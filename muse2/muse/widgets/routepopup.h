@@ -79,7 +79,7 @@ class RoutePopupMenu : public PopupMenu
     //int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
     // REMOVE Tim. Persistent routes. Changed.
     //int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
-    void addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths);
+    void addMidiPorts(MusECore::Track* t, MusEGui::PopupMenu* pup, bool isOutput, bool show_synths, bool want_readable);
     
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);

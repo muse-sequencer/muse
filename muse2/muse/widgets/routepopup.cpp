@@ -297,15 +297,17 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     act->setCheckable(true);
     const MusECore::Route r(route_track, -1);
     act->setData(QVariant::fromValue(r));   
-    for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
-    {
-      if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
-          ir->remoteChannel == -1 && ir->channel == -1 && ir->channels == -1)
-      {
-        act->setChecked(true);
-        break;
-      }  
-    }
+//     for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+//     {
+//       if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+//           ir->remoteChannel == -1 && ir->channel == -1 && ir->channels == -1)
+//       {
+//         act->setChecked(true);
+//         break;
+//       }  
+//     }
+    if(rl->exists(r))
+      act->setChecked(true);
     
     if(rt_chans != 0 && t_chans != 0)
     {
@@ -1065,7 +1067,7 @@ int RoutePopupMenu::addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id,
 //   }    
 //   return id;      
 // }
-void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths)
+void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths, bool want_writable)
 {
 
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
@@ -1074,6 +1076,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
   const MusECore::MidiDevice* md;
   
   // Currently only midi port output to midi track input supports 'Omni' routes.
+#ifdef _USE_MIDI_TRACK_SINGLE_PORT_CHAN_
   if(isOutput)
   {
     // Count the number of required rows. 
@@ -1085,7 +1088,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // So for now, just list all valid ports whether read or write.
       //if(!md)
       //  continue;
-      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
         continue;
       // Do not list synth devices!
       if(!show_synths && md->isSynti())
@@ -1107,7 +1110,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // So for now, just list all valid ports whether read or write.
       //if(!md)
       //  continue;
-      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
         continue;
       // Do not list synth devices!
       if(!show_synths && md->isSynti())
@@ -1118,41 +1121,11 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       //wa->array()->headerSetRoute(row, -1, MusECore::Route(MusECore::Route::MIDI_PORT_ROUTE, i, NULL, -1, -1, -1, NULL));
       wa->array()->headerSetRoute(row, -1, MusECore::Route(i)); // Midi port route.
       
-#ifdef _USE_MIDI_TRACK_SINGLE_PORT_CHAN_
       wa->array()->setRowsExclusive(true);
       wa->array()->setColumnsExclusive(true);
       MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
       if(i == mt->outPort())
         wa->array()->setValue(row, mt->outChannel(), true);
-#else      
-      int chans = 0;
-      // Is there already a route?
-      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-      {
-        switch(ir->type)
-        {
-          case MusECore::Route::MIDI_PORT_ROUTE:
-            if(ir->midiPort == i)
-              chans = ir->channel; // Grab the channels.
-          break;  
-          case MusECore::Route::TRACK_ROUTE:
-          case MusECore::Route::JACK_ROUTE:
-          case MusECore::Route::MIDI_DEVICE_ROUTE:
-          break;  
-        }
-        if(chans != 0)
-          break;
-      }
-      if(chans != 0 && chans != -1)
-      {
-        for(int col = 0; col < MIDI_CHANNELS; ++col)
-        {
-          if(chans & (1 << col))
-            wa->array()->setValue(row, col, true);
-        }
-      }
-#endif
-      
       ++row;
     }
     // Must rebuild array after text changes.
@@ -1160,6 +1133,9 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
     pup->addAction(wa);
   }
   else 
+    
+#endif // _USE_MIDI_TRACK_SINGLE_PORT_CHAN_
+    
   {
     // It's an input. Allow 'Omni' routes'...
     pup->addAction(new MenuTitleItem(tr("Omnis"), this)); 
@@ -1170,7 +1146,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // So for now, just list all valid ports whether read or write.
       //if(!md)
       //  continue;
-      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
         continue;
       // Do not list synth devices!
       if(!show_synths && md->isSynti())
@@ -1231,7 +1207,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
     }
   }
         
-#else   
+#else // _USE_CUSTOM_WIDGET_ACTIONS_
         
   pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
   for(int i = 0; i < MIDI_PORTS; ++i)
@@ -1244,7 +1220,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
     // So for now, just list all valid ports whether read or write.
     //if(!md)
     //  continue;
-    if(!md || !(md->rwFlags() & (isOutput ? 2 : 1)))  // If this is an input click we are looking for midi outputs here.
+    if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi outputs here.
       continue;
           
     // Do not list synth devices!
@@ -3547,7 +3523,7 @@ void RoutePopupMenu::prepare()
         act->setData(_OPEN_MIDI_CONFIG_);
         addSeparator();
         
-        addMidiPorts(track, this, _isOutMenu, true);
+        addMidiPorts(track, this, _isOutMenu, true, _isOutMenu);
         
         if(_isOutMenu)   
         {
@@ -3564,7 +3540,7 @@ void RoutePopupMenu::prepare()
             if(mp->device() && !mp->device()->isSynti())  
             {
               MusECore::RouteList* mprl = mp->outRoutes();
-              int chbits = 1 << ((MusECore::MidiTrack*)track)->outChannel();
+              //int chbits = 1 << ((MusECore::MidiTrack*)track)->outChannel();
               //MusECore::MidiDevice* md = mp->device();
               //if(!md)
               //  continue;
@@ -3576,6 +3552,79 @@ void RoutePopupMenu::prepare()
               addMenu(subp);
               
               MusECore::InputList* al = MusEGlobal::song->inputs();
+
+#ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+              for (MusECore::ciAudioInput i = al->begin(); i != al->end(); ++i) 
+              {
+                MusECore::Track* t = *i;
+                
+                act = subp->addAction(t->name());
+                act->setCheckable(true);
+                const MusECore::Route r(t, -1);
+                act->setData(QVariant::fromValue(r));   
+            //     for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+            //     {
+            //       if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+            //           ir->remoteChannel == -1 && ir->channel == -1 && ir->channels == -1)
+            //       {
+            //         act->setChecked(true);
+            //         break;
+            //       }  
+            //     }
+                if(mprl->exists(r))
+                  act->setChecked(true);
+                
+                
+                //QString s(t->name());
+                //act = subp->addAction(s);
+                //act->setCheckable(true);
+                //MusECore::Route r(t, chbits);
+                //act->setData(QVariant::fromValue(r));   
+                //for(MusECore::ciRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
+                //{
+                //  if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == t && (ir->channel & chbits))
+                //  {
+                //    act->setChecked(true);
+                //    break;
+                //  }  
+                //}
+                //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+                //wa->array()->setArrayTitle(tr("Channels"));
+                //wa->setData(QVariant::fromValue(MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, NULL, -1, -1, -1, NULL)));
+                
+                
+                
+                PopupMenu* wa_subp = new PopupMenu(this, true);
+                wa_subp->addAction(new MenuTitleItem(tr("Channels"), this));
+                act->setMenu(wa_subp);
+                RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+                //wa->array()->setArrayTitle(tr("Channels"));
+                wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
+                //for(int row = 0; row < rt_chans; ++row)
+                //{
+                  for(int col = 0; col < MIDI_CHANNELS; ++col)
+                  {  
+                    for(MusECore::ciRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
+                    {
+                      // TODO
+                      if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == t && 
+                          //ir->remoteChannel == row && 
+                          ir->channel == col && 
+                          ir->channels == 1)
+                      {
+                        wa->array()->setValue(0, col, true);
+                        break;
+                      }  
+                    }
+                  }
+                //}
+                // Must rebuild array after text changes.
+                wa->updateChannelArray();
+                wa_subp->addAction(wa);
+                //subp->addAction(act);  
+              }
+#else
+              int chbits = 1 << ((MusECore::MidiTrack*)track)->outChannel();
               for (MusECore::ciAudioInput i = al->begin(); i != al->end(); ++i) 
               {
                 MusECore::Track* t = *i;
@@ -3593,6 +3642,8 @@ void RoutePopupMenu::prepare()
                   }  
                 }
               }
+#endif
+              
             }     
           }  
         }
@@ -3873,7 +3924,7 @@ void RoutePopupMenu::prepare()
               subp->setTitle(tr("Midi port sends")); 
               addMenu(subp);
               //addMidiPorts(t, subp, gid, false);
-              addMidiPorts(t, subp, false, false);
+              addMidiPorts(t, subp, false, false, true);
               //
               // Display all in the same menu:
               //
