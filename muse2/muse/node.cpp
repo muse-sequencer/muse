@@ -44,6 +44,9 @@
 #include "wavepreview.h"
 #include "al/dsp.h"
 
+// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK amd makes good sense.
+#define _USE_SIMPLIFIED_SOLO_CHAIN_
+
 // Turn on debugging messages
 //#define NODE_DEBUG     
 // Turn on constant flow of process debugging messages
@@ -262,7 +265,17 @@ void MidiTrack::updateSoloStates(bool noDec)
   _tmpSoloChainDoIns = false;
   _tmpSoloChainNoDec = noDec;
   updateSoloState();
-  
+
+#ifdef _USE_SIMPLIFIED_SOLO_CHAIN_
+    // Support Midi Track to Audio Input track soloing chain routes.
+    // Support omni routes only, because if channels are supported, the graphical router becomes more complicated.
+    const RouteList* rl = outRoutes();
+    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && ir->channel == -1)
+        ir->track->updateInternalSoloStates();
+    }
+#else  
   if(outPort() >= 0)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[outPort()];
@@ -281,7 +294,8 @@ void MidiTrack::updateSoloStates(bool noDec)
       }  
     }
   }
-  
+#endif
+
   _nodeTraversed = false; // Reset.
 }
 

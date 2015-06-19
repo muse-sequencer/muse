@@ -59,6 +59,10 @@
 #include "popupmenu.h"
 #include "routepopup.h"
 
+// REMOVE Tim. Persistent routes. Added. 
+// Temporary for testing migration of some port list columns over to the new device list.
+#define _USE_EXTRA_DEVICE_COLUMNS_
+
 namespace MusEGlobal {
 extern std::vector<MusECore::Synth*> synthis;
 }
@@ -69,9 +73,12 @@ enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_
        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
 
 // REMOVE Tim. Persistent routes. Added.
-//enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_STATE };
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
+#else
 enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
-       
+#endif     
+
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
@@ -1164,9 +1171,13 @@ MPConfig::MPConfig(QWidget* parent)
       columnnames.clear();
       columnnames << tr("Device Name")
                   << tr("Type")
-                  //<< tr("I")
-                  //<< tr("O")
-                  //<< tr("GUI")
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+                  << tr("I")
+                  << tr("O")
+                  << tr("GUI")
+                  << tr("In")
+                  << tr("Out")
+#endif                  
                   << tr("State");
       instanceList->setColumnCount(columnnames.size());
       //instanceList->setHeaderLabels(columnnames);
@@ -1511,36 +1522,88 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             instanceList->setItem(row_cnt, INSTCOL_TYPE, iitem);
 
-//             iitem->setText(INSTCOL_NAME, md->name());
-//             iitem->setText(INSTCOL_TYPE, md->deviceTypeString());
-//             if(md->hasNativeGui())
-//               iitem->setIcon(INSTCOL_GUI, md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
-//             else
-//               iitem->setIcon(INSTCOL_GUI, QIcon(QPixmap()));
-//             //iitem->setText(INSTCOL_STATE, md->());
-//             if(md->rwFlags() & 0x2)
-//               iitem->setIcon(INSTCOL_REC, md->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-//             else
-//               iitem->setIcon(INSTCOL_REC, QIcon(QPixmap()));
-//             if(md->rwFlags() & 0x1)
-//               iitem->setIcon(INSTCOL_PLAY, md->openFlags() & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-//             else
-//               iitem->setIcon(INSTCOL_PLAY, QIcon(QPixmap()));
-//             iitem->setTextAlignment(INSTCOL_GUI, Qt::AlignHCenter);
-//             iitem->setTextAlignment(INSTCOL_REC, Qt::AlignHCenter);
-//             iitem->setTextAlignment(INSTCOL_PLAY, Qt::AlignHCenter);
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+            iitem = new QTableWidgetItem;
+            iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            iitem->setTextAlignment(Qt::AlignHCenter);
+            instanceList->setItem(row_cnt, INSTCOL_REC, iitem);
+            if(md->rwFlags() & 0x2)
+              iitem->setIcon(md->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            else
+              iitem->setIcon(QIcon(QPixmap()));
+            
+            iitem = new QTableWidgetItem;
+            iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            iitem->setTextAlignment(Qt::AlignHCenter);
+            instanceList->setItem(row_cnt, INSTCOL_PLAY, iitem);
+            if(md->rwFlags() & 0x1)
+              iitem->setIcon(md->openFlags() & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            else
+              iitem->setIcon(QIcon(QPixmap()));
+            
+            iitem = new QTableWidgetItem;
+            iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            iitem->setTextAlignment(Qt::AlignHCenter);
+            instanceList->setItem(row_cnt, INSTCOL_GUI, iitem);
+            if(md->hasNativeGui())
+              iitem->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            else
+              iitem->setIcon(QIcon(QPixmap()));
+
+            QTableWidgetItem* or_item = new QTableWidgetItem;
+            or_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            QTableWidgetItem* ir_item = new QTableWidgetItem;
+            ir_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+            {
+              if(md->openFlags() & 1)  
+              {
+                //or_item->setIcon(QIcon(*buttondownIcon));
+                //or_item->setText(tr("out"));
+                or_item->setIcon(QIcon(*routesMidiOutIcon));
+              }
+              else  
+              {
+                or_item->setIcon(QIcon());
+                //or_item->setText("");
+              }
+              
+              if(md->openFlags() & 2)  
+              {
+                //ir_item->setIcon(QIcon(*buttondownIcon));
+                //ir_item->setText(tr("in"));
+                ir_item->setIcon(QIcon(*routesMidiInIcon));
+              }
+              else
+              {
+                ir_item->setIcon(QIcon());
+                //ir_item->setText("");
+              }  
+            }
+            instanceList->setItem(row_cnt, INSTCOL_OUTROUTES, or_item);
+            instanceList->setItem(row_cnt, INSTCOL_INROUTES, ir_item);
+#endif            
+
             ++row_cnt;
             }
             
       instanceList->resizeColumnToContents(INSTCOL_NAME);
       instanceList->resizeColumnToContents(INSTCOL_TYPE);
       instanceList->resizeColumnToContents(INSTCOL_STATE);
-//       instanceList->resizeColumnToContents(INSTCOL_REC);
-//       instanceList->resizeColumnToContents(INSTCOL_PLAY);
-//       instanceList->resizeColumnToContents(INSTCOL_GUI);
-//       instanceList->header()->setSectionResizeMode(INSTCOL_REC ,QHeaderView::Fixed);
-//       instanceList->header()->setSectionResizeMode(INSTCOL_PLAY ,QHeaderView::Fixed);
-//       instanceList->header()->setSectionResizeMode(INSTCOL_GUI ,QHeaderView::Fixed);
+      
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+      instanceList->resizeColumnToContents(INSTCOL_REC);
+      instanceList->resizeColumnToContents(INSTCOL_PLAY);
+      instanceList->resizeColumnToContents(INSTCOL_GUI);
+      instanceList->resizeColumnToContents(INSTCOL_OUTROUTES);
+      instanceList->resizeColumnToContents(INSTCOL_INROUTES);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_REC, QHeaderView::Fixed);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_PLAY, QHeaderView::Fixed);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_GUI, QHeaderView::Fixed);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_OUTROUTES, QHeaderView::Fixed);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_INROUTES, QHeaderView::Fixed);
+#endif
+      
       //instanceList->header()->setStretchLastSection( true );
       //instanceList->header()->setDefaultAlignment(Qt::AlignHCenter);
       instanceList->horizontalHeader()->setStretchLastSection( true );
@@ -1662,9 +1725,9 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
 {
       if(!item)
         return;
-      int col = item->column();
-      QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-      QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
+      const int col = item->column();
+      const QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
+      const QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
       MusECore::iMidiDevice imd;
       for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MusECore::MidiDevice* md = *imd;
@@ -1675,68 +1738,78 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
             fprintf(stderr, "synthesizerConfig::deviceItemClicked(): device not found\n");
             return;
             }
-      //MusECore::MidiDevice* md = *imd;
-      //int rwFlags   = md->rwFlags();
-      //int openFlags = md->openFlags();
+            
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+      MusECore::MidiDevice* md = *imd;
+      int rwFlags   = md->rwFlags();
+      int openFlags = md->openFlags();
+#endif        
+      
       switch(col)
       {
-//         case INSTCOL_REC:
-//                   if(!(rwFlags & 2))
-//                         return;
-//                   openFlags ^= 0x2;
-//                   MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
-//                   md->setOpenFlags(openFlags);
-//                   if(md->midiPort() != -1)
-//                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
-//                   MusEGlobal::audio->msgIdle(false);
-//                   item->setIcon(INSTCOL_REC, openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-//                   
-// //                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-// //                   {
-// //                     if(md->openFlags() & 2)  
-// //                     {
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
-// //                     }
-// //                     else
-// //                     {
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
-// //                     }  
-// //                   }
-//                   return;
-//         case INSTCOL_PLAY:
-//                   if(!(rwFlags & 1))
-//                         return;
-//                   openFlags ^= 0x1;
-//                   MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
-//                   md->setOpenFlags(openFlags);
-//                   if(md->midiPort() != -1)
-//                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
-//                   MusEGlobal::audio->msgIdle(false);
-//                   item->setIcon(INSTCOL_PLAY, openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-//                   
-// //                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-// //                   {
-// //                     if(md->openFlags() & 1)  
-// //                     {
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
-// //                     }
-// //                     else  
-// //                     {
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());
-// //                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
-// //                     }
-// //                   }
-//                   return;
-//         case INSTCOL_GUI:
-//                   if(md->hasNativeGui())
+        
+#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+        case INSTCOL_REC:
+                  if(!(rwFlags & 2))
+                        return;
+                  openFlags ^= 0x2;
+                  MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
+                  md->setOpenFlags(openFlags);
+                  if(md->midiPort() != -1)
+                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
+                  MusEGlobal::audio->msgIdle(false);
+                  //item->setIcon(INSTCOL_REC, openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  
+//                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
 //                   {
-//                     md->showNativeGui(!md->nativeGuiVisible());
-//                     item->setIcon(INSTCOL_GUI, md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+//                     if(md->openFlags() & 2)  
+//                     {
+//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
+//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
+//                     }
+//                     else
+//                     {
+//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());
+//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
+//                     }  
 //                   }
-//                   return;
+                  return;
+        case INSTCOL_PLAY:
+                  if(!(rwFlags & 1))
+                        return;
+                  openFlags ^= 0x1;
+                  MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
+                  md->setOpenFlags(openFlags);
+                  if(md->midiPort() != -1)
+                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
+                  MusEGlobal::audio->msgIdle(false);
+                  //item->setIcon(INSTCOL_PLAY, openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  
+//                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+//                   {
+//                     if(md->openFlags() & 1)  
+//                     {
+//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
+//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
+//                     }
+//                     else  
+//                     {
+//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());
+//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
+//                     }
+//                   }
+                  return;
+        case INSTCOL_GUI:
+                  if(md->hasNativeGui())
+                  {
+                    md->showNativeGui(!md->nativeGuiVisible());
+                    item->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  }
+                  return;
+#endif  
+                  
       }
 }
       
