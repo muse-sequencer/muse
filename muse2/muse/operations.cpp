@@ -909,6 +909,14 @@ void PendingOperationItem::executeNonRTStage()
 {
   switch(_type)
   {
+    case AddRoute:
+     MusEGlobal::song->connectJackRoutes(_src_route, _dst_route);
+    break;
+    
+    case DeleteRoute:
+      MusEGlobal::song->connectJackRoutes(_src_route, _dst_route, true);
+    break;
+    
     case DeleteTempo:
       {
 #ifdef _PENDING_OPS_DEBUG_

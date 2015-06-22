@@ -31,6 +31,10 @@
 #include "ui_synthconfigbase.h"
 #include "type_defs.h"
 
+// REMOVE Tim. Persistent routes. Added. 
+// Temporary for testing migration of some port list columns over to the new device list.
+#define _USE_EXTRA_INSTANCE_COLUMNS_
+
 class QTreeWidget;
 class QTableWidget;
 class QPoint;
@@ -51,14 +55,23 @@ class PopupMenu;
 
 class MPConfig : public QDialog, Ui::SynthConfigBase {
       Q_OBJECT
+      
+      enum InstanceRoles { DeviceRole = Qt::UserRole, DeviceTypeRole = Qt::UserRole + 1};
+      enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
+                           DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
+      // REMOVE Tim. Persistent routes. Added.
+      #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
+      enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
+      #else
+      enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
+      #endif     
+      
       PopupMenu* instrPopup;
       PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
       void addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table);
-
-      
 
    private slots:
       void rbClicked(QTableWidgetItem*);

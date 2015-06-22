@@ -350,70 +350,89 @@ void addRoute(Route src, Route dst)
             if(mp->device() && mp->device()->isSynti())
               return;
             
+            
             // REMOVE Tim. Persistent routes. Changed.
             //if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
-            const int chmask = (1 << MIDI_CHANNELS) - 1;
-            if(dst.channel < -1 || dst.channel == 0 || dst.channel > chmask)
+            //const int chmask = (1 << MIDI_CHANNELS) - 1;
+            //if(dst.channel < -1 || dst.channel == 0 || dst.channel > chmask)
+            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
             {
-              fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
+              //fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
+              fprintf(stderr, "addRoute: source is midi port:%d, but destination channel:%d out of range\n", src.midiPort, dst.channel);
               return;
             }
 
-            // REMOVE Tim. Persistent routes. Added.
-            if(dst.channel == chmask)
-              dst.channel = -1;
+//             // REMOVE Tim. Persistent routes. Added.
+//             if(dst.channel == chmask)
+//               dst.channel = -1;
+//             //dst.remoteChannel = src.remoteChannel = -1;
+//             
+//             src.channel = dst.channel;
+//             RouteList* outRoutes = mp->outRoutes();
+//             iRoute ir = outRoutes->begin();                                      
+//             for ( ; ir != outRoutes->end(); ++ir) 
+//             {
+//               if (ir->type == Route::TRACK_ROUTE && ir->track == dst.track)     // Does a route to the track exist?
+//               {
+//                 // REMOVE Tim. Persistent routes. Changed.
+//                 //ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                 if(dst.channel == -1 || ir->channel == -1)
+//                   ir->channel = dst.channel;
+//                 else
+//                 {
+//                   ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   if(ir->channel == chmask)
+//                     ir->channel = -1;
+//                 }
+//                 break;
+//               }      
+//             }
+//             #ifdef ROUTE_DEBUG
+//             fprintf(stderr, "addRoute: src midi port:%d dst track name:%s pushing dst and src routes\n", src.midiPort, dst.track->name().toLatin1().constData());
+//             #endif
+//             
+//             if(ir == outRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+//               outRoutes->push_back(dst);
+//               
+//             RouteList* inRoutes = dst.track->inRoutes();
+//             
+//             // Make sure only one single route, with a channel mask, can ever exist.
+//             ir = inRoutes->begin();
+//             for ( ; ir != inRoutes->end(); ++ir)         
+//             {
+//               if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == src.midiPort)  // Does a route to the midi port exist?
+//               {
+//                 // REMOVE Tim. Persistent routes. Changed.
+//                 //ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                 if(src.channel == -1 || ir->channel == -1)
+//                   ir->channel = src.channel;
+//                 else
+//                 {
+//                   ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   if(ir->channel == chmask)
+//                     ir->channel = -1;
+//                 }
+//                 break;
+//               }      
+//             }
+//             
+//             if(ir == inRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+//               inRoutes->push_back(src);
             
             src.channel = dst.channel;
-            RouteList* outRoutes = mp->outRoutes();
-            iRoute ir = outRoutes->begin();                                      
-            for ( ; ir != outRoutes->end(); ++ir) 
+            RouteList* rl;
+            if(src.isValid())
             {
-              if (ir->type == Route::TRACK_ROUTE && ir->track == dst.track)     // Does a route to the track exist?
-              {
-                // REMOVE Tim. Persistent routes. Changed.
-                //ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                if(dst.channel == -1 || ir->channel == -1)
-                  ir->channel = dst.channel;
-                else
-                {
-                  ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                  if(ir->channel == chmask)
-                    ir->channel = -1;
-                }
-                break;
-              }      
+              rl = mp->outRoutes();
+              if(!rl->exists(dst))
+                rl->push_back(dst);
             }
-            #ifdef ROUTE_DEBUG
-            fprintf(stderr, "addRoute: src midi port:%d dst track name:%s pushing dst and src routes\n", src.midiPort, dst.track->name().toLatin1().constData());
-            #endif
-            
-            if(ir == outRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
-              outRoutes->push_back(dst);
-              
-            RouteList* inRoutes = dst.track->inRoutes();
-            
-            // Make sure only one single route, with a channel mask, can ever exist.
-            ir = inRoutes->begin();
-            for ( ; ir != inRoutes->end(); ++ir)         
+            if(dst.isValid())
             {
-              if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == src.midiPort)  // Does a route to the midi port exist?
-              {
-                // REMOVE Tim. Persistent routes. Changed.
-                //ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                if(src.channel == -1 || ir->channel == -1)
-                  ir->channel = src.channel;
-                else
-                {
-                  ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                  if(ir->channel == chmask)
-                    ir->channel = -1;
-                }
-                break;
-              }      
+              rl = dst.track->inRoutes();
+              if(!rl->exists(src))
+                rl->push_back(src);
             }
-            
-            if(ir == inRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
-              inRoutes->push_back(src);
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
@@ -424,71 +443,90 @@ void addRoute(Route src, Route dst)
             }
             // REMOVE Tim. Persistent routes. Changed.
             //if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
-            const int chmask = (1 << MIDI_CHANNELS) - 1;
-            if(src.channel < -1 || src.channel == 0 || src.channel > chmask)
+            //const int chmask = (1 << MIDI_CHANNELS) - 1;
+            //if(src.channel < -1 || src.channel == 0 || src.channel > chmask)
+            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
             {
-              fprintf(stderr, "addRoute: destination is midi port:%d, but source channel mask:%d out of range\n", dst.midiPort, src.channel);
+              //fprintf(stderr, "addRoute: destination is midi port:%d, but source channel mask:%d out of range\n", dst.midiPort, src.channel);
+              fprintf(stderr, "addRoute: destination is midi port:%d, but source channel:%d out of range\n", dst.midiPort, src.channel);
               return;
             }
             
-            // REMOVE Tim. Persistent routes. Added.
-            if(src.channel == chmask)
-              src.channel = -1;
+//             // REMOVE Tim. Persistent routes. Added.
+//             if(src.channel == chmask)
+//               src.channel = -1;
+//             //dst.remoteChannel = src.remoteChannel = -1;
+//             
+//             dst.channel = src.channel;
+//             RouteList* outRoutes = src.track->outRoutes();
+//       
+//             iRoute ir = outRoutes->begin();                                      
+//             for ( ; ir != outRoutes->end(); ++ir) 
+//             {
+//               if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == dst.midiPort)     // Does a route to the midi port exist?
+//               {
+//                 // REMOVE Tim. Persistent routes. Changed.
+//                 //ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                 if(dst.channel == -1 || ir->channel == -1)
+//                   ir->channel = dst.channel;
+//                 else
+//                 {
+//                   ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   if(ir->channel == chmask)
+//                     ir->channel = -1;
+//                 }
+//                 break;
+//               }      
+//             }
+//             
+//             if(ir == outRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+//               outRoutes->push_back(dst);
+//             
+//             MidiPort *mp = &MusEGlobal::midiPorts[dst.midiPort];
+//             
+//             #ifdef ROUTE_DEBUG
+//             fprintf(stderr, "addRoute: src track:%s dst midi port:%d pushing dst and src routes\n", src.track->name().toLatin1().constData(), dst.midiPort);
+//             #endif
+//             RouteList* inRoutes = mp->inRoutes();
+//               
+//             // Make sure only one single route, with a channel mask, can ever exist.
+//             ir = inRoutes->begin();
+//             for ( ; ir != inRoutes->end(); ++ir)         
+//             {
+//               if (ir->type == Route::TRACK_ROUTE && ir->track == src.track)  // Does a route to the track exist?
+//               {
+//                 // REMOVE Tim. Persistent routes. Changed.
+//                 //ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                 if(src.channel == -1 || ir->channel == -1)
+//                   ir->channel = src.channel;
+//                 else
+//                 {
+//                   ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   if(ir->channel == chmask)
+//                     ir->channel = -1;
+//                 }
+//                 break;
+//               }      
+//             }
+//             
+//             if(ir == inRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+//               inRoutes->push_back(src);
+            
             
             dst.channel = src.channel;
-            RouteList* outRoutes = src.track->outRoutes();
-      
-            iRoute ir = outRoutes->begin();                                      
-            for ( ; ir != outRoutes->end(); ++ir) 
+            RouteList* rl;
+            if(src.isValid())
             {
-              if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == dst.midiPort)     // Does a route to the midi port exist?
-              {
-                // REMOVE Tim. Persistent routes. Changed.
-                //ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                if(dst.channel == -1 || ir->channel == -1)
-                  ir->channel = dst.channel;
-                else
-                {
-                  ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                  if(ir->channel == chmask)
-                    ir->channel = -1;
-                }
-                break;
-              }      
+              rl = src.track->outRoutes();
+              if(!rl->exists(dst))
+                rl->push_back(dst);
             }
-            
-            if(ir == outRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
-              outRoutes->push_back(dst);
-            
-            MidiPort *mp = &MusEGlobal::midiPorts[dst.midiPort];
-            
-            #ifdef ROUTE_DEBUG
-            fprintf(stderr, "addRoute: src track:%s dst midi port:%d pushing dst and src routes\n", src.track->name().toLatin1().constData(), dst.midiPort);
-            #endif
-            RouteList* inRoutes = mp->inRoutes();
-              
-            // Make sure only one single route, with a channel mask, can ever exist.
-            ir = inRoutes->begin();
-            for ( ; ir != inRoutes->end(); ++ir)         
+            if(dst.isValid())
             {
-              if (ir->type == Route::TRACK_ROUTE && ir->track == src.track)  // Does a route to the track exist?
-              {
-                // REMOVE Tim. Persistent routes. Changed.
-                //ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                if(src.channel == -1 || ir->channel == -1)
-                  ir->channel = src.channel;
-                else
-                {
-                  ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
-                  if(ir->channel == chmask)
-                    ir->channel = -1;
-                }
-                break;
-              }      
-            }
-            
-            if(ir == inRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
-              inRoutes->push_back(src);
+              rl = MusEGlobal::midiPorts[dst.midiPort].inRoutes();
+              if(!rl->exists(src))
+                rl->push_back(src);
+            }  
       }
       else 
       {
@@ -687,63 +725,65 @@ void removeRoute(Route src, Route dst)
       return;
     }
     
-    const int chmask = (1 << MIDI_CHANNELS) - 1;
+//     const int chmask = (1 << MIDI_CHANNELS) - 1;
     if(src.isValid())
     {
-      MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-      RouteList* outRoutes = mp->outRoutes();
-      for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-      {
-        if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // Is there a route to the track?
-        {
-          //printf("i->channel:%x dst.channel:%x\n", i->channel, dst.channel);   
-          // REMOVE Tim. Persistent routes. Changed.
-          //i->channel &= ~dst.channel;        // Unset the desired channel bits.
-          if(dst.channel == -1)
-            outRoutes->erase(i);
-          else
-          {
-            if(i->channel == -1)
-              i->channel = chmask & ~dst.channel;
-            else
-              i->channel &= ~dst.channel;        // Unset the desired channel bits.
-            if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-              outRoutes->erase(i);
-          }
-          
-          break;  // For safety, keep looking and remove any more found.
-                  // No, must break, else crash. There should only be one route anyway...
-        }
-      }
+//       MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+//       RouteList* outRoutes = mp->outRoutes();
+//       for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+//       {
+//         if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // Is there a route to the track?
+//         {
+//           //printf("i->channel:%x dst.channel:%x\n", i->channel, dst.channel);   
+//           // REMOVE Tim. Persistent routes. Changed.
+//           //i->channel &= ~dst.channel;        // Unset the desired channel bits.
+//           if(dst.channel == -1)
+//             outRoutes->erase(i);
+//           else
+//           {
+//             if(i->channel == -1)
+//               i->channel = chmask & ~dst.channel;
+//             else
+//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
+//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+//               outRoutes->erase(i);
+//           }
+//           
+//           break;  // For safety, keep looking and remove any more found.
+//                   // No, must break, else crash. There should only be one route anyway...
+//         }
+//       }
+      MusEGlobal::midiPorts[src.midiPort].outRoutes()->removeRoute(dst);
     }
     else
       fprintf(stderr, "removeRoute: source is midi port:%d but invalid\n", src.midiPort); 
     
     if(dst.isValid())
     {
-      RouteList* inRoutes = dst.track->inRoutes();
-      for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-      {
-        if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == src.midiPort)  // Is there a route to the midi port?
-        {
-          // REMOVE Tim. Persistent routes. Changed.
-          //i->channel &= ~src.channel;        // Unset the desired channel bits.
-          if(src.channel == -1)
-            inRoutes->erase(i);
-          else
-          {
-            if(i->channel == -1)
-              i->channel = chmask & ~src.channel;
-            else
-              i->channel &= ~src.channel;        // Unset the desired channel bits.
-            if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-              inRoutes->erase(i);
-          }
-          
-          break;  // For safety, keep looking and remove any more found.
-                  // No, must break, else crash. There should only be one route anyway...
-        }
-      }
+//       RouteList* inRoutes = dst.track->inRoutes();
+//       for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+//       {
+//         if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == src.midiPort)  // Is there a route to the midi port?
+//         {
+//           // REMOVE Tim. Persistent routes. Changed.
+//           //i->channel &= ~src.channel;        // Unset the desired channel bits.
+//           if(src.channel == -1)
+//             inRoutes->erase(i);
+//           else
+//           {
+//             if(i->channel == -1)
+//               i->channel = chmask & ~src.channel;
+//             else
+//               i->channel &= ~src.channel;        // Unset the desired channel bits.
+//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+//               inRoutes->erase(i);
+//           }
+//           
+//           break;  // For safety, keep looking and remove any more found.
+//                   // No, must break, else crash. There should only be one route anyway...
+//         }
+//       }
+      dst.track->inRoutes()->removeRoute(src);
     }
     else
       fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
@@ -756,62 +796,64 @@ void removeRoute(Route src, Route dst)
       return;
     }
     
-    const int chmask = (1 << MIDI_CHANNELS) - 1;
+    //const int chmask = (1 << MIDI_CHANNELS) - 1;
     if(src.isValid())
     {
-      RouteList* outRoutes = src.track->outRoutes();
-      for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-      {
-        if (i->type == Route::MIDI_PORT_ROUTE && i->midiPort == dst.midiPort)  // Is there a route to the midi port?
-        {
-          // REMOVE Tim. Persistent routes. Changed.
-          //i->channel &= ~dst.channel;        // Unset the desired channel bits.
-          if(dst.channel == -1)
-            outRoutes->erase(i);
-          else
-          {
-            if(i->channel == -1)
-              i->channel = chmask & ~dst.channel;
-            else
-              i->channel &= ~dst.channel;        // Unset the desired channel bits.
-            if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-              outRoutes->erase(i);
-          }
-              
-          break;  // For safety, keep looking and remove any more found.
-                  // No, must break, else crash. There should only be one route anyway...
-        }
-      }
+//       RouteList* outRoutes = src.track->outRoutes();
+//       for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+//       {
+//         if (i->type == Route::MIDI_PORT_ROUTE && i->midiPort == dst.midiPort)  // Is there a route to the midi port?
+//         {
+//           // REMOVE Tim. Persistent routes. Changed.
+//           //i->channel &= ~dst.channel;        // Unset the desired channel bits.
+//           if(dst.channel == -1)
+//             outRoutes->erase(i);
+//           else
+//           {
+//             if(i->channel == -1)
+//               i->channel = chmask & ~dst.channel;
+//             else
+//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
+//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+//               outRoutes->erase(i);
+//           }
+//               
+//           break;  // For safety, keep looking and remove any more found.
+//                   // No, must break, else crash. There should only be one route anyway...
+//         }
+//       }
+      src.track->outRoutes()->removeRoute(dst);
     }  
     else
       fprintf(stderr, "removeRoute: destination is midi port:%d but source track is invalid\n", dst.midiPort);
     
     if(dst.isValid())
     {
-      MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-      RouteList* inRoutes = mp->inRoutes();
-      for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-      {
-        if(i->type == Route::TRACK_ROUTE && i->track == src.track)  // Is there a route to the track?
-        {
-          // REMOVE Tim. Persistent routes. Changed.
-          //i->channel &= ~src.channel;        // Unset the desired channel bits.
-          if(src.channel == -1)
-            inRoutes->erase(i);
-          else
-          {
-            if(i->channel == -1)
-              i->channel = chmask & ~src.channel;
-            else
-              i->channel &= ~src.channel;        // Unset the desired channel bits.
-            if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-              inRoutes->erase(i);
-          }
-              
-          break;  // For safety, keep looking and remove any more found.
-                  // No, must break, else crash. There should only be one route anyway...
-        }
-      }
+//       MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+//       RouteList* inRoutes = mp->inRoutes();
+//       for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+//       {
+//         if(i->type == Route::TRACK_ROUTE && i->track == src.track)  // Is there a route to the track?
+//         {
+//           // REMOVE Tim. Persistent routes. Changed.
+//           //i->channel &= ~src.channel;        // Unset the desired channel bits.
+//           if(src.channel == -1)
+//             inRoutes->erase(i);
+//           else
+//           {
+//             if(i->channel == -1)
+//               i->channel = chmask & ~src.channel;
+//             else
+//               i->channel &= ~src.channel;        // Unset the desired channel bits.
+//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+//               inRoutes->erase(i);
+//           }
+//               
+//           break;  // For safety, keep looking and remove any more found.
+//                   // No, must break, else crash. There should only be one route anyway...
+//         }
+//       }
+      MusEGlobal::midiPorts[dst.midiPort].inRoutes()->removeRoute(src);
     }  
     else
       fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
@@ -1301,69 +1343,84 @@ bool routeCanConnect(const Route& src, const Route& dst)
             if(mp->device() && mp->device()->isSynti())
               return false;
             
-            if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
+            //if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
+            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
               return false;
                         
-            int chan = dst.channel;
-            RouteList* outRoutes = mp->outRoutes();
-            iRoute ior = outRoutes->begin();                                      
-            for( ; ior != outRoutes->end(); ++ior) 
-            {
-              if(ior->type == Route::TRACK_ROUTE && ior->track == dst.track)     // Does a route to the track exist?
-              {
-                if(ior->channel | chan)  // Bitwise OR the desired channel bit with the existing bit mask.
-                  break;
-              }      
-            }
+//             int chan = dst.channel;
+//             RouteList* outRoutes = mp->outRoutes();
+//             iRoute ior = outRoutes->begin();                                      
+//             for( ; ior != outRoutes->end(); ++ior) 
+//             {
+//               if(ior->type == Route::TRACK_ROUTE && ior->track == dst.track)     // Does a route to the track exist?
+//               {
+//                 if(ior->channel | chan)  // Bitwise OR the desired channel bit with the existing bit mask.
+//                   break;
+//               }      
+//             }
+//             
+//             RouteList* inRoutes = dst.track->inRoutes();
+//             // Make sure only one single route, with a channel mask, can ever exist.
+//             iRoute iir = inRoutes->begin();
+//             for( ; iir != inRoutes->end(); ++iir)         
+//             {
+//               if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == src.midiPort)  // Does a route to the midi port exist?
+//               {
+//                 if(iir->channel | chan)  // Bitwise OR the desired channel bit with the existing bit mask.
+//                   break;
+//               }      
+//             }
+//             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
+//             return ior == outRoutes->end() || iir == inRoutes->end();
             
-            RouteList* inRoutes = dst.track->inRoutes();
-            // Make sure only one single route, with a channel mask, can ever exist.
-            iRoute iir = inRoutes->begin();
-            for( ; iir != inRoutes->end(); ++iir)         
-            {
-              if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == src.midiPort)  // Does a route to the midi port exist?
-              {
-                if(iir->channel | chan)  // Bitwise OR the desired channel bit with the existing bit mask.
-                  break;
-              }      
-            }
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
-            return ior == outRoutes->end() || iir == inRoutes->end();
+            if((src.isValid() && !MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && !dst.track->inRoutes()->exists(src)))
+              return true;
+            
+            return false;
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
             if(src.type != Route::TRACK_ROUTE)
               return false;
-            if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
+
+            //if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
+            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
               return false;
             
-            int chan = src.channel;
-            RouteList* outRoutes = src.track->outRoutes();
-      
-            iRoute ior = outRoutes->begin();                                      
-            for( ; ior != outRoutes->end(); ++ior) 
-            {
-              if(ior->type == Route::MIDI_PORT_ROUTE && ior->midiPort == dst.midiPort)     // Does a route to the midi port exist?
-              {
-                if(ior->channel | chan)    // Bitwise OR the desired channel bit with the existing bit mask.
-                  break;
-              }      
-            }
+//             int chan = src.channel;
+//             RouteList* outRoutes = src.track->outRoutes();
+//       
+//             iRoute ior = outRoutes->begin();                                      
+//             for( ; ior != outRoutes->end(); ++ior) 
+//             {
+//               if(ior->type == Route::MIDI_PORT_ROUTE && ior->midiPort == dst.midiPort)     // Does a route to the midi port exist?
+//               {
+//                 if(ior->channel | chan)    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   break;
+//               }      
+//             }
+//             
+//             MidiPort *mp = &MusEGlobal::midiPorts[dst.midiPort];
+//             RouteList* inRoutes = mp->inRoutes();
+//             // Make sure only one single route, with a channel mask, can ever exist.
+//             iRoute iir = inRoutes->begin();
+//             for( ; iir != inRoutes->end(); ++iir)         
+//             {
+//               if(iir->type == Route::TRACK_ROUTE && iir->track == src.track)  // Does a route to the track exist?
+//               {
+//                 if(iir->channel | chan)    // Bitwise OR the desired channel bit with the existing bit mask.
+//                   break;
+//               }      
+//             }
+//             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
+//             return ior == outRoutes->end() || iir == inRoutes->end();
             
-            MidiPort *mp = &MusEGlobal::midiPorts[dst.midiPort];
-            RouteList* inRoutes = mp->inRoutes();
-            // Make sure only one single route, with a channel mask, can ever exist.
-            iRoute iir = inRoutes->begin();
-            for( ; iir != inRoutes->end(); ++iir)         
-            {
-              if(iir->type == Route::TRACK_ROUTE && iir->track == src.track)  // Does a route to the track exist?
-              {
-                if(iir->channel | chan)    // Bitwise OR the desired channel bit with the existing bit mask.
-                  break;
-              }      
-            }
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
-            return ior == outRoutes->end() || iir == inRoutes->end();
+            if((src.isValid() && !src.track->outRoutes()->exists(dst)) || (dst.isValid() && !MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+              return true;
+            
+            return false;
       }
       else 
       {
@@ -1633,51 +1690,57 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
         //if(!src.isValid() || !dst.isValid())
         //  return false;
         
-        if(src.isValid())
-        {
-          MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-          RouteList* outRoutes = mp->outRoutes();
-          for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-          {
-            if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // Is there a route to the track?
-            {
-//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//                 outRoutes->erase(i);
-//               break;  // For safety, keep looking and remove any more found.
-//                       // No, must break, else crash. There should only be one route anyway...
-                      
-              //if(i->channel & dst.channel)
-              //if(i->channel || dst.channel)
-                return true;
-            }
-          }
-        }
-        //else
-        //  fprintf(stderr, "removeRoute: source is midi port:%d but invalid\n", src.midiPort); 
+//         if(src.isValid())
+//         {
+//           MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+//           RouteList* outRoutes = mp->outRoutes();
+//           for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+//           {
+//             if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // Is there a route to the track?
+//             {
+// //               i->channel &= ~dst.channel;        // Unset the desired channel bits.
+// //               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+// //                 outRoutes->erase(i);
+// //               break;  // For safety, keep looking and remove any more found.
+// //                       // No, must break, else crash. There should only be one route anyway...
+//                       
+//               //if(i->channel & dst.channel)
+//               //if(i->channel || dst.channel)
+//                 return true;
+//             }
+//           }
+//         }
+//         //else
+//         //  fprintf(stderr, "removeRoute: source is midi port:%d but invalid\n", src.midiPort); 
+//         
+//         if(dst.isValid())
+//         {
+//           RouteList* inRoutes = dst.track->inRoutes();
+//           for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+//           {
+//             if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == src.midiPort)  // Is there a route to the midi port?
+//             {
+// //               i->channel &= ~src.channel;        // Unset the desired channel bits.
+// //               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+// //                 inRoutes->erase(i);
+// //               
+// //               break;  // For safety, keep looking and remove any more found.
+// //                       // No, must break, else crash. There should only be one route anyway...
+//                       
+//               //if(i->channel & src.channel)
+//               //if(i->channel || src.channel)
+//                 return true;
+//             }
+//           }
+//         }
+//         //else
+//         //  fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
         
-        if(dst.isValid())
-        {
-          RouteList* inRoutes = dst.track->inRoutes();
-          for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-          {
-            if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == src.midiPort)  // Is there a route to the midi port?
-            {
-//               i->channel &= ~src.channel;        // Unset the desired channel bits.
-//               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//                 inRoutes->erase(i);
-//               
-//               break;  // For safety, keep looking and remove any more found.
-//                       // No, must break, else crash. There should only be one route anyway...
-                      
-              //if(i->channel & src.channel)
-              //if(i->channel || src.channel)
-                return true;
-            }
-          }
-        }
-        //else
-        //  fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
+        
+        
+        // Allow it to disconnect a partial route.
+        if((src.isValid() && MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && dst.track->inRoutes()->exists(src)))
+          return true;
         
         return false;
       }      
@@ -1686,55 +1749,61 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
         if(src.type != Route::TRACK_ROUTE)
           return false;
         
-        //if(!src.isValid() || !dst.isValid())
-        //  return false;
+//         //if(!src.isValid() || !dst.isValid())
+//         //  return false;
+//         
+//         if(src.isValid())
+//         {
+//           RouteList* outRoutes = src.track->outRoutes();
+//           for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+//           {
+//             if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == dst.midiPort)  // Is there a route to the midi port?
+//             {
+// //               i->channel &= ~dst.channel;        // Unset the desired channel bits.
+// //               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+// //                   outRoutes->erase(i);
+// //                   
+// //               break;  // For safety, keep looking and remove any more found.
+// //                       // No, must break, else crash. There should only be one route anyway...
+//                       
+//               //if(i->channel & dst.channel)
+//               //if(i->channel || dst.channel)
+//                 return true;
+//             }
+//           }
+//         }  
+//         //else
+//         //  fprintf(stderr, "removeRoute: destination is midi port:%d but source track is invalid\n", dst.midiPort);
+//         
+//         if(dst.isValid())
+//         {
+//           MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+//           RouteList* inRoutes = mp->inRoutes();
+//           for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+//           {
+//             if(i->type == Route::TRACK_ROUTE && i->track == src.track)  // Is there a route to the track?
+//             {
+// //               i->channel &= ~src.channel;        // Unset the desired channel bits.
+// //               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+// //                 inRoutes->erase(i);
+// //                   
+// //               break;  // For safety, keep looking and remove any more found.
+// //                       // No, must break, else crash. There should only be one route anyway...
+//                       
+//               //if(i->channel & src.channel)
+//               //if(i->channel || src.channel)
+//                 return true;
+//             }
+//           }
+//         }  
+//         //else
+//         //  fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
         
-        if(src.isValid())
-        {
-          RouteList* outRoutes = src.track->outRoutes();
-          for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-          {
-            if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == dst.midiPort)  // Is there a route to the midi port?
-            {
-//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//                   outRoutes->erase(i);
-//                   
-//               break;  // For safety, keep looking and remove any more found.
-//                       // No, must break, else crash. There should only be one route anyway...
-                      
-              //if(i->channel & dst.channel)
-              //if(i->channel || dst.channel)
-                return true;
-            }
-          }
-        }  
-        //else
-        //  fprintf(stderr, "removeRoute: destination is midi port:%d but source track is invalid\n", dst.midiPort);
+        // Allow it to disconnect a partial route.
+        //if((src.isValid() && MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && dst.track->inRoutes()->exists(src)))
+        if((src.isValid() && src.track->outRoutes()->exists(dst)) || (dst.isValid() && MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+          return true;
         
-        if(dst.isValid())
-        {
-          MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-          RouteList* inRoutes = mp->inRoutes();
-          for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-          {
-            if(i->type == Route::TRACK_ROUTE && i->track == src.track)  // Is there a route to the track?
-            {
-//               i->channel &= ~src.channel;        // Unset the desired channel bits.
-//               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//                 inRoutes->erase(i);
-//                   
-//               break;  // For safety, keep looking and remove any more found.
-//                       // No, must break, else crash. There should only be one route anyway...
-                      
-              //if(i->channel & src.channel)
-              //if(i->channel || src.channel)
-                return true;
-            }
-          }
-        }  
-        //else
-        //  fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
         return false;
       }
       else 
@@ -1932,6 +2001,7 @@ void Song::readRoute(Xml& xml)
       QString src;
       QString dst;
       int ch          = -1;
+      int chmask      = -1;
       int chs         = -1;
       int remch       = -1;
 
@@ -1963,9 +2033,22 @@ void Song::readRoute(Xml& xml)
                         else if (tag == "dest")
                         {
                               droute.read(xml);
-                              droute.channel       = ch;
                               droute.channels      = chs;
+                              // REMOVE Tim. Persistent routes. Changed.
+                              droute.channel       = ch;
                               droute.remoteChannel = remch;
+//                               // If both a channel and remote channel were given, 
+//                               //  switch them around for the destination route:
+//                               if(ch != -1 && remch != -1)
+//                               {
+//                                 droute.channel       = remch;
+//                                 droute.remoteChannel = ch;
+//                               }
+//                               else
+//                               {
+//                                 droute.channel       = ch;
+//                                 droute.remoteChannel = remch;
+//                               }
                         }      
                         else
                               xml.unknown("readRoute");
@@ -1984,7 +2067,9 @@ void Song::readRoute(Xml& xml)
                           remch = xml.s2().toInt();
                         else
                         if(tag == "channelMask")           // New channel mask for midi port-track routes.
-                          ch = xml.s2().toInt();               
+                          // REMOVE Tim. Persistent routes. Changed.
+                          //ch = xml.s2().toInt();               
+                          chmask = xml.s2().toInt();               
                         else
                           fprintf(stderr, "Song::readRoute(): unknown attribute:%s\n", tag.toLatin1().constData());
                         break;
@@ -2012,7 +2097,9 @@ void Song::readRoute(Xml& xml)
                                 sroute.device = 0;
                                 sroute.type = Route::MIDI_PORT_ROUTE;
                                 
-                                sroute.channel = 1 << ch;                  // Convert to new bit-wise channel mask.
+                                // REMOVE Tim. Persistent routes. Changed.
+                                //sroute.channel = 1 << ch;                  // Convert to new bit-wise channel mask.
+                                sroute.channel = ch;
                                 droute.channel = sroute.channel;
                                 
                                 addRoute(sroute, droute);
@@ -2030,7 +2117,9 @@ void Song::readRoute(Xml& xml)
                                 droute.device = 0;
                                 droute.type = Route::MIDI_PORT_ROUTE;
                                 
-                                droute.channel = 1 << ch;                  // Convert to new bit-wise channel mask.
+                                // REMOVE Tim. Persistent routes. Changed.
+                                //droute.channel = 1 << ch;                  // Convert to new bit-wise channel mask.
+                                droute.channel = ch;
                                 sroute.channel = droute.channel;
                                 
                                 addRoute(sroute, droute);
@@ -2041,7 +2130,76 @@ void Song::readRoute(Xml& xml)
                             }
                             else
                             {
-                              addRoute(sroute, droute);
+                              // REMOVE Tim. Persistent routes. Added.
+                              // Support old bit-wise channel mask. Obsolete!
+                              if(chmask > 0)
+                              {
+                                fprintf(stderr, "  Warning - Route: Converting old single-route bitwise channel mask:%d to individual routes\n", chmask);
+                                
+                                // All channels set? Convert to new Omni route.
+                                if(chmask == ((1 << MIDI_CHANNELS) - 1))
+                                {
+                                  //fprintf(stderr, "  - Route: Converting an all-channels route to an Omni route\n");
+                                  sroute.channel = -1;
+                                  droute.channel = -1;
+                                }
+                                else
+                                // Convert to individual routes.  
+                                for(int i = 0; i < MIDI_CHANNELS; ++i)
+                                {
+                                  if(chmask & (1 << i))
+                                  {
+                                    //fprintf(stderr, "  - Route: Converting channel:%d to an individual route\n", i);
+                                    sroute.channel = i;
+                                    droute.channel = i;
+                                    addRoute(sroute, droute);
+                                  }
+                                }
+                              }
+                              // Support old multi-channel audio routes. Obsolete!
+                              else if(chs > 0)
+                              {
+                                fprintf(stderr, "  Warning - Route: Converting old multi-channel audio routes to individual routes\n");
+                                
+                                // If channels was given, it should be a multi-channel audio route.
+                                // Convert to new scheme by switching them around for the destination route:
+                                {
+                                  const int dchan      = droute.channel;
+                                  droute.channel       = droute.remoteChannel;
+                                  droute.remoteChannel = dchan;
+                                }
+                                  
+                                // If EITHER the channel or the remote channel are zero but the other not given, convert to an Omni route:
+                                if((ch == -1 && remch == -1) || (ch == 0 && remch == -1) || (remch == 0 && ch == -1))
+                                {
+                                  sroute.channel = sroute.remoteChannel = sroute.channels = droute.channel = droute.remoteChannel = droute.channels = -1;
+                                  addRoute(sroute, droute);
+                                }
+                                // Otherwise convert to individual routes: 
+                                else
+                                {
+                                  sroute.channels = droute.channels = 1;
+                                  if(sroute.channel == -1)
+                                    sroute.channel = 0;
+                                  if(sroute.remoteChannel == -1)
+                                    sroute.remoteChannel = 0;
+                                  if(droute.channel == -1)
+                                    droute.channel = 0;
+                                  if(droute.remoteChannel == -1)
+                                    droute.remoteChannel = 0;
+                                  for(int i = 0; i < chs; ++i)
+                                  {
+                                    addRoute(sroute, droute);
+                                    ++sroute.channel;
+                                    ++sroute.remoteChannel;
+                                    ++droute.channel;
+                                    ++droute.remoteChannel;
+                                  }
+                                }
+                              }
+                              else
+                                
+                                addRoute(sroute, droute);
                             }  
                           }
                           else
@@ -2067,7 +2225,7 @@ void RouteList::removeRoute(const Route& r)
                   return;
                   }
             }
-      fprintf(stderr, "internal error: cannot remove Route\n");
+      //fprintf(stderr, "internal error: cannot remove Route\n");
       }
 
 //---------------------------------------------------------

@@ -2774,78 +2774,168 @@ void Song::stopRolling()
 //   connectJackRoutes
 //---------------------------------------------------------
 
-void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
+// REMOVE Tim. Persistent routes. Changed.
+// void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
+// {
+//   switch(track->type())
+//   {
+//         case Track::AUDIO_OUTPUT:
+//                 {
+//                     AudioOutput* ao = (AudioOutput*)track;
+//                     // This will re-register the track's jack ports.
+//                     if(!disconnect)
+//                     ao->setName(ao->name());
+//                     // Now reconnect the output routes.
+//                     if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+//                     {
+//                     for(int ch = 0; ch < ao->channels(); ++ch)
+//                     {
+//                         RouteList* ir = ao->outRoutes();
+//                         for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
+//                         {
+//                             Route r = *ii;
+//                             if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
+//                             {
+//                                     if(disconnect)
+//                                     MusEGlobal::audioDevice->disconnect(ao->jackPort(ch), r.jackPort);
+//                                     else
+//                                     MusEGlobal::audioDevice->connect(ao->jackPort(ch), r.jackPort);
+//                                     break;
+//                             }
+//                         }
+//                         if(disconnect)
+//                         {
+//                         MusEGlobal::audioDevice->unregisterPort(ao->jackPort(ch));
+//                         ao->setJackPort(ch, 0);
+//                         }
+//                     }
+//                     }
+//                 }
+//               break;
+//         case Track::AUDIO_INPUT:
+//                 {
+//                     AudioInput* ai = (AudioInput*)track;
+//                     // This will re-register the track's jack ports.
+//                     if(!disconnect)
+//                     ai->setName(ai->name());
+//                     // Now reconnect the input routes.
+//                     if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+//                     {
+//                         for(int ch = 0; ch < ai->channels(); ++ch)
+//                         {
+//                             RouteList* ir = ai->inRoutes();
+//                             for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
+//                             {
+//                                 Route r = *ii;
+//                                 if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
+//                                 {
+//                                         if(disconnect)
+//                                         MusEGlobal::audioDevice->disconnect(r.jackPort, ai->jackPort(ch));
+//                                         else
+//                                         MusEGlobal::audioDevice->connect(r.jackPort, ai->jackPort(ch));
+//                                         break;
+//                                 }
+//                             }
+//                             if(disconnect)
+//                             {
+//                             MusEGlobal::audioDevice->unregisterPort(ai->jackPort(ch));
+//                             ai->setJackPort(ch, 0);
+//                             }
+//                         }
+//                     }
+//                 }
+//               break;
+//         default:
+//               break;
+//   }
+// }
+void Song::connectJackRoutes(const MusECore::Route& src, const MusECore::Route& dst, bool disconnect)
 {
-  switch(track->type())
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "connectJackRoutes:\n");
+      
+  if(!MusEGlobal::checkAudioDevice() || !MusEGlobal::audio->isRunning()) 
+    return;
+
+  switch(src.type)
   {
-        case Track::AUDIO_OUTPUT:
-                {
-                    AudioOutput* ao = (AudioOutput*)track;
-                    // This will re-register the track's jack ports.
-                    if(!disconnect)
-                    ao->setName(ao->name());
-                    // Now reconnect the output routes.
-                    if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
-                    {
-                    for(int ch = 0; ch < ao->channels(); ++ch)
-                    {
-                        RouteList* ir = ao->outRoutes();
-                        for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
-                        {
-                            Route r = *ii;
-                            if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
-                            {
-                                    if(disconnect)
-                                    MusEGlobal::audioDevice->disconnect(ao->jackPort(ch), r.jackPort);
-                                    else
-                                    MusEGlobal::audioDevice->connect(ao->jackPort(ch), r.jackPort);
-                                    break;
-                            }
-                        }
-                        if(disconnect)
-                        {
-                        MusEGlobal::audioDevice->unregisterPort(ao->jackPort(ch));
-                        ao->setJackPort(ch, 0);
-                        }
-                    }
-                    }
-                }
-              break;
-        case Track::AUDIO_INPUT:
-                {
-                    AudioInput* ai = (AudioInput*)track;
-                    // This will re-register the track's jack ports.
-                    if(!disconnect)
-                    ai->setName(ai->name());
-                    // Now reconnect the input routes.
-                    if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
-                    {
-                        for(int ch = 0; ch < ai->channels(); ++ch)
-                        {
-                            RouteList* ir = ai->inRoutes();
-                            for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
-                            {
-                                Route r = *ii;
-                                if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
-                                {
-                                        if(disconnect)
-                                        MusEGlobal::audioDevice->disconnect(r.jackPort, ai->jackPort(ch));
-                                        else
-                                        MusEGlobal::audioDevice->connect(r.jackPort, ai->jackPort(ch));
-                                        break;
-                                }
-                            }
-                            if(disconnect)
-                            {
-                            MusEGlobal::audioDevice->unregisterPort(ai->jackPort(ch));
-                            ai->setJackPort(ch, 0);
-                            }
-                        }
-                    }
-                }
-              break;
-        default:
-              break;
+    case Route::JACK_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(disconnect)
+            MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, dst.persistentJackPortName);
+          else
+            MusEGlobal::audioDevice->connect(src.persistentJackPortName, dst.persistentJackPortName);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI && dst.device->inClientPort())
+          {
+            if(disconnect)
+              MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+            else
+              MusEGlobal::audioDevice->connect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+          }
+        break;
+        case Route::TRACK_ROUTE:
+          if(dst.track && dst.track->type() == Track::AUDIO_INPUT && dst.channel >= 0)
+          {
+            AudioInput* ai = static_cast<AudioInput*>(dst.track);
+            if(ai->jackPort(dst.channel))
+            {
+              if(disconnect)
+                MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(ai->jackPort(dst.channel)));
+              else
+                MusEGlobal::audioDevice->connect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(ai->jackPort(dst.channel)));
+            }
+          }
+        break;
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::MIDI_DEVICE_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI && src.device->outClientPort())
+          {
+            if(disconnect)
+              MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+            else
+              MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+          }
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::TRACK_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(src.track && src.track->type() == Track::AUDIO_OUTPUT && src.channel >= 0)
+          {
+            AudioOutput* ao = static_cast<AudioOutput*>(src.track);
+            if(ao->jackPort(src.channel))
+            {
+              if(disconnect)
+                MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(ao->jackPort(src.channel)), dst.persistentJackPortName);
+              else
+                MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(ao->jackPort(src.channel)), dst.persistentJackPortName);
+            }
+          }
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::MIDI_PORT_ROUTE:
+    break;
   }
 }
 

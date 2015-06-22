@@ -59,25 +59,21 @@
 #include "popupmenu.h"
 #include "routepopup.h"
 
-// REMOVE Tim. Persistent routes. Added. 
-// Temporary for testing migration of some port list columns over to the new device list.
-#define _USE_EXTRA_DEVICE_COLUMNS_
-
 namespace MusEGlobal {
 extern std::vector<MusECore::Synth*> synthis;
 }
 
 namespace MusEGui {
 
-enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
-       DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
-
-// REMOVE Tim. Persistent routes. Added.
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
-enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
-#else
-enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
-#endif     
+// enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
+//        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
+// 
+// // REMOVE Tim. Persistent routes. Added.
+// #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
+// enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
+// #else
+// enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
+// #endif     
 
 //---------------------------------------------------------
 //   closeEvent
@@ -306,8 +302,11 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
 {
   if(item == 0)
     return;
+  if(!item->data(DeviceRole).canConvert<void*>())
+    return;
+  MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+  
   int col = item->column();
-  //QString s = item->text();
   QTableWidgetItem* twi = item->tableWidget()->item(item->row(), INSTCOL_NAME);
   if(!twi)
   {
@@ -316,38 +315,50 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
   }
   QString new_name = twi->text();
   // Get the original name.
-  QString orig_name = twi->data(Qt::UserRole).toString();
+  //QString orig_name = twi->data(Qt::UserRole).toString();
+  QString orig_name = md->name();
   if(new_name == orig_name)
     return;
   
-  twi = item->tableWidget()->item(item->row(), INSTCOL_TYPE);  
-  if(!twi)
-  {
-    fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): row:%d INSTCOL_TYPE not found\n", item->row());
-    return;
-  }
-  QString type = twi->text();
+//   twi = item->tableWidget()->item(item->row(), INSTCOL_TYPE);  
+//   if(!twi)
+//   {
+//     fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): row:%d INSTCOL_TYPE not found\n", item->row());
+//     return;
+//   }
+//   QString type = twi->text();
   //QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
   //QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
   
   
-  MusECore::MidiDevice* md = 0;
-  MusECore::MidiDevice* newname_md = 0;
-  for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-        if((*imd)->deviceTypeString() == type) {
-          if(!md && (*imd)->name() == orig_name)
-            md = *imd;
-          if(!newname_md && (*imd)->name() == new_name)
-            newname_md = *imd;
-          if(md && newname_md)
-            break;
-          }
+//   MusECore::MidiDevice* md = 0;
+//   MusECore::MidiDevice* newname_md = 0;
+  MusECore::iMidiDevice imd;
+  for(imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
+        MusECore::MidiDevice* d = *imd;
+        if(d == md || (*imd)->name() != new_name)
+          continue;
+        break;
         }
+        //if((*imd)->deviceTypeString() == type) {
+        //if(d->deviceType() == md->deviceType() && (*imd)->name() == new_name) 
+//         if((*imd)->name() == new_name) 
+//           break;
+//           if(!md && (*imd)->name() == orig_name)
+//             md = *imd;
+//           if(!newname_md && (*imd)->name() == new_name)
+//             newname_md = *imd;
+//           if(md && newname_md)
+//             break;
+//           if((*imd)->name() == new_name)
+//             break;
+//           }
+//         }
   //if (imd == MusEGlobal::midiDevices.end()) {  // REMOVE Tim. Persistent routes. Changed.
-  if (!md) {
-        fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): device not found\n");
-        return;
-        }
+//   if (!md) {
+//         fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): device not found\n");
+//         return;
+//         }
   switch(col)
   {
     // REMOVE Tim. Persistent routes. Changed.
@@ -375,7 +386,7 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
       //  return;  
       
       //if(MusEGlobal::midiDevices.find(s))
-      if(newname_md)
+      if(imd != MusEGlobal::midiDevices.end())
       {
         QMessageBox::critical(this,
             tr("MusE: bad device name"),
@@ -1171,7 +1182,7 @@ MPConfig::MPConfig(QWidget* parent)
       columnnames.clear();
       columnnames << tr("Device Name")
                   << tr("Type")
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
                   << tr("I")
                   << tr("O")
                   << tr("GUI")
@@ -1267,20 +1278,24 @@ void MPConfig::deviceSelectionChanged()
   
   // REMOVE Tim. Persistent routes. Added.
   //MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-  QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-  QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-  
-  MusECore::MidiDevice* md = 0;
-  MusECore::iMidiDevice imd;
-  for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-        md = *imd;
-        if(md->name() == name && md->deviceTypeString() == type)
-          break;
-        }
-  if (imd == MusEGlobal::midiDevices.end()) {
-        fprintf(stderr, "synthesizerConfig::deviceSelectionChanged(): device not found\n");
-        return;
-        }
+//   QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
+//   QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
+
+
+  if(!item->data(DeviceRole).canConvert<void*>())
+    return;
+  //MusECore::MidiDevice* md = 0;
+  MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+//   MusECore::iMidiDevice imd;
+//   for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
+//         md = *imd;
+//         if(md->name() == name && md->deviceTypeString() == type)
+//           break;
+//         }
+//   if (imd == MusEGlobal::midiDevices.end()) {
+//         fprintf(stderr, "synthesizerConfig::deviceSelectionChanged(): device not found\n");
+//         return;
+//         }
         
   // Is it an ALSA midi device? 
   // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
@@ -1318,6 +1333,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       }
       
       sitem = 0;
+      mdevView->blockSignals(true);
       mdevView->clearContents();
       int defochs = 0;
       for (int i = MIDI_PORTS-1; i >= 0; --i) 
@@ -1472,8 +1488,10 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       }
       if(sitem)
          mdevView->setCurrentItem(sitem);
+      mdevView->blockSignals(false);
       
       QString s;
+      synthList->blockSignals(true);
       synthList->clear();
       for (std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) {
@@ -1487,6 +1505,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             item->setText(4, QString((*i)->version()));
             item->setText(5, QString((*i)->description()));
             }
+      synthList->blockSignals(false);
 // REMOVE Tim. Persistent routes. Removed.
 //       instanceList->clear();
 //       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
@@ -1502,6 +1521,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 //             }
             
 // REMOVE Tim. Persistent routes. Added.
+      instanceList->blockSignals(true);
       instanceList->clearContents();
       instanceList->setRowCount(MusEGlobal::midiDevices.size());
       int row_cnt = 0;
@@ -1510,8 +1530,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             //QTreeWidgetItem* iitem = new QTreeWidgetItem(instanceList);
             
             QTableWidgetItem* iitem = new QTableWidgetItem(md->name());
-            // We need the original name for the itemChanged handler, which also updates this string after changing.
-            iitem->setData(Qt::UserRole, md->name());
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             // Is it a Jack midi device? Allow renaming.
             if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
               iitem->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -1519,11 +1538,13 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             instanceList->setItem(row_cnt, INSTCOL_NAME, iitem);
             iitem = new QTableWidgetItem(md->deviceTypeString());
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             instanceList->setItem(row_cnt, INSTCOL_TYPE, iitem);
 
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
             iitem = new QTableWidgetItem;
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             iitem->setTextAlignment(Qt::AlignHCenter);
             instanceList->setItem(row_cnt, INSTCOL_REC, iitem);
@@ -1533,6 +1554,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               iitem->setIcon(QIcon(QPixmap()));
             
             iitem = new QTableWidgetItem;
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             iitem->setTextAlignment(Qt::AlignHCenter);
             instanceList->setItem(row_cnt, INSTCOL_PLAY, iitem);
@@ -1542,6 +1564,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               iitem->setIcon(QIcon(QPixmap()));
             
             iitem = new QTableWidgetItem;
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             iitem->setTextAlignment(Qt::AlignHCenter);
             instanceList->setItem(row_cnt, INSTCOL_GUI, iitem);
@@ -1551,12 +1574,15 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               iitem->setIcon(QIcon(QPixmap()));
 
             QTableWidgetItem* or_item = new QTableWidgetItem;
+            or_item->setData(DeviceRole, QVariant::fromValue<void*>(md));
             or_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             QTableWidgetItem* ir_item = new QTableWidgetItem;
+            ir_item->setData(DeviceRole, QVariant::fromValue<void*>(md));
             ir_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
             {
-              if(md->openFlags() & 1)  
+              //if(md->openFlags() & 1)  
+              if(md->rwFlags() & 1)  
               {
                 //or_item->setIcon(QIcon(*buttondownIcon));
                 //or_item->setText(tr("out"));
@@ -1568,7 +1594,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
                 //or_item->setText("");
               }
               
-              if(md->openFlags() & 2)  
+              //if(md->openFlags() & 2)  
+              if(md->rwFlags() & 2)  
               {
                 //ir_item->setIcon(QIcon(*buttondownIcon));
                 //ir_item->setText(tr("in"));
@@ -1586,12 +1613,13 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 
             ++row_cnt;
             }
-            
+      instanceList->blockSignals(false);
+
       instanceList->resizeColumnToContents(INSTCOL_NAME);
       instanceList->resizeColumnToContents(INSTCOL_TYPE);
       instanceList->resizeColumnToContents(INSTCOL_STATE);
       
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       instanceList->resizeColumnToContents(INSTCOL_REC);
       instanceList->resizeColumnToContents(INSTCOL_PLAY);
       instanceList->resizeColumnToContents(INSTCOL_GUI);
@@ -1675,20 +1703,29 @@ void MPConfig::removeInstanceClicked()
       
       // REMOVE Tim. Persistent routes. Added.
       //MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-      QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-      QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
+//       QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
+//       QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
       
-      MusECore::MidiDevice* md = 0;
-      MusECore::iMidiDevice imd;
-      for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-            md = *imd;
-            if(md->name() == name && md->deviceTypeString() == type)
-              break;
-            }
-      if (imd == MusEGlobal::midiDevices.end()) {
-            fprintf(stderr, "synthesizerConfig::removeInstanceClicked(): device not found\n");
-            return;
-            }
+      if(!item->data(DeviceRole).canConvert<void*>())
+        return;
+
+      //MusECore::MidiDevice* md = 0;
+      MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+      
+//       MusECore::MidiDevice* md = 0;
+//       MusECore::iMidiDevice imd;
+//       for(imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+//         if(*imd == md)
+//           break;
+//       {
+//             md = *imd;
+//             if(md->name() == name && md->deviceTypeString() == type)
+//               break;
+//             }
+//       if (imd == MusEGlobal::midiDevices.end()) {
+//             fprintf(stderr, "synthesizerConfig::removeInstanceClicked(): device not found\n");
+//             return;
+//             }
             
       // Is it an ALSA midi device? 
       // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
@@ -1708,7 +1745,8 @@ void MPConfig::removeInstanceClicked()
         MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
         if(md->midiPort() != -1)
           MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(0);
-        MusEGlobal::midiDevices.erase(imd);
+        //MusEGlobal::midiDevices.erase(imd);
+        MusEGlobal::midiDevices.remove(md);
         MusEGlobal::audio->msgIdle(false);
         MusEGlobal::song->update(SC_CONFIG);
       }
@@ -1726,21 +1764,23 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
       if(!item)
         return;
       const int col = item->column();
-      const QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-      const QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-      MusECore::iMidiDevice imd;
-      for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-            MusECore::MidiDevice* md = *imd;
-            if(md->name() == name && md->deviceTypeString() == type)
-              break;
-            }
-      if (imd == MusEGlobal::midiDevices.end()) {
-            fprintf(stderr, "synthesizerConfig::deviceItemClicked(): device not found\n");
-            return;
-            }
+//       const QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
+//       const QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
+//       MusECore::iMidiDevice imd;
+//       for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
+//             MusECore::MidiDevice* md = *imd;
+//             if(md->name() == name && md->deviceTypeString() == type)
+//               break;
+//             }
+//       if (imd == MusEGlobal::midiDevices.end()) {
+//             fprintf(stderr, "synthesizerConfig::deviceItemClicked(): device not found\n");
+//             return;
+//             }
             
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
-      MusECore::MidiDevice* md = *imd;
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
+      if(!item->data(DeviceRole).canConvert<void*>())
+        return;
+      MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
       int rwFlags   = md->rwFlags();
       int openFlags = md->openFlags();
 #endif        
@@ -1748,7 +1788,7 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
       switch(col)
       {
         
-#ifdef _USE_EXTRA_DEVICE_COLUMNS_
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
         case INSTCOL_REC:
                   if(!(rwFlags & 2))
                         return;
@@ -1808,6 +1848,34 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                     item->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
+                  
+        case INSTCOL_INROUTES:
+        case INSTCOL_OUTROUTES:
+                  {
+                    if(!MusEGlobal::checkAudioDevice())
+                      return;
+                      
+                    if(MusEGlobal::audioDevice->deviceType() != MusECore::AudioDevice::JACK_AUDIO)  // Only if Jack is running.
+                      return;
+                      
+                    if(!md)
+                      return;
+                    
+                    // Only Jack midi devices.
+                    if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
+                      return;
+                    
+                    //if(!(md->openFlags() & ((col == INSTCOL_OUTROUTES) ? 1 : 2)))    
+                    if(!(md->rwFlags() & ((col == INSTCOL_OUTROUTES) ? 1 : 2)))    
+                      return;
+                      
+                    // REMOVE Tim. Persistent routes. Added.
+                    RoutePopupMenu* pup = new RoutePopupMenu();
+                    pup->exec(QCursor::pos(), md, col == INSTCOL_OUTROUTES);
+                    delete pup;
+                  }
+                  return;
+                  
 #endif  
                   
       }
