@@ -374,7 +374,7 @@ sord_iter_seek_match_range(SordIter* iter)
 		if (sord_quad_match_inline(key, iter->pat))
 			return false;  // Found match
 
-		for (int i = 0; i < iter->n_prefix; ++i) {
+  for (int i = 0; (i < iter->n_prefix) && (i < TUP_LEN); ++i) {
 			const int idx = iter->ordering[i];
 			if (!sord_id_match(key[idx], iter->pat[idx])) {
 				iter->end = true;  // Reached end of valid range
