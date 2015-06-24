@@ -466,6 +466,13 @@ static void scanVstNativeDir(const QString& s)
 
 void initVST_Native()
       {
+#ifdef VST_NATIVE_SUPPORT
+  #ifdef VST_VESTIGE_SUPPORT
+    printf("Initializing Native VST support. Using VESTIGE compatibility implementation.\n");
+  #else
+    printf("Initializing Native VST support. Using Steinberg VSTSDK.\n");
+  #endif
+#endif
       std::string s;
       const char* vstPath = getenv("VST_NATIVE_PATH");
       if (vstPath)
