@@ -58,6 +58,10 @@
 #include "utils.h"
 #include "popupmenu.h"
 #include "routepopup.h"
+#include "operations.h"
+
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 namespace MusEGlobal {
 extern std::vector<MusECore::Synth*> synthis;
@@ -121,6 +125,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
   int actid = act->data().toInt();
   int allch = (1 << MIDI_CHANNELS) - 1;  
   int defch = MusEGlobal::midiPorts[no].defaultInChannels();  
+  MusECore::PendingOperationList operations;
   
   if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
   {
@@ -135,14 +140,58 @@ void MPConfig::changeDefInputRoutes(QAction* act)
       if(ret == QMessageBox::Ok) 
       {
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+// REMOVE Tim. Persistent routes. Changed.        
+//         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+//         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//         {
+//           // Remove all routes from this port to the tracks first.
+//           MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
+//           if(defch)
+//             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
+//         }  
+        
         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
         {
-          // Remove all routes from this port to the tracks first.
-          MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-          if(defch)
-            MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
-        }  
-        MusEGlobal::song->update(SC_ROUTE);                    
+          MusECore::MidiTrack* mt = *it;
+          MusECore::RouteList* rl = mt->inRoutes();
+          for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+          {
+            switch(ir->type)
+            {
+              case MusECore::Route::MIDI_PORT_ROUTE:
+                // Remove all routes from this port to the tracks first.
+                if(ir->midiPort == no)
+                  operations.add(MusECore::PendingOperationItem(*ir, MusECore::Route(mt, ir->channel),
+                                                                MusECore::PendingOperationItem::DeleteRoute));
+              break;  
+              case MusECore::Route::TRACK_ROUTE:
+              case MusECore::Route::JACK_ROUTE:
+              case MusECore::Route::MIDI_DEVICE_ROUTE:
+              break;  
+            }
+            
+            // All channels set or Omni? Use an Omni route:
+            if(defch == -1 || defch == allch)
+              operations.add(MusECore::PendingOperationItem(MusECore::Route(no), MusECore::Route(mt),
+                                                            MusECore::PendingOperationItem::AddRoute));
+            else
+            // Add individual channels:  
+            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            {
+              const int chbit = 1 << ch;
+              if(defch & chbit)
+                operations.add(MusECore::PendingOperationItem(MusECore::Route(no, ch), MusECore::Route(mt, ch),
+                                                              MusECore::PendingOperationItem::AddRoute));
+            }
+          }
+        }
+        
+        if(!operations.empty())
+        {
+          MusEGlobal::audio->msgExecutePendingOperations(operations);
+          MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
+          MusEGlobal::song->update(SC_ROUTE);
+        }
       }
     }  
   }
@@ -151,7 +200,8 @@ void MPConfig::changeDefInputRoutes(QAction* act)
     int chbits;
     if(actid == MIDI_CHANNELS)              // Toggle all.
     {
-      chbits = (defch == allch) ? 0 : allch;
+      //chbits = (defch == allch) ? 0 : allch;
+      chbits = (defch == -1 || defch == allch) ? 0 : allch;
       if(defpup)
         for(int i = 0; i < MIDI_CHANNELS; ++i)
         {
@@ -161,7 +211,12 @@ void MPConfig::changeDefInputRoutes(QAction* act)
         }    
     }  
     else
-      chbits = defch ^ (1 << actid);
+    {
+      if(defch == -1)
+        chbits = 0;
+      else
+        chbits = defch ^ (1 << actid);
+    }
     MusEGlobal::midiPorts[no].setDefaultInChannels(chbits);
     mdevView->item(item->row(), DEVCOL_DEF_IN_CHANS)->setText(MusECore::bitmap2String(chbits));
   }  
@@ -182,10 +237,11 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     return;
   int actid = act->data().toInt();
   int defch = MusEGlobal::midiPorts[no].defaultOutChannels();  
-  // Turn on if and when multiple output routes are supported. DELETETHIS??
-  #if 0
+  
+#ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
   int allch = (1 << MIDI_CHANNELS) - 1;
-  #endif
+  MusECore::PendingOperationList operations;
+#endif
   
   if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
   {
@@ -193,11 +249,11 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     // Tested: Hmm, allow ports with no device since that is a valid situation.
     if(!MusEGlobal::song->midis()->empty()) // && MusEGlobal::midiPorts[no].device())
     {
-      // Turn off if and when multiple output routes are supported.
-      #if 1
+      
+#ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
       if(!defch) // No channels selected? Just return.
         return;
-      #endif
+#endif
         
       int ret = QMessageBox::question(this, tr("Default output connections"),
                                     tr("Are you sure you want to apply to all existing midi tracks now?"),
@@ -206,18 +262,8 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
       if(ret == QMessageBox::Ok) 
       {
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-        // Turn on if and when multiple output routes are supported. DELETETHIS??
-        #if 0
-        for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-        {
-          // Remove all routes from this port to the tracks first.
-          MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-          if(defch)
-            MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
-        }  
-        MusEGlobal::audio->msgUpdateSoloStates();
-        MusEGlobal::song->update(SC_ROUTE);                    
-        #else
+        
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
           if(defch & (1 << ch))
           { 
@@ -237,35 +283,73 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
             // Stop at the first output channel found.
             break;
           }  
-        #endif
+#else
+// REMOVE Tim. Persistent routes. Changed.        
+//         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//         {
+//           // Remove all routes from this port to the tracks first.
+//           MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
+//           if(defch)
+//             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
+//         }  
+//         MusEGlobal::audio->msgUpdateSoloStates();
+//         MusEGlobal::song->update(SC_ROUTE);
+        for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+        {
+          MusECore::MidiTrack* mt = *it;
+          MusECore::RouteList* rl = mt->outRoutes();
+          for(MusECore::ciRoute ir = rl->begin(); ir != rl.end(); ++ir)
+          {
+            switch(ir->type)
+            {
+              case MusECore::Route::MIDI_PORT_ROUTE:
+                // Remove all routes from this port to the tracks first.
+                if(ir->midiPort == no)
+                  operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ir->channel), *ir,
+                                                                MusECore::PendingOperationItem::DeleteRoute));
+              break;  
+              case MusECore::Route::TRACK_ROUTE:
+              case MusECore::Route::JACK_ROUTE:
+              case MusECore::Route::MIDI_DEVICE_ROUTE:
+              break;  
+            }
+            
+            // All channels set or Omni? Use an Omni route:
+            if(defch == -1 || defch == allch)
+              operations.add(MusECore::PendingOperationItem(MusECore::Route(mt), MusECore::Route(no),
+                                                            MusECore::PendingOperationItem::AddRoute));
+            else
+            // Add individual channels:  
+            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            {
+              const int chbit = 1 << ch;
+              if(defch & chbit)
+                operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ch), MusECore::Route(no, ch),
+                                                              MusECore::PendingOperationItem::AddRoute));
+            }
+          }
+        }
+        
+        if(!operations.empty())
+        {
+          MusEGlobal::audio->msgExecutePendingOperations(operations);
+          MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
+          MusEGlobal::song->update(SC_ROUTE);
+        }        
+#endif
+
       }
     }  
   }
   else
   {
-    #if 0          // Turn on if and when multiple output routes are supported. DELETETHIS??
-    int chbits;
-    if(actid == MIDI_CHANNELS)              // Toggle all.
-    {
-      chbits = (defch == allch) ? 0 : allch;
-      if(defpup)
-        for(int i = 0; i < MIDI_CHANNELS; ++i)
-        {
-          QAction* act = defpup->findActionFromData(i);  
-          if(act)
-            act->setChecked(chbits);
-        }    
-    }  
-    else
-      chbits = defch ^ (1 << actid);
-    MusEGlobal::midiPorts[no].setDefaultOutChannels(chbits);
-    mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(chbits));
-    #else
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
     if(actid < MIDI_CHANNELS)
     {
       int chbits = 1 << actid;
       // Are we toggling off?
-      if(chbits & defch)
+      //if(chbits & defch)
+      if(defch == -1 || chbits & defch)
       {
         // Just clear this port's default channels.
         MusEGlobal::midiPorts[no].setDefaultOutChannels(0);
@@ -290,7 +374,31 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         }  
       }
     }    
-    #endif
+#else
+    int chbits;
+    if(actid == MIDI_CHANNELS)              // Toggle all.
+    {
+      //chbits = (defch == allch) ? 0 : allch;
+      chbits = (defch == -1 || defch == allch) ? 0 : allch;
+      if(defpup)
+        for(int i = 0; i < MIDI_CHANNELS; ++i)
+        {
+          QAction* act = defpup->findActionFromData(i);  
+          if(act)
+            act->setChecked(chbits);
+        }    
+    }  
+    else
+    {
+      if(defch == -1)
+        chbits = 0;
+      else
+        chbits = defch ^ (1 << actid);
+    }
+    MusEGlobal::midiPorts[no].setDefaultOutChannels(chbits);
+    mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(chbits));
+#endif
+
   }  
 }
 
@@ -439,7 +547,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       int col = item->column();
       ppt += QPoint(0, listView->horizontalHeader()->height());
       ppt  = listView->mapToGlobal(ppt);
-
+      MusECore::PendingOperationList operations;
+      
       switch (col) {
             case DEVCOL_GUI:
                   if (dev == 0)
@@ -699,10 +808,10 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }  
                     
                     // Turn on if and when multiple output routes are supported. DELETETHIS?
-                    #if 0
+#ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                     act = defpup->addAction(tr("Toggle all"));
                     act->setData(MIDI_CHANNELS);
-                    #endif
+#endif
                     
                     defpup->addSeparator();
                     act = defpup->addAction(tr("Change all tracks now"));
@@ -902,107 +1011,205 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                           sdev = 0;
                       }    
 
-                      int allch = (1 << MIDI_CHANNELS) - 1;  
                       MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-
-                      // Remove track routes to/from an existing port already using the selected device...
-                      if(sdev) 
+                      for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
                       {
-                        for(int i = 0; i < MIDI_PORTS; ++i) 
+                        MusECore::MidiTrack* mt = *it;
+                        MusECore::RouteList* rl = mt->inRoutes();
+                        for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
                         {
-                          if(MusEGlobal::midiPorts[i].device() == sdev) 
+                          switch(ir->type)
                           {
-                            for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                              MusEGlobal::audio->msgRemoveRoute(MusECore::Route(i, allch), MusECore::Route(*it, allch));
-
-                            // Turn on if and when multiple output routes are supported. DELETETHIS?
-                        #if 0
-                            for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                              MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-                        #endif
+                            case MusECore::Route::MIDI_PORT_ROUTE:
+                              // Remove track routes from an existing port already using the selected device.
+                              // Remove all track routes from this port.
+                              if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
+                                operations.add(MusECore::PendingOperationItem(*ir, MusECore::Route(mt, ir->channel),
+                                                                              MusECore::PendingOperationItem::DeleteRoute));
+                            break;  
+                            
+                            case MusECore::Route::TRACK_ROUTE:
+                            case MusECore::Route::JACK_ROUTE:
+                            case MusECore::Route::MIDI_DEVICE_ROUTE:
+                            break;  
+                          }
+                        }
                         
-                            break;
+                        rl = mt->outRoutes();
+                        for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                        {
+                          switch(ir->type)
+                          {
+                            case MusECore::Route::MIDI_PORT_ROUTE:
+                              // Remove track routes to an existing port already using the selected device.
+                              // Remove all track routes to this port.
+                              if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
+                                operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ir->channel), *ir,
+                                                                              MusECore::PendingOperationItem::DeleteRoute));
+                            break;  
+                            
+                            case MusECore::Route::TRACK_ROUTE:
+                            case MusECore::Route::JACK_ROUTE:
+                            case MusECore::Route::MIDI_DEVICE_ROUTE:
+                            break;  
                           }
                         }
                       }
                       
-                      // Remove all track routes to/from this port...
-                      for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                        // Remove all routes from this port to the tracks.
-                        MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-                      // Turn on if and when multiple output routes are supported. DELETETHIS?
-                  #if 0
-                      for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                        MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-                  #endif
-                      
-                      // REMOVE Tim. Persistent routes. Added.
-//                       for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+//                       int allch = (1 << MIDI_CHANNELS) - 1;  
+//                       if(sdev) 
 //                       {
-//                         MusECore::MidiDevice* md = *imd;
-//                         fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
-//                         for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
-//                           (*ir).dump();
-//                         fprintf(stderr, "\n");
-//                         fprintf(stderr, "Out ");
-//                         for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
-//                           (*ir).dump();
-//                         fprintf(stderr, "\n");
-//                       }
+//                         for(int i = 0; i < MIDI_PORTS; ++i) 
+//                         {
+//                           if(MusEGlobal::midiPorts[i].device() != sdev)
+//                             continue;
+//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                           {
+//                             MusEGlobal::audio->msgRemoveRoute(MusECore::Route(i, allch), MusECore::Route(*it, allch));
+//                           }
+//                           
+//                           // Turn on if and when multiple output routes are supported. DELETETHIS?
+//                       #if 0
+//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                             MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
+//                       #endif
+//                       
+//                           break;
+//                         }
+                      
+                      
+//                       // Remove all track routes to/from this port...
+//                       for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                         // Remove all routes from this port to the tracks.
+//                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
+//                       // Turn on if and when multiple output routes are supported. DELETETHIS?
+//                   #if 0
+//                       for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
+//                   #endif
+//                       
+//                       // REMOVE Tim. Persistent routes. Added.
+// //                       for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+// //                       {
+// //                         MusECore::MidiDevice* md = *imd;
+// //                         fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
+// //                         for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
+// //                           (*ir).dump();
+// //                         fprintf(stderr, "\n");
+// //                         fprintf(stderr, "Out ");
+// //                         for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
+// //                           (*ir).dump();
+// //                         fprintf(stderr, "\n");
+// //                       }
+//                     }
+                      
                       
                       MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
                       MusEGlobal::muse->changeConfig(true);     // save configuration file
                       
+//                       // Add all track routes to/from this port...
+//                       if(sdev)
+//                       {  
+//                         const int chbits = MusEGlobal::midiPorts[no].defaultInChannels();
+//                         // Do not add input routes to synths.
+//                         if(!sdev->isSynti())  
+//                         {
+//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                           {
+//                             // Connect all the specified routes.
+//                             if(chbits)
+//                               MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
+//                           }  
+//                         }
+// //                        chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
+//                         // Turn on if and when multiple output routes are supported. DELETETHIS?
+// #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//                         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+//                         {
+//                           // Connect all the specified routes.
+//                           if(chbits)
+//                             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
+//                         }  
+// #else
+// // REMOVE Tim.                    
+// //                         for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+// //                           if(chbits & (1 << ch)) 
+// //                           {    
+// //                             MusEGlobal::audio->msgIdle(true);
+// //                             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+// //                             {
+// //                               We are only interested in tracks which use this port being changed now.
+// //                               if((*it)->outPort() != no)
+// //                                 continue;
+// //                               Leave drum track channel at current setting.  // REMOVE Tim.
+// //                               if((*it)->type() == MusECore::Track::DRUM)
+// //                                 (*it)->setOutPortAndUpdate(no);
+// //                               else
+// //                                 (*it)->setOutPortAndChannelAndUpdate(no, ch);
+// //                               (*it)->setOutPortAndUpdate(no);
+// //                             }  
+// //                             MusEGlobal::audio->msgIdle(false);
+// //                             Stop at the first output channel found.
+// //                             break;
+// //                           }   
+// #endif
+//                       }
+
+                      
+                      
                       // Add all track routes to/from this port...
                       if(sdev)
                       {  
-                        int chbits = MusEGlobal::midiPorts[no].defaultInChannels();
-                        // Do not add input routes to synths.
-                        if(!sdev->isSynti())  
+                        const int allch = (1 << MIDI_CHANNELS) - 1;  
+                        const int i_chbits = MusEGlobal::midiPorts[no].defaultInChannels();
+                        const int o_chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
+                        // Connect all the specified routes. Do not add input routes to synths.
+                        if((i_chbits || o_chbits) && !sdev->isSynti())
                         {
                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
                           {
-                            // Connect all the specified routes.
-                            if(chbits)
-                              MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
+                            MusECore::MidiTrack* mt = *it;
+                            // All channels set or Omni? Use an Omni route:
+                            if(i_chbits == -1 || i_chbits == allch)
+                              operations.add(MusECore::PendingOperationItem(MusECore::Route(no), MusECore::Route(mt),
+                                                                            MusECore::PendingOperationItem::AddRoute));
+                            else
+                            // Add individual channels:  
+                            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                            {
+                              const int chbit = 1 << ch;
+                              if(i_chbits & chbit)
+                                operations.add(MusECore::PendingOperationItem(MusECore::Route(no, ch), MusECore::Route(mt, ch),
+                                                                              MusECore::PendingOperationItem::AddRoute));
+                            }
+                            
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+// REMOVE Tim.                                
+//                               MusEGlobal::audio->msgIdle(true);
+//                               mt->setOutPortAndUpdate(no);
+//                               MusEGlobal::audio->msgIdle(false);
+#else
+                            // All channels set or Omni? Use an Omni route:
+                            if(o_chbits == -1 || o_chbits == allch)
+                              operations.add(MusECore::PendingOperationItem(MusECore::Route(mt), MusECore::Route(no),
+                                                                            MusECore::PendingOperationItem::AddRoute));
+                            else
+                            // Add individual channels:  
+                            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                            {
+                              const int chbit = 1 << ch;
+                              if(o_chbits & chbit)
+                                operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ch), MusECore::Route(no, ch),
+                                                                              MusECore::PendingOperationItem::AddRoute));
+                            }
+#endif
+                            
                           }  
                         }
-//                        chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
-                        // Turn on if and when multiple output routes are supported. DELETETHIS?
-                    #if 0
-                        for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                        {
-                          // Connect all the specified routes.
-                          if(chbits)
-                            MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
-                        }  
-                    #else
-// REMOVE Tim.                    
-//                         for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//                           if(chbits & (1 << ch)) 
-//                           {    
-//                             MusEGlobal::audio->msgIdle(true);
-//                             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                             {
-//                               // We are only interested in tracks which use this port being changed now.
-//                               if((*it)->outPort() != no)
-//                                 continue;
-//                               // Leave drum track channel at current setting.  // REMOVE Tim.
-//                               //if((*it)->type() == MusECore::Track::DRUM)
-//                               //  (*it)->setOutPortAndUpdate(no);
-//                               //else
-//                               //  (*it)->setOutPortAndChannelAndUpdate(no, ch);
-//                               (*it)->setOutPortAndUpdate(no);
-//                             }  
-//                             MusEGlobal::audio->msgIdle(false);
-//                             // Stop at the first output channel found.
-//                             break;
-//                           }   
-                    #endif
                       }
                       
-                      MusEGlobal::audio->msgUpdateSoloStates();
-                      MusEGlobal::song->update();
+//                       MusEGlobal::audio->msgUpdateSoloStates();
+//                       MusEGlobal::song->update();
                     }  
                     
                     // REMOVE Tim. Persistent routes. Added.
@@ -1020,6 +1227,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 //                     }
                     
                   }
+                  
+                  if(!operations.empty())
+                    MusEGlobal::audio->msgExecutePendingOperations(operations);
+                  // Do these always, regardless of operations - the device has changed.
+                  MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ? (Hm, not here but elsewhere like audio routing popups etc.)
+                  MusEGlobal::song->update();
+                  
                   return;
             break;                    
 
@@ -1048,6 +1262,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
             break;                    
             }
+            
+//             if(!operations.empty())
+//             {
+//               MusEGlobal::audio->msgExecutePendingOperations(operations);
+//               MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
+//               MusEGlobal::song->update();
+//             }
       }
 
 //---------------------------------------------------------
@@ -1066,12 +1287,11 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
             case DEVCOL_DEF_IN_CHANS:   item->setToolTip(tr("Auto-connect these channels to new midi tracks")); break;
-            // Turn on if and when multiple output routes are supported. DELETETHIS?
-            #if 0
-            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to these channels")); break;
-            #else
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to this channel")); break;
-            #endif
+#else
+            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to these channels")); break;
+#endif
             case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
@@ -1104,12 +1324,11 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
             case DEVCOL_DEF_IN_CHANS:
                   item->setWhatsThis(tr("Auto-connect these channels, on this port, to new midi tracks.")); break;
             case DEVCOL_DEF_OUT_CHANS:
-                  // Turn on if and when multiple output routes are supported. DELETETHIS?
-                  #if 0
-                  item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.")); break;
-                  #else                      
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                   item->setWhatsThis(tr("Connect new midi tracks to this channel, on this port.")); break;
-                  #endif                      
+#else                      
+                  item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.")); break;
+#endif                      
             case DEVCOL_STATE:
                   item->setWhatsThis(tr("State: result of opening the device")); break;
             default:
@@ -1393,12 +1612,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             }  
             #endif
             
-            // Turn on if and when multiple output routes are supported. DELETETHIS?
-            #if 0
-            QTableWidgetItem* itemdefout = new QTableWidgetItem(MusECore::bitmap2String(port->defaultOutChannels()));
-            addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
-            itemdefout->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
-            #else
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             QTableWidgetItem* itemdefout = new QTableWidgetItem(MusECore::bitmap2String(0));
             defochs = port->defaultOutChannels();
             if(defochs)
@@ -1415,7 +1629,12 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
             itemdefout->setFlags(Qt::ItemIsEnabled);
             itemdefout->setIcon(QIcon(*buttondownIcon));
-	    #endif
+#else
+            QTableWidgetItem* itemdefout = new QTableWidgetItem(MusECore::bitmap2String(port->defaultOutChannels()));
+            addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
+            itemdefout->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
+#endif
+            
             if(dev && dev->isSynti()) //make deleted audio softsynths not show in ports dialog
             {
                MusECore::AudioTrack *_track = static_cast<MusECore::AudioTrack *>(static_cast<MusECore::SynthI *>(dev));

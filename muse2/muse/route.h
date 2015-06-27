@@ -82,6 +82,7 @@ struct Route {
       Route(Track* t, int ch = -1, int chans = -1);
       Route(MidiDevice* d, int ch = -1);  
       Route(int port, int ch = -1);         
+      // REMOVE Tim. Persistent routes. Removed.
       Route(const QString&, bool dst, int ch, int rtype = -1);
       Route();
       Route(const Route&); // Copy constructor

@@ -1188,8 +1188,11 @@ void MidiPort::writeRouting(int level, Xml& xml) const
             continue;
             
           s = QT_TRANSLATE_NOOP("@default", "Route");
-          if(r->channel != -1 && r->channel != 0)  
-            s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+          // REMOVE Tim. Persistent routes. Changed. Reverted to route per channel now.
+          //if(r->channel != -1 && r->channel != 0)  
+          //  s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+          if(r->channel != -1)
+            s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
           
           xml.tag(level, "source mport=\"%d\"/", portno());

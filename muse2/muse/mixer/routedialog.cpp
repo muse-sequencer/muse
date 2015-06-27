@@ -154,14 +154,13 @@ void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
             const int sz = _channels.size();
             if(_route.track->isMidiTrack())
             {  
-              for(int i = 0; i < sz; ++i)
+              for(int i = 0; i < sz && i < MIDI_CHANNELS; ++i)
               {
-                if(i >= MIDI_CHANNELS)
-                  break;
                 //if(_channels.testBit(i))
                 if(_channels.channelSelected(i))
                 {
-                  r.channel = (1 << i);
+                  //r.channel = (1 << i);
+                  r.channel = i;
                   routes.push_back(r);
                 }
               }
@@ -339,15 +338,16 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
             case MusECore::Route::MIDI_PORT_ROUTE:
               if(ir->isValid() && ir->channel != -1)
               {
-                for(int i = 0; i < MIDI_CHANNELS; ++i)
-                {
-                  if(ir->channel & (1 << i))
-                  {
-                    // Mark the channel as used with a zero, for now.
-                    //_channelYValues.replace(i, 0);
-                    _channels.setConnected(i, true);
-                  }
-                }
+//                 for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                 {
+//                   if(ir->channel & (1 << i))
+//                   {
+//                     // Mark the channel as used with a zero, for now.
+//                     //_channelYValues.replace(i, 0);
+//                     _channels.setConnected(i, true);
+//                   }
+//                 }
+                _channels.setConnected(ir->channel, true);
               }
             break;
 
@@ -1305,15 +1305,15 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
         switch(src.type)
         {
           case MusECore::Route::TRACK_ROUTE:
-            if(src_chan != -1 && src.track && src.track->isMidiTrack())
-            {
-              for(int i = 0; i < MIDI_CHANNELS; ++i)
-                if(src_chan & (1 << i))
-                {
-                  src_chan = i;
-                  break;
-                }
-            }  // Fall through
+//             if(src_chan != -1 && src.track && src.track->isMidiTrack())
+//             {
+//               for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                 if(src_chan & (1 << i))
+//                 {
+//                   src_chan = i;
+//                   break;
+//                 }
+//             }  // Fall through
           case MusECore::Route::MIDI_DEVICE_ROUTE:
           case MusECore::Route::MIDI_PORT_ROUTE:
             if(src_chan == -1 && src.channels == -1) 
@@ -1325,15 +1325,15 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
         switch(dst.type)
         {
           case MusECore::Route::TRACK_ROUTE:
-            if(dst_chan != -1 && dst.track && dst.track->isMidiTrack())
-            {
-              for(int i = 0; i < MIDI_CHANNELS; ++i)
-                if(dst_chan & (1 << i))
-                {
-                  dst_chan = i;
-                  break;
-                }
-            } // Fall through
+//             if(dst_chan != -1 && dst.track && dst.track->isMidiTrack())
+//             {
+//               for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                 if(dst_chan & (1 << i))
+//                 {
+//                   dst_chan = i;
+//                   break;
+//                 }
+//             } // Fall through
           case MusECore::Route::MIDI_DEVICE_ROUTE:
           case MusECore::Route::MIDI_PORT_ROUTE:
             if(dst_chan == -1 && dst.channels == -1) 
@@ -3932,8 +3932,8 @@ void RouteDialog::addItems()
           //for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
           //{
             //const MusECore::Route sub_r(track, channel, 1);
-            //const MusECore::Route sub_r(track, 0, 1);
-            const MusECore::Route sub_r(track, 0);
+            const MusECore::Route sub_r(track, 0, 1);
+//             const MusECore::Route sub_r(track, 0);
             subitem = newDstList->findItem(sub_r, RouteTreeWidgetItem::ChannelsItem);
             if(subitem)
             {
@@ -4026,10 +4026,10 @@ void RouteDialog::addItems()
               break;
             }
             
-            for(int i = 0; i < MIDI_CHANNELS; ++i)
+//             for(int i = 0; i < MIDI_CHANNELS; ++i)
             {
-              int chbits = 1 << i;
-              if(r->channel & chbits)
+//               int chbits = 1 << i;
+//               if(r->channel & chbits)
               {
                 //src = MusECore::Route(r->midiPort, r->channel);
                 //src = MusECore::Route(r->midiPort, 1 << i);
@@ -4041,13 +4041,14 @@ void RouteDialog::addItems()
                   src = MusECore::Route(r->midiPort);
   //               //dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       1, -1, 0);
                 //dst = MusECore::Route(track, r->channel, 1);
-                //dst = MusECore::Route(track, r->channel);
-                dst = MusECore::Route(track, chbits);
+                dst = MusECore::Route(track, r->channel);
+//                 dst = MusECore::Route(track, chbits);
                 //dst = MusECore::Route(track, i);
                 srcName = r->name();
                 //if(src.channel != -1)
                 //  srcName += QString(" [") + QString::number(i + 1) + QString("]");
-                dstName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
+//                 dstName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
+                dstName = track->name() + QString(" [") + QString::number(r->channel + 1) + QString("]");
                 routesItem = findRoutesItem(src, dst);
                 if(routesItem)
                 {
@@ -4202,8 +4203,9 @@ void RouteDialog::addItems()
         {
           //for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
           //{
-            //const MusECore::Route sub_r(track, channel, 1);
-            const MusECore::Route sub_r(track, 0);
+            //const MusECore::Route sub_r(track, r.channel, 1);
+            const MusECore::Route sub_r(track, 0, 1);
+//             const MusECore::Route sub_r(track, 0);
             subitem = newSrcList->findItem(sub_r, RouteTreeWidgetItem::ChannelsItem);
             if(subitem)
             {
@@ -4338,13 +4340,13 @@ void RouteDialog::addItems()
               break;
             }
             
-            for(int i = 0; i < MIDI_CHANNELS; ++i)
+//             for(int i = 0; i < MIDI_CHANNELS; ++i)
             {
-              int chbits = 1 << i;
-              if(r->channel & chbits)
+//               int chbits = 1 << i;
+//               if(r->channel & chbits)
               {
-                //src = MusECore::Route(track, r->channel);
-                src = MusECore::Route(track, chbits);
+                src = MusECore::Route(track, r->channel);
+//                 src = MusECore::Route(track, chbits);
                 //src = MusECore::Route(track, i);
   //               //dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       1, -1, 0);
                 //dst = MusECore::Route(track, r->channel, 1);
@@ -4357,7 +4359,8 @@ void RouteDialog::addItems()
                 else
                   //dst = MusECore::Route(r->midiPort, chbits);
                   dst = MusECore::Route(r->midiPort);
-                srcName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
+//                 srcName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
+                srcName = track->name() + QString(" [") + QString::number(r->channel + 1) + QString("]");
                 dstName = r->name();
                 //if(dst.channel != -1)
                 //  dstName += QString(" [") + QString::number(i + 1) + QString("]");

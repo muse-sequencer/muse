@@ -1130,7 +1130,10 @@ void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
       xml.header();
 
       int level = 0;
-      xml.tag(level++, "muse version=\"2.0\"");
+      // REMOVE Tim. Persistent routes. Changed.
+      //xml.tag(level++, "muse version=\"2.0\"");
+      xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+      
       writeConfiguration(level, xml);
 
       writeStatusMidiInputTransformPlugins(level, xml);

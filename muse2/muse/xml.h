@@ -47,8 +47,16 @@ class Xml {
       int level;
       bool inTag;
       bool inComment;
-      int _minorVersion;
-      int _majorVersion;
+      // NOTICE: Whenever the MusE song file structure changes - even for a small reason, bump these up!
+      //         To preserve user data please try to add song-loading converters to accompany any changes so no data is lost.
+      //         The user will be automatically informed and warned (via GUI) of loading an OLD or FUTURE song file,
+      //          and that the song might be converted if saved!
+      // TODO: Always make this equal the MusE version? 
+      //       But how do we bump up the MusE version safely before releasing, for testing/coding purposes?
+      static const int _latestMinorVersion;   // Latest known songfile minor version (as of this release)
+      static const int _latestMajorVersion;   // Latest known songfile major version (as of this release)
+      int _minorVersion;                      // Currently loaded songfile minor version
+      int _majorVersion;                      // Currently loaded songfile major version
 
       int c;            // current char
       char lbuffer[512];
@@ -64,6 +72,8 @@ class Xml {
    public:
       enum Token {Error, TagStart, TagEnd, Flag,
          Proc, Text, Attribut, End};
+      int latestMajorVersion() const { return _latestMajorVersion; }
+      int latestMinorVersion() const { return _latestMinorVersion; }
       int majorVersion() const { return _majorVersion; }
       int minorVersion() const { return _minorVersion; }
       void setVersion(int maj, int min) {

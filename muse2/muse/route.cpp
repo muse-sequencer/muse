@@ -41,6 +41,9 @@
 
 //#define ROUTE_DEBUG 
 
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+
 namespace MusECore {
 
 const QString ROUTE_MIDIPORT_NAME_PREFIX = "MusE MidiPort ";
@@ -96,6 +99,7 @@ Route::Route(int port, int ch)
       persistentJackPortName[0] = 0;
 }
 
+// REMOVE Tim. Persistent routes. Removed.
 Route::Route(const QString& s, bool dst, int ch, int rtype)
     {
       Route node(name2route(s, dst, rtype));
@@ -136,6 +140,7 @@ Route::Route(const QString& s, bool dst, int ch, int rtype)
       }  
     }
 
+    
 Route::Route()
       {
       track    = 0;
@@ -2004,6 +2009,7 @@ void Song::readRoute(Xml& xml)
       int chmask      = -1;
       int chs         = -1;
       int remch       = -1;
+      bool midi_track_out_set = false;
 
       Route sroute, droute;
       
@@ -2035,20 +2041,23 @@ void Song::readRoute(Xml& xml)
                               droute.read(xml);
                               droute.channels      = chs;
                               // REMOVE Tim. Persistent routes. Changed.
-                              droute.channel       = ch;
-                              droute.remoteChannel = remch;
-//                               // If both a channel and remote channel were given, 
-//                               //  switch them around for the destination route:
-//                               if(ch != -1 && remch != -1)
-//                               {
-//                                 droute.channel       = remch;
-//                                 droute.remoteChannel = ch;
-//                               }
-//                               else
-//                               {
-//                                 droute.channel       = ch;
-//                                 droute.remoteChannel = remch;
-//                               }
+                              //droute.channel       = ch;
+                              //droute.remoteChannel = remch;
+                              // If both a channel and remote channel were given, 
+                              //  switch them around for the destination route:
+                              //if(ch != -1 && remch != -1)
+                              // If channels was given, it should be a multi-channel audio route.
+                              // Convert to new scheme by switching them around for the destination route:
+                              if(chs > 0)
+                              {
+                                droute.channel       = remch;
+                                droute.remoteChannel = ch;
+                              }
+                              else
+                              {
+                                droute.channel       = ch;
+                                droute.remoteChannel = remch;
+                              }
                         }      
                         else
                               xml.unknown("readRoute");
@@ -2087,7 +2096,7 @@ void Song::readRoute(Xml& xml)
                           // Support new routes.
                           if(sroute.isValid() && droute.isValid())
                           {    
-                            // Support pre- 1.1-RC2 midi-device-to-track routes. Obsolete. Replaced with midi port routes.
+                            // Support pre- 1.1-RC2 midi device to track routes. Obsolete. Replaced with midi port routes.
                             if(sroute.type == Route::MIDI_DEVICE_ROUTE && droute.type == Route::TRACK_ROUTE) 
                             {
                               if(sroute.device->midiPort() >= 0 && sroute.device->midiPort() < MIDI_PORTS
@@ -2108,99 +2117,139 @@ void Song::readRoute(Xml& xml)
                                 fprintf(stderr, "  Warning - device:%s to track route, no device midi port or chan:%d out of range. Ignoring route!\n", 
                                        sroute.device->name().toLatin1().constData(), ch);
                             }
-                            else if(sroute.type == Route::TRACK_ROUTE && droute.type == Route::MIDI_DEVICE_ROUTE) 
+                            // Support pre- 1.1-RC2 track to midi device routes. Obsolete. Replaced with midi port routes.
+                            else if(sroute.type == Route::TRACK_ROUTE && droute.type == Route::MIDI_DEVICE_ROUTE)
                             {
-                              if(droute.device->midiPort() >= 0 && droute.device->midiPort() < MIDI_PORTS
-                                 && ch >= 0 && ch < MIDI_CHANNELS)        
+                              // Device and track already validated in ::read().
+                              const int port = droute.device->midiPort();
+                              if(port >= 0 && port < MIDI_PORTS
+                                 && ch >= 0 && ch < MIDI_CHANNELS &&
+                                 sroute.track->isMidiTrack())
                               {
+                                MidiTrack* mt = static_cast<MidiTrack*>(sroute.track);
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+                                if(!midi_track_out_set)
+                                {
+                                  midi_track_out_set = true;
+                                  MusEGlobal::audio->msgIdle(true);
+                                  mt->setOutPortAndChannelAndUpdate(port, ch);
+                                  MusEGlobal::audio->msgIdle(false);
+                                  MusEGlobal::audio->msgUpdateSoloStates();
+                                  MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+                                }
+#else
                                 droute.midiPort = droute.device->midiPort();
                                 droute.device = 0;
                                 droute.type = Route::MIDI_PORT_ROUTE;
-                                
                                 // REMOVE Tim. Persistent routes. Changed.
                                 //droute.channel = 1 << ch;                  // Convert to new bit-wise channel mask.
                                 droute.channel = ch;
                                 sroute.channel = droute.channel;
-                                
                                 addRoute(sroute, droute);
+#endif
                               }  
                               else  
                                 fprintf(stderr, "  Warning - track to device:%s route, no device midi port or chan:%d out of range. Ignoring route!\n", 
                                        droute.device->name().toLatin1().constData(), ch);
                             }
-                            else
+                            // Support old bit-wise channel mask for midi port to midi track routes and midi port to audio input soling chain routes. Obsolete!
+                            // Check for song file version 2.0 or below:
+                            else if(chmask > 0 && (xml.majorVersion() * 1000000 + xml.minorVersion()) <= 2000000)  // Arbitrary shift, and add
                             {
-                              // REMOVE Tim. Persistent routes. Added.
-                              // Support old bit-wise channel mask. Obsolete!
-                              if(chmask > 0)
+                              fprintf(stderr, "  Warning - Route: Converting old single-route bitwise channel mask:%d to individual routes\n", chmask);
+
+                              if(sroute.type == Route::MIDI_PORT_ROUTE && droute.type == Route::TRACK_ROUTE)
                               {
-                                fprintf(stderr, "  Warning - Route: Converting old single-route bitwise channel mask:%d to individual routes\n", chmask);
-                                
-                                // All channels set? Convert to new Omni route.
-                                if(chmask == ((1 << MIDI_CHANNELS) - 1))
+                                if(droute.track->isMidiTrack())
                                 {
-                                  //fprintf(stderr, "  - Route: Converting an all-channels route to an Omni route\n");
-                                  sroute.channel = -1;
-                                  droute.channel = -1;
-                                }
-                                else
-                                // Convert to individual routes.  
-                                for(int i = 0; i < MIDI_CHANNELS; ++i)
-                                {
-                                  if(chmask & (1 << i))
+                                  // All channels set? Convert to new Omni route.
+                                  if(chmask == ((1 << MIDI_CHANNELS) - 1))
                                   {
-                                    //fprintf(stderr, "  - Route: Converting channel:%d to an individual route\n", i);
-                                    sroute.channel = i;
-                                    droute.channel = i;
+                                    sroute.channel = -1;
+                                    droute.channel = -1;
                                     addRoute(sroute, droute);
+                                  }
+                                  else
+                                  {
+                                    // Check each channel bit:
+                                    for(int i = 0; i < MIDI_CHANNELS; ++i)
+                                    {
+                                      const int chbit = 1 << i;
+                                      // Is channel bit set?
+                                      if(chmask & chbit)
+                                      {
+                                        // Convert to individual routes:
+                                        sroute.channel = i;
+                                        droute.channel = i;
+                                        addRoute(sroute, droute);
+                                      }
+                                    }
+                                  }                                  
+                                }
+                                // Support old midi port to audio input soloing chain routes. Obsolete!
+                                else if(droute.track->type() == Track::AUDIO_INPUT)
+                                {
+                                  const int port = sroute.midiPort;
+                                  // Check each channel bit:
+                                  for(int i = 0; i < MIDI_CHANNELS; ++i)
+                                  {
+                                    const int chbit = 1 << i;
+                                    // Is channel bit set?
+                                    if(chmask & chbit)
+                                    {
+                                      const MusECore::MidiTrackList* const mtl = MusEGlobal::song->midis();
+                                      for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
+                                      {
+                                        MidiTrack* const mt = *imt;
+                                        if(mt->outPort() == port && mt->outChannel() == i)
+                                        {
+                                          // Convert to a midi track to audio input route:
+                                          sroute.type = Route::TRACK_ROUTE;
+                                          sroute.track = mt;
+                                          sroute.midiPort = -1;
+                                          sroute.channel = sroute.channels = sroute.remoteChannel = droute.channel = droute.channels = droute.remoteChannel = -1;
+                                          addRoute(sroute, droute);
+                                        }
+                                      }
+                                    }
                                   }
                                 }
                               }
-                              // Support old multi-channel audio routes. Obsolete!
-                              else if(chs > 0)
+                            }
+                            // If channels was given, it must be a multi-channel audio route:
+                            else if(chs > 0)
+                            {
+                              // If EITHER the channel or the remote channel are zero but the other not given, convert to an Omni route:
+                              if((ch == -1 && remch == -1) || (ch == 0 && remch == -1) || (remch == 0 && ch == -1))
                               {
-                                fprintf(stderr, "  Warning - Route: Converting old multi-channel audio routes to individual routes\n");
-                                
-                                // If channels was given, it should be a multi-channel audio route.
-                                // Convert to new scheme by switching them around for the destination route:
-                                {
-                                  const int dchan      = droute.channel;
-                                  droute.channel       = droute.remoteChannel;
-                                  droute.remoteChannel = dchan;
-                                }
-                                  
-                                // If EITHER the channel or the remote channel are zero but the other not given, convert to an Omni route:
-                                if((ch == -1 && remch == -1) || (ch == 0 && remch == -1) || (remch == 0 && ch == -1))
-                                {
-                                  sroute.channel = sroute.remoteChannel = sroute.channels = droute.channel = droute.remoteChannel = droute.channels = -1;
-                                  addRoute(sroute, droute);
-                                }
-                                // Otherwise convert to individual routes: 
-                                else
-                                {
-                                  sroute.channels = droute.channels = 1;
-                                  if(sroute.channel == -1)
-                                    sroute.channel = 0;
-                                  if(sroute.remoteChannel == -1)
-                                    sroute.remoteChannel = 0;
-                                  if(droute.channel == -1)
-                                    droute.channel = 0;
-                                  if(droute.remoteChannel == -1)
-                                    droute.remoteChannel = 0;
-                                  for(int i = 0; i < chs; ++i)
-                                  {
-                                    addRoute(sroute, droute);
-                                    ++sroute.channel;
-                                    ++sroute.remoteChannel;
-                                    ++droute.channel;
-                                    ++droute.remoteChannel;
-                                  }
-                                }
-                              }
-                              else
-                                
+                                sroute.channel = sroute.remoteChannel = sroute.channels = droute.channel = droute.remoteChannel = droute.channels = -1;
                                 addRoute(sroute, droute);
+                              }
+                              // Otherwise convert to individual routes: 
+                              else
+                              {
+                                sroute.channels = droute.channels = 1;
+                                if(sroute.channel == -1)
+                                  sroute.channel = 0;
+                                if(sroute.remoteChannel == -1)
+                                  sroute.remoteChannel = 0;
+                                if(droute.channel == -1)
+                                  droute.channel = 0;
+                                if(droute.remoteChannel == -1)
+                                  droute.remoteChannel = 0;
+                                for(int i = 0; i < chs; ++i)
+                                {
+                                  addRoute(sroute, droute);
+                                  ++sroute.channel;
+                                  ++sroute.remoteChannel;
+                                  ++droute.channel;
+                                  ++droute.remoteChannel;
+                                }
+                              }
                             }  
+                            else
+                               
+                              addRoute(sroute, droute);
                           }
                           else
                             fprintf(stderr, "  Warning - route invalid. Ignoring route!\n");

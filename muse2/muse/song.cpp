@@ -68,6 +68,9 @@
 #include "tempo.h"
 #include "route.h"
 
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+
 namespace MusEGlobal {
 MusECore::Song* song = 0;
 }
@@ -310,7 +313,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
       if(track->isMidiTrack()) 
       {
         MidiTrack* mt = (MidiTrack*)track;
-        int c, cbi, ch;
+        int c;
         bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
         const int chmask = (1 << MIDI_CHANNELS) - 1;
         for(int i = 0; i < MIDI_PORTS; ++i)
@@ -326,9 +329,20 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
               // REMOVE Tim. Persistent routes. Changed.
               //MusEGlobal::audio->msgAddRoute(Route(i, c), Route(track, c));
               //updateFlags |= SC_ROUTE;
-              if(c == chmask)
-                c = -1;
-              track->inRoutes()->push_back(Route(i, c));
+              //if(c == chmask)
+              //  c = -1;
+              //track->inRoutes()->push_back(Route(i, c));
+              //
+              // All channels set or Omni? Use an Omni route:
+              if(c == -1 || c == chmask)
+                track->inRoutes()->push_back(Route(i));
+              else
+              // Add individual channels:  
+              for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+              {
+                if(c & (1 << ch))
+                  track->inRoutes()->push_back(Route(i, ch));
+              }
             }
           }
           
@@ -340,35 +354,41 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
               if(c)
               {
                 
-          /// TODO: Switch if and when multiple output routes supported.
-          #if 0
-                // REMOVE Tim. Persistent routes. Changed.
-                //MusEGlobal::audio->msgAddRoute(Route(track, c), Route(i, c));
-                //updateFlags |= SC_ROUTE;
-                if(c == chmask)
-                  c = -1;
-                track->outRoutes()->push_back(Route(i, c));
-          #else 
-
-                // REMOVE Tim. Persistent routes. Added.
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                 if(c == -1)
-                  c = chmask;
-                
-                for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
+                  c = 1;  // Just to be safe, shouldn't happen, default to channel 0.
+                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)   
                 {
-                  cbi = 1 << ch;
-                  if(c & cbi)
+                  if(c & (1 << ch))
                   {
                     defOutFound = true;
                     mt->setOutPort(i);
-                    if(type != Track::DRUM  &&  type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
+                    if(type != Track::DRUM && type != Track::NEW_DRUM)  // Leave drum tracks at channel 10.
                       mt->setOutChannel(ch);
                     // REMOVE Tim. Persistent routes. Removed.
                     //updateFlags |= SC_ROUTE;
                     break;               
                   }
                 }
-          #endif
+#else 
+                // REMOVE Tim. Persistent routes. Changed.
+                //MusEGlobal::audio->msgAddRoute(Route(track, c), Route(i, c));
+                //updateFlags |= SC_ROUTE;
+                //if(c == chmask)
+                //  c = -1;
+                //track->outRoutes()->push_back(Route(i, c));
+                //
+                // All channels set or Omni? Use an Omni route:
+                if(c == -1 || c == chmask)
+                  track->outRoutes()->push_back(Route(i));
+                else
+                // Add individual channels:  
+                for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                {
+                  if(c & (1 << ch))
+                    track->outRoutes()->push_back(Route(i, ch));
+                }
+#endif
               }
             }  
           }

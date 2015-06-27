@@ -497,12 +497,17 @@ void AudioTrack::internal_assign(const Track& t, int flags)
                     case Track::WAVE:
                     case Track::AUDIO_AUX:
                           // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
-                          _outRoutes.push_back(Route(ao, -1));
+                          // REMOVE Tim. Persistent routes. Changed.
+                          //_outRoutes.push_back(Route(ao, -1));
+                          _outRoutes.push_back(Route(ao));
                           break;
                     // It should actually never get here now, but just in case.
                     case Track::AUDIO_SOFTSYNTH:
                           // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
-                          _outRoutes.push_back(Route(ao, 0, channels()));
+                          // REMOVE Tim. Persistent routes. Changed to Omni route.
+                          //_outRoutes.push_back(Route(ao, 0, channels()));
+                          // Add an Omni route.
+                          _outRoutes.push_back(Route(ao));
                           break;
                     default:
                           break;
