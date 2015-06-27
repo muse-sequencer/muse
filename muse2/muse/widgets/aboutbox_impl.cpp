@@ -33,6 +33,22 @@ AboutBoxImpl::AboutBoxImpl()
   QString version(VERSION);
   QString gitstring(GITSTRING);
   versionLabel->setText("Version: " + version + (gitstring == QString() ? "" : "\n("+ gitstring + ")"));
+  QString systemInfo="";
+
+#ifdef LV2_SUPPORT
+  systemInfo.append("LV2 support enabled.\n");
+#endif
+#ifdef DSSI_SUPPORT
+  systemInfo.append("DSSI support enabled.\n");
+#endif
+#ifdef VST_NATIVE_SUPPORT
+  #ifdef VST_VESTIGE_SUPPORT
+    systemInfo.append("Native VST support enabled using VESTIGE compatibility header.\n");
+  #else
+    systemInfo.append("Native VST support enabled using Steinberg VSTSDK.\n");
+  #endif
+#endif
+    systemInformationLabel->setText(systemInfo);
 }
 
 }
