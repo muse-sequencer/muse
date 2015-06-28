@@ -1223,10 +1223,14 @@ bool readConfiguration(const char *configFile)
                         // REMOVE Tim. Persistent routes. Added.
                         if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
                         {
+                          fprintf(stderr, "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
+                                  "Conversions may be applied!\n\n",
+                                  xml.majorVersion(), xml.minorVersion(), 
+                                  xml.latestMajorVersion(), xml.latestMinorVersion());
                              // Meh, skip the GUI warning. Not really necessary, or preventable. 
 //                           // Cannot construct QWidgets until QApplication created!
 //                           // Check MusEGlobal::muse which is created shortly after the application...
-//                           if(MusEGlobal::muse)
+//                           if(MusEGlobal::config.warnOnFileVersions && MusEGlobal::muse)
 //                           {
 //                             QString txt = QObject::tr("Config file version is %1.%2\nCurrent version is %3.%4\n"
 //                                                       "Conversions may be applied!")
@@ -1237,23 +1241,15 @@ bool readConfiguration(const char *configFile)
 //                                                               txt, 
 //                                                               QMessageBox::Ok, MusEGlobal::muse);
 //                             QCheckBox* cb = new QCheckBox(QObject::tr("Do not warn again"));
-//                             cb->setChecked(MusEGlobal::config.warnOnFileVersions);
+//                             cb->setChecked(!MusEGlobal::config.warnOnFileVersions);
 //                             mb->setCheckBox(cb);
 //                             mb->exec();
-//                             if(mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
+//                             if(!mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
 //                             {
-//                               MusEGlobal::config.warnOnFileVersions = mb->checkBox()->isChecked();
+//                               MusEGlobal::config.warnOnFileVersions = !mb->checkBox()->isChecked();
 //                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
 //                             }
 //                             delete mb;
-//                           }
-//                           else
-//                           {
-                            fprintf(stderr, 
-                                    "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
-                                    "Conversions may be applied!\n\n",
-                                    xml.majorVersion(), xml.minorVersion(), 
-                                    xml.latestMajorVersion(), xml.latestMinorVersion());
 //                           }
                         }
                         if (!skipmode && tag == "muse") {
