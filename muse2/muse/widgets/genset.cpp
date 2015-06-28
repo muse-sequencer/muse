@@ -156,6 +156,7 @@ void GlobalSettingsConfig::updateSettings()
       autoSaveCheckBox->setChecked(MusEGlobal::config.autoSave);
       scrollableSubmenusCheckbox->setChecked(MusEGlobal::config.scrollableSubMenus);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);      
+      warnOnFileVersionsCheckBox->setChecked(MusEGlobal::config.warnOnFileVersions);
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
       midiSendCtlDefaults->setChecked(MusEGlobal::config.midiSendCtlDefaults);      
@@ -280,6 +281,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
       MusEGlobal::config.warnIfBadTiming = warnIfBadTimingCheckBox->isChecked();
+      MusEGlobal::config.warnOnFileVersions = warnOnFileVersionsCheckBox->isChecked();
       MusEGlobal::config.midiSendInit = midiSendInit->isChecked();
       MusEGlobal::config.warnInitPending = midiWarnInitPending->isChecked();
       MusEGlobal::config.midiSendCtlDefaults = midiSendCtlDefaults->isChecked();

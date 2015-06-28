@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -36,7 +36,7 @@
           <string>Start Muse</string>
          </property>
          <layout class="QGridLayout">
-          <item row="0" column="0">
+          <item row="1" column="0">
            <layout class="QGridLayout" name="gridLayout11">
             <item row="3" column="0" colspan="2">
              <layout class="QHBoxLayout" name="qhboxStartSong">
@@ -152,6 +152,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="warnOnFileVersionsCheckBox">
+            <property name="text">
+             <string>Warn if opening file versions different than current version</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1332,16 +1339,7 @@ Adjusts responsiveness of audio controls and
        <property name="spacing">
         <number>6</number>
        </property>
-       <property name="leftMargin">
-        <number>11</number>
-       </property>
-       <property name="topMargin">
-        <number>11</number>
-       </property>
-       <property name="rightMargin">
-        <number>11</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>11</number>
        </property>
        <item>
@@ -1784,8 +1782,8 @@ Disable to use an alternate standard
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>520</width>
-               <height>457</height>
+               <width>526</width>
+               <height>463</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

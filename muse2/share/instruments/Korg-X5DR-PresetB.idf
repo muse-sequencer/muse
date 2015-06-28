@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Korg X5DR Preset B">
     <PatchGroup name="Bank C Combinations">
       <Patch name="Star*Burst" hbank="127" lbank="0" prog="0" />

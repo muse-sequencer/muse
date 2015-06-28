@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
 <drummap>
 <entry><name>PulseBass C</name><channel>1</channel><enote>0</enote><anote>0</anote></entry>
 <entry><name>PulseBass C#</name><channel>1</channel><enote>1</enote><anote>1</anote></entry>

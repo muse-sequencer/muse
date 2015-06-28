@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Emu Proteus 2000">
     <PatchGroup name="bpm">
       <Patch name="Build Up" hbank="4" lbank="2" prog="22" />

@@ -21,6 +21,9 @@
 //
 //=========================================================
 
+#include <QMessageBox>
+#include <QString>
+
 #include <sndfile.h>
 #include <errno.h>
 #include <stdio.h>
@@ -1047,6 +1050,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiSendCtlDefaults = xml.parseInt();
                         else if (tag == "warnIfBadTiming")
                               MusEGlobal::config.warnIfBadTiming = xml.parseInt();
+                        else if (tag == "warnOnFileVersions")
+                              MusEGlobal::config.warnOnFileVersions = xml.parseInt();
                         else if (tag == "minMeter")
                               MusEGlobal::config.minMeter = xml.parseInt();
                         else if (tag == "minSlider")
@@ -1215,6 +1220,42 @@ bool readConfiguration(const char *configFile)
                               }
                         break;
                   case Xml::TagEnd:
+                        // REMOVE Tim. Persistent routes. Added.
+                        if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
+                        {
+                             // Meh, skip the GUI warning. Not really necessary, or preventable. 
+//                           // Cannot construct QWidgets until QApplication created!
+//                           // Check MusEGlobal::muse which is created shortly after the application...
+//                           if(MusEGlobal::muse)
+//                           {
+//                             QString txt = QObject::tr("Config file version is %1.%2\nCurrent version is %3.%4\n"
+//                                                       "Conversions may be applied!")
+//                                                      .arg(xml.majorVersion()).arg(xml.minorVersion())
+//                                                      .arg(xml.latestMajorVersion()).arg(xml.latestMinorVersion());
+//                             QMessageBox* mb = new QMessageBox(QMessageBox::Warning, 
+//                                                               QObject::tr("Opening configuration file"), 
+//                                                               txt, 
+//                                                               QMessageBox::Ok, MusEGlobal::muse);
+//                             QCheckBox* cb = new QCheckBox(QObject::tr("Do not warn again"));
+//                             cb->setChecked(MusEGlobal::config.warnOnFileVersions);
+//                             mb->setCheckBox(cb);
+//                             mb->exec();
+//                             if(mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
+//                             {
+//                               MusEGlobal::config.warnOnFileVersions = mb->checkBox()->isChecked();
+//                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
+//                             }
+//                             delete mb;
+//                           }
+//                           else
+//                           {
+                            fprintf(stderr, 
+                                    "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
+                                    "Conversions may be applied!\n\n",
+                                    xml.majorVersion(), xml.minorVersion(), 
+                                    xml.latestMajorVersion(), xml.latestMinorVersion());
+//                           }
+                        }
                         if (!skipmode && tag == "muse") {
                               fclose(f);
                               return false;
@@ -1403,7 +1444,9 @@ void MusE::writeGlobalConfiguration() const
             }
       MusECore::Xml xml(f);
       xml.header();
-      xml.tag(0, "muse version=\"2.0\"");
+      // REMOVE Tim. Persistent routes. Changed.
+      //xml.tag(0, "muse version=\"2.0\"");
+      xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
       writeGlobalConfiguration(1, xml);
       xml.tag(1, "/muse");
       fclose(f);
@@ -1419,6 +1462,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "warnInitPending", MusEGlobal::config.warnInitPending);
       xml.intTag(level, "midiSendCtlDefaults", MusEGlobal::config.midiSendCtlDefaults);
       xml.intTag(level, "warnIfBadTiming", MusEGlobal::config.warnIfBadTiming);
+      xml.intTag(level, "warnOnFileVersions", MusEGlobal::config.warnOnFileVersions);
       xml.intTag(level, "minMeter", MusEGlobal::config.minMeter);
       xml.doubleTag(level, "minSlider", MusEGlobal::config.minSlider);
       xml.intTag(level, "freewheelMode", MusEGlobal::config.freewheelMode);

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Yamaha Motif Rack" nullparam="32639">
     <PatchGroup name="Preset 1">
       <Patch name="PowerGrand" hbank="63" lbank="0" prog="0" />

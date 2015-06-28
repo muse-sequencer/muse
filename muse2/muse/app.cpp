@@ -1101,7 +1101,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
         }
       }
       progress->setLabelText(label);
-      progress->setWindowModality(Qt::WindowModal);
+//       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority.
       progress->setCancelButton(0);
       if (!songTemplate)
         progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog

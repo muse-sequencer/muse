@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Waldorf microQ Factory2001">
     <PatchGroup name="Internal Bank A">
       <Patch name="LosAngeles2019" hbank="0" lbank="0" prog="0" />

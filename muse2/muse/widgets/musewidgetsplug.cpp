@@ -128,6 +128,7 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(0xff, 0xff, 0xff),     // trackBg;
       QColor(0x80, 0xff, 0x80),     // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
+      Qt::gray,                     // trackSectionDividerColor;
       
       QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
       QColor(150, 177, 189),        // drumTrackLabelBg;   // Pale pastel blue
@@ -153,6 +154,26 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(255, 170, 0),          // ctrlGraphFg; Medium orange
       QColor(98, 124, 168),         // mixerBg;
 
+      QColor(0xe0, 0xe0, 0xe0),     // Ruler background
+      QColor(0, 0, 0),              // Ruler text
+      QColor(255, 255, 255),        // Midi editor canvas
+      QColor(255, 255, 255),        // midiControllerViewBg
+      QColor(255, 255, 255),        // drumListBg
+      QColor(255, 255, 255),        // rulerCurrent
+      Qt::gray,                     // midiCanvasBeatColor
+      Qt::lightGray,                // midiCanvasBarColor
+
+      Qt::lightGray,                // waveNonselectedPart
+      Qt::darkGray,                 // wavePeakColor
+      Qt::black,                    // waveRmsColor
+      Qt::lightGray,                // wavePeakColorSelected
+      Qt::white,                    // waveRmsColorSelected
+
+      Qt::darkGray,                 // partWaveColorPeak
+      QColor(20,20,20),             // partWaveColorRms
+      QColor(54,54,54),             // partMidiDarkEventColor
+      QColor(200,200,200),          // partMidiLightEventColor
+      
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences
@@ -187,7 +208,6 @@ MusEGlobal::GlobalConfigValues config = {
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
-      //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
@@ -236,7 +256,14 @@ MusEGlobal::GlobalConfigValues config = {
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
-      true                          // borderlessMouse
+      true,                         // borderlessMouse
+      false,                        // autoSave
+      false,                        // scrollableSubMenus
+      true,                         // warnOnFileVersions Warn if file version different than current
+      QString("klick1.wav"),        // measSample
+      QString("klick2.wav"),        // beatSample
+      QString("klick3.wav"),        // accent1Sample
+      QString("klick4.wav")         // accent2Sample
       };
 
 //---------------------------------------------------------

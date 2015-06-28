@@ -14,7 +14,7 @@
 <!--GM DRUM MSB=127, LSB=0  -->
 <!--MSB=hbank, LSB=lbank  -->
 <!--Maintained by Geoff King 5/24/2011  -->
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Yamaha Mo6 v4">
     <PatchGroup name="GM">
       <Patch name="ConcertGnd" hbank="0" lbank="0" prog="0" />

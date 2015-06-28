@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="KORG microSTATION programs">
     <PatchGroup name="Category: KEYBOARD">
       <Patch name="001 L/R Piano" hbank="0" lbank="0" prog="0" />

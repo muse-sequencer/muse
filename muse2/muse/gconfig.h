@@ -236,7 +236,8 @@ struct GlobalConfigValues {
       bool borderlessMouse;
       bool autoSave;
       bool scrollableSubMenus;
-
+      bool warnOnFileVersions; // Warn if file version different than current
+      
       QString measSample;
       QString beatSample;
       QString accent1Sample;

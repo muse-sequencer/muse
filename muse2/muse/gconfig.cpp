@@ -229,12 +229,13 @@ GlobalConfigValues config = {
       true,                         // smartFocus
       20,                           // trackHeight
       true,                         // borderlessMouse
-      false,                          // autoSave
+      false,                        // autoSave
       false,                        // scrollableSubMenus
+      true,                         // warnOnFileVersions Warn if file version different than current
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample
-      QString("klick4.wav"),        // accent2Sample
+      QString("klick4.wav")         // accent2Sample
     };
 
 } // namespace MusEGlobal

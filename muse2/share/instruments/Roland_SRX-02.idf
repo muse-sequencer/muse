@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Roland SRX-02 Concert Piano">
     <PatchGroup name="SRX02 Concert Piano">
       <Patch name="PremierGrand" hbank="93" lbank="1" prog="0" />

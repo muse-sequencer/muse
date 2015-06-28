@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Yamaha-S90">
     <SysEx name="Master 0">
       <comment>Master number 0 select</comment>

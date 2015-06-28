@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Access Virus">
     <PatchGroup name="Bank A">
       <Patch name="A 000" hbank="0" lbank="0" prog="0" />

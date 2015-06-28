@@ -24,6 +24,8 @@
 #include <uuid/uuid.h>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QCheckBox>
+#include <QString>
 
 #include "app.h"
 #include "song.h"
@@ -1028,7 +1030,7 @@ void MusE::readMidiport(MusECore::Xml& xml)
 void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
       {
       bool skipmode = true;
-      
+
       writeTopwinState=true;
       
       for (;;) {
@@ -1111,6 +1113,41 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               }
                         break;
                   case MusECore::Xml::TagEnd:
+                        // REMOVE Tim. Persistent routes. Added.
+                        if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
+                        {
+                          // Cannot construct QWidgets until QApplication created!
+                          // Check MusEGlobal::muse which is created shortly after the application...
+                          if(MusEGlobal::muse)
+                          {
+                            QString txt = tr("File version is %1.%2\nCurrent version is %3.%4\n"
+                                             "Conversions may be applied if file is saved!")
+                                            .arg(xml.majorVersion()).arg(xml.minorVersion())
+                                            .arg(xml.latestMajorVersion()).arg(xml.latestMinorVersion());
+                            QMessageBox* mb = new QMessageBox(QMessageBox::Warning, 
+                                                              tr("Opening file"), 
+                                                              txt, 
+                                                              QMessageBox::Ok, MusEGlobal::muse);
+                            QCheckBox* cb = new QCheckBox(tr("Do not warn again"));
+                            cb->setChecked(MusEGlobal::config.warnOnFileVersions);
+                            mb->setCheckBox(cb);
+                            mb->exec();
+                            if(mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
+                            {
+                              MusEGlobal::config.warnOnFileVersions = mb->checkBox()->isChecked();
+                              //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
+                            }
+                            delete mb;
+                          }
+                          else
+                          {
+                            fprintf(stderr, 
+                                    "\n***WARNING***\nLoaded file version is %d.%d\nCurrent version is %d.%d\n"
+                                    "Conversions may be applied if file is saved!\n\n",
+                                    xml.majorVersion(), xml.minorVersion(), 
+                                    xml.latestMajorVersion(), xml.latestMinorVersion());
+                          }
+                        }
                         if (!skipmode && tag == "muse")
                               return;
                   default:

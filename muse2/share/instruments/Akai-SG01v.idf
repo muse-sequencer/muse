@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="1.0">
+<muse version="2.1">
   <MidiInstrument name="Akai SG01v">
     <PatchGroup name="Bank 00">
       <Patch name="MEGA BRASS" hbank="0" lbank="0" prog="0" />
