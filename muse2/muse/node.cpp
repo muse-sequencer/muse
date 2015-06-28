@@ -222,6 +222,7 @@ void AudioTrack::updateInternalSoloStates()
     {
       if(ir->type == Route::TRACK_ROUTE)
         ir->track->updateInternalSoloStates();
+#ifndef _USE_SIMPLIFIED_SOLO_CHAIN_
       else  
       // Support Midi Port -> Audio Input solo chains. p4.0.37 Tim.
       if(ir->type == Route::MIDI_PORT_ROUTE)    
@@ -234,6 +235,7 @@ void AudioTrack::updateInternalSoloStates()
             mt->updateInternalSoloStates();
         }
       }
+#endif
     }
   }
   else
@@ -333,6 +335,7 @@ void AudioTrack::updateSoloStates(bool noDec)
     {
       if(ir->type == Route::TRACK_ROUTE)
         ir->track->updateInternalSoloStates();
+#ifndef _USE_SIMPLIFIED_SOLO_CHAIN_
       else  
       // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
       if(ir->type == Route::MIDI_PORT_ROUTE)    
@@ -345,6 +348,7 @@ void AudioTrack::updateSoloStates(bool noDec)
             mt->updateInternalSoloStates();
         }
       }
+#endif            
     }
   }  
   _tmpSoloChainDoIns = false;

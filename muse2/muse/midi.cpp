@@ -47,6 +47,9 @@
 #include "gconfig.h"
 #include "ticksynth.h"
 
+// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK amd makes good sense.
+#define _USE_MIDI_ROUTE_PER_CHANNEL_
+
 namespace MusECore {
 
 extern void dump(const unsigned char* p, int n);
@@ -1076,13 +1079,27 @@ void Audio::processMidi()
                         MidiDevice* dev = MusEGlobal::midiPorts[devport].device();
                         if(!dev)
                           continue;
-                        int channelMask = r->channel;   
+                        
+#ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
+                        
+                        const int r_chan = r->channel;
+#else
+                        const int channelMask = r->channel;   
                         if(channelMask == -1 || channelMask == 0)
                           continue;
+#endif // _USE_MIDI_ROUTE_PER_CHANNEL_
+                        
                         for(int channel = 0; channel < MIDI_CHANNELS; ++channel)     
                         {
+                          
+#ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
+                          if(r_chan != -1 && channel != r_chan)
+                            continue;
+#else // _USE_MIDI_ROUTE_PER_CHANNEL_
                           if(!(channelMask & (1 << channel)))
                             continue;
+#endif // _USE_MIDI_ROUTE_PER_CHANNEL_
+                          
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.

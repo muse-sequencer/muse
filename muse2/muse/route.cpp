@@ -2262,55 +2262,56 @@ void Song::readRoute(Xml& xml)
       }
 }
 
-//---------------------------------------------------------
-//   removeRoute
-//---------------------------------------------------------
-
-void RouteList::removeRoute(const Route& r)
-      {
-      for (iRoute i = begin(); i != end(); ++i) {
-            if (r == *i) {
-                  erase(i);
-                  return;
-                  }
-            }
-      //fprintf(stderr, "internal error: cannot remove Route\n");
-      }
-
-//---------------------------------------------------------
-//   exists
-//---------------------------------------------------------
-
-bool RouteList::exists(const Route& r) const
-      {
-      for(ciRoute i = begin(); i != end(); ++i) {
-            if(r == *i) 
-              return true;
-            }
-      return false;
-      }
-
-//---------------------------------------------------------
-//   find
-//---------------------------------------------------------
-
-iRoute RouteList::find(const Route& r)
-      {
-      for(iRoute i = begin(); i != end(); ++i) {
-            if(r == *i) 
-              return i;
-            }
-      return end();
-      }
-
-ciRoute RouteList::find(const Route& r) const
-      {
-      for(ciRoute i = begin(); i != end(); ++i) {
-            if(r == *i) 
-              return i;
-            }
-      return end();
-      }
+// REMOVE Tim. Persistent routes. Added.
+// //---------------------------------------------------------
+// //   removeRoute
+// //---------------------------------------------------------
+// 
+// void RouteList::removeRoute(const Route& r)
+//       {
+//       for (iRoute i = begin(); i != end(); ++i) {
+//             if (r == *i) {
+//                   erase(i);
+//                   return;
+//                   }
+//             }
+//       //fprintf(stderr, "internal error: cannot remove Route\n");
+//       }
+// 
+// //---------------------------------------------------------
+// //   exists
+// //---------------------------------------------------------
+// 
+// bool RouteList::exists(const Route& r) const
+//       {
+//       for(ciRoute i = begin(); i != end(); ++i) {
+//             if(r == *i) 
+//               return true;
+//             }
+//       return false;
+//       }
+// 
+// //---------------------------------------------------------
+// //   find
+// //---------------------------------------------------------
+// 
+// iRoute RouteList::find(const Route& r)
+//       {
+//       for(iRoute i = begin(); i != end(); ++i) {
+//             if(r == *i) 
+//               return i;
+//             }
+//       return end();
+//       }
+// 
+// ciRoute RouteList::find(const Route& r) const
+//       {
+//       for(ciRoute i = begin(); i != end(); ++i) {
+//             if(r == *i) 
+//               return i;
+//             }
+//       return end();
+//       }
 
 //---------------------------------------------------------
 //   dump

@@ -28,7 +28,6 @@
 #include <QMetaType>
 
 #include <vector>
-#include <map>
 #include "globaldefs.h"
 
 #define ROUTE_PERSISTENT_NAME_SIZE 256    // Size of char array Route::persistentName, including the terminating null character.
@@ -46,7 +45,8 @@ class PendingOperationList;
 //   Route
 //---------------------------------------------------------
 
-struct Route {
+class Route {
+  public:
       enum RouteType { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; 
       
       union {
@@ -114,15 +114,100 @@ struct Route {
 //   RouteList
 //---------------------------------------------------------
 
-struct RouteList : public std::vector<Route> {
-      void removeRoute(const Route& r);
-      bool exists(const Route& r) const;
-      iterator find(const Route& r);
-      const_iterator find(const Route& r) const;
+class RouteList : public std::vector <Route> {
+  public:  
+      // REMOVE Tim. Persistent routes. Changed.
+      //void removeRoute(const Route& r);
+      //bool exists(const Route& r) const;
+      //iterator find(const Route& r);
+      //const_iterator find(const Route& r) const;
+      iterator find(const Route& r)             { return std::find(begin(), end(), r); }
+      const_iterator find(const Route& r) const { return std::find(begin(), end(), r); }
+      bool exists(const Route& r) const         { return std::find(begin(), end(), r) != end(); }
+      void removeRoute(const Route& r)          { iterator i = std::find(begin(), end(), r);  if(i != end()) erase(i); }
       };
 
 typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;
+
+// REMOVE Tim. Persistent routes. Added. Doesn't cure non-highlighted -> dereferencing in editor. Only (*iterator).member works. :-(  
+
+/*
+template<class T> class routelist : public std::vector<Route> {
+      typedef std::vector<Route> vlist;
+
+   public:
+      class iterator : public vlist::iterator {
+         public:
+            iterator() : vlist::iterator() {}
+            iterator(vlist::iterator i) : vlist::iterator(i) {}
+
+            T operator*() {
+                  return (T)(**((vlist::iterator*)this));
+                  }
+            iterator operator++(int) {
+                  return iterator ((*(vlist::iterator*)this).operator++(0));
+                  }
+            iterator& operator++() {
+                  return (iterator&) ((*(vlist::iterator*)this).operator++());
+                  }
+            };
+
+      class const_iterator : public vlist::const_iterator {
+         public:
+            const_iterator() : vlist::const_iterator() {}
+            const_iterator(vlist::const_iterator i) : vlist::const_iterator(i) {}
+            const_iterator(vlist::iterator i) : vlist::const_iterator(i) {}
+
+            const T operator*() const {
+                  return (T)(**((vlist::const_iterator*)this));
+                  }
+            };
+
+      class reverse_iterator : public vlist::reverse_iterator {
+         public:
+            reverse_iterator() : vlist::reverse_iterator() {}
+            reverse_iterator(vlist::reverse_iterator i) : vlist::reverse_iterator(i) {}
+
+            T operator*() {
+                  return (T)(**((vlist::reverse_iterator*)this));
+                  }
+            };
+
+      routelist() : vlist() {}
+      virtual ~routelist() {}
+
+      void push_back(T v)             { vlist::push_back(v); }
+      iterator begin()                { return vlist::begin(); }
+      iterator end()                  { return vlist::end(); }
+      const_iterator begin() const    { return vlist::begin(); }
+      const_iterator end() const      { return vlist::end(); }
+      reverse_iterator rbegin()       { return vlist::rbegin(); }
+      reverse_iterator rend()         { return vlist::rend(); }
+      T& back() const                 { return (T&)(vlist::back()); }
+      T& front() const                { return (T&)(vlist::front()); }
+      
+      
+      iterator find(const Route& r)       {
+            return std::find(begin(), end(), r);
+            }
+      const_iterator find(const Route& r) const {
+            return std::find(begin(), end(), r);
+            }
+            
+      //iterator find(const Route& r);
+      //const_iterator find(const Route& r) const;
+      //void removeRoute(const Route& r);
+      bool exists(const Route& r) const { return find(r) != vlist::end(); }
+            
+      void erase(const Route& r) { iterator i = std::find(begin(), end(), r); if(i != end()) erase i; }
+      void erase(vlist::iterator i)  { vlist::erase(i); }
+      };
+
+typedef routelist<Route> RouteList;
+typedef RouteList::iterator iRoute;
+typedef RouteList::const_iterator ciRoute;*/
+
 
 extern void addRoute(Route, Route);
 extern void removeRoute(Route, Route);

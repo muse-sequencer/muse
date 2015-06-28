@@ -284,20 +284,24 @@ void MidiTrackInfo::heartBeat()
       MusECore::ciRoute r = rl->begin();
       for( ; r != rl->end(); ++r)
       {
-        if(!r->isValid() || (r->type != MusECore::Route::MIDI_PORT_ROUTE))
+        if(r->type != MusECore::Route::MIDI_PORT_ROUTE || !r->isValid())
           continue;
         
+        // REMOVE Tim. Persistent routes. Changed. Reverted to route per channel now.
         // NOTE: TODO: Code for channelless events like sysex, ** IF we end up using the 'special channel 17' method.
         //if(r->channel == -1)
-        if(r->channel == -1 || r->channel == 0)
-          continue;
+//         if(r->channel == -1 || r->channel == 0)
+//           continue;
         
         // No port assigned to the device?
         mpt = r->midiPort;
         if(mpt < 0 || mpt >= MIDI_PORTS)
           continue;
-        
-        if(MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits() & r->channel)
+
+        const int det_bits = MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits();
+        if(!det_bits)
+          continue;
+        if(r->channel == -1 || (det_bits & (1 << r->channel)))
         {
           if(!_midiDetect)
           {

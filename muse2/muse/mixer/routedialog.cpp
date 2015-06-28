@@ -130,7 +130,7 @@ void RouteTreeWidgetItem::init()
     break;  
   }
   
-  computeChannelYValues();
+  //computeChannelYValues();
 }
 
 void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
@@ -1316,6 +1316,9 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
 //             }  // Fall through
           case MusECore::Route::MIDI_DEVICE_ROUTE:
           case MusECore::Route::MIDI_PORT_ROUTE:
+            // Support port/device items (no channel bar) to track channel item routes:
+            // Source channel will be -1 but destination channel will be valid. Copy destination channel to source.
+            //src_chan = dst_chan;
             if(src_chan == -1 && src.channels == -1) 
               src_wid = true;
           break;
@@ -1336,6 +1339,9 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
 //             } // Fall through
           case MusECore::Route::MIDI_DEVICE_ROUTE:
           case MusECore::Route::MIDI_PORT_ROUTE:
+            // Support track channel items to port/device items (no channel bar) routes:
+            // Destination channel will be -1 but source channel will be valid. Copy source channel to destination.
+            //dst_chan = src_chan;
             if(dst_chan == -1 && dst.channels == -1) 
               dst_wid = true;
           break;
@@ -3084,6 +3090,10 @@ RouteDialog::RouteDialog(QWidget* parent)
   // Need this. Don't remove.
   newSrcList->header()->setSectionResizeMode(QHeaderView::Stretch);
   newDstList->header()->setSectionResizeMode(QHeaderView::Stretch);
+
+  newSrcList->setTextElideMode(Qt::ElideMiddle);
+  newDstList->setTextElideMode(Qt::ElideMiddle);
+
   
   columnnames.clear();
   columnnames << tr("Source")
@@ -3171,6 +3181,24 @@ void RouteDialog::routingChanged()
   newDstList->resizeColumnToContents(ROUTE_NAME_COL);
   routeList->resizeColumnToContents(ROUTE_SRC_COL);
   routeList->resizeColumnToContents(ROUTE_DST_COL);
+  
+  // Now that column resizing is done, update all channel y values in source and destination lists.
+  // Must be done here because it relies on the column width.
+  QTreeWidgetItemIterator iDstList(newDstList);
+  while(*iDstList)
+  {
+    RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
+    item->computeChannelYValues();
+    ++iDstList;
+  }
+  QTreeWidgetItemIterator iSrcList(newSrcList);
+  while(*iSrcList)
+  {
+    RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
+    item->computeChannelYValues();
+    ++iSrcList;
+  }
+  
   routeSelectionChanged();      // Init remove button.
   srcSelectionChanged();        // Init select button.
   connectionsWidget->update();  // Redraw the connections.
@@ -3866,7 +3894,7 @@ void RouteDialog::addItems()
   RouteTreeWidgetItem* item;
   RouteTreeWidgetItem* subitem;
   QTreeWidgetItem* routesItem;
-
+  Qt::Alignment align_flags = Qt::AlignLeft | Qt::AlignVCenter;
   //
   // Tracks:
   //
@@ -3914,14 +3942,14 @@ void RouteDialog::addItems()
             fnt.setItalic(true);
             //fnt.setPointSize(fnt.pointSize() + 2);
             dstCatItem->setFont(ROUTE_NAME_COL, fnt);
-            dstCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+            dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
             newDstList->blockSignals(false);
           }
           newDstList->blockSignals(true);
           //item = new QTreeWidgetItem(dstCatItem, QStringList() << track->name() << trackLabel );
           item = new RouteTreeWidgetItem(dstCatItem, QStringList() << track->name(), RouteTreeWidgetItem::RouteItem, false, r);
           //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
-          item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          item->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newDstList->blockSignals(false);
           //dstCatItem->setExpanded(true); // REMOVE Tim. For test only.
         }
@@ -3932,15 +3960,17 @@ void RouteDialog::addItems()
           //for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
           //{
             //const MusECore::Route sub_r(track, channel, 1);
-            const MusECore::Route sub_r(track, 0, 1);
 //             const MusECore::Route sub_r(track, 0);
+            //const MusECore::Route sub_r(track, 0, 1);
+            const MusECore::Route sub_r(track, 0);
             subitem = newDstList->findItem(sub_r, RouteTreeWidgetItem::ChannelsItem);
-            if(subitem)
-            {
-              // Update the channel y values.
-              subitem->computeChannelYValues();
-            }
-            else
+//             if(subitem)
+//             {
+//               // Update the channel y values.
+//               //subitem->computeChannelYValues();
+//             }
+//             else
+            if(!subitem)
             {
               newDstList->blockSignals(true);
               //subitem = new QTreeWidgetItem(item, QStringList() << QString::number(channel) << QString() );
@@ -3948,9 +3978,11 @@ void RouteDialog::addItems()
               subitem = new RouteTreeWidgetItem(item, QStringList() << QString(), RouteTreeWidgetItem::ChannelsItem, false, sub_r);
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(sub_r));
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MIDI_CHANNELS)));
-              subitem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+              subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newDstList->blockSignals(false);
             }
+            // Update the channel y values.
+            //subitem->computeChannelYValues();
           //}
         }
         else
@@ -3963,12 +3995,13 @@ void RouteDialog::addItems()
             //const MusECore::Route sub_r(track, channel, 1);
             const MusECore::Route sub_r(track, 0, 1);
             subitem = newDstList->findItem(sub_r, RouteTreeWidgetItem::ChannelsItem);
-            if(subitem)
-            {
-              // Update the channel y values.
-              subitem->computeChannelYValues();
-            }
-            else
+//             if(subitem)
+//             {
+//               // Update the channel y values.
+//               subitem->computeChannelYValues();
+//             }
+//             else
+            if(!subitem)
             {
               newDstList->blockSignals(true);
               //subitem = new QTreeWidgetItem(item, QStringList() << QString::number(channel) << QString() );
@@ -3976,9 +4009,11 @@ void RouteDialog::addItems()
               subitem = new RouteTreeWidgetItem(item, QStringList() << QString(), RouteTreeWidgetItem::ChannelsItem, false, sub_r);
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(sub_r));
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(chans)));
-              subitem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+              subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newDstList->blockSignals(false);
             }
+            // Update the channel y values.
+            //subitem->computeChannelYValues();
           }
         }
       }
@@ -4036,9 +4071,11 @@ void RouteDialog::addItems()
                 if(md)
                   //src = MusECore::Route(md, chbits);
                   src = MusECore::Route(md);
+                  //src = MusECore::Route(md, r->channel);
                 else
                   //src = MusECore::Route(r->midiPort, chbits);
                   src = MusECore::Route(r->midiPort);
+                  //src = MusECore::Route(r->midiPort, r->channel);
   //               //dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       1, -1, 0);
                 //dst = MusECore::Route(track, r->channel, 1);
                 dst = MusECore::Route(track, r->channel);
@@ -4187,14 +4224,14 @@ void RouteDialog::addItems()
             fnt.setItalic(true);
             //fnt.setPointSize(fnt.pointSize() + 2);
             srcCatItem->setFont(ROUTE_NAME_COL, fnt);
-            srcCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+            srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
             newSrcList->blockSignals(false);
           }
           newSrcList->blockSignals(true);
           //item = new QTreeWidgetItem(srcCatItem, QStringList() << track->name() << trackLabel );
           item = new RouteTreeWidgetItem(srcCatItem, QStringList() << track->name(), RouteTreeWidgetItem::RouteItem, true, r);
           //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(r));
-          item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          item->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
         
@@ -4204,15 +4241,17 @@ void RouteDialog::addItems()
           //for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
           //{
             //const MusECore::Route sub_r(track, r.channel, 1);
-            const MusECore::Route sub_r(track, 0, 1);
 //             const MusECore::Route sub_r(track, 0);
+            //const MusECore::Route sub_r(track, 0, 1);
+            const MusECore::Route sub_r(track, 0);
             subitem = newSrcList->findItem(sub_r, RouteTreeWidgetItem::ChannelsItem);
-            if(subitem)
-            {
-              // Update the channel y values.
-              subitem->computeChannelYValues();
-            }
-            else
+//             if(subitem)
+//             {
+//               // Update the channel y values.
+//               subitem->computeChannelYValues();
+//             }
+//             else
+            if(!subitem)
             {
               newSrcList->blockSignals(true);
               //subitem = new QTreeWidgetItem(item, QStringList() << QString::number(channel) << QString() );
@@ -4220,9 +4259,11 @@ void RouteDialog::addItems()
               subitem = new RouteTreeWidgetItem(item, QStringList() << QString(), RouteTreeWidgetItem::ChannelsItem, true, sub_r);
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(sub_r));
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(MIDI_CHANNELS)));
-              subitem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+              subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newSrcList->blockSignals(false);
             }
+            // Update the channel y values.
+            //subitem->computeChannelYValues();
           //}
         }
         else
@@ -4235,12 +4276,13 @@ void RouteDialog::addItems()
             //const MusECore::Route src_r(track, channel, 1);
             const MusECore::Route src_r(track, 0, 1);
             subitem = newSrcList->findItem(src_r, RouteTreeWidgetItem::ChannelsItem);
-            if(subitem)
-            {
-              // Update the channel y values.
-              subitem->computeChannelYValues();
-            }
-            else
+//             if(subitem)
+//             {
+//               // Update the channel y values.
+//               subitem->computeChannelYValues();
+//             }
+//             else
+            if(!subitem)
             {
               newSrcList->blockSignals(true);
               //subitem = new QTreeWidgetItem(item, QStringList() << QString("ch ") + QString::number(channel + 1) << QString() );
@@ -4248,9 +4290,11 @@ void RouteDialog::addItems()
               subitem = new RouteTreeWidgetItem(item, QStringList() << QString(), RouteTreeWidgetItem::ChannelsItem, true, src_r);
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(src_r));
               //subitem->setData(ROUTE_NAME_COL, RouteDialog::ChannelsRole, QVariant::fromValue(QBitArray(chans)));
-              subitem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+              subitem->setTextAlignment(ROUTE_NAME_COL, align_flags);
               newSrcList->blockSignals(false);
             }
+            // Update the channel y values.
+            //subitem->computeChannelYValues();
           }
         }
 //       }
@@ -4356,9 +4400,11 @@ void RouteDialog::addItems()
                 if(md)
                   //dst = MusECore::Route(md, chbits);
                   dst = MusECore::Route(md);
+                  //dst = MusECore::Route(md, r->channel);
                 else
                   //dst = MusECore::Route(r->midiPort, chbits);
                   dst = MusECore::Route(r->midiPort);
+                  //dst = MusECore::Route(r->midiPort, r->channel);
 //                 srcName = track->name() + QString(" [") + QString::number(i + 1) + QString("]");
                 srcName = track->name() + QString(" [") + QString::number(r->channel + 1) + QString("]");
                 dstName = r->name();
@@ -4479,7 +4525,7 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
-          dstCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -4488,7 +4534,7 @@ void RouteDialog::addItems()
         item = new RouteTreeWidgetItem(dstCatItem, QStringList() << mdname, RouteTreeWidgetItem::RouteItem, false, dst);
         //item->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
 //       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
@@ -4655,14 +4701,14 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
-          srcCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
         //item = new QTreeWidgetItem(srcCatItem, QStringList() << mdname << midiDeviceLabel );
         item = new RouteTreeWidgetItem(srcCatItem, QStringList() << mdname, RouteTreeWidgetItem::RouteItem, true, src);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
       }
 //       for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
@@ -4826,14 +4872,14 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
-          srcCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
         //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackLabel );
         item = new RouteTreeWidgetItem(srcCatItem, QStringList() << in_r.name(), RouteTreeWidgetItem::RouteItem, true, in_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
       }
       in_rl.push_back(in_r);
@@ -4862,14 +4908,14 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
-          dstCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
         //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackLabel );
         item = new RouteTreeWidgetItem(dstCatItem, QStringList() << out_r.name(), RouteTreeWidgetItem::RouteItem, false, out_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
@@ -4924,14 +4970,14 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
-          srcCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
         //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackMidiLabel );
         item = new RouteTreeWidgetItem(srcCatItem, QStringList() << in_r.name(), RouteTreeWidgetItem::RouteItem, true, in_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
       }
       in_rl.push_back(in_r);
@@ -4960,14 +5006,14 @@ void RouteDialog::addItems()
           fnt.setItalic(true);
           //fnt.setPointSize(fnt.pointSize() + 2);
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
-          dstCatItem->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+          dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
         //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackMidiLabel );
         item = new RouteTreeWidgetItem(dstCatItem, QStringList() << out_r.name(), RouteTreeWidgetItem::RouteItem, false, out_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
-        item->setTextAlignment(ROUTE_NAME_COL, Qt::AlignCenter);
+        item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
