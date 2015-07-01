@@ -146,7 +146,7 @@ class SndFileR {
       bool isOpen() const     { return sf->isOpen(); }
       bool isWritable() const { return sf->isWritable(); }
       void update()           { sf->update(); }
-      bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); };  
+      bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); }
 
       QString basename() const { return sf->basename(); }
       QString dirPath() const  { return sf->dirPath(); }

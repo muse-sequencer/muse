@@ -29,6 +29,7 @@
 #include <uuid/uuid.h>
 #include <math.h>
 #include <map>
+#include <assert.h>
 
 #include <QClipboard>
 #include <QLineEdit>
@@ -758,6 +759,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_wexport->setData(16);
                   QAction *act_wfinfo = partPopup->addAction(tr("file info"));
                   act_wfinfo->setData(17);
+                  QAction *act_wfnorm = partPopup->addAction(tr("Normalize wave part"));
+                  act_wfnorm->setData(19);
                   }
                   break;
             case MusECore::Track::AUDIO_OUTPUT:
@@ -782,147 +785,228 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 //---------------------------------------------------------
 
 void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
-      {
-      if(n >= TOOLS_ID_BASE)
-      {
-        canvasPopup(n);
-        return;
+{
+   if(n >= TOOLS_ID_BASE)
+   {
+      canvasPopup(n);
+      return;
+   }
+
+   MusECore::PartList* pl = new MusECore::PartList;
+   NPart* npart = (NPart*)(item);
+   pl->add(npart->part());
+   switch(n) {
+   case 0:     // rename
+   {
+      editPart = npart;
+      QRect r = map(curItem->bbox());
+      if (lineEditor == 0) {
+         lineEditor = new QLineEdit(this);
+         lineEditor->setFrame(true);
+         connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
       }
-      
-      MusECore::PartList* pl = new MusECore::PartList;
-      NPart* npart = (NPart*)(item);
-      pl->add(npart->part());
-      switch(n) {
-            case 0:     // rename
-                  {
-                  editPart = npart;
-                  QRect r = map(curItem->bbox());
-                  if (lineEditor == 0) {
-                        lineEditor = new QLineEdit(this);
-                        lineEditor->setFrame(true);
-                        connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
-                        }
-                  lineEditor->setText(editPart->name());
-                  lineEditor->setFocus();
-                  lineEditor->show();
-                  lineEditor->setGeometry(r);
-                  editMode = true;
-                  }
-                  break;
-            case 1:     // delete
-                  deleteItem(item);
-                  break;
-            case 2:     // split
-                  splitItem(item, pt);
-                  break;
-            case 3:     // glue
-                  glueItem(item);
-                  break;
-            case 4:
-                  copy(pl);
-                  MusEGlobal::audio->msgRemovePart(npart->part());
-                  break;
-            case 5:
-                  copy(pl);
-                  break;
-            case 6:
-                  MusECore::merge_selected_parts();
-                  break;
+      lineEditor->setText(editPart->name());
+      lineEditor->setFocus();
+      lineEditor->show();
+      lineEditor->setGeometry(r);
+      editMode = true;
+   }
+      break;
+   case 1:     // delete
+      deleteItem(item);
+      break;
+   case 2:     // split
+      splitItem(item, pt);
+      break;
+   case 3:     // glue
+      glueItem(item);
+      break;
+   case 4:
+      copy(pl);
+      MusEGlobal::audio->msgRemovePart(npart->part());
+      break;
+   case 5:
+      copy(pl);
+      break;
+   case 6:
+      MusECore::merge_selected_parts();
+      break;
 
-            case 14:    // wave edit
-                    emit startEditor(pl, 4);
-                  return;
-            case 15:    // declone
-                  {
-                  MusECore::Part* spart  = npart->part();
-                  MusECore::Part* dpart  = spart->duplicate(); // dpart will not be member of any clone chain!
+   case 14:    // wave edit
+      emit startEditor(pl, 4);
+      return;
+   case 15:    // declone
+   {
+      MusECore::Part* spart  = npart->part();
+      MusECore::Part* dpart  = spart->duplicate(); // dpart will not be member of any clone chain!
 
-                  Undo operations;
-                  operations.push_back(UndoOp(UndoOp::DeletePart, spart));
-                  operations.push_back(UndoOp(UndoOp::AddPart, dpart));
-                  MusEGlobal::song->applyOperationGroup(operations);
-                  break;
-                  }
-            case 16: // Export to file
-                  {
-                  const MusECore::Part* part = item->part();
-                  bool popenFlag = false;
-                  QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: save part"));
-                  if (!fn.isEmpty()) {
-                        FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
-                        if (fp) {
-                              MusECore::Xml tmpXml = MusECore::Xml(fp);
-                              // Write the part. Indicate that it's a copy operation - to add special markers, 
-                              //  and force full wave paths.
-                              part->write(0, tmpXml, true, true);
-                              fclose(fp);
-                              }
-                        }
-                  break;
-                  }
-                  
-            case 17: // File info
-                  {
-                    MusECore::Part* p = item->part();
-                    QString str = tr("Part name: %1\nFiles:").arg(p->name());
-                    for (MusECore::ciEvent e = p->events().begin(); e != p->events().end(); ++e) 
-                    {
-                      MusECore::Event event = e->second;
-                      MusECore::SndFileR f  = event.sndFile();
-                      if (f.isNull())
-                        continue;
-                      str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") + 
-                        QString().setNum(event.lenTick()) + QString(" ") + f.path());
-                    }  
-                    QMessageBox::information(this, "File info", str, "Ok", 0);
-                    break;
-                  }
-            case 18: // Select clones
-                  {
-                    MusECore::Part* part = item->part();
-                    
-                    // Traverse and process the clone chain ring until we arrive at the same part again.
-                    // The loop is a safety net.
-                    MusECore::Part* p = part; 
-                    
-                    Undo operations;
-                    if(part->hasClones())
-                    {
-                      operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected()));
-                      for(MusECore::Part* it = p->nextClone(); it!=p; it=it->nextClone())
-                        operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected()));
+      Undo operations;
+      operations.push_back(UndoOp(UndoOp::DeletePart, spart));
+      operations.push_back(UndoOp(UndoOp::AddPart, dpart));
+      MusEGlobal::song->applyOperationGroup(operations);
+      break;
+   }
+   case 16: // Export to file
+   {
+      const MusECore::Part* part = item->part();
+      bool popenFlag = false;
+      QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: save part"));
+      if (!fn.isEmpty()) {
+         FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
+         if (fp) {
+            MusECore::Xml tmpXml = MusECore::Xml(fp);
+            // Write the part. Indicate that it's a copy operation - to add special markers,
+            //  and force full wave paths.
+            part->write(0, tmpXml, true, true);
+            fclose(fp);
+         }
+      }
+      break;
+   }
 
-                      MusEGlobal::song->applyOperationGroup(operations);
-                    }
-                    
-                    break;
-                  }
-            case 20 ... NUM_PARTCOLORS+20:
-                  {
-                    curColorIndex = n - 20;
-                    bool selfound = false;
-                    //Loop through all parts and set color on selected:
-                    for (iCItem i = items.begin(); i != items.end(); i++) {
-                          if (i->second->isSelected()) {
-                                selfound = true;
-                                i->second->part()->setColorIndex(curColorIndex);
-                                }
-                          }
-                          
-                    // If no items selected, use the one clicked on.
-                    if(!selfound)
-                      item->part()->setColorIndex(curColorIndex);
-                    
-                    MusEGlobal::song->update(SC_PART_MODIFIED);
-                    redraw();
-                    break;
-                  }
-            default:
-                  printf("unknown action %d\n", n);
-                  break;
+   case 17: // File info
+   {
+      MusECore::Part* p = item->part();
+      QString str = tr("Part name: %1\nFiles:").arg(p->name());
+      for (MusECore::ciEvent e = p->events().begin(); e != p->events().end(); ++e)
+      {
+         MusECore::Event event = e->second;
+         MusECore::SndFileR f  = event.sndFile();
+         if (f.isNull())
+            continue;
+         str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") +
+                    QString().setNum(event.lenTick()) + QString(" ") + f.path());
+      }
+      QMessageBox::information(this, "File info", str, "Ok", 0);
+      break;
+   }
+   case 18: // Select clones
+   {
+      MusECore::Part* part = item->part();
+
+      // Traverse and process the clone chain ring until we arrive at the same part again.
+      // The loop is a safety net.
+      MusECore::Part* p = part;
+
+      Undo operations;
+      if(part->hasClones())
+      {
+         operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected()));
+         for(MusECore::Part* it = p->nextClone(); it!=p; it=it->nextClone())
+            operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected()));
+
+         MusEGlobal::song->applyOperationGroup(operations);
+      }
+
+      break;
+   }
+   case 19: // Normalize wave part
+   {
+      MusECore::Part* part = item->part();
+      assert(part->track() && (part->track()->type() == MusECore::Track::WAVE));
+      MusECore::EventList evs = part->events();
+      for(MusECore::EventList::iterator it = evs.begin(); it != evs.end(); ++it)
+      {
+         MusECore::SndFileR sf = (*it).second.sndFile();
+         MusECore::SndFileR file = sf;
+
+         QString tmpWavFile = QString::null;
+         if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
+         {
+            break;
+         }
+
+         MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
+         MusECore::SndFile tmpFile(tmpWavFile);
+         unsigned int file_channels = file.channels();
+         tmpFile.setFormat(file.format(), file_channels, file.samplerate());
+         if (tmpFile.openWrite())
+         {
+            MusEGlobal::audio->msgIdle(false);
+            printf("Could not open temporary file...\n");
+            break;
+         }
+         MusEGlobal::song->startUndo();
+         float*   tmpdata[file_channels];
+         unsigned tmpdatalen = file.samples();
+         for (unsigned i=0; i<file_channels; i++)
+         {
+            tmpdata[i] = new float[tmpdatalen];
+         }
+         file.seek(0, 0);
+         file.readWithHeap(file_channels, tmpdata, tmpdatalen);
+         file.close();
+         tmpFile.write(file_channels, tmpdata, tmpdatalen);
+         tmpFile.close();
+
+         float loudest = 0.0;
+         for (unsigned i=0; i<file_channels; i++)
+         {
+            for (unsigned j=0; j<tmpdatalen; j++)
+            {
+               if (tmpdata[i][j]  > loudest)
+               {
+                  loudest = tmpdata[i][j];
+               }
             }
-      delete pl;
+         }
+
+         double scale = 0.99 / (double)loudest;
+         for (unsigned i=0; i<file_channels; i++)
+         {
+            for (unsigned j=0; j<tmpdatalen; j++)
+            {
+               tmpdata[i][j] = (float) ((double)tmpdata[i][j] * scale);
+            }
+         }
+
+         file.openWrite();
+         file.seek(0, 0);
+         file.write(file_channels, tmpdata, tmpdatalen);
+         file.update();
+         file.close();
+         file.openRead();
+
+         for (unsigned i=0; i<file_channels; i++)
+         {
+            delete[] tmpdata[i];
+         }
+
+         // Undo handling
+         MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, 0, tmpdatalen);
+         MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
+         //sf.update();
+         MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);
       }
+
+      break;
+   }
+   case 20 ... NUM_PARTCOLORS+20:
+   {
+      curColorIndex = n - 20;
+      bool selfound = false;
+      //Loop through all parts and set color on selected:
+      for (iCItem i = items.begin(); i != items.end(); i++) {
+         if (i->second->isSelected()) {
+            selfound = true;
+            i->second->part()->setColorIndex(curColorIndex);
+         }
+      }
+
+      // If no items selected, use the one clicked on.
+      if(!selfound)
+         item->part()->setColorIndex(curColorIndex);
+
+      MusEGlobal::song->update(SC_PART_MODIFIED);
+      redraw();
+      break;
+   }
+   default:
+      printf("unknown action %d\n", n);
+      break;
+   }
+   delete pl;
+}
 
 //---------------------------------------------------------
 //   viewMousePressEvent
