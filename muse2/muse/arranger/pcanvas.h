@@ -156,6 +156,8 @@ class PartCanvas : public Canvas {
       double logToVal(double inLog, double min, double max);
       double valToLog(double inV, double min, double max);
 
+      void normalizePart(MusECore::Part *part);
+
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
