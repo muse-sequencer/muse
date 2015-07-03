@@ -325,6 +325,11 @@ class Song : public QObject {
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
+private:
+      void normalizePart(MusECore::Part *part);
+public:
+      void normalizeWaveParts(Part *partCursor = NULL);
+
       //-----------------------------------------
       //   track manipulations
       //-----------------------------------------

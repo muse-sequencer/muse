@@ -359,6 +359,9 @@ enum {
       SHRT_NEXT_MARKER,
       SHRT_PREV_MARKER,
 
+      //arragner
+      SHRT_PART_NORMALIZE, // Alt+N
+
       //Last item:
       SHRT_NUM_OF_ELEMENTS        // must be last
       };

@@ -165,31 +165,42 @@ class MuseApplication : public QApplication {
             }
 
       bool notify(QObject* receiver, QEvent* event) {
-            bool flag = QApplication::notify(receiver, event);
-            if (event->type() == QEvent::KeyPress) {
-                  QKeyEvent* ke = (QKeyEvent*)event;
-                  MusEGlobal::globalKeyState = ke->modifiers();
-                  bool accepted = ke->isAccepted();
-                  if (!accepted) {
-                        int key = ke->key();
-                        if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
-                              key += Qt::SHIFT;
-                        if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
-                              key += Qt::ALT;
-                        if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
-                              key+= Qt::CTRL;
-                        muse->kbAccel(key);
-                        return true;
-                        }
-                  }
-            if (event->type() == QEvent::KeyRelease) {
-                  QKeyEvent* ke = (QKeyEvent*)event;
-                  ///MusEGlobal::globalKeyState = ke->stateAfter();
-		  MusEGlobal::globalKeyState = ke->modifiers();
-                  }
-
-            return flag;
+         bool flag = QApplication::notify(receiver, event);
+         if (event->type() == QEvent::KeyPress) {
+#if QT_VERSION >= 0x050000
+            const QMetaObject * mo = receiver->metaObject();
+            bool forQWidgetWindow = false;
+            if (mo){
+               if (strcmp(mo->className(), "QWidgetWindow") == 0)
+                  forQWidgetWindow = true;
             }
+            if(forQWidgetWindow){
+               return false;
+            }
+#endif
+            QKeyEvent* ke = (QKeyEvent*)event;
+            MusEGlobal::globalKeyState = ke->modifiers();
+            bool accepted = ke->isAccepted();
+            if (!accepted) {
+               int key = ke->key();
+               if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
+                  key += Qt::SHIFT;
+               if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
+                  key += Qt::ALT;
+               if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
+                  key+= Qt::CTRL;
+               muse->kbAccel(key);
+               return true;
+            }
+         }
+         if (event->type() == QEvent::KeyRelease) {
+            QKeyEvent* ke = (QKeyEvent*)event;
+            ///MusEGlobal::globalKeyState = ke->stateAfter();
+            MusEGlobal::globalKeyState = ke->modifiers();
+         }
+
+         return flag;
+      }
 
 #ifdef HAVE_LASH
      virtual void timerEvent (QTimerEvent*) {

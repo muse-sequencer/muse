@@ -2274,6 +2274,9 @@ void MusE::kbAccel(int key)
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_CONFIG_SHORTCUTS].key) {
             configShortCuts();
             }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_PART_NORMALIZE].key) {
+            MusEGlobal::song->normalizeWaveParts();
+            }
       else {
             if (MusEGlobal::debugMsg)
                   printf("unknown kbAccel 0x%x\n", key);

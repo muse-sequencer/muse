@@ -761,6 +761,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_wfinfo->setData(17);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
                   act_wfnorm->setData(19);
+                  act_wfnorm->setShortcut(Qt::CTRL+Qt::Key_N);
                   }
                   break;
             case MusECore::Track::AUDIO_OUTPUT:
@@ -780,81 +781,6 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       return partPopup;
       }
 
-void PartCanvas::normalizePart(MusECore::Part *part)
-{
-   MusECore::EventList evs = part->events();
-   for(MusECore::EventList::iterator it = evs.begin(); it != evs.end(); ++it)
-   {
-      MusECore::SndFileR sf = (*it).second.sndFile();
-      MusECore::SndFileR file = sf;
-
-      QString tmpWavFile = QString::null;
-      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
-      {
-         return;
-      }
-
-      MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
-      MusECore::SndFile tmpFile(tmpWavFile);
-      unsigned int file_channels = file.channels();
-      tmpFile.setFormat(file.format(), file_channels, file.samplerate());
-      if (tmpFile.openWrite())
-      {
-         MusEGlobal::audio->msgIdle(false);
-         printf("Could not open temporary file...\n");
-         return;
-      }
-      float*   tmpdata[file_channels];
-      unsigned tmpdatalen = file.samples();
-      for (unsigned i=0; i<file_channels; i++)
-      {
-         tmpdata[i] = new float[tmpdatalen];
-      }
-      file.seek(0, 0);
-      file.readWithHeap(file_channels, tmpdata, tmpdatalen);
-      file.close();
-      tmpFile.write(file_channels, tmpdata, tmpdatalen);
-      tmpFile.close();
-
-      float loudest = 0.0;
-      for (unsigned i=0; i<file_channels; i++)
-      {
-         for (unsigned j=0; j<tmpdatalen; j++)
-         {
-            if (tmpdata[i][j]  > loudest)
-            {
-               loudest = tmpdata[i][j];
-            }
-         }
-      }
-
-      double scale = 0.99 / (double)loudest;
-      for (unsigned i=0; i<file_channels; i++)
-      {
-         for (unsigned j=0; j<tmpdatalen; j++)
-         {
-            tmpdata[i][j] = (float) ((double)tmpdata[i][j] * scale);
-         }
-      }
-
-      file.openWrite();
-      file.seek(0, 0);
-      file.write(file_channels, tmpdata, tmpdatalen);
-      file.update();
-      file.close();
-      file.openRead();
-
-      for (unsigned i=0; i<file_channels; i++)
-      {
-         delete[] tmpdata[i];
-      }
-
-      // Undo handling
-      MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, 0, tmpdatalen);
-      MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
-      //sf.update();
-   }
-}
 //---------------------------------------------------------
 //   itemPopup
 //---------------------------------------------------------
@@ -976,48 +902,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       break;
    }
    case 19: // Normalize
-   {      
-      //MusECore::Part* part = item->part();
-      //MusECore::Track *track = part->track();
-      //assert(track != NULL && track->type() == MusECore::Track::WAVE);
-      //MusECore::PartList *plist = track->parts();
-      MusECore::TrackList* tracks=MusEGlobal::song->tracks();
-      bool undoStarted = false;
-      for (MusECore::TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
-      {
-         if((*t_it)->type() != MusECore::Track::WAVE)
-         {
-            continue;
-         }
-         const MusECore::PartList* parts=(*t_it)->cparts();
-         for (MusECore::ciPart p_it=parts->begin(); p_it!=parts->end(); p_it++)
-         {
-            if (p_it->second->selected())
-            {
-               MusECore::Part* part = p_it->second;
-               if(!undoStarted)
-               {
-                  undoStarted = true;
-                  MusEGlobal::song->startUndo();
-               }
-
-               normalizePart(part);
-
-            }
-         }
-      }
-      //if nothing selected, normilize current part under mouse
-      if(!undoStarted && item->part())
-      {
-         undoStarted = true;
-         MusEGlobal::song->startUndo();
-         normalizePart(item->part());
-      }
-      if(undoStarted)
-      {
-         MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);
-      }
-
+   {
+      MusEGlobal::song->normalizeWaveParts(item->part());
       break;
    }
    case 20 ... NUM_PARTCOLORS+20:
