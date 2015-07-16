@@ -85,7 +85,7 @@ class RoutePopupMenu : public PopupMenu
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     void addJackPorts(PopupMenu* lb);
-    void jackRouteActivated(QAction* action, MusECore::PendingOperationList& operations);
+    void jackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void midiTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
