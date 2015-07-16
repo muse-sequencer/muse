@@ -355,7 +355,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       for(int row = 0; row < rt_chans; ++row)
       {
 //         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this);
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
         wa->array()->headerSetVisible(row == 0);
         //wa->array()->setArrayTitle(tr("Channels"));
         r.channel = row;
@@ -1407,7 +1407,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       else
         wa->array()->headerSetVisible(false);
         
-      wa->setData(QVariant::fromValue(r));
+      //wa->setData(QVariant::fromValue(r));
       
       //wa->array()->headerSetText(row, -1, QString("%1:%2").arg(i + 1).arg(md->name()));
 //       wa->setText(QString("%1:%2").arg(i + 1).arg(md->name()));
@@ -3843,6 +3843,7 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
           {
             if(rem_route.isValid() && rem_route.midiPort != -1)
             {
+              // Do channel routes...
               for(int col = 0; col < cols && col < MIDI_CHANNELS; ++col)
               {
                 const bool val = matrix_wa->array()->value(col);
@@ -3895,6 +3896,31 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
                 }
               }
             }
+            
+            // Do Omni route...
+            if(matrix_wa->hasCheckBox())
+            {
+              const bool cb_val = matrix_wa->checkBoxChecked();
+              MusECore::Route this_route(track);
+              rem_route.channel = -1;
+              const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
+              const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
+              fprintf(stderr, "RoutePopupMenu::midiTrackPopupActivated: Omni checking operations\n"); // REMOVE Tim. Persistent routes. Added. 
+              // Connect if route does not exist. Allow it to reconnect a partial route.
+              if(cb_val && MusECore::routeCanConnect(src, dst))
+              {
+                fprintf(stderr, "RoutePopupMenu::midiTrackPopupActivated: Omni adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+                operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
+              }
+              // Disconnect if route exists. Allow it to reconnect a partial route.
+              else if(!cb_val && MusECore::routeCanDisconnect(src, dst))
+              {
+                fprintf(stderr, "RoutePopupMenu::midiTrackPopupActivated: Omni adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+                operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
+              }
+            }
+            
+            
           }
           break;
           
