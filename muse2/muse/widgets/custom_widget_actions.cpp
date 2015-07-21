@@ -24,7 +24,7 @@
 #include <QSignalMapper>
 #include <QPainter>
 #include <QPaintEvent>
-#include <QPainterPath>
+//#include <QPainterPath>
 #include <QString>
 #include <QList>
 #include <QApplication>
@@ -32,6 +32,7 @@
 #include <QStyle>
 #include <QMenu>
 #include <QGraphicsWidget>
+#include <QMouseEvent>
 
 #include "icons.h"
 #include "pixmap_button.h"
@@ -1329,6 +1330,7 @@ RouteChannelArray::RouteChannelArray(int cols)
   _cols = cols;
   _colsExclusive = false;
   _exclusiveToggle = false;
+  _activeCol = -1;
   init();
 }
 
@@ -1533,11 +1535,17 @@ MenuItemControlWidget::MenuItemControlWidget(RoutingMatrixWidgetAction* action, 
              : QWidget(parent)
 {
   _action = action;
+  //_isSelected = false;
+  setMouseTracking(true);
 }
 
 void MenuItemControlWidget::elementRect(QRect* checkbox_rect, QRect* label_rect) const
 {
   QSize checkbox_sz(0, 0);
+  //QSize txt_sz(0, 0);
+//   QRect cb_rect;
+  //QRect txt_rect();
+  
   if(_action->hasCheckBox())
   {
     QStyle* st = style() ? style() : QApplication::style();
@@ -1545,28 +1553,76 @@ void MenuItemControlWidget::elementRect(QRect* checkbox_rect, QRect* label_rect)
     {
 //       QStyleOptionMenuItem option;
 //       option.checkType = QStyleOptionMenuItem::NonExclusive;
-//       option.checked = isChecked();
-//       option.menuHasCheckableItems = true;
+//       option.menuHasCheckableItems = _action->hasCheckBox();
+//       option.checked = _action->checkBoxChecked();
 //       option.menuItemType = QStyleOptionMenuItem::Normal;
 //       //option.menuRect = menuItemControlRect();
-//       option.text = text();
+//       option.text = _action->actionText();
 
       QStyleOptionButton option;
-      option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus | QStyle::State_On;
-      //option.text = text();
+      option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus |
+                      (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off);
+      //if(_isSelected)
+      //if(_action->isSelected())
+      //  option.state |= QStyle::State_Selected;
+      //option.rect = rect();
       
-      checkbox_sz = st->sizeFromContents(QStyle::CT_CheckBox, &option, QSize(0, 0)); //, q);
+      //option.text = _action->actionText();
+      //option.fontMetrics = ;
+      
+//       if(_action->hasCheckBox())
+        checkbox_sz = st->sizeFromContents(QStyle::CT_CheckBox, &option, QSize(0, 0)); //, q);
+
+      //if(_action->hasCheckBox())
+//         cb_rect = st->subElementRect(QStyle::SE_CheckBoxIndicator, &option); //, q);
+      
+//       if(_action->hasCheckBox())
+//         cb_rect = st->subElementRect(QStyle::SE_CheckBoxIndicator, &option);
+//       
+//       txt_rect = st->subElementRect(QStyle::SE_CheckBoxContents, &option);
+      
+      //QRect QStyle::itemTextRect(const QFontMetrics & metrics, const QRect & rectangle, int alignment, bool enabled, const QString & text) const      
+//       const QFontMetrics txt_fm(_action->font());
+//       const QRect txt_geo = geometry();
+      //txt_rect = st->itemTextRect(txt_fm, txt_geo, Qt::AlignLeft | Qt::AlignVCenter, true, _action->actionText());
+//       txt_rect = txt_fm.boundingRect(_action->actionText());
+      
+      //txt_sz = st->sizeFromContents(QStyle::CT_CheckBoxLabel, &option, QSize(txt_rect.width(), txt_rect.height())); //, q);
+      
     }
   }
 
-  const QFontMetrics text_fm(_action->font());
-  const QSize text_sz = text_fm.size(Qt::TextSingleLine, _action->actionText().isEmpty() ? "8" : _action->actionText());
+  const QFontMetrics txt_fm(_action->font());
+  const QSize txt_sz = txt_fm.size(Qt::TextSingleLine, _action->actionText().isEmpty() ? "8" : _action->actionText());
+//   const QRect txt_rect = txt_fm.boundingRect(geometry(), 
+//                                              Qt::TextSingleLine | Qt::AlignLeft | Qt::AlignVCenter, 
+//                                              _action->actionText().isEmpty() ? "8" : _action->actionText());
 
-  const int menu_item_h = text_sz.height() > checkbox_sz.height() ? text_sz.height() : checkbox_sz.height();
+  const int menu_item_h = txt_sz.height() > checkbox_sz.height() ? txt_sz.height() : checkbox_sz.height();
+//   const int menu_item_h = txt_rect.height() > checkbox_sz.height() ? txt_rect.height() : checkbox_sz.height();
+//   const int menu_item_h = txt_sz.height() > cb_rect.height() ? txt_sz.height() : cb_rect.height();
   if(checkbox_rect)
-    *checkbox_rect = QRect(_action->actionHMargin, 0, checkbox_sz.width() + _action->actionHMargin, menu_item_h);
+//     *checkbox_rect = QRect(_action->actionHMargin, 0, checkbox_sz.width() + _action->actionHMargin, menu_item_h);
+//     *checkbox_rect = QRect(_action->actionHMargin, 0, cb_rect.width() + _action->actionHMargin, menu_item_h);
+//     *checkbox_rect = QRect(_action->actionHMargin, 0, cb_rect.width(), cb_rect.height());
+//     *checkbox_rect = cb_rect;
+//     *checkbox_rect = QRect(0, 0, checkbox_sz.width(), checkbox_sz.height());
+    *checkbox_rect = QRect(0, 0, checkbox_sz.width(), menu_item_h);
   if(label_rect)
-    *label_rect = QRect(_action->actionHMargin + checkbox_sz.width() + _action->actionHMargin, 0, text_sz.width(), menu_item_h);
+//     *label_rect = QRect(_action->actionHMargin + checkbox_sz.width() + _action->actionHMargin, 0, txt_sz.width(), menu_item_h);
+//     *label_rect = QRect(txt_rect.x(), txt_rect.y(), txt_rect.width(), menu_item_h);
+//     *label_rect = QRect(_action->actionHMargin + cb_rect.width() + _action->actionHMargin, 0, txt_sz.width(), menu_item_h);
+//     *label_rect = QRect(_action->actionHMargin + cb_rect.width() + _action->actionHMargin, 0, txt_sz.width(), txt_sz.height());
+//     *label_rect = txt_rect;
+//     *label_rect = QRect(0, 0, txt_sz.width(), txt_sz.height());
+    *label_rect = QRect(0, 0, txt_sz.width(), menu_item_h);
+  
+//   const int menu_item_h = txt_rect.height() > cb_rect.height() ? txt_rect.height() : cb_rect.height();
+//   if(checkbox_rect)
+//     *checkbox_rect = QRect(cb_rect.x(), cb_rect.y(), cb_rect.width(), menu_item_h);
+//   if(label_rect)
+//     *label_rect = QRect(txt_rect.x(), txt_rect.y(), txt_rect.width(), menu_item_h);
+  
 }
 
 QSize MenuItemControlWidget::sizeHint() const
@@ -1580,10 +1636,51 @@ QSize MenuItemControlWidget::sizeHint() const
 //   fprintf(stderr, "MenuItemControlWidget::sizeHint menu item checkbox w:%d h:%d label w:%d h:%d\n", 
 //           cb_ctrl_rect.width(), cb_ctrl_rect.height(), lbl_ctrl_rect.width(), lbl_ctrl_rect.height());
 
-  const int l_h = lbl_ctrl_rect.y() + lbl_ctrl_rect.height();
+  const int cb_w = _action->hasCheckBox() ? (_action->actionHMargin + cb_ctrl_rect.x() + cb_ctrl_rect.width()) : 0;
+  const int l_w = cb_w + _action->actionHMargin + lbl_ctrl_rect.x() + lbl_ctrl_rect.width();
+  
   const int cb_h = cb_ctrl_rect.y() + cb_ctrl_rect.height();
+  const int l_h = lbl_ctrl_rect.y() + lbl_ctrl_rect.height();
   const int h = l_h > cb_h ? l_h : cb_h;
-  return QSize(lbl_ctrl_rect.x() + lbl_ctrl_rect.width(), h);
+//   return QSize(lbl_ctrl_rect.x() + lbl_ctrl_rect.width(), h);
+  return QSize(cb_w + l_w, h);
+
+
+/*  
+    QSize item_sz(0, 0);
+    QStyle* st = style() ? style() : QApplication::style();
+    if(st)
+    {
+//       QStyleOptionMenuItem option;
+//       option.checkType = QStyleOptionMenuItem::NonExclusive;
+//       option.menuHasCheckableItems = _action->hasCheckBox();
+//       option.checked = _action->checkBoxChecked();
+//       option.menuItemType = QStyleOptionMenuItem::Normal;
+//       //option.menuRect = menuItemControlRect();
+//       option.text = _action->actionText();
+
+      QStyleOptionViewItem option;
+      //option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus | QStyle::State_On;
+      option.state = QStyle::State_Active | QStyle::State_Enabled; // | QStyle::State_HasFocus;
+      if(_isSelected)
+        option.state |= QStyle::State_Selected;
+      
+      //option.features = QStyleOptionViewItem::None;
+      option.features = QStyleOptionViewItem::HasDisplay;
+      if(_action->hasCheckBox())
+      {
+        option.features |= QStyleOptionViewItem::HasCheckIndicator;
+        option.checkState = _action->checkBoxChecked() ? Qt::Checked : Qt::Unchecked;
+      }
+      option.text = _action->actionText();
+      option.font = _action->font();
+      
+      QFontMetrics fm(_action->font());
+      const QRect b_rect = fm.tightBoundingRect(_action->actionText());
+      
+      item_sz = st->sizeFromContents(QStyle::CT_ItemViewItem, &option, QSize(b_rect.width(), b_rect.height())); //, q);
+    }
+  return item_sz;  */
 }
 
 void MenuItemControlWidget::paintEvent(QPaintEvent*)
@@ -1594,6 +1691,10 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
   QRect lbl_ctrl_rect;
   
   elementRect(&cb_ctrl_rect, &lbl_ctrl_rect);
+   
+  //if(_isSelected)
+  if(_action->isSelected())
+    p.fillRect(rect(), palette().highlight());
   
 //   p.fillRect(0, 0, 500, 500, Qt::lightGray);
   
@@ -1603,8 +1704,9 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
 //   }
 //   else
 //   {
-  p.setFont(_action->font());
+//   p.setFont(_action->font());
 //   }
+  
   if(_action->hasCheckBox())
   {
     QStyle* st = style() ? style() : QApplication::style();
@@ -1619,18 +1721,36 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
 //       option.rect = _action->menuItemControlRect();
 //       option.text = _action->text();
 //       option.font = _action->font();
+
       
-      QStyleOptionButton option;
-      option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus | 
-                     (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off);
-                     
-//       option.rect = _action->checkBoxControlRect();
-      option.rect = cb_ctrl_rect;
-//       option.text = _action->text();
-//       option.fontMetrics = QFontMetrics(_action->font());
+      //if(_action->hasCheckBox())
+      //{
+        QStyleOptionButton option;
+        option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus | // QStyle::State_Selected |
+                      (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off);
+//         if(_isSelected)
+//           option.state |= QStyle::State_Selected;
+//         option.rect = _action->checkBoxControlRect();
+        //option.rect = cb_ctrl_rect;
+        option.rect = QRect(_action->actionHMargin + cb_ctrl_rect.x(), 
+                            cb_ctrl_rect.y(), 
+                            cb_ctrl_rect.width(), 
+                            cb_ctrl_rect.height());
+        option.palette = palette();
+        //option.text = _action->text();
+        //option.fontMetrics = QFontMetrics(_action->font());
+          
+        //st->drawControl(QStyle::CE_MenuItem, &option, &p);
+        st->drawControl(QStyle::CE_CheckBox, &option, &p);
+//         st->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &p);
+      //}
       
-      //st->drawControl(QStyle::CE_MenuItem, &option, &p);
-      st->drawControl(QStyle::CE_CheckBox, &option, &p);
+//       if(!_action->actionText().isEmpty())
+//       {
+//         //p.setPen(_isSelected ? palette().highlightedText().color() : palette().text().color());
+//         //st->drawItemText(&p, lbl_ctrl_rect, Qt::AlignLeft | Qt::AlignVCenter, palette(), true, _action->actionText());
+//         st->drawControl(QStyle::CE_CheckBoxLabel, &option, &p);
+//       }
     }
   }  
 //   else
@@ -1644,8 +1764,42 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
 //   if(!_action->itemLabelText().isEmpty())
 //     p.drawText(_action->labelControlRect(), Qt::AlignLeft | Qt::AlignVCenter, _action->itemLabelText());
   if(!_action->actionText().isEmpty())
+  {
 //     p.drawText(_action->labelControlRect(), Qt::AlignLeft | Qt::AlignVCenter, _action->text());
-    p.drawText(lbl_ctrl_rect, Qt::AlignLeft | Qt::AlignVCenter, _action->actionText());
+    //p.setBrush(_isSelected ? palette().highlightedText() : palette().text());
+    //p.setPen(_isSelected ? palette().highlightedText().color() : palette().text().color());
+    p.setPen(_action->isSelected() ? palette().highlightedText().color() : palette().text().color());
+    p.setFont(_action->font());
+    const int l_x = _action->actionHMargin + (_action->hasCheckBox() ? (_action->actionHMargin + cb_ctrl_rect.x() + cb_ctrl_rect.width()) : 0);
+    const QRect l_r(l_x, lbl_ctrl_rect.y(), 
+                    lbl_ctrl_rect.width(), lbl_ctrl_rect.height());
+    p.drawText(l_r, Qt::AlignLeft | Qt::AlignVCenter, _action->actionText());
+  }
+  
+  
+  
+//     QStyle* st = style() ? style() : QApplication::style();
+//     if(st)
+//     {
+//       QStyleOptionViewItem option;
+//       //option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus | QStyle::State_On;
+//       option.state = QStyle::State_Active | QStyle::State_Enabled; // | QStyle::State_HasFocus;
+//       if(_isSelected)
+//         option.state |= QStyle::State_Selected;
+//       //option.features = QStyleOptionViewItem::None;
+//       option.features = QStyleOptionViewItem::HasDisplay;
+//       if(_action->hasCheckBox())
+//       {
+//         option.features |= QStyleOptionViewItem::HasCheckIndicator;
+//         option.checkState = _action->checkBoxChecked() ? Qt::Checked : Qt::Unchecked;
+//       }
+//       option.text = _action->actionText();
+//       option.font = _action->font();
+//       option.rect = geometry();
+//       
+//       //item_sz = st->sizeFromContents(QStyle::CT_ItemViewItem, &option, QSize(b_rect.width(), b_rect.height())); //, q);
+//       st->drawControl(QStyle::CE_ItemViewItem, &option, &p);
+//     }  
 }
 
 void MenuItemControlWidget::mousePressEvent(QMouseEvent* e)
@@ -1697,13 +1851,18 @@ void MenuItemControlWidget::contextMenuEvent(QContextMenuEvent* e)
   _action->setIsChanged(false);
 }
 
-void MenuItemControlWidget::actionEvent(QActionEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "MenuItemControlWidget::actionEvent\n");
-  QWidget::actionEvent(e);
-}
+// void MenuItemControlWidget::actionEvent(QActionEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "MenuItemControlWidget::actionEvent\n");
+//   QWidget::actionEvent(e);
+// }
 
+// bool MenuItemControlWidget::event(QEvent* e)
+// {
+//   fprintf(stderr, "MenuItemControlWidget::event type:%d\n", e->type()); // REMOVE Tim. Persistent routes. Added.
+//   return QWidget::event(e);
+// }
 
 
 //---------------------------------------------------------
@@ -1714,6 +1873,8 @@ SwitchBarActionWidget::SwitchBarActionWidget(RoutingMatrixWidgetAction* action, 
   : QWidget(parent)
 {
   _action = action;
+  //_isSelected = false;
+  setMouseTracking(true);
 }
 
 QSize SwitchBarActionWidget::sizeHint() const
@@ -2080,10 +2241,12 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
   p.setFont(_action->smallFont());
   for(int col = 0; col < cols; ++col)
   {
+    const QRect r = _action->array()->rect(col);
+    if(_action->isSelected() && col == _action->array()->activeColumn())
+      p.fillRect(r, palette().highlight());
     const QPixmap& pm = _action->array()->value(col) ? *_action->onPixmap() : *_action->offPixmap();
     const int pm_w = pm.width();
     const int pm_h = pm.height();
-    const QRect r = _action->array()->rect(col);
     int x = r.x();
     if(r.width() > pm_w)
       x += (r.width() - pm_w) / 2;
@@ -2220,6 +2383,29 @@ void SwitchBarActionWidget::mouseDoubleClickEvent(QMouseEvent* ev)
   _action->setIsChanged(false);
 }
 
+void SwitchBarActionWidget::mouseMoveEvent(QMouseEvent* ev)
+{
+  const int cols = _action->array()->columns();
+  const QPoint pt = ev->pos();
+  int a_col = -1;
+  for(int col = 0; col < cols; ++col)
+  {
+    const QRect rect = _action->array()->rect(col);
+    if(rect.contains(pt))
+    {
+      a_col = col;
+      break;
+    }
+  }
+  if(a_col != _action->array()->activeColumn())
+  {
+    _action->array()->setActiveColumn(a_col);
+    update();
+  }
+  ev->ignore();
+  //QWidget::mouseMoveEvent(ev);
+}
+
 void SwitchBarActionWidget::contextMenuEvent(QContextMenuEvent* ev)
 {
   ev->accept();
@@ -2235,14 +2421,18 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
              : QWidget(parent)
 {
   _action = action;
-  
+  //_isSelected = false;
+
+  setMouseTracking(true);
   setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   
   //QWidget* lw = new QWidget(parent);
   
+  const int layout_m_l = 0, layout_m_r = 0, layout_m_t = 1, layout_m_b = 1;
+  
   QHBoxLayout* h_layout = new QHBoxLayout(this);
   h_layout->setSpacing(0);
-  h_layout->setContentsMargins(0, 0, 0, 0);
+  h_layout->setContentsMargins(layout_m_l, layout_m_t, layout_m_r, layout_m_b);
 
   // Remove Tim. Just a test.
 //   h_layout->addWidget(_itemLabel);
@@ -2253,6 +2443,8 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
   QVBoxLayout* right_v_layout = new QVBoxLayout();
   left_v_layout->setSpacing(0);
   right_v_layout->setSpacing(0);
+//   left_v_layout->setContentsMargins(layout_m_l, layout_m_t, layout_m_r, layout_m_b);
+//   right_v_layout->setContentsMargins(layout_m_l, layout_m_t, layout_m_r, layout_m_b);
   left_v_layout->setContentsMargins(0, 0, 0, 0);
   right_v_layout->setContentsMargins(0, 0, 0, 0);
   
@@ -2272,25 +2464,26 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
   {
     QHBoxLayout* left_title_layout = new QHBoxLayout();
     left_title_layout->setSpacing(0);
-    left_title_layout->setContentsMargins(0, 0, 0, 0);
+    //left_title_layout->setContentsMargins(layout_m_l, layout_m_t, layout_m_r, layout_m_b);
+    left_title_layout->setContentsMargins(0, 0, 0, 0); // Zero because we're already inside a layout.
     if(!_action->array()->checkBoxTitle().isEmpty())
     {
-      QLabel* lbl = new QLabel(_action->array()->checkBoxTitle(), parent);
-      lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      lbl->setAlignment(Qt::AlignCenter);
-      lbl->setAutoFillBackground(true);
-      lbl->setBackgroundRole(QPalette::Dark);
-      left_title_layout->addWidget(lbl);
+      QLabel* cb_lbl = new QLabel(_action->array()->checkBoxTitle(), parent);
+      cb_lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      cb_lbl->setAlignment(Qt::AlignCenter);
+      cb_lbl->setAutoFillBackground(true);
+      cb_lbl->setBackgroundRole(QPalette::Dark);
+      left_title_layout->addWidget(cb_lbl);
     }
     //left_title_layout->addSpacing(actionHMargin);
     if(!_action->array()->headerTitle().isEmpty())
     {
-      QLabel* lbl = new QLabel(_action->array()->headerTitle(), parent);
-      lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-      lbl->setAlignment(Qt::AlignCenter);
-      lbl->setAutoFillBackground(true);
-      lbl->setBackgroundRole(QPalette::Dark);
-      left_title_layout->addWidget(lbl);
+      QLabel* hdr_lbl = new QLabel(_action->array()->headerTitle(), parent);
+      hdr_lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+      hdr_lbl->setAlignment(Qt::AlignCenter);
+      hdr_lbl->setAutoFillBackground(true);
+      hdr_lbl->setBackgroundRole(QPalette::Dark);
+      left_title_layout->addWidget(hdr_lbl);
     }
     left_v_layout->addLayout(left_title_layout);
   }
@@ -2305,7 +2498,7 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
   //MenuItemControlWidget* micw = new MenuItemControlWidget(this, parent);
   //micw->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
   _menuItemControlWidget = new MenuItemControlWidget(_action, parent);
-  _menuItemControlWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+  _menuItemControlWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
   
 //   micw->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 //   mic_h_layout->addWidget(micw);
@@ -2331,6 +2524,7 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
 //     right_v_layout->addWidget(switch_widget);
   }
   else
+//   if(!_action->array()->arrayTitle().isEmpty())
   {
     QLabel* lbl = new QLabel(_action->array()->arrayTitle(), parent);
     //lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -2351,18 +2545,20 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
 //     sw_h_layout->addWidget(switch_widget);
 //     right_v_layout->addLayout(sw_h_layout);
   }
+//   right_v_layout->addStretch();
   
   QHBoxLayout* sw_h_layout = new QHBoxLayout();
   sw_h_layout->setSpacing(0);
+//   sw_h_layout->setContentsMargins(layout_m_l, layout_m_t, layout_m_r, layout_m_b);
   sw_h_layout->setContentsMargins(0, 0, 0, 0);
   sw_h_layout->addStretch();
-  SwitchBarActionWidget* switch_widget = new SwitchBarActionWidget(_action, parent);
-  switch_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-  sw_h_layout->addWidget(switch_widget);
+  _switchWidget = new SwitchBarActionWidget(_action, parent);
+  _switchWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  sw_h_layout->addWidget(_switchWidget);
   right_v_layout->addLayout(sw_h_layout);
 
   h_layout->addLayout(left_v_layout);
-  h_layout->addStretch();
+//   h_layout->addStretch();
   h_layout->addLayout(right_v_layout);
   //h_layout->addLayout(sw_h_layout);
   
@@ -2440,7 +2636,111 @@ void RoutingMatrixActionWidget::actionEvent(QActionEvent* e)
       layout()->activate();
     }
   }
+  e->ignore();
 }
+
+// bool RoutingMatrixActionWidget::event(QEvent* e)
+// {
+//   fprintf(stderr, "RoutingMatrixActionWidget::event type:%d hasMouseTracking:%d\n", e->type(), hasMouseTracking()); // REMOVE Tim. Persistent routes. Added.
+// //   switch(e->type())
+// //   {
+// //     case QEvent::MouseMove:
+// //     {
+// //       QMouseEvent* m_e = static_cast<QMouseEvent*>(e);
+// //       //if(_isSelected != true && geometry().contains(m_e->pos()))
+// //       if(_isSelected != true && rect().contains(m_e->pos()))
+// //       {
+// //         _isSelected = true;
+// //         _menuItemControlWidget->setSelected(true);
+// //         _switchWidget->setSelected(true);
+// //         //e->accept();
+// //         e->ignore();
+// //         update();
+// //         //return true;
+// //         //return false;
+// //       }
+// //     }
+// //     break;
+// //     
+// //     case QEvent::Enter:
+// //       if(_isSelected != true)
+// //       {
+// //         _isSelected = true;
+// //         _menuItemControlWidget->setSelected(true);
+// //         _switchWidget->setSelected(true);
+// //         //e->accept();
+// //         e->ignore();
+// //         update();
+// //         //return true;
+// //         //return false;
+// //       }
+// //     break;
+// // 
+// //     case QEvent::Leave:
+// //       if(_isSelected != false)
+// //       {
+// //         _isSelected = false;
+// //         _menuItemControlWidget->setSelected(false);
+// //         _switchWidget->setSelected(false);
+// //         //e->accept();
+// //         e->ignore();
+// //         update();
+// //         //return true;
+// //         //return false;
+// //       }
+// //     break;
+// // 
+// //     default:
+// //     break;
+// //   }
+//   return QWidget::event(e);
+// }
+// 
+// void RoutingMatrixActionWidget::mouseMoveEvent(QMouseEvent* e)
+// {
+//   //fprintf(stderr, "RoutingMatrixActionWidget::mouseMoveEvent pos x:%d y:%d rect x:%d y:%d w:%d h:%d\n", 
+//   //        e->pos().x(), e->pos().y(), rect().x(), rect().y(), rect().width(), rect().height()); // REMOVE Tim. Persistent routes. Added.
+//   //fprintf(stderr, "RoutingMatrixActionWidget::mouseMoveEvent\n"); 
+//   //if(_isSelected != true && geometry().contains(m_e->pos()))
+//   if(_isSelected != true && rect().contains(e->pos()))
+//   {
+//     //fprintf(stderr, "   selecting:%s\n", _action->actionText().toLatin1().constData()); 
+//     _isSelected = true;
+//     _menuItemControlWidget->setSelected(true);
+//     _switchWidget->setSelected(true);
+//     //e->accept();
+//     e->ignore();
+//     update();
+//   }
+// }
+
+// void RoutingMatrixActionWidget::enterEvent(QEvent* e)
+// {
+//   fprintf(stderr, "RoutingMatrixActionWidget::enterEvent\n"); // REMOVE Tim. Persistent routes. Added.
+//   if(_isSelected != true)
+//   {
+//     _isSelected = true;
+//     _menuItemControlWidget->setSelected(true);
+//     _switchWidget->setSelected(true);
+//     //e->accept();
+//     e->ignore();
+//     update();
+//   }
+// }
+// 
+// void RoutingMatrixActionWidget::leaveEvent(QEvent* e)
+// {
+//   fprintf(stderr, "RoutingMatrixActionWidget::leaveEvent\n"); // REMOVE Tim. Persistent routes. Added.
+//   if(_isSelected != false)
+//   {
+//     _isSelected = false;
+//     _menuItemControlWidget->setSelected(false);
+//     _switchWidget->setSelected(false);
+//     //e->accept();
+//     e->ignore();
+//     update();
+//   }
+// }
 
 //---------------------------------------------------------
 //   RoutingMatrixWidgetAction
@@ -2469,6 +2769,7 @@ RoutingMatrixWidgetAction::RoutingMatrixWidgetAction(int cols,
   _isChanged = false;
   _hasCheckBox = false;
   _checkBoxChecked = false;
+  _isSelected = false;
   _onPixmap = on_pixmap;
   _offPixmap = off_pixmap;
   //_header.setSize(rows, cols);
@@ -2506,6 +2807,8 @@ RoutingMatrixWidgetAction::RoutingMatrixWidgetAction(int cols,
   if(_maxPixmapGeometry.height() < _offPixmap->height())
     _maxPixmapGeometry.setHeight(_offPixmap->height());
   updateChannelArray();
+
+  //connect(this, SIGNAL(hovered()), this, SLOT(actionHovered()));
 }
 
 // void RoutingMatrixWidgetAction::updateChannelArray()
@@ -3062,7 +3365,42 @@ void RoutingMatrixWidgetAction::updateChannelArray()
   //setMenu(menu());
 }
 
+// void RoutingMatrixWidgetAction::actionHovered()
+// {  
+//   fprintf(stderr, "RoutingMatrixWidgetAction::actionHovered action text:%s\n", text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
+//   const int m_sz = associatedWidgets().size();
+//   for(int k = 0; k < m_sz; ++k)
+//   {
+//     fprintf(stderr, "   assoc widget:%d\n", k); // REMOVE Tim. Persistent routes. Added.
+//     if(QMenu* m = qobject_cast< QMenu* >(associatedWidgets().at(k)))
+//     {
+//       fprintf(stderr, "   menu:%p\n", m); // REMOVE Tim. Persistent routes. Added.
+//       const int sz = m->actions().size();
+//       for(int i = 0; i < sz; ++i)
+//       {
+//         fprintf(stderr, "   action:%d text:%s\n", i, m->actions().at(i)->text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
+//         if(RoutingMatrixWidgetAction* wa = qobject_cast< RoutingMatrixWidgetAction* >(m->actions().at(i)))
+//         {
+//           fprintf(stderr, "   matrix\n"); // REMOVE Tim. Persistent routes. Added.
+//           const bool sel = (this == wa);
+//           if(wa->isSelected() != sel)
+//           {
+//             fprintf(stderr, "   sel:%d\n", sel); // REMOVE Tim. Persistent routes. Added.
+//             wa->setSelected(sel);
+//             wa->updateCreatedWidgets();
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
 
+void RoutingMatrixWidgetAction::updateCreatedWidgets()
+{
+  const int sz = createdWidgets().size();
+  for(int i = 0; i < sz; ++i)
+    createdWidgets().at(i)->update();
+}
 
 QWidget* RoutingMatrixWidgetAction::createWidget(QWidget *parent)
 {
@@ -3292,6 +3630,19 @@ void RoutingMatrixWidgetAction::setActionText(const QString& s)
   // A better way might be tell the widget to updateGeometry and so on before a single ActionChanged message.
   sendActionChanged(); 
 }
+
+bool RoutingMatrixWidgetAction::event(QEvent* e)
+{
+  fprintf(stderr, "RoutingMatrixWidgetAction::event type:%d\n", e->type()); // REMOVE Tim. Persistent routes. Added. 
+  return QWidgetAction::event(e);
+}
+
+bool RoutingMatrixWidgetAction::eventFilter(QObject* obj, QEvent* e)
+{
+  fprintf(stderr, "RoutingMatrixWidgetAction::eventFilter type:%d\n", e->type()); // REMOVE Tim. Persistent routes. Added. 
+  return QWidgetAction::eventFilter(obj, e);
+}
+
 
 //---------------------------------------------------------
 //   RoutingMatrixHeaderWidgetAction

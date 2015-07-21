@@ -37,6 +37,9 @@ class QPaintEvent;
 class QPixmap;
 class QString;
 class QResizeEvent;
+class QMouseEvent;
+class QEnterEvent;
+class QLeaveEvent;
 
 namespace MusEGui {
 
@@ -221,11 +224,12 @@ struct RouteChannelArrayHeaderItem
 
 class RouteChannelArray
 {
-  protected:
+  private:
     int _cols;
     bool _colsExclusive;
     bool _exclusiveToggle;
     bool _headerVisible;
+    int _activeCol;  // -1 == none.
     RouteChannelArrayItem* _array;
     RouteChannelArrayHeaderItem* _header;
     RouteChannelArrayHeaderItem _checkBoxTitleItem;
@@ -305,6 +309,8 @@ class RouteChannelArray
     void setColumnsExclusive(bool v) { _colsExclusive = v; }
     bool exclusiveToggle() const     { return _exclusiveToggle; }
     void setExclusiveToggle(bool v)  { _exclusiveToggle = v; }
+    int activeColumn() const         { return _activeCol; }
+    void setActiveColumn(int col)    { _activeCol = col; }
 };
 
 // class RouteChannelArrayHeader : public RouteChannelArray {
@@ -321,6 +327,7 @@ class RouteChannelArray
 
 
 
+class RoutingMatrixActionWidget;
 class RoutingMatrixWidgetAction;
 
 //---------------------------------------------------------
@@ -330,10 +337,11 @@ class RoutingMatrixWidgetAction;
 
 class MenuItemControlWidget : public QWidget 
 { 
-    Q_OBJECT
+  Q_OBJECT
       
-   private:
-     RoutingMatrixWidgetAction* _action;
+  private:
+    RoutingMatrixWidgetAction* _action;
+    //bool _isSelected;
       
   protected:
     QSize sizeHint() const;
@@ -342,11 +350,14 @@ class MenuItemControlWidget : public QWidget
     void mouseReleaseEvent(QMouseEvent*);
     void mouseDoubleClickEvent(QMouseEvent*);
     void contextMenuEvent(QContextMenuEvent*);
-    void actionEvent(QActionEvent*);
+    //void actionEvent(QActionEvent*);
+    //bool event(QEvent*);
     
-   public:
-      MenuItemControlWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
-      void elementRect(QRect* checkbox_rect = 0, QRect* label_rect = 0) const;
+  public:
+    MenuItemControlWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
+    void elementRect(QRect* checkbox_rect = 0, QRect* label_rect = 0) const;
+    //bool isSelected() const { return _isSelected; }
+    //void setSelected(bool v)  { _isSelected = v; }
 };
       
 //---------------------------------------------------------
@@ -355,9 +366,11 @@ class MenuItemControlWidget : public QWidget
 //---------------------------------------------------------
 
 class SwitchBarActionWidget : public QWidget {
-      Q_OBJECT
+    Q_OBJECT
+      
   private:
     RoutingMatrixWidgetAction* _action;
+    //bool _isSelected;
     
   protected:
     QSize sizeHint() const;
@@ -366,11 +379,14 @@ class SwitchBarActionWidget : public QWidget {
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
     void mouseDoubleClickEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
     void resizeEvent(QResizeEvent*);
     void contextMenuEvent(QContextMenuEvent*);
     
   public:
     SwitchBarActionWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
+    //bool isSelected() const { return _isSelected; }
+    //void setSelected(bool v)  { _isSelected = v; }
 };
       
 //---------------------------------------------------------
@@ -383,9 +399,11 @@ class RoutingMatrixActionWidget : public QWidget
 { 
     Q_OBJECT
       
-   private:
-     RoutingMatrixWidgetAction* _action;
-     MenuItemControlWidget* _menuItemControlWidget;
+  private:
+    RoutingMatrixWidgetAction* _action;
+    MenuItemControlWidget* _menuItemControlWidget;
+    SwitchBarActionWidget* _switchWidget;
+    //bool _isSelected;
       
   protected:
     void mousePressEvent(QMouseEvent*);
@@ -393,6 +411,10 @@ class RoutingMatrixActionWidget : public QWidget
     void mouseDoubleClickEvent(QMouseEvent*);
     void contextMenuEvent(QContextMenuEvent*);
     void actionEvent(QActionEvent*);
+//     bool event(QEvent*);
+//     void mouseMoveEvent(QMouseEvent*);
+//     void enterEvent(QEvent*);
+//     void leaveEvent(QEvent*);
     
    public:
       RoutingMatrixActionWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
@@ -417,12 +439,18 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       bool _isChanged;
       bool _hasCheckBox;
       bool _checkBoxChecked;
+      bool _isSelected;
       QString _labelText;
       
+   //private slots:
+   //   void actionHovered();
+     
    protected:
       QWidget* createWidget(QWidget* parent);
       void deleteWidget(QWidget* widget);
-     
+      bool event(QEvent*);
+      bool eventFilter(QObject*, QEvent*);
+      
    public:
       static const int margin;
       static const int itemHSpacing;
@@ -435,6 +463,7 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
                                 QPixmap* on_pixmap, QPixmap* off_pixmap, 
                                 QWidget* parent = 0, const QString& action_text = QString());
 
+      void updateCreatedWidgets();
       void updateChannelArray();
       void sendActionChanged();
       
@@ -460,6 +489,9 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       bool checkBoxChecked() const { return _checkBoxChecked; }
       void setCheckBoxChecked(bool v) { _checkBoxChecked = v; }
       
+      bool isSelected() const { return _isSelected; }
+      void setSelected(bool v)  { _isSelected = v; }
+    
       // NOTE: Use setActionText instead of QAction::setText().
       void setActionText(const QString& s);
       // NOTE: Use actionText instead of QAction::text().

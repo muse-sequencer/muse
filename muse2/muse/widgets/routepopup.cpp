@@ -350,17 +350,20 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     if(rt_chans != 0 && t_chans != 0)
     {
       PopupMenu* subp = new PopupMenu(this, true);
+      //QMenu* subp = new QMenu(this);
       subp->addAction(new MenuTitleItem(tr("Channels"), this));
       act->setMenu(subp);
       for(int row = 0; row < rt_chans; ++row)
       {
 //         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this);
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
+//         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, subp, QString::number(row + 1));
+        wa->setFont(wa->smallFont());
         wa->array()->headerSetVisible(row == 0);
         //wa->array()->setArrayTitle(tr("Channels"));
         r.channel = row;
         wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
-//         wa->setText(QString::number(row));
+        //wa->setText(QString::number(row));  // REMOVE Tim. Just a test.
         for(int col = 0; col < t_chans; ++col)
         {  
           for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
@@ -1913,9 +1916,17 @@ void RoutePopupMenu::addJackPorts(PopupMenu* lb)
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, this);
         if(row == 0)
         {
-          wa->array()->setArrayTitle(tr("Channels"));
           wa->array()->headerSetTitle(tr("Jack ports"));
-          wa->array()->headerSetVisible(true);
+          if(channels == -1)
+          {
+            wa->array()->setArrayTitle(tr("Connect"));
+            wa->array()->headerSetVisible(false);
+          }
+          else
+          {
+            wa->array()->setArrayTitle(tr("Channels"));
+            wa->array()->headerSetVisible(true);
+          }
         }
         else
           wa->array()->headerSetVisible(false);
@@ -2063,6 +2074,7 @@ RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, const QString& titl
 void RoutePopupMenu::init()
 {
   //printf("RoutePopupMenu::init this:%p\n", this);  
+  //connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 }
 
@@ -2070,6 +2082,39 @@ void RoutePopupMenu::resizeEvent(QResizeEvent* e)
 {
   fprintf(stderr, "RoutePopupMenu::resizeEvent\n");
   PopupMenu::resizeEvent(e);
+}
+
+void RoutePopupMenu::popHovered(QAction* action)
+{  
+  PopupMenu::popHovered(action);
+  fprintf(stderr, "RoutePopupMenu::popHovered action text:%s\n", action->text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
+  const int m_sz = action->associatedWidgets().size();
+  for(int k = 0; k < m_sz; ++k)
+  {
+    fprintf(stderr, "   assoc widget:%d\n", k); // REMOVE Tim. Persistent routes. Added.
+    if(QMenu* m = qobject_cast< QMenu* >(action->associatedWidgets().at(k)))
+    {
+      fprintf(stderr, "   menu:%p\n", m); // REMOVE Tim. Persistent routes. Added.
+      const int sz = m->actions().size();
+      for(int i = 0; i < sz; ++i)
+      {
+        fprintf(stderr, "   action:%d text:%s\n", i, m->actions().at(i)->text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
+        if(RoutingMatrixWidgetAction* wa = qobject_cast< RoutingMatrixWidgetAction* >(m->actions().at(i)))
+        {
+          fprintf(stderr, "   matrix\n"); // REMOVE Tim. Persistent routes. Added.
+          const bool sel = (action == wa);
+          if(wa->isSelected() != sel)
+          {
+            fprintf(stderr, "   sel:%d\n", sel); // REMOVE Tim. Persistent routes. Added.
+            wa->setSelected(sel);
+            if(!sel)
+              wa->array()->setActiveColumn(-1); // Reset any active column.
+            wa->updateCreatedWidgets();
+          }
+        }
+      }
+    }
+  }
 }
 
 void RoutePopupMenu::songChanged(MusECore::SongChangedFlags_t val)

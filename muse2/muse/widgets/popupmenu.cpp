@@ -65,6 +65,9 @@ PopupMenu::PopupMenu(const QString& title, QWidget* parent, bool stayOpen)
 
 void PopupMenu::init()
 {
+   // REMOVE Tim. Persistent routes. Added. TESTING
+   //setWindowFlags((windowFlags() ^ Qt::Popup) | Qt::Window);
+  
    _contextMenu = 0;
    _lastHoveredAction = 0;
    _highlightedAction = 0;
@@ -183,12 +186,31 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
 
 bool PopupMenu::event(QEvent* event)
 {
+  fprintf(stderr, "PopupMenu::event type:%d\n", event->type()); // REMOVE Tim. Persistent routes. Added.
+
    if(MusEGlobal::config.scrollableSubMenus)
    {
       return QMenu::event(event);
    }
    switch(event->type())
    {
+
+// REMOVE Tim. Persistent routes. Added. TESTING     
+//     case QEvent::Enter:
+//     {
+//       //grabMouse();
+//       qApp->setActiveWindow(this);
+//       //activateWindow();
+//     }
+//     break;
+//     case QEvent::Leave:
+//     {
+//       releaseMouse();
+//       //qApp->setActiveWindow(0);
+//       //deactivateWindow();
+//     }
+//     break;
+    
 #ifndef POPUP_MENU_DISABLE_STAY_OPEN
    case QEvent::MouseButtonDblClick:
    {
@@ -303,6 +325,7 @@ void PopupMenu::timerHandler()
 
 void PopupMenu::popHovered(QAction* action)
 {  
+  fprintf(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
    _lastHoveredAction = action;
    hideContextMenu();  
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  

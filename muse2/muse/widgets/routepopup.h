@@ -98,6 +98,9 @@ class RoutePopupMenu : public PopupMenu
   protected:  
     virtual void resizeEvent(QResizeEvent* e);
     
+  protected slots:
+    void popHovered(QAction*);
+    
   public:
     // REMOVE Tim. Persistent routes. Changed.
     //RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
