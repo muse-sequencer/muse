@@ -72,7 +72,7 @@ struct instrument_number_mapping_t //FINDMICH TODO move into a suitable namespac
     pitch=p;
   }
   
-  bool operator==(const instrument_number_mapping_t& that) //TODO maybe compare the Track* serial numbers, not the pointers themselves?
+  bool operator==(const instrument_number_mapping_t& that) const //TODO maybe compare the Track* serial numbers, not the pointers themselves?
   {
     return (this->tracks == that.tracks && this->pitch==that.pitch);
   }
