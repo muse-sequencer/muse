@@ -60,7 +60,7 @@
 #define JACK_CALLBACK_FIFO_SIZE 512
 
 // REMOVE Tim. Persistent routes. Added.
-#define DEBUG_PRST_ROUTES(dev, format, args...) //fprintf(dev, format, ##args);
+#define DEBUG_PRST_ROUTES(dev, format, args...) fprintf(dev, format, ##args);
 
 #ifdef VST_SUPPORT
 #include <fst.h>
@@ -746,11 +746,11 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
     return;
   
   jack_port_t* our_ext_port = our_port;
-  const char* our_port_name = jack_port_name(our_port);
+  const char* our_port_name = our_port ? jack_port_name(our_port) : 0;
 
-  if(jack1_port_by_name_workaround)
+  if(our_port && our_port_name && jack1_port_by_name_workaround)
   {
-    jack_port_t* jp = jack_port_by_name(_client, our_port_name);
+    jack_port_t* jp = jack_port_by_name(client, our_port_name);
     if(jp && jp != our_port)
     {
       // REMOVE Tim. Persistent routes. Added.
@@ -773,7 +773,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
     {
       // TODO: For Jack-2 maybe alter this? Before calling jack_port_connected_to(), maybe first check if the IDs 
       //        (hence jack ports) passed in the connect callback match here, to avoid calling jack_port_connected_to() ?
-      if(jack_port_connected_to(our_port, route_jpname)) 
+      if(our_port && jack_port_connected_to(our_port, route_jpname)) 
       {
         // The ports are connected. Keep the route node but update its jack port pointer if necessary.
         const char* s = NULL;
@@ -803,7 +803,9 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
         {
           // Check whether the disconnect happened BEFORE this graphChanged() was called, 
           //  or just now during it, or was followed by an unregister. 
-          int ret = checkDisconnectCallback(our_ext_port, jp);
+          // Support our port == null (midi device not assigned to a midi port or I/O disabled etc.):
+          // If our port is null, treat this as an unregister...
+          const int ret = our_ext_port ? checkDisconnectCallback(our_ext_port, jp) : 1;
           if(ret == 2)
           {
             // REMOVE Tim. Persistent routes. Added.
@@ -885,7 +887,8 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
     }
   }
 
-  checkNewRouteConnections(our_port, our_node.channel, route_list);
+  if(our_port)
+    checkNewRouteConnections(our_port, our_node.channel, route_list);
 }  
   
 //---------------------------------------------------------
@@ -975,8 +978,9 @@ void JackAudioDevice::processGraphChanges()
     for(int channel = 0; channel < channels; ++channel) 
     {
       jack_port_t* port = (jack_port_t*)(it->jackPort(channel));
-      if(port == 0)
-        continue;
+      // REMOVE Tim. Persistent routes. Removed. Support our port == null.
+      //if(port == 0)
+      //  continue;
       processJackCallbackEvents(Route(it, channel), port, it->inRoutes(), true);
     }
   }
@@ -993,8 +997,9 @@ void JackAudioDevice::processGraphChanges()
     for(int channel = 0; channel < channels; ++channel) 
     {
       jack_port_t* port = (jack_port_t*)(it->jackPort(channel));
-      if(port == 0)
-        continue;
+      // REMOVE Tim. Persistent routes. Removed. Support our port == null.
+      //if(port == 0)
+      //  continue;
       processJackCallbackEvents(Route(it, channel), port, it->outRoutes(), false);
     }
   }
@@ -1016,7 +1021,8 @@ void JackAudioDevice::processGraphChanges()
     if(md->rwFlags() & 1) // Writable
     {
       jack_port_t* port = (jack_port_t*)md->outClientPort();
-      if(port != 0)
+      // REMOVE Tim. Persistent routes. Removed. Support our port == null.
+      //if(port != 0)
         processJackCallbackEvents(Route(md, -1), port, md->outRoutes(), false);
     }  
           
@@ -1027,7 +1033,8 @@ void JackAudioDevice::processGraphChanges()
     if(md->rwFlags() & 2) // Readable
     {
       jack_port_t* port = (jack_port_t*)md->inClientPort();
-      if(port != 0)
+      // REMOVE Tim. Persistent routes. Removed. Support our port == null.
+      //if(port != 0)
         processJackCallbackEvents(Route(md, -1), port, md->inRoutes(), true);
     }  
   }
@@ -1036,8 +1043,8 @@ void JackAudioDevice::processGraphChanges()
 void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list)
 {
   // REMOVE Tim. Persistent routes. Added.
-  DEBUG_PRST_ROUTES(stderr, "JackAudioDevice::checkNewRouteConnections(): our_port:%p channel:%d route_list:%p\n", 
-          our_port, channel, route_list);
+  DEBUG_PRST_ROUTES(stderr, "JackAudioDevice::checkNewRouteConnections(): client:%p our_port:%p channel:%d route_list:%p\n", 
+          _client, our_port, channel, route_list);
   // Check for new connections...
   const char** ports = jack_port_get_all_connections(_client, our_port);
   if(ports) 

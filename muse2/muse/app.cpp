@@ -311,6 +311,7 @@ MusE::MusE() : QMainWindow()
       //audioMixer            = 0;
       mixer1                = 0;
       mixer2                = 0;
+      routeDialog           = 0;
       watchdogThread        = 0;
       editInstrument        = 0;
       //routingPopupMenu      = 0;
@@ -2406,6 +2407,12 @@ void MusE::deleteParentlessDialogs()
     delete midiTransformerDialog;
     midiTransformerDialog = 0;
   }
+  if(routeDialog)
+  {
+    delete routeDialog;
+    routeDialog = 0;
+  }
+  
 }
 
 //---------------------------------------------------------

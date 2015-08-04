@@ -53,7 +53,7 @@
 //#define JACK_MIDI_DEBUG
 
 // REMOVE Tim. Persistent routes. Added.
-#define DEBUG_PRST_ROUTES(dev, format, args...) //fprintf(dev, format, ##args);
+#define DEBUG_PRST_ROUTES(dev, format, args...) fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -145,7 +145,17 @@ QString MidiJackDevice::open()
   printf("MidiJackDevice::open %s\n", name().toLatin1().constData());
   #endif  
   
+  // REMOVE Tim. Persistent routes. Added.
+  // Start by disabling for now.
+  _writeEnable = _readEnable = false;
+  if(!MusEGlobal::checkAudioDevice())
+  {
+    fprintf(stderr, "MusE: MidiJackDevice::open failed: No audio device\n"); 
+    return QString("Not ready");
+  }
+   
   QString s;
+  bool out_fail = false, in_fail = false;
   if(_openFlags & 1)
   {
     if(!_out_client_jackport)
@@ -159,10 +169,14 @@ QString MidiJackDevice::open()
         if(!_out_client_jackport)   
         {
           fprintf(stderr, "MusE: MidiJackDevice::open failed creating output port name %s\n", cs); 
-          _openFlags &= ~1; // Remove the flag, but continue on...
+          // REMOVE Tim. Persistent routes. Changed.
+          //_openFlags &= ~1; // Remove the flag, but continue on...
+          _writeEnable = false;
+          out_fail = true;
         }
         else
         {
+          _writeEnable = true;  // REMOVE Tim. Persistent routes. Added.
           const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(_out_client_jackport);
           if(our_port_name)
           {
@@ -185,6 +199,7 @@ QString MidiJackDevice::open()
   }
   else
   {
+    _writeEnable = false; // REMOVE Tim. Persistent routes. Added.
     if(_out_client_jackport)
     {
       DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open unregistering output port\n");  // REMOVE Tim. Persistent routes. Added.
@@ -210,10 +225,22 @@ QString MidiJackDevice::open()
       //  the connections should not have been there and kept toggling along with the other (like a 'ghost' connection).
       // REMOVE Tim. Persistent routes. Changed.
       //MusEGlobal::audio->msgRemoveRoutes(Route(this, 0), Route());   // New function msgRemoveRoutes simply uses Routes, for their pointers.
-      removeAllRoutes(Route(this, 0), Route());   // New function removeAllRoutes simply uses Routes, for their pointers.
+//       removeAllRoutes(Route(this, 0), Route());   // New function removeAllRoutes simply uses Routes, for their pointers.
+      for(iRoute ir = _outRoutes.begin(); ir != _outRoutes.end(); ++ir)
+      {
+        if(ir->type != Route::JACK_ROUTE)
+          continue;
+        if(ir->jackPort)
+        {
+          // Before we nullify the jackPort, grab the latest valid name of the port.
+          MusEGlobal::audioDevice->portName(ir->jackPort, ir->persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+          ir->jackPort = 0;
+        }
+      }  
+      
       MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
+      _out_client_jackport = NULL;  
     }  
-    _out_client_jackport = NULL;  
   }
   
   if(_openFlags & 2)
@@ -229,10 +256,14 @@ QString MidiJackDevice::open()
         if(!_in_client_jackport)    
         {
           fprintf(stderr, "MusE: MidiJackDevice::open failed creating input port name %s\n", cs);
-          _openFlags &= ~2; // Remove the flag, but continue on...
+          // REMOVE Tim. Persistent routes. Changed.
+          //_openFlags &= ~2; // Remove the flag, but continue on...
+          _readEnable = false;
+          in_fail = true;
         }  
         else
         {
+          _readEnable = true;  // REMOVE Tim. Persistent routes. Added.
           const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(_in_client_jackport);
           if(our_port_name)
           {
@@ -255,19 +286,41 @@ QString MidiJackDevice::open()
   }
   else
   {
+    _readEnable = false;  // REMOVE Tim. Persistent routes. Added.
     if(_in_client_jackport)
     {
       DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open unregistering input port\n");  // REMOVE Tim. Persistent routes. Added.
       // REMOVE Tim. Persistent routes. Changed.
       //MusEGlobal::audio->msgRemoveRoutes(Route(), Route(this, 0));
-      removeAllRoutes(Route(), Route(this, 0));
+//       removeAllRoutes(Route(), Route(this, 0));
+      for(iRoute ir = _inRoutes.begin(); ir != _inRoutes.end(); ++ir)
+      {
+        if(ir->type != Route::JACK_ROUTE)
+          continue;
+        if(ir->jackPort)
+        {
+          // Before we nullify the jackPort, grab the latest valid name of the port.
+          MusEGlobal::audioDevice->portName(ir->jackPort, ir->persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+          ir->jackPort = 0;
+        }
+      }  
+      
       MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
+      _in_client_jackport = NULL;  
     }  
-    _in_client_jackport = NULL;  
   }
     
-  _writeEnable = bool(_openFlags & 1);
-  _readEnable = bool(_openFlags & 2);
+  // REMOVE Tim. Persistent routes. Removed.
+  //_writeEnable = bool(_openFlags & 1);
+  //_readEnable = bool(_openFlags & 2);
+
+  // REMOVE Tim. Persistent routes. Added.
+  if(out_fail && in_fail)
+    return QString("R+W Open fail");
+  if(out_fail)
+    return QString("Write open fail");
+  if(in_fail)
+    return QString("Read open fail");
   
   return QString("OK");
 }
@@ -284,6 +337,15 @@ void MidiJackDevice::close()
   
   // REMOVE Tim. Persistent routes. Added.
   DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close %s\n", name().toLatin1().constData());
+  // Disable immediately.
+  _writeEnable = _readEnable = false;
+  jack_port_t* i_jp = _in_client_jackport;
+  jack_port_t* o_jp = _out_client_jackport;
+  _in_client_jackport = 0;
+  _out_client_jackport = 0;
+  
+  // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close nullifying route jackPorts...\n");
   
   for(iRoute ir = _outRoutes.begin(); ir != _outRoutes.end(); ++ir)
   {
@@ -310,21 +372,36 @@ void MidiJackDevice::close()
     }
   }  
 
-  if(_in_client_jackport)
+//   if(_in_client_jackport)
+//   {
+//     if(MusEGlobal::checkAudioDevice())
+//       MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
+//     _in_client_jackport = 0;
+//   }
+//   if(_out_client_jackport)
+//   {
+//     if(MusEGlobal::checkAudioDevice())
+//       MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
+//     _out_client_jackport = 0;
+//   }
+  
+  // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close unregistering our ports...\n");
+  
+  if(i_jp)
   {
     if(MusEGlobal::checkAudioDevice())
-      MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
-    _in_client_jackport = 0;
+      MusEGlobal::audioDevice->unregisterPort(i_jp);
   }
-  if(_out_client_jackport)
+  if(o_jp)
   {
     if(MusEGlobal::checkAudioDevice())
-      MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
-    _out_client_jackport = 0;
+      MusEGlobal::audioDevice->unregisterPort(o_jp);
   }
   
-  _writeEnable = false;
-  _readEnable = false;
+// REMOVE Tim. Persistent routes. Removed.
+//   _writeEnable = false;
+//   _readEnable = false;
 }
 
 //---------------------------------------------------------
@@ -688,7 +765,9 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       //if(port >= JACK_MIDI_CHANNELS)
       //  return false;
         
-      if(!_out_client_jackport)   
+      // REMOVE Tim. Persistent routes. Changed.
+      //if(!_out_client_jackport)   
+      if(!_writeEnable || !_out_client_jackport)   
         return false;
       void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
     

@@ -47,6 +47,7 @@
 #include "audio.h"
 #include "driver/jackaudio.h"
 #include "globaldefs.h"
+#include "app.h"
 
 namespace MusEGui {
 
@@ -5041,5 +5042,15 @@ void RouteDialog::addItems()
     }
   }
 }
+
+void MusE::startRouteDialog()
+{
+  if(routeDialog == 0)
+    // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
+    routeDialog = new MusEGui::RouteDialog;
+  routeDialog->show();
+  routeDialog->raise();
+}
+
 
 } // namespace MusEGui

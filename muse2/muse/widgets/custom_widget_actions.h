@@ -326,6 +326,24 @@ class RouteChannelArray
 // };
 
 
+//---------------------------------------------------------
+// RoutePopupHit
+// Structure for action hit tests
+//---------------------------------------------------------
+
+struct RoutePopupHit
+{
+  enum HitTestType { HitTestHover, HitTestClick };
+  enum HitType { HitNone, HitMenuItem, HitChannelBar };
+  QAction* _action; // Action where the hit occurred.
+  HitType _type;    
+  int _value;   // Channel number for channel bar.
+
+  RoutePopupHit() { _action = 0; _type = HitNone; _value = 0; }
+  RoutePopupHit(QAction* action, HitType ht, int val = 0) { _action = action; _type = ht; _value = val; }
+  bool operator==(const RoutePopupHit& hit) { return _action == hit._action && _type == hit._type && _value == hit._value; }
+};
+
 
 class RoutingMatrixActionWidget;
 class RoutingMatrixWidgetAction;
@@ -418,6 +436,7 @@ class RoutingMatrixActionWidget : public QWidget
     
    public:
       RoutingMatrixActionWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
+      RoutePopupHit hitTest(const QPoint&, RoutePopupHit::HitTestType);
 };
       
 //---------------------------------------------------------
@@ -439,6 +458,8 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       bool _isChanged;
       bool _hasCheckBox;
       bool _checkBoxChecked;
+      // Whether clicking the array closes the menu or not.
+      bool _stayOpen;
       bool _isSelected;
       QString _labelText;
       
@@ -489,6 +510,9 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       bool checkBoxChecked() const { return _checkBoxChecked; }
       void setCheckBoxChecked(bool v) { _checkBoxChecked = v; }
       
+      bool stayOpen() const { return _stayOpen; }
+      void setStayOpen(bool v)  { _stayOpen = v; }
+      
       bool isSelected() const { return _isSelected; }
       void setSelected(bool v)  { _isSelected = v; }
     
@@ -497,6 +521,8 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       // NOTE: Use actionText instead of QAction::text().
       QString actionText() const { return _labelText; }
       //QString actionText() const { return text(); }
+      
+      RoutePopupHit hitTest(const QPoint&, RoutePopupHit::HitTestType);
       };
 
 //---------------------------------------------------------

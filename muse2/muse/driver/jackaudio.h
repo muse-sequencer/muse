@@ -77,8 +77,12 @@ class JackAudioDevice : public AudioDevice {
       void processGraphChanges();
       void processJackCallbackEvents(const Route& our_node, jack_port_t* our_port, RouteList* route_list, bool is_input);
       void checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list);
-      //
+      // Return 0: Neither disconnect nor unregister found
+      //        1: Disconnect found followed later by unregister
+      //        2: Disconnect found (with no unregister later)
       int checkDisconnectCallback(const jack_port_t* our_port, const jack_port_t* port);
+      // Return 0: No port register found (or it was cancelled by a later unregister)
+      //        1: Port register was found.
       int checkPortRegisterCallback(const jack_port_t* port);
      
 

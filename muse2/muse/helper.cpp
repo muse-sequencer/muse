@@ -30,6 +30,7 @@
 #include "icons.h"
 #include "synth.h"
 #include "functions.h"
+#include "operations.h"
 #include "gconfig.h"
 
 #include "driver/jackmidi.h"
@@ -101,56 +102,147 @@ QString pitch2string(int v)
 // It does not attempt to pair them together.
 // -------------------------------------------------------------------------------------------------------
 
+// REMOVE Tim. Persistent routes. Changed.
+// void enumerateJackMidiDevices()
+// {
+//   if(!MusEGlobal::checkAudioDevice())
+//     return;
+// 
+//   MidiDevice* dev = 0;
+//   
+//   // If Jack is running.
+//   if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)  
+//   {
+//     std::list<QString> sl;
+//     sl = MusEGlobal::audioDevice->inputPorts(true, 1);  // Ask for second aliases.
+//     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
+//     {
+//       dev = MidiJackDevice::createJackMidiDevice(*i, 1); 
+//       if(dev)
+//       {
+//         Route srcRoute(dev, -1);
+//         //Route dstRoute(*i, true, -1, Route::JACK_ROUTE);
+//         // REMOVE Tim. Persistent routes. Changed.
+//         //Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const QString& name_);
+//         Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
+//         // If audio is running, this calls jack_connect() and waits for the audio thread to execute addRoute().
+//         // If audio is not running, this directly executes addRoute(), bypassing the audio messaging system,
+//         //  and jack_connect() is not called.
+//         //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+//         //
+//         // We only want to add the route, not call jack_connect - jack may not have been activated yet.
+//         // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
+//         // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
+//         // REMOVE Tim. Persistent routes. Changed.
+//         MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
+//       }  
+//     }
+//     
+//     sl = MusEGlobal::audioDevice->outputPorts(true, 1); // Ask for second aliases.
+//     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
+//     {
+//       dev = MidiJackDevice::createJackMidiDevice(*i, 2); 
+//       if(dev)
+//       {
+//         //Route srcRoute(*i, false, -1, Route::JACK_ROUTE);
+//         // REMOVE Tim. Persistent routes. Changed.
+//         Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
+//         Route dstRoute(dev, -1);
+//         //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+//         // REMOVE Tim. Persistent routes. Changed.
+//         MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
+//       }  
+//     }
+//   }
+// }
 void enumerateJackMidiDevices()
 {
   if(!MusEGlobal::checkAudioDevice())
     return;
 
   MidiDevice* dev = 0;
+  PendingOperationList operations;
   
   // If Jack is running.
   if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)  
   {
+    char good_name[ROUTE_PERSISTENT_NAME_SIZE];
     std::list<QString> sl;
-    sl = MusEGlobal::audioDevice->inputPorts(true, 1);  // Ask for second aliases.
+//     sl = MusEGlobal::audioDevice->inputPorts(true, 1);  // Ask for second aliases.
+    sl = MusEGlobal::audioDevice->inputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      dev = MidiJackDevice::createJackMidiDevice(*i, 1); 
-      if(dev)
+      const char* port_name = (*i).toLatin1().constData();
+      void* const port = MusEGlobal::audioDevice->findPort(port_name);
+      if(port)
       {
-        Route srcRoute(dev, -1);
-        //Route dstRoute(*i, true, -1, Route::JACK_ROUTE);
-        // REMOVE Tim. Persistent routes. Changed.
-        //Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const QString& name_);
-        Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
-        // If audio is running, this calls jack_connect() and waits for the audio thread to execute addRoute().
-        // If audio is not running, this directly executes addRoute(), bypassing the audio messaging system,
-        //  and jack_connect() is not called.
-        //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-        //
-        // We only want to add the route, not call jack_connect - jack may not have been activated yet.
-        // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
-        // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
-        // REMOVE Tim. Persistent routes. Changed.
-        MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
-      }  
+        //dev = MidiJackDevice::createJackMidiDevice(*i, 1); 
+        dev = MidiJackDevice::createJackMidiDevice(QString(), 1); // Let it pick the name
+        if(dev)
+        {
+          // Get a good routing name.
+          MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+          
+          //Route srcRoute(dev, -1);
+          //Route dstRoute(*i, true, -1, Route::JACK_ROUTE);
+          // REMOVE Tim. Persistent routes. Changed.
+          //Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const QString& name_);
+          //Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
+          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          // If audio is running, this calls jack_connect() and waits for the audio thread to execute addRoute().
+          // If audio is not running, this directly executes addRoute(), bypassing the audio messaging system,
+          //  and jack_connect() is not called.
+          //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+          //
+          // We only want to add the route, not call jack_connect - jack may not have been activated yet.
+          // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
+          // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
+          // REMOVE Tim. Persistent routes. Changed.
+          //MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
+          // Connect if route does not exist. Allow it to reconnect a partial route.
+          //if(MusECore::routeCanConnect(srcRoute, dstRoute))
+          //  operations.add(MusECore::PendingOperationItem(srcRoute, dstRoute, MusECore::PendingOperationItem::AddRoute));
+          if(!dev->outRoutes()->exists(dstRoute))
+            operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+        }  
+      }
     }
     
-    sl = MusEGlobal::audioDevice->outputPorts(true, 1); // Ask for second aliases.
+    //sl = MusEGlobal::audioDevice->outputPorts(true, 1); // Ask for second aliases.
+    sl = MusEGlobal::audioDevice->outputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      dev = MidiJackDevice::createJackMidiDevice(*i, 2); 
-      if(dev)
+      const char* port_name = (*i).toLatin1().constData();
+      void* const port = MusEGlobal::audioDevice->findPort(port_name);
+      if(port)
       {
-        //Route srcRoute(*i, false, -1, Route::JACK_ROUTE);
-        // REMOVE Tim. Persistent routes. Changed.
-        Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
-        Route dstRoute(dev, -1);
-        //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-        // REMOVE Tim. Persistent routes. Changed.
-        MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
-      }  
+        //dev = MidiJackDevice::createJackMidiDevice(*i, 2); 
+        dev = MidiJackDevice::createJackMidiDevice(QString(), 2); // Let it pick the name
+        if(dev)
+        {
+          // Get a good routing name.
+          MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+          //Route srcRoute(*i, false, -1, Route::JACK_ROUTE);
+          // REMOVE Tim. Persistent routes. Changed.
+          //Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, i->toLatin1().constData()); // Persistent route.
+          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          //Route dstRoute(dev, -1);
+          //MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+          // REMOVE Tim. Persistent routes. Changed.
+          //MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
+          //if(MusECore::routeCanConnect(srcRoute, dstRoute))
+          //  operations.add(MusECore::PendingOperationItem(srcRoute, dstRoute, MusECore::PendingOperationItem::AddRoute));
+          if(!dev->inRoutes()->exists(srcRoute))
+            operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
+        }  
+      }
     }
+  }
+  if(!operations.empty())
+  {
+    MusEGlobal::audio->msgExecutePendingOperations(operations);
+    //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
+    //MusEGlobal::song->update(SC_ROUTE);
   }
 }
 

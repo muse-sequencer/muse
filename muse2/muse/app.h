@@ -88,6 +88,7 @@ class ShortcutConfig;
 class TopWin;
 class Transport;
 class VisibleTracks;
+class RouteDialog;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -199,6 +200,8 @@ class MusE : public QMainWindow
       Appearance* appearance;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
+      RouteDialog* routeDialog;
+      // NOTE: For deleting parentless dialogs and widgets, please add them to deleteParentlessDialogs().
       void deleteParentlessDialogs();
       
       Arranger* _arranger;
@@ -337,6 +340,7 @@ class MusE : public QMainWindow
       void showBigtime(bool);
       void showMixer1(bool);
       void showMixer2(bool);
+      void startRouteDialog();
       void showMarker(bool);
       void showArranger(bool);
       void importMidi(const QString &file);

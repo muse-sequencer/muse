@@ -2015,7 +2015,8 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
                   md->setOpenFlags(openFlags);
                   if(md->midiPort() != -1)
-                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
+                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device // FIXME: This causes jack crash with R+W Jack midi device
+                    //md->open(); // reopen device
                   MusEGlobal::audio->msgIdle(false);
                   //item->setIcon(INSTCOL_REC, openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
@@ -2041,7 +2042,8 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   MusEGlobal::audio->msgIdle(true);  // Make it safe to edit structures
                   md->setOpenFlags(openFlags);
                   if(md->midiPort() != -1)
-                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device
+                    MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device FIXME: This causes jack crash with R+W Jack midi device
+                    //md->open(); // reopen device
                   MusEGlobal::audio->msgIdle(false);
                   //item->setIcon(INSTCOL_PLAY, openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));

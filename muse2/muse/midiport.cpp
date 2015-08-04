@@ -44,6 +44,7 @@
 #include "icons.h"
 #include "track.h"
 #include "drummap.h"
+#include "audio.h"
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MIDI_PORTS];
@@ -187,6 +188,8 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             _device->setPort(-1);
             _device->close();
             _initializationsSent = false;
+            // Wait until upcoming process call has finished. Otherwise Jack may crash!
+            MusEGlobal::audio->msgAudioWait();  // REMOVE Tim. Persistent routes. Added.
             }
       if (dev) {
             for (int i = 0; i < MIDI_PORTS; ++i) {

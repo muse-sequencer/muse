@@ -26,6 +26,7 @@
 //#include <QObject>
 #include "type_defs.h"
 #include "route.h"
+#include "custom_widget_actions.h"
 #include "popupmenu.h"
 
 namespace MusECore {
@@ -56,6 +57,7 @@ class RoutePopupMenu : public PopupMenu
     MusECore::Route  _route;  // REMOVE Tim. Persistent routes. Added.
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
+    RoutePopupHit _lastHitClick;
     
     void init();
     void prepare();
@@ -84,7 +86,7 @@ class RoutePopupMenu : public PopupMenu
     
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    void addJackPorts(PopupMenu* lb);
+    void addJackPorts(const MusECore::Route& route, PopupMenu* lb);
     void jackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
@@ -94,9 +96,13 @@ class RoutePopupMenu : public PopupMenu
   private slots:
     void popupActivated(QAction*);
     void songChanged(MusECore::SongChangedFlags_t);
+    void popupAboutToShow();
   
   protected:  
     virtual void resizeEvent(QResizeEvent* e);
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
     
   protected slots:
     void popHovered(QAction*);

@@ -186,31 +186,28 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
 
 bool PopupMenu::event(QEvent* event)
 {
-  fprintf(stderr, "PopupMenu::event type:%d\n", event->type()); // REMOVE Tim. Persistent routes. Added.
-
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "PopupMenu::event activeWindow:%p activeModalWidget:%p activePopupWidget:%p this:%p class:%s event type:%d\n", 
+          QApplication::activeWindow(), QApplication::activeModalWidget(), QApplication::activePopupWidget(), this, metaObject()->className(), event->type()); 
    if(MusEGlobal::config.scrollableSubMenus)
    {
       return QMenu::event(event);
    }
    switch(event->type())
    {
+    case QEvent::Enter:
+    {
+      //raise();
+      //grabMouse();
+    }
+    break;
 
-// REMOVE Tim. Persistent routes. Added. TESTING     
-//     case QEvent::Enter:
-//     {
-//       //grabMouse();
-//       qApp->setActiveWindow(this);
-//       //activateWindow();
-//     }
-//     break;
-//     case QEvent::Leave:
-//     {
-//       releaseMouse();
-//       //qApp->setActiveWindow(0);
-//       //deactivateWindow();
-//     }
-//     break;
-    
+    case QEvent::Leave:
+    {
+      //releaseMouse();
+    }
+    break;
+     
 #ifndef POPUP_MENU_DISABLE_STAY_OPEN
    case QEvent::MouseButtonDblClick:
    {
