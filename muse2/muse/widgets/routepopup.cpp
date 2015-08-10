@@ -29,6 +29,7 @@
 
 #include "app.h"
 #include "routepopup.h"
+#include "gconfig.h"
 #include "midiport.h"
 #include "mididev.h"
 #include "audio.h"
@@ -1548,7 +1549,8 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // Make it easy for the user: Show the device's jack ports as well.
       // This is reasonable for midi devices since they are hidden away.
       // (Midi devices were made tracks, and midi ports eliminated, in the old MusE-2 muse_evolution branch!)
-      PopupMenu* subp = new PopupMenu(this, true);
+      //PopupMenu* subp = new PopupMenu(this, true);
+      RoutePopupMenu* subp = new RoutePopupMenu(this, isOutput);
       const MusECore::Route md_r(md, -1);
       addJackPorts(md_r, subp);
       wa->setMenu(subp);
@@ -2239,72 +2241,270 @@ void RoutePopupMenu::init()
   //connect(this, SIGNAL(aboutToShow()), SLOT(popupAboutToShow()));
 }
 
+bool RoutePopupMenu::event(QEvent* event)
+{
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "RoutePopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n",
+          event, QApplication::activePopupWidget(), this, metaObject()->className(), event->type());
+  
+  if(MusEGlobal::config.scrollableSubMenus)
+    return PopupMenu::event(event);
+      
+  switch(event->type())
+  {
+    // Technical difficulties:
+    // "mouseReleaseEvent() is called when a mouse button is released. A widget receives mouse release events 
+    //   when it has received the corresponding mouse press event. This means that if the user presses the mouse 
+    //   inside your widget, then drags the mouse somewhere else before releasing the mouse button, your widget 
+    //   receives the release event. There is one exception: if a popup menu appears while the mouse button is held down, 
+    //   this popup immediately steals the mouse events."
+    // Unfortunately that's exactly what we don't want. The mouse release events are not being passed to the higher-up menu
+    //  if we hold the mouse down and move over another menu item which has a submenu - the (delayed) appearance  of that 
+    //  submenu steals the release. Oddly, if the mouse is moved further - even just once - within the new item, 
+    //  the release event IS passed on. So to avoid dealing with that distinction, let's just pass on all release events.
+    // Should be OK under normal usage, since it makes some sense that no mouse events should be reaching a submenu anyway - 
+    //  they have no effect since the cursor position is outside of them !
+    // NOTE: If a submenu OVERLAPS its higher-up menu, this could be a big problem. In general how to deal with overlapping popups
+    //        when we wish to be able to click on items in both a menu and its submenu. Overlapping will only happen with too-wide 
+    //        menus which should be rare for routing, but we could also defer to the advanced router when the popup becomes too wide.
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    {
+      QMouseEvent* mev = static_cast<QMouseEvent*>(event);
+      // REMOVE Tim. Persistent routes. Added.
+      //fprintf(stderr, "RoutePopupMenu::event MouseButtonRelease x:%d y:%d gx:%d gy:%d sx:%f sy:%f wx:%f wy:%f lx:%f ly:%f sending event to:%p\n", 
+      fprintf(stderr, "RoutePopupMenu::event type:%d x:%d y:%d gx:%d gy:%d sx:%f sy:%f wx:%f wy:%f lx:%f ly:%f\n", 
+              mev->type(),
+              mev->pos().x(), mev->pos().y(), 
+              mev->globalPos().x(), mev->globalPos().y(), 
+              mev->screenPos().x(), mev->screenPos().y(), 
+              mev->windowPos().x(), mev->windowPos().y(), 
+              mev->localPos().x(), mev->localPos().y());
+      
+      QMenu* target_menu = 0;
+      const int sz = QApplication::topLevelWidgets().size();
+      for(int i = 0; i < sz; ++i)
+      {
+        QWidget* w = QApplication::topLevelWidgets().at(i);
+        // REMOVE Tim. Persistent routes. Added.
+        fprintf(stderr, "   checking top level widget:%p\n", w);
+        if(QMenu* menu = qobject_cast<QMenu*>(w))
+        {
+          //if(!menu->underMouse())
+          //  continue;
+          // REMOVE Tim. Persistent routes. Added. TESTED: modal is always zero for popups !
+          fprintf(stderr, "   checking hit in menu:%p visible:%d modal:%d\n", menu, menu->isVisible(), menu->isModal());
+          if(!menu->isVisible() || !menu->geometry().contains(mev->globalPos()))
+            continue;
+          fprintf(stderr, "   hit\n");
+          // If we hit the submenu it means the submenu is partially or wholly obscuring the other menu.
+          // We must honour the submenu in this case even if it is only slightly obscuring the other menu.
+          if(menu == this)
+          {
+            // REMOVE Tim. Persistent routes. Added.
+            fprintf(stderr, "   menu is this\n");
+            return PopupMenu::event(mev);
+          }
+          // The menu is a good target - the mouse is within it and it is not obscured.
+          // Regardless, afterward continue watching for THIS menu...
+          if(!target_menu)
+            target_menu = menu;
+        }
+      }
+      
+      if(target_menu)
+      {
+        // REMOVE Tim. Persistent routes. Added.
+        fprintf(stderr, "   target_menu:%p\n", target_menu);
+        QMouseEvent new_mev(mev->type(), 
+                            //mev->windowPos(), // Relative to the widget the mouse is actually over (menu variable).
+                            QPointF(target_menu->mapFromGlobal(mev->globalPos())),
+                            mev->screenPos(),
+                            mev->button(),
+                            mev->buttons(),
+                            mev->modifiers());
+        new_mev.setAccepted(mev->isAccepted());
+        new_mev.setTimestamp(mev->timestamp());
+        QApplication::sendEvent(target_menu, &new_mev);
+        return true;
+      }
+      
+      // REMOVE Tim. Persistent routes. Added.
+      fprintf(stderr, "   no target popup found\n");
+    }
+    break;
+    
+    default:
+    break;
+  }
+  
+  return PopupMenu::event(event);
+}
+
 void RoutePopupMenu::resizeEvent(QResizeEvent* e)
 {
   fprintf(stderr, "RoutePopupMenu::resizeEvent\n");
+  e->ignore();
   PopupMenu::resizeEvent(e);
 }
 
-void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* )
+void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
 {
+  fprintf(stderr, "RoutePopupMenu::mouseReleaseEvent this:%p x:%d y:%d\n", this, e->pos().x(), e->pos().y());
+//   //bool accept = false;
 //   const int sz = actions().size();
 //   for(int i = 0; i < sz; ++i)
 //   {
 //     if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
 //     {
-//       // Check that the mouse is still over the element that was clicked.
-//       RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-//       if(hit._type != RoutePopupHit::HitNone)
+//       const bool mi_press = mwa->menuItemPressed();
+//       const int col_press = mwa->array()->pressedColumn();
+//       
+//       if(mi_press)
 //       {
-//         if(hit == _lastHitClick)
-//         {
-//           
-//         }
-//         _lastHitClick = RoutePopupHit(mwa, RoutePopupHit::HitNone);
+//         mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
+//         mwa->activate(QAction::Trigger);
+//         if(mwa->setMenuItemPressed(false))
+//           mwa->updateCreatedWidgets();
+//       }
+//       else if(col_press != -1)
+//       {
+//         mwa->array()->setValue(col_press, !mwa->array()->value(col_press));
+//         mwa->activate(QAction::Trigger);
+//         if(mwa->array()->setPressedColumn(-1))
+//           mwa->updateCreatedWidgets();
 //       }
 //     }
 //   }
-  //e->ignore();
-  //RoutePopupMenu::mouseReleaseEvent(e);
-}
-
-void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
-{
+// 
+  
+  bool accept = false;
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
   {
     if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
     {
       RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-      if(hit._type != RoutePopupHit::HitNone)
+      switch(hit._type)
       {
-        _lastHitClick = hit;
-        switch(_lastHitClick._type)
-        {
-          case RoutePopupHit::HitChannelBar:
-            mwa->array()->setValue(_lastHitClick._value, !mwa->array()->value(_lastHitClick._value));  // TODO: Add a toggleValue.
+        case RoutePopupHit::HitChannel:
+          mwa->array()->setValue(hit._value, !mwa->array()->value(hit._value));
+          mwa->activate(QAction::Trigger);
+        break;
+        
+        case RoutePopupHit::HitMenuItem:
+          mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
+          mwa->activate(QAction::Trigger);
+        break;
+        
+        case RoutePopupHit::HitChannelBar:
+        case RoutePopupHit::HitSpace:
+          accept = true;
+        break;
+        
+        case RoutePopupHit::HitNone:
+        break;
+      }
+      mwa->setMenuItemPressed(false);
+      mwa->array()->setPressedColumn(-1);
+      mwa->updateCreatedWidgets();
+    }
+  }
+  
+  if(accept)
+  {
+   e->accept();
+   //PopupMenu::mouseReleaseEvent(e);
+   return;
+  }
+
+  e->ignore();
+  PopupMenu::mouseReleaseEvent(e);
+}
+
+void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
+{
+  fprintf(stderr, "RoutePopupMenu::mousePressEvent this:%p x:%d y:%d\n", this, e->pos().x(), e->pos().y());
+  bool accept = false;
+  const int sz = actions().size();
+  for(int i = 0; i < sz; ++i)
+  {
+    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+    {
+      RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+      switch(hit._type)
+      {
+        case RoutePopupHit::HitChannel:
+          if(mwa->array()->setPressedColumn(hit._value))
             mwa->updateCreatedWidgets();
-          break;
-          
-          case RoutePopupHit::HitMenuItem:
-            mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
+          accept = true;
+        break;
+        
+        case RoutePopupHit::HitMenuItem:
+          if(mwa->setMenuItemPressed(true))
             mwa->updateCreatedWidgets();
-          break;
-          
-          case RoutePopupHit::HitNone:
-          break;
-        }
-        e->accept();
-        return;
+          accept = true;
+        break;
+        
+        case RoutePopupHit::HitChannelBar:
+        case RoutePopupHit::HitSpace:
+          if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+            mwa->updateCreatedWidgets();
+          accept = true;
+        break;
+        
+        case RoutePopupHit::HitNone:
+          if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+            mwa->updateCreatedWidgets(); // TODO Close the menu instead of letting QMenu do it (below)?
+        break;
       }
     }
   }
+
+  if(accept)
+  {
+//     e->accept();
+//     PopupMenu::mousePressEvent(e);
+//     return;
+  }
+
   e->ignore();
   PopupMenu::mousePressEvent(e);
 }
 
 void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
 {
+  if(e->buttons() != Qt::NoButton)
+  {
+    const int sz = actions().size();
+    for(int i = 0; i < sz; ++i)
+    {
+      if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+      {
+        RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+        switch(hit._type)
+        {
+          case RoutePopupHit::HitChannel:
+            if(mwa->array()->setPressedColumn(hit._value))
+              mwa->updateCreatedWidgets();
+          break;
+          
+          case RoutePopupHit::HitMenuItem:
+            if(mwa->setMenuItemPressed(true))
+              mwa->updateCreatedWidgets();
+          break;
+          
+          case RoutePopupHit::HitChannelBar:
+          case RoutePopupHit::HitSpace:
+          case RoutePopupHit::HitNone:
+            if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+              mwa->updateCreatedWidgets();
+          break;
+        }
+      }
+    }
+  }
   e->ignore();
   PopupMenu::mouseMoveEvent(e);
 }

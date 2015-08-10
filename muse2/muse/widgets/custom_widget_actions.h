@@ -229,7 +229,10 @@ class RouteChannelArray
     bool _colsExclusive;
     bool _exclusiveToggle;
     bool _headerVisible;
-    int _activeCol;  // -1 == none.
+    // Current column the mouse is over. -1 == none.
+    int _activeCol;
+    // Current column being pressed. -1 == none.
+    int _pressedCol;
     RouteChannelArrayItem* _array;
     RouteChannelArrayHeaderItem* _header;
     RouteChannelArrayHeaderItem _checkBoxTitleItem;
@@ -238,7 +241,7 @@ class RouteChannelArray
     
     void init();
     int itemCount() const { return _cols; }
-    bool invalidIndex(int col) const { return col >= _cols; }
+    bool invalidIndex(int col) const { return col < 0 || col >= _cols; }
     int itemIndex(int col) const { return col; }
 
     int headerItemCount() const { return _cols; }
@@ -252,8 +255,21 @@ class RouteChannelArray
     int columns() const { return _cols; }
     void setSize(int cols);
 
-    void setValues(int col, bool value, bool exclusive_cols = false, bool exclusive_toggle = false);
-    
+    bool columnsExclusive() const    { return _colsExclusive; }
+    void setColumnsExclusive(bool v) { _colsExclusive = v; }
+    bool exclusiveToggle() const     { return _exclusiveToggle; }
+    void setExclusiveToggle(bool v)  { _exclusiveToggle = v; }
+    // Current column mouse is over. -1 == none.
+    int activeColumn() const         { return _activeCol; }
+    // Set current column mouse is over. -1 == none.
+    void setActiveColumn(int col)    
+      { if((col == -1 || !invalidIndex(col)) && _activeCol != col) _activeCol = col; }
+    // Current column being pressed. -1 == none.
+    int pressedColumn() const { return _pressedCol; }
+    // Set current column being pressed. -1 == none.
+    // Returns true if any channel was changed (for redrawing).
+    bool setPressedColumn(int col)
+      { if((col != -1 && invalidIndex(col)) || _pressedCol == col) return false; _pressedCol = col; return true; }
     QString checkBoxTitle() const
       { return _checkBoxTitleItem._text; }
     void setCheckBoxTitle(const QString& str)
@@ -263,6 +279,7 @@ class RouteChannelArray
     void setCheckBoxTitleRect(const QRect& r)
       { _checkBoxTitleItem._rect = r; }
       
+    void setValues(int col, bool value, bool exclusive_cols = false, bool exclusive_toggle = false);
     bool value(int col) const
       { if(invalidIndex(col)) return false; return _array[itemIndex(col)]._value; }
     void setValue(int col, bool value)
@@ -283,6 +300,12 @@ class RouteChannelArray
       { return _arrayTitleItem._rect; }
     void setArrayTitleRect(const QRect& r)
       { _arrayTitleItem._rect = r; }
+//     bool pressed(int col) const
+//       { if(invalidIndex(col)) return false; return _array[itemIndex(col)]._pressed; }
+//     // Returns true if any channel was changed (for redrawing).
+//     bool  setPressed(int col, bool value);
+//     // Returns true if any channel was cleared (for redrawing).
+//     bool clearPressed();
       
     bool headerVisible() const
       { return _headerVisible; }
@@ -304,13 +327,6 @@ class RouteChannelArray
       { return _headerTitleItem._rect; }
     void headerSetTitleRect(const QRect& r)
       { _headerTitleItem._rect = r; }
-      
-    bool columnsExclusive() const    { return _colsExclusive; }
-    void setColumnsExclusive(bool v) { _colsExclusive = v; }
-    bool exclusiveToggle() const     { return _exclusiveToggle; }
-    void setExclusiveToggle(bool v)  { _exclusiveToggle = v; }
-    int activeColumn() const         { return _activeCol; }
-    void setActiveColumn(int col)    { _activeCol = col; }
 };
 
 // class RouteChannelArrayHeader : public RouteChannelArray {
@@ -334,10 +350,10 @@ class RouteChannelArray
 struct RoutePopupHit
 {
   enum HitTestType { HitTestHover, HitTestClick };
-  enum HitType { HitNone, HitMenuItem, HitChannelBar };
+  enum HitType { HitNone, HitSpace, HitMenuItem, HitChannelBar, HitChannel };
   QAction* _action; // Action where the hit occurred.
   HitType _type;    
-  int _value;   // Channel number for channel bar.
+  int _value;   // Channel number for HitChannel.
 
   RoutePopupHit() { _action = 0; _type = HitNone; _value = 0; }
   RoutePopupHit(QAction* action, HitType ht, int val = 0) { _action = action; _type = ht; _value = val; }
@@ -364,10 +380,10 @@ class MenuItemControlWidget : public QWidget
   protected:
     QSize sizeHint() const;
     void paintEvent(QPaintEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void contextMenuEvent(QContextMenuEvent*);
+//     void mousePressEvent(QMouseEvent*);
+//     void mouseReleaseEvent(QMouseEvent*);
+//     void mouseDoubleClickEvent(QMouseEvent*);
+//     void contextMenuEvent(QContextMenuEvent*);
     //void actionEvent(QActionEvent*);
     //bool event(QEvent*);
     
@@ -394,12 +410,12 @@ class SwitchBarActionWidget : public QWidget {
     QSize sizeHint() const;
     //void drawGrid(QPainter&);
     void paintEvent(QPaintEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void resizeEvent(QResizeEvent*);
-    void contextMenuEvent(QContextMenuEvent*);
+//     void mousePressEvent(QMouseEvent*);
+//     void mouseReleaseEvent(QMouseEvent*);
+//     void mouseDoubleClickEvent(QMouseEvent*);
+//     void mouseMoveEvent(QMouseEvent*);
+//     void resizeEvent(QResizeEvent*);
+//     void contextMenuEvent(QContextMenuEvent*);
     
   public:
     SwitchBarActionWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
@@ -424,10 +440,10 @@ class RoutingMatrixActionWidget : public QWidget
     //bool _isSelected;
       
   protected:
-    void mousePressEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void contextMenuEvent(QContextMenuEvent*);
+//     void mousePressEvent(QMouseEvent*);
+//     void mouseReleaseEvent(QMouseEvent*);
+//     void mouseDoubleClickEvent(QMouseEvent*);
+//     void contextMenuEvent(QContextMenuEvent*);
     void actionEvent(QActionEvent*);
 //     bool event(QEvent*);
 //     void mouseMoveEvent(QMouseEvent*);
@@ -458,6 +474,7 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       bool _isChanged;
       bool _hasCheckBox;
       bool _checkBoxChecked;
+      bool _menuItemPressed;
       // Whether clicking the array closes the menu or not.
       bool _stayOpen;
       bool _isSelected;
@@ -509,6 +526,10 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       
       bool checkBoxChecked() const { return _checkBoxChecked; }
       void setCheckBoxChecked(bool v) { _checkBoxChecked = v; }
+      
+      bool menuItemPressed() const { return _menuItemPressed; }
+      // Returns true if the menu item section was changed (for redrawing).
+      bool setMenuItemPressed(bool v) { if(_menuItemPressed == v) return false; _menuItemPressed = v; return true; }
       
       bool stayOpen() const { return _stayOpen; }
       void setStayOpen(bool v)  { _stayOpen = v; }

@@ -57,7 +57,7 @@ class RoutePopupMenu : public PopupMenu
     MusECore::Route  _route;  // REMOVE Tim. Persistent routes. Added.
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
-    RoutePopupHit _lastHitClick;
+    //RoutePopupHit _lastHitClick;
     
     void init();
     void prepare();
@@ -99,6 +99,7 @@ class RoutePopupMenu : public PopupMenu
     void popupAboutToShow();
   
   protected:  
+    virtual bool event(QEvent*);
     virtual void resizeEvent(QResizeEvent* e);
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mousePressEvent(QMouseEvent*);

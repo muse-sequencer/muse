@@ -1331,6 +1331,7 @@ RouteChannelArray::RouteChannelArray(int cols)
   _colsExclusive = false;
   _exclusiveToggle = false;
   _activeCol = -1;
+  _pressedCol = -1;
   init();
 }
 
@@ -1428,6 +1429,46 @@ void RouteChannelArray::setValues(int col, bool value, bool exclusive_cols, bool
   
   _array[itemIndex(col)]._value = value; 
 }
+
+// bool RouteChannelArray::setPressedColumn(int c)
+// {
+//   if(invalidIndex(c) || _pressedCol == c) 
+//     return false;
+//   _pressedCol = c;
+//   return true;
+// }
+
+// bool RouteChannelArray::setPressed(int col, bool value)
+// {
+//   if(invalidIndex(col))
+//     return false;
+//   bool changed = false;
+//   for(int c = 0; c < _cols; ++c)
+//   {
+//     bool v = (c == col && value);
+//     if(_array[itemIndex(c)]._pressed != v)
+//     {
+//       _array[itemIndex(c)]._pressed = v;
+//       changed = true;
+//     }
+//   }
+//   return changed;
+// }
+// 
+// bool RouteChannelArray::clearPressed()
+// { 
+//   bool changed = false;
+//   for(int c = 0; c < _cols; ++c)
+//   {
+//     if(_array[itemIndex(c)]._pressed)
+//     {
+//       _array[itemIndex(c)]._pressed = false;
+//       changed = true;
+//     }
+//   }
+//   return changed;
+// }
+// 
 
 // void RouteChannelArray::headerSetValues(int col, bool value, bool exclusive_cols, bool exclusive_toggle)
 // { 
@@ -1727,8 +1768,9 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
       //{
         QStyleOptionButton option;
         option.state = QStyle::State_Active | QStyle::State_HasFocus | 
-                      (_action->isEnabled() ? QStyle::State_Enabled : QStyle::State_None) | 
-                      (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off);
+                      (_action->isEnabled() ? QStyle::State_Enabled : QStyle::State_ReadOnly) |  // Or State_None?
+                      (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off) |
+                      (_action->menuItemPressed() ? QStyle::State_Sunken : QStyle::State_None);
 //         if(_isSelected)
 //           option.state |= QStyle::State_Selected;
 //         option.rect = _action->checkBoxControlRect();
@@ -1806,58 +1848,62 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
 //     }  
 }
 
-void MenuItemControlWidget::mousePressEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "MenuItemControlWidget::mousePressEvent\n");
-  
-//   if(_action->isEnabled() && _action->hasCheckBox())
-//   {
-//     _action->setCheckBoxChecked(!_action->checkBoxChecked());
-//     update();  // Redraw the indicators.
-//     e->ignore();  // Don't accept. Let the menu close if neccessary.
-//     _action->setIsChanged(true); // For when the container widget gets the event.
-//   }
-//   else
-//   {
-//     e->accept();  // Not checkable? Eat it up - the text was clicked on.
-//     _action->setIsChanged(false);
-//   }
-  e->ignore();
-  QWidget::mousePressEvent(e);
-}
-
-void MenuItemControlWidget::mouseReleaseEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "MenuItemControlWidget::mouseReleaseEvent\n");
-//   if(_action->hasCheckBox())
-//   {
-//     e->ignore();  // Don't accept. Let the menu close if neccessary.
-//     //_action->setChanged(true); // For when the container widget gets the event.
-//   }
-//   else
-//   {
-//     e->accept();  // Not checkable? Eat it up - the text was clicked on.
-//     _action->setIsChanged(false);
-//   }
-  e->ignore();
-  QWidget::mouseReleaseEvent(e);
-}
-
-void MenuItemControlWidget::mouseDoubleClickEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "MenuItemControlWidget::mouseDoubleClickEvent\n");
-  e->accept(); 
-  _action->setIsChanged(false);
-}
-
-void MenuItemControlWidget::contextMenuEvent(QContextMenuEvent* e)
-{
-  e->accept();
-  _action->setIsChanged(false);
-}
+// void MenuItemControlWidget::mousePressEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "MenuItemControlWidget::mousePressEvent\n");
+//   
+// //   if(_action->isEnabled() && _action->hasCheckBox())
+// //   {
+// //     _action->setCheckBoxChecked(!_action->checkBoxChecked());
+// //     update();  // Redraw the indicators.
+// //     e->ignore();  // Don't accept. Let the menu close if neccessary.
+// //     _action->setIsChanged(true); // For when the container widget gets the event.
+// //   }
+// //   else
+// //   {
+// //     e->accept();  // Not checkable? Eat it up - the text was clicked on.
+// //     _action->setIsChanged(false);
+// //   }
+//   e->ignore();
+//   QWidget::mousePressEvent(e);
+// }
+// 
+// void MenuItemControlWidget::mouseReleaseEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "MenuItemControlWidget::mouseReleaseEvent\n");
+// //   if(_action->hasCheckBox())
+// //   {
+// //     e->ignore();  // Don't accept. Let the menu close if neccessary.
+// //     //_action->setChanged(true); // For when the container widget gets the event.
+// //   }
+// //   else
+// //   {
+// //     e->accept();  // Not checkable? Eat it up - the text was clicked on.
+// //     _action->setIsChanged(false);
+// //   }
+//   e->ignore();
+//   QWidget::mouseReleaseEvent(e);
+// }
+// 
+// void MenuItemControlWidget::mouseDoubleClickEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "MenuItemControlWidget::mouseDoubleClickEvent\n");
+// //   e->accept(); 
+// //   _action->setIsChanged(false);
+//   e->ignore();
+//   QWidget::mouseDoubleClickEvent(e);
+// }
+// 
+// void MenuItemControlWidget::contextMenuEvent(QContextMenuEvent* e)
+// {
+// //   e->accept();
+// //   _action->setIsChanged(false);
+//   e->ignore();
+//   QWidget::contextMenuEvent(e);
+// }
 
 // void MenuItemControlWidget::actionEvent(QActionEvent* e)
 // {
@@ -2024,11 +2070,12 @@ QSize SwitchBarActionWidget::sizeHint() const
   return QSize(w, h);
 }
 
-void SwitchBarActionWidget::resizeEvent(QResizeEvent* e)
-{
-  fprintf(stderr, "SwitchBarActionWidget::resizeEvent\n");
-  QWidget::resizeEvent(e);
-}
+// void SwitchBarActionWidget::resizeEvent(QResizeEvent* e)
+// {
+//   fprintf(stderr, "SwitchBarActionWidget::resizeEvent\n");
+//   e->ignore();
+//   QWidget::resizeEvent(e);
+// }
 
 
 // void RoutingMatrixWidget::drawGrid(QPainter& p)
@@ -2253,7 +2300,9 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
   for(int col = 0; col < cols; ++col)
   {
     const QRect r = _action->array()->rect(col);
-    if(_action->isSelected() && col == _action->array()->activeColumn())
+    if(col == _action->array()->pressedColumn())
+      p.fillRect(r, palette().dark());
+    else if(_action->isSelected() && col == _action->array()->activeColumn())
       p.fillRect(r, palette().highlight());
     const QPixmap& pm = _action->array()->value(col) ? *_action->onPixmap() : *_action->offPixmap();
     const int pm_w = pm.width();
@@ -2316,45 +2365,71 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
   }
 }
 
-void SwitchBarActionWidget::mousePressEvent(QMouseEvent* ev)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "SwitchBarActionWidget::mousePressEvent\n");
-//   const int cols = _action->array()->columns();
-//   const QPoint pt = ev->pos();
-//   bool changed = false;
-//   //for(int row = 0; row < rows; ++row)
-//   if(_action->isEnabled())
-//   {
-// //     if(_action->isCheckable())
+// void SwitchBarActionWidget::mousePressEvent(QMouseEvent* ev)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "SwitchBarActionWidget::mousePressEvent\n");
+// //   const int cols = _action->array()->columns();
+// //   const QPoint pt = ev->pos();
+// //   bool changed = false;
+// //   //for(int row = 0; row < rows; ++row)
+// //   if(_action->isEnabled())
+// //   {
+// // //     if(_action->isCheckable())
+// // //     {
+// // //       const QRect mi_rect = _action->menuItemControlRect();
+// // //       if(mi_rect.contains(pt))
+// // //       {
+// // //         _action->toggle();
+// // //         changed = true;
+// // // //         break;
+// // //       }
+// // //     }
+// //     
+// //     for(int col = 0; col < cols; ++col)
 // //     {
-// //       const QRect mi_rect = _action->menuItemControlRect();
-// //       if(mi_rect.contains(pt))
+// //       const QRect rect = _action->array()->rect(col);
+// //       if(rect.contains(pt))
 // //       {
-// //         _action->toggle();
+// //         _action->array()->setValue(col, !_action->array()->value(col));  // TODO: Add a toggleValue.
 // //         changed = true;
-// // //         break;
+// //         break;
 // //       }
 // //     }
-//     
-//     for(int col = 0; col < cols; ++col)
-//     {
-//       const QRect rect = _action->array()->rect(col);
-//       if(rect.contains(pt))
-//       {
-//         _action->array()->setValue(col, !_action->array()->value(col));  // TODO: Add a toggleValue.
-//         changed = true;
-//         break;
-//       }
-//     }
-// //     if(changed)
-// //       break;
-//   }
-// 
-//   // Reset any other switch bars besides this one which are part of a QActionGroup.
-//   // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+// // //     if(changed)
+// // //       break;
+// //   }
+// // 
+// //   // Reset any other switch bars besides this one which are part of a QActionGroup.
+// //   // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+// // //   if(changed)
+// // //   {
+// // //     QActionGroup* act_group = _action->actionGroup();
+// // //     if(act_group && act_group->isExclusive())
+// // //     {
+// // //       for(int i = 0; i < act_group->actions().size(); ++i) 
+// // //       {
+// // //         RoutingMatrixWidgetAction* act = dynamic_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i));
+// // //         if(act && act != _action)
+// // //           // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
+// // //           act->array()->setValues(0, false, true, true);
+// // //       }  
+// // //     }
+// // //   }
+// // //   if(changed)
+// // //   {
+// // //     //ev->accept();
+// // //     update();  // Redraw the indicators.
+// // //     //return;
+// // //   }
+// // //   
+// // //   ev->ignore();  // Don't accept. Let the menu close if neccessary.
+// //   
+// //   
 // //   if(changed)
 // //   {
+// //     // Reset any other switch bars besides this one which are part of a QActionGroup.
+// //     // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
 // //     QActionGroup* act_group = _action->actionGroup();
 // //     if(act_group && act_group->isExclusive())
 // //     {
@@ -2366,104 +2441,82 @@ void SwitchBarActionWidget::mousePressEvent(QMouseEvent* ev)
 // //           act->array()->setValues(0, false, true, true);
 // //       }  
 // //     }
-// //   }
-// //   if(changed)
-// //   {
-// //     //ev->accept();
+// //     
 // //     update();  // Redraw the indicators.
-// //     //return;
+// //     if(_action->stayOpen())
+// //     {
+// //       ev->accept(); // Force it to stay open.
+// //       _action->activate(QAction::Trigger);
+// //     }
+// //     else
+// //       ev->ignore();  // Don't accept. Let the menu close if neccessary.
+// //     _action->setIsChanged(true); // For when the container widget gets the event.
 // //   }
-// //   
-// //   ev->ignore();  // Don't accept. Let the menu close if neccessary.
-//   
-//   
-//   if(changed)
-//   {
-//     // Reset any other switch bars besides this one which are part of a QActionGroup.
-//     // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
-//     QActionGroup* act_group = _action->actionGroup();
-//     if(act_group && act_group->isExclusive())
-//     {
-//       for(int i = 0; i < act_group->actions().size(); ++i) 
-//       {
-//         RoutingMatrixWidgetAction* act = dynamic_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i));
-//         if(act && act != _action)
-//           // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
-//           act->array()->setValues(0, false, true, true);
-//       }  
-//     }
-//     
-//     update();  // Redraw the indicators.
-//     if(_action->stayOpen())
-//     {
-//       ev->accept(); // Force it to stay open.
-//       _action->activate(QAction::Trigger);
-//     }
-//     else
-//       ev->ignore();  // Don't accept. Let the menu close if neccessary.
-//     _action->setIsChanged(true); // For when the container widget gets the event.
-//   }
-//   else
-//   {
-//     // Nothing clicked? Stay open.
-//     ev->accept();
-//     _action->setIsChanged(false); // For when the container widget gets the event.
-//   }
-  ev->ignore();
-  QWidget::mousePressEvent(ev);
-}
-
-void SwitchBarActionWidget::mouseReleaseEvent(QMouseEvent* ev)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "SwitchBarActionWidget::mouseReleaseEvent\n");
-//   if(_action->stayOpen())
-//     ev->accept(); // Force it to stay open.
-//   else
-//     ev->ignore();
-  //_action->setChanged(false); // For when the container widget gets the event.
-  ev->ignore();
-  QWidget::mouseReleaseEvent(ev);
-}
-
-void SwitchBarActionWidget::mouseDoubleClickEvent(QMouseEvent* ev)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "SwitchBarActionWidget::mouseDoubleClickEvent\n");
-  ev->accept(); 
-  _action->setIsChanged(false);
-}
-
-void SwitchBarActionWidget::mouseMoveEvent(QMouseEvent* ev)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "SwitchBarActionWidget::mouseMoveEvent\n");
-//   const int cols = _action->array()->columns();
-//   const QPoint pt = ev->pos();
-//   int a_col = -1;
-//   for(int col = 0; col < cols; ++col)
-//   {
-//     const QRect rect = _action->array()->rect(col);
-//     if(rect.contains(pt))
-//     {
-//       a_col = col;
-//       break;
-//     }
-//   }
-//   if(a_col != _action->array()->activeColumn())
-//   {
-//     _action->array()->setActiveColumn(a_col);
-//     update();
-//   }
-  ev->ignore();
-  QWidget::mouseMoveEvent(ev);
-}
-
-void SwitchBarActionWidget::contextMenuEvent(QContextMenuEvent* ev)
-{
-  ev->accept();
-  _action->setIsChanged(false);
-}
+// //   else
+// //   {
+// //     // Nothing clicked? Stay open.
+// //     ev->accept();
+// //     _action->setIsChanged(false); // For when the container widget gets the event.
+// //   }
+//   ev->ignore();
+//   QWidget::mousePressEvent(ev);
+// }
+// 
+// void SwitchBarActionWidget::mouseReleaseEvent(QMouseEvent* ev)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "SwitchBarActionWidget::mouseReleaseEvent\n");
+// //   if(_action->stayOpen())
+// //     ev->accept(); // Force it to stay open.
+// //   else
+// //     ev->ignore();
+//   //_action->setChanged(false); // For when the container widget gets the event.
+//   ev->ignore();
+//   QWidget::mouseReleaseEvent(ev);
+// }
+// 
+// void SwitchBarActionWidget::mouseDoubleClickEvent(QMouseEvent* ev)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "SwitchBarActionWidget::mouseDoubleClickEvent\n");
+// //   ev->accept(); 
+// //   _action->setIsChanged(false);
+//   ev->ignore();
+//   QWidget::mouseDoubleClickEvent(ev);
+// }
+// 
+// void SwitchBarActionWidget::mouseMoveEvent(QMouseEvent* ev)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "SwitchBarActionWidget::mouseMoveEvent\n");
+// //   const int cols = _action->array()->columns();
+// //   const QPoint pt = ev->pos();
+// //   int a_col = -1;
+// //   for(int col = 0; col < cols; ++col)
+// //   {
+// //     const QRect rect = _action->array()->rect(col);
+// //     if(rect.contains(pt))
+// //     {
+// //       a_col = col;
+// //       break;
+// //     }
+// //   }
+// //   if(a_col != _action->array()->activeColumn())
+// //   {
+// //     _action->array()->setActiveColumn(a_col);
+// //     update();
+// //   }
+//   ev->ignore();
+//   QWidget::mouseMoveEvent(ev);
+// }
+// 
+// void SwitchBarActionWidget::contextMenuEvent(QContextMenuEvent* ev)
+// {
+// //   ev->accept();
+// //   _action->setIsChanged(false);
+//   ev->ignore();
+//   QWidget::contextMenuEvent(ev);
+// }
 
 
 //---------------------------------------------------------
@@ -2640,70 +2693,84 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
 
 RoutePopupHit RoutingMatrixActionWidget::hitTest(const QPoint& p, RoutePopupHit::HitTestType test_type)
 {
-  if(test_type == RoutePopupHit::HitTestClick && !_action->isEnabled())
-    return RoutePopupHit(_action, RoutePopupHit::HitNone);
-  // The point is relative to this widget.
-  // Check if we hit the left hand portion (the checkbox and text area).
-  if(_menuItemControlWidget->rect().contains(p))
+  if(_action->isEnabled())
   {
-    if((test_type == RoutePopupHit::HitTestClick && _action->hasCheckBox()) || 
-        test_type == RoutePopupHit::HitTestHover)
-      return RoutePopupHit(_action, RoutePopupHit::HitMenuItem);
-  }
-  else
-  {
-    // Check if we hit the channel bar.
-    QPoint cb_p(p.x() - _switchWidget->x(), p.y() - _switchWidget->y()); 
+    // The point is relative to this widget.
+    // Check if we hit the left hand portion (the checkbox and text area).
+    if(_menuItemControlWidget->geometry().contains(p))
+    {
+      if((test_type == RoutePopupHit::HitTestClick && _action->hasCheckBox()) || 
+          test_type == RoutePopupHit::HitTestHover)
+        return RoutePopupHit(_action, RoutePopupHit::HitMenuItem);
+      else
+        return RoutePopupHit(_action, RoutePopupHit::HitSpace);
+    }
+    
+    // Check if we hit one of the channel bar channels.
+    const QPoint cb_p(p.x() - _switchWidget->x(), p.y() - _switchWidget->y()); 
     const int cols = _action->array()->columns();
     for(int col = 0; col < cols; ++col)
     {
       const QRect rect = _action->array()->rect(col);
       if(rect.contains(cb_p))
-        return RoutePopupHit(_action, RoutePopupHit::HitChannelBar, col);
+        return RoutePopupHit(_action, RoutePopupHit::HitChannel, col);
     }
+
+    // Check if we hit the channel bar itself.
+    if(_switchWidget->geometry().contains(p))
+      return RoutePopupHit(_action, RoutePopupHit::HitChannelBar);
+    
+    // Check if we hit this widget.
+    if(rect().contains(p))
+      return RoutePopupHit(_action, RoutePopupHit::HitSpace);
   }
+  
   return RoutePopupHit(_action, RoutePopupHit::HitNone);
 }
 
-void RoutingMatrixActionWidget::mousePressEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "RoutingMatrixActionWidget::mousePressEvent\n");
-//   //_action->setItemLabelText("fdshjkskfhks dauiasd sajkldjkla wqjelwqkjewl");
-//   if(_action->isChanged())
-//     e->ignore();  // Don't accept. Let the menu close if neccessary.
-//   else
-//     e->accept();  // Eat it up and don't close - it's whitespace.
-//   //_action->setChanged(false);
-  e->ignore();
-  QWidget::mousePressEvent(e);
-}
-
-void RoutingMatrixActionWidget::mouseReleaseEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "RoutingMatrixActionWidget::mouseReleaseEvent\n");
-//   if(_action->isChanged())
-//     e->ignore();  // Don't accept. Let the menu close if neccessary.
-//   else
-//     e->accept();  // Eat it up and don't close - it's whitespace.
-//   _action->setIsChanged(false);
-  e->ignore();
-  QWidget::mouseReleaseEvent(e);
-}
-
-void RoutingMatrixActionWidget::mouseDoubleClickEvent(QMouseEvent* e)
-{
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "RoutingMatrixActionWidget::mouseDoubleClickEvent\n");
-  e->accept();  // Eat it up and don't close - it's whitespace.
-}
-
-void RoutingMatrixActionWidget::contextMenuEvent(QContextMenuEvent* e)
-{
-  e->accept();
-  _action->setIsChanged(false);
-}
+// void RoutingMatrixActionWidget::mousePressEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "RoutingMatrixActionWidget::mousePressEvent\n");
+// //   //_action->setItemLabelText("fdshjkskfhks dauiasd sajkldjkla wqjelwqkjewl");
+// //   if(_action->isChanged())
+// //     e->ignore();  // Don't accept. Let the menu close if neccessary.
+// //   else
+// //     e->accept();  // Eat it up and don't close - it's whitespace.
+// //   //_action->setChanged(false);
+//   e->ignore();
+//   QWidget::mousePressEvent(e);
+// }
+// 
+// void RoutingMatrixActionWidget::mouseReleaseEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "RoutingMatrixActionWidget::mouseReleaseEvent\n");
+// //   if(_action->isChanged())
+// //     e->ignore();  // Don't accept. Let the menu close if neccessary.
+// //   else
+// //     e->accept();  // Eat it up and don't close - it's whitespace.
+// //   _action->setIsChanged(false);
+//   e->ignore();
+//   QWidget::mouseReleaseEvent(e);
+// }
+// 
+// void RoutingMatrixActionWidget::mouseDoubleClickEvent(QMouseEvent* e)
+// {
+//   // REMOVE Tim. Persistent routes. Added.
+//   fprintf(stderr, "RoutingMatrixActionWidget::mouseDoubleClickEvent\n");
+//   //e->accept();  // Eat it up and don't close - it's whitespace.
+//   e->ignore();
+//   QWidget::mouseDoubleClickEvent(e);
+// }
+// 
+// void RoutingMatrixActionWidget::contextMenuEvent(QContextMenuEvent* e)
+// {
+// //   e->accept();
+// //   _action->setIsChanged(false);
+//   e->ignore();
+//   QWidget::contextMenuEvent(e);
+// }
 
 void RoutingMatrixActionWidget::actionEvent(QActionEvent* e)
 {
@@ -2854,6 +2921,7 @@ RoutingMatrixWidgetAction::RoutingMatrixWidgetAction(int cols,
   _isChanged = false;
   _hasCheckBox = false;
   _checkBoxChecked = false;
+  _menuItemPressed = false;
   _stayOpen = false;
   _isSelected = false;
   _onPixmap = on_pixmap;
