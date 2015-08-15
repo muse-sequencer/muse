@@ -189,25 +189,12 @@ bool PopupMenu::event(QEvent* event)
   // REMOVE Tim. Persistent routes. Added.
   fprintf(stderr, "PopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n", 
           event, QApplication::activePopupWidget(), this, metaObject()->className(), event->type()); 
-   //if(MusEGlobal::config.scrollableSubMenus)
+   if(MusEGlobal::config.scrollableSubMenus)
    {
       return QMenu::event(event);
    }
    switch(event->type())
    {
-    case QEvent::Enter:
-    {
-      //raise();
-      //grabMouse();
-    }
-    break;
-
-    case QEvent::Leave:
-    {
-      //releaseMouse();
-    }
-    break;
-     
 #ifndef POPUP_MENU_DISABLE_STAY_OPEN
    case QEvent::MouseButtonDblClick:
    {
@@ -343,9 +330,9 @@ void PopupMenu::mousePressEvent(QMouseEvent* e)
 {
   fprintf(stderr, "PopupMenu::mousePressEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
   // REMOVE Tim. Persistent routes. Added. Just a test. 
-  e->ignore();
-  QMenu::mousePressEvent(e);
-  return;
+//   e->ignore();
+//   QMenu::mousePressEvent(e);
+//   return;
   
   if (_contextMenu && _contextMenu->isVisible())
     _contextMenu->hide();
@@ -357,18 +344,20 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
   fprintf(stderr, "PopupMenu::mouseReleaseEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
   // REMOVE Tim. Persistent routes. Added. Just a test. 
-  e->ignore();
-  QMenu::mouseReleaseEvent(e);
-  return;
+//   e->ignore();
+//   QMenu::mouseReleaseEvent(e);
+//   return;
    
    if(_contextMenu && _contextMenu->isVisible())
      return;
      
-   if(MusEGlobal::config.scrollableSubMenus)
-   {
-     QMenu::mouseReleaseEvent(e);
-     return;
-   }
+// REMOVE Tim. Persistent routes. Removed. Why not stay-open scrollable menus?
+//    if(MusEGlobal::config.scrollableSubMenus)
+//    {
+//      QMenu::mouseReleaseEvent(e);
+//      return;
+//    }
+   
    QAction* action = actionAt(e->pos());
    if (!(action && action == activeAction() && !action->isSeparator() && action->isEnabled()))
       action=NULL;
@@ -625,9 +614,9 @@ void PopupMenu::contextMenuEvent(QContextMenuEvent* e)
 void PopupMenu::hideEvent(QHideEvent *e)
 {
   // REMOVE Tim. Persistent routes. Added. Just a test.
-  e->ignore();
-  QMenu::hideEvent(e);
-  return;
+//   e->ignore();
+//   QMenu::hideEvent(e);
+//   return;
   
   if(_contextMenu && _contextMenu->isVisible())
   {

@@ -351,8 +351,8 @@ struct RoutePopupHit
 {
   enum HitTestType { HitTestHover, HitTestClick };
   enum HitType { HitNone, HitSpace, HitMenuItem, HitChannelBar, HitChannel };
-  QAction* _action; // Action where the hit occurred.
   HitType _type;    
+  QAction* _action; // Action where the hit occurred.
   int _value;   // Channel number for HitChannel.
 
   RoutePopupHit() { _action = 0; _type = HitNone; _value = 0; }
@@ -464,30 +464,47 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       Q_OBJECT
    private:
       //QLabel* _itemLabel;
+      // The switch (channel) array.
       RouteChannelArray _array;
+      // Pixmap used for 'on' indicator.
       QPixmap* _onPixmap;
+      // Pixmap used for 'off' indicator.
       QPixmap* _offPixmap;
+      // A smaller font (about half size) than the action's font.
       QFont _smallFont;
+      // Maximum dimensions of the on/off pixmaps.
       QRect _maxPixmapGeometry;
       //QRect _checkBoxControlRect;
       //QRect _labelControlRect;
-      bool _isChanged;
+      //bool _isChanged;
+      // NOTE: _hasCheckBox is used instead of QAction::isCheckable()/setCheckable().
       bool _hasCheckBox;
+      // Whether the checkbox is currently checked or not.
       bool _checkBoxChecked;
+      // Whether the label and checkbox area is currently pressed or not.
       bool _menuItemPressed;
       // Whether clicking the array closes the menu or not.
-      bool _stayOpen;
+      bool _arrayStayOpen;
+      // Whether the action is highlighted (hovered) or not.
       bool _isSelected;
-      QString _labelText;
+      // NOTE: _actionText is used instead of QAction::text()/setText().
+      QString _actionText;
       
    //private slots:
    //   void actionHovered();
      
    protected:
+      // Override
       QWidget* createWidget(QWidget* parent);
+      // Override
       void deleteWidget(QWidget* widget);
+      // Override
       bool event(QEvent*);
+      // Override
       bool eventFilter(QObject*, QEvent*);
+      // Sends ActionChanged events to created and associated widgets. Emits changed().
+      // For resizing properly on text changes.
+      void sendActionChanged();
       
    public:
       static const int margin;
@@ -501,48 +518,64 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
                                 QPixmap* on_pixmap, QPixmap* off_pixmap, 
                                 QWidget* parent = 0, const QString& action_text = QString());
 
-      void updateCreatedWidgets();
+      // Access to the switch (channel) array.
+      RouteChannelArray* array() { return &_array; }
+      // Updates the structure and/or cached rectangles of the channel array.
+      // When array header text is changed this should also be called.
       void updateChannelArray();
-      void sendActionChanged();
-      
-      RouteChannelArray* array()        { return &_array; }
+      // Updates (redraws) created widgets.
+      void updateCreatedWidgets();
 
-      QFont smallFont() const     { return _smallFont; }
-      QRect maxPixmapGeometry() const { return _maxPixmapGeometry; }
-
-      QPixmap* onPixmap() const  { return _onPixmap; }
+      // A smaller font (about half size) than the action's font.
+      QFont smallFont() const { return _smallFont; }
+      // Pixmap used for 'on' indicator.
+      QPixmap* onPixmap() const { return _onPixmap; }
+      // Pixmap used for 'off' indicator.
       QPixmap* offPixmap() const { return _offPixmap; }
+      // Maximum dimensions of the on/off pixmaps.
+      QRect maxPixmapGeometry() const { return _maxPixmapGeometry; }
       
       //QRect checkBoxControlRect() const { return _checkBoxControlRect; }
       //QRect labelControlRect() const { return _labelControlRect; }
       
       //void activate(ActionEvent event);
       
-      bool isChanged() const { return _isChanged; }
-      void setIsChanged(bool v) { _isChanged = v; }
+      //bool isChanged() const { return _isChanged; }
+      //void setIsChanged(bool v) { _isChanged = v; }
       
+      // NOTE: Use hasCheckBox() instead of QAction::isCheckable().
       bool hasCheckBox() const { return _hasCheckBox; }
+      // NOTE: Use setHasCheckBox() instead of QAction::setCheckable().
       void setHasCheckBox(bool v) { _hasCheckBox = v; }
       
+      // Whether the checkbox is currently checked or not.
       bool checkBoxChecked() const { return _checkBoxChecked; }
+      // Sets whether the checkbox is currently checked or not.
       void setCheckBoxChecked(bool v) { _checkBoxChecked = v; }
       
+      // Whether the label and checkbox area is currently pressed or not.
       bool menuItemPressed() const { return _menuItemPressed; }
+      // Sets whether the label and checkbox area is currently pressed or not.
       // Returns true if the menu item section was changed (for redrawing).
       bool setMenuItemPressed(bool v) { if(_menuItemPressed == v) return false; _menuItemPressed = v; return true; }
       
-      bool stayOpen() const { return _stayOpen; }
-      void setStayOpen(bool v)  { _stayOpen = v; }
+      // Whether clicking the array closes the menu or not.
+      bool arrayStayOpen() const { return _arrayStayOpen; }
+      // Sets whether clicking the array closes the menu or not.
+      void setArrayStayOpen(bool v)  { _arrayStayOpen = v; }
       
+      // Whether the action is highlighted (hovered) or not.
       bool isSelected() const { return _isSelected; }
+      // Sets whether the action is highlighted (hovered) or not.
       void setSelected(bool v)  { _isSelected = v; }
     
-      // NOTE: Use setActionText instead of QAction::setText().
+      // NOTE: Use setActionText() instead of QAction::setText().
       void setActionText(const QString& s);
-      // NOTE: Use actionText instead of QAction::text().
-      QString actionText() const { return _labelText; }
+      // NOTE: Use actionText() instead of QAction::text().
+      QString actionText() const { return _actionText; }
       //QString actionText() const { return text(); }
       
+      // Does a hit test of type HitTestType, returning a RoutePopupHit structure describing what was hit.
       RoutePopupHit hitTest(const QPoint&, RoutePopupHit::HitTestType);
       };
 

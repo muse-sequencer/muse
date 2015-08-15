@@ -2914,15 +2914,15 @@ RoutingMatrixWidgetAction::RoutingMatrixWidgetAction(int cols,
 //   _itemLabel = new QLabel(itemLabelText, parent);
 //   _itemLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
   //_itemLabel = 0;
-  _labelText = action_text;
+  _actionText = action_text;
 //   setText(action_text);
   // Just to be safe, set to -1 instead of default 0.
   //setData(-1);
-  _isChanged = false;
+  //_isChanged = false;
   _hasCheckBox = false;
   _checkBoxChecked = false;
   _menuItemPressed = false;
-  _stayOpen = false;
+  _arrayStayOpen = false;
   _isSelected = false;
   _onPixmap = on_pixmap;
   _offPixmap = off_pixmap;
@@ -3784,7 +3784,7 @@ void RoutingMatrixWidgetAction::setActionText(const QString& s)
   //fprintf(stderr, "RoutingMatrixWidgetAction::setActionText\n"); // REMOVE Tim. Persistent routes. Added. 
 //   QWidgetAction::setText(s);
   //_itemLabel->setText(s); 
-  _labelText = s;
+  _actionText = s;
   // Need to update the rectangle.
   //updateChannelArray();
   
