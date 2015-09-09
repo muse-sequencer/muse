@@ -76,19 +76,19 @@ Q_OBJECT
     PopupMenu* getMenu();
     
   private slots:
+    void popHovered(QAction*);
+
     #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
     void timerHandler();
     #endif
   
-  protected slots:
-    virtual void popHovered(QAction*);
-    
   protected:
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void contextMenuEvent(QContextMenuEvent*);
     virtual void hideEvent(QHideEvent*);    
     virtual bool event(QEvent*);
+    virtual void closeUp();
 
   public: signals:
     void aboutToShowContextMenu(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);

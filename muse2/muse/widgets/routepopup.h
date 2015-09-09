@@ -57,7 +57,9 @@ class RoutePopupMenu : public PopupMenu
     MusECore::Route  _route;  // REMOVE Tim. Persistent routes. Added.
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
-    //RoutePopupHit _lastHitClick;
+    RoutePopupHit _lastHoveredHit;
+    // To inform a pending hover slot whether the hover was from mouse or not.
+    bool _hoverIsFromMouse;
     
     void init();
     void prepare();
@@ -87,16 +89,17 @@ class RoutePopupMenu : public PopupMenu
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     void addJackPorts(const MusECore::Route& route, PopupMenu* lb);
-    void jackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
+    void jackRouteActivated(QAction* action, const MusECore::Route& route, const MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void midiTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void trackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     
   private slots:
-    void popupActivated(QAction*);
+    void routePopupHovered(QAction*);
+    void routePopupActivated(QAction*);
     void songChanged(MusECore::SongChangedFlags_t);
-    void popupAboutToShow();
+    //void popupAboutToShow();
   
   protected:  
     virtual bool event(QEvent*);
@@ -104,9 +107,9 @@ class RoutePopupMenu : public PopupMenu
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
-    
-  protected slots:
-    void popHovered(QAction*);
+    virtual void keyPressEvent(QKeyEvent*);
+    // Updates item texts and the 'preferred alias action'. Returns true if any action was changed.
+    virtual bool preferredPortAliasChanged(); 
     
   public:
     // REMOVE Tim. Persistent routes. Changed.

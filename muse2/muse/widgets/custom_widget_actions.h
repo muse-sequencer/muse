@@ -577,6 +577,10 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       
       // Does a hit test of type HitTestType, returning a RoutePopupHit structure describing what was hit.
       RoutePopupHit hitTest(const QPoint&, RoutePopupHit::HitTestType);
+      // Returns the previous hittable item (ie. for left key movement).
+      RoutePopupHit previousHit(const RoutePopupHit& fromHit);
+      // Returns the next hittable item (ie. for right key movement).
+      RoutePopupHit nextHit(const RoutePopupHit& fromHit);
       };
 
 //---------------------------------------------------------
@@ -589,9 +593,12 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
 class RoutingMatrixHeaderWidgetAction : public QWidgetAction { 
       Q_OBJECT
    private:
-      QLabel* _checkBoxLabel;
-      QLabel* _itemLabel;
-      QLabel* _arrayLabel;
+      //QLabel* _checkBoxLabel;
+      //QLabel* _itemLabel;
+      //QLabel* _arrayLabel;
+      QString _checkBoxLabel;
+      QString _itemLabel;
+      QString _arrayLabel;
       
    protected:
       QWidget* createWidget(QWidget* parent);

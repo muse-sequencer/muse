@@ -33,6 +33,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 //#include <QMetaMethod>
+#include <QStyle>
 
 #include "popupmenu.h"
 #include "gconfig.h"
@@ -193,6 +194,7 @@ bool PopupMenu::event(QEvent* event)
    {
       return QMenu::event(event);
    }
+   
    switch(event->type())
    {
 #ifndef POPUP_MENU_DISABLE_STAY_OPEN
@@ -214,26 +216,61 @@ bool PopupMenu::event(QEvent* event)
          }
       }
    }
-      break;
+   break;
+   
    case QEvent::KeyPress:
    {
-      if(_stayOpen)
-         //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
-      {
-         QKeyEvent* e = static_cast<QKeyEvent*>(event);
-         if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
-         {
-            QAction* act = activeAction();
-            if(act)
+//       if(_stayOpen)
+//          //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
+//       {
+//          QKeyEvent* e = static_cast<QKeyEvent*>(event);
+//          if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
+//          {
+//             QAction* act = activeAction();
+//             if(act)
+//             {
+//                act->trigger();
+//                event->accept();
+//                return true;    // We handled it.
+//             }
+//          }
+//       }
+     
+     QKeyEvent* e = static_cast<QKeyEvent*>(event);
+     switch(e->key())
+     {
+        case Qt::Key_Space:
+          if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
+              break;
+            // for motif, fall through
+#ifdef QT_KEYPAD_NAVIGATION
+        case Qt::Key_Select:
+#endif
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+        {
+          if(_stayOpen && (MusEGlobal::config.popupsDefaultStayOpen || (e->modifiers() & Qt::ControlModifier)))
+          {
+            //if(act && act->menu() && act->isCheckable())
+            if(QAction* act = activeAction())
             {
-               act->trigger();
-               event->accept();
-               return true;    // We handled it.
+              // REMOVE Tim. Persistent routes. Added.
+              fprintf(stderr, "   Return/Enter pressed: triggering action:%p\n", act); 
+              act->trigger();
+              event->accept();
+              //if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
+                closeUp();
+              return true;    // We handled it.
             }
-         }
-      }
+          }
+        }
+        break;
+       
+        default:
+        break;
+     }
    }
-      break;
+   break;
 #endif   // POPUP_MENU_DISABLE_STAY_OPEN
 
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
@@ -266,7 +303,7 @@ bool PopupMenu::event(QEvent* event)
       //event->accept();
       //return true;
       
-      event->ignore();               // Pass it on
+      //event->ignore();               // Pass it on
       //return QMenu::event(event);
    }
       break;
@@ -276,7 +313,57 @@ bool PopupMenu::event(QEvent* event)
       break;
    }
 
+   event->ignore();
    return QMenu::event(event);
+}
+
+void PopupMenu::closeUp()
+{
+  // Code adapted from QWidget::mousePressEvent()...
+  // NG. This didn't work
+//   if((windowType() == Qt::Popup))
+//   {
+//     QWidget* w;
+//     while((w = QApplication::activePopupWidget()) && w != this)
+//     {
+//       w->close();
+//       if(QApplication::activePopupWidget() == w) // widget does not want to disappear
+//         w->hide(); // hide at least
+//     }
+//     close();
+//   }
+  
+  if(isVisible())
+  {
+    fprintf(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
+    close();
+  }
+  
+  QAction* act = menuAction();
+  if(act)
+  {
+    fprintf(stderr, "PopupMenu::closeUp() this:%p menuAction:%p\n", this, act);
+    const int sz = act->associatedWidgets().size();
+    for(int i = 0; i < sz; ++i)
+    {
+      fprintf(stderr, "   associated widget#:%d\n", i);
+      if(PopupMenu* pup = qobject_cast<PopupMenu*>(act->associatedWidgets().at(i)))
+      {
+        fprintf(stderr, "   associated popup:%p\n", pup);
+        //if(pup->isVisible())
+        //{
+          fprintf(stderr, "   closing...\n");
+          pup->closeUp();
+        //}
+      }
+    }
+  }
+  //else
+//   if(isVisible())
+//   {
+//     fprintf(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
+//     close();
+//   }
 }
 
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  

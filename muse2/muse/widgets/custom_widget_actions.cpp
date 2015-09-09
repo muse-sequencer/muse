@@ -2302,7 +2302,8 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
     const QRect r = _action->array()->rect(col);
     if(col == _action->array()->pressedColumn())
       p.fillRect(r, palette().dark());
-    else if(_action->isSelected() && col == _action->array()->activeColumn())
+    //else if(_action->isSelected() && col == _action->array()->activeColumn())
+    else if(col == _action->array()->activeColumn())
       p.fillRect(r, palette().highlight());
     const QPixmap& pm = _action->array()->value(col) ? *_action->onPixmap() : *_action->offPixmap();
     const int pm_w = pm.width();
@@ -2580,6 +2581,7 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
       cb_lbl->setAutoFillBackground(true);
       cb_lbl->setBackgroundRole(QPalette::Dark);
       left_title_layout->addWidget(cb_lbl);
+      left_title_layout->addSpacing(4);
     }
     //left_title_layout->addSpacing(actionHMargin);
     if(!_action->array()->headerTitle().isEmpty())
@@ -2590,6 +2592,7 @@ RoutingMatrixActionWidget::RoutingMatrixActionWidget(RoutingMatrixWidgetAction* 
       hdr_lbl->setAutoFillBackground(true);
       hdr_lbl->setBackgroundRole(QPalette::Dark);
       left_title_layout->addWidget(hdr_lbl);
+      left_title_layout->addSpacing(4);
     }
     left_v_layout->addLayout(left_title_layout);
   }
@@ -2699,11 +2702,20 @@ RoutePopupHit RoutingMatrixActionWidget::hitTest(const QPoint& p, RoutePopupHit:
     // Check if we hit the left hand portion (the checkbox and text area).
     if(_menuItemControlWidget->geometry().contains(p))
     {
-      if((test_type == RoutePopupHit::HitTestClick && _action->hasCheckBox()) || 
-          test_type == RoutePopupHit::HitTestHover)
-        return RoutePopupHit(_action, RoutePopupHit::HitMenuItem);
-      else
-        return RoutePopupHit(_action, RoutePopupHit::HitSpace);
+//       if((test_type == RoutePopupHit::HitTestClick && _action->hasCheckBox()) || 
+//           test_type == RoutePopupHit::HitTestHover)
+//         return RoutePopupHit(_action, RoutePopupHit::HitMenuItem);
+//       else
+//         return RoutePopupHit(_action, RoutePopupHit::HitSpace);
+      switch(test_type)
+      {
+        case RoutePopupHit::HitTestClick:
+        case RoutePopupHit::HitTestHover:
+          if(_action->hasCheckBox())
+            return RoutePopupHit(_action, RoutePopupHit::HitMenuItem);
+        break;
+      }
+      return RoutePopupHit(_action, RoutePopupHit::HitSpace);
     }
     
     // Check if we hit one of the channel bar channels.
@@ -3814,6 +3826,171 @@ RoutePopupHit RoutingMatrixWidgetAction::hitTest(const QPoint& p, RoutePopupHit:
   return RoutePopupHit(this, RoutePopupHit::HitNone);
 }
 
+RoutePopupHit RoutingMatrixWidgetAction::previousHit(const RoutePopupHit& fromHit)
+{
+  RoutePopupHit retHit = fromHit;
+  retHit._action = this;
+  const int cols = array()->columns();
+  switch(fromHit._type)
+  {
+    case RoutePopupHit::HitChannel:
+    {
+      if(cols == 0)
+      {
+        if(hasCheckBox())
+        {
+          retHit._type = RoutePopupHit::HitMenuItem;
+          retHit._value = 0;
+        }
+      }
+      else
+      {
+        int col = fromHit._value; // The column.
+        if(col > cols) // Greater than. Let the decrement work.
+          col = cols;
+        --col;
+        if(col == -1)
+        {
+          if(hasCheckBox())
+          {
+            retHit._type = RoutePopupHit::HitMenuItem;
+            retHit._value = 0;
+          }
+          else
+            col = cols - 1;  // Wrap around.
+        }
+        if(col != -1)
+          retHit._value = col; // Adjust the current 'last' column setting.
+      }
+    }
+    break;
+    
+    case RoutePopupHit::HitMenuItem:
+    {
+      if(cols != 0)
+      {
+        const int col = cols - 1; // Wrap around.
+        retHit._type = RoutePopupHit::HitChannel;
+        retHit._value = col;
+      }
+      //if(hasCheckBox() && !isSelected())
+      //{
+      //  setSelected(true);
+      //  do_upd = true;
+      //}
+      //if(array()->activeColumn() != -1)
+      //{
+      //  array()->setActiveColumn(-1);
+      //  do_upd = true;
+      //}
+    }
+    break; 
+    
+    case RoutePopupHit::HitChannelBar:
+    case RoutePopupHit::HitSpace:
+    case RoutePopupHit::HitNone:
+      // If it has a checkbox (or there is no channel bar) select the checkbox/text area.
+      if(hasCheckBox() || array()->columns() == 0)
+      {
+        retHit._type = RoutePopupHit::HitMenuItem;
+        retHit._value = 0;
+      }
+      // Otherwise select the first available channel bar column.
+      else
+      {
+        retHit._type = RoutePopupHit::HitChannel;
+        retHit._value = 0;
+      }
+    break;
+  }
+  
+  return retHit;
+}
+
+RoutePopupHit RoutingMatrixWidgetAction::nextHit(const RoutePopupHit& fromHit)
+{
+  RoutePopupHit retHit = fromHit;
+  const int cols = array()->columns();
+  switch(fromHit._type)
+  {
+    case RoutePopupHit::HitChannel:
+    {
+      if(cols == 0)
+      {
+        if(hasCheckBox())
+        {
+          retHit._type = RoutePopupHit::HitMenuItem;
+          retHit._action = this;
+          retHit._value = 0;
+        }
+      }
+      else
+      {
+        int col = fromHit._value; // The column.
+        ++col;
+        if(col >= cols)
+        {
+          if(hasCheckBox())
+          {
+            retHit._type = RoutePopupHit::HitMenuItem;
+            retHit._action = this;
+            retHit._value = 0;
+            col = -1;
+          }
+          else
+            col = 0;  // Wrap around.
+        }
+        if(col != -1)
+          retHit._value = col; // Adjust the current 'last' column setting.
+      }
+    }
+    break;
+    
+    case RoutePopupHit::HitMenuItem:
+    {
+      if(cols != 0)
+      {
+        const int col = 0; // Select the first available channel.
+        retHit._type = RoutePopupHit::HitChannel;
+        retHit._action = this;
+        retHit._value = col;
+      }
+      //if(hasCheckBox() && !isSelected())
+      //{
+      //  setSelected(true);
+      //  do_upd = true;
+      //}
+      //if(array()->activeColumn() != -1)
+      //{
+      //  array()->setActiveColumn(-1);
+      //  do_upd = true;
+      //}
+    }
+    break; 
+    
+    case RoutePopupHit::HitChannelBar:
+    case RoutePopupHit::HitSpace:
+    case RoutePopupHit::HitNone:
+      // If it has a checkbox (or there is no channel bar) select the checkbox/text area.
+      if(hasCheckBox() || array()->columns() == 0)
+      {
+        retHit._type = RoutePopupHit::HitMenuItem;
+        retHit._action = this;
+        retHit._value = 0;
+      }
+      // Otherwise select the first available channel bar column.
+      else
+      {
+        retHit._type = RoutePopupHit::HitChannel;
+        retHit._action = this;
+        retHit._value = 0;
+      }
+    break;
+  }
+  
+  return retHit;
+}
+
 bool RoutingMatrixWidgetAction::event(QEvent* e)
 {
   fprintf(stderr, "RoutingMatrixWidgetAction::event type:%d\n", e->type()); // REMOVE Tim. Persistent routes. Added. 
@@ -3832,27 +4009,9 @@ bool RoutingMatrixWidgetAction::eventFilter(QObject* obj, QEvent* e)
 //---------------------------------------------------------
 
 RoutingMatrixHeaderWidgetAction::RoutingMatrixHeaderWidgetAction(const QString& checkbox_label, const QString& item_label, const QString& array_label, QWidget* parent)
-  : QWidgetAction(parent)
+  : QWidgetAction(parent), _checkBoxLabel(checkbox_label), _itemLabel(item_label), _arrayLabel(array_label)
 {
   setEnabled(false);
-  _checkBoxLabel = new QLabel(checkbox_label, parent);
-  _checkBoxLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-  _checkBoxLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-  _checkBoxLabel->setAutoFillBackground(true);
-  _checkBoxLabel->setBackgroundRole(QPalette::Dark);
-  
-  _itemLabel = new QLabel(item_label, parent);
-  _itemLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-  _itemLabel->setAlignment(Qt::AlignCenter);
-  //_itemLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-  _itemLabel->setAutoFillBackground(true);
-  _itemLabel->setBackgroundRole(QPalette::Dark);
-  
-  _arrayLabel = new QLabel(array_label, parent);
-  _arrayLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-  _arrayLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  _arrayLabel->setAutoFillBackground(true);
-  _arrayLabel->setBackgroundRole(QPalette::Dark);
 }
 
 QWidget* RoutingMatrixHeaderWidgetAction::createWidget(QWidget *parent)
@@ -3864,19 +4023,46 @@ QWidget* RoutingMatrixHeaderWidgetAction::createWidget(QWidget *parent)
   h_layout->setSpacing(0);
   h_layout->setContentsMargins(0, 0, 0, 0);
 
-  if(!_checkBoxLabel->text().isEmpty())
-    h_layout->addWidget(_checkBoxLabel);
+  if(!_checkBoxLabel.isEmpty())
+  {
+    QLabel* lbl = new QLabel(_checkBoxLabel, parent);
+    lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    lbl->setAutoFillBackground(true);
+    lbl->setBackgroundRole(QPalette::Dark);
+    h_layout->addWidget(lbl);
+  }
+  
   //h_layout->addSpacing(15);
-  if(!_itemLabel->text().isEmpty())
-    h_layout->addWidget(_itemLabel);
-  if(!_arrayLabel->text().isEmpty())
-    h_layout->addWidget(_arrayLabel);
+  if(!_itemLabel.isEmpty())
+  {
+    QLabel* lbl = new QLabel(_itemLabel, parent);
+    lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    lbl->setAlignment(Qt::AlignCenter);
+    //lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    lbl->setAutoFillBackground(true);
+    lbl->setBackgroundRole(QPalette::Dark);
+    h_layout->addSpacing(4);
+    h_layout->addWidget(lbl);
+  }
+  
+  if(!_arrayLabel.isEmpty())
+  {
+    QLabel* lbl = new QLabel(_arrayLabel, parent);
+    lbl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    lbl->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    lbl->setAutoFillBackground(true);
+    lbl->setBackgroundRole(QPalette::Dark);
+    h_layout->addSpacing(4);
+    h_layout->addWidget(lbl);
+  }
+  
   return lw;
 }
 
 void RoutingMatrixHeaderWidgetAction::deleteWidget(QWidget* widget)
 {
-  fprintf(stderr, "RoutingMatrixHeaderWidgetAction::deleteWidget widget:%p\n", widget); // REMOVE Tim. Persistent routes. Added. 
+  //fprintf(stderr, "RoutingMatrixHeaderWidgetAction::deleteWidget widget:%p\n", widget); // REMOVE Tim. Persistent routes. Added. 
   QWidgetAction::deleteWidget(widget);
 }  
 

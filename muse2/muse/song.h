@@ -71,6 +71,12 @@ class MidiDevice;
 class AudioPort;
 class AudioDevice;
 
+// Song changed flags:
+// These are flags, usually passed by connecting to the songChanged() signal,
+//  which inform that various things have changed and appropriate action should 
+//  be taken (redraw, refill lists etc.) upon the signal's reception.
+// NOTE: Use the SongChangedFlags_t typedef in type_defs.h to support all the bits.
+
 #define SC_TRACK_INSERTED      1
 #define SC_TRACK_REMOVED       2
 #define SC_TRACK_MODIFIED      4
@@ -103,6 +109,7 @@ class AudioDevice;
 #define SC_PART_SELECTION      0x20000000   // part selection changed
 #define SC_KEY                 0x40000000   // key map changed
 #define SC_TRACK_SELECTION     0x80000000   // track selection changed
+#define SC_PORT_ALIAS_PREFERENCE 0x100000000  // (Jack) port alias viewing preference has changed
 #define SC_EVERYTHING          -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
