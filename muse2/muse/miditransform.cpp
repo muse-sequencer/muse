@@ -623,10 +623,10 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                   len -= cmt->procLenA;
                   break;
             case MusECore::Multiply:
-                  len = int(val * (cmt->procLenA/100.0) + .5);
+                  len = int(len * (cmt->procLenA/100.0) + .5);
                   break;
             case MusECore::Divide:
-                  len = int(val / (cmt->procLenA/100.0) + .5);
+                  len = int(len / (cmt->procLenA/100.0) + .5);
                   break;
             case MusECore::Fix:
                   len = cmt->procLenA;
@@ -658,10 +658,10 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                   pos -= cmt->procPosA;
                   break;
             case MusECore::Multiply:
-                  pos = int(val * (cmt->procPosA/100.0) + .5);
+                  pos = int(pos * (cmt->procPosA/100.0) + .5);
                   break;
             case MusECore::Divide:
-                  pos = int(val / (cmt->procPosA/100.0) + .5);
+                  pos = int(pos / (cmt->procPosA/100.0) + .5);
                   break;
             case MusECore::Fix:
             case MusECore::Invert:
