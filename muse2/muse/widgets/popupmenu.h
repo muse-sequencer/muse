@@ -6,7 +6,7 @@
 //  (C) Copyright 1999-2010 Werner Schweer (ws@seh.de)
 //
 //  PopupMenu sub-class of QMenu created by Tim.
-//  (C) Copyright 2010-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2010-2015 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -36,8 +36,6 @@
   #include <QTimer>
 #endif
 
-//#include <QMouseEvent>
-//#include <QColumnView>
 #include <QPointer>
 
 class QWidget;
@@ -89,6 +87,10 @@ Q_OBJECT
     virtual void hideEvent(QHideEvent*);    
     virtual bool event(QEvent*);
     virtual void closeUp();
+    
+    // For auto-breakup of a too-wide menu. Virtual.
+    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false)
+      { return new PopupMenu(title, parent, stayOpen); }
 
   public: signals:
     void aboutToShowContextMenu(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);
@@ -98,7 +100,6 @@ Q_OBJECT
     PopupMenu(QWidget* parent=0, bool stayOpen = false);
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
     ~PopupMenu();
-    //void clear();
     QAction* findActionFromData(const QVariant&) const;
     bool stayOpen() const { return _stayOpen; }
     void clearAllChecks() const;
@@ -134,24 +135,6 @@ class PopupMenuContextData {
     inline QVariant varValue() const { return _variant; }
 };
   
-/*
-class PopupView : public QColumnView
-{
-  Q_OBJECT
-  private:  
-    QStandardItemModel* _model;
-    
-  protected:
-  
-  public:
-    PopupView(QWidget* parent=0);
-    ~PopupView();
-    
-    void clear();
-    QStandardItemModel* model() { return _model; }
-};
-*/
-
 } // namespace MusEGui
 
 Q_DECLARE_METATYPE(MusEGui::PopupMenuContextData)

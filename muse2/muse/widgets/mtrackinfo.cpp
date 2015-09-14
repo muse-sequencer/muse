@@ -1021,22 +1021,68 @@ void MidiTrackInfo::iPanChanged(int val)
 //   patchPopupActivated
 //---------------------------------------------------------
 
+// REMOVE Tim. Persistent routes. Changed.
+// void MidiTrackInfo::patchPopupActivated(QAction* act)
+// {
+//   if(act && selected) 
+//   {
+//     int rv = act->data().toInt();
+//     if(rv != -1)
+//     {
+//       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+//       int channel = track->outChannel();
+//       int port    = track->outPort();
+//       ++_blockHeartbeatCount;
+//       MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+//       MusEGlobal::audio->msgPlayMidiEvent(&ev);
+//       updateTrackInfo(-1);
+//       --_blockHeartbeatCount;
+//     }  
+//   }
+// }
 void MidiTrackInfo::patchPopupActivated(QAction* act)
 {
   if(act && selected) 
   {
-    int rv = act->data().toInt();
-    if(rv != -1)
+    MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+    const int channel = track->outChannel();
+    const int port    = track->outPort();
+    MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+    if(act->data().type() == QVariant::Int)
     {
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-      int channel = track->outChannel();
-      int port    = track->outPort();
-      ++_blockHeartbeatCount;
-      MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      updateTrackInfo(-1);
-      --_blockHeartbeatCount;
-    }  
+      int rv = act->data().toInt();
+      if(rv != -1)
+      {
+          ++_blockHeartbeatCount;
+          MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+          MusEGlobal::audio->msgPlayMidiEvent(&ev);
+          updateTrackInfo(-1);
+          --_blockHeartbeatCount;
+      }
+    }
+    else if(instr->isSynti() && act->data().canConvert<void *>())
+    {
+      MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
+      MusECore::Synth *s = si->synth();
+#ifdef LV2_SUPPORT
+      //only for lv2 synths call applyPreset function.
+      if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
+      {
+          MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
+          //be pedantic about checks
+          if(sif)
+          {
+            MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+            if(mp)
+            {
+                if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+                  MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+                sif->applyPreset(act->data().value<void *>());
+            }
+          }
+      }
+#endif
+    }
   }
 }
 
@@ -1102,52 +1148,59 @@ void MidiTrackInfo::patchPopup()
         return;
       }  
       
+      // REMOVE Tim. Persistent routes. Reinstated and fixed.
       //FIXME: (danvd) why execute the same code twice?
       //Leave only synchronous execution
       //connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
-      
-      QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
-      if(act)
-      {
-         if(act->data().type() == QVariant::Int)
-         {
-            int rv = act->data().toInt();
-            if(rv != -1)
-            {
-               ++_blockHeartbeatCount;
-               MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-               MusEGlobal::audio->msgPlayMidiEvent(&ev);
-               updateTrackInfo(-1);
-               --_blockHeartbeatCount;
-            }
-         }
-         else if(instr->isSynti() && act->data().canConvert<void *>())
-         {
-            MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
-            MusECore::Synth *s = si->synth();
-#ifdef LV2_SUPPORT
-            //only for lv2 synths call applyPreset function.
-            if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
-            {
-               MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
-               //be pedantic about checks
-               if(sif)
-               {
-                  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-                  if(mp)
-                  {
-                     if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-                        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-                     sif->applyPreset(act->data().value<void *>());
-                  }
-               }
-            }
-#endif
-         }
-      }
-            
+      connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
+
+      // REMOVE Tim. Persistent routes. Added.
+      pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       delete pup;      
-      }
+      }   
+      // REMOVE Tim. Persistent routes. Removed.
+//       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
+//       if(act)
+//       {
+//          if(act->data().type() == QVariant::Int)
+//          {
+//             int rv = act->data().toInt();
+//             if(rv != -1)
+//             {
+//                ++_blockHeartbeatCount;
+//                MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+//                MusEGlobal::audio->msgPlayMidiEvent(&ev);
+//                updateTrackInfo(-1);
+//                --_blockHeartbeatCount;
+//             }
+//          }
+//          else if(instr->isSynti() && act->data().canConvert<void *>())
+//          {
+//             MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
+//             MusECore::Synth *s = si->synth();
+// #ifdef LV2_SUPPORT
+//             //only for lv2 synths call applyPreset function.
+//             if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
+//             {
+//                MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
+//                //be pedantic about checks
+//                if(sif)
+//                {
+//                   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+//                   if(mp)
+//                   {
+//                      if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+//                         MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+//                      sif->applyPreset(act->data().value<void *>());
+//                   }
+//                }
+//             }
+// #endif
+//          }
+//       }
+//             
+//       delete pup;      
+//       }
 
 //---------------------------------------------------------
 //   recEchoToggled

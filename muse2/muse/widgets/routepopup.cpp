@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  RoutePopupMenu.cpp 
-//  (C) Copyright 2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2011-2015 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -2281,8 +2281,8 @@ bool RoutePopupMenu::event(QEvent* event)
   fprintf(stderr, "RoutePopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n",
           event, QApplication::activePopupWidget(), this, metaObject()->className(), event->type());
   
-  if(MusEGlobal::config.scrollableSubMenus)
-    return PopupMenu::event(event);
+  //if(MusEGlobal::config.scrollableSubMenus)
+  //  return PopupMenu::event(event);
       
   switch(event->type())
   {
@@ -2380,9 +2380,7 @@ bool RoutePopupMenu::event(QEvent* event)
             if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
                 break;
               // for motif, fall through
-#ifdef QT_KEYPAD_NAVIGATION
           case Qt::Key_Select:
-#endif
           case Qt::Key_Return:
           case Qt::Key_Enter:
           {
@@ -2390,153 +2388,54 @@ bool RoutePopupMenu::event(QEvent* event)
             {
               if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(activeAction()))
               {
-                if(mwa->hasCheckBox() || mwa->array()->columns() != 0)
+                bool accept = false;
+                if(mwa->hasCheckBox() && mwa->isSelected())
                 {
-                  //if(contextMenu() && contextMenu()->isVisible())
-                  //  return;
-                  
-                  bool activate = false;
-                  bool accept = false;
-                  bool do_upd = false;
-                  
-                  //RoutingMatrixWidgetAction* mwa = 0;
-                  //QAction* action = actionAt(e->pos());
-                  //if(action)
-                  {
-                    //mwa = qobject_cast<RoutingMatrixWidgetAction*>(action);
-                    //if(mwa)
-                    {
-                      //RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-                      //switch(hit._type)
-                      //switch(_lastHoveredHit._type)
-                      {
-                        if(mwa->hasCheckBox() && mwa->isSelected())
-                        {
-                          mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
-                          do_upd = true;
-                          activate = true;
-                        }
-                        //case RoutePopupHit::HitChannel:
-                        else if(mwa->array()->activeColumn() != -1)
-                        {
-                          //mwa->array()->setValue(hit._value, !mwa->array()->value(hit._value));
-                          //mwa->array()->setValue(_lastHoveredHit._value, !mwa->array()->value(_lastHoveredHit._value));
-                          mwa->array()->setValue(mwa->array()->activeColumn(), !mwa->array()->value(mwa->array()->activeColumn()));
-                          
-                          // Reset any other switch bars besides this one which are part of a QActionGroup.
-                          // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
-                          QActionGroup* act_group = mwa->actionGroup();
-                          if(act_group && act_group->isExclusive())
-                          {
-                            const int sz = act_group->actions().size();
-                            for(int i = 0; i < sz; ++i) 
-                            {
-                              if(RoutingMatrixWidgetAction* act = qobject_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i)))
-                              {
-                                if(act != mwa)
-                                {
-                                  // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
-                                  act->array()->setValues(0, false, true, true);
-                                  //update();  // Redraw the indicators.
-                                  act->updateCreatedWidgets();  // Redraw the indicators.
-                                }
-                              }
-                            }  
-                          }
-                            
-                          if(mwa->arrayStayOpen())
-                            accept = true;
-                //           mwa->activate(QAction::Trigger);
-                //           popupActivated(mwa);
-                          activate = true;
-                          do_upd = true;
-                        }
-                        //break;
-                        
-//                         case RoutePopupHit::HitMenuItem:
-//                           mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
-//                 //           mwa->activate(QAction::Trigger);
-//                 //           popupActivated(mwa);
-//                           activate = true;
-//                         break;
-//                         
-//                         case RoutePopupHit::HitChannelBar:
-//                         case RoutePopupHit::HitSpace:
-//                           accept = true;
-//                         break;
-//                         
-//                         case RoutePopupHit::HitNone:
-//                         break;
-                      }
-                    }
-                  }
-                  
-//                   const int sz = actions().size();
-//                   for(int i = 0; i < sz; ++i)
-//                   {
-//                     if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
-//                     {
-//                       if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
-//                         mwa->updateCreatedWidgets();  // Redraw
-//                     }
-//                   }
-                  
-//                   if(!action || !mwa)
-//                   {
-//                     e->ignore();
-//                     // Defer to PopupMenu, where we handle regular actions with checkboxes.
-//                     PopupMenu::mouseReleaseEvent(e);
-//                     return;
-//                   }
-
-                  if(do_upd)
-                    mwa->updateCreatedWidgets();
-
-                  if(accept)
-                  {
-                    e->accept();
-                    if(activate)
-                      routePopupActivated(mwa);
-                      //mwa->trigger();
-                    //PopupMenu::mouseReleaseEvent(e);
-                    return true; // We handled it.
-                  }
-                  
-                  // Check for Ctrl to stay open.
-                  if(!stayOpen() || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
-                  {
-                    e->ignore();
-                    // If this is the active popup widget let the ancestor activate and close it, otherwise we must close this manually.
-                //     QMenu* m = qobject_cast<QMenu*>(QApplication::activePopupWidget());
-                //     if(m == this)
-                //       PopupMenu::mouseReleaseEvent(e);
-                //     else
-                //     {
-                      if(activate)
-                        routePopupActivated(mwa);
-                        //mwa->trigger();
-                      // Close all the popups.
-                      closeUp();
-                //     }
-                    return true;  // We handled it.
-                  }
-
-                  e->accept();
-                  if(activate)
-                    routePopupActivated(mwa);
-                    //mwa->trigger();
-                  return true;    // We handled it.
-                  
-                  
-                  //mwa->trigger();
-                  //event->accept();
-                  //if(!stayOpen() || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
-                  //  closeUp();
-                  //return true;    // We handled it.
-                  
+                  mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
                 }
-                // Otherwise let ancestor PopupMenu handle it...
+                else if(mwa->array()->columns() != 0 && mwa->array()->activeColumn() != -1)
+                {
+                  mwa->array()->setValue(mwa->array()->activeColumn(), !mwa->array()->value(mwa->array()->activeColumn()));
+                  // Reset any other switch bars besides this one which are part of a QActionGroup.
+                  // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+                  QActionGroup* act_group = mwa->actionGroup();
+                  if(act_group && act_group->isExclusive())
+                  {
+                    const int sz = act_group->actions().size();
+                    for(int i = 0; i < sz; ++i) 
+                    {
+                      if(RoutingMatrixWidgetAction* act = qobject_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i)))
+                      {
+                        if(act != mwa)
+                        {
+                          // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
+                          act->array()->setValues(0, false, true, true);
+                          //update();  // Redraw the indicators.
+                          act->updateCreatedWidgets();  // Redraw the indicators.
+                        }
+                      }
+                    }  
+                  }
+                  if(mwa->arrayStayOpen())
+                    accept = true;
+                }
+                else
+                {
+                  // Nothing selected. Do nothing. TODO: Select the first available item, like QMenu does...
+                  e->accept();
+                  return true; // We handled it.
+                }
+                
+                mwa->updateCreatedWidgets();
+                e->accept();
+                //routePopupActivated(mwa);  // Directly execute the trigger handler.
+                mwa->trigger();  // Trigger the action. 
+                // Check for Ctrl to stay open.
+                if(!accept && (!stayOpen() || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0)))
+                  closeUp(); // Close all the popups.
+                return true; // We handled it.
               }
+              // Otherwise let ancestor PopupMenu handle it...
             }
           }
           break;
@@ -2681,8 +2580,8 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   {
     e->accept();
     if(activate)
+      // Directly execute the trigger handler.
       routePopupActivated(mwa);
-    //PopupMenu::mouseReleaseEvent(e);
     return;
   }
   
@@ -2697,6 +2596,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
 //     else
 //     {
       if(activate)
+        // Directly execute the trigger handler.
         routePopupActivated(mwa);
       // Close all the popups.
       closeUp();

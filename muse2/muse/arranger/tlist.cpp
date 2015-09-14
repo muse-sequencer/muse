@@ -2040,9 +2040,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         p->addMenu(pnew);
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
+                              fprintf(stderr, "TList::mousePressEvent act:%p\n", act);  // REMOVE Tim. Persistent routes. Added.
                               int n = act->data().toInt();
-                              if(n >= 1000)
+                              if(n >= 1000 && n < MENU_ADD_SYNTH_ID_BASE)
                               {
+                                fprintf(stderr, "   n:%d\n", n);  // REMOVE Tim. Persistent routes. Added.
                                 switch (n) {
                                     case 1001:     // delete track
                                           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
@@ -2103,6 +2105,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               else
                               {
                                 t = MusEGlobal::song->addNewTrack(act, t);  // Let addNewTrack handle it. Insert before clicked-on track 't'.
+                                fprintf(stderr, "   addNewTrack: track:%p\n", t);  // REMOVE Tim. Persistent routes. Added.
                                 if(t)
                                 {
                                   MusEGlobal::song->deselectTracks();

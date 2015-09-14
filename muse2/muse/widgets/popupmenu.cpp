@@ -6,7 +6,7 @@
 //  (C) Copyright 1999-2010 Werner Schweer (ws@seh.de)
 //
 //  PopupMenu sub-class of QMenu created by Tim.
-//  (C) Copyright 2010-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2010-2015 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -32,7 +32,6 @@
 #include <QVariant>
 #include <QDesktopWidget>
 #include <QApplication>
-//#include <QMetaMethod>
 #include <QStyle>
 
 #include "popupmenu.h"
@@ -66,29 +65,25 @@ PopupMenu::PopupMenu(const QString& title, QWidget* parent, bool stayOpen)
 
 void PopupMenu::init()
 {
-   // REMOVE Tim. Persistent routes. Added. TESTING
-   //setWindowFlags((windowFlags() ^ Qt::Popup) | Qt::Window);
-  
    _contextMenu = 0;
    _lastHoveredAction = 0;
    _highlightedAction = 0;
+   // Menus will trigger! Set to make sure our trigger handlers ignore menus.
+   menuAction()->setData(-1);
+   _cur_menu = this;
+   _cur_menu_count = 1;
+   _cur_item_width = 0;
+   _cur_col_count = 0;
+   moveDelta = 0;
+   timer = 0;
+
+   connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
+
    if(MusEGlobal::config.scrollableSubMenus)
    {
       setStyleSheet("QMenu { menu-scrollable: 1; }");
       return;
    }
-   // Menus will trigger! Set to make sure our trigger handlers ignore menus.
-   menuAction()->setData(-1);
-
-   _cur_menu = this;
-   _cur_menu_count = 1;
-   _cur_item_width = 0;
-   _cur_col_count = 0;
-
-   //_stayOpen = false;
-   moveDelta = 0;
-
-   connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
    
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
    timer = new QTimer(this);
@@ -105,46 +100,13 @@ PopupMenu::~PopupMenu()
    _contextMenu = 0;
 }
 
-// NOTE: Tested all RoutePopupMenu and PopupMenu dtors and a couple of action dtors from our 
-//  PixmapButtonsHeaderWidgetAction and PixmapButtonsWidgetAction: 
-// This does not appear to be required any more. All submenus and actions are being deleted now.  
-/*
-void PopupMenu::clear()
-{
-  //printf("PopupMenu::clear this:%p\n", this);
-
-  QList<QAction*> list = actions();
-  for(int i = 0; i < list.size(); ++i)
-  {
-    QAction* act = list[i];
-    QMenu* menu = act->menu();
-    if(menu)
-    {
-      menu->clear();    // Recursive.
-      act->setMenu(0);  // CHECK: Is this OK?
-      //printf("  deleting menu:%p\n", menu);
-      delete menu;
-    }
-  }
-  
-  // Now let QT remove and delete this menu's actions.
-  QMenu::clear();
-  
-  #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
-  connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
-  connect(timer, SIGNAL(timeout()), SLOT(timerHandler()));
-  #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
-}
-*/
-
 void PopupMenu::clearAllChecks() const
 {
    QList<QAction*> list = actions();
    for(int i = 0; i < list.size(); ++i)
    {
       QAction* act = list[i];
-      PopupMenu* menu = static_cast <PopupMenu*>(act->menu());
-      if(menu)
+      if(PopupMenu* menu = qobject_cast<PopupMenu*>(act->menu()))
          menu->clearAllChecks();     // Recursive.
       if(act->isCheckable())
       {
@@ -161,8 +123,7 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
    for(int i = 0; i < list.size(); ++i)
    {
       QAction* act = list[i];
-      PopupMenu* menu = (PopupMenu*)act->menu();
-      if(menu)
+      if(PopupMenu* menu = qobject_cast<PopupMenu*>(act->menu()))
       {
          if(QAction* actm = menu->findActionFromData(v))      // Recursive.
             return actm;
@@ -190,10 +151,11 @@ bool PopupMenu::event(QEvent* event)
   // REMOVE Tim. Persistent routes. Added.
   fprintf(stderr, "PopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n", 
           event, QApplication::activePopupWidget(), this, metaObject()->className(), event->type()); 
-   if(MusEGlobal::config.scrollableSubMenus)
-   {
-      return QMenu::event(event);
-   }
+//    if(MusEGlobal::config.scrollableSubMenus)
+//    {
+//       event->ignore();
+//       return QMenu::event(event);
+//    }
    
    switch(event->type())
    {
@@ -220,48 +182,29 @@ bool PopupMenu::event(QEvent* event)
    
    case QEvent::KeyPress:
    {
-//       if(_stayOpen)
-//          //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
-//       {
-//          QKeyEvent* e = static_cast<QKeyEvent*>(event);
-//          if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
-//          {
-//             QAction* act = activeAction();
-//             if(act)
-//             {
-//                act->trigger();
-//                event->accept();
-//                return true;    // We handled it.
-//             }
-//          }
-//       }
-     
      QKeyEvent* e = static_cast<QKeyEvent*>(event);
      switch(e->key())
      {
         case Qt::Key_Space:
           if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
               break;
-            // for motif, fall through
-#ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:
-#endif
         case Qt::Key_Return:
         case Qt::Key_Enter:
         {
-          if(_stayOpen && (MusEGlobal::config.popupsDefaultStayOpen || (e->modifiers() & Qt::ControlModifier)))
+          if(QAction* act = activeAction())
           {
-            //if(act && act->menu() && act->isCheckable())
-            if(QAction* act = activeAction())
+            const bool stay_open = _stayOpen && (MusEGlobal::config.popupsDefaultStayOpen || (e->modifiers() & Qt::ControlModifier));
+            // Stay open? Or does the action have a submenu, but also a checkbox of its own?
+            if(stay_open || (act->isEnabled() && act->menu() && act->isCheckable()))
             {
-              // REMOVE Tim. Persistent routes. Added.
-              fprintf(stderr, "   Return/Enter pressed: triggering action:%p\n", act); 
-              act->trigger();
+              act->trigger();  // Trigger the action. 
               event->accept();
-              //if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
+              if(!stay_open)
                 closeUp();
-              return true;    // We handled it.
+              return true;     // We handled it.
             }
+            // Otherwise let ancestor QMenu handle it...
           }
         }
         break;
@@ -276,37 +219,34 @@ bool PopupMenu::event(QEvent* event)
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
    case QEvent::MouseMove:
    {
-      QMouseEvent* e = static_cast<QMouseEvent*>(event);
-      QPoint globPos = e->globalPos();
-      int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
-      if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
+      if(!MusEGlobal::config.scrollableSubMenus)
       {
-         moveDelta = 32;
-         if(!timer->isActive())
-            timer->start();
-         event->accept();
-         return true;
-      }
-      else
-         if(x() + width() >= dw && globPos.x() >= (dw -1))   // If on the very last pixel (or beyond)
-         {
-            moveDelta = -32;
-            if(!timer->isActive())
-               timer->start();
-            event->accept();
-            return true;
-         }
+        QMouseEvent* e = static_cast<QMouseEvent*>(event);
+        QPoint globPos = e->globalPos();
+        int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
+        if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
+        {
+          moveDelta = 32;
+          if(!timer->isActive())
+              timer->start();
+          event->accept();
+          return true;
+        }
+        else
+          if(x() + width() >= dw && globPos.x() >= (dw -1))   // If on the very last pixel (or beyond)
+          {
+              moveDelta = -32;
+              if(!timer->isActive())
+                timer->start();
+              event->accept();
+              return true;
+          }
 
-      if(timer->isActive())
-         timer->stop();
-      
-      //event->accept();
-      //return true;
-      
-      //event->ignore();               // Pass it on
-      //return QMenu::event(event);
+        if(timer->isActive())
+          timer->stop();
+      }
    }
-      break;
+   break;
 #endif  // POPUP_MENU_DISABLE_AUTO_SCROLL
 
    default:
@@ -319,20 +259,6 @@ bool PopupMenu::event(QEvent* event)
 
 void PopupMenu::closeUp()
 {
-  // Code adapted from QWidget::mousePressEvent()...
-  // NG. This didn't work
-//   if((windowType() == Qt::Popup))
-//   {
-//     QWidget* w;
-//     while((w = QApplication::activePopupWidget()) && w != this)
-//     {
-//       w->close();
-//       if(QApplication::activePopupWidget() == w) // widget does not want to disappear
-//         w->hide(); // hide at least
-//     }
-//     close();
-//   }
-  
   if(isVisible())
   {
     fprintf(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
@@ -350,26 +276,16 @@ void PopupMenu::closeUp()
       if(PopupMenu* pup = qobject_cast<PopupMenu*>(act->associatedWidgets().at(i)))
       {
         fprintf(stderr, "   associated popup:%p\n", pup);
-        //if(pup->isVisible())
-        //{
-          fprintf(stderr, "   closing...\n");
-          pup->closeUp();
-        //}
+        fprintf(stderr, "   closing...\n");
+        pup->closeUp();
       }
     }
   }
-  //else
-//   if(isVisible())
-//   {
-//     fprintf(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
-//     close();
-//   }
 }
 
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
 void PopupMenu::timerHandler()
 {
-   //if(!isVisible() || !hasFocus())
    if(!isVisible())
    {
       timer->stop();
@@ -400,7 +316,7 @@ void PopupMenu::popHovered(QAction* action)
    _lastHoveredAction = action;
    hideContextMenu();  
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-   if(action)
+   if(action && !MusEGlobal::config.scrollableSubMenus)
    {
       int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
       QRect r = actionGeometry(action);
@@ -416,11 +332,6 @@ void PopupMenu::popHovered(QAction* action)
 void PopupMenu::mousePressEvent(QMouseEvent* e)
 {
   fprintf(stderr, "PopupMenu::mousePressEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
-  // REMOVE Tim. Persistent routes. Added. Just a test. 
-//   e->ignore();
-//   QMenu::mousePressEvent(e);
-//   return;
-  
   if (_contextMenu && _contextMenu->isVisible())
     _contextMenu->hide();
   e->ignore();
@@ -430,11 +341,6 @@ void PopupMenu::mousePressEvent(QMouseEvent* e)
 void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
   fprintf(stderr, "PopupMenu::mouseReleaseEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
-  // REMOVE Tim. Persistent routes. Added. Just a test. 
-//   e->ignore();
-//   QMenu::mouseReleaseEvent(e);
-//   return;
-   
    if(_contextMenu && _contextMenu->isVisible())
      return;
      
@@ -461,27 +367,44 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
    return;
 
 #else
-   // Check for Ctrl to stay open.
-   if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
-   {
-      fprintf(stderr, "PopupMenu::mouseReleaseEvent: not stay open\n");  // REMOVE Tim. Persistent routes. Added.
-      if (action && action->menu() != NULL  &&  action->isCheckable())
-         action->activate(QAction::Trigger);
-
-      e->ignore(); // REMOVE Tim. Persistent routes. Added. Just a test.
-      QMenu::mouseReleaseEvent(e);
-
-      if (action && action->menu() != NULL  &&  action->isCheckable())
-         close();
-
-      return;
-   }
-
-   fprintf(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");  // REMOVE Tim. Persistent routes. Added.
-   if (action)
-      action->activate(QAction::Trigger);
-   else
-      QMenu::mouseReleaseEvent(e);
+   
+  // Check for Ctrl to stay open.
+  const bool stay_open = _stayOpen && (MusEGlobal::config.popupsDefaultStayOpen || (e->modifiers() & Qt::ControlModifier));
+  // Stay open? Or does the action have a submenu, but also a checkbox of its own?
+  if(action && (stay_open || (action->isEnabled() && action->menu() && action->isCheckable())))
+  {
+    fprintf(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");  // REMOVE Tim. Persistent routes. Added.
+    action->trigger();  // Trigger the action. 
+    e->accept();
+    if(!stay_open)
+      closeUp();
+    return;     // We handled it.
+  }
+  // Otherwise let ancestor QMenu handle it...
+  e->ignore();
+  QMenu::mouseReleaseEvent(e);
+   
+//    // Check for Ctrl to stay open.
+//    if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
+//    {
+//       fprintf(stderr, "PopupMenu::mouseReleaseEvent: not stay open\n");  // REMOVE Tim. Persistent routes. Added.
+//       if (action && action->menu() != NULL  &&  action->isCheckable())
+//          action->activate(QAction::Trigger);
+// 
+//       e->ignore(); // REMOVE Tim. Persistent routes. Added. Just a test.
+//       QMenu::mouseReleaseEvent(e);
+// 
+//       if (action && action->menu() != NULL  &&  action->isCheckable())
+//          close();
+// 
+//       return;
+//    }
+// 
+//    fprintf(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");  // REMOVE Tim. Persistent routes. Added.
+//    if (action)
+//       action->activate(QAction::Trigger);
+//    else
+//       QMenu::mouseReleaseEvent(e);
 
 #endif   // POPUP_MENU_DISABLE_STAY_OPEN
 }
@@ -511,7 +434,7 @@ PopupMenu* PopupMenu::getMenu()
       _cur_item_width = 0;
       _cur_col_count = 1;
       QString s(tr("<More...> %1").arg(_cur_menu_count));
-      _cur_menu = new PopupMenu(s, this, _stayOpen);
+      _cur_menu = cloneMenu(s, this, _stayOpen);
       ++_cur_menu_count;
       addMenu(_cur_menu);
    }
@@ -700,11 +623,6 @@ void PopupMenu::contextMenuEvent(QContextMenuEvent* e)
 
 void PopupMenu::hideEvent(QHideEvent *e)
 {
-  // REMOVE Tim. Persistent routes. Added. Just a test.
-//   e->ignore();
-//   QMenu::hideEvent(e);
-//   return;
-  
   if(_contextMenu && _contextMenu->isVisible())
   {
     // we need to block signals here when the ctxMenu is showing
@@ -721,32 +639,5 @@ void PopupMenu::hideEvent(QHideEvent *e)
   }
   QMenu::hideEvent(e);
 }
-
-/*
-//======================
-// PopupView
-//======================
-
-PopupView::PopupView(QWidget* parent) 
-          : QColumnView(parent)
-{
-  _model= new QStandardItemModel(this);
-  // FIXME: After clearing, then re-filling, no items seen.
-  // But if setModel is called FOR THE FIRST TIME after clearing the model,
-  //  then it works. Calling setModel any time after that does not work.
-  setModel(_model);
-}
-
-PopupView::~PopupView()
-{
-  // Make sure to clear the popup so that any child popups are also deleted !
-  //popup->clear();
-}
-
-void PopupView::clear()
-{
-  _model->clear();
-}
-*/ 
 
 } // namespace MusEGui

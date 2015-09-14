@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  RoutePopupMenu.h 
-//  (C) Copyright 2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//  (C) Copyright 2011-2015 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -23,7 +23,6 @@
 #ifndef __ROUTEPOPUPMENU_H__
 #define __ROUTEPOPUPMENU_H__
 
-//#include <QObject>
 #include "type_defs.h"
 #include "route.h"
 #include "custom_widget_actions.h"
@@ -43,27 +42,24 @@ class QResizeEvent;
 
 namespace MusEGui {
 
-//class PopupMenu;
 class RoutingMatrixWidgetAction;
 
-//class RoutePopupMenu : public QObject
 class RoutePopupMenu : public PopupMenu
 {
   Q_OBJECT
   
-    //PopupMenu* _pup;
-    // REMOVE Tim. Persistent routes. Removed.
-    //MusECore::Track* _track;
-    MusECore::Route  _route;  // REMOVE Tim. Persistent routes. Added.
+    // Route describing the caller (a track, device, jack port etc).
+    MusECore::Route  _route;
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
+    // For keyboard navigation.
     RoutePopupHit _lastHoveredHit;
     // To inform a pending hover slot whether the hover was from mouse or not.
     bool _hoverIsFromMouse;
     
     void init();
+    // Prepares (fills) the popup before display.
     void prepare();
-    // REMOVE Tim. Persistent routes. Added.
     // Recursive. Returns true if any text was changed.
     bool updateItemTexts(PopupMenu* menu = 0); 
     
@@ -74,19 +70,9 @@ class RoutePopupMenu : public PopupMenu
     int addOutPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addGroupPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    // REMOVE Tim. Persistent routes. Removed.
-    //int addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    
-    // REMOVE Tim. Persistent routes. Removed.
-    //int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
-    // REMOVE Tim. Persistent routes. Removed.
-    //int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
-    // REMOVE Tim. Persistent routes. Changed.
-    //int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
     void addMidiPorts(MusECore::Track* t, MusEGui::PopupMenu* pup, bool isOutput, bool show_synths, bool want_readable);
     void addMidiTracks(MusECore::Track* t, MusEGui::PopupMenu* pup, bool isOutput);
     
-    // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     void addJackPorts(const MusECore::Route& route, PopupMenu* lb);
     void jackRouteActivated(QAction* action, const MusECore::Route& route, const MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
@@ -99,7 +85,6 @@ class RoutePopupMenu : public PopupMenu
     void routePopupHovered(QAction*);
     void routePopupActivated(QAction*);
     void songChanged(MusECore::SongChangedFlags_t);
-    //void popupAboutToShow();
   
   protected:  
     virtual bool event(QEvent*);
@@ -110,26 +95,23 @@ class RoutePopupMenu : public PopupMenu
     virtual void keyPressEvent(QKeyEvent*);
     // Updates item texts and the 'preferred alias action'. Returns true if any action was changed.
     virtual bool preferredPortAliasChanged(); 
-    
+
+    // For auto-breakup of a too-wide menu. Virtual.
+    virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool /*stayOpen*/ = false)
+      { return new RoutePopupMenu(_route, title, parent, _isOutMenu); }
+
   public:
-    // REMOVE Tim. Persistent routes. Changed.
-    //RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
-    //RoutePopupMenu(const QString& title, QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
     RoutePopupMenu(QWidget* parent = 0, bool isOutput = false);
     RoutePopupMenu(const MusECore::Route& route, QWidget* parent = 0, bool isOutput = false);
     RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent = 0, bool isOutput = false);
     
     void updateRouteMenus();
     
-    // REMOVE Tim. Persistent routes. Changed.
-    //void exec(MusECore::Track* track = 0, bool isOutput = false);
-    //void exec(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
-    //void popup(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
     void exec(const MusECore::Route& route, bool isOutput = false);
     void exec(const QPoint& p, const MusECore::Route& route, bool isOutput = false);
     void popup(const QPoint& p, const MusECore::Route& route, bool isOutput = false);
 };
 
-}
+} // namespace MusEGui
 
 #endif
