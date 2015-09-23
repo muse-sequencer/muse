@@ -137,7 +137,7 @@ class JackAudioDevice : public AudioDevice {
       
       virtual int setMaster(bool f);
 
-      virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
+      //virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
 
       //static bool jackStarted;
       };

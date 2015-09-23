@@ -225,7 +225,7 @@ class DummyAudioDevice : public AudioDevice {
 
 DummyAudioDevice* dummyAudio = 0;
 
-DummyAudioDevice::DummyAudioDevice() 
+DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       {
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
