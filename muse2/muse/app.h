@@ -371,6 +371,12 @@ class MusE : public QMainWindow
 
       void updateWindowMenu();
 
+   private:
+      timeval lastCpuTime;
+      timeval lastSysTime;
+      float fAvrCpuLoad;
+      int avrCpuLoadCounter;
+      float fCurCpuLoad;
    public:
       MusE();
       void loadDefaultSong(int argc, char** argv);
@@ -400,6 +406,8 @@ class MusE : public QMainWindow
       const ToplevelList* getToplevels() { return &toplevels; }
       
       TopWin* getCurrentMenuSharingTopwin() { return currentMenuSharingTopwin; }
+
+      float getCPULoad();
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();

@@ -42,19 +42,10 @@ class AudioDevice {
 
    public:
       enum { DUMMY_AUDIO=0, JACK_AUDIO=1 };  // p3.3.52
-      timeval lastCpuTime;
-      timeval lastSysTime;
-      float fAvrCpuLoad;
-      int avrCpuLoadCounter;
-      float fCurCpuLoad;
+
       AudioDevice()
       {
-          gettimeofday(&lastSysTime, NULL);
-          lastCpuTime.tv_sec = 0;
-          lastCpuTime.tv_usec = 0;
-          fAvrCpuLoad = 0.0f;
-          avrCpuLoadCounter = 0;
-          fCurCpuLoad = 0.0f;
+
       }
       virtual ~AudioDevice() {}
 
@@ -107,37 +98,6 @@ class AudioDevice {
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
       virtual int setMaster(bool f) = 0;
-      virtual float getCPULoad()
-      {
-          struct rusage ru;
-          struct timeval curSysTime;
-          gettimeofday(&curSysTime, NULL);
-          //float fLoad = 0.0f;
-          if(getrusage(RUSAGE_SELF, &ru) != 0)
-          {
-              return 0.0f;
-          }
-          long msSysElapsed = (curSysTime.tv_usec / 1000L) + curSysTime.tv_sec * 1000L;
-          msSysElapsed -= (lastSysTime.tv_usec / 1000L) + lastSysTime.tv_sec * 1000L;
-          long msCpuElasped = (ru.ru_utime.tv_usec / 1000L) + ru.ru_utime.tv_sec * 1000L;
-          msCpuElasped -= (lastCpuTime.tv_usec / 1000L) + lastCpuTime.tv_sec * 1000L;
-          if(msSysElapsed > 0)
-          {
-              fAvrCpuLoad += (float)((double)msCpuElasped / (double)msSysElapsed);
-              avrCpuLoadCounter++;
-          }
-          lastCpuTime = ru.ru_utime;
-          lastSysTime = curSysTime;
-          if(avrCpuLoadCounter > 10)
-          {
-              fCurCpuLoad = (fAvrCpuLoad / (float)avrCpuLoadCounter) * 100.0f;
-              fAvrCpuLoad = 0.0f;
-              avrCpuLoadCounter = 0;
-          }
-
-          return fCurCpuLoad;
-      }
-
       };
 
 } // namespace MusECore
