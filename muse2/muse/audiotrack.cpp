@@ -48,10 +48,10 @@
 
 namespace MusECore {
 
-bool AudioAux::_isVisible=false;
-bool AudioInput::_isVisible=false;
-bool AudioOutput::_isVisible=false;
-bool AudioGroup::_isVisible =false;
+bool AudioAux::_isVisible=true;
+bool AudioInput::_isVisible=true;
+bool AudioOutput::_isVisible=true;
+bool AudioGroup::_isVisible =true;
 bool WaveTrack::_isVisible=true;
 
 // DELETETHIS 40. this caching stuff seems to be not used any more
