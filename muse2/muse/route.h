@@ -209,14 +209,20 @@ typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;*/
 
 
-extern void addRoute(Route, Route);
-extern void removeRoute(Route, Route);
-extern void removeAllRoutes(Route, Route);
+extern void addRoute(Route src, Route dst);
+extern void removeRoute(Route src, Route dst);
+extern void removeAllRoutes(Route src, Route dst);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 // REMOVE Tim. Persistent routes. Removed.
 //extern bool checkRoute(const QString&, const QString&);
-extern bool routeCanConnect(const Route&, const Route&);
-extern bool routeCanDisconnect(const Route&, const Route&);
+// Returns true if the routes are found and they are connected.
+extern bool routeCanDisconnect(const Route& src, const Route& dst);
+// Returns true if the routes are found and they are not connected and CAN be connected.
+extern bool routeCanConnect(const Route& src, const Route& dst);
+// Returns true if the routes are found and they CAN be connected (even if they are already connected).
+// If check_types_only is true, it only compares route types.
+// Otherwise other parameters such as channels are also compared.
+extern bool routesCompatible(const Route& src, const Route& dst, bool check_types_only = false);
 
 } // namespace MusECore
 

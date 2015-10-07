@@ -36,9 +36,9 @@ bool checkAudioDevice();
 }
 
 namespace MusECore {
-class MidiPlayEvent;
+//class MidiPlayEvent;
 
-enum JackCallbackEventType {PortRegister, PortUnregister, PortConnect, PortDisconnect, GraphChanged };
+enum JackCallbackEventType {PortRegister, PortUnregister, PortConnect, PortDisconnect, GraphChanged};
 struct JackCallbackEvent
 {
   JackCallbackEventType type;
@@ -89,63 +89,71 @@ class JackAudioDevice : public AudioDevice {
    public:
       JackAudioDevice(jack_client_t* cl, char * jack_id_string);
       virtual ~JackAudioDevice();
-      virtual void nullify_client() { _client = 0; }
-      
       virtual inline int deviceType() const { return JACK_AUDIO; }   
       
       virtual void start(int);
       virtual void stop ();
       
-      virtual int framePos() const;
-      virtual unsigned frameTime() const     { return _frameCounter; }  
-      virtual double systemTime() const;
+      jack_client_t* jackClient() const { return _client; }
+      virtual void registerClient();
+      virtual const char* clientName() { return jackRegisteredName; }
+      virtual void nullify_client() { _client = 0; }
 
+      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
+      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
+      virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
+      virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
+      virtual void unregisterPort(void*);
+      virtual AudioDevice::PortType portType(void*) const;
+      virtual AudioDevice::PortDirection portDirection(void*) const;
+      virtual void connect(void* src, void* dst);
+      virtual void connect(const char* src, const char* dst);
+      virtual void disconnect(void* src, void* dst);
+      virtual void disconnect(const char* src, const char* dst);
+      virtual int connections(void* clientPort) { return jack_port_connected((jack_port_t*)clientPort); }
+      virtual bool portConnectedTo(void* our_port, const char* port) { return jack_port_connected_to((jack_port_t*)our_port, port); }
+      // Returns true if the ports are connected.
+      virtual bool portsCanDisconnect(void* src, void* dst) const;
+      // Returns true if the ports are found and they are connected.
+      virtual bool portsCanDisconnect(const char* src, const char* dst) const;
+      // Returns true if the ports are not connected and CAN be connected.
+      virtual bool portsCanConnect(void* src, void* dst) const;
+      // Returns true if the ports are found and they are not connected and CAN be connected.
+      virtual bool portsCanConnect(const char* src, const char* dst) const;
+      // Returns true if the ports CAN be connected.
+      virtual bool portsCompatible(void* src, void* dst) const;
+      // Returns true if the ports are found and they CAN be connected.
+      virtual bool portsCompatible(const char* src, const char* dst) const;
+      virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
+      // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
+      virtual const char* canonicalPortName(void* port) { if(!port) return NULL; return jack_port_name((jack_port_t*)port); }
+      virtual void* findPort(const char* name);
+      virtual unsigned int portLatency(void* port, bool capture) const;
       virtual float* getBuffer(void* port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
-      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
-      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
-
-      jack_client_t* jackClient() const { return _client; }
-      virtual void registerClient();
-      virtual const char* clientName() { return jackRegisteredName; }
-
-      virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
-      virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
-
-      virtual void unregisterPort(void*);
-      virtual void connect(void*, void*);
-      virtual void connect(const char*, const char*);
-      virtual void disconnect(void*, void*);
-      virtual void disconnect(const char*, const char*);
-      virtual int connections(void* clientPort) { return jack_port_connected((jack_port_t*)clientPort); }
-      virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
-      virtual void* findPort(const char* name);
-      // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
-      virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
-      virtual const char* canonicalPortName(void* port) { if(!port) return NULL; return jack_port_name((jack_port_t*)port); }
-      virtual unsigned int portLatency(void* port, bool capture) const;
       virtual int getState();
       virtual unsigned int getCurFrame() const;
+      virtual int framePos() const;
+      virtual unsigned frameTime() const     { return _frameCounter; }  
+      virtual double systemTime() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
       virtual int realtimePriority() const;
+      
       virtual void startTransport();
       virtual void stopTransport();
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
+      virtual int setMaster(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
-      void graphChanged();
-      virtual bool portConnectedTo(void* our_port, const char* port) { return jack_port_connected_to((jack_port_t*)our_port, port); }
-      virtual bool portsConnected(const char*, const char*);
-      virtual bool portsCanConnect(const char*, const char*);
-      
-      virtual int setMaster(bool f);
 
       virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
 
+      void graphChanged();
       //static bool jackStarted;
       };
 

@@ -50,6 +50,9 @@ class QColor;
 
 namespace MusEGui {
 
+  
+typedef QList <QTreeWidgetItem*> RouteTreeItemList;
+
 //---------------------------------------------------------
 //   RouteTreeWidgetItem
 //---------------------------------------------------------
@@ -305,6 +308,13 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       RoutingItemDelegate* srcItemDelegate;
       RoutingItemDelegate* dstItemDelegate;
       
+      //RouteTreeWidgetItem* _srcFilterItem;
+      //RouteTreeWidgetItem* _dstFilterItem;
+      RouteTreeItemList _srcFilterItems;
+      RouteTreeItemList _dstFilterItems;
+      //RouteTreeItemList _srcFilterRouteItems;
+      //RouteTreeItemList _dstFilterRouteItems;
+      
       virtual void closeEvent(QCloseEvent*);
       void routingChanged();
       void removeItems();
@@ -326,6 +336,12 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void srcScrollBarValueChanged(int value);
       void dstScrollBarValueChanged(int value);
       
+      void filterSrcClicked(bool v);
+      void filterDstClicked(bool v);
+      
+      void filterSrcRoutesClicked(bool v);
+      void filterDstRoutesClicked(bool v);
+      
    signals:
       void closed();
 
@@ -336,6 +352,17 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       //RouteTreeWidgetItem* findCategoryItem(QTreeWidget*, const QString&);
       QTreeWidgetItem* findRoutesItem(const MusECore::Route&, const MusECore::Route&);
       //void getSelectedRoutes(QTreeWidget* tree, MusECore::RouteList& routes);
+      
+      // Hide all items in the source or destination tree except the filter items, 
+      //  and hide any items in the route tree whose source or destination route data 
+      //  matches matches the filter items' routes.
+      // If filter items is empty show all items, in both the source or destination tree 
+      //  and the route tree.
+      // Hiding items does not disturb the open state of an entire tree.
+      void filter(const RouteTreeItemList& srcFilterItems, 
+                  const RouteTreeItemList& dstFilterItems,
+                  bool filterSrc, 
+                  bool filterDst);
       
       enum { ROUTE_NAME_COL = 0 }; //, ROUTE_TYPE_COL };
       enum { ROUTE_SRC_COL = 0, ROUTE_DST_COL };

@@ -126,15 +126,21 @@ class DummyAudioDevice : public AudioDevice {
       virtual void* registerInPort(const char*, bool) {
             return (void*)2;
             }
+      virtual AudioDevice::PortType portType(void*) const { return UnknownType; }
+      virtual AudioDevice::PortDirection portDirection(void*) const { return UnknownDirection; }
       virtual void unregisterPort(void*) {}
-      virtual void connect(void*, void*) {}
-      virtual void connect(const char*, const char*) {}
-      virtual void disconnect(void*, void*) {}
-      virtual void disconnect(const char*, const char*) {}
+      virtual void connect(void* /*src*/, void* /*dst*/) {}
+      virtual void connect(const char* /*src*/, const char* /*dst*/) {}
+      virtual void disconnect(void* /*src*/, void* /*dst*/) {}
+      virtual void disconnect(const char* /*src*/, const char* /*dst*/) {}
       virtual int connections(void* /*clientPort*/) { return 0; }
       virtual bool portConnectedTo(void*, const char*) { return false; }
-      virtual bool portsConnected(const char*, const char*) { return false; }
-      virtual bool portsCanConnect(const char*, const char*) { return false; }
+      virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const { return false; };
+      virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const { return false; }
+      virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const { return false; }
+      virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const { return false; }
+      virtual bool portsCompatible(void* /*src*/, void* /*dst*/) const { return false; }
+      virtual bool portsCompatible(const char* /*src*/, const char* /*dst*/) const { return false; }
       virtual void setPortName(void*, const char*) {}
       virtual void* findPort(const char*) { return 0;}
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.

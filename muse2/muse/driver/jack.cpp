@@ -1331,21 +1331,17 @@ void JackAudioDevice::disconnect(const char* src, const char* dst)
 }
 
 //---------------------------------------------------------
-//   portsConnected
+//   portsCanDisconnect
 //---------------------------------------------------------
 
-bool JackAudioDevice::portsConnected(const char* port1, const char* port2)
+bool JackAudioDevice::portsCanDisconnect(void* src, void* dst) const
 {
   if(!_client)
     return false;
-  jack_port_t* jp1 = jack_port_by_name(_client, port1);
-  if(!jp1)
-    return false;
-  jack_port_t* jp2 = jack_port_by_name(_client, port2);
-  if(!jp2)
+  if(!src || !dst)
     return false;
   
-  const char** ports = jack_port_get_all_connections(_client, jp1);
+  const char** ports = jack_port_get_all_connections(_client, (jack_port_t*)src);
   if(!ports)
     return false;
 
@@ -1353,33 +1349,42 @@ bool JackAudioDevice::portsConnected(const char* port1, const char* port2)
   for(const char** p = ports; p && *p; ++p) 
   {
     jack_port_t* jp = jack_port_by_name(_client, *p);
-    if(jp == jp2)
+    if(jp == dst)
     {
       rv = true;
       break;
     }
   }
-  
   jack_free(ports);
   return rv;
+}
+
+bool JackAudioDevice::portsCanDisconnect(const char* src, const char* dst) const
+{
+  if(!_client)
+    return false;
+  return portsCanDisconnect(jack_port_by_name(_client, src), jack_port_by_name(_client, dst));
 }
 
 //---------------------------------------------------------
 //   portsCanConnect
 //---------------------------------------------------------
 
-bool JackAudioDevice::portsCanConnect(const char* port1, const char* port2)
+bool JackAudioDevice::portsCanConnect(void* src, void* dst) const
 { 
   if(!_client)
     return false;
-  jack_port_t* jp1 = jack_port_by_name(_client, port1);
-  if(!jp1)
+  if(!src || !dst)
     return false;
-  jack_port_t* jp2 = jack_port_by_name(_client, port2);
-  if(!jp2)
+  const char* src_type = jack_port_type((jack_port_t*)src);
+  const char* dst_type = jack_port_type((jack_port_t*)dst);
+  if(!src_type || !dst_type || (strcmp(src_type, dst_type) != 0))
+    return false;
+
+  if(!(jack_port_flags((jack_port_t*)src) & JackPortIsOutput) || !(jack_port_flags((jack_port_t*)dst) & JackPortIsInput))
     return false;
   
-  const char** ports = jack_port_get_all_connections(_client, jp1);
+  const char** ports = jack_port_get_all_connections(_client, (jack_port_t*)src);
   if(!ports)
     return true;
 
@@ -1387,15 +1392,48 @@ bool JackAudioDevice::portsCanConnect(const char* port1, const char* port2)
   for(const char** p = ports; p && *p; ++p) 
   {
     jack_port_t* jp = jack_port_by_name(_client, *p);
-    if(jp == jp2)
+    if(jp == dst)
     {
       rv = false;
       break;
     }
   }
-  
+
   jack_free(ports);
   return rv;
+}
+
+bool JackAudioDevice::portsCanConnect(const char* src, const char* dst) const
+{ 
+  if(!_client)
+    return false;
+  return portsCanConnect(jack_port_by_name(_client, src), jack_port_by_name(_client, dst));
+}
+
+//---------------------------------------------------------
+//   portsCompatible
+//---------------------------------------------------------
+
+bool JackAudioDevice::portsCompatible(void* src, void* dst) const
+{
+  if(!src || !dst)
+    return false;
+  const char* src_type = jack_port_type((jack_port_t*)src);
+  const char* dst_type = jack_port_type((jack_port_t*)dst);
+  if(!src_type || !dst_type || (strcmp(src_type, dst_type) != 0))
+    return false;
+
+  if(!(jack_port_flags((jack_port_t*)src) & JackPortIsOutput) || !(jack_port_flags((jack_port_t*)dst) & JackPortIsInput))
+    return false;
+  
+  return true;
+}
+
+bool JackAudioDevice::portsCompatible(const char* src, const char* dst) const
+{
+  if(!_client)
+    return false;
+  return portsCompatible(jack_port_by_name(_client, src), jack_port_by_name(_client, dst));
 }
 
 //---------------------------------------------------------
@@ -1853,6 +1891,32 @@ void JackAudioDevice::unregisterPort(void* p)
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 
+AudioDevice::PortType JackAudioDevice::portType(void* p) const
+{ 
+  if(!p)
+    return UnknownType; 
+  if(const char* type = jack_port_type((jack_port_t*)p))
+  {
+    if(strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
+      return AudioPort; 
+    if(strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
+      return MidiPort; 
+  }
+  return UnknownType; 
+}
+
+AudioDevice::PortDirection JackAudioDevice::portDirection(void* p) const
+{ 
+  if(!p)
+    return UnknownDirection; 
+  const int flags = jack_port_flags((jack_port_t*)p);
+  if(flags & JackPortIsInput)
+    return InputPort;
+  if(flags & JackPortIsOutput)
+    return OutputPort;
+  return UnknownDirection; 
+}
+      
 //---------------------------------------------------------
 //   getState
 //---------------------------------------------------------

@@ -32,7 +32,7 @@
       <property name="childrenCollapsible">
        <bool>false</bool>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="spacing">
          <number>0</number>
@@ -142,7 +142,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget_1">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <property name="spacing">
          <number>0</number>
@@ -195,6 +195,34 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="filterSrcButton">
+       <property name="text">
+        <string>Filter src</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="filterDstButton">
+       <property name="text">
+        <string>Filter dst</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="srcRoutesButton">
+       <property name="text">
+        <string>Src routes</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="dstRoutesButton">
+       <property name="text">
+        <string>Dst routes</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">

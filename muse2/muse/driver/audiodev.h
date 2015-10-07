@@ -39,12 +39,14 @@ class Pos;
 class AudioDevice {
 
    public:
-      enum { DUMMY_AUDIO=0, JACK_AUDIO=1 };  // p3.3.52
+      enum { DUMMY_AUDIO=0, JACK_AUDIO=1 };
+      enum PortType { UnknownType=0, AudioPort=1, MidiPort=2 };
+      enum PortDirection { UnknownDirection=0, InputPort=1, OutputPort=2 };
       
       AudioDevice() {}
       virtual ~AudioDevice() {}
 
-      virtual int deviceType() const = 0;  // p3.3.52
+      virtual int deviceType() const = 0;
       
       //virtual void start() = 0;
       virtual void start(int priority) = 0;
@@ -68,15 +70,27 @@ class AudioDevice {
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
       
+      virtual PortType portType(void*) const = 0;
+      virtual PortDirection portDirection(void*) const = 0;
       virtual void unregisterPort(void*) = 0;
-      virtual void connect(void*, void*) = 0;
-      virtual void connect(const char*, const char*) = 0;
-      virtual void disconnect(void*, void*) = 0;
-      virtual void disconnect(const char*, const char*) = 0;
+      virtual void connect(void* src, void* dst) = 0;
+      virtual void connect(const char* src, const char* dst) = 0;
+      virtual void disconnect(void* src, void* dst) = 0;
+      virtual void disconnect(const char* src, const char* dst) = 0;
       virtual int connections(void* /*clientPort*/) = 0; 
       virtual bool portConnectedTo(void* our_port, const char* port) = 0;
-      virtual bool portsConnected(const char*, const char*) = 0;
-      virtual bool portsCanConnect(const char*, const char*) = 0;
+      // Returns true if the ports are connected.
+      virtual bool portsCanDisconnect(void* src, void* dst) const = 0;
+      // Returns true if the ports are found and they are connected.
+      virtual bool portsCanDisconnect(const char* src, const char* dst) const = 0;
+      // Returns true if the ports are not connected and CAN be connected.
+      virtual bool portsCanConnect(void* src, void* dst) const = 0;
+      // Returns true if the ports are found and they are not connected and CAN be connected.
+      virtual bool portsCanConnect(const char* src, const char* dst) const = 0;
+      // Returns true if the ports CAN be connected.
+      virtual bool portsCompatible(void* src, void* dst) const = 0;
+      // Returns true if the ports are found and they CAN be connected.
+      virtual bool portsCompatible(const char* src, const char* dst) const = 0;
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
