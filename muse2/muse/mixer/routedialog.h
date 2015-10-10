@@ -325,8 +325,8 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
 
    private slots:
       void routeSelectionChanged();
-      void removeRoute();
-      void addRoute();
+      void disconnectClicked();
+      void connectClicked();
       void srcSelectionChanged();
       void dstSelectionChanged();
       void songChanged(MusECore::SongChangedFlags_t);
@@ -369,6 +369,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       enum  RoutingRoles { RouteRole = Qt::UserRole}; //, ChannelsRole = Qt::UserRole + 1 };
       
       static const QString tracksCat;
+      static const QString midiPortsCat;
       static const QString midiDevicesCat;
       static const QString jackCat;
       static const QString jackMidiCat;
