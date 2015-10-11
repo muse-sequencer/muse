@@ -717,7 +717,7 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+      QToolBar *jackCpuToolbar = addToolBar(tr("Cpu load"));
       jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
       QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
       actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));

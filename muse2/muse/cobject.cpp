@@ -145,7 +145,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
 	sig_tb->addWidget(sw);
 
- QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+ QToolBar *jackCpuToolbar = addToolBar(tr("Cpu load"));
  jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
  QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
  actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
