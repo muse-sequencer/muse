@@ -188,8 +188,9 @@ void MPConfig::changeDefInputRoutes(QAction* act)
         
         if(!operations.empty())
         {
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations);
-          MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
+          //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
           MusEGlobal::song->update(SC_ROUTE);
         }
       }
@@ -332,8 +333,9 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         
         if(!operations.empty())
         {
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations);
-          MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
+          //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
           MusEGlobal::song->update(SC_ROUTE);
         }        
 #endif
@@ -1228,10 +1230,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     
                   }
                   
-                  if(!operations.empty())
+                  // Do these always, regardless of operations - the device has changed.
+                  operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+                  //if(!operations.empty())
                     MusEGlobal::audio->msgExecutePendingOperations(operations);
                   // Do these always, regardless of operations - the device has changed.
-                  MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ? (Hm, not here but elsewhere like audio routing popups etc.)
+                  //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ? (Hm, not here but elsewhere like audio routing popups etc.)
                   MusEGlobal::song->update();
                   
                   return;

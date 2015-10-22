@@ -228,7 +228,7 @@ void addRoute(Route src, Route dst)
               
               src.channel = dst.channel;
               
-              if(dst.track->inRoutes()->exists(src))
+              if(dst.track->inRoutes()->contains(src))
               {
                 fprintf(stderr, "addRoute: src track route already exists.\n");
                 return;
@@ -246,7 +246,7 @@ void addRoute(Route src, Route dst)
               {
                 src.channel = dst.channel;
                 
-                if(dst.device->inRoutes()->exists(src))
+                if(dst.device->inRoutes()->contains(src))
                 {
                   fprintf(stderr, "addRoute: src Jack midi route already exists.\n");
                   return;
@@ -291,7 +291,7 @@ void addRoute(Route src, Route dst)
               
               dst.channel = src.channel;
               
-              if(src.track->outRoutes()->exists(dst))
+              if(src.track->outRoutes()->contains(dst))
               {
                 fprintf(stderr, "addRoute: dst track route already exists.\n");
                 return;
@@ -309,7 +309,7 @@ void addRoute(Route src, Route dst)
               {
                 dst.channel = src.channel;
                 
-                if(src.device->outRoutes()->exists(dst))
+                if(src.device->outRoutes()->contains(dst))
                 {
                   fprintf(stderr, "addRoute: dst Jack midi route already exists.\n");
                   return;
@@ -342,12 +342,22 @@ void addRoute(Route src, Route dst)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(dst.type != Route::TRACK_ROUTE)
+//             if(src.midiPort < 0 || src.midiPort >= MIDI_PORTS)
+//             {
+//               fprintf(stderr, "addRoute: source is midi port, but port number:%d out of range\n", src.midiPort);
+//               return;
+//             }       
+            if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack())
             {
-              fprintf(stderr, "addRoute: source is midi port:%d, but destination is not track\n", src.midiPort);
+              fprintf(stderr, "addRoute: source is midi port:%d, but destination is not midi track\n", src.midiPort);
               return;
             }
-            
+            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+            {
+              fprintf(stderr, "addRoute: source is midi port:%d, but destination track channel:%d out of range\n", src.midiPort, dst.channel);
+              return;
+            }       
+        
             MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
             
             // Do not allow synth ports to connect to any track. It may be useful in some cases, 
@@ -360,12 +370,12 @@ void addRoute(Route src, Route dst)
             //if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
             //const int chmask = (1 << MIDI_CHANNELS) - 1;
             //if(dst.channel < -1 || dst.channel == 0 || dst.channel > chmask)
-            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
-            {
-              //fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
-              fprintf(stderr, "addRoute: source is midi port:%d, but destination channel:%d out of range\n", src.midiPort, dst.channel);
-              return;
-            }
+//             if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+//             {
+//               //fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
+//               fprintf(stderr, "addRoute: source is midi port:%d, but destination channel:%d out of range\n", src.midiPort, dst.channel);
+//               return;
+//             }
 
 //             // REMOVE Tim. Persistent routes. Added.
 //             if(dst.channel == chmask)
@@ -426,36 +436,54 @@ void addRoute(Route src, Route dst)
             
             src.channel = dst.channel;
             RouteList* rl;
-            if(src.isValid())
-            {
+            //if(src.isValid())
+            //{
               rl = mp->outRoutes();
-              if(!rl->exists(dst))
+              if(!rl->contains(dst))
                 rl->push_back(dst);
-            }
-            if(dst.isValid())
-            {
+            //}
+            //if(dst.isValid())
+            //{
               rl = dst.track->inRoutes();
-              if(!rl->exists(src))
+              if(!rl->contains(src))
                 rl->push_back(src);
-            }
+            //}
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(src.type != Route::TRACK_ROUTE)
+        
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+            fprintf(stderr, "addRoute: destination is midi port:%d, but source is not allowed\n", dst.midiPort);
+            return;
+#endif        
+        
+//             if(dst.midiPort < 0 || dst.midiPort >= MIDI_PORTS)
+//             {
+//               fprintf(stderr, "addRoute: destination is midi port, but port number:%d out of range\n", dst.midiPort);
+//               return;
+//             }       
+            if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack())
             {
-              fprintf(stderr, "addRoute: destination is midi port:%d, but source is not track\n", dst.midiPort);
+              fprintf(stderr, "addRoute: destination is midi port:%d, but source is not midi track\n", dst.midiPort);
               return;
             }
+            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+            {
+              fprintf(stderr, "addRoute: destination is midi port:%d, but source track channel:%d out of range\n", dst.midiPort, src.channel);
+              return;
+            }       
+        
+        
             // REMOVE Tim. Persistent routes. Changed.
             //if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
             //const int chmask = (1 << MIDI_CHANNELS) - 1;
             //if(src.channel < -1 || src.channel == 0 || src.channel > chmask)
-            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
-            {
-              //fprintf(stderr, "addRoute: destination is midi port:%d, but source channel mask:%d out of range\n", dst.midiPort, src.channel);
-              fprintf(stderr, "addRoute: destination is midi port:%d, but source channel:%d out of range\n", dst.midiPort, src.channel);
-              return;
-            }
+//             if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+//             {
+//               //fprintf(stderr, "addRoute: destination is midi port:%d, but source channel mask:%d out of range\n", dst.midiPort, src.channel);
+//               fprintf(stderr, "addRoute: destination is midi port:%d, but source channel:%d out of range\n", dst.midiPort, src.channel);
+//               return;
+//             }
             
 //             // REMOVE Tim. Persistent routes. Added.
 //             if(src.channel == chmask)
@@ -520,18 +548,18 @@ void addRoute(Route src, Route dst)
             
             dst.channel = src.channel;
             RouteList* rl;
-            if(src.isValid())
-            {
+            //if(src.isValid())
+            //{
               rl = src.track->outRoutes();
-              if(!rl->exists(dst))
+              if(!rl->contains(dst))
                 rl->push_back(dst);
-            }
-            if(dst.isValid())
-            {
+            //}
+            //if(dst.isValid())
+            //{
               rl = MusEGlobal::midiPorts[dst.midiPort].inRoutes();
-              if(!rl->exists(src))
+              if(!rl->contains(src))
                 rl->push_back(src);
-            }  
+            //}  
       }
       else 
       {
@@ -597,14 +625,14 @@ void addRoute(Route src, Route dst)
 //             return;
 //           }      
 //         }
-        const bool o_found = outRoutes->exists(dst);
+        const bool o_found = outRoutes->contains(dst);
         if(o_found)
           fprintf(stderr, "addRoute: dst track route already exists in src track out routes list. Ignoring.\n");
         else
           outRoutes->push_back(dst);
         
         RouteList* inRoutes = dst.track->inRoutes();
-        const bool i_found = inRoutes->exists(src);
+        const bool i_found = inRoutes->contains(src);
         if(i_found)
           fprintf(stderr, "addRoute: src track route already exists in dst track out routes list. Ignoring.\n");
         else
@@ -638,230 +666,257 @@ void removeRoute(Route src, Route dst)
 {
   if(src.type == Route::JACK_ROUTE) 
   {
-    if(!dst.isValid())
-    {
-      fprintf(stderr, "removeRoute: source is jack, invalid destination\n");
-      return;
-    }
+//     if(!dst.isValid())
+//     {
+//       fprintf(stderr, "removeRoute: source is jack, invalid destination\n");
+//       return;
+//     }
+//     
+//     if(dst.type == Route::TRACK_ROUTE) 
+//     {
+// //       if(dst.track->type() != Track::AUDIO_INPUT) 
+// //       {
+// //         fprintf(stderr, "removeRoute: source is jack, destination is track but not audio input\n");
+// //         return;
+// //       }
+//       src.channel = dst.channel;
+//       iRoute ir = dst.track->inRoutes()->find(src);
+//       if(ir != dst.track->inRoutes()->end())
+//         dst.track->inRoutes()->erase(ir);
+//       else
+//         fprintf(stderr, "removeRoute: source is jack, destination is track but track route not found\n");
+//       return;
+//     }  
+//     else if(dst.type == Route::MIDI_DEVICE_ROUTE) 
+//     {
+//       iRoute ir = dst.device->inRoutes()->find(src);
+//       if(ir != dst.device->inRoutes()->end())
+//         dst.device->inRoutes()->erase(ir);
+//       else
+//         fprintf(stderr, "removeRoute: source is jack, destination is midi device but device route not found\n");
+//       return;
+//     }  
+//     else if(dst.type == Route::JACK_ROUTE) 
+//     {
+//       // Do nothing - it's a direct Jack disconnection!
+//       return;
+//     }
+//     else
+//     {
+//       fprintf(stderr, "removeRoute: source is jack, destination unknown\n");
+//       return;
+//     }
+
     
-    if(dst.type == Route::TRACK_ROUTE) 
-    {
-      if(dst.track->type() != Track::AUDIO_INPUT) 
+    
+    if(dst.isValid())
+    { 
+      switch(dst.type)
       {
-        fprintf(stderr, "removeRoute: source is jack, destination is track but not audio input\n");
-        return;
+        case Route::TRACK_ROUTE:
+          src.channel = dst.channel;
+          dst.track->inRoutes()->removeRoute(src);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          dst.device->inRoutes()->removeRoute(src);
+        break;
+        case Route::MIDI_PORT_ROUTE:
+          MusEGlobal::midiPorts[dst.midiPort].inRoutes()->removeRoute(src);
+        break;
+        case Route::JACK_ROUTE:
+          // Do nothing - it's a direct Jack disconnection!
+        break;
       }
-      src.channel = dst.channel;
-      iRoute ir = dst.track->inRoutes()->find(src);
-      if(ir != dst.track->inRoutes()->end())
-        dst.track->inRoutes()->erase(ir);
-      else
-        fprintf(stderr, "removeRoute: source is jack, destination is track but track route not found\n");
-      return;
-    }  
-    else if(dst.type == Route::MIDI_DEVICE_ROUTE) 
-    {
-      iRoute ir = dst.device->inRoutes()->find(src);
-      if(ir != dst.device->inRoutes()->end())
-        dst.device->inRoutes()->erase(ir);
-      else
-        fprintf(stderr, "removeRoute: source is jack, destination is midi device but device route not found\n");
-      return;
-    }  
-    else if(dst.type == Route::JACK_ROUTE) 
-    {
-      // Do nothing - it's a direct Jack disconnection!
-      return;
     }
-    else
-    {
-      fprintf(stderr, "removeRoute: source is jack, destination unknown\n");
-      return;
-    }
+    return;
+    
   }
   else if(dst.type == Route::JACK_ROUTE) 
   {
-    if(!src.isValid())
-    {
-      fprintf(stderr, "removeRoute: destination is jack, invalid source\n");
-      return;
-    }
+//     if(!src.isValid())
+//     {
+//       fprintf(stderr, "removeRoute: destination is jack, invalid source\n");
+//       return;
+//     }
+//     
+//     if(src.type == Route::TRACK_ROUTE) 
+//     {
+// //       if(src.track->type() != Track::AUDIO_OUTPUT) 
+// //       {
+// //         fprintf(stderr, "removeRoute: destination is jack, source is track but not audio output\n");
+// //         return;
+// //       }
+//       dst.channel = src.channel;
+//       iRoute ir = src.track->outRoutes()->find(dst);
+//       if(ir != src.track->outRoutes()->end())
+//         src.track->outRoutes()->erase(ir);
+//       else
+//         fprintf(stderr, "removeRoute: destination is jack, source is track but track route not found\n");
+//       return;
+//     }  
+//     else if(src.type == Route::MIDI_DEVICE_ROUTE) 
+//     {
+//       iRoute ir = src.device->outRoutes()->find(dst);
+//       if(ir != src.device->outRoutes()->end())
+//         src.device->outRoutes()->erase(ir);
+//       else
+//         fprintf(stderr, "removeRoute: destination is jack, source is midi device but device route not found\n");
+//       return;
+//     }  
+//     else if(src.type == Route::JACK_ROUTE) 
+//     {
+//       // Do nothing - it's a direct Jack disconnection!
+//       return;
+//     }
+//     else
+//     {
+//       fprintf(stderr, "removeRoute: destination is jack, source unknown\n");
+//       return;
+//     }
     
-    if(src.type == Route::TRACK_ROUTE) 
-    {
-      if(src.track->type() != Track::AUDIO_OUTPUT) 
+    if(src.isValid())
+    { 
+      switch(src.type)
       {
-        fprintf(stderr, "removeRoute: destination is jack, source is track but not audio output\n");
-        return;
+        case Route::TRACK_ROUTE:
+          dst.channel = src.channel;
+          src.track->inRoutes()->removeRoute(dst);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          src.device->inRoutes()->removeRoute(dst);
+        break;
+        case Route::MIDI_PORT_ROUTE:
+          MusEGlobal::midiPorts[src.midiPort].inRoutes()->removeRoute(dst);
+        break;
+        case Route::JACK_ROUTE:
+          // Do nothing - it's a direct Jack disconnection!
+        break;
       }
-      dst.channel = src.channel;
-      iRoute ir = src.track->outRoutes()->find(dst);
-      if(ir != src.track->outRoutes()->end())
-        src.track->outRoutes()->erase(ir);
-      else
-        fprintf(stderr, "removeRoute: destination is jack, source is track but track route not found\n");
-      return;
-    }  
-    else if(src.type == Route::MIDI_DEVICE_ROUTE) 
-    {
-      iRoute ir = src.device->outRoutes()->find(dst);
-      if(ir != src.device->outRoutes()->end())
-        src.device->outRoutes()->erase(ir);
-      else
-        fprintf(stderr, "removeRoute: destination is jack, source is midi device but device route not found\n");
-      return;
-    }  
-    else if(src.type == Route::JACK_ROUTE) 
-    {
-      // Do nothing - it's a direct Jack disconnection!
-      return;
     }
-    else
-    {
-      fprintf(stderr, "removeRoute: destination is jack, source unknown\n");
-      return;
-    }
+    return;
+    
   }
   else if(src.type == Route::MIDI_PORT_ROUTE)  
   {
-    if(dst.type != Route::TRACK_ROUTE)
-    {
-      fprintf(stderr, "removeRoute: source is midi port:%d, but destination is not track\n", src.midiPort);
-      return;
-    }
+//     if(!src.isValid())
+//     {
+//       fprintf(stderr, "removeRoute: source is midi port, but port number:%d is invalid\n", src.midiPort);
+//       return;
+//     }       
+//     if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+//     {
+//       fprintf(stderr, "removeRoute: source is midi port:%d, but source channel:%d out of range\n", src.midiPort, src.channel);
+//       return;
+//     }       
+    
+//     if(dst.type != Route::TRACK_ROUTE || !dst.isValid() || !dst.track->isMidiTrack())
+//     {
+//       fprintf(stderr, "removeRoute: source is midi port:%d, but destination is invalid or not midi track\n", src.midiPort);
+//       return;
+//     }
+//     if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+//     {
+//       fprintf(stderr, "removeRoute: source is midi port:%d, but destination track channel:%d out of range\n", src.midiPort, dst.channel);
+//       return;
+//     }       
     
 //     const int chmask = (1 << MIDI_CHANNELS) - 1;
+//     if(src.isValid())
+//     {
     if(src.isValid())
-    {
-//       MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-//       RouteList* outRoutes = mp->outRoutes();
-//       for(iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-//       {
-//         if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // Is there a route to the track?
-//         {
-//           //printf("i->channel:%x dst.channel:%x\n", i->channel, dst.channel);   
-//           // REMOVE Tim. Persistent routes. Changed.
-//           //i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//           if(dst.channel == -1)
-//             outRoutes->erase(i);
-//           else
-//           {
-//             if(i->channel == -1)
-//               i->channel = chmask & ~dst.channel;
-//             else
-//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//               outRoutes->erase(i);
-//           }
-//           
-//           break;  // For safety, keep looking and remove any more found.
-//                   // No, must break, else crash. There should only be one route anyway...
-//         }
-//       }
       MusEGlobal::midiPorts[src.midiPort].outRoutes()->removeRoute(dst);
-    }
-    else
-      fprintf(stderr, "removeRoute: source is midi port:%d but invalid\n", src.midiPort); 
+//     }
+//     else
+//       fprintf(stderr, "removeRoute: source is midi port:%d but invalid\n", src.midiPort); 
     
+    //if(dst.isValid())
+    //{
+      //const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
+      //dst.track->inRoutes()->removeRoute(v_src);
     if(dst.isValid())
-    {
-//       RouteList* inRoutes = dst.track->inRoutes();
-//       for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-//       {
-//         if(i->type == Route::MIDI_PORT_ROUTE && i->midiPort == src.midiPort)  // Is there a route to the midi port?
-//         {
-//           // REMOVE Tim. Persistent routes. Changed.
-//           //i->channel &= ~src.channel;        // Unset the desired channel bits.
-//           if(src.channel == -1)
-//             inRoutes->erase(i);
-//           else
-//           {
-//             if(i->channel == -1)
-//               i->channel = chmask & ~src.channel;
-//             else
-//               i->channel &= ~src.channel;        // Unset the desired channel bits.
-//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//               inRoutes->erase(i);
-//           }
-//           
-//           break;  // For safety, keep looking and remove any more found.
-//                   // No, must break, else crash. There should only be one route anyway...
-//         }
-//       }
-      dst.track->inRoutes()->removeRoute(src);
+    { 
+      switch(dst.type)
+      {
+        case Route::TRACK_ROUTE:
+          dst.track->inRoutes()->removeRoute(src);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          dst.device->inRoutes()->removeRoute(src);
+        break;
+        case Route::MIDI_PORT_ROUTE:
+          MusEGlobal::midiPorts[dst.midiPort].inRoutes()->removeRoute(src);
+        break;
+        case Route::JACK_ROUTE:
+        break;
+      }
     }
-    else
-      fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
+    //}
+    //else
+    //  fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
+    return;
   }      
   else if(dst.type == Route::MIDI_PORT_ROUTE)  
   {
-    if(src.type != Route::TRACK_ROUTE)
-    {
-      fprintf(stderr, "removeRoute: destination is midi port:%d, but source is not track\n", dst.midiPort);
-      return;
-    }
+    
+// #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//         return;
+// #endif        
+//         
+//     if(!dst.isValid())
+//     {
+//       fprintf(stderr, "removeRoute: destination is midi port, but port number:%d is invalid\n", dst.midiPort);
+//       return;
+//     }       
+//     if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+//     {
+//       fprintf(stderr, "removeRoute: destination is midi port:%d, but destination channel:%d out of range\n", dst.midiPort, dst.channel);
+//       return;
+//     }       
+    
+//     if(src.type != Route::TRACK_ROUTE || !src.isValid() || !src.track->isMidiTrack())
+//     {
+//       fprintf(stderr, "removeRoute: destination is midi port:%d, but source is invalid or not midi track\n", dst.midiPort);
+//       return;
+//     }
+//     if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+//     {
+//       fprintf(stderr, "removeRoute: destination is midi port:%d, but source track channel:%d out of range\n", dst.midiPort, src.channel);
+//       return;
+//     }       
     
     //const int chmask = (1 << MIDI_CHANNELS) - 1;
+    //if(src.isValid())
+    //{
+      //const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+      //src.track->outRoutes()->removeRoute(v_dst);
+//       src.track->outRoutes()->removeRoute(dst);
     if(src.isValid())
-    {
-//       RouteList* outRoutes = src.track->outRoutes();
-//       for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
-//       {
-//         if (i->type == Route::MIDI_PORT_ROUTE && i->midiPort == dst.midiPort)  // Is there a route to the midi port?
-//         {
-//           // REMOVE Tim. Persistent routes. Changed.
-//           //i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//           if(dst.channel == -1)
-//             outRoutes->erase(i);
-//           else
-//           {
-//             if(i->channel == -1)
-//               i->channel = chmask & ~dst.channel;
-//             else
-//               i->channel &= ~dst.channel;        // Unset the desired channel bits.
-//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//               outRoutes->erase(i);
-//           }
-//               
-//           break;  // For safety, keep looking and remove any more found.
-//                   // No, must break, else crash. There should only be one route anyway...
-//         }
-//       }
-      src.track->outRoutes()->removeRoute(dst);
-    }  
-    else
-      fprintf(stderr, "removeRoute: destination is midi port:%d but source track is invalid\n", dst.midiPort);
+    { 
+      switch(src.type)
+      {
+        case Route::TRACK_ROUTE:
+          src.track->inRoutes()->removeRoute(dst);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          src.device->inRoutes()->removeRoute(dst);
+        break;
+        case Route::MIDI_PORT_ROUTE:
+          MusEGlobal::midiPorts[src.midiPort].inRoutes()->removeRoute(dst);
+        break;
+        case Route::JACK_ROUTE:
+        break;
+      }
+    }
+    //}  
+    //else
+    //  fprintf(stderr, "removeRoute: destination is midi port:%d but source track is invalid\n", dst.midiPort);
     
     if(dst.isValid())
-    {
-//       MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
-//       RouteList* inRoutes = mp->inRoutes();
-//       for(iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
-//       {
-//         if(i->type == Route::TRACK_ROUTE && i->track == src.track)  // Is there a route to the track?
-//         {
-//           // REMOVE Tim. Persistent routes. Changed.
-//           //i->channel &= ~src.channel;        // Unset the desired channel bits.
-//           if(src.channel == -1)
-//             inRoutes->erase(i);
-//           else
-//           {
-//             if(i->channel == -1)
-//               i->channel = chmask & ~src.channel;
-//             else
-//               i->channel &= ~src.channel;        // Unset the desired channel bits.
-//             if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
-//               inRoutes->erase(i);
-//           }
-//               
-//           break;  // For safety, keep looking and remove any more found.
-//                   // No, must break, else crash. There should only be one route anyway...
-//         }
-//       }
+//     {
       MusEGlobal::midiPorts[dst.midiPort].inRoutes()->removeRoute(src);
-    }  
-    else
-      fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
+//     }  
+//     else
+//       fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
   }
   else 
   {
@@ -885,7 +940,7 @@ void removeRoute(Route src, Route dst)
     
     // Is the source an Aux Track or else does it have Aux Tracks routed to it?
     // Update the destination track's aux ref count, and all tracks it is routed to.
-    if(src.isValid() && dst.isValid() && src.track->outRoutes()->exists(dst) && dst.track->inRoutes()->exists(src))
+    if(src.isValid() && dst.isValid() && src.track->outRoutes()->contains(dst) && dst.track->inRoutes()->contains(src))
     {
       if(src.track->auxRefCount())
         src.track->updateAuxRoute( -src.track->auxRefCount(), dst.track );
@@ -1292,7 +1347,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
                  dst.channel < 0) 
                 return false;
               const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
-              return !dst.track->inRoutes()->exists(v_src);
+              return !dst.track->inRoutes()->contains(v_src);
             }  
             else if(dst.type == Route::MIDI_DEVICE_ROUTE) 
             {
@@ -1300,7 +1355,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
                  dst.device->deviceType() != MidiDevice::JACK_MIDI)
                 return false;
               const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
-              return !dst.device->inRoutes()->exists(v_src);
+              return !dst.device->inRoutes()->contains(v_src);
             }  
             else if(dst.type == Route::JACK_ROUTE) 
             {
@@ -1324,7 +1379,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
                  src.track->type() != Track::AUDIO_OUTPUT || src.channel < 0) 
                 return false;
               const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
-              return !src.track->outRoutes()->exists(v_dst);
+              return !src.track->outRoutes()->contains(v_dst);
             }
             else 
             if(src.type == Route::MIDI_DEVICE_ROUTE) 
@@ -1333,7 +1388,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
                  src.device->deviceType() != MidiDevice::JACK_MIDI)
                 return false;
               const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
-              return !src.device->outRoutes()->exists(v_dst);
+              return !src.device->outRoutes()->contains(v_dst);
             }
             else if(src.type == Route::JACK_ROUTE) 
             {
@@ -1346,7 +1401,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(dst.type != Route::TRACK_ROUTE)
+            if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
               return false;
             
             MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
@@ -1356,10 +1411,6 @@ bool routeCanConnect(const Route& src, const Route& dst)
             if(mp->device() && mp->device()->isSynti())
               return false;
             
-            //if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
-            if(dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
-              return false;
-                        
 //             int chan = dst.channel;
 //             RouteList* outRoutes = mp->outRoutes();
 //             iRoute ior = outRoutes->begin();                                      
@@ -1386,19 +1437,22 @@ bool routeCanConnect(const Route& src, const Route& dst)
 //             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
 //             return ior == outRoutes->end() || iir == inRoutes->end();
             
+            const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
-            if((src.isValid() && !MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && !dst.track->inRoutes()->exists(src)))
+            //if((src.isValid() && !MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && !dst.track->inRoutes()->exists(src)))
+            if(!MusEGlobal::midiPorts[src.midiPort].outRoutes()->contains(dst) || !dst.track->inRoutes()->contains(v_src))
               return true;
             
             return false;
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(src.type != Route::TRACK_ROUTE)
-              return false;
-
-            //if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
-            if(src.channel < -1 || src.channel >= MIDI_CHANNELS)
+        
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+            return false;
+#endif  
+        
+            if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MIDI_CHANNELS)
               return false;
             
 //             int chan = src.channel;
@@ -1429,8 +1483,20 @@ bool routeCanConnect(const Route& src, const Route& dst)
 //             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
 //             return ior == outRoutes->end() || iir == inRoutes->end();
             
+            const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+            
+// Special: Allow simulated midi track to midi port route (a route found in a 'local' routelist
+//           but not in any track or port routelist) until multiple output routes are allowed
+//           instead of just single port and channel properties. The route is exclusive.
+// #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//             MidiTrack* mt = static_cast<MidiTrack*>(src.track);
+//             // Only allow it to 'connect' if it's a different port and channel.
+//             return mt->outPort() != dst.midiPort || mt->outChannel() != dst.channel;
+// #endif
+            
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
-            if((src.isValid() && !src.track->outRoutes()->exists(dst)) || (dst.isValid() && !MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+            //if((src.isValid() && !src.track->outRoutes()->exists(dst)) || (dst.isValid() && !MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+            if(!src.track->outRoutes()->contains(v_dst) || !MusEGlobal::midiPorts[dst.midiPort].inRoutes()->contains(src))
               return true;
             
             return false;
@@ -1634,7 +1700,7 @@ bool routeCanConnect(const Route& src, const Route& dst)
         const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
            
         // Allow it to reconnect a partial route.
-        if(!v_src.isValid() || !v_dst.isValid() || (src.track->outRoutes()->exists(v_dst) && dst.track->inRoutes()->exists(v_src)))
+        if(!v_src.isValid() || !v_dst.isValid() || (src.track->outRoutes()->contains(v_dst) && dst.track->inRoutes()->contains(v_src)))
           return false;
         
         return true;
@@ -1650,7 +1716,8 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
 {
       if(src.type == Route::JACK_ROUTE) 
       {
-            if(!dst.isValid())
+            //if(!dst.isValid())
+            if(!dst.exists())
               return false;
             
             if(dst.type == Route::TRACK_ROUTE) 
@@ -1658,11 +1725,11 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
               if(dst.track->type() != Track::AUDIO_INPUT) 
                 return false;
               const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, -1, src.persistentJackPortName);
-              return dst.track->inRoutes()->exists(v_src);
+              return dst.track->inRoutes()->contains(v_src);
             }  
             else if(dst.type == Route::MIDI_DEVICE_ROUTE) 
             {
-              return dst.device->inRoutes()->exists(src);
+              return dst.device->inRoutes()->contains(src);
             }  
             else if(dst.type == Route::JACK_ROUTE) 
             {
@@ -1675,7 +1742,8 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
       }
       else if(dst.type == Route::JACK_ROUTE) 
       {
-            if(!src.isValid())
+            //if(!src.isValid())
+            if(!src.exists())
               return false;
             
             if(src.type == Route::TRACK_ROUTE) 
@@ -1683,11 +1751,11 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
               if(src.track->type() != Track::AUDIO_OUTPUT) 
                     return false;
               const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
-              return src.track->outRoutes()->exists(v_dst);
+              return src.track->outRoutes()->contains(v_dst);
             }  
             else if(src.type == Route::MIDI_DEVICE_ROUTE) 
             {
-              return src.device->outRoutes()->exists(dst);
+              return src.device->outRoutes()->contains(dst);
             }  
             else if(src.type == Route::JACK_ROUTE) 
             {
@@ -1700,9 +1768,11 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-        if(dst.type != Route::TRACK_ROUTE)
+        if(!src.isValid() || src.channel < -1 || src.channel >= MIDI_CHANNELS ||
+           //dst.type != Route::TRACK_ROUTE || !dst.isValid() || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
+           dst.type != Route::TRACK_ROUTE || !dst.exists() || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
           return false;
-        
+            
         //if(!src.isValid() || !dst.isValid())
         //  return false;
         
@@ -1753,16 +1823,26 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
 //         //  fprintf(stderr, "removeRoute: source is midi port:%d but destination track invalid\n", src.midiPort);
         
         
+        //const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
         
         // Allow it to disconnect a partial route.
-        if((src.isValid() && MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && dst.track->inRoutes()->exists(src)))
+        //if((src.isValid() && MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && dst.track->inRoutes()->exists(src)))
+        //if(MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst) || (dst.isValid() && dst.track->inRoutes()->exists(v_src)))
+        if(MusEGlobal::midiPorts[src.midiPort].outRoutes()->contains(dst) || dst.track->inRoutes()->contains(src))
           return true;
         
         return false;
       }      
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
-        if(src.type != Route::TRACK_ROUTE)
+        
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+        return false;
+#endif        
+        
+        if(!dst.isValid() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS ||
+           //src.type != Route::TRACK_ROUTE || !src.isValid() || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MIDI_CHANNELS)
+           src.type != Route::TRACK_ROUTE || !src.exists() || !src.track->isMidiTrack() || src.channel < -1 || src.channel >= MIDI_CHANNELS)
           return false;
         
 //         //if(!src.isValid() || !dst.isValid())
@@ -1815,9 +1895,24 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
 //         //else
 //         //  fprintf(stderr, "removeRoute: destination is midi port:%d but invalid\n", dst.midiPort);
         
+        //const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+        
+
+// Special: Allow simulated midi track to midi port route (a route found in a 'local' routelist
+//           but not in any track or port routelist) until multiple output routes are allowed
+//           instead of just single port and channel properties. The route is exclusive.
+// #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//         MidiTrack* mt = static_cast<MidiTrack*>(src.track);
+//         // We cannot 'disconnect' a simulated midi track output port and channel route.
+//         // (Midi port cannot be -1 meaning 'no port'.)
+//         // Only allow it to 'disconnect' if it's a different port or channel. 
+//         return mt->outPort() != dst.midiPort || mt->outChannel() != dst.channel;
+// #endif
+        
         // Allow it to disconnect a partial route.
-        //if((src.isValid() && MusEGlobal::midiPorts[src.midiPort].outRoutes()->exists(dst)) || (dst.isValid() && dst.track->inRoutes()->exists(src)))
-        if((src.isValid() && src.track->outRoutes()->exists(dst)) || (dst.isValid() && MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+        //if((src.isValid() && src.track->outRoutes()->exists(dst)) || (dst.isValid() && MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src)))
+        //if((src.isValid() && src.track->outRoutes()->exists(v_dst)) || MusEGlobal::midiPorts[dst.midiPort].inRoutes()->exists(src))
+        if(src.track->outRoutes()->contains(dst) || MusEGlobal::midiPorts[dst.midiPort].inRoutes()->contains(src))
           return true;
         
         return false;
@@ -1871,7 +1966,8 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
 //               }
             
             // Allow it to disconnect a partial route.
-            if((v_src.isValid() && src.track->outRoutes()->exists(v_dst)) || (v_dst.isValid() && dst.track->inRoutes()->exists(v_src)))
+            //if((v_src.isValid() && src.track->outRoutes()->contains(v_dst)) || (v_dst.isValid() && dst.track->inRoutes()->contains(v_src)))
+            if((v_src.exists() && src.track->outRoutes()->contains(v_dst)) || (v_dst.exists() && dst.track->inRoutes()->contains(v_src)))
               return true;
             
             return false;
@@ -1947,7 +2043,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
       }
       else if(src.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(src.midiPort < 0 || src.midiPort >= MIDI_PORTS || dst.type != Route::TRACK_ROUTE)
+            if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack())
               return false;
             
             MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
@@ -1999,7 +2095,12 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {
-            if(dst.midiPort < 0 || dst.midiPort >= MIDI_PORTS || src.type != Route::TRACK_ROUTE)
+        
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+            return false;
+#endif      
+            
+            if(src.type != Route::TRACK_ROUTE || !src.track->isMidiTrack())
               return false;
             
             if(check_types_only)
@@ -2811,6 +2912,33 @@ bool Route::operator==(const Route& a) const
 }
 
 //---------------------------------------------------------
+//   exists
+//---------------------------------------------------------
+
+bool Route::exists() const
+{
+  switch(type)
+  {
+    case MusECore::Route::TRACK_ROUTE:
+      return MusEGlobal::song->tracks()->contains(track);
+    break;
+    
+    case MusECore::Route::JACK_ROUTE:
+      return MusEGlobal::checkAudioDevice() && MusEGlobal::audioDevice->findPort(persistentJackPortName);
+    break;
+    
+    case MusECore::Route::MIDI_DEVICE_ROUTE:
+      return MusEGlobal::midiDevices.contains(device);
+    break;
+      
+    case MusECore::Route::MIDI_PORT_ROUTE:
+      return isValid();
+    break;
+  }
+  return false;
+}
+
+//---------------------------------------------------------
 //   compare
 //---------------------------------------------------------
 
@@ -2828,9 +2956,9 @@ bool Route::compare(const Route& a) const
                          ((a.remoteChannel == -1) ? (remoteChannel == -1) : (remoteChannel != -1));  // TODO: Want this? Seems logical.
             }
             else 
-            if(channel == a.channel)
+            //if(channel == a.channel)
             {
-              if (type == JACK_ROUTE)
+              if (type == JACK_ROUTE && channel == a.channel)
               {
                     // If the ports are valid compare them, otherwise compare the persistent port names.
                     if(jackPort && a.jackPort)

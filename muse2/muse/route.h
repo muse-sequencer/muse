@@ -99,6 +99,7 @@ class Route {
       // If the routes support channels, if the given route's channel is -1 meaning all channels, compare matches ONLY if this channel == -1, 
       //  and if the given route's channel is >= 0, compare matches on ANY channel. Useful for example finding router treeview items.
       bool compare(const Route&) const;
+      bool exists() const;
       Route& operator=(const Route&);
       bool isValid() const {
             return ((type == TRACK_ROUTE) && (track != 0)) || 
@@ -123,7 +124,7 @@ class RouteList : public std::vector <Route> {
       //const_iterator find(const Route& r) const;
       iterator find(const Route& r)             { return std::find(begin(), end(), r); }
       const_iterator find(const Route& r) const { return std::find(begin(), end(), r); }
-      bool exists(const Route& r) const         { return std::find(begin(), end(), r) != end(); }
+      bool contains(const Route& r) const         { return std::find(begin(), end(), r) != end(); }
       void removeRoute(const Route& r)          { iterator i = std::find(begin(), end(), r);  if(i != end()) erase(i); }
       };
 

@@ -729,6 +729,9 @@ template<class T> class tracklist : public std::vector<Track*> {
       const_iterator find(const Track* t) const {
             return std::find(begin(), end(), t);
             }
+      bool contains(const Track* t) const {
+            return std::find(begin(), end(), t) != end();
+            }
       unsigned index(const Track* t) const {
             unsigned n = 0;
             for (vlist::const_iterator i = begin(); i != end(); ++i, ++n) {

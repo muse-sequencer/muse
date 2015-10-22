@@ -170,6 +170,7 @@ class MidiDevice {
 //---------------------------------------------------------
 
 typedef std::list<MidiDevice*>::iterator iMidiDevice;
+typedef std::list<MidiDevice*>::const_iterator ciMidiDevice;
 
 class MidiDeviceList : public std::list<MidiDevice*> 
 {
@@ -177,7 +178,31 @@ class MidiDeviceList : public std::list<MidiDevice*>
       void add(MidiDevice* dev);
       void remove(MidiDevice* dev);
       MidiDevice* find(const QString& name, int typeHint = -1);
-      iMidiDevice find(const MidiDevice* dev);
+
+      iterator find(const MidiDevice* dev)
+      {
+        for(iterator i = begin(); i != end(); ++i)
+          if(*i == dev)
+            return i;
+        return end();
+      }
+
+      const_iterator find(const MidiDevice* dev) const
+      {
+        for(const_iterator i = begin(); i != end(); ++i)
+          if(*i == dev)
+            return i;
+        return end();
+      }
+      
+      bool contains(const MidiDevice* dev) const
+      {
+        for(const_iterator i = begin(); i != end(); ++i)
+          if(*i == dev)
+            return true;
+        return false;
+      }
+      
       void addOperation(MidiDevice* dev, PendingOperationList& ops);
 };
 

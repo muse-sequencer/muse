@@ -49,7 +49,7 @@ struct PendingOperationItem
                               AddMidiInstrument, DeleteMidiInstrument,
                               AddMidiDevice,     DeleteMidiDevice,       
                               ModifyMidiDeviceAddress,        ModifyMidiDeviceFlags,        ModifyMidiDeviceName,
-                              AddTrack ,         DeleteTrack, MoveTrack,                    ModifyTrackName,
+                              AddTrack,          DeleteTrack, MoveTrack,                    ModifyTrackName,
                               AddPart,           DeletePart,  MovePart,  ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,      ModifyMidiCtrlVal, AddMidiCtrlValList,
@@ -58,7 +58,8 @@ struct PendingOperationItem
                               AddKey,            DeleteKey,              ModifyKey,
                               AddAuxSendValue,   
                               AddRoute,          DeleteRoute, 
-                              AddRouteNode,      DeleteRouteNode,        ModifyRouteNode
+                              AddRouteNode,      DeleteRouteNode,        ModifyRouteNode,
+                              UpdateSoloStates
                               }; 
                               
   PendingOperationType _type;
@@ -123,6 +124,9 @@ struct PendingOperationItem
   };
 
 
+  PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
+    { _type = type; _track_list = tl; }
+  
   // TODO: Try to break this operation down so that only the actual operation is executed stage-2.
   PendingOperationItem(const Route& src_route, const Route& dst_route, PendingOperationType type) // Type is AddRoute or DeleteRoute.
     { _type = type; _src_route = src_route; _dst_route = dst_route; }

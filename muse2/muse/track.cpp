@@ -935,8 +935,9 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   
   if(!operations.empty())
   {
+    operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations);
-    MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
+    //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
     MusEGlobal::song->update(SC_ROUTE);
   }
 }

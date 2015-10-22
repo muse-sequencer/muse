@@ -316,7 +316,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
 //         break;
 //       }  
 //     }
-    if(rl->exists(r))
+    if(rl->contains(r))
       act->setChecked(true);
     
 //     if(rt_chans != 0 && t_chans != 0)
@@ -1127,7 +1127,7 @@ void RoutePopupMenu::addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOu
     act->setCheckable(true);
     const MusECore::Route r(mt, -1);
     act->setData(QVariant::fromValue(r));   
-    if(rl->exists(r))
+    if(rl->contains(r))
       act->setChecked(true);
   }
 }
@@ -1523,7 +1523,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
 //       wa->array()->headerSetVisible(row == 0);
 //       wa->setText(QString("%1:%2").arg(i + 1).arg(md->name()));
       wa->setHasCheckBox(true);
-      if(rl->exists(r))
+      if(rl->contains(r))
         wa->setCheckBoxChecked(true);
       //wa->array()->setArrayTitle(tr("Channels"));
       wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
@@ -1533,7 +1533,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       for(int col = 0; col < MIDI_CHANNELS; ++col)
       {  
         r.channel = col;
-        if(rl->exists(r))
+        if(rl->contains(r))
           wa->array()->setValue(col, true);
       }
 #else  // _USE_MIDI_ROUTE_PER_CHANNEL_    
@@ -1993,7 +1993,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         wa->setData(QVariant::fromValue(r));
         if(channels == -1)
         {
-          if(rl->exists(r))
+          if(rl->contains(r))
             wa->array()->setValue(0, true);
         }
         else
@@ -2001,7 +2001,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
           for(int i = 0; i < channels; ++i) 
           {
             r.channel = i;
-            if(rl->exists(r))
+            if(rl->contains(r))
               wa->array()->setValue(i, true);
           }
         }
@@ -5564,8 +5564,9 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
   if(!operations.empty())
   {
     fprintf(stderr, "RoutePopupMenu::popupActivated: executing operations\n"); // REMOVE Tim. Persistent routes. Added. 
+    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations);
-    MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
+    //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
     MusEGlobal::song->update(SC_ROUTE);
   }
 }
@@ -6229,7 +6230,7 @@ void RoutePopupMenu::prepare()
               act->setCheckable(true);
               const MusECore::Route r(t, -1);
               act->setData(QVariant::fromValue(r));
-              if(track->outRoutes()->exists(r))
+              if(track->outRoutes()->contains(r))
                 act->setChecked(true);
             }
             addMenu(subp);

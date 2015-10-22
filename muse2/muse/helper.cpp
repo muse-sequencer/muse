@@ -202,7 +202,7 @@ void enumerateJackMidiDevices()
           // Connect if route does not exist. Allow it to reconnect a partial route.
           //if(MusECore::routeCanConnect(srcRoute, dstRoute))
           //  operations.add(MusECore::PendingOperationItem(srcRoute, dstRoute, MusECore::PendingOperationItem::AddRoute));
-          if(!dev->outRoutes()->exists(dstRoute))
+          if(!dev->outRoutes()->contains(dstRoute))
             operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
         }  
       }
@@ -232,7 +232,7 @@ void enumerateJackMidiDevices()
           //MusEGlobal::audio->msgAddRoute1(srcRoute, dstRoute);
           //if(MusECore::routeCanConnect(srcRoute, dstRoute))
           //  operations.add(MusECore::PendingOperationItem(srcRoute, dstRoute, MusECore::PendingOperationItem::AddRoute));
-          if(!dev->inRoutes()->exists(srcRoute))
+          if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }  
       }
@@ -240,6 +240,7 @@ void enumerateJackMidiDevices()
   }
   if(!operations.empty())
   {
+    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations);
     //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
     //MusEGlobal::song->update(SC_ROUTE);

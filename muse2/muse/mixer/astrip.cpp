@@ -202,7 +202,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
             //mute->setIconSize(muteIconOn->size());  
             updateOffState();
             }
-      if (solo && (val & SC_SOLO)) {
+      if (solo && (val & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);

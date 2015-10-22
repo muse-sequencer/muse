@@ -87,40 +87,62 @@ class RouteChannelsList : public QVector<RouteChannelsStruct>
 
 class RouteTreeWidgetItem : public QTreeWidgetItem
 {
+  public:
+        enum ItemType { NormalItem = Type, CategoryItem = UserType, RouteItem = UserType + 1, ChannelsItem = UserType + 2};
+        enum ItemMode { NormalMode, ExclusiveMode };
+    
   private:
+        bool _isInput;
         MusECore::Route _route;
         RouteChannelsList _channels;
+        ItemMode _itemMode;
         //QBitArray _channels;
         //QVector<int> _channelYValues; // Useful for drawing channel lines.
         
         int _curChannel;
-        bool _isInput;
         void init();
   
   public:
-        enum ItemType { NormalItem = Type, CategoryItem = UserType, RouteItem = UserType + 1, ChannelsItem = UserType + 2};
-    
-        RouteTreeWidgetItem(int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(const QStringList& strings, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(strings, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidget* parent, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, strings, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidget* parent, QTreeWidgetItem* preceding, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, preceding, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidgetItem* parent, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, strings, type), _route(route), _isInput(isInput) { init(); }
-        RouteTreeWidgetItem(QTreeWidgetItem* parent, QTreeWidgetItem* preceding, int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route())
-                            : QTreeWidgetItem(parent, preceding, type), _route(route), _isInput(isInput) { init(); }
+        RouteTreeWidgetItem(int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(const QStringList& strings, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(strings, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidget* parent, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, strings, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidget* parent, QTreeWidgetItem* preceding, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, preceding, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidgetItem* parent, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, strings, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
+        RouteTreeWidgetItem(QTreeWidgetItem* parent, QTreeWidgetItem* preceding, int type = NormalItem,
+                            bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
+                            : QTreeWidgetItem(parent, preceding, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
+                            
         //RouteTreeWidgetItem(const RouteTreeWidgetItem& other);
         
         MusECore::Route& route()          { return _route; }
+        // Whether this item should exist or not, based on _route and the item type.
         bool routeNodeExists();
         void getSelectedRoutes(MusECore::RouteList& routes);
+        
+        ItemMode itemMode() const         { return _itemMode; }
+        void setItemMode(ItemMode mode)   { _itemMode = mode; }
         
         int channelCount() const          { return _channels.size(); }
         //void setChannelCount(int c)       { _channels.resize(c); _channelYValues.resize(c); _channelYValues.fill(-1); }
@@ -242,7 +264,7 @@ public:
         //void clearChannels();
         
         void getSelectedRoutes(MusECore::RouteList& routes);
-        void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove);
+        void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
 };
 
 
@@ -341,6 +363,8 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       
       void filterSrcRoutesClicked(bool v);
       void filterDstRoutesClicked(bool v);
+      
+      void allMidiPortsClicked(bool v);
       
    signals:
       void closed();

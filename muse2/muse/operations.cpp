@@ -90,6 +90,7 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::AddRouteNode:
     case PendingOperationItem::DeleteRouteNode:
     case PendingOperationItem::ModifyRouteNode:
+    case PendingOperationItem::UpdateSoloStates:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -168,6 +169,14 @@ void PendingOperationItem::executeRTStage()
 {
   switch(_type)
   {
+    case UpdateSoloStates:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
+#endif      
+      // TODO Use the track_list, or simply keep as dummy parameter to identify UpdateSoloStates?
+      MusEGlobal::song->updateSoloStates();
+    break;
+    
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
     case AddRoute:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1007,6 +1016,14 @@ bool PendingOperationList::add(PendingOperationItem op)
     
     switch(op._type)
     {
+      case PendingOperationItem::UpdateSoloStates:
+        if(poi._type == PendingOperationItem::UpdateSoloStates && poi._track_list == op._track_list)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double UpdateSoloStates. Ignoring.\n");
+          return false;  
+        }
+      break;
+      
       case PendingOperationItem::AddRoute:
         if(poi._type == PendingOperationItem::AddRoute && poi._src_route == op._src_route && poi._dst_route == op._dst_route)
         {

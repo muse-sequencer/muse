@@ -350,14 +350,6 @@ MidiDevice* MidiDeviceList::find(const QString& s, int typeHint)
       return 0;
       }
 
-iMidiDevice MidiDeviceList::find(const MidiDevice* dev)
-      {
-      for (iMidiDevice i = begin(); i != end(); ++i)
-            if (*i == dev)
-                  return i;
-      return end();
-      }
-
 //---------------------------------------------------------
 //   add
 //---------------------------------------------------------
