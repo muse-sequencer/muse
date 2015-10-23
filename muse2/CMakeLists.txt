@@ -150,6 +150,7 @@ option ( ENABLE_VST         "Enable VST/win support (deprecated)"               
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
+option ( ENABLE_LV2_DEBUG        "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -387,6 +388,11 @@ if (ENABLE_LV2)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
+
+if (ENABLE_LV2_DEBUG)
+      set (DEBUG_LV2 ON)
+      add_definitions(-DDEBUG_LV2)
+endif (ENABLE_LV2_DEBUG)
 
 ##
 ## TODO
