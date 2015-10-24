@@ -608,8 +608,9 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       FS_Helper* helper = new FS_Helper;
       helper->fptr = this;
       helper->id = extid;
-      QString fn = QString::fromLatin1(filename);
+      QString fn = QString::fromLocal8Bit(filename);
 
+      //QString fn = gui->tmpCopy;
       if (QFile::exists(fn))
       {
               helper->file_name = fn;

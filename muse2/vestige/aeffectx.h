@@ -104,6 +104,7 @@ const int effEditClose = 15;
 const int effEditIdle = 19;
 const int effEditTop = 20;
 const int effProcessEvents = 25;
+const int effGetPlugCategory = 35;
 const int effGetEffectName = 45;
 const int effGetParameterProperties = 47; // missing
 const int effGetVendorString = 47;
@@ -111,11 +112,13 @@ const int effGetProductString = 48;
 const int effGetVendorVersion = 49;
 const int effCanDo = 51; // currently unused
 const int effGetVstVersion = 58; // currently unused
+const int effShellGetNextPlugin = 70;
 
 const int kEffectMagic = CCONST( 'V', 's', 't', 'P' );
 const int kVstLangEnglish = 1;
 const int kVstMidiType = 1;
 const int kVstTransportPlaying = 1 << 1;
+const int kPlugCategShell = 10;
 
 /* validity flags for a VstTimeInfo structure, this info comes from the web */
 

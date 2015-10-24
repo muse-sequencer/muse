@@ -236,7 +236,8 @@ void FluidSynthGui::sendLoadFont(QString filename)
       data[2] = FS_PUSH_FONT;
       data[3] = FS_UNSPECIFIED_ID;
       //memcpy(data+2, filename.toLatin1(), filename.length()+1);
-      memcpy(data+4, filename.toLatin1().data(), filename.length()+1);
+      memcpy(data+4, filename.toLocal8Bit().data(), filename.length()+1);
+
       sendSysex(data,l);
       }
 

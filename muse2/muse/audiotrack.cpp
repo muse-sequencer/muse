@@ -624,8 +624,8 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
     plugin->setID(idx);
     plugin->setTrack(this);
 
-    int controller = plugin->parameters();
-    for (int i = 0; i < controller; ++i)
+    int numControllers = plugin->parameters();
+    for (int i = 0; i < numControllers; ++i)
     {
       int id = genACnum(idx, i);
       const char* name = plugin->paramName(i);
@@ -637,6 +637,17 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
       cl->setValueType(plugin->ctrlValueType(i));
       cl->setMode(plugin->ctrlMode(i));
       cl->setCurVal(plugin->param(i));
+      addController(cl);
+    }
+    // Add mute
+    {
+      int id = genACnum(idx, numControllers);
+      CtrlList* cl = new CtrlList(id);
+      cl->setRange(0, 1);
+      cl->setName("On/Off");
+      cl->setValueType(VAL_BOOL);
+      cl->setMode(CtrlList::DISCRETE);
+      cl->setCurVal(1.0);
       addController(cl);
     }
   }

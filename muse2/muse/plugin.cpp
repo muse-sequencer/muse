@@ -1255,6 +1255,7 @@ void Pipeline::initBuffers()
 
 bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame)
 {
+  printf("addScheduledControlEvent\n");
   // If a track controller, or the special dssi synth controller block, just return.
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
     return true;
@@ -1660,6 +1661,7 @@ PluginIBase::~PluginIBase()
 
 bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame)
 {
+  printf("pluginibase::addScheduledControlEvent\n");
   if(i >= parameters())
   {
     printf("PluginIBase::addScheduledControlEvent param number %lu out of range of ports:%lu\n", i, parameters());
@@ -1815,6 +1817,7 @@ void PluginI::setID(int i)
 
 void PluginI::updateControllers()
 {
+  printf("NOPE updateControllers\n");
   if(!_track)
     return;
 
@@ -1893,6 +1896,7 @@ void PluginI::setChannels(int c)
 
 void PluginI::setParam(unsigned long i, float val)
 {
+  printf("NOPE setParam %ld %f\n",i,val);
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
 
@@ -2058,6 +2062,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
 void PluginI::connect(unsigned long ports, unsigned long offset, float** src, float** dst)
       {
+
       unsigned long port = 0;
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
@@ -2118,6 +2123,7 @@ void PluginI::activate()
 
 bool PluginI::setControl(const QString& s, float val)
       {
+  printf("NOPE setControl\n");
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
                   setParam(i, val);
@@ -2489,6 +2495,7 @@ void PluginIBase::deleteGui()
 
 void PluginI::enableAllControllers(bool v)
 {
+  printf("enableAllControllers\n");
   for(unsigned long i = 0; i < controlPorts; ++i)
     controls[i].enCtrl = v;
 }
@@ -2875,6 +2882,7 @@ int PluginI::oscUpdate()
 
 int PluginI::oscControl(unsigned long port, float value)
 {
+  printf("oscControl %ld %f\n", port, value);
   #ifdef PLUGIN_DEBUGIN
   printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);
   #endif

@@ -106,11 +106,12 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       e->accept();
 
       float inc = (maxValue() - minValue()) / 40;
-      if (e->modifiers() == Qt::ShiftModifier)
+      if (e->modifiers() & Qt::ShiftModifier)
             inc = inc / 10;
 
-      if(inc < step())
+      if(inc < step() && !(e->modifiers() & Qt::ShiftModifier)) {
         inc = step();
+      }
       
       if(e->delta() > 0)
             setValue(value()+inc);

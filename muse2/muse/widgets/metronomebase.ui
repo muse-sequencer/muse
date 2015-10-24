@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
-    <height>513</height>
+    <width>525</width>
+    <height>653</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,7 +81,7 @@
           <item>
            <widget class="QRadioButton" name="radioSamples2">
             <property name="text">
-             <string>Two samples (old samples)</string>
+             <string>Two sa&amp;mples (old samples)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -91,7 +91,7 @@
           <item>
            <widget class="QRadioButton" name="radioSamples4">
             <property name="text">
-             <string>Four samples (new samples, with accents)</string>
+             <string>Four samples (&amp;new samples, with accents)</string>
             </property>
            </widget>
           </item>
@@ -609,6 +609,9 @@
    </item>
    <item row="0" column="1">
     <widget class="QGroupBox" name="GroupBox2">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="mouseTracking">
       <bool>false</bool>
      </property>
@@ -637,7 +640,7 @@
       <item>
        <widget class="QCheckBox" name="precountEnable">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>enable</string>
@@ -667,7 +670,7 @@
         <item>
          <widget class="QSpinBox" name="precountBars">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -683,7 +686,7 @@
         <item>
          <widget class="QLabel" name="TextLabel7">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Bars</string>
@@ -698,7 +701,7 @@
       <item>
        <widget class="QCheckBox" name="precountFromMastertrack">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>From Mastertrack</string>
@@ -728,7 +731,7 @@
         <item>
          <widget class="QSpinBox" name="precountSigZ">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -757,7 +760,7 @@
         <item>
          <widget class="QSpinBox" name="precountSigN">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="minimum">
            <number>2</number>
@@ -773,7 +776,7 @@
         <item>
          <widget class="QLabel" name="TextLabel9">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Signature</string>
@@ -788,7 +791,7 @@
       <item>
        <widget class="QCheckBox" name="precountPrerecord">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Prerecord</string>
@@ -798,7 +801,7 @@
       <item>
        <widget class="QCheckBox" name="precountPreroll">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Preroll</string>

@@ -116,7 +116,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void disconnect(void*, void*);
       virtual void disconnect(const char*, const char*);
       virtual int connections(void* clientPort) { return jack_port_connected((jack_port_t*)clientPort); }
-      virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
+      virtual void setPortName(void* p, const char* n) { jack_port_rename(_client,(jack_port_t*)p, n); }
       virtual void* findPort(const char* name);
       virtual char* portName(void* port, char* str, int str_size);
       virtual const char* canonicalPortName(void* port) { if(!port) return NULL; return jack_port_name((jack_port_t*)port); }
