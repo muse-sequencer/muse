@@ -27,9 +27,6 @@
 
 #ifdef LV2_SUPPORT
 
-//uncomment to print debugging information for lv2 host
-#define DEBUG_LV2
-
 #include "lilv/lilv.h"
 #include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"

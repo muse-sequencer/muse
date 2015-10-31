@@ -144,6 +144,7 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
 
       if(rd == 0)
       {
+         sem.release();
          return;
       }
       

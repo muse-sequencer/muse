@@ -1,3 +1,7 @@
+23.10.2015
+        - Moving to 3.0.0 release (danvd)
+23.09.2015
+        - New cpu usage metering algorithm without jack dependency (danvd)
 01.07.2015
         - Implemented "Normalize wave part" menu item for wave track parts (danvd)
 24.06.2015:

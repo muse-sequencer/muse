@@ -25,6 +25,8 @@
 #define __AUDIODEV_H__
 
 #include <list>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 class QString;
 
@@ -110,7 +112,6 @@ class AudioDevice {
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
       virtual int setMaster(bool f) = 0;
-      virtual float getCPULoad() { return 0.0f; }
       };
 
 } // namespace MusECore

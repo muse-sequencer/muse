@@ -341,6 +341,14 @@ MusE::MusE() : QMainWindow()
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
       saveTimer->start( 60 * 1000 ); // every minute
+
+      //init cpuload stuff
+      gettimeofday(&lastSysTime, NULL);
+      lastCpuTime.tv_sec = 0;
+      lastCpuTime.tv_usec = 0;
+      fAvrCpuLoad = 0.0f;
+      avrCpuLoadCounter = 0;
+      fCurCpuLoad = 0.0f;
       
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
@@ -710,7 +718,7 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+      QToolBar *jackCpuToolbar = addToolBar(tr("Cpu load"));
       jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
       QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
       actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
@@ -1716,8 +1724,39 @@ void MusE::showTransport(bool flag)
       if(transport->isVisible() != flag)
         transport->setVisible(flag);
       if(viewTransportAction->isChecked() != flag)
-        viewTransportAction->setChecked(flag);
-      }
+         viewTransportAction->setChecked(flag);
+}
+
+float MusE::getCPULoad()
+{
+    struct rusage ru;
+    struct timeval curSysTime;
+    gettimeofday(&curSysTime, NULL);
+    //float fLoad = 0.0f;
+    if(getrusage(RUSAGE_SELF, &ru) != 0)
+    {
+        return 0.0f;
+    }
+    long msSysElapsed = (curSysTime.tv_usec / 1000L) + curSysTime.tv_sec * 1000L;
+    msSysElapsed -= (lastSysTime.tv_usec / 1000L) + lastSysTime.tv_sec * 1000L;
+    long msCpuElasped = (ru.ru_utime.tv_usec / 1000L) + ru.ru_utime.tv_sec * 1000L;
+    msCpuElasped -= (lastCpuTime.tv_usec / 1000L) + lastCpuTime.tv_sec * 1000L;
+    if(msSysElapsed > 0)
+    {
+        fAvrCpuLoad += (float)((double)msCpuElasped / (double)msSysElapsed);
+        avrCpuLoadCounter++;
+    }
+    lastCpuTime = ru.ru_utime;
+    lastSysTime = curSysTime;
+    if(avrCpuLoadCounter > 10)
+    {
+        fCurCpuLoad = (fAvrCpuLoad / (float)avrCpuLoadCounter) * 100.0f;
+        fAvrCpuLoad = 0.0f;
+        avrCpuLoadCounter = 0;
+    }
+
+    return fCurCpuLoad;
+}
 
 //---------------------------------------------------------
 //   saveAs

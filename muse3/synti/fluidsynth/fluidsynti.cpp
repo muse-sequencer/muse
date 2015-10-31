@@ -150,7 +150,8 @@ bool FluidSynth::init(const char* name)
       debug("FluidSynth::init\n");
 
       gui = new FluidSynthGui();
-      gui->show();
+      //don't show gui on init - it will be shown later by setNativeguiVisible()
+      //gui->show();
       gui->setWindowTitle(name);
 
       lastdir= "";

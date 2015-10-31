@@ -90,13 +90,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
-SET(MusE_VERSION_MAJOR 2)
-SET(MusE_VERSION_MINOR 2)
-SET(MusE_VERSION_PATCH 1)
-SET(MusE_VERSION       "2.2.1")
-SET(MusE_VERSION_FULL  "2.2.1")
-SET(MusE_INSTALL_NAME  "muse-2.2")
-SET(MusE_EXEC_NAME     "muse2")
+SET(MusE_VERSION_MAJOR 3)
+SET(MusE_VERSION_MINOR 0)
+SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION       "3.0.0")
+SET(MusE_VERSION_FULL  "3.0.0")
+SET(MusE_INSTALL_NAME  "muse-3.0")
+SET(MusE_EXEC_NAME     "muse3")
 
 ## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
@@ -150,6 +150,7 @@ option ( ENABLE_VST         "Enable VST/win support (deprecated)"               
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
+option ( ENABLE_LV2_DEBUG        "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -387,6 +388,11 @@ if (ENABLE_LV2)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
+
+if (ENABLE_LV2_DEBUG)
+      set (DEBUG_LV2 ON)
+      add_definitions(-DDEBUG_LV2)
+endif (ENABLE_LV2_DEBUG)
 
 ##
 ## TODO

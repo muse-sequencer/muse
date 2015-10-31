@@ -150,7 +150,7 @@ class JackAudioDevice : public AudioDevice {
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
 
-      virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
+      //virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
 
       void graphChanged();
       };
