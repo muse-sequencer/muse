@@ -51,7 +51,7 @@
 #include "mididev.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
-#include "driver/alsamidi.h" // REMOVE Tim. Persistent routes. Added.
+#include "driver/alsamidi.h"
 #include "xml.h"
 #include "waveedit.h"
 #include "midi.h"
@@ -271,8 +271,7 @@ static void readConfigMidiDevice(Xml& xml)
                                 }
                               }                              
                               
-//                               if(MusEGlobal::debugMsg && !dev) 
-                              if(!dev) // REMOVE Tim. Persistent routes. Changed. FOR TEST ONLY.
+                              if(MusEGlobal::debugMsg && !dev) 
                                 fprintf(stderr, "readConfigMidiDevice: device not found %s\n", device.toLatin1().constData());
                               
                               if (dev) {
@@ -1220,37 +1219,12 @@ bool readConfiguration(const char *configFile)
                               }
                         break;
                   case Xml::TagEnd:
-                        // REMOVE Tim. Persistent routes. Added.
                         if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
                                   "Conversions may be applied!\n\n",
                                   xml.majorVersion(), xml.minorVersion(), 
                                   xml.latestMajorVersion(), xml.latestMinorVersion());
-                             // Meh, skip the GUI warning. Not really necessary, or preventable. 
-//                           // Cannot construct QWidgets until QApplication created!
-//                           // Check MusEGlobal::muse which is created shortly after the application...
-//                           if(MusEGlobal::config.warnOnFileVersions && MusEGlobal::muse)
-//                           {
-//                             QString txt = QObject::tr("Config file version is %1.%2\nCurrent version is %3.%4\n"
-//                                                       "Conversions may be applied!")
-//                                                      .arg(xml.majorVersion()).arg(xml.minorVersion())
-//                                                      .arg(xml.latestMajorVersion()).arg(xml.latestMinorVersion());
-//                             QMessageBox* mb = new QMessageBox(QMessageBox::Warning, 
-//                                                               QObject::tr("Opening configuration file"), 
-//                                                               txt, 
-//                                                               QMessageBox::Ok, MusEGlobal::muse);
-//                             QCheckBox* cb = new QCheckBox(QObject::tr("Do not warn again"));
-//                             cb->setChecked(!MusEGlobal::config.warnOnFileVersions);
-//                             mb->setCheckBox(cb);
-//                             mb->exec();
-//                             if(!mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
-//                             {
-//                               MusEGlobal::config.warnOnFileVersions = !mb->checkBox()->isChecked();
-//                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
-//                             }
-//                             delete mb;
-//                           }
                         }
                         if (!skipmode && tag == "muse") {
                               fclose(f);
@@ -1440,8 +1414,6 @@ void MusE::writeGlobalConfiguration() const
             }
       MusECore::Xml xml(f);
       xml.header();
-      // REMOVE Tim. Persistent routes. Changed.
-      //xml.tag(0, "muse version=\"2.0\"");
       xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
       writeGlobalConfiguration(1, xml);
       xml.tag(1, "/muse");

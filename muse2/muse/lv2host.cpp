@@ -3688,76 +3688,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          {
             if(!i->track->isMidiTrack())
             {
-// REMOVE Tim. Persistent routes. Changed.
-//                const int ch     = i->channel       == -1 ? 0 : i->channel;
-//                const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-//                const int chs    = i->channels      == -1 ? 0 : i->channels;
-//                assert((unsigned)remch <= _inports);
-// 
-//                if((unsigned)ch < _inports && (unsigned)(ch + chs) <= _inports)
-//                {
-//                   const bool u1 = _iUsedIdx[remch];
-// 
-//                   if(chs >= 2)
-//                   {
-//                      const bool u2 = _iUsedIdx[remch + 1];
-// 
-//                      if(u1 && u2)
-//                      {
-//                         ((AudioTrack *)i->track)->addData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-//                      }
-//                      else if(!u1 && !u2)
-//                      {
-//                         ((AudioTrack *)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-//                      }
-//                      else
-//                      {
-//                         if(u1)
-//                         {
-//                            ((AudioTrack *)i->track)->addData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-//                         }
-//                         else
-//                         {
-//                            ((AudioTrack *)i->track)->copyData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-//                         }
-// 
-//                         if(u2)
-//                         {
-//                            ((AudioTrack *)i->track)->addData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
-//                         }
-//                         else
-//                         {
-//                            ((AudioTrack *)i->track)->copyData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
-//                         }
-//                      }
-//                   }
-//                   else
-//                   {
-//                      if(u1)
-//                      {
-//                         ((AudioTrack *)i->track)->addData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-//                      }
-//                      else
-//                      {
-//                         ((AudioTrack *)i->track)->copyData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-//                      }
-//                   }
-// 
-//                   const int h = remch + chs;
-// 
-//                   for(int j = remch; j < h; ++j)
-//                   {
-//                      _iUsedIdx[j] = true;
-//                   }
-//                }
-
-//                 const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
-//                 const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-//                 int ch           = i->channel       == -1 ? 0 : i->channel;
-//                 int chs          = i->channels      == -1 ? total_ins : i->channels;
-//                 if(ch > total_ins)
-//                 if((ch + chs) > total_ins)
-//                   chs = total_ins - ch;
                 
                 //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
                 const int src_ch = i->remoteChannel == -1 ? 0 : i->remoteChannel;
@@ -3782,26 +3712,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                   for(int ch = dst_ch; ch < nxt_ch; ++ch)
                     _iUsedIdx[ch] = true;
                 }
-                
-                
-//                 for(unsigned i = ch; i < (unsigned)nxt_ch; ++i)
-//                 {
-//                   if(_iUsedIdx[ch])
-//                   {
-//                     //((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-//                     ((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
-//                   }
-//                   else
-//                   {
-//                     //((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-//                     ((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
-//                     _iUsedIdx[i] = true;
-//                   }
-//                 }
-//                 for(int j = ch; j < nxt_ch; ++j)
-//                 {
-//                     _iUsedIdx[j] = true;
-//                 }
              }
          }
       }

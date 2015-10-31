@@ -118,8 +118,6 @@ MidiPort::~MidiPort()
 
 bool MidiPort::guiVisible() const
       {
-      // REMOVE Tim. Persistent routes. Changed.
-      //return _instrument ? _instrument->guiVisible() : false;
       return _device ? _device->guiVisible() : false;
       }
 
@@ -139,8 +137,6 @@ void MidiPort::showGui(bool v)
 
 bool MidiPort::hasGui() const
       {
-      // REMOVE Tim. Persistent routes. Changed.
-      //return _instrument ? _instrument->hasGui() : false;
       return _device ? _device->hasGui() : false;
       }
 
@@ -150,8 +146,6 @@ bool MidiPort::hasGui() const
 
 bool MidiPort::nativeGuiVisible() const
       {
-      // REMOVE Tim. Persistent routes. Changed.
-      //return _instrument ? _instrument->nativeGuiVisible() : false;
       return _device ? _device->nativeGuiVisible() : false;
       }
 
@@ -171,8 +165,6 @@ void MidiPort::showNativeGui(bool v)
 
 bool MidiPort::hasNativeGui() const
       {
-      // REMOVE Tim. Persistent routes. Changed.
-      //return _instrument ? _instrument->hasNativeGui() : false;
       return _device ? _device->hasNativeGui() : false;
       }
 
@@ -189,7 +181,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             _device->close();
             _initializationsSent = false;
             // Wait until upcoming process call has finished. Otherwise Jack may crash!
-            MusEGlobal::audio->msgAudioWait();  // REMOVE Tim. Persistent routes. Added.
+            MusEGlobal::audio->msgAudioWait();
             }
       if (dev) {
             for (int i = 0; i < MIDI_PORTS; ++i) {
@@ -1191,9 +1183,6 @@ void MidiPort::writeRouting(int level, Xml& xml) const
             continue;
             
           s = QT_TRANSLATE_NOOP("@default", "Route");
-          // REMOVE Tim. Persistent routes. Changed. Reverted to route per channel now.
-          //if(r->channel != -1 && r->channel != 0)  
-          //  s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
           if(r->channel != -1)
             s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());

@@ -47,8 +47,6 @@ struct DrumMap;
 //---------------------------------------------------------
 
 struct Patch {
-      // REMOVE Tim. OBSOLETE. 
-      //signed char typ;                     // 1 - GM  2 - GS  4 - XG
       signed char hbank, lbank, prog;
       QString name;
       bool drum;
@@ -229,15 +227,6 @@ class MidiInstrument {
       void setNullSendValue(int v) { _nullvalue = v; }
 
       void readMidiState(Xml& xml);
-      // REMOVE Tim. Persistent routes. Removed.
-//       virtual bool guiVisible() const   { return false; }
-//       virtual void showGui(bool)        {}
-//       virtual bool hasGui() const       { return false; }
-//       virtual bool nativeGuiVisible() const   { return false; }
-//       virtual void showNativeGui(bool)        {}
-//       virtual bool hasNativeGui() const       { return false; }
-//       virtual void writeToGui(const MidiPlayEvent&) {}
-
       virtual void reset(int); 
       virtual QString getPatchName(int,int,bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);

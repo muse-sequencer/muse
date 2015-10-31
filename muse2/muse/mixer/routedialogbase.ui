@@ -21,11 +21,11 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QSplitter" name="splitter_2">
+    <widget class="QSplitter" name="verticalSplitter">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="routeViewSplitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -49,15 +49,27 @@
           <property name="verticalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="textElideMode">
+           <enum>Qt::ElideMiddle</enum>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
           <property name="isInput" stdset="0">
            <bool>true</bool>
           </property>
+          <attribute name="headerStretchLastSection">
+           <bool>false</bool>
+          </attribute>
           <column>
            <property name="text">
             <string notr="true">1</string>
@@ -152,15 +164,27 @@
           <property name="verticalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="textElideMode">
+           <enum>Qt::ElideMiddle</enum>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
           <property name="isInput" stdset="0">
            <bool>false</bool>
           </property>
+          <attribute name="headerStretchLastSection">
+           <bool>false</bool>
+          </attribute>
           <column>
            <property name="text">
             <string notr="true">1</string>
@@ -184,6 +208,12 @@
       </property>
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="textElideMode">
+       <enum>Qt::ElideMiddle</enum>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
       <column>
        <property name="text">

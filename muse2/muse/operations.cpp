@@ -324,38 +324,6 @@ void PendingOperationItem::executeRTStage()
       _track_list->insert(track_it, _track);
 
       // Add routes:
-      // REMOVE Tim. Persistent routes. Removed.
-//       if(_track->type() == Track::AUDIO_OUTPUT) 
-//       {
-//             const RouteList* rl = _track->inRoutes();
-//             for(ciRoute r = rl->begin(); r != rl->end(); ++r)
-//             {
-//                   Route src(_track, r->channel, r->channels);
-//                   src.remoteChannel = r->remoteChannel;
-//                   r->track->outRoutes()->push_back(src);
-//                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-//                   // Update the Audio Output track's aux ref count.
-//                   if(r->track->auxRefCount())
-//                     _track->updateAuxRoute(r->track->auxRefCount(), NULL);
-//                   else if(r->track->type() == Track::AUDIO_AUX)
-//                     _track->updateAuxRoute(1, NULL);
-//             }      
-//       }
-//       else if(_track->type() == Track::AUDIO_INPUT) 
-//       {
-//             const RouteList* rl = _track->outRoutes();
-//             for(ciRoute r = rl->begin(); r != rl->end(); ++r)
-//             {
-//                   Route src(_track, r->channel, r->channels);
-//                   src.remoteChannel = r->remoteChannel;
-//                   r->track->inRoutes()->push_back(src);
-//                   // Does this track have Aux Tracks routed to it?
-//                   // Update the other track's aux ref count and all tracks it is connected to.
-//                   if(_track->auxRefCount())
-//                     r->track->updateAuxRoute(_track->auxRefCount(), NULL);
-//             }      
-//       }
-//       else 
       if(_track->isMidiTrack())
       {
             // Add any port output routes to this track
@@ -400,9 +368,6 @@ void PendingOperationItem::executeRTStage()
                   switch(r->type)
                   {
                     case Route::TRACK_ROUTE: {
-                      // REMOVE Tim. Persistent routes. Changed.
-                      //Route src(_track, r->channel, r->channels);
-                      //src.remoteChannel = r->remoteChannel;
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->outRoutes()->push_back(src);  }
@@ -426,9 +391,6 @@ void PendingOperationItem::executeRTStage()
                   switch(r->type)
                   {
                     case Route::TRACK_ROUTE: {
-                      // REMOVE Tim. Persistent routes. Changed.
-                      //Route src(_track, r->channel, r->channels);
-                      //src.remoteChannel = r->remoteChannel;
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->inRoutes()->push_back(src);  }
@@ -516,22 +478,6 @@ void PendingOperationItem::executeRTStage()
                 continue;
               r->jackPort = 0;
             }
-            
-            // REMOVE Tim. Persistent routes. Removed.
-//             // Remove other tracks' output routes to this track
-//             const RouteList* irl = _track->inRoutes();
-//             for(ciRoute r = irl->begin(); r != irl->end(); ++r)
-//             {
-//                   Route src(_track, r->channel, r->channels);
-//                   src.remoteChannel = r->remoteChannel;
-//                   r->track->outRoutes()->removeRoute(src);
-//                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-//                   // Update the Audio Output track's aux ref count.
-//                   if(r->track->auxRefCount())
-//                     _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
-//                   else if(r->track->type() == Track::AUDIO_AUX)
-//                     _track->updateAuxRoute(-1, NULL);
-//             }      
       }
       else if(_track->type() == Track::AUDIO_INPUT) 
       {
@@ -547,24 +493,8 @@ void PendingOperationItem::executeRTStage()
                 continue;
               r->jackPort = 0;
             }
-            
-            // REMOVE Tim. Persistent routes. Removed.
-//             // Remove other tracks' input routes from this track
-//             const RouteList* orl = _track->outRoutes();
-//             for(ciRoute r = orl->begin(); r != orl->end(); ++r)
-//             {
-//                   Route src(_track, r->channel, r->channels);
-//                   src.remoteChannel = r->remoteChannel;
-//                   r->track->inRoutes()->removeRoute(src);
-//                   // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-//                   // Update the other track's aux ref count and all tracks it is connected to.
-//                   if(_track->auxRefCount())
-//                     r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
-//                   else if(_track->type() == Track::AUDIO_AUX)
-//                     r->track->updateAuxRoute(-1, NULL);
-//             }      
       }
-      //else // REMOVE Tim. Persistent routes. Removed.
+      
       if(_track->isMidiTrack())
       {
             // Remove any port output routes to this track
@@ -609,9 +539,6 @@ void PendingOperationItem::executeRTStage()
                   switch(r->type)
                   {
                     case Route::TRACK_ROUTE: {
-                      // REMOVE Tim. Persistent routes. Changed.
-                      //Route src(_track, r->channel, r->channels);
-                      //src.remoteChannel = r->remoteChannel;
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->outRoutes()->removeRoute(src);  }
@@ -635,9 +562,6 @@ void PendingOperationItem::executeRTStage()
                   switch(r->type)
                   {
                     case Route::TRACK_ROUTE: {
-                      // REMOVE Tim. Persistent routes. Changed.
-                      //Route src(_track, r->channel, r->channels);
-                      //src.remoteChannel = r->remoteChannel;
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->inRoutes()->removeRoute(src);  }

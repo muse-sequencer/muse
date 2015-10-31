@@ -23,20 +23,14 @@
 //=========================================================
 
 #include <QCloseEvent>
-//#include <QDialog>
-// REMOVE Tim. Persistent routes. Added.
-//#include <QListWidgetItem>
-//#include <QTreeWidgetItem>
 #include <QScrollBar>
 #include <QVector>
 #include <QList>
 #include <QPainter>
 #include <Qt>
-//#include <QStyledItemDelegate>
 #include <QMouseEvent>
 #include <QRect>
 #include <QPoint>
-//#include <QBitArray>
 #include <QModelIndex>
 #include <QString>
 #include <QHeaderView>
@@ -52,6 +46,9 @@
 #include "app.h"
 #include "operations.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
+
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
@@ -62,11 +59,6 @@ const QString RouteDialog::midiPortsCat(QObject::tr("Midi ports:"));
 const QString RouteDialog::midiDevicesCat(QObject::tr("Midi devices:"));
 const QString RouteDialog::jackCat(QObject::tr("Jack:"));
 const QString RouteDialog::jackMidiCat(QObject::tr("Jack midi:"));
-
-// const QString RouteDialog::trackLabel(QObject::tr("Track"));
-// const QString RouteDialog::midiDeviceLabel(QObject::tr("Midi port:device"));
-// const QString RouteDialog::jackLabel(QObject::tr("Jack"));
-// const QString RouteDialog::jackMidiLabel(QObject::tr("Jack midi"));
 
 const int RouteDialog::channelDotDiameter = 9;
 const int RouteDialog::channelDotSpacing = 1;
@@ -81,15 +73,6 @@ std::list<QString> tmpJackOutPorts;
 std::list<QString> tmpJackMidiInPorts;
 std::list<QString> tmpJackMidiOutPorts;
 
-
-// //---------------------------------------------------------
-// //   RouteChannelsList
-// //---------------------------------------------------------
-// 
-// void RouteChannelsList::computeChannelYValues()
-// {
-//   
-// }
 
 //---------------------------------------------------------
 //   RouteTreeWidgetItem
@@ -113,19 +96,13 @@ void RouteTreeWidgetItem::init()
           if(_route.track)
           {
             if(_route.track->isMidiTrack())
-            {
               _channels.resize(MIDI_CHANNELS);
-              //_channelYValues.resize(MIDI_CHANNELS);
-            }
             else
             {
               MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_route.track);
               const int chans = atrack->type() == MusECore::Track::AUDIO_SOFTSYNTH ? atrack->totalInChannels() : atrack->channels();
               if(chans != 0)
-              {
                 _channels.resize(chans);
-                //_channelYValues.resize(chans);
-              }
             }
           }
         break;  
@@ -202,16 +179,17 @@ void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
 int RouteTreeWidgetItem::channelAt(const QPoint& pt, const QRect& rect) const
 {
   const int col = treeWidget()->columnAt(pt.x());
-  const int col_width = treeWidget()->columnWidth(col); 
+//   const int col_width = treeWidget()->columnWidth(col); 
   const int view_width = treeWidget()->viewport()->width();
   const int chans = _channels.size();
   const int view_offset = treeWidget()->header()->offset();
   //const int x_offset = (_isInput ? view_width - getSizeHint(col, col_width).width() + view_offset : -view_offset);
-  const int x_offset = (_isInput ? view_width - getSizeHint(col, col_width).width() - view_offset : -view_offset);
+//   const int x_offset = (_isInput ? view_width - getSizeHint(col, col_width).width() - view_offset : -view_offset);
+  const int x_offset = (_isInput ? view_width - getSizeHint(col, view_width).width() - view_offset : -view_offset);
 
   QPoint p(pt.x() - x_offset, pt.y() - rect.y());
   
-  fprintf(stderr, "RouteTreeWidgetItem::channelAt() pt x:%d y:%d rect x:%d y:%d w:%d h:%d view_offset:%d x_offset:%d col w:%d header w:%d view w:%d p x:%d y:%d\n", 
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::channelAt() pt x:%d y:%d rect x:%d y:%d w:%d h:%d view_offset:%d x_offset:%d col w:%d header w:%d view w:%d p x:%d y:%d\n", 
           pt.x(), pt.y(), rect.x(), rect.y(), rect.width(), rect.height(), view_offset, x_offset, 
           treeWidget()->columnWidth(col), treeWidget()->header()->sectionSize(col), view_width, p.x(), p.y());  // REMOVE Tim.
   
@@ -271,7 +249,8 @@ int RouteTreeWidgetItem::channelsPerWidth(int w) const
   if(type() == ChannelsItem) 
   {
     if(w == -1)
-      w = treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL);
+//       w = treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL);
+      w = treeWidget()->viewport()->width();
     int groups_per_col = (w - 2 * RouteDialog::channelDotsMargin) / 
                          (RouteDialog::channelDotGroupSpacing + RouteDialog::channelDotsPerGroup * (RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing));
     if(groups_per_col < 1)
@@ -333,8 +312,8 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
                 //if(ir->channel >= _channelYValues.size())
                 //if(ir->channel >= _channels.size())
                 //{
-                  //fprintf(stderr, "RouteTreeWidgetItem::computeChannelYValues() Error: iRoute channel:%d out of channels range:%d\n", ir->channel, _channelYValues.size());
-                //  fprintf(stderr, "RouteTreeWidgetItem::computeChannelYValues() Error: iRoute channel:%d out of channels range:%d\n", ir->channel, _channels.size());
+                  //DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() Error: iRoute channel:%d out of channels range:%d\n", ir->channel, _channelYValues.size());
+                //  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() Error: iRoute channel:%d out of channels range:%d\n", ir->channel, _channels.size());
                 //  break; 
                 //}
                 // Mark the channel as used with a zero, for now.
@@ -388,13 +367,14 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
 
   //const int col_width = treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL);
   if(col_width == -1)
-    col_width = treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL);
+//     col_width = treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL);
+    col_width = treeWidget()->viewport()->width();
   int chans_per_w = channelsPerWidth(col_width);
   // Limit to actual number of channels available.
   if(chans_per_w > chans)
     chans_per_w = chans;
 
-  //fprintf(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
+  //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
   //int x = _isInput ? router->newSrcList->viewport()->width() - w : RouteDialog::midiDotsMargin;
   //int x = _isInput ? painter->device()->width() - w : RouteDialog::channelDotsMargin;
   //const int x_orig = _isInput ? treeWidget()->width() - w : RouteDialog::channelDotsMargin;
@@ -403,7 +383,7 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
   //int chan_y = RouteDialog::channelDotsMargin + (_isInput ? chans : 0);
   int chan_y = RouteDialog::channelDotsMargin;
 
-  fprintf(stderr, "RouteTreeWidgetItem::computeChannelYValues() col_width:%d chans_per_w:%d\n", col_width, chans_per_w);  // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() col_width:%d chans_per_w:%d\n", col_width, chans_per_w);  // REMOVE Tim.
   
   int line_y = RouteDialog::channelDotsMargin + (_isInput ? 0 : RouteDialog::channelBarHeight);
 
@@ -494,7 +474,7 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
         x = x_orig;
         for( ; cur_chan < i; )
         {
-          fprintf(stderr, "RouteTreeWidgetItem::computeChannelYValues() i:%d cur_chan:%d x:%d\n", i, cur_chan, x);  // REMOVE Tim.
+          DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() i:%d cur_chan:%d x:%d\n", i, cur_chan, x);  // REMOVE Tim.
           _channels[cur_chan]._buttonRect = QRect(x, line_y, RouteDialog::channelDotDiameter, RouteDialog::channelDotDiameter);
           ++cur_chan;
           x += RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing;
@@ -674,42 +654,42 @@ bool RouteTreeWidgetItem::mousePressHandler(QMouseEvent* e, const QRect& rect)
 
 // bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 // {
-//   //fprintf(stderr, "RoutingItemDelegate::paint\n");  // REMOVE Tim.
+//   //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint\n");  // REMOVE Tim.
 // //   RouteDialog* router = qobject_cast< RouteDialog* >(parent());
 //   //if(parent() && qobject_cast< RouteDialog* >(parent()))
 // //   if(router)
 // //   {
-//     //fprintf(stderr, "RoutingItemDelegate::paint parent is RouteDialog\n");  // REMOVE Tim.
+//     //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint parent is RouteDialog\n");  // REMOVE Tim.
 //     //QWidget* qpd = qobject_cast<QWidget*>(painter->device());
 //     //if(qpd)
 //     if(painter->device())
 //     {
-//       //fprintf(stderr, "RoutingItemDelegate::paint device is QWidget\n");  // REMOVE Tim.
+//       //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint device is QWidget\n");  // REMOVE Tim.
 //       //RouteDialog* router = static_cast<RouteDialog*>(parent());
 //       
 // //       if(index.column() == RouteDialog::ROUTE_NAME_COL && index.data(RouteDialog::RouteRole).canConvert<MusECore::Route>()) 
 //       if(type() == ChannelsItem && index.column() == RouteDialog::ROUTE_NAME_COL) 
 //       {
-//         //fprintf(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
+//         //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
 // //         MusECore::Route r = qvariant_cast<MusECore::Route>(index.data(RouteDialog::RouteRole));
 //         QRect rect(option.rect);
 // //         switch(r.type)
 //         switch(_route.type)
 //         {
 //           case MusECore::Route::TRACK_ROUTE:
-//             //fprintf(stderr, "RoutingItemDelegate::paint route is track\n");  // REMOVE Tim.
+//             //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint route is track\n");  // REMOVE Tim.
 //             if(_route.track && _route.channel != -1)
 //             {
 //               const int chans = _channels.size(); 
 // //               int chans; 
 // //               if(_route.track->isMidiTrack())
 // //               {
-// //                 //fprintf(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
+// //                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
 // //                 chans = MIDI_CHANNELS;
 // //               }
 // //               else
 // //               {
-// //                 //fprintf(stderr, "RoutingItemDelegate::paint track is audio\n");  // REMOVE Tim.
+// //                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is audio\n");  // REMOVE Tim.
 // //                 MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_route.track);
 // //                 if(atrack->type() == MusECore::Track::AUDIO_SOFTSYNTH)
 // //                 {
@@ -728,7 +708,7 @@ bool RouteTreeWidgetItem::mousePressHandler(QMouseEvent* e, const QRect& rect)
 //               if(chans > 4)
 //                 w += RouteDialog::channelDotGroupSpacing * (chans - 1) / 4;
 //               
-//               //fprintf(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
+//               //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
 //               //int x = _isInput ? router->newSrcList->viewport()->width() - w : RouteDialog::midiDotsMargin;
 //               int x = _isInput ? painter->device()->width() - w : RouteDialog::channelDotsMargin;
 //               const int y = RouteDialog::channelDotsMargin + (_isInput ? chans : 0);
@@ -818,24 +798,31 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
 {
   if(treeWidget()->viewport())
   {
-    if(index.column() == RouteDialog::ROUTE_NAME_COL) 
+    if(index.column() == RouteDialog::ROUTE_NAME_COL)
     {
-      const QRect rect(option.rect);
-      const int col_width = treeWidget()->columnWidth(index.column()); 
+//       const QRect rect(option.rect);
+//       const int col_width = treeWidget()->columnWidth(index.column()); 
       const int view_width = treeWidget()->viewport()->width();
       const int chans = _channels.size();
       const int view_offset = treeWidget()->header()->offset();
       //const int x_offset = (_isInput ? view_width - getSizeHint(index.column(), col_width).width() + view_offset : -view_offset);
-      const int x_offset = (_isInput ? view_width - getSizeHint(index.column(), col_width).width() - view_offset : -view_offset);
+//       const int x_offset = (_isInput ? view_width - getSizeHint(index.column(), col_width).width() - view_offset : -view_offset);
+      const int x_offset = (_isInput ? view_width - getSizeHint(index.column(), view_width).width() - view_offset : -view_offset);
 
-      fprintf(stderr, "RouteTreeWidgetItem::paint() rect x:%d y:%d w:%d h:%d view_offset:%d x_offset:%d dev w:%d col w:%d header w:%d view w:%d\n", 
-              rect.x(), rect.y(), rect.width(), rect.height(), view_offset, x_offset, painter->device()->width(), 
+      DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::paint() rect x:%d y:%d w:%d h:%d view_offset:%d x_offset:%d dev w:%d col w:%d header w:%d view w:%d\n", 
+              option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(), view_offset, x_offset, painter->device()->width(), 
               treeWidget()->columnWidth(index.column()), treeWidget()->header()->sectionSize(index.column()), view_width);  // REMOVE Tim.
       
       switch(type())
       {
         case ChannelsItem:
         {
+          // From QStyledItemDelegate::paint help: Neccessary?
+          // "After painting, you should ensure that the painter is returned to its the state it was supplied in when this function
+          //  was called. For example, it may be useful to call QPainter::save() before painting and QPainter::restore() afterwards."
+          painter->save();
+          if(index.parent().isValid() && (index.parent().row() & 0x01))
+            painter->fillRect(option.rect, treeWidget()->palette().alternateBase());
           int cur_chan = 0;
           for(int i = 0; i < chans; ++i)
           {
@@ -861,7 +848,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
               if(_isInput)
               {
                 const int ch_y = option.rect.y() + ch_rect.y() -1;
-                fprintf(stderr, "RouteTreeWidgetItem::paint() input: line_x:%d ch_y:%d line_y:%d view_w:%d\n", line_x, ch_y, line_y, view_width);  // REMOVE Tim.
+                DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::paint() input: line_x:%d ch_y:%d line_y:%d view_w:%d\n", line_x, ch_y, line_y, view_width);  // REMOVE Tim.
 
                 painter->drawLine(line_x, ch_y, line_x, line_y);
                 painter->drawLine(line_x, line_y, view_width, line_y);
@@ -876,13 +863,43 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
               ++cur_chan;
             }
           }
+          painter->restore();
           return true;
         }
         break;
         
-        case NormalItem:
         case CategoryItem:
-        case RouteItem:          
+        case RouteItem:
+        {
+          QStyle* st = treeWidget()->style();
+          if(st)
+          {
+            painter->save();
+            if(isSelected())
+              painter->fillRect(option.rect, treeWidget()->palette().highlight());
+            else if(type() == CategoryItem)
+              painter->fillRect(option.rect, treeWidget()->palette().mid());
+            else if(index.row() & 0x01)
+              painter->fillRect(option.rect, treeWidget()->palette().alternateBase());
+
+            painter->setFont(font(RouteDialog::ROUTE_NAME_COL));
+            st->drawItemText(painter, 
+                             option.rect, 
+                             textAlignment(RouteDialog::ROUTE_NAME_COL) | Qt::TextWordWrap | Qt::TextWrapAnywhere, 
+                             treeWidget()->palette(), 
+                             !isDisabled(), 
+                             text(RouteDialog::ROUTE_NAME_COL),
+                             isSelected() ? QPalette::HighlightedText : QPalette::NoRole
+                             //QPalette::ColorRole textRole = QPalette::NoRole);
+                             );
+            
+            painter->restore();
+            return true;
+          }
+        }
+        break;
+        
+        case NormalItem:
         break;
       }
     }
@@ -903,46 +920,77 @@ QSize RouteTreeWidgetItem::getSizeHint(int col, int col_width) const
 //     
   //return QStyledItemDelegate::sizeHint(option, index);
 
-//   fprintf(stderr, "RouteTreeWidgetItem::getSizeHint col:%d column width:%d\n",
-//           col, treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL));  // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::getSizeHint width:%d view width:%d col:%d column width:%d\n",
+          treeWidget()->viewport()->width(), treeWidget()->width(), col, treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL));  // REMOVE Tim.
   
+  if(col_width == -1)
+//       col_width = treeWidget()->columnWidth(col);
+    col_width = treeWidget()->viewport()->width();
+            
   //if(index.column() == RouteDialog::ROUTE_NAME_COL && index.data(RouteDialog::RouteRole).canConvert<MusECore::Route>()) 
-  if(type() == ChannelsItem && col == RouteDialog::ROUTE_NAME_COL) 
+  if(col == RouteDialog::ROUTE_NAME_COL) 
   {
-    if(col_width == -1)
-      col_width = treeWidget()->columnWidth(col);
+      switch(type())
+      {
+        case ChannelsItem:
+        {
+//           if(col_width == -1)
+//       //       col_width = treeWidget()->columnWidth(col);
+//             col_width = treeWidget()->viewport()->width();
 
-//     int groups_per_col = (col_width - 2 * RouteDialog::channelDotsMargin) / 
-//                             (RouteDialog::channelDotGroupSpacing + RouteDialog::channelDotsPerGroup * (RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing));
-//     if(groups_per_col < 1)
-//       groups_per_col = 1;
-    
-    const int chans = _channels.size();
-    
-    //const int chans_per_col = RouteDialog::channelDotsPerGroup * groups_per_col;
-    int chans_per_col = channelsPerWidth(col_width);
-    
-    // Limit to actual number of channels available.
-    if(chans_per_col > chans)
-      chans_per_col = chans;
-    
-    const int groups_per_col = groupsPerChannels(chans_per_col);
-    
-    //const int chans = connectedChannels();
+      //     int groups_per_col = (col_width - 2 * RouteDialog::channelDotsMargin) / 
+      //                             (RouteDialog::channelDotGroupSpacing + RouteDialog::channelDotsPerGroup * (RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing));
+      //     if(groups_per_col < 1)
+      //       groups_per_col = 1;
+          
+          const int chans = _channels.size();
+          
+          //const int chans_per_col = RouteDialog::channelDotsPerGroup * groups_per_col;
+          int chans_per_col = channelsPerWidth(col_width);
+          
+          // Limit to actual number of channels available.
+          if(chans_per_col > chans)
+            chans_per_col = chans;
+          
+          const int groups_per_col = groupsPerChannels(chans_per_col);
+          
+          //const int chans = connectedChannels();
 
-//     int chan_rows = chans / chans_per_col;
-//     if(chans % chans_per_col)
-//       ++chan_rows;
-//     if(chan_rows < 1)
-//       chan_rows = 1;
-//     //int chan_rows = 1 + chans / chans_per_col;
-    
-    const int bars = barsPerColChannels(chans_per_col);
-    const int h = bars * RouteDialog::channelBarHeight + RouteDialog::channelDotsMargin + connectedChannels() * RouteDialog::channelLinesSpacing;
-    const int w = chans_per_col * (RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing) +
-                  groups_per_col * RouteDialog::channelDotGroupSpacing +
-                  2 * RouteDialog::channelDotsMargin;
-    return QSize(w, h);
+      //     int chan_rows = chans / chans_per_col;
+      //     if(chans % chans_per_col)
+      //       ++chan_rows;
+      //     if(chan_rows < 1)
+      //       chan_rows = 1;
+      //     //int chan_rows = 1 + chans / chans_per_col;
+          
+          const int bars = barsPerColChannels(chans_per_col);
+          const int h = bars * RouteDialog::channelBarHeight + RouteDialog::channelDotsMargin + connectedChannels() * RouteDialog::channelLinesSpacing;
+          const int w = chans_per_col * (RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing) +
+                        groups_per_col * RouteDialog::channelDotGroupSpacing +
+                        2 * RouteDialog::channelDotsMargin;
+          return QSize(w, h);
+        }
+        break;
+        
+        case NormalItem:
+        case CategoryItem:
+        case RouteItem:
+        {
+          QStyle* st = treeWidget()->style();
+          if(st)
+          {
+            // Qt sources show itemTextRect() just calls QFontMetrics::boundingRect and supports enabled.
+            // And Qt::TextWrapAnywhere is not listed as supported in boundingRect() help, yet it is in drawItemText().
+            // A look through the Qt sources shows it IS supported. Try it...
+            QRect r = st->itemTextRect(treeWidget()->fontMetrics(), QRect(0, 0, col_width, 32767), 
+                                       textAlignment(RouteDialog::ROUTE_NAME_COL) | Qt::TextWordWrap | Qt::TextWrapAnywhere,
+                                       !isDisabled(), text(RouteDialog::ROUTE_NAME_COL));
+            
+            return QSize(r.width(), r.height());
+          }
+        }
+        break;
+      }
     
 //     switch(_route.type)
 //     {
@@ -1003,7 +1051,7 @@ QSize RouteTreeWidgetItem::getSizeHint(const QStyleOptionViewItem& /*option*/, c
   //return QStyledItemDelegate::sizeHint(option, index);
 
 //   const QSize sz = getSizeHint(index.column());
-//   fprintf(stderr, "RouteTreeWidgetItem::sizeHint opt rect x:%d y:%d w:%d h:%d  hint w:%d h:%d column width:%d\n",
+//   DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::sizeHint opt rect x:%d y:%d w:%d h:%d  hint w:%d h:%d column width:%d\n",
 //           option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(), 
 //           sz.width(), sz.height(), 
 //           treeWidget()->columnWidth(RouteDialog::ROUTE_NAME_COL));  // REMOVE Tim.
@@ -1058,7 +1106,7 @@ QSize RouteTreeWidgetItem::getSizeHint(const QStyleOptionViewItem& /*option*/, c
 
 // void RouteTreeWidgetItem::columnSizeChanged(int logicalIndex, int oldSize, int newSize)
 // {
-//   fprintf(stderr, "RouteTreeWidgetItem::columnSizeChanged idx:%d old sz:%d new sz:%d\n", logicalIndex, oldSize, newSize);
+//   DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::columnSizeChanged idx:%d old sz:%d new sz:%d\n", logicalIndex, oldSize, newSize);
 //   if(type() == ChannelsItem && logicalIndex == RouteDialog::ROUTE_NAME_COL)
 //   {
 //     //setSizeHint(logicalIndex, getSizeHint(logicalIndex));
@@ -1151,7 +1199,7 @@ int ConnectionsView::itemY(RouteTreeWidgetItem* item, bool /*is_input*/, int cha
       return line_width + rect.top() + item->channelYValue(channel);
     return line_width + rect.top() + rect.height() / 2;
 //   }
-  //fprintf(stderr, "ConnectionsView::itemY: left:%d top:%d right:%d bottom:%d\n", rect.left(), rect.top(), rect.right(), rect.bottom());
+  //DEBUG_PRST_ROUTES(stderr, "ConnectionsView::itemY: left:%d top:%d right:%d bottom:%d\n", rect.left(), rect.top(), rect.right(), rect.bottom());
 //   if(channel != -1)
 //     //return rect.top() + RouteDialog::channelDotsMargin + (is_input ? 0 : RouteDialog::channelDotDiameter) + channel;
 //     return rect.top() + item->channelYValue(channel);
@@ -1163,7 +1211,7 @@ int ConnectionsView::itemY(RouteTreeWidgetItem* item, bool /*is_input*/, int cha
 void ConnectionsView::drawConnectionLine(QPainter* pPainter,
         int x1, int y1, int x2, int y2, int h1, int h2 )
 {
-  //fprintf(stderr, "ConnectionsView::drawConnectionLine: x1:%d y1:%d x2:%d y2:%d h1:%d h2:%d\n", x1, y1, x2, y2, h1, h2);
+  //DEBUG_PRST_ROUTES(stderr, "ConnectionsView::drawConnectionLine: x1:%d y1:%d x2:%d y2:%d h1:%d h2:%d\n", x1, y1, x2, y2, h1, h2);
   
   // Account for list view headers.
   y1 += h1;
@@ -1303,7 +1351,7 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
 // Draw visible port connection relation arrows.
 void ConnectionsView::paintEvent(QPaintEvent*)
 {
-  //fprintf(stderr, "ConnectionsView::paintEvent: _routeDialog:%p\n", _routeDialog);
+  //DEBUG_PRST_ROUTES(stderr, "ConnectionsView::paintEvent: _routeDialog:%p\n", _routeDialog);
   if(!_routeDialog)
     return;
 
@@ -1441,14 +1489,14 @@ void ConnectionsView::paintEvent(QPaintEvent*)
 //         }
 //         else
 //         {
-//           fprintf(stderr, "ConnectionsView::paintEvent: dstItem not found:\n");
+//           DEBUG_PRST_ROUTES(stderr, "ConnectionsView::paintEvent: dstItem not found:\n");
 //           src.dump();
 //           dst.dump();
 //         }
 //       }
 //       else
 //       {
-//         fprintf(stderr, "ConnectionsView::paintEvent: srcItem not found:\n");
+//         DEBUG_PRST_ROUTES(stderr, "ConnectionsView::paintEvent: srcItem not found:\n");
 //         src.dump();
 //         dst.dump();
 //       }
@@ -1490,7 +1538,7 @@ void ConnectionsView::mouseMoveEvent(QMouseEvent* e)
 void ConnectionsView::wheelEvent(QWheelEvent* e)
 {
   int delta = e->delta();
-  fprintf(stderr, "ConnectionsView::wheelEvent: delta:%d\n", delta); // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "ConnectionsView::wheelEvent: delta:%d\n", delta); // REMOVE Tim.
   e->setAccepted(true);
   emit scrollBy(0, delta < 0 ? 1 : -1);
 }
@@ -1552,9 +1600,20 @@ RouteTreeWidget::~RouteTreeWidget()
 {
 }
 
+void RouteTreeWidget::computeChannelYValues()
+{
+  QTreeWidgetItemIterator itw(this);
+  while(*itw)
+  {
+    RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*itw);
+    item->computeChannelYValues();
+    ++itw;
+  }
+}
+
 void RouteTreeWidget::headerSectionResized(int logicalIndex, int oldSize, int newSize)
 {
-//   fprintf(stderr, "RouteTreeWidget::headerSectionResized idx:%d old sz:%d new sz:%d\n", logicalIndex, oldSize, newSize);
+   DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::headerSectionResized idx:%d old sz:%d new sz:%d\n", logicalIndex, oldSize, newSize);
 //   scheduleDelayedItemsLayout();
   
   // Self adjust certain item heights...
@@ -1578,24 +1637,10 @@ void RouteTreeWidget::headerSectionResized(int logicalIndex, int oldSize, int ne
   }
   if(do_layout)
   {
-    fprintf(stderr, "RouteTreeWidget::headerSectionResized idx:%d old sz:%d new sz:%d calling scheduleDelayedItemsLayout()\n", logicalIndex, oldSize, newSize);
+    DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::headerSectionResized idx:%d old sz:%d new sz:%d calling scheduleDelayedItemsLayout()\n", logicalIndex, oldSize, newSize);
+    // Neither updateGeometry() or updateGeometries() works here.
     scheduleDelayedItemsLayout();
   }
-}
-
-void RouteTreeWidget::scrollRangeChanged(int min, int max)
-{
-  fprintf(stderr, "RouteTreeWidget::scrollRangeChanged min:%d max:%d\n", min, max);
-}
-
-void RouteTreeWidget::scrollSliderMoved(int value)
-{
-  fprintf(stderr, "RouteTreeWidget::scrollSliderMoved val:%d\n", value);
-}
-
-void RouteTreeWidget::scrollValueChanged(int value)
-{
-  fprintf(stderr, "RouteTreeWidget::scrollValueChanged val:%d\n", value);
 }
 
 RouteTreeWidgetItem* RouteTreeWidget::itemFromIndex(const QModelIndex& index) const
@@ -1767,6 +1812,16 @@ int RouteTreeWidget::channelAt(RouteTreeWidgetItem* item, const QPoint& pt)
 //       p.setX(p.x() - RouteDialog::midiDotGroupSpacing);
 //   }
 //   return -1;
+}
+
+void RouteTreeWidget::resizeEvent(QResizeEvent* event)
+{
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::resizeEvent old w:%d h:%d new w:%d h:%d\n", event->oldSize().width(), event->oldSize().height(),
+          event->size().width(), event->size().height()); // REMOVE Tim. Persistent routes. Added.
+
+  event->ignore();
+  QTreeWidget::resizeEvent(event);
+  headerSectionResized(RouteDialog::ROUTE_NAME_COL, event->oldSize().width(), event->size().width());
 }
 
 void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
@@ -1963,7 +2018,7 @@ void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
 QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QModelIndex& index, const QEvent* e) const
 {
   QItemSelectionModel::SelectionFlags flags = QTreeWidget::selectionCommand(index, e);
-  fprintf(stderr, "RouteTreeWidget::selectionCommand flags:%d row:%d col:%d ev type:%d\n", int(flags), index.row(), index.column(), e ? e->type() : -1); // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand flags:%d row:%d col:%d ev type:%d\n", int(flags), index.row(), index.column(), e ? e->type() : -1); // REMOVE Tim. Persistent routes. Added.
 
   RouteTreeWidgetItem* item = itemFromIndex(index);
 
@@ -1973,7 +2028,7 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
     {
       flags &= ~QItemSelectionModel::Toggle;
       flags |= QItemSelectionModel::Select;
-      fprintf(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
+      DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
     }
   }
   
@@ -1983,8 +2038,8 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
 //   //if(index.data(RouteDialog::RouteRole).canConvert<MusECore::Route>()) 
 //   if(item) 
 //   {
-//     fprintf(stderr, "RouteTreeWidget::selectionCommand can convert data to Route\n"); // REMOVE Tim. Persistent routes. Added.
-//     //fprintf(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand can convert data to Route\n"); // REMOVE Tim. Persistent routes. Added.
+//     //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
 //     //const MusECore::Route r = qvariant_cast<MusECore::Route>(index.data(RouteDialog::RouteRole));
 //     //const MusECore::Route r = index.data(RouteDialog::RouteRole).value<MusECore::Route>();
 //     const MusECore::Route& r = item->route();
@@ -1998,7 +2053,7 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
 //           {
 //             flags &= ~QItemSelectionModel::Toggle;
 //             flags |= QItemSelectionModel::Select;
-//             fprintf(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
+//             DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
 //           }
 //         }
 //       break;
@@ -2016,7 +2071,7 @@ void RouteTreeWidget::selectionChanged(const QItemSelection& selected, const QIt
 {
   QModelIndexList mil = deselected.indexes();
   const int dsz = mil.size();
-  fprintf(stderr, "RouteTreeWidget::selectionChanged: selected size:%d deselected size:%d\n", selected.size(), dsz); // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: selected size:%d deselected size:%d\n", selected.size(), dsz); // REMOVE Tim. Persistent routes. Added.
   for(int i = 0; i < dsz; ++i)
   {
     const QModelIndex& index = mil.at(i);
@@ -2040,7 +2095,7 @@ void RouteTreeWidget::selectionChanged(const QItemSelection& selected, const QIt
 //           {
 // //             if(item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
 // //             {
-// //               fprintf(stderr, "RouteTreeWidget::selectionChanged: track route: deselected idx:%d clearing channels bitarray\n", i); // REMOVE Tim. Persistent routes. Added.
+// //               DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: track route: deselected idx:%d clearing channels bitarray\n", i); // REMOVE Tim. Persistent routes. Added.
 // //               QBitArray ba = item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>();
 // //               ba.fill(false);
 // //               item->setData(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole, qVariantFromValue<QBitArray>(ba));
@@ -2062,7 +2117,7 @@ void RouteTreeWidget::selectionChanged(const QItemSelection& selected, const QIt
 
 void RouteTreeWidget::scrollBy(int dx, int dy)
 {
-  fprintf(stderr, "RouteTreeWidget::scrollBy: dx:%d dy:%d\n", dx, dy); // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::scrollBy: dx:%d dy:%d\n", dx, dy); // REMOVE Tim.
   int hv = horizontalScrollBar()->value();
   int vv = verticalScrollBar()->value();
   if(dx)
@@ -2285,7 +2340,7 @@ RoutingItemDelegate::RoutingItemDelegate(bool is_input, RouteTreeWidget* tree, Q
 // void RoutingItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 // {
 //   // REMOVE Tim.
-//   fprintf(stderr, "ColorChooserEditor::updateEditorGeometry editor x:%d y:%d w:%d h:%d rect x:%d y:%d w:%d h:%d\n",
+//   DEBUG_PRST_ROUTES(stderr, "ColorChooserEditor::updateEditorGeometry editor x:%d y:%d w:%d h:%d rect x:%d y:%d w:%d h:%d\n",
 //           editor->x(), editor->y(), editor->width(), editor->height(),
 //           option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height());
 // 
@@ -2307,7 +2362,7 @@ RoutingItemDelegate::RoutingItemDelegate(bool is_input, RouteTreeWidget* tree, Q
 void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                         const QModelIndex &index) const
 {
-//   fprintf(stderr, "RoutingItemDelegate::paint row:%d col:%d, rect x:%d y:%d w:%d h:%d showDecorationSelected:%d\n",
+//   DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint row:%d col:%d, rect x:%d y:%d w:%d h:%d showDecorationSelected:%d\n",
 //           index.row(), index.column(),
 //           option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(),
 //           option.showDecorationSelected);  // REMOVE Tim.
@@ -2378,40 +2433,40 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
   
   //QStyledItemDelegate::paint(painter, option, index);
   
-  //fprintf(stderr, "RoutingItemDelegate::paint\n");  // REMOVE Tim.
+  //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint\n");  // REMOVE Tim.
   
 // //   RouteDialog* router = qobject_cast< RouteDialog* >(parent());
 //   //if(parent() && qobject_cast< RouteDialog* >(parent()))
 // //   if(router)
 // //   {
-//     //fprintf(stderr, "RoutingItemDelegate::paint parent is RouteDialog\n");  // REMOVE Tim.
+//     //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint parent is RouteDialog\n");  // REMOVE Tim.
 //     //QWidget* qpd = qobject_cast<QWidget*>(painter->device());
 //     //if(qpd)
 //     if(painter->device())
 //     {
-//       //fprintf(stderr, "RoutingItemDelegate::paint device is QWidget\n");  // REMOVE Tim.
+//       //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint device is QWidget\n");  // REMOVE Tim.
 //       //RouteDialog* router = static_cast<RouteDialog*>(parent());
 //       
 //       if(index.column() == RouteDialog::ROUTE_NAME_COL && index.data(RouteDialog::RouteRole).canConvert<MusECore::Route>()) 
 //       {
-//         //fprintf(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
+//         //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
 //         MusECore::Route r = qvariant_cast<MusECore::Route>(index.data(RouteDialog::RouteRole));
 //         QRect rect(option.rect);
 //         switch(r.type)
 //         {
 //           case MusECore::Route::TRACK_ROUTE:
-//             //fprintf(stderr, "RoutingItemDelegate::paint route is track\n");  // REMOVE Tim.
+//             //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint route is track\n");  // REMOVE Tim.
 //             if(r.track && r.channel != -1)
 //             {
 //               int chans; 
 //               if(r.track->isMidiTrack())
 //               {
-//                 //fprintf(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
+//                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is midi\n");  // REMOVE Tim.
 //                 chans = MIDI_CHANNELS;
 //               }
 //               else
 //               {
-//                 //fprintf(stderr, "RoutingItemDelegate::paint track is audio\n");  // REMOVE Tim.
+//                 //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint track is audio\n");  // REMOVE Tim.
 //                 MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(r.track);
 //                 if(atrack->type() == MusECore::Track::AUDIO_SOFTSYNTH)
 //                 {
@@ -2430,7 +2485,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //               if(chans > 4)
 //                 w += RouteDialog::midiDotGroupSpacing * (chans - 1) / 4;
 //               
-//               //fprintf(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
+//               //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint src list width:%d src viewport width:%d\n", router->newSrcList->width(), router->newSrcList->viewport()->width());  // REMOVE Tim.
 //               //int x = _isInput ? router->newSrcList->viewport()->width() - w : RouteDialog::midiDotsMargin;
 //               //int x = _isInput ? painter->device()->width() - w : RouteDialog::midiDotsMargin;
 //               int x = _isInput ? _tree->width() - w : RouteDialog::midiDotsMargin;
@@ -2507,7 +2562,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 // //     } else
 // 
 //   int opt_state = option.state;
-//   fprintf(stderr, "RoutingItemDelegate::createEditor option state:%d\n", opt_state);  // REMOVE Tim.
+//   DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::createEditor option state:%d\n", opt_state);  // REMOVE Tim.
 // 
 //   // HACK: For some reason when using CurrentChanged trigger, createEditor is called upon opening the dialog, yet nothing is selected.
 //   // It suddenly started doing that after working just fine. Can't find what may have changed.
@@ -2521,11 +2576,11 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 // //     case ControlMapperDialog::C_SHOW:
 // //       //return QStyledItemDelegate::createEditor(parent, option, index);
 // //       // This is a checkbox column. No editable info.
-// //       //fprintf(stderr, "ERROR: RoutingItemDelegate::createEditor called for SHOW column\n");
+// //       //DEBUG_PRST_ROUTES(stderr, "ERROR: RoutingItemDelegate::createEditor called for SHOW column\n");
 // //       return 0;
 // 
 //     //case ControlMapperDialog::C_NAME:
-//       //fprintf(stderr, "ERROR: RoutingItemDelegate::createEditor called for NAME column\n");
+//       //DEBUG_PRST_ROUTES(stderr, "ERROR: RoutingItemDelegate::createEditor called for NAME column\n");
 //       // This seems to be a way we can prevent editing of a cell here in this tree widget.
 //       // Table widget has individual item cell edting enable but here in tree widget it's per row.
 //       //return 0;
@@ -2683,7 +2738,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 // //     emit commitData(editor);
 // //     emit closeEditor(editor);
 // 
-//   fprintf(stderr, "RoutingItemDelegate::editorChanged\n");  // REMOVE Tim.
+//   DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorChanged\n");  // REMOVE Tim.
 //   
 //   // Wow, I thought using sender was frowned upon ("breaks modularity"). But hey, it's necessary sometimes. TODO Improve this?
 //   //ColorEditor* editor = qobject_cast<ColorEditor*>(sender());
@@ -2705,7 +2760,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 // void RoutingItemDelegate::setEditorData(QWidget *editor,
 //                                   const QModelIndex &index) const
 // {
-//   fprintf(stderr, "RoutingItemDelegate::setEditorData\n");  // REMOVE Tim.
+//   DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::setEditorData\n");  // REMOVE Tim.
 // //      if (index.data().canConvert<StarRating>()) {
 // //          StarRating starRating = qvariant_cast<StarRating>(index.data());
 // //          StarEditor *starEditor = qobject_cast<StarEditor *>(editor);
@@ -2784,7 +2839,7 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 void RoutingItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                                  const QModelIndex &index) const
 {
-  fprintf(stderr, "RoutingItemDelegate::setModelData\n");  // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::setModelData\n");  // REMOVE Tim.
 //      if (index.data().canConvert<StarRating>()) {
 //          StarEditor *starEditor = qobject_cast<StarEditor *>(editor);
 //          model->setData(index, QVariant::fromValue(starEditor->starRating()));
@@ -2875,6 +2930,8 @@ QSize RoutingItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QM
 //     
   //return QStyledItemDelegate::sizeHint(option, index);
 
+  DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::sizeHint\n"); // REMOVE Tim.
+  
   RouteTreeWidgetItem* item = _tree->itemFromIndex(index);
   if(item)
   { 
@@ -2937,7 +2994,7 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 //   if(event->type() == QEvent::MouseMove)
 //   {
 //     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-//     fprintf(stderr, "RoutingItemDelegate::editorEvent: Move X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorEvent: Move X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
 //     // If any buttons down, ignore.
 // //     if(me->buttons() != Qt::NoButton)
 // //     {
@@ -2949,7 +3006,7 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 //   if(event->type() == QEvent::MouseButtonPress)
 //   {
 //     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-//     fprintf(stderr, "RoutingItemDelegate::editorEvent: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorEvent: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
 // 
 // //     _firstPress = false;  // HACK
 // //     
@@ -2963,7 +3020,7 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 //   if(event->type() == QEvent::MouseButtonRelease)
 //   {
 //     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-//     fprintf(stderr, "RoutingItemDelegate::editorEvent: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorEvent: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
 // 
 // //     // If the element under the mouse is not the one when pressed, eat up these events because
 // //     //  they trigger the editor or action of the element under the mouse at the release position.
@@ -2981,10 +3038,10 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 //   else
 //   if(event->type() == QEvent::Close)
 //   {
-//     fprintf(stderr, "RoutingItemDelegate::editorEvent: Close\n");  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorEvent: Close\n");  // REMOVE Tim.
 //   }
 //   else
-//     fprintf(stderr, "RoutingItemDelegate::editorEvent: event type:%d\n", event->type());  // REMOVE Tim.
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::editorEvent: event type:%d\n", event->type());  // REMOVE Tim.
 
 
 //   switch(index.column())
@@ -3006,7 +3063,7 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 //       if(event->type() == QEvent::MouseButtonRelease)
 //       {
 //         QMouseEvent* me = static_cast<QMouseEvent*>(event);
-//         fprintf(stderr, " X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//         DEBUG_PRST_ROUTES(stderr, " X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
 // 
 //       }
 // 
@@ -3039,28 +3096,28 @@ bool RoutingItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, 
 
 bool RoutingItemDelegate::eventFilter(QObject* editor, QEvent* event)
 {
-  if(event->type() == QEvent::MouseButtonPress)
-  {
-    QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "RoutingItemDelegate::eventFilter: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
-    //event->accept();
-    //return true;
-  }
-  else
-  if(event->type() == QEvent::MouseButtonRelease)
-  {
-    QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "RoutingItemDelegate::eventFilter: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
-    //event->accept();
-    //return true;
-  }
-  else
-  if(event->type() == QEvent::Close)
-  {
-    fprintf(stderr, "RoutingItemDelegate::eventFilter: Close\n");  // REMOVE Tim.
-  }
-  else
-    fprintf(stderr, "RoutingItemDelegate::eventFilter: event type:%d\n", event->type());  // REMOVE Tim.
+//   if(event->type() == QEvent::MouseButtonPress)
+//   {
+//     QMouseEvent* me = static_cast<QMouseEvent*>(event);
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::eventFilter: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//     //event->accept();
+//     //return true;
+//   }
+//   else
+//   if(event->type() == QEvent::MouseButtonRelease)
+//   {
+//     QMouseEvent* me = static_cast<QMouseEvent*>(event);
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::eventFilter: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+//     //event->accept();
+//     //return true;
+//   }
+//   else
+//   if(event->type() == QEvent::Close)
+//   {
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::eventFilter: Close\n");  // REMOVE Tim.
+//   }
+//   else
+//     DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::eventFilter: event type:%d\n", event->type());  // REMOVE Tim.
 
   return QStyledItemDelegate::eventFilter(editor, event);
 }
@@ -3127,7 +3184,12 @@ RouteDialog::RouteDialog(QWidget* parent)
   // Need this. Don't remove.
   newSrcList->header()->setSectionResizeMode(QHeaderView::Stretch);
   newDstList->header()->setSectionResizeMode(QHeaderView::Stretch);
+  //newSrcList->header()->setSectionResizeMode(QHeaderView::Interactive);
+  //newDstList->header()->setSectionResizeMode(QHeaderView::Interactive);
 
+  //newSrcList->header()->setStretchLastSection(false);
+  //newDstList->header()->setStretchLastSection(false);
+  
   newSrcList->setTextElideMode(Qt::ElideMiddle);
   newDstList->setTextElideMode(Qt::ElideMiddle);
 
@@ -3150,6 +3212,7 @@ RouteDialog::RouteDialog(QWidget* parent)
   connect(newDstList->verticalScrollBar(), SIGNAL(valueChanged(int)), SLOT(dstTreeScrollValueChanged(int))); 
   connect(srcTreeScrollBar, SIGNAL(valueChanged(int)), SLOT(srcScrollBarValueChanged(int))); 
   connect(dstTreeScrollBar, SIGNAL(valueChanged(int)), SLOT(dstScrollBarValueChanged(int))); 
+  connect(routeViewSplitter, SIGNAL(splitterMoved(int,int)), SLOT(routeSplitterMoved(int,int))); 
   
   connect(routeList, SIGNAL(itemSelectionChanged()), SLOT(routeSelectionChanged()));
   connect(newSrcList, SIGNAL(itemSelectionChanged()), SLOT(srcSelectionChanged()));
@@ -3206,10 +3269,42 @@ void RouteDialog::dstScrollBarValueChanged(int value)
   newDstList->blockSignals(false);
 }
 
-void RouteDialog::allMidiPortsClicked(bool /*v*/)
+// void RouteDialog::routeSplitterMoved(int pos, int index)
+// {
+//   DEBUG_PRST_ROUTES(stderr, "RouteDialog::routeSplitterMoved pos:%d index:%d\n", pos, index);  // REMOVE Tim.
+//   
+// }
+
+
+void RouteDialog::allMidiPortsClicked(bool v)
 {
   // TODO: This is a bit brutal and sweeping... Refine this down to needed parts only.
-  routingChanged();  
+//   routingChanged();  
+  
+  
+  // Refill the lists of available external ports.
+//   tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
+//   tmpJackInPorts = MusEGlobal::audioDevice->inputPorts();
+//   tmpJackMidiOutPorts = MusEGlobal::audioDevice->outputPorts(true);
+//   tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
+  if(v)
+    addItems();                   // Add any new items.
+  else
+    removeItems();                // Remove unused items.
+    
+  newSrcList->resizeColumnToContents(ROUTE_NAME_COL);
+  newDstList->resizeColumnToContents(ROUTE_NAME_COL);
+  routeList->resizeColumnToContents(ROUTE_SRC_COL);
+  routeList->resizeColumnToContents(ROUTE_DST_COL);
+  
+  // Now that column resizing is done, update all channel y values in source and destination lists.
+  // Must be done here because it relies on the column width.
+  newDstList->computeChannelYValues();
+  newSrcList->computeChannelYValues();
+  
+  routeSelectionChanged();      // Init remove button.
+  srcSelectionChanged();        // Init select button.
+  connectionsWidget->update();  // Redraw the connections.
 }
 
 void RouteDialog::filterSrcClicked(bool v)
@@ -3524,8 +3619,39 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
             for( ; iSelItems != src_sel_items.cend(); ++iSelItems)
             {
               RouteTreeWidgetItem* sel_src_item = static_cast<RouteTreeWidgetItem*>(*iSelItems);
-              //if(sel_src_item->type() == item->type() && MusECore::routesCompatible(sel_src_item->route(), rtwi->route(), false))
-              if(MusECore::routesCompatible(sel_src_item->route(), rtwi->route(), true))
+
+              MusECore::Route& src = sel_src_item->route();
+              MusECore::Route& dst = rtwi->route();
+              
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+// Special: Allow simulated midi track to midi port route (a route found in our 'local' routelist
+//           but not in any track or port routelist) until multiple output routes are allowed
+//           instead of just single port and channel properties. The route is exclusive.
+              bool is_compatible = false;
+              switch(src.type)
+              {
+                case MusECore::Route::TRACK_ROUTE:
+                  switch(dst.type)
+                  {
+                    case MusECore::Route::MIDI_PORT_ROUTE:
+                      if(src.track->isMidiTrack())
+                        is_compatible = true;
+                    break;
+                    
+                    case MusECore::Route::TRACK_ROUTE: case MusECore::Route::MIDI_DEVICE_ROUTE: case MusECore::Route::JACK_ROUTE:
+                      break;
+                  }
+                break;
+                
+                case MusECore::Route::MIDI_PORT_ROUTE: case MusECore::Route::MIDI_DEVICE_ROUTE: case MusECore::Route::JACK_ROUTE:
+                break;
+              }
+              
+              if(is_compatible ||
+#else
+              if(
+#endif
+                 MusECore::routesCompatible(sel_src_item->route(), rtwi->route(), true))
               {
                 //hide = false;
                 // Hm, Qt doesn't seem to do this for us:
@@ -3564,23 +3690,25 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
   // Update the connecting lines.
   if(src_changed)
   {
-    QTreeWidgetItemIterator iSrcList(newSrcList);
-    while(*iSrcList)
-    {
-      RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
-      item->computeChannelYValues();
-      ++iSrcList;
-    }
+//     QTreeWidgetItemIterator iSrcList(newSrcList);
+//     while(*iSrcList)
+//     {
+//       RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
+//       item->computeChannelYValues();
+//       ++iSrcList;
+//     }
+    newSrcList->computeChannelYValues();
   }
   if(dst_changed)
   {
-    QTreeWidgetItemIterator iDstList(newDstList);
-    while(*iDstList)
-    {
-      RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
-      item->computeChannelYValues();
-      ++iDstList;
-    }
+//     QTreeWidgetItemIterator iDstList(newDstList);
+//     while(*iDstList)
+//     {
+//       RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
+//       item->computeChannelYValues();
+//       ++iDstList;
+//     }
+    newDstList->computeChannelYValues();
   }
   
   if(src_changed || dst_changed)  
@@ -3641,27 +3769,31 @@ void RouteDialog::routingChanged()
   tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
   removeItems();                // Remove unused items.
   addItems();                   // Add any new items.
-  newSrcList->resizeColumnToContents(ROUTE_NAME_COL);
-  newDstList->resizeColumnToContents(ROUTE_NAME_COL);
+//   newSrcList->resizeColumnToContents(ROUTE_NAME_COL);
+//   newDstList->resizeColumnToContents(ROUTE_NAME_COL);
   routeList->resizeColumnToContents(ROUTE_SRC_COL);
   routeList->resizeColumnToContents(ROUTE_DST_COL);
   
   // Now that column resizing is done, update all channel y values in source and destination lists.
   // Must be done here because it relies on the column width.
-  QTreeWidgetItemIterator iDstList(newDstList);
-  while(*iDstList)
-  {
-    RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
-    item->computeChannelYValues();
-    ++iDstList;
-  }
-  QTreeWidgetItemIterator iSrcList(newSrcList);
-  while(*iSrcList)
-  {
-    RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
-    item->computeChannelYValues();
-    ++iSrcList;
-  }
+//   QTreeWidgetItemIterator iDstList(newDstList);
+//   while(*iDstList)
+//   {
+//     RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
+//     item->computeChannelYValues();
+//     ++iDstList;
+//   }
+//   QTreeWidgetItemIterator iSrcList(newSrcList);
+//   while(*iSrcList)
+//   {
+//     RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
+//     item->computeChannelYValues();
+//     ++iSrcList;
+//   }
+  newDstList->computeChannelYValues();
+  newSrcList->computeChannelYValues();
+  newDstList->scheduleDelayedLayout();
+  newSrcList->scheduleDelayedLayout();
   
   routeSelectionChanged();      // Init remove button.
   srcSelectionChanged();        // Init select button.
@@ -3970,7 +4102,7 @@ void RouteDialog::connectClicked()
 
 void RouteDialog::srcSelectionChanged()
 {
-  fprintf(stderr, "RouteDialog::srcSelectionChanged\n");  // REMOVE Tim.
+  DEBUG_PRST_ROUTES(stderr, "RouteDialog::srcSelectionChanged\n");  // REMOVE Tim.
 
   MusECore::RouteList srcList;
   MusECore::RouteList dstList;
@@ -4343,7 +4475,7 @@ QTreeWidgetItem* RouteDialog::findRoutesItem(const MusECore::Route& src, const M
       
 // void RouteDialog::getSelectedRoutes(QTreeWidget* tree, MusECore::RouteList& routes)
 // {
-//   //fprintf(stderr, "RouteDialog::getSelectedRoutes\n");  // REMOVE Tim.
+//   //DEBUG_PRST_ROUTES(stderr, "RouteDialog::getSelectedRoutes\n");  // REMOVE Tim.
 //   
 //   RouteTreeItemList sel = tree->selectedItems();
 //   const int selSz = sel.size();
@@ -5369,7 +5501,7 @@ void RouteDialog::addItems()
 //           
 //           QFont fnt(subitem->font(ROUTE_NAME_COL));
 //           fnt.setPointSize(4);
-//           //fprintf(stderr, "point size:%d family:%s\n", fnt.pointSize(), fnt.family().toLatin1().constData());
+//           //DEBUG_PRST_ROUTES(stderr, "point size:%d family:%s\n", fnt.pointSize(), fnt.family().toLatin1().constData());
 //           //subitem->font(ROUTE_NAME_COL).setPointSize(2);
 //           //subitem->font(ROUTE_TYPE_COL).setPointSize(2);
 //           subitem->setFont(ROUTE_NAME_COL, fnt);
@@ -5770,7 +5902,7 @@ void RouteDialog::addItems()
 //           
 //           QFont fnt(subitem->font(ROUTE_NAME_COL));
 //           fnt.setPointSize(4);
-//           //fprintf(stderr, "point size:%d family:%s\n", fnt.pointSize(), fnt.family().toLatin1().constData());
+//           //DEBUG_PRST_ROUTES(stderr, "point size:%d family:%s\n", fnt.pointSize(), fnt.family().toLatin1().constData());
 //           //subitem->font(ROUTE_NAME_COL).setPointSize(2);
 //           //subitem->font(ROUTE_TYPE_COL).setPointSize(2);
 //           subitem->setFont(ROUTE_NAME_COL, fnt);

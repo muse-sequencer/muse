@@ -287,7 +287,6 @@ void MidiTrackInfo::heartBeat()
         if(r->type != MusECore::Route::MIDI_PORT_ROUTE || !r->isValid())
           continue;
         
-        // REMOVE Tim. Persistent routes. Changed. Reverted to route per channel now.
         // NOTE: TODO: Code for channelless events like sysex, ** IF we end up using the 'special channel 17' method.
         //if(r->channel == -1)
 //         if(r->channel == -1 || r->channel == 0)
@@ -616,8 +615,6 @@ void MidiTrackInfo::inRoutesPressed()
     return;
   
   RoutePopupMenu* pup = new RoutePopupMenu();
-  // REMOVE Tim. Persistent routes. Changed.
-  //pup->exec(QCursor::pos(), selected, false);
   pup->exec(QCursor::pos(), MusECore::Route(selected), false);
   delete pup;
   iRButton->setDown(false);     
@@ -635,8 +632,6 @@ void MidiTrackInfo::outRoutesPressed()
     return;
   
   RoutePopupMenu* pup = new RoutePopupMenu();
-  // REMOVE Tim. Persistent routes. Changed.
-  //pup->exec(QCursor::pos(), selected, true);
   pup->exec(QCursor::pos(), MusECore::Route(selected), true);
   delete pup;
   oRButton->setDown(false);     
@@ -1021,25 +1016,6 @@ void MidiTrackInfo::iPanChanged(int val)
 //   patchPopupActivated
 //---------------------------------------------------------
 
-// REMOVE Tim. Persistent routes. Changed.
-// void MidiTrackInfo::patchPopupActivated(QAction* act)
-// {
-//   if(act && selected) 
-//   {
-//     int rv = act->data().toInt();
-//     if(rv != -1)
-//     {
-//       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-//       int channel = track->outChannel();
-//       int port    = track->outPort();
-//       ++_blockHeartbeatCount;
-//       MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-//       MusEGlobal::audio->msgPlayMidiEvent(&ev);
-//       updateTrackInfo(-1);
-//       --_blockHeartbeatCount;
-//     }  
-//   }
-// }
 void MidiTrackInfo::patchPopupActivated(QAction* act)
 {
   if(act && selected) 
@@ -1148,59 +1124,11 @@ void MidiTrackInfo::patchPopup()
         return;
       }  
       
-      // REMOVE Tim. Persistent routes. Reinstated and fixed.
-      //FIXME: (danvd) why execute the same code twice?
-      //Leave only synchronous execution
-      //connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
       connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
 
-      // REMOVE Tim. Persistent routes. Added.
       pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       delete pup;      
       }   
-      // REMOVE Tim. Persistent routes. Removed.
-//       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
-//       if(act)
-//       {
-//          if(act->data().type() == QVariant::Int)
-//          {
-//             int rv = act->data().toInt();
-//             if(rv != -1)
-//             {
-//                ++_blockHeartbeatCount;
-//                MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-//                MusEGlobal::audio->msgPlayMidiEvent(&ev);
-//                updateTrackInfo(-1);
-//                --_blockHeartbeatCount;
-//             }
-//          }
-//          else if(instr->isSynti() && act->data().canConvert<void *>())
-//          {
-//             MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
-//             MusECore::Synth *s = si->synth();
-// #ifdef LV2_SUPPORT
-//             //only for lv2 synths call applyPreset function.
-//             if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
-//             {
-//                MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
-//                //be pedantic about checks
-//                if(sif)
-//                {
-//                   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-//                   if(mp)
-//                   {
-//                      if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-//                         MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-//                      sif->applyPreset(act->data().value<void *>());
-//                   }
-//                }
-//             }
-// #endif
-//          }
-//       }
-//             
-//       delete pup;      
-//       }
 
 //---------------------------------------------------------
 //   recEchoToggled

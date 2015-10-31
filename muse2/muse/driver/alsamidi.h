@@ -59,7 +59,6 @@ class MidiAlsaDevice : public MidiDevice {
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice() {}
       
-      // REMOVE Tim. Persistent routes. Added.
       static MidiDevice* createAlsaMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable 
       
       virtual QString open();

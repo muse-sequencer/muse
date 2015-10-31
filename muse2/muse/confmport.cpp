@@ -60,6 +60,9 @@
 #include "routepopup.h"
 #include "operations.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
+
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
@@ -68,16 +71,6 @@ extern std::vector<MusECore::Synth*> synthis;
 }
 
 namespace MusEGui {
-
-// enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
-//        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
-// 
-// // REMOVE Tim. Persistent routes. Added.
-// #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
-// enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
-// #else
-// enum { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
-// #endif     
 
 //---------------------------------------------------------
 //   closeEvent
@@ -140,16 +133,6 @@ void MPConfig::changeDefInputRoutes(QAction* act)
       if(ret == QMessageBox::Ok) 
       {
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-// REMOVE Tim. Persistent routes. Changed.        
-//         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-//         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//         {
-//           // Remove all routes from this port to the tracks first.
-//           MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-//           if(defch)
-//             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
-//         }  
-        
         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
         {
           MusECore::MidiTrack* mt = *it;
@@ -190,7 +173,6 @@ void MPConfig::changeDefInputRoutes(QAction* act)
         {
           operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations);
-          //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
           MusEGlobal::song->update(SC_ROUTE);
         }
       }
@@ -285,16 +267,6 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
             break;
           }  
 #else
-// REMOVE Tim. Persistent routes. Changed.        
-//         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//         {
-//           // Remove all routes from this port to the tracks first.
-//           MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-//           if(defch)
-//             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, defch), MusECore::Route(*it, defch));
-//         }  
-//         MusEGlobal::audio->msgUpdateSoloStates();
-//         MusEGlobal::song->update(SC_ROUTE);
         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
         {
           MusECore::MidiTrack* mt = *it;
@@ -335,7 +307,6 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         {
           operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations);
-          //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
           MusEGlobal::song->update(SC_ROUTE);
         }        
 #endif
@@ -425,24 +396,9 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
   }
   QString new_name = twi->text();
   // Get the original name.
-  //QString orig_name = twi->data(Qt::UserRole).toString();
   QString orig_name = md->name();
   if(new_name == orig_name)
     return;
-  
-//   twi = item->tableWidget()->item(item->row(), INSTCOL_TYPE);  
-//   if(!twi)
-//   {
-//     fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): row:%d INSTCOL_TYPE not found\n", item->row());
-//     return;
-//   }
-//   QString type = twi->text();
-  //QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-  //QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-  
-  
-//   MusECore::MidiDevice* md = 0;
-//   MusECore::MidiDevice* newname_md = 0;
   MusECore::iMidiDevice imd;
   for(imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
         MusECore::MidiDevice* d = *imd;
@@ -450,52 +406,13 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
           continue;
         break;
         }
-        //if((*imd)->deviceTypeString() == type) {
-        //if(d->deviceType() == md->deviceType() && (*imd)->name() == new_name) 
-//         if((*imd)->name() == new_name) 
-//           break;
-//           if(!md && (*imd)->name() == orig_name)
-//             md = *imd;
-//           if(!newname_md && (*imd)->name() == new_name)
-//             newname_md = *imd;
-//           if(md && newname_md)
-//             break;
-//           if((*imd)->name() == new_name)
-//             break;
-//           }
-//         }
-  //if (imd == MusEGlobal::midiDevices.end()) {  // REMOVE Tim. Persistent routes. Changed.
-//   if (!md) {
-//         fprintf(stderr, "synthesizerConfig::DeviceItemRenamed(): device not found\n");
-//         return;
-//         }
   switch(col)
   {
-    // REMOVE Tim. Persistent routes. Changed.
-    //case DEVCOL_NAME:
     case INSTCOL_NAME:
     {
-      // REMOVE Tim. Persistent routes. Changed.
-      //QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      //int no = atoi(id.toLatin1().constData()) - 1;
-      //if(no < 0 || no >= MIDI_PORTS)
-      //  return;
-      //MusECore::MidiPort* port      = &MusEGlobal::midiPorts[no];
-      //MusECore::MidiDevice* dev     = port->device();
-      // Only Jack midi devices.
-      //if(!dev || dev->deviceType() != MusECore::MidiDevice::JACK_MIDI)
-      //  return;
-      //if(dev->name() == s)
-      //  return;  
-        
       // Only Jack midi devices.
       if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)
         return;
-      // REMOVE Tim. Persistent routes. Removed.
-      //if(md->name() == s)
-      //  return;  
-      
-      //if(MusEGlobal::midiDevices.find(s))
       if(imd != MusEGlobal::midiDevices.end())
       {
         QMessageBox::critical(this,
@@ -504,19 +421,14 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
             QMessageBox::Ok,
             Qt::NoButton,
             Qt::NoButton);
-        //songChanged(-1);
         instanceList->blockSignals(true);
         item->setText(orig_name);
         instanceList->blockSignals(false);
         return;
       }
-      //dev->setName(s);
       MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
       md->setName(new_name);
       MusEGlobal::audio->msgIdle(false);
-      // Save the new name for the next time this itemChanged handler is called.
-      //item->setData(Qt::UserRole, md->name()); // Not necessary, the update clears and fills the table.
-
       MusEGlobal::song->update(SC_CONFIG);
     }
     break;    
@@ -541,26 +453,25 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       int n;
       MusECore::MidiPort* port      = &MusEGlobal::midiPorts[no];
       MusECore::MidiDevice* dev     = port->device();
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
       int rwFlags         = dev ? dev->rwFlags() : 0;
       int openFlags       = dev ? dev->openFlags() : 0;
+#endif      
       QTableWidget* listView = item->tableWidget();
       QPoint ppt          = listView->visualItemRect(item).bottomLeft();
-      //QPoint mousepos     = QCursor::pos();  // REMOVE Tim. Persistent routes. Removed.
       int col = item->column();
       ppt += QPoint(0, listView->horizontalHeader()->height());
       ppt  = listView->mapToGlobal(ppt);
       MusECore::PendingOperationList operations;
       
       switch (col) {
+        
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             case DEVCOL_GUI:
                   if (dev == 0)
                         return;
-                  // REMOVE Tim. Persistent routes. Changed.
                   if (port->hasNativeGui())
-                  //if(dev->hasNativeGui())
                   {
-                        // REMOVE Tim. Persistent routes. Changed.
-                        //port->instrument()->showNativeGui(!port->nativeGuiVisible());
                         port->showNativeGui(!port->nativeGuiVisible());
                         item->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
@@ -634,7 +545,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     if(!(dev->openFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    
                       return;
                       
-                    // REMOVE Tim. Persistent routes. Added.
                     RoutePopupMenu* pup = new RoutePopupMenu();
                     pup->exec(QCursor::pos(), dev, col == DEVCOL_OUTROUTES);
                     delete pup;
@@ -642,127 +552,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
             break;                    
                     
-                    
-// REMOVE Tim. Persistent routes. Removed.
-//                     MusECore::RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   
-//                     QMenu* pup = 0;
-//                     int gid = 0;
-//                     std::list<QString> sl;
-//                     pup = new QMenu(this);
-//                     
-//         _redisplay:
-//                     pup->clear();
-//                     gid = 0;
-//                     
-//                     // Jack input ports if device is writable, and jack output ports if device is readable.
-//                     sl = (col == DEVCOL_OUTROUTES) ? MusEGlobal::audioDevice->inputPorts(true, _showAliases) : MusEGlobal::audioDevice->outputPorts(true, _showAliases);
-//                     
-//                     QAction* act;
-//                     
-//                     act = pup->addAction(tr("Show first aliases"));
-//                     act->setData(gid);
-//                     act->setCheckable(true);
-//                     act->setChecked(_showAliases == 0);
-//                     ++gid;
-//                     
-//                     act = pup->addAction(tr("Show second aliases"));
-//                     act->setData(gid);
-//                     act->setCheckable(true);
-//                     act->setChecked(_showAliases == 1);
-//                     ++gid;
-//                     
-//                     pup->addSeparator();
-//                     for(std::list<QString>::iterator ip = sl.begin(); ip != sl.end(); ++ip) 
-//                     {
-//                       act = pup->addAction(*ip);
-//                       act->setData(gid);
-//                       act->setCheckable(true);
-//                       
-//                       MusECore::Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, MusECore::Route::JACK_ROUTE);   
-//                       for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
-//                       {
-//                         if (*ir == rt) 
-//                         {
-//                           act->setChecked(true);
-//                           break;
-//                         }
-//                       }
-//                       ++gid;
-//                     }
-//                     
-//                     act = pup->exec(ppt);
-//                     if(act)
-//                     {
-//                       n = act->data().toInt();
-//                       if(n == 0) // Show first aliases
-//                       {
-//                         if(_showAliases == 0)
-//                           _showAliases = -1;
-//                         else  
-//                           _showAliases = 0;
-//                         goto _redisplay;   // Go back
-//                       }
-//                       else
-//                       if(n == 1) // Show second aliases
-//                       {
-//                         if(_showAliases == 1)
-//                           _showAliases = -1;
-//                         else  
-//                           _showAliases = 1;
-//                         goto _redisplay;   // Go back
-//                       }
-//                       
-//                       QString s(act->text());
-//                       
-//                       if(col == DEVCOL_OUTROUTES) // Writeable  
-//                       {
-//                         MusECore::Route srcRoute(dev, -1);
-//                         MusECore::Route dstRoute(s, true, -1, MusECore::Route::JACK_ROUTE);
-//             
-//                         MusECore::ciRoute iir = rl->begin();
-//                         for(; iir != rl->end(); ++iir) 
-//                         {
-//                           if(*iir == dstRoute)
-//                             break;
-//                         }
-//                         if(iir != rl->end()) 
-//                           // disconnect
-//                           MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
-//                         else 
-//                           // connect
-//                           MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-//                       }
-//                       else
-//                       {
-//                         MusECore::Route srcRoute(s, false, -1, MusECore::Route::JACK_ROUTE);
-//                         MusECore::Route dstRoute(dev, -1);
-//             
-//                         MusECore::ciRoute iir = rl->begin();
-//                         for(; iir != rl->end(); ++iir) 
-//                         {
-//                           if(*iir == srcRoute)
-//                             break;
-//                         }
-//                         if(iir != rl->end()) 
-//                           // disconnect
-//                           MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
-//                         else 
-//                           // connect
-//                           MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-//                       }  
-//                       
-//                       MusEGlobal::audio->msgUpdateSoloStates();
-//                       MusEGlobal::song->update(SC_ROUTE);
-//                       
-//                       // FIXME:
-//                       // Routes can't be re-read until the message sent from msgAddRoute1() 
-//                       //  has had time to be sent and actually affected the routes.
-//                       //goto _redisplay;   // Go back
-//                     }  
-//                     delete pup;
-//                   }
-//                   return;
-                  
+#endif  // not _USE_EXTRA_INSTANCE_COLUMNS_
+
             case DEVCOL_DEF_IN_CHANS:
                   {
                     defpup = new MusEGui::PopupMenu(this, true);
@@ -784,8 +575,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act = defpup->addAction(tr("Change all tracks now"));
                     act->setData(MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
-                    // Tested: Hmm, allow ports with no device since that is a valid situation.
-                    act->setEnabled(!MusEGlobal::song->midis()->empty());  // && MusEGlobal::midiPorts[no].device()); DELETETHIS
+                    // Allow ports with no device since that is a valid situation.
+                    act->setEnabled(!MusEGlobal::song->midis()->empty());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
                     defpup->exec(QCursor::pos());
@@ -809,7 +600,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       act->setChecked((1 << i) & chbits);
                     }  
                     
-                    // Turn on if and when multiple output routes are supported. DELETETHIS?
+                    // Turn on if and when multiple output routes are supported.
 #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                     act = defpup->addAction(tr("Toggle all"));
                     act->setData(MIDI_CHANNELS);
@@ -819,8 +610,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act = defpup->addAction(tr("Change all tracks now"));
                     act->setData(MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
-                    // Tested: Hmm, allow ports with no device since that is a valid situation.
-                    act->setEnabled(!MusEGlobal::song->midis()->empty());  // && MusEGlobal::midiPorts[no].device());
+                    // Allow ports with no device since that is a valid situation.
+                    act->setEnabled(!MusEGlobal::song->midis()->empty());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
                     defpup->exec(QCursor::pos());
@@ -832,410 +623,271 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   
             case DEVCOL_NAME:
                   {
-                    // REMOVE Tim. Persistent routes. Removed.
-//                     // Did we click in the text area?
-//                     if((mousepos.x() - ppt.x()) > buttondownIcon->width())
-//                     {
-//                       // Start the renaming of the cell...
-//                       QModelIndex current = item->tableWidget()->currentIndex();
-//                       if (item->flags() & Qt::ItemIsEditable)
-//                         item->tableWidget()->edit(current.sibling(current.row(), DEVCOL_NAME));
-//                         
-//                       return;
-//                     }
-//                     else
                     // We clicked the 'down' button.
+                    PopupMenu* pup = new PopupMenu(this);
+                    QAction* act;
+
+                    // REMOVE Tim. Persistent routes. Added. Testing...
+                    QMenu* ctxmenu = pup->contextMenu();
+                    act = ctxmenu->addAction(tr("Remove"));
+                    act->setData(0);
+                    connect(ctxmenu, SIGNAL(triggered(QAction*)), SLOT(deviceContextTriggered(QAction*)));
+                    
+                    // Could do it this way...
+                    //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" input"));
+                    //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" output"));
+                    //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" combo"));
+                    // ... or keep it simple and let the user click on the green lights instead.
+                    act = pup->addAction(tr("Create Jack device"));
+                    act->setData(0);
+                    
+                    typedef std::map<std::string, int > asmap;
+                    typedef std::map<std::string, int >::iterator imap;
+                    
+                    asmap mapALSA;
+                    asmap mapJACK;
+                    asmap mapSYNTH;
+                    
+                    int aix = 0x10000000;
+                    int jix = 0x20000000;
+                    int six = 0x30000000;
+                    for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
                     {
-                      //QMenu* pup = new QMenu(this);   // REMOVE Tim. Persistent routes. Changed.
-                      PopupMenu* pup = new PopupMenu(this);
-                      
-                      QAction* act;
-
-                      // REMOVE Tim. Persistent routes. Added.
-                      QMenu* ctxmenu = pup->contextMenu();
-                      act = ctxmenu->addAction(tr("Remove"));
-                      act->setData(0);
-                      connect(ctxmenu, SIGNAL(triggered(QAction*)), SLOT(deviceContextTriggered(QAction*)));
-                      
-                      // Could do it this way...
-                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" input"));
-                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" output"));
-                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" combo"));
-                      // ... or keep it simple and let the user click on the green lights instead.
-                      act = pup->addAction(tr("Create Jack device"));
-                      act->setData(0);
-                      
-                      typedef std::map<std::string, int > asmap;
-                      typedef std::map<std::string, int >::iterator imap;
-                      
-                      asmap mapALSA;
-                      asmap mapJACK;
-                      asmap mapSYNTH;
-                      
-                      int aix = 0x10000000;
-                      int jix = 0x20000000;
-                      int six = 0x30000000;
-                      for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+                      if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
                       {
-                        if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
-                        {
-                          mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
-                          ++aix;
-                        }  
-                        else
-                        if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-                        {  
-                          mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
-                          ++jix;
-                        }
-                        else
-                        if((*i)->deviceType() == MusECore::MidiDevice::SYNTH_MIDI)
-                        {
-                          mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), six) );
-                          ++six;  
-                        }
-                        else
-                          printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
-                      }
-                      
-                      if(!mapALSA.empty())
-                      {
-                        pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
-                        
-                        for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
-                        {
-                          int idx = i->second;
-                          QString s(i->first.c_str());
-                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
-                          if(md)
-                          {
-                            if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
-                              continue;
-                            act = pup->addAction(md->name());
-                            act->setData(idx);
-                            act->setCheckable(true);
-                            act->setChecked(md == dev);
-                          }  
-                        }  
-                      }
-                      
-                      if(!mapSYNTH.empty())
-                      {
-                        pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
-                        
-                        for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
-                        {
-                          int idx = i->second;
-                          QString s(i->first.c_str());
-                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
-                          if(md)
-                          {
-                            if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
-                              continue;
-                              
-                            act = pup->addAction(md->name());
-                            act->setData(idx);
-                            act->setCheckable(true);
-                            act->setChecked(md == dev);
-                          }  
-                        }
-                      }  
-                      
-                      if(!mapJACK.empty())
-                      {
-                        pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
-                        
-                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
-                        {
-                          int idx = i->second;
-                          QString s(i->first.c_str());
-                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
-                          if(md)
-                          {
-                            if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
-                              continue;
-                              
-                            act = pup->addAction(md->name());
-                            act->setData(idx);
-                            act->setCheckable(true);
-                            act->setChecked(md == dev);
-                          }  
-                        }
-                      }
-                      
-                      act = pup->exec(ppt);
-                      if(!act)
-                      {      
-                        delete pup;
-                        return;
-                      }
-                      
-                      n = act->data().toInt();
-                      
-                      MusECore::MidiDevice* sdev = 0;
-                      if(n < 0x10000000)
-                      {
-                        delete pup;
-                        if(n <= 2)  
-                        {
-                          sdev = MusECore::MidiJackDevice::createJackMidiDevice(); 
-
-                          if(sdev)
-                          {
-                            int of = 3;
-                            switch(n)
-                            {
-                              case 0: of = 3; break;  
-                              case 1: of = 2; break;
-                              case 2: of = 1; break;
-                            }  
-                            sdev->setOpenFlags(of);
-                          }  
-                        }  
+                        mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
+                        ++aix;
                       }  
                       else
-                      {
-                        int typ;
-                        if(n < 0x20000000)
-                          typ = MusECore::MidiDevice::ALSA_MIDI;
-                        else if(n < 0x30000000)
-                          typ = MusECore::MidiDevice::JACK_MIDI;
-                        else //if(n < 0x40000000)
-                          typ = MusECore::MidiDevice::SYNTH_MIDI;
-                        
-                        sdev = MusEGlobal::midiDevices.find(act->text(), typ);
-                        delete pup;
-                        // Is it the current device? Reset it to <none>.
-                        if(sdev == dev)
-                          sdev = 0;
-                      }    
-
-                      MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-                      for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                      {
-                        MusECore::MidiTrack* mt = *it;
-                        MusECore::RouteList* rl = mt->inRoutes();
-                        for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
-                        {
-                          switch(ir->type)
-                          {
-                            case MusECore::Route::MIDI_PORT_ROUTE:
-                              // Remove track routes from an existing port already using the selected device.
-                              // Remove all track routes from this port.
-                              if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
-                                operations.add(MusECore::PendingOperationItem(*ir, MusECore::Route(mt, ir->channel),
-                                                                              MusECore::PendingOperationItem::DeleteRoute));
-                            break;  
-                            
-                            case MusECore::Route::TRACK_ROUTE:
-                            case MusECore::Route::JACK_ROUTE:
-                            case MusECore::Route::MIDI_DEVICE_ROUTE:
-                            break;  
-                          }
-                        }
-                        
-                        rl = mt->outRoutes();
-                        for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
-                        {
-                          switch(ir->type)
-                          {
-                            case MusECore::Route::MIDI_PORT_ROUTE:
-                              // Remove track routes to an existing port already using the selected device.
-                              // Remove all track routes to this port.
-                              if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
-                                operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ir->channel), *ir,
-                                                                              MusECore::PendingOperationItem::DeleteRoute));
-                            break;  
-                            
-                            case MusECore::Route::TRACK_ROUTE:
-                            case MusECore::Route::JACK_ROUTE:
-                            case MusECore::Route::MIDI_DEVICE_ROUTE:
-                            break;  
-                          }
-                        }
-                      }
-                      
-//                       int allch = (1 << MIDI_CHANNELS) - 1;  
-//                       if(sdev) 
-//                       {
-//                         for(int i = 0; i < MIDI_PORTS; ++i) 
-//                         {
-//                           if(MusEGlobal::midiPorts[i].device() != sdev)
-//                             continue;
-//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                           {
-//                             MusEGlobal::audio->msgRemoveRoute(MusECore::Route(i, allch), MusECore::Route(*it, allch));
-//                           }
-//                           
-//                           // Turn on if and when multiple output routes are supported. DELETETHIS?
-//                       #if 0
-//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                             MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-//                       #endif
-//                       
-//                           break;
-//                         }
-                      
-                      
-//                       // Remove all track routes to/from this port...
-//                       for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                         // Remove all routes from this port to the tracks.
-//                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-//                       // Turn on if and when multiple output routes are supported. DELETETHIS?
-//                   #if 0
-//                       for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-//                   #endif
-//                       
-//                       // REMOVE Tim. Persistent routes. Added.
-// //                       for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
-// //                       {
-// //                         MusECore::MidiDevice* md = *imd;
-// //                         fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
-// //                         for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
-// //                           (*ir).dump();
-// //                         fprintf(stderr, "\n");
-// //                         fprintf(stderr, "Out ");
-// //                         for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
-// //                           (*ir).dump();
-// //                         fprintf(stderr, "\n");
-// //                       }
-//                     }
-                      
-                      
-                      MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
-                      MusEGlobal::muse->changeConfig(true);     // save configuration file
-                      
-//                       // Add all track routes to/from this port...
-//                       if(sdev)
-//                       {  
-//                         const int chbits = MusEGlobal::midiPorts[no].defaultInChannels();
-//                         // Do not add input routes to synths.
-//                         if(!sdev->isSynti())  
-//                         {
-//                           for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                           {
-//                             // Connect all the specified routes.
-//                             if(chbits)
-//                               MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
-//                           }  
-//                         }
-// //                        chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
-//                         // Turn on if and when multiple output routes are supported. DELETETHIS?
-// #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-//                         for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-//                         {
-//                           // Connect all the specified routes.
-//                           if(chbits)
-//                             MusEGlobal::audio->msgAddRoute(MusECore::Route(no, chbits), MusECore::Route(*it, chbits));
-//                         }  
-// #else
-// // REMOVE Tim.                    
-// //                         for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-// //                           if(chbits & (1 << ch)) 
-// //                           {    
-// //                             MusEGlobal::audio->msgIdle(true);
-// //                             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-// //                             {
-// //                               We are only interested in tracks which use this port being changed now.
-// //                               if((*it)->outPort() != no)
-// //                                 continue;
-// //                               Leave drum track channel at current setting.  // REMOVE Tim.
-// //                               if((*it)->type() == MusECore::Track::DRUM)
-// //                                 (*it)->setOutPortAndUpdate(no);
-// //                               else
-// //                                 (*it)->setOutPortAndChannelAndUpdate(no, ch);
-// //                               (*it)->setOutPortAndUpdate(no);
-// //                             }  
-// //                             MusEGlobal::audio->msgIdle(false);
-// //                             Stop at the first output channel found.
-// //                             break;
-// //                           }   
-// #endif
-//                       }
-
-                      
-                      
-                      // Add all track routes to/from this port...
-                      if(sdev)
+                      if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
                       {  
-                        const int allch = (1 << MIDI_CHANNELS) - 1;  
-                        const int i_chbits = MusEGlobal::midiPorts[no].defaultInChannels();
-                        const int o_chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
-                        // Connect all the specified routes. Do not add input routes to synths.
-                        if((i_chbits || o_chbits) && !sdev->isSynti())
-                        {
-                          for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-                          {
-                            MusECore::MidiTrack* mt = *it;
-                            // All channels set or Omni? Use an Omni route:
-                            if(i_chbits == -1 || i_chbits == allch)
-                              operations.add(MusECore::PendingOperationItem(MusECore::Route(no), MusECore::Route(mt),
-                                                                            MusECore::PendingOperationItem::AddRoute));
-                            else
-                            // Add individual channels:  
-                            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-                            {
-                              const int chbit = 1 << ch;
-                              if(i_chbits & chbit)
-                                operations.add(MusECore::PendingOperationItem(MusECore::Route(no, ch), MusECore::Route(mt, ch),
-                                                                              MusECore::PendingOperationItem::AddRoute));
-                            }
-                            
-#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-// REMOVE Tim.                                
-//                               MusEGlobal::audio->msgIdle(true);
-//                               mt->setOutPortAndUpdate(no);
-//                               MusEGlobal::audio->msgIdle(false);
-#else
-                            // All channels set or Omni? Use an Omni route:
-                            if(o_chbits == -1 || o_chbits == allch)
-                              operations.add(MusECore::PendingOperationItem(MusECore::Route(mt), MusECore::Route(no),
-                                                                            MusECore::PendingOperationItem::AddRoute));
-                            else
-                            // Add individual channels:  
-                            for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-                            {
-                              const int chbit = 1 << ch;
-                              if(o_chbits & chbit)
-                                operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ch), MusECore::Route(no, ch),
-                                                                              MusECore::PendingOperationItem::AddRoute));
-                            }
-#endif
-                            
-                          }  
-                        }
+                        mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
+                        ++jix;
                       }
+                      else
+                      if((*i)->deviceType() == MusECore::MidiDevice::SYNTH_MIDI)
+                      {
+                        mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), six) );
+                        ++six;  
+                      }
+                      else
+                        fprintf(stderr, "MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
+                    }
+                    
+                    if(!mapALSA.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
                       
-//                       MusEGlobal::audio->msgUpdateSoloStates();
-//                       MusEGlobal::song->update();
+                      for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
+                      {
+                        int idx = i->second;
+                        QString s(i->first.c_str());
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
+                            continue;
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }  
+                      }  
+                    }
+                    
+                    if(!mapSYNTH.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
+                      
+                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
+                      {
+                        int idx = i->second;
+                        QString s(i->first.c_str());
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
+                            continue;
+                            
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }  
+                      }
                     }  
                     
-                    // REMOVE Tim. Persistent routes. Added.
-//                     for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
-//                     {
-//                       MusECore::MidiDevice* md = *imd;
-//                       fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
-//                       for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
-//                         (*ir).dump();
-//                       fprintf(stderr, "\n");
-//                       fprintf(stderr, "Out ");
-//                       for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
-//                         (*ir).dump();
-//                       fprintf(stderr, "\n");
-//                     }
+                    if(!mapJACK.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
+                      
+                      for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
+                      {
+                        int idx = i->second;
+                        QString s(i->first.c_str());
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
+                            continue;
+                            
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }  
+                      }
+                    }
                     
+                    act = pup->exec(ppt);
+                    if(!act)
+                    {      
+                      delete pup;
+                      return;
+                    }
+                    
+                    n = act->data().toInt();
+                    
+                    MusECore::MidiDevice* sdev = 0;
+                    if(n < 0x10000000)
+                    {
+                      delete pup;
+                      if(n <= 2)  
+                      {
+                        sdev = MusECore::MidiJackDevice::createJackMidiDevice(); 
+
+                        if(sdev)
+                        {
+                          int of = 3;
+                          switch(n)
+                          {
+                            case 0: of = 3; break;  
+                            case 1: of = 2; break;
+                            case 2: of = 1; break;
+                          }  
+                          sdev->setOpenFlags(of);
+                        }  
+                      }  
+                    }  
+                    else
+                    {
+                      int typ;
+                      if(n < 0x20000000)
+                        typ = MusECore::MidiDevice::ALSA_MIDI;
+                      else if(n < 0x30000000)
+                        typ = MusECore::MidiDevice::JACK_MIDI;
+                      else //if(n < 0x40000000)
+                        typ = MusECore::MidiDevice::SYNTH_MIDI;
+                      
+                      sdev = MusEGlobal::midiDevices.find(act->text(), typ);
+                      delete pup;
+                      // Is it the current device? Reset it to <none>.
+                      if(sdev == dev)
+                        sdev = 0;
+                    }    
+
+                    MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+                    for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+                    {
+                      MusECore::MidiTrack* mt = *it;
+                      MusECore::RouteList* rl = mt->inRoutes();
+                      for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                      {
+                        switch(ir->type)
+                        {
+                          case MusECore::Route::MIDI_PORT_ROUTE:
+                            // Remove track routes from an existing port already using the selected device.
+                            // Remove all track routes from this port.
+                            if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
+                              operations.add(MusECore::PendingOperationItem(*ir, MusECore::Route(mt, ir->channel),
+                                                                            MusECore::PendingOperationItem::DeleteRoute));
+                          break;  
+                          
+                          case MusECore::Route::TRACK_ROUTE:
+                          case MusECore::Route::JACK_ROUTE:
+                          case MusECore::Route::MIDI_DEVICE_ROUTE:
+                          break;  
+                        }
+                      }
+                      
+                      rl = mt->outRoutes();
+                      for(MusECore::iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                      {
+                        switch(ir->type)
+                        {
+                          case MusECore::Route::MIDI_PORT_ROUTE:
+                            // Remove track routes to an existing port already using the selected device.
+                            // Remove all track routes to this port.
+                            if((sdev && ir->midiPort == sdev->midiPort()) || (ir->midiPort == no))
+                              operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ir->channel), *ir,
+                                                                            MusECore::PendingOperationItem::DeleteRoute));
+                          break;  
+                          
+                          case MusECore::Route::TRACK_ROUTE:
+                          case MusECore::Route::JACK_ROUTE:
+                          case MusECore::Route::MIDI_DEVICE_ROUTE:
+                          break;  
+                        }
+                      }
+                    }
+                    
+                    MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
+                    MusEGlobal::muse->changeConfig(true);     // save configuration file
+                    
+                    // Add all track routes to/from this port...
+                    if(sdev)
+                    {  
+                      const int allch = (1 << MIDI_CHANNELS) - 1;  
+                      const int i_chbits = MusEGlobal::midiPorts[no].defaultInChannels();
+                      const int o_chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
+                      // Connect all the specified routes. Do not add input routes to synths.
+                      if((i_chbits || o_chbits) && !sdev->isSynti())
+                      {
+                        for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+                        {
+                          MusECore::MidiTrack* mt = *it;
+                          // All channels set or Omni? Use an Omni route:
+                          if(i_chbits == -1 || i_chbits == allch)
+                            operations.add(MusECore::PendingOperationItem(MusECore::Route(no), MusECore::Route(mt),
+                                                                          MusECore::PendingOperationItem::AddRoute));
+                          else
+                          // Add individual channels:  
+                          for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                          {
+                            const int chbit = 1 << ch;
+                            if(i_chbits & chbit)
+                              operations.add(MusECore::PendingOperationItem(MusECore::Route(no, ch), MusECore::Route(mt, ch),
+                                                                            MusECore::PendingOperationItem::AddRoute));
+                          }
+                          
+#ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+                          // All channels set or Omni? Use an Omni route:
+                          if(o_chbits == -1 || o_chbits == allch)
+                            operations.add(MusECore::PendingOperationItem(MusECore::Route(mt), MusECore::Route(no),
+                                                                          MusECore::PendingOperationItem::AddRoute));
+                          else
+                          // Add individual channels:  
+                          for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+                          {
+                            const int chbit = 1 << ch;
+                            if(o_chbits & chbit)
+                              operations.add(MusECore::PendingOperationItem(MusECore::Route(mt, ch), MusECore::Route(no, ch),
+                                                                            MusECore::PendingOperationItem::AddRoute));
+                          }
+#endif
+                          
+                        }  
+                      }
+                    }
                   }
                   
                   // Do these always, regardless of operations - the device has changed.
                   operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
                   //if(!operations.empty())
                     MusEGlobal::audio->msgExecutePendingOperations(operations);
-                  // Do these always, regardless of operations - the device has changed.
-                  //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ? (Hm, not here but elsewhere like audio routing popups etc.)
                   MusEGlobal::song->update();
                   
                   return;
@@ -1266,13 +918,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
             break;                    
             }
-            
-//             if(!operations.empty())
-//             {
-//               MusEGlobal::audio->msgExecutePendingOperations(operations);
-//               MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations.
-//               MusEGlobal::song->update();
-//             }
       }
 
 //---------------------------------------------------------
@@ -1283,19 +928,25 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
       {
       switch (col) {
             case DEVCOL_NO:     item->setToolTip(tr("Port Number")); break;
+            
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;
             case DEVCOL_REC:    item->setToolTip(tr("Enable reading")); break;
             case DEVCOL_PLAY:   item->setToolTip(tr("Enable writing")); break;
-            case DEVCOL_INSTR:  item->setToolTip(tr("Port instrument")); break;
-            case DEVCOL_NAME:   item->setToolTip(tr("Midi device name. Click to edit (Jack)")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
+#endif      
+            
+            case DEVCOL_INSTR:  item->setToolTip(tr("Port instrument")); break;
+            case DEVCOL_NAME:   item->setToolTip(tr("Midi device name. Click to edit (Jack)")); break;
             case DEVCOL_DEF_IN_CHANS:   item->setToolTip(tr("Auto-connect these channels to new midi tracks")); break;
+            
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
             case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to this channel")); break;
 #else
             case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to these channels")); break;
 #endif
+            
             case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
@@ -1310,21 +961,25 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
       switch (col) {
             case DEVCOL_NO:
                   item->setWhatsThis(tr("Port Number")); break;
+                  
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             case DEVCOL_GUI:
                   item->setWhatsThis(tr("Enable gui for device")); break;
             case DEVCOL_REC:
                   item->setWhatsThis(tr("Enable reading from device")); break;
             case DEVCOL_PLAY:
                   item->setWhatsThis(tr("Enable writing to device")); break;
+            case DEVCOL_INROUTES:
+                  item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
+            case DEVCOL_OUTROUTES:
+                  item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
+#endif
+                  
             case DEVCOL_NAME:
                   item->setWhatsThis(tr("Name of the midi device associated with"
                                         " this port number. Click to edit Jack midi name.")); break;
             case DEVCOL_INSTR:
                   item->setWhatsThis(tr("Instrument connected to port")); break;
-            case DEVCOL_INROUTES:
-                  item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
-            case DEVCOL_OUTROUTES:
-                  item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
             case DEVCOL_DEF_IN_CHANS:
                   item->setWhatsThis(tr("Auto-connect these channels, on this port, to new midi tracks.")); break;
             case DEVCOL_DEF_OUT_CHANS:
@@ -1366,8 +1021,6 @@ MPConfig::MPConfig(QWidget* parent)
 
       mdevView->setRowCount(MIDI_PORTS);
       mdevView->verticalHeader()->hide();
-      //mdevView->setSelectionMode(QAbstractItemView::SingleSelection);
-      //mdevView->setSelectionBehavior(QAbstractItemView::SelectRows);// REMOVE Tim. Persistent routes. Added.
       mdevView->setShowGrid(false);
 
       instrPopup = 0;
@@ -1376,13 +1029,17 @@ MPConfig::MPConfig(QWidget* parent)
       
       QStringList columnnames;
       columnnames << tr("Port")
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
 		  << tr("GUI")
 		  << tr("I")
 		  << tr("O")
+#endif                  
+                  << tr("Device Name")
 		  << tr("Instrument")
-		  << tr("Device Name")
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
 		  << tr("In routes")
 		  << tr("Out routes")
+#endif                  
                   << tr("Def in ch")
                   << tr("Def out ch")
 		  << tr("State");
@@ -1393,14 +1050,10 @@ MPConfig::MPConfig(QWidget* parent)
             setWhatsThis(mdevView->horizontalHeaderItem(i), i);
             setToolTip(mdevView->horizontalHeaderItem(i), i);
             }
-      // REMOVE Tim. Persistent routes. Removed.
       mdevView->setFocusPolicy(Qt::NoFocus);
 
       
-// REMOVE Tim. Persistent routes. Added.
-      //instanceList->setRowCount(MIDI_PORTS);
       instanceList->verticalHeader()->hide();
-      //instanceList->setSelectionMode(QAbstractItemView::SingleSelection);
       instanceList->setShowGrid(false);
       columnnames.clear();
       columnnames << tr("Device Name")
@@ -1412,39 +1065,25 @@ MPConfig::MPConfig(QWidget* parent)
                   << tr("In")
                   << tr("Out")
 #endif                  
-                  << tr("State");
+                  ; //<< tr("State"); // TODO
       instanceList->setColumnCount(columnnames.size());
-      //instanceList->setHeaderLabels(columnnames);
       instanceList->setHorizontalHeaderLabels(columnnames);
       for (int i = 0; i < columnnames.size(); ++i) {
+            // TODO
             //setWhatsThis(instanceList->horizontalHeaderItem(i), i);
             //setToolTip(instanceList->horizontalHeaderItem(i), i);
             }
-      //instanceList->setFocusPolicy(Qt::NoFocus);
       connect(instanceList, SIGNAL(itemPressed(QTableWidgetItem*)), SLOT(deviceItemClicked(QTableWidgetItem*)));
       connect(instanceList, SIGNAL(itemSelectionChanged()),         SLOT(deviceSelectionChanged()));
       connect(instanceList, SIGNAL(itemChanged(QTableWidgetItem*)), SLOT(DeviceItemRenamed(QTableWidgetItem*)));
-      
       connect(addJACKDevice, SIGNAL(clicked(bool)), SLOT(addJackDeviceClicked()));
       connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked()));
-      
-      connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)),
-         this, SLOT(rbClicked(QTableWidgetItem*)));
-      // REMOVE Tim. Persistent routes. Removed.
-      //connect(mdevView, SIGNAL(itemChanged(QTableWidgetItem*)),
-      //   this, SLOT(mdevViewItemRenamed(QTableWidgetItem*)));
+      connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
-
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
-      // REMOVE Tim. Persistent routes. Removed.
-      //connect(instanceList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
-
       connect(addSynthDevice, SIGNAL(clicked()), SLOT(addInstanceClicked()));
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
       connect(removeDevice, SIGNAL(clicked()), SLOT(removeInstanceClicked()));
-      // REMOVE Tim. Persistent routes. Removed.
-      //connect(instanceList,  SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(removeInstanceClicked()));
-      
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(okClicked()));
       
@@ -1462,63 +1101,25 @@ MPConfig::~MPConfig()
 
 void MPConfig::selectionChanged()
       {
-      // REMOVE Tim. Persistent routes. Changed.
-      //addSynthDevice->setEnabled(synthList->currentItem());
       addSynthDevice->setEnabled(synthList->selectedItems().isEmpty() ? false : (bool)synthList->currentItem());
-      // REMOVE Tim. Persistent routes. Removed.
-      //removeDevice->setEnabled(instanceList->currentItem());
       }
 
-// REMOVE Tim. Persistent routes. Added.
 //---------------------------------------------------------
 //   deviceSelectionChanged
 //---------------------------------------------------------
 
 void MPConfig::deviceSelectionChanged()
 {
-  fprintf(stderr, "synthesizerConfig::deviceSelectionChanged() currentItem:%p\n", instanceList->currentItem()); // REMOVE Tim. Persistent routes. Added.
-  //removeDevice->setEnabled(instanceList->selectedItems().isEmpty() ? false : (bool)instanceList->currentItem());
-  //removeDevice->setEnabled((bool)instanceList->currentItem());
+  DEBUG_PRST_ROUTES(stderr, "synthesizerConfig::deviceSelectionChanged() currentItem:%p\n", instanceList->currentItem());
   QTableWidgetItem* item = instanceList->currentItem();
   if(item == 0)
   {
     removeDevice->setEnabled(false);
     return;
   }
-  // REMOVE Tim. Persistent routes. Removed.
-//       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-//       MusECore::iSynthI ii;
-//       for (ii = sl->begin(); ii != sl->end(); ++ii) {
-//             if( (*ii)->iname() == item->text(0) && 
-//                  MusECore::synthType2String((*ii)->synth()->synthType()) == item->text(1) )
-//               break;
-//             }
-//       if (ii == sl->end()) {
-//             printf("synthesizerConfig::removeInstanceClicked(): synthi not found\n");
-//             return;
-//             }
-//       MusEGlobal::audio->msgRemoveTrack(*ii);
-  
-  // REMOVE Tim. Persistent routes. Added.
-  //MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-//   QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-//   QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-
-
   if(!item->data(DeviceRole).canConvert<void*>())
     return;
-  //MusECore::MidiDevice* md = 0;
   MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
-//   MusECore::iMidiDevice imd;
-//   for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-//         md = *imd;
-//         if(md->name() == name && md->deviceTypeString() == type)
-//           break;
-//         }
-//   if (imd == MusEGlobal::midiDevices.end()) {
-//         fprintf(stderr, "synthesizerConfig::deviceSelectionChanged(): device not found\n");
-//         return;
-//         }
         
   // Is it an ALSA midi device? 
   // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
@@ -1581,6 +1182,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             QTableWidgetItem* itemname = new QTableWidgetItem;
             addItem(i, DEVCOL_NAME, itemname, mdevView);
             itemname->setFlags(Qt::ItemIsEnabled);
+            
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             QTableWidgetItem* itemgui = new QTableWidgetItem;
             addItem(i, DEVCOL_GUI, itemgui, mdevView);
             itemgui->setTextAlignment(Qt::AlignHCenter);
@@ -1599,11 +1202,13 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             QTableWidgetItem* itemin = new QTableWidgetItem;
             addItem(i, DEVCOL_INROUTES, itemin, mdevView);
             itemin->setFlags(Qt::ItemIsEnabled);
+#endif
+            
             // Ignore synth devices. Default input routes make no sense for them (right now).
             QTableWidgetItem* itemdefin = new QTableWidgetItem((dev && dev->isSynti()) ? 
                                                QString() : MusECore::bitmap2String(port->defaultInChannels()));
             addItem(i, DEVCOL_DEF_IN_CHANS, itemdefin, mdevView);
-            // Enabled: Use editor (not good). Disabled: Use pop-up menu. DELETETHIS
+            // Enabled: Use editor (not good). Disabled: Use pop-up menu.
             #if 0
             itemdefin->setFlags((dev && dev->isSynti()) ? Qt::NoItemFlags : Qt::ItemIsEditable | Qt::ItemIsEnabled);
             # else
@@ -1656,11 +1261,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             if (dev) {
 	          itemname->setText(dev->name());
 
-                  // REMOVE Tim. Persistent routes. Removed.
-//                   // Is it a Jack midi device? Allow renaming.
-//                   if (dev->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-//                        itemname->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
-                    
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
                   if (dev->rwFlags() & 0x2)
                        itemrec->setIcon(dev->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   else
@@ -1669,24 +1270,23 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
                        itemplay->setIcon( dev->openFlags() & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   else
                        itemplay->setIcon(QIcon(QPixmap()));
+#endif                  
                   }
             else {
                   itemname->setText(tr("<none>"));
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
                   itemgui->setIcon(QIcon(*dothIcon));
                   itemrec->setIcon(QIcon(QPixmap()));
                   itemplay->setIcon(QIcon(QPixmap()));
+#endif                  
                   }
+                  
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             if (port->hasNativeGui())
                   itemgui->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
                   itemgui->setIcon(QIcon(QPixmap()));
-
-            if (!(dev && dev->isSynti()))
-                  iteminstr->setIcon(QIcon(*buttondownIcon));
-
-            itemname->setIcon(QIcon(*buttondownIcon));
-
-
+            
             if(dev && dev->deviceType() == MusECore::MidiDevice::JACK_MIDI)
             {
               if(dev->rwFlags() & 1)  
@@ -1706,7 +1306,13 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
                 }  
               }  
             }
-            
+#endif                  
+
+            if (!(dev && dev->isSynti()))
+                  iteminstr->setIcon(QIcon(*buttondownIcon));
+
+            itemname->setIcon(QIcon(*buttondownIcon));
+
             if(i == no) sitem = itemno;
       }
       if(sitem)
@@ -1729,29 +1335,12 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             item->setText(5, QString((*i)->description()));
             }
       synthList->blockSignals(false);
-// REMOVE Tim. Persistent routes. Removed.
-//       instanceList->clear();
-//       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-//       for (MusECore::iSynthI si = sl->begin(); si != sl->end(); ++si) {
-//             QTreeWidgetItem* iitem = new QTreeWidgetItem(instanceList);
-//             iitem->setText(0, (*si)->name());
-//             iitem->setText(1, MusECore::synthType2String((*si)->synth()->synthType()));
-//             if ((*si)->midiPort() == -1)
-//                   s = tr("<none>");
-//             else
-//                   s.setNum((*si)->midiPort() + 1);
-//             iitem->setText(2, s);
-//             }
-            
-// REMOVE Tim. Persistent routes. Added.
       instanceList->blockSignals(true);
       instanceList->clearContents();
       instanceList->setRowCount(MusEGlobal::midiDevices.size());
       int row_cnt = 0;
       for (MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MusECore::MidiDevice* md = *imd;
-            //QTreeWidgetItem* iitem = new QTreeWidgetItem(instanceList);
-            
             QTableWidgetItem* iitem = new QTableWidgetItem(md->name());
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             // Is it a Jack midi device? Allow renaming.
@@ -1804,31 +1393,15 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             ir_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
             {
-              //if(md->openFlags() & 1)  
               if(md->rwFlags() & 1)  
-              {
-                //or_item->setIcon(QIcon(*buttondownIcon));
-                //or_item->setText(tr("out"));
                 or_item->setIcon(QIcon(*routesMidiOutIcon));
-              }
               else  
-              {
                 or_item->setIcon(QIcon());
-                //or_item->setText("");
-              }
               
-              //if(md->openFlags() & 2)  
               if(md->rwFlags() & 2)  
-              {
-                //ir_item->setIcon(QIcon(*buttondownIcon));
-                //ir_item->setText(tr("in"));
                 ir_item->setIcon(QIcon(*routesMidiInIcon));
-              }
               else
-              {
                 ir_item->setIcon(QIcon());
-                //ir_item->setText("");
-              }  
             }
             instanceList->setItem(row_cnt, INSTCOL_OUTROUTES, or_item);
             instanceList->setItem(row_cnt, INSTCOL_INROUTES, ir_item);
@@ -1840,7 +1413,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 
       instanceList->resizeColumnToContents(INSTCOL_NAME);
       instanceList->resizeColumnToContents(INSTCOL_TYPE);
-      instanceList->resizeColumnToContents(INSTCOL_STATE);
+      //instanceList->resizeColumnToContents(INSTCOL_STATE); 
       
 #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       instanceList->resizeColumnToContents(INSTCOL_REC);
@@ -1855,18 +1428,20 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_INROUTES, QHeaderView::Fixed);
 #endif
       
-      //instanceList->header()->setStretchLastSection( true );
-      //instanceList->header()->setDefaultAlignment(Qt::AlignHCenter);
-      instanceList->horizontalHeader()->setStretchLastSection( true );
+      //instanceList->horizontalHeader()->setStretchLastSection( false );
       instanceList->horizontalHeader()->setDefaultAlignment(Qt::AlignHCenter);
       deviceSelectionChanged();
       
       synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
       mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+      
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
       mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
       mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
       mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
+#endif
+      
       mdevView->horizontalHeader()->setStretchLastSection( true );
       selectionChanged();
       }
@@ -1906,49 +1481,13 @@ void MPConfig::addInstanceClicked()
 
 void MPConfig::removeInstanceClicked()
       {
-      //QTreeWidgetItem* item = instanceList->currentItem();
       QTableWidgetItem* item = instanceList->currentItem();
       if (item == 0)
             return;
-      // REMOVE Tim. Persistent routes. Removed.
-//       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-//       MusECore::iSynthI ii;
-//       for (ii = sl->begin(); ii != sl->end(); ++ii) {
-//             if( (*ii)->iname() == item->text(0) && 
-//                  MusECore::synthType2String((*ii)->synth()->synthType()) == item->text(1) )
-//               break;
-//             }
-//       if (ii == sl->end()) {
-//             printf("synthesizerConfig::removeInstanceClicked(): synthi not found\n");
-//             return;
-//             }
-//       MusEGlobal::audio->msgRemoveTrack(*ii);
-      
-      // REMOVE Tim. Persistent routes. Added.
-      //MusECore::SynthIList* sl = MusEGlobal::song->syntis();
-//       QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-//       QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-      
       if(!item->data(DeviceRole).canConvert<void*>())
         return;
 
-      //MusECore::MidiDevice* md = 0;
       MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
-      
-//       MusECore::MidiDevice* md = 0;
-//       MusECore::iMidiDevice imd;
-//       for(imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
-//         if(*imd == md)
-//           break;
-//       {
-//             md = *imd;
-//             if(md->name() == name && md->deviceTypeString() == type)
-//               break;
-//             }
-//       if (imd == MusEGlobal::midiDevices.end()) {
-//             fprintf(stderr, "synthesizerConfig::removeInstanceClicked(): device not found\n");
-//             return;
-//             }
             
       // Is it an ALSA midi device? 
       // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
@@ -1976,29 +1515,15 @@ void MPConfig::removeInstanceClicked()
       
       }
 
-// REMOVE Tim. Persistent routes. Added.
 //---------------------------------------------------------
 //   deviceItemClicked
 //---------------------------------------------------------
 
-//void MPConfig::deviceItemClicked(QTreeWidgetItem* item, int col)
 void MPConfig::deviceItemClicked(QTableWidgetItem* item)
 {
       if(!item)
         return;
       const int col = item->column();
-//       const QString name = item->tableWidget()->item(item->row(), INSTCOL_NAME)->text();
-//       const QString type = item->tableWidget()->item(item->row(), INSTCOL_TYPE)->text();
-//       MusECore::iMidiDevice imd;
-//       for (imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
-//             MusECore::MidiDevice* md = *imd;
-//             if(md->name() == name && md->deviceTypeString() == type)
-//               break;
-//             }
-//       if (imd == MusEGlobal::midiDevices.end()) {
-//             fprintf(stderr, "synthesizerConfig::deviceItemClicked(): device not found\n");
-//             return;
-//             }
             
 #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       if(!item->data(DeviceRole).canConvert<void*>())
@@ -2020,24 +1545,8 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   md->setOpenFlags(openFlags);
                   if(md->midiPort() != -1)
                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device // FIXME: This causes jack crash with R+W Jack midi device
-                    //md->open(); // reopen device
                   MusEGlobal::audio->msgIdle(false);
-                  //item->setIcon(INSTCOL_REC, openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-                  
-//                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-//                   {
-//                     if(md->openFlags() & 2)  
-//                     {
-//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
-//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
-//                     }
-//                     else
-//                     {
-//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());
-//                       //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
-//                     }  
-//                   }
                   return;
         case INSTCOL_PLAY:
                   if(!(rwFlags & 1))
@@ -2047,24 +1556,8 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   md->setOpenFlags(openFlags);
                   if(md->midiPort() != -1)
                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device FIXME: This causes jack crash with R+W Jack midi device
-                    //md->open(); // reopen device
                   MusEGlobal::audio->msgIdle(false);
-                  //item->setIcon(INSTCOL_PLAY, openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
-                  
-//                   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-//                   {
-//                     if(md->openFlags() & 1)  
-//                     {
-//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
-//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
-//                     }
-//                     else  
-//                     {
-//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());
-//                       //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
-//                     }
-//                   }
                   return;
         case INSTCOL_GUI:
                   if(md->hasNativeGui())
@@ -2090,11 +1583,9 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                     if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
                       return;
                     
-                    //if(!(md->openFlags() & ((col == INSTCOL_OUTROUTES) ? 1 : 2)))    
                     if(!(md->rwFlags() & ((col == INSTCOL_OUTROUTES) ? 1 : 2)))    
                       return;
                       
-                    // REMOVE Tim. Persistent routes. Added.
                     RoutePopupMenu* pup = new RoutePopupMenu();
                     pup->exec(QCursor::pos(), md, col == INSTCOL_OUTROUTES);
                     delete pup;
@@ -2128,16 +1619,16 @@ void MPConfig::addJackDeviceClicked()
 
 void MPConfig::addAlsaDeviceClicked()
 {
-  
+  // TODO
 }
       
 //---------------------------------------------------------
 //   beforeDeviceContextShow
 //---------------------------------------------------------
 
-void MPConfig::beforeDeviceContextShow(PopupMenu* /*menu*/, QAction* menuAction, QMenu* /*ctxMenu*/)
+void MPConfig::beforeDeviceContextShow(PopupMenu* /*menu*/, QAction* /*menuAction*/, QMenu* /*ctxMenu*/)
 {
-  fprintf(stderr, "MPConfig::beforeDeviceContextShow:%s\n", menuAction->text().toLatin1().constData());
+  DEBUG_PRST_ROUTES(stderr, "MPConfig::beforeDeviceContextShow\n");
 }
       
 //---------------------------------------------------------
@@ -2146,22 +1637,20 @@ void MPConfig::beforeDeviceContextShow(PopupMenu* /*menu*/, QAction* menuAction,
 
 void MPConfig::deviceContextTriggered(QAction* act)
 {
-  fprintf(stderr, "MPConfig::deviceRemoveTriggered:%s\n", act->text().toLatin1().constData());
+  DEBUG_PRST_ROUTES(stderr, "MPConfig::deviceRemoveTriggered:%s\n", act->text().toLatin1().constData());
   if(act)
   {
- 
-    
-    PopupMenu* menu = 0;
-    QAction* action = 0;
-    QVariant var_val = 0;
-    
-    menu = act->data().value<PopupMenuContextData>().menu();
-    action = act->data().value<PopupMenuContextData>().action();
-    var_val = act->data().value<PopupMenuContextData>().varValue();
-
-    MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(action->text());
-    
-    fprintf(stderr, " menu:%p action:%p var:%x md:%p\n", menu, action, var_val.toInt(), md);
+// TODO: Work in progress.
+//     
+//     PopupMenu* menu = 0;
+//     QAction* action = 0;
+//     QVariant var_val = 0;
+//     
+//     menu = act->data().value<PopupMenuContextData>().menu();
+//     action = act->data().value<PopupMenuContextData>().action();
+//     var_val = act->data().value<PopupMenuContextData>().varValue();
+// 
+//     DEBUG_PRST_ROUTES(stderr, " menu:%p action:%p var:%x md:%p\n", menu, action, var_val.toInt(), MusEGlobal::midiDevices.find(action->text());
   }
 }
 

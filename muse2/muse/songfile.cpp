@@ -1113,7 +1113,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               }
                         break;
                   case MusECore::Xml::TagEnd:
-                        // REMOVE Tim. Persistent routes. Added.
                         if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded file version is %d.%d\nCurrent version is %d.%d\n"
@@ -1163,8 +1162,6 @@ void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
       xml.header();
 
       int level = 0;
-      // REMOVE Tim. Persistent routes. Changed.
-      //xml.tag(level++, "muse version=\"2.0\"");
       xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
       
       writeConfiguration(level, xml);

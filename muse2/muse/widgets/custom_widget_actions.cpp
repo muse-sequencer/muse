@@ -38,6 +38,9 @@
 #include "pixmap_button.h"
 #include "custom_widget_actions.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -88,13 +91,6 @@ QWidget* PixmapButtonsHeaderWidgetAction::createWidget(QWidget* parent)
   
   return lw;
 }
-  
-// void PixmapButtonsHeaderWidgetAction::chanClickMap(int /*idx*/)
-// {
-//   // TODO: Toggle vertical columns...   p4.0.42 
-//   //trigger();  // REMOVE Tim. Persistent routes. Removed. Already triggered by widget, causes double activation!
-// }
-
   
 //---------------------------------------------------------
 //   PixmapButtonsWidgetAction
@@ -184,7 +180,6 @@ void PixmapButtonsWidgetAction::chanClickMap(int idx)
         _current.clearBit(i);
     }
   }
-  //trigger();  // REMOVE Tim. Persistent routes. Removed. Already triggered by widget, causes double activation!
 }
 
 void PixmapButtonsWidgetAction::setCurrentState(const QBitArray& state)
@@ -600,14 +595,13 @@ RoutePopupHit RoutingMatrixActionWidget::hitTest(const QPoint& p, RoutePopupHit:
 
 void RoutingMatrixActionWidget::actionEvent(QActionEvent* e)
 {
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "RoutingMatrixActionWidget::actionEvent\n");
+  DEBUG_PRST_ROUTES(stderr, "RoutingMatrixActionWidget::actionEvent\n");
   if(e->type() == QEvent::ActionChanged && e->action() == _action)
   {
     _menuItemControlWidget->updateGeometry();
     if(layout())
     {
-      fprintf(stderr, "    layout...\n"); // REMOVE Tim. Persistent routes. Added. 
+      DEBUG_PRST_ROUTES(stderr, "    layout...\n");
       //layout()->invalidate();
       //layout()->update();
       layout()->activate();
@@ -750,7 +744,7 @@ void RoutingMatrixWidgetAction::sendActionChanged()
   // Update the created widgets first.
   for (int i = 0; i < createdWidgets().size(); ++i) {
       QWidget *w = createdWidgets().at(i);
-      //fprintf(stderr, "RoutingMatrixWidgetAction::sendActionChanged created widget:%s\n", w->metaObject()->className()); // REMOVE Tim. Persistent routes. Added. 
+      //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged created widget:%s\n", w->metaObject()->className());
       qApp->sendEvent(w, &e);
   }
 
@@ -758,7 +752,7 @@ void RoutingMatrixWidgetAction::sendActionChanged()
   
 #ifndef QT_NO_GRAPHICSVIEW
   for (int i = 0; i < associatedGraphicsWidgets().size(); ++i) {
-      //fprintf(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated graphics widget\n"); // REMOVE Tim. Persistent routes. Added. 
+      //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated graphics widget\n");
       QGraphicsWidget *w = associatedGraphicsWidgets().at(i);
       qApp->sendEvent(w, &e);
   }
@@ -766,7 +760,7 @@ void RoutingMatrixWidgetAction::sendActionChanged()
 
   for (int i = 0; i < associatedWidgets().size(); ++i) {
       QWidget *w = associatedWidgets().at(i);
-      //fprintf(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated widget:%s \n", w->metaObject()->className()); // REMOVE Tim. Persistent routes. Added. 
+      //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated widget:%s \n", w->metaObject()->className());
       qApp->sendEvent(w, &e);
   }
   emit changed();
@@ -774,7 +768,7 @@ void RoutingMatrixWidgetAction::sendActionChanged()
 
 void RoutingMatrixWidgetAction::setActionText(const QString& s) 
 { 
-  //fprintf(stderr, "RoutingMatrixWidgetAction::setActionText\n"); // REMOVE Tim. Persistent routes. Added. 
+  //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::setActionText\n");
   _actionText = s;
   sendActionChanged(); 
 }

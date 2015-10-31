@@ -1266,15 +1266,9 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
 #endif
       QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if (ract == gact) {
-            // REMOVE Tim. Persistent routes. Changed.
-            //bool show = !port->guiVisible();
-            //port->instrument()->showGui(show);
             port->showGui(!port->guiVisible());
             }
       else if (ract == nact) {
-            // REMOVE Tim. Persistent routes. Changed.
-            //bool show = !port->nativeGuiVisible();
-            //port->instrument()->showNativeGui(show);
             port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
@@ -2040,11 +2034,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         p->addMenu(pnew);
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
-                              fprintf(stderr, "TList::mousePressEvent act:%p\n", act);  // REMOVE Tim. Persistent routes. Added.
+                              //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
                               int n = act->data().toInt();
                               if(n >= 1000 && n < MENU_ADD_SYNTH_ID_BASE)
                               {
-                                fprintf(stderr, "   n:%d\n", n);  // REMOVE Tim. Persistent routes. Added.
+                                //fprintf(stderr, "   n:%d\n", n);
                                 switch (n) {
                                     case 1001:     // delete track
                                           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
@@ -2105,7 +2099,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               else
                               {
                                 t = MusEGlobal::song->addNewTrack(act, t);  // Let addNewTrack handle it. Insert before clicked-on track 't'.
-                                fprintf(stderr, "   addNewTrack: track:%p\n", t);  // REMOVE Tim. Persistent routes. Added.
+                                //fprintf(stderr, "   addNewTrack: track:%p\n", t);
                                 if(t)
                                 {
                                   MusEGlobal::song->deselectTracks();

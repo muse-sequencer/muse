@@ -1198,8 +1198,7 @@ void Arranger::switchInfo(int n)
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
                   {
-                        // REMOVE Tim. Persistent routes. Added.
-                        fprintf(stderr, "Arranger::switchInfo deleting strip\n");
+                        //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
                         //delete w;
                         w->deleteLater();
                   }

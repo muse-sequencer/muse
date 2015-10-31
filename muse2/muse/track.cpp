@@ -600,8 +600,6 @@ void MidiTrack::internal_assign(const Track& t, int flags)
             if(c)
             {
               // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
-              // REMOVE Tim. Persistent routes. Changed.
-              //_inRoutes.push_back(Route(i, c)); 
               // All channels set or Omni? Use an Omni route:
               if(c == -1 || c == chmask)
                 _inRoutes.push_back(Route(i));
@@ -649,38 +647,6 @@ void MidiTrack::internal_assign(const Track& t, int flags)
 
 #endif
               
-              
-// REMOVE Tim. Persistent routes. Changed.
-//         /// TODO: Switch if and when multiple output routes supported.
-//         #if 0
-//               // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
-//               _outRoutes.push_back(Route(i, c)); 
-//               
-//                 // All channels set or Omni? Use an Omni route:
-//                 if(c == -1 || c == chmask)
-//                   track->outRoutes()->push_back(Route(i));
-//                 else
-//                 // Add individual channels:  
-//                 for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//                 {
-//                   if(c & (1 << ch))
-//                     track->outRoutes()->push_back(Route(i, ch));
-//                 }
-//               
-//         #else 
-//               for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
-//               {
-//                 cbi = 1 << ch;
-//                 if(c & cbi)
-//                 {
-//                   defOutFound = true;
-//                   _outPort = i;
-//                   if(type() != Track::DRUM)  // Leave drum tracks at channel 10.
-//                     _outChannel = ch;
-//                   break;               
-//                 }
-//               }
-//         #endif
             }
           }  
         }
@@ -876,31 +842,6 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
     if(!MusEGlobal::midiPorts[port].foundInSongFile())
       continue;
       
-    //if(!(portmask & (1 << port))) DELETETHIS 8
-    //  continue;
-    
-    // Removed. Allow to connect to port with no device so user can change device later.
-    //MidiPort* mp = &MusEGlobal::midiPorts[port];
-    //MidiDevice* md = mp->device();
-    //if(!md)
-    //  continue;
-        
-// REMOVE Tim. Persistent routes. Removed. Reverted to route per channel now.
-//     Route aRoute(port, chanmask);
-//     Route bRoute(this, chanmask);
-//   
-//     // Route wanted?
-//     if(portmask & (1 << port))
-//     {
-//       MusEGlobal::audio->msgAddRoute(aRoute, bRoute);
-//       changed = true;
-//     }
-//     else
-//     {
-//       MusEGlobal::audio->msgRemoveRoute(aRoute, bRoute);
-//       changed = true;
-//     }
-    
     const int allch = (1 << MIDI_CHANNELS) - 1;
     // Check if Omni route will do...
     if(chanmask == allch)
@@ -1294,24 +1235,6 @@ void Track::writeRouting(int level, Xml& xml) const
         const RouteList* rl = &_inRoutes;
         for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
         {
-          // REMOVE Tim. Persistent routes. Removed. Reverted to route per channel now.
-          // Support Midi Port to Audio Input track routes. p4.0.14 Tim. 
-//           if(r->type == Route::MIDI_PORT_ROUTE)
-//           {
-//             s = "Route";
-//             if(r->channel != -1 && r->channel != 0)  
-//               s += QString(" channelMask=\"%1\"").arg(r->channel);  // Use new channel mask.
-//             xml.tag(level++, s.toLatin1().constData());
-//             
-//             xml.tag(level, "source mport=\"%d\"/", r->midiPort);
-//             
-//             s = "dest";
-//             s += QString(" name=\"%1\"/").arg(Xml::xmlString(name()));
-//             xml.tag(level, s.toLatin1().constData());
-//             
-//             xml.etag(level--, "Route");
-//           }
-//           else
           if(!r->name().isEmpty())
           {
             s = "Route";
@@ -1345,17 +1268,8 @@ void Track::writeRouting(int level, Xml& xml) const
         if(r->midiPort != -1 || !r->name().isEmpty()) 
         {
           s = "Route";
-          // REMOVE Tim. Persistent routes. Removed. Reverted to route per channel now.
-//           if(r->type == Route::MIDI_PORT_ROUTE)  
-//           {
-//             if(r->channel != -1 && r->channel != 0)
-//               s += QString(" channelMask=\"%1\"").arg(r->channel);  // Use new channel mask.
-//           }
-//           else
-//           {
-            if(r->channel != -1)
-              s += QString(" channel=\"%1\"").arg(r->channel);
-//           }    
+          if(r->channel != -1)
+            s += QString(" channel=\"%1\"").arg(r->channel);
           if(r->channels != -1)
             s += QString(" channels=\"%1\"").arg(r->channels);
           if(r->remoteChannel != -1)

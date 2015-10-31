@@ -38,6 +38,9 @@
 #include "gconfig.h"
 #include "route.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
+
 
 namespace MusEGui {
 
@@ -148,14 +151,8 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
 
 bool PopupMenu::event(QEvent* event)
 {
-  // REMOVE Tim. Persistent routes. Added.
-  fprintf(stderr, "PopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n", 
+  DEBUG_PRST_ROUTES(stderr, "PopupMenu::event:%p activePopupWidget:%p this:%p class:%s event type:%d\n", 
           event, QApplication::activePopupWidget(), this, metaObject()->className(), event->type()); 
-//    if(MusEGlobal::config.scrollableSubMenus)
-//    {
-//       event->ignore();
-//       return QMenu::event(event);
-//    }
    
    switch(event->type())
    {
@@ -163,7 +160,6 @@ bool PopupMenu::event(QEvent* event)
    case QEvent::MouseButtonDblClick:
    {
       if(_stayOpen)
-         //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
       {
          QMouseEvent* e = static_cast<QMouseEvent*>(event);
          if(e->modifiers() == Qt::NoModifier)
@@ -261,22 +257,22 @@ void PopupMenu::closeUp()
 {
   if(isVisible())
   {
-    fprintf(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
+    DEBUG_PRST_ROUTES(stderr, "PopupMenu::closeUp() this:%p closing\n", this);
     close();
   }
   
   QAction* act = menuAction();
   if(act)
   {
-    fprintf(stderr, "PopupMenu::closeUp() this:%p menuAction:%p\n", this, act);
+    DEBUG_PRST_ROUTES(stderr, "PopupMenu::closeUp() this:%p menuAction:%p\n", this, act);
     const int sz = act->associatedWidgets().size();
     for(int i = 0; i < sz; ++i)
     {
-      fprintf(stderr, "   associated widget#:%d\n", i);
+      DEBUG_PRST_ROUTES(stderr, "   associated widget#:%d\n", i);
       if(PopupMenu* pup = qobject_cast<PopupMenu*>(act->associatedWidgets().at(i)))
       {
-        fprintf(stderr, "   associated popup:%p\n", pup);
-        fprintf(stderr, "   closing...\n");
+        DEBUG_PRST_ROUTES(stderr, "   associated popup:%p\n", pup);
+        DEBUG_PRST_ROUTES(stderr, "   closing...\n");
         pup->closeUp();
       }
     }
@@ -312,7 +308,7 @@ void PopupMenu::timerHandler()
 
 void PopupMenu::popHovered(QAction* action)
 {  
-  fprintf(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLatin1().constData()); // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLatin1().constData());
    _lastHoveredAction = action;
    hideContextMenu();  
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
@@ -331,7 +327,7 @@ void PopupMenu::popHovered(QAction* action)
 
 void PopupMenu::mousePressEvent(QMouseEvent* e)
 {
-  fprintf(stderr, "PopupMenu::mousePressEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "PopupMenu::mousePressEvent this:%p\n", this);
   if (_contextMenu && _contextMenu->isVisible())
     _contextMenu->hide();
   e->ignore();
@@ -340,11 +336,11 @@ void PopupMenu::mousePressEvent(QMouseEvent* e)
 
 void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
-  fprintf(stderr, "PopupMenu::mouseReleaseEvent this:%p\n", this);  // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "PopupMenu::mouseReleaseEvent this:%p\n", this);
    if(_contextMenu && _contextMenu->isVisible())
      return;
      
-// REMOVE Tim. Persistent routes. Removed. Why not stay-open scrollable menus?
+// Removed by Tim. Why not stay-open scrollable menus?
 //    if(MusEGlobal::config.scrollableSubMenus)
 //    {
 //      QMenu::mouseReleaseEvent(e);
@@ -373,7 +369,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
   // Stay open? Or does the action have a submenu, but also a checkbox of its own?
   if(action && (stay_open || (action->isEnabled() && action->menu() && action->isCheckable())))
   {
-    fprintf(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");  // REMOVE Tim. Persistent routes. Added.
+    DEBUG_PRST_ROUTES(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");
     action->trigger();  // Trigger the action. 
     e->accept();
     if(!stay_open)
@@ -383,28 +379,6 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
   // Otherwise let ancestor QMenu handle it...
   e->ignore();
   QMenu::mouseReleaseEvent(e);
-   
-//    // Check for Ctrl to stay open.
-//    if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
-//    {
-//       fprintf(stderr, "PopupMenu::mouseReleaseEvent: not stay open\n");  // REMOVE Tim. Persistent routes. Added.
-//       if (action && action->menu() != NULL  &&  action->isCheckable())
-//          action->activate(QAction::Trigger);
-// 
-//       e->ignore(); // REMOVE Tim. Persistent routes. Added. Just a test.
-//       QMenu::mouseReleaseEvent(e);
-// 
-//       if (action && action->menu() != NULL  &&  action->isCheckable())
-//          close();
-// 
-//       return;
-//    }
-// 
-//    fprintf(stderr, "PopupMenu::mouseReleaseEvent: stay open\n");  // REMOVE Tim. Persistent routes. Added.
-//    if (action)
-//       action->activate(QAction::Trigger);
-//    else
-//       QMenu::mouseReleaseEvent(e);
 
 #endif   // POPUP_MENU_DISABLE_STAY_OPEN
 }
@@ -528,21 +502,6 @@ void PopupMenu::addAction(QAction* action)
 // Context menu
 //----------------
 
-// PopupMenuContextData::PopupMenuContextData()
-// : _menu(0L), _action(0L)
-// {
-// }
-// 
-// PopupMenuContextData::PopupMenuContextData(const PopupMenuContextData& o)
-// : _menu(o._menu), _action(o._action)
-// {
-// }
-// 
-// PopupMenuContextData::PopupMenuContextData(QPointer<PopupMenu> menu,QPointer<QAction> action)
-// : _menu(menu), _action(action)
-// {
-// }
-
 static void PopupMenuSetActionData(QMenu *context_menu, PopupMenu* menu, QAction* menuAction) 
 {
   const QList<QAction*>actions = context_menu->actions();
@@ -625,14 +584,14 @@ void PopupMenu::hideEvent(QHideEvent *e)
 {
   if(_contextMenu && _contextMenu->isVisible())
   {
-    // we need to block signals here when the ctxMenu is showing
+    // "we need to block signals here when the ctxMenu is showing
     // to prevent the QPopupMenu::activated(int) signal from emitting
     // when hiding with a context menu, the user doesn't expect the
     // menu to actually do anything.
     // since hideEvent gets called very late in the process of hiding
     // (deep within QWidget::hide) the activated(int) signal is the
     // last signal to be emitted, even after things like aboutToHide()
-    // AJS
+    // AJS"
     bool blocked = blockSignals(true);
     _contextMenu->hide();
     blockSignals(blocked);

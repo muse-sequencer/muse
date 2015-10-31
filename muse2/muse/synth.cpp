@@ -750,7 +750,6 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::T
 
       int idx = insertAt ? _tracks.index(insertAt) : -1;
 
-      // REMOVE Tim. Persistent routes. Added. Moved here and modified from below.
       OutputList* ol = MusEGlobal::song->outputs();
       // Add an omnibus default route to master (first audio output)
       if (!ol->empty()) {
@@ -761,27 +760,8 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::T
       
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTrack, idx, si));
 
-      // REMOVE Tim. Persistent routes. Added. Moved here and modified from below.
       MusEGlobal::audio->msgUpdateSoloStates();
       
-// REMOVE Tim. Persistent routes. Removed. Moved into Song::addNewTrack().
-//       OutputList* ol = MusEGlobal::song->outputs();
-//       // add default route to master (first audio output)
-//       if (!ol->empty()) {
-//             AudioOutput* ao = ol->front();
-//             // Make sure the route channel and channels are valid.
-//             MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
-// 
-//             MusEGlobal::audio->msgUpdateSoloStates();
-//             }
-
-      // DELETETHIS 5
-      // Now that the track has been added to the lists in insertTrack2(),
-      //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
-      // No, initializing OSC without actually showing the gui doesn't work, at least for
-      //  dssi-vst plugins - without showing the gui they exit after ten seconds.
-      //si->initGui();
-
       return si;
       }
 
@@ -798,7 +778,6 @@ void SynthI::write(int level, Xml& xml) const
       xml.strTag(level, "class", synth()->baseName());
 
       // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the label is the name of the dll file.
-      // Added by Tim. p3.3.16
       xml.strTag(level, "label", synth()->name());
 
       if(openFlags() != 1)

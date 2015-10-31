@@ -47,7 +47,7 @@
 #include "gconfig.h"
 #include "ticksynth.h"
 
-// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK amd makes good sense.
+// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_
 
 namespace MusECore {

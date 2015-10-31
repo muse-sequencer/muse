@@ -1123,8 +1123,6 @@ void AudioStrip::oRoutePressed()
       RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, true);
       delete pup;
-      // REMOVE Tim. Persistent routes. Added.
-      fprintf(stderr, "AudioStrip::oRoutePressed setting oR down\n");
       oR->setDown(false);     
 }
 

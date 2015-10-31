@@ -36,7 +36,6 @@ bool checkAudioDevice();
 }
 
 namespace MusECore {
-//class MidiPlayEvent;
 
 enum JackCallbackEventType {PortRegister, PortUnregister, PortConnect, PortDisconnect, GraphChanged};
 struct JackCallbackEvent
@@ -154,7 +153,6 @@ class JackAudioDevice : public AudioDevice {
       virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
 
       void graphChanged();
-      //static bool jackStarted;
       };
 
 // Our own wrappers for functions we need to look up with dlsym:

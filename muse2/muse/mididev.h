@@ -87,7 +87,6 @@ class MidiDevice {
       
       virtual void* inClientPort() { return 0; }
       virtual void* outClientPort() { return 0; }
-      // REMOVE Tim. Persistent routes. Added.
       // These two are generally for ALSA.
       virtual void setAddressClient(int) { }
       virtual void setAddressPort(int) { }
@@ -115,7 +114,6 @@ class MidiDevice {
       void setOpenFlags(int val)       { _openFlags = val; }
       void setrwFlags(int val)         { _rwFlags = val; }
 
-      // REMOVE Tim. Persistent routes. Added.
       virtual bool guiVisible() const { return false; }
       virtual void showGui(bool)    { }
       virtual bool hasGui() const     { return false; }

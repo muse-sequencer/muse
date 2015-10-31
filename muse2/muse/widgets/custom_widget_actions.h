@@ -58,9 +58,6 @@ class PixmapButtonsHeaderWidgetAction : public QWidgetAction {
       QString _text;
       int _channels;
       
-   //private slots:
-     //void chanClickMap(int);
-     
    public:
       PixmapButtonsHeaderWidgetAction (const QString& text, QPixmap* ref_pixmap, int channels, QWidget* parent = 0);
       QWidget* createWidget(QWidget* parent);

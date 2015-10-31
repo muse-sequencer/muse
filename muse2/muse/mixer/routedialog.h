@@ -31,7 +31,6 @@
 #include <QTreeWidgetItem>
 #include <QDialog>
 #include <QStyledItemDelegate>
-//#include <QItemSelectionModel>
 #include <QBitArray>
 
 //#include "ui_routedialogbase.h"
@@ -47,6 +46,7 @@ class QMouseEvent;
 class QItemSelectionModel;
 class QPainter;
 class QColor;
+class QResizeEvent;
 
 namespace MusEGui {
 
@@ -177,6 +177,7 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         void setCurChannel(int c)         { _curChannel = c; }
         
         bool mousePressHandler(QMouseEvent* e, const QRect& rect); 
+        // Returns true if the painting was handled.
         bool paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
         QSize getSizeHint(int col, int col_width = -1) const;
         QSize getSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -235,14 +236,11 @@ private:
 private slots:
         void headerSectionResized(int logicalIndex, int oldSize, int newSize);
 
-        void scrollRangeChanged(int min, int max);
-        void scrollSliderMoved(int value);
-        void scrollValueChanged(int value);
-
 protected:
         virtual void mousePressEvent(QMouseEvent*);
         virtual QItemSelectionModel::SelectionFlags selectionCommand(const QModelIndex& index, const QEvent* event = 0) const;
-
+        virtual void resizeEvent(QResizeEvent*);
+        
 protected slots:
         virtual void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         
@@ -253,11 +251,12 @@ public:
         RouteTreeWidget(QWidget* parent = 0, bool is_input = false);
         virtual ~RouteTreeWidget();
 
-        RouteTreeWidgetItem* itemFromIndex(const QModelIndex& index) const;
-
+        void computeChannelYValues();
+        
         bool isInput() { return _isInput; }
         void setIsInput(bool v) { _isInput = v; }
         
+        RouteTreeWidgetItem* itemFromIndex(const QModelIndex& index) const;
         RouteTreeWidgetItem* findItem(const MusECore::Route&, int itemType = -1);
         RouteTreeWidgetItem* findCategoryItem(const QString&);
         int channelAt(RouteTreeWidgetItem* item, const QPoint& pt);
@@ -265,6 +264,7 @@ public:
         
         void getSelectedRoutes(MusECore::RouteList& routes);
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
+        void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
 };
 
 
@@ -341,8 +341,6 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void routingChanged();
       void removeItems();
       void addItems();
-      //bool routeNodeExists(const MusECore::Route&);
-      //void getItemsToDelete(QTreeWidget* tree, QVector<QTreeWidgetItem*>& items_to_remove);
       void getRoutesToDelete(QTreeWidget* routesTree, QVector<QTreeWidgetItem*>& items_to_remove);
 
    private slots:
@@ -357,7 +355,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void dstTreeScrollValueChanged(int value);
       void srcScrollBarValueChanged(int value);
       void dstScrollBarValueChanged(int value);
-      
+
       void filterSrcClicked(bool v);
       void filterDstClicked(bool v);
       
@@ -371,11 +369,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
 
    public:
       RouteDialog(QWidget* parent=0);
-      //RouteTreeWidgetItem* findSrcItem(const MusECore::Route&);
-      //RouteTreeWidgetItem* findDstItem(const MusECore::Route&);
-      //RouteTreeWidgetItem* findCategoryItem(QTreeWidget*, const QString&);
       QTreeWidgetItem* findRoutesItem(const MusECore::Route&, const MusECore::Route&);
-      //void getSelectedRoutes(QTreeWidget* tree, MusECore::RouteList& routes);
       
       // Hide all items in the source or destination tree except the filter items, 
       //  and hide any items in the route tree whose source or destination route data 
@@ -398,11 +392,6 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       static const QString jackCat;
       static const QString jackMidiCat;
 
-//       static const QString trackLabel;
-//       static const QString midiDeviceLabel;
-//       static const QString jackLabel;
-//       static const QString jackMidiLabel;
-      
       static const int channelDotDiameter;
       static const int channelDotSpacing;
       static const int channelDotsPerGroup;

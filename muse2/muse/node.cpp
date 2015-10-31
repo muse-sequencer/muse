@@ -44,7 +44,7 @@
 #include "wavepreview.h"
 #include "al/dsp.h"
 
-// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK amd makes good sense.
+// REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_SIMPLIFIED_SOLO_CHAIN_
 
 // Turn on debugging messages

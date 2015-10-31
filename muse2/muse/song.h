@@ -367,8 +367,6 @@ public:
       void processMasterRec();
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
-      // REMOVE Tim. Persistent routes. Changed.
-      //void connectJackRoutes(AudioTrack* track, bool disconnect);
       void connectJackRoutes(const MusECore::Route& src, const MusECore::Route& dst, bool disconnect = false);
       void connectAudioPorts();
       void connectMidiPorts();
@@ -400,9 +398,6 @@ public:
 
       SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       
-      // REMOVE Tim. Persistent routes. Removed.
-      //void rescanAlsaPorts();
-
       //-----------------------------------------
       //   Debug
       //-----------------------------------------
@@ -466,7 +461,6 @@ public:
       void clickChanged(bool);
       void quantizeChanged(bool);
       void markerChanged(int);
-      //void midiPortsChanged();  // REMOVE Tim. Persistent routes. Removed.
       void midiNote(int pitch, int velo);  
       void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);

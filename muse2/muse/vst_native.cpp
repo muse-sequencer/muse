@@ -313,6 +313,7 @@ static void scanVstNativeLib(QFileInfo& fi)
   QString vendorString;
   QString productString;
   int vendorVersion;
+  QString vendorVersionString;
   std::vector<Synth*>::iterator is;
   int vst_version = 0;
   VstNativeSynth* new_synth = NULL;
@@ -417,7 +418,8 @@ static void scanVstNativeLib(QFileInfo& fi)
     goto _ending;  
   }
 
-  new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, QString::number(vendorVersion)); 
+  vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
+  new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString); 
   
   if(MusEGlobal::debugMsg)
     fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
@@ -2347,80 +2349,6 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   #ifdef VST_NATIVE_DEBUG_PROCESS
   fprintf(stderr, "VstNativeSynthIF::getData: Handling inputs...\n");
   #endif
-
-  // REMOVE Tim. Persistent routes. Changed.
-//   // Handle inputs...
-//   if(ports != 0)  // Don't bother if not 'running'.
-//   {
-//     if(!atrack->noInRoute())
-//     {
-//       RouteList* irl = atrack->inRoutes();
-//       iRoute i = irl->begin();
-//       if(!i->track->isMidiTrack())
-//       {
-//         const int ch     = i->channel       == -1 ? 0 : i->channel;
-//         const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-//         const int chs    = i->channels      == -1 ? 0 : i->channels;
-// 
-//         if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
-//         {
-//           const int h = remch + chs;
-//           for(int j = remch; j < h; ++j)
-//             _iUsedIdx[j] = true;
-// 
-//           ((AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-//         }
-//       }
-// 
-//       ++i;
-//       for(; i != irl->end(); ++i)
-//       {
-//         if(i->track->isMidiTrack())
-//           continue;
-// 
-//         const int ch     = i->channel       == -1 ? 0 : i->channel;
-//         const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-//         const int chs    = i->channels      == -1 ? 0 : i->channels;
-// 
-//         if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
-//         {
-//           const bool u1 = _iUsedIdx[remch];
-//           if(chs >= 2)
-//           {
-//             const bool u2 = _iUsedIdx[remch + 1];
-//             if(u1 && u2)
-//               ((AudioTrack*)i->track)->addData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-//             else
-//             if(!u1 && !u2)
-//               ((AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-//             else
-//             {
-//               if(u1)
-//                 ((AudioTrack*)i->track)->addData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-//               else
-//                 ((AudioTrack*)i->track)->copyData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-// 
-//               if(u2)
-//                 ((AudioTrack*)i->track)->addData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
-//               else
-//                 ((AudioTrack*)i->track)->copyData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
-//             }
-//           }
-//           else
-//           {
-//               if(u1)
-//                 ((AudioTrack*)i->track)->addData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-//               else
-//                 ((AudioTrack*)i->track)->copyData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-//           }
-// 
-//           const int h = remch + chs;
-//           for(int j = remch; j < h; ++j)
-//             _iUsedIdx[j] = true;
-//         }
-//       }
-//     }
-//   }
   
   if(ports != 0)
   {
