@@ -1066,9 +1066,9 @@ unsigned int Audio::curFrame() const
 //     it is circular (about the cur pos, width = segment size).
 //---------------------------------------------------------
 
-int Audio::timestamp() const
+unsigned Audio::timestamp() const
       {
-      int t = curFrame() - frameOffset;
+      unsigned t = curFrame() - frameOffset;
       return t;
       }
 

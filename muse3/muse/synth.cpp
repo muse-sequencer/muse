@@ -1123,25 +1123,25 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
 iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
 {
       //prevent compiler warning: comparison of signed/unsigned
-      int curPos      = pos;
-      int endPos      = pos + n;
-      int off         = pos;
-      int frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned curPos      = pos;
+      unsigned endPos      = pos + n;
+      unsigned off         = pos;
+      unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
 
       for (; i != el->end(); ++i) {
-          int evTime = i->time();
+          unsigned evTime = i->time();
           if (evTime == 0)
                 evTime=abs(frameOffset); // will cause frame to be zero, problem?
 
-          int frame = evTime - abs(frameOffset);
+          unsigned frame = evTime - frameOffset;
 
             if (frame >= endPos) {
-                fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
+                fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
                 continue;
                 }
 
             if (frame > curPos) {
-                  if (frame < (int) pos)
+                  if (frame < pos)
                         fprintf(stderr, "should not happen: missed event %d\n", pos -frame);
                   else
                   {

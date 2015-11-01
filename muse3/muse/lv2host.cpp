@@ -3651,7 +3651,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    std::vector<snd_seq_event_t> events;
    //events.reserve(ev_buf_sz);
 
-   const int frameOffset = MusEGlobal::audio->getFrameOffset();
+   const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
    const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
@@ -4019,7 +4019,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
                   if(ft >= int(nsamp))
                   {
-                     fprintf(stderr, "LV2SynthIF::getData: eventlist event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                     fprintf(stderr, "LV2SynthIF::getData: eventlist event time:%u out of range. pos:%u offset:%lu ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
                      ft = nsamp - 1;
                   }
 
@@ -4071,7 +4071,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
                   if(ft >= int(nsamp))
                   {
-                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
                      ft = nsamp - 1;
                   }
                   // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
