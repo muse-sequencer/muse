@@ -1,3 +1,73 @@
+31.10.2015
+      By Tim E. Real:
+      * New routing capabilities:
+        - New: Persistent routes: If a device disappears (say USB Midi) we remember it.
+          Currently works for Jack audio and midi routes. 
+          TODO: Expand concept to include persistent Synth Tracks, Rack Plugins and Tracks.
+
+        - New: Multi-channel Audio Track routing. Any channel to any channel.
+          Fully functional (although maybe a sound engine bug - an unconnected 
+           channel may have repeating nonsense sound data.)
+          Audio tracks still only have up to two channels (or N synth audio channels), 
+           but this feature may help later for true multi-channel Audio Tracks.
+
+          Users connect individual Audio or Midi channels with 'Channel Routes', 
+           or all at once with 'Omni' Routes (similar to previous behaviour).
+
+        - New: Graphical Routing dialog redone and enhanced. Almost complete.
+          Added to routing popups as "Open Advanced Router".
+          Middle Connections View window, which can be scrolled. 
+                  Thick lines are Omni Routes and thin ones are Channel Routes.
+          Each pane's tree has textual Omni nodes, plus some have a 
+           'Channel Bar' sub node (an array of connectable Channels).
+          All nodes are organized in 'Category' nodes.
+          Itemized Master Connection List synchronized with left and right panes.
+          Filter buttons: Show only selected nodes in left or right pane
+                  Show only routeable nodes in the other (right or left) pane
+                  Show all 200 Midi Ports (else it filters unused/unrouted ones)
+
+        - Routing popup menus redone. Test OK, some cosmetic tweaks aside. 
+          Shows Channel Routing matrices, plus easy single-click Omni Routes.
+          Uniform audio and midi routing popup menus.
+          Full keyboard support.
+        - Note: Keyboard action activation for ALL popup menus, including routing, 
+                 has been changed from space bar to Enter. Hold ctrl to 'stay open'.
+                 
+        - New: Routing popup menus for Midi Tracks now allow you to do Jack Midi 
+           routing from the menus! Like "Connect this Midi Track to Jack Midi port 
+           XYZ via Midi Port 123:MyJackMidiDeviceName".
+           
+        - Midi Track to Audio Input routing (for soloing chaining) greatly simplified.
+          Instead of a cumbersome dual system of Midi Track to Midi Port route and 
+           Midi Port to Audio Input route PER track channel, now it is simply a more 
+           direct Midi Track to Audio Input Omni Route. No 'channels' involved.
+          This behaviour is different than before, but should still serve the purpose
+           of soloing chaining.
+
+        - Instead of one route for all 16 Midi Track channels using a bit-wise mask for 
+           the Route::channel member, it is now reverted back to one route per channel.
+          This makes all routing uniform (Route::channel now always means 'a channel'),
+           no special code for Midi Track routes.
+          (Applies only to Midi Track input routes for now.)
+
+      * File operations:
+        - A new system of warning users about loading older song file versions 
+           is in place and operational. It uses the MusE File Version number 
+           found in the xml module. Increment it wisely given these new warnings, 
+           especially if 'auto-converters' are 'quietly' enacted while loading.
+        - Added conversion code to transform older loaded files into the format
+           which this verion currently stands at.
+        - Saving and loading tests OK so far but may need a few tweaks.
+        
+      * Midi config dialog:
+        - New: Device List added, with 'Delete' button.
+        - New: Command-line flag disables startup 'midi auto-discover/fill devices/ports'.
+        - Default Jack Midi Device names have been changed.
+          Instead of 'mirroring' the long Jack Midi port names, helpful but NOT good - a 
+           different Jack port or multiple ports can be connected making the name meaningless - 
+           Midi Devices are now simply named like "Jack Midi 1".
+        - Fixed improper Native VST version number display in synth list.
+
 23.10.2015
         - Moving to 3.0.0 release (danvd)
 23.09.2015
