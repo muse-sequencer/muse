@@ -156,7 +156,7 @@ class Audio {
 
       double syncTime;  // wall clock at last sync point
       unsigned syncFrame;    // corresponding frame no. to syncTime
-      int frameOffset;  // offset to free running hw frame counter
+      unsigned long frameOffset;  // offset to free running hw frame counter
 
       State state;
 
@@ -287,7 +287,7 @@ class Audio {
 
       unsigned tickPos() const    { return curTickPos; }
       unsigned nextTick() const   { return nextTickPos; }
-      int timestamp() const;
+      unsigned timestamp() const;
       void processMidi();
       unsigned framesSinceCycleStart() const;   
       unsigned curFrame() const;
@@ -296,7 +296,7 @@ class Audio {
       void recordStop();
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
-      int getFrameOffset() const   { return frameOffset; }
+      unsigned long getFrameOffset() const   { return frameOffset; }
       void initDevices(bool force = true);
 
       void sendMsgToGui(char c);
