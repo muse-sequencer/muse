@@ -1375,19 +1375,19 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
         y2 = itemY(dstItem, false, dst_chan) + (yi - yc);
         drawConnectionLine(painter, x1, y1, x2, y2, h1, h2);
       }
-      else
-      {
-        fprintf(stderr, "ConnectionsView::drawItem: dstItem not found:\n");
-        src.dump();
-        dst.dump();
-      }
+//       else
+//       {
+//         fprintf(stderr, "ConnectionsView::drawItem: dstItem not found:\n");
+//         src.dump();
+//         dst.dump();
+//       }
     }
-    else
-    {
-      fprintf(stderr, "ConnectionsView::drawItem: srcItem not found:\n");
-      src.dump();
-      dst.dump();
-    }
+//     else
+//     {
+//       fprintf(stderr, "ConnectionsView::drawItem: srcItem not found:\n");
+//       src.dump();
+//       dst.dump();
+//     }
   }
 }
 
@@ -4009,9 +4009,8 @@ void RouteDialog::disconnectClicked()
   if(!operations.empty())
   {
     operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
-    MusEGlobal::audio->msgExecutePendingOperations(operations);
-    //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
-    MusEGlobal::song->update(SC_ROUTE);
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+//     MusEGlobal::song->update(SC_ROUTE);
     //MusEGlobal::song->update(SC_SOLO);
     //routingChanged();
   }
@@ -4113,9 +4112,8 @@ void RouteDialog::connectClicked()
   if(!operations.empty())
   {
     operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
-    MusEGlobal::audio->msgExecutePendingOperations(operations);
-    //MusEGlobal::audio->msgUpdateSoloStates(); // TODO Include this in operations ?
-    MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true, upd_trk_props ? SC_MIDI_TRACK_PROP : 0);
+//     MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));
     //MusEGlobal::song->update(SC_SOLO);
     //routingChanged();
   }

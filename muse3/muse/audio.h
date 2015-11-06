@@ -25,6 +25,7 @@
 #ifndef __AUDIO_H__
 #define __AUDIO_H__
 
+#include "type_defs.h"
 #include "thread.h"
 #include "pos.h"
 #include "mpevent.h"
@@ -219,7 +220,9 @@ class Audio {
 
       void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3
       void msgRevertOperationGroup(Undo&); // similar.
-      void msgExecutePendingOperations(PendingOperationList&); // Bypass the Undo system and directly execute the pending operations.
+      // Bypass the Undo system and directly execute the pending operations.
+      // Do a song update with accumulated flags and extra_flags, if doUpdate is true.
+      void msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate = false, SongChangedFlags_t extraFlags = 0);
 
       void msgRemoveTracks();
       void msgRemoveTrack(Track*, bool u = true); // only does applyOperation

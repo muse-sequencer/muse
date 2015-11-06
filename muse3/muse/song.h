@@ -449,6 +449,7 @@ public:
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
+      void setDirty() { emit sigDirty(); }
 
    signals:
       void songChanged(MusECore::SongChangedFlags_t); 

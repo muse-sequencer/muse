@@ -168,7 +168,7 @@ void enumerateJackMidiDevices()
   if(!operations.empty())
   {
     //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
-    MusEGlobal::audio->msgExecutePendingOperations(operations);
+    MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
     //MusEGlobal::song->update(SC_ROUTE);
   }
 }
