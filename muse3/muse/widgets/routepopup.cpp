@@ -87,19 +87,22 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
   MusECore::RouteList* rl = isOutput ? track->outRoutes() : track->inRoutes();
   
   const bool circ_route = (isOutput ? track : route_track)->isCircularRoute(isOutput ? route_track : track);
-  const int t_chans = isOutput ? track->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE) : track->totalRoutableInputs(MusECore::Route::TRACK_ROUTE);
-  const int rt_chans = isOutput ? route_track->totalRoutableInputs(MusECore::Route::TRACK_ROUTE) : route_track->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE);
+  
+  MusECore::RouteCapabilitiesStruct t_caps = track->routeCapabilities();
+  MusECore::RouteCapabilitiesStruct rt_caps = route_track->routeCapabilities();
+  const int t_chans = isOutput ? t_caps._trackChannels._outChannels : t_caps._trackChannels._inChannels;
+  const int rt_chans = isOutput ? rt_caps._trackChannels._inChannels : rt_caps._trackChannels._outChannels;
+  
+  // Support Audio Output Track to Audio Input Track 'Omni' routes.
   if(isOutput && track->type() == MusECore::Track::AUDIO_OUTPUT && route_track->type() == MusECore::Track::AUDIO_INPUT)
   {
-    // Only support omnibus routes for now.
-    if(channel != -1 || track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0)
+    if(channel != -1 || !t_caps._trackChannels._outRoutable || !rt_caps._trackChannels._inRoutable)
       return ++id;
   }
   else
   if(!isOutput && track->type() == MusECore::Track::AUDIO_INPUT && route_track->type() == MusECore::Track::AUDIO_OUTPUT)
   {
-    // Only support omnibus routes for now.
-    if(channel != -1 || track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0)
+    if(channel != -1 || !t_caps._trackChannels._inRoutable || !rt_caps._trackChannels._outRoutable)
       return ++id;
   }
   else
@@ -618,13 +621,14 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
   MusECore::RouteList* rl;
   int channels = -1;
   std::list<QString> ol;
+  MusECore::RouteCapabilitiesStruct rcaps;
   switch(route.type)
   {
     case MusECore::Route::TRACK_ROUTE:
-      ol = _isOutMenu ? MusEGlobal::audioDevice->inputPorts() : MusEGlobal::audioDevice->outputPorts();      
+      ol = _isOutMenu ? MusEGlobal::audioDevice->inputPorts() : MusEGlobal::audioDevice->outputPorts();
       rl = _isOutMenu ? route.track->outRoutes() : route.track->inRoutes();
-      channels = _isOutMenu ? route.track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) : 
-                              route.track->totalRoutableInputs(MusECore::Route::JACK_ROUTE);
+      rcaps = route.track->routeCapabilities();
+      channels = _isOutMenu ? rcaps._jackChannels._outChannels : rcaps._jackChannels._inChannels;
     break;
     
     case MusECore::Route::MIDI_DEVICE_ROUTE:
@@ -2934,9 +2938,10 @@ void RoutePopupMenu::prepare()
       else
       {
         MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
+        MusECore::RouteCapabilitiesStruct rcaps = t->routeCapabilities();
         if(_isOutMenu)   
         {
-          const int t_ochs = t->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE);
+          const int t_ochs = rcaps._trackChannels._outChannels;
           int gid = 0;
           
           switch(track->type()) 
@@ -3025,7 +3030,7 @@ void RoutePopupMenu::prepare()
           if(track->type() == MusECore::Track::AUDIO_AUX)
             return;
             
-          const int t_ichs = t->totalRoutableInputs(MusECore::Route::TRACK_ROUTE);
+          const int t_ichs = rcaps._trackChannels._inChannels;
           int gid = 0;
           
           switch(track->type()) 

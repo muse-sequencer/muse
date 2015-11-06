@@ -476,46 +476,12 @@ bool Track::isCircularRoute(Track* dst)
   return rv;
 }
 
-//---------------------------------------------------------
-//   totalRoutableInputs
-//   Number of routable inputs.
-//---------------------------------------------------------
-
-int Track::totalRoutableInputs(Route::RouteType type) const 
+RouteCapabilitiesStruct Track::routeCapabilities() const 
 { 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return _channels;
-    break;
-    case Route::JACK_ROUTE:
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
-}
-
-//---------------------------------------------------------
-//   totalRoutableOutputs
-//   Number of routable outputs.
-//---------------------------------------------------------
-
-int Track::totalRoutableOutputs(Route::RouteType type) const 
-{ 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return _channels;
-    break;
-    case Route::JACK_ROUTE:
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
+  RouteCapabilitiesStruct s;
+  s._trackChannels._inChannels = s._trackChannels._outChannels = _channels;
+  s._trackChannels._inRoutable = s._trackChannels._outRoutable = (_channels != 0);
+  return s;
 }
 
 
@@ -780,6 +746,21 @@ int MidiTrack::height() const
     return _height;
   return 0;
 }
+
+RouteCapabilitiesStruct MidiTrack::routeCapabilities() const 
+{ 
+  RouteCapabilitiesStruct s;
+  s._midiPortChannels._inRoutable = true;
+  s._midiPortChannels._inChannels = MIDI_CHANNELS;
+  s._trackChannels._outRoutable = true;  // Support Midi Track to Audio Input Track routes (for soloing chain).
+  
+#ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+  s._midiPortChannels._outChannels = MIDI_CHANNELS;
+#endif
+  
+  return s;
+}
+
 
 //---------------------------------------------------------
 //   setOutChanAndUpdate

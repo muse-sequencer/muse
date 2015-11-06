@@ -96,10 +96,8 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         MusECore::Route _route;
         RouteChannelsList _channels;
         ItemMode _itemMode;
-        //QBitArray _channels;
-        //QVector<int> _channelYValues; // Useful for drawing channel lines.
-        
         int _curChannel;
+
         void init();
   
   public:
@@ -134,27 +132,30 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
                             bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
                             : QTreeWidgetItem(parent, preceding, type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
                             
-        //RouteTreeWidgetItem(const RouteTreeWidgetItem& other);
-        
         MusECore::Route& route()          { return _route; }
         // Whether this item should exist or not, based on _route and the item type.
         bool routeNodeExists();
+        // Fills a list of routes with selected items' routes.
         void getSelectedRoutes(MusECore::RouteList& routes);
         
         ItemMode itemMode() const         { return _itemMode; }
         void setItemMode(ItemMode mode)   { _itemMode = mode; }
         
+        // Automatically sets the number of channels. Returns true if channel count was changed.
+        bool setChannels();
+        // Returns the number of channels.
         int channelCount() const          { return _channels.size(); }
-        //void setChannelCount(int c)       { _channels.resize(c); _channelYValues.resize(c); _channelYValues.fill(-1); }
+        // Sets the number of channels.
         void setChannelCount(int c)       { _channels.resize(c); }
-        //bool channelSelected(int c) const { if(c >= _channels.size()) return false; return _channels.testBit(c); }
+        // Returns true if the channel is selected.
         bool channelSelected(int c) const { return _channels.channelSelected(c); }
-        //void selectChannel(int c, bool v) { if(c >= _channels.size()) return; v ? _channels.setBit(c) : _channels.clearBit(c); }
+        // Selects the channel.
         void selectChannel(int c, bool v) { _channels.selectChannel(c, v); }
-        //void toggleChannel(int c)         { if(c >= _channels.size()) return; _channels.toggleBit(c); }
+        // Toggles the channel selection.
         void toggleChannel(int c)         { _channels.toggleChannel(c); }
-        //void fillSelectedChannels(bool v)         { _channels.fill(v); }
+        // Sets all channels' selected state.
         void fillSelectedChannels(bool v)         { _channels.fillSelectedChannels(v); }
+        // Returns the channel, based at rect y, whose rectangle contains pt.
         int channelAt(const QPoint& pt, const QRect& rect) const;
         // How many non-omni channels are connected. For speed, it looks in the channel y values list, which must be current.
         int connectedChannels() const;
@@ -166,24 +167,25 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         int barsPerColChannels(int cc) const;
 
         // For drawing channel lines:
-        // Dual use: -1 means channel is not routed anywhere. Values >= 0 are y values for drawing channel lines.
-        //int channelYValue(int c) const    { if(c >= _channelYValues.size()) return -1; return _channelYValues.at(c); }
-        // For drawing channel lines:
         int channelYValue(int c) const    { return _channels.lineY(c); }
-        // May be slow. Don't call every draw time, only when routes change. Use channelYValue() to draw.
+        // Computes, and caches, channel y values. May be slow. Don't call on each draw, only when routes change. Use channelYValue() to draw.
         void computeChannelYValues(int col_width = -1); 
         
+        // Returns current channel. (Unlike being selected.)
         int curChannel() const            { return _curChannel; }
+        // Sets the current channel. (Unlike being selected.)
         void setCurChannel(int c)         { _curChannel = c; }
-        
+
+        // Handles mouse press events.
         bool mousePressHandler(QMouseEvent* e, const QRect& rect); 
-        // Returns true if the painting was handled.
+        // Handles painting. Returns true if the painting was handled.
         bool paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+        // Returns suggested size of item.
         QSize getSizeHint(int col, int col_width = -1) const;
+        // Returns suggested size of item.
         QSize getSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+        // Returns true if tree should be re laid out (ie. with scheduleDelayedItemsLayout()).
         bool testForRelayout(int col, int old_width, int new_width) const;
-        
-        //void columnSizeChanged(int logicalIndex, int oldSize, int newSize);
 };
 
 //---------------------------------------------------------

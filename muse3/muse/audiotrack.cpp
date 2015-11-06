@@ -1718,48 +1718,13 @@ void AudioTrack::mapRackPluginsToControllers()
     */
 }
 
-//---------------------------------------------------------
-//   totalRoutableInputs
-//   Number of routable inputs.
-//---------------------------------------------------------
-
-int AudioTrack::totalRoutableInputs(Route::RouteType type) const 
+RouteCapabilitiesStruct AudioTrack::routeCapabilities() const 
 { 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE: 
-      return totalProcessBuffers();
-    break;
-    case Route::JACK_ROUTE:
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
+  RouteCapabilitiesStruct s;
+  s._trackChannels._inChannels = s._trackChannels._outChannels = totalProcessBuffers();
+  s._trackChannels._inRoutable = s._trackChannels._outRoutable = (s._trackChannels._inChannels != 0);
+  return s;
 }
-
-//---------------------------------------------------------
-//   totalRoutableOutputs
-//   Number of routable outputs.
-//---------------------------------------------------------
-
-int AudioTrack::totalRoutableOutputs(Route::RouteType type) const 
-{ 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return totalProcessBuffers();
-    break;
-    case Route::JACK_ROUTE:
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
-}
-
 
 //---------------------------------------------------------
 //   AudioInput
@@ -1874,29 +1839,18 @@ void AudioInput::read(Xml& xml)
             }
       }
 
-//---------------------------------------------------------
-//   totalRoutableInputs
-//   Number of routable inputs.
-//---------------------------------------------------------
-
-int AudioInput::totalRoutableInputs(Route::RouteType type) const 
+RouteCapabilitiesStruct AudioInput::routeCapabilities() const 
 { 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return 0;
-    break;
-    case Route::JACK_ROUTE:
-      return totalProcessBuffers();
-    break;
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
-}
+  RouteCapabilitiesStruct s = AudioTrack::routeCapabilities();
+  
+  // Support Midi Track to Audio Input Track routes (for soloing chain).
+  s._trackChannels._inRoutable = true;
+  s._trackChannels._inChannels = 0;
 
+  s._jackChannels._inRoutable = false;
+  s._jackChannels._inChannels = totalProcessBuffers();
+  return s;
+}
 
 //---------------------------------------------------------
 //   AudioOutput
@@ -2009,30 +1963,19 @@ void AudioOutput::read(Xml& xml)
                   }
             }
       }
-
-//---------------------------------------------------------
-//   totalRoutableOutputs
-//   Number of routable outputs.
-//---------------------------------------------------------
-
-int AudioOutput::totalRoutableOutputs(Route::RouteType type) const 
-{ 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return 0;
-    break;
-    case Route::JACK_ROUTE:
-      return totalProcessBuffers();
-    break;
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
-}
       
+RouteCapabilitiesStruct AudioOutput::routeCapabilities() const 
+{ 
+  RouteCapabilitiesStruct s = AudioTrack::routeCapabilities();
+  
+  // Support Midi Track to Audio Input Track routes (for soloing chain).
+  s._trackChannels._outRoutable = true;
+  s._trackChannels._outChannels = 0;
+
+  s._jackChannels._outRoutable = false;
+  s._jackChannels._outChannels = totalProcessBuffers();
+  return s;
+}
       
 //---------------------------------------------------------
 //   write

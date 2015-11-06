@@ -430,25 +430,12 @@ void SynthI::setName(const QString& s)
       MidiDevice::setName(s);
       }
 
-//---------------------------------------------------------
-//   totalRoutableInputs
-//   Number of routable inputs.
-//---------------------------------------------------------
-
-int SynthI::totalRoutableInputs(Route::RouteType type) const 
+RouteCapabilitiesStruct SynthI::routeCapabilities() const 
 { 
-  switch(type)
-  {
-    case Route::TRACK_ROUTE:
-      return totalInChannels();
-    break;
-    case Route::JACK_ROUTE:
-    case Route::MIDI_DEVICE_ROUTE:
-    case Route::MIDI_PORT_ROUTE:
-      return 0;
-    break;
-  }
-  return 0;
+  RouteCapabilitiesStruct s = AudioTrack::routeCapabilities();
+  s._trackChannels._inChannels = totalInChannels();
+  s._trackChannels._inRoutable = (s._trackChannels._inChannels != 0);
+  return s;
 }
 
 //---------------------------------------------------------

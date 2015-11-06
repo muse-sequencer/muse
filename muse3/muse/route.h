@@ -41,6 +41,57 @@ class MidiDevice;
 class Xml;
 class PendingOperationList;
 
+
+struct RouteChannelsDescriptor
+{
+  // Independent of _inChannels/_outChannels. Typically represents 'Omni' for objects 
+  //  which have channels, otherwise it just means the object itself is routable.
+  bool _inRoutable;
+  bool _outRoutable;
+  
+  int _inChannels;
+  int _outChannels;
+  
+  RouteChannelsDescriptor() : _inRoutable(false),
+                              _outRoutable(false),
+                              _inChannels(0),
+                              _outChannels(0) { }
+  RouteChannelsDescriptor(bool inRoutable,
+                          bool outRoutable,
+                          int inChannels,
+                          int outChannels)
+                      : _inRoutable(inRoutable),
+                        _outRoutable(outRoutable),
+                        _inChannels(inChannels),
+                        _outChannels(outChannels) { }
+};
+typedef RouteChannelsDescriptor TrackRouteDescriptor;
+typedef RouteChannelsDescriptor JackRouteDescriptor;
+typedef RouteChannelsDescriptor MidiDeviceRouteDescriptor;
+typedef RouteChannelsDescriptor MidiPortRouteDescriptor;
+
+struct RouteCapabilitiesStruct
+{
+  TrackRouteDescriptor _trackChannels;
+  JackRouteDescriptor _jackChannels;
+  MidiDeviceRouteDescriptor _midiDeviceChannels;
+  MidiPortRouteDescriptor _midiPortChannels;
+  
+  RouteCapabilitiesStruct() : _trackChannels(TrackRouteDescriptor()),
+                              _jackChannels(JackRouteDescriptor()),
+                              _midiDeviceChannels(MidiDeviceRouteDescriptor()),
+                              _midiPortChannels(MidiPortRouteDescriptor()) { }
+                      
+  RouteCapabilitiesStruct(const TrackRouteDescriptor& trackChannels,
+                          const JackRouteDescriptor& jackChannels,
+                          const MidiDeviceRouteDescriptor& midiDeviceChannels,
+                          const MidiPortRouteDescriptor& midiPortChannels) :
+                          _trackChannels(trackChannels),
+                          _jackChannels(jackChannels),
+                          _midiDeviceChannels(midiDeviceChannels),
+                          _midiPortChannels(midiPortChannels) { }
+};
+
 //---------------------------------------------------------
 //   Route
 //---------------------------------------------------------

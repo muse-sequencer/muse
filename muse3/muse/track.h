@@ -150,10 +150,8 @@ class Track {
       bool isCircularRoute(Track* dst);   
       int auxRefCount() const { return _auxRouteCount; }  // Number of Aux Tracks with routing paths to this track. 
       void updateAuxRoute(int refInc, Track* dst);  // Internal use. 
-      // Number of routable inputs.
-      virtual int totalRoutableInputs(Route::RouteType) const;
-      // Number of routable outputs.
-      virtual int totalRoutableOutputs(Route::RouteType) const;
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
       
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
@@ -278,6 +276,9 @@ class MidiTrack : public Track {
       virtual MidiTrack* clone(int flags) const { return new MidiTrack(*this, flags); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
+      
       void setOutChannel(int i)       { _outChannel = i; }
       void setOutPort(int i)          { _outPort = i; }
       // These will transfer controller data to the new selected port and/or channel.
@@ -429,10 +430,8 @@ class AudioTrack : public Track {
       virtual int totalOutChannels() const { return _totalOutChannels; }
       virtual void setTotalInChannels(int num);
       virtual int totalInChannels() const { return _totalInChannels; }
-      // Number of routable inputs.
-      virtual int totalRoutableInputs(Route::RouteType) const;
-      // Number of routable outputs.
-      virtual int totalRoutableOutputs(Route::RouteType) const;
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
       // Number of required processing buffers.
       virtual int totalProcessBuffers() const { return (channels() == 1) ? 1 : totalOutChannels(); }
 
@@ -531,8 +530,8 @@ class AudioInput : public AudioTrack {
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
-      // Number of routable inputs.
-      virtual int totalRoutableInputs(Route::RouteType) const;
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
@@ -564,8 +563,8 @@ class AudioOutput : public AudioTrack {
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
-      // Number of routable outputs.
-      virtual int totalRoutableOutputs(Route::RouteType) const;
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
       void processInit(unsigned);
       void process(unsigned pos, unsigned offset, unsigned);
       void processWrite();
@@ -616,8 +615,12 @@ class AudioAux : public AudioTrack {
       virtual void write(int, Xml&) const;
       virtual bool getData(unsigned, int, unsigned, float**);
       virtual void setChannels(int n);
-      // Number of routable inputs.
-      virtual int totalRoutableInputs(Route::RouteType) const { return 0; }
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const {
+                RouteCapabilitiesStruct s = AudioTrack::routeCapabilities();
+                s._trackChannels._inRoutable = false;
+                s._trackChannels._inChannels = 0;
+                return s; }
       float** sendBuffer() { return buffer; }
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;

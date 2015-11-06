@@ -272,8 +272,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      // Number of routable inputs.
-      virtual int totalRoutableInputs(Route::RouteType) const;
+      // Number of routable inputs/outputs for each Route::RouteType.
+      virtual RouteCapabilitiesStruct routeCapabilities() const;
       
       virtual QString getPatchName(int ch, int prog, bool dr) const {
             return _sif->getPatchName(ch, prog, dr);

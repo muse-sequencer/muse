@@ -410,6 +410,8 @@ void addRoute(Route src, Route dst)
           fprintf(stderr, "addRoute: source and destination are track routes but channels incompatible: src:%d dst:%d\n", src.channel, dst.channel);
           return;
         }
+        
+        // Don't bother checking valid channel ranges, to support persistent routes...
 
         if(src.channels != dst.channels)
         {
@@ -1106,10 +1108,10 @@ bool routeCanConnect(const Route& src, const Route& dst)
 
         if(src.channels != dst.channels)
           return false;
-
+        
         // Allow for -1 = omni route.
-        if(src.channel >= src.track->totalRoutableOutputs(Route::TRACK_ROUTE) ||
-           dst.channel >= dst.track->totalRoutableInputs(Route::TRACK_ROUTE))
+        if(src.channel >= src.track->routeCapabilities()._trackChannels._outChannels ||
+           dst.channel >= dst.track->routeCapabilities()._trackChannels._inChannels)
           return false;
           
         if(src.track->isCircularRoute(dst.track)) 
@@ -1504,8 +1506,8 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
           return false;
 
         // Allow for -1 = omni route.
-        if(src.channel >= src.track->totalRoutableOutputs(Route::TRACK_ROUTE) ||
-           dst.channel >= dst.track->totalRoutableInputs(Route::TRACK_ROUTE) ||
+        if(src.channel >= src.track->routeCapabilities()._trackChannels._outChannels ||
+           dst.channel >= dst.track->routeCapabilities()._trackChannels._inChannels ||
            src.track->isCircularRoute(dst.track))
           return false;
           
