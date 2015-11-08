@@ -165,8 +165,9 @@ int PendingOperationItem::getIndex() const
   }
 }  
 
-void PendingOperationItem::executeRTStage()
+SongChangedFlags_t PendingOperationItem::executeRTStage()
 {
+  SongChangedFlags_t flags = 0;
   switch(_type)
   {
     case UpdateSoloStates:
@@ -175,6 +176,7 @@ void PendingOperationItem::executeRTStage()
 #endif      
       // TODO Use the track_list, or simply keep as dummy parameter to identify UpdateSoloStates?
       MusEGlobal::song->updateSoloStates();
+      flags |= SC_SOLO;
     break;
     
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
@@ -185,6 +187,7 @@ void PendingOperationItem::executeRTStage()
       _dst_route.dump();
 #endif      
       addRoute(_src_route, _dst_route);
+      flags |= SC_ROUTE;
     break;
     
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
@@ -195,6 +198,7 @@ void PendingOperationItem::executeRTStage()
       _dst_route.dump();
 #endif      
       removeRoute(_src_route, _dst_route);
+      flags |= SC_ROUTE;
     break;
     
     case AddRouteNode:
@@ -203,6 +207,7 @@ void PendingOperationItem::executeRTStage()
       _src_route.dump();
 #endif      
       _route_list->push_back(_src_route);
+      flags |= SC_ROUTE;
     break;
     
     case DeleteRouteNode:
@@ -211,6 +216,7 @@ void PendingOperationItem::executeRTStage()
       _iRoute->dump();
 #endif      
       _route_list->erase(_iRoute);
+      flags |= SC_ROUTE;
     break;
     
     case ModifyRouteNode:
@@ -220,6 +226,7 @@ void PendingOperationItem::executeRTStage()
       _dst_route_pointer->dump();
 #endif      
       *_dst_route_pointer = _src_route;
+      flags |= SC_ROUTE;
     break;
 
     case AddAuxSendValue:
@@ -227,6 +234,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAuxSendValue aux_send_value_list:%p val:%f\n", _aux_send_value_list, _aux_send_value);
 #endif      
       _aux_send_value_list->push_back(_aux_send_value);
+      flags |= SC_AUX;
     break;
 
     
@@ -235,6 +243,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, _midi_instrument);
 #endif      
       _midi_instrument_list->push_back(_midi_instrument);
+      flags |= SC_CONFIG;
     break;
     
     case DeleteMidiInstrument:
@@ -242,6 +251,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, *_iMidiInstrument);
 #endif      
       _midi_instrument_list->erase(_iMidiInstrument);
+      flags |= SC_CONFIG;
     break;
     
     case AddMidiDevice:
@@ -249,6 +259,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiDevice devicelist:%p device:%p\n", _midi_device_list, _midi_device);
 #endif      
       _midi_device_list->push_back(_midi_device);
+      flags |= SC_CONFIG;
     break;
     
     case DeleteMidiDevice:
@@ -256,6 +267,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, *_iMidiDevice);
 #endif      
       _midi_device_list->erase(_iMidiDevice);
+      flags |= SC_CONFIG;
     break;
     
     case ModifyMidiDeviceAddress:
@@ -265,6 +277,7 @@ void PendingOperationItem::executeRTStage()
       _midi_device->setAddressClient(_address_client);
       _midi_device->setAddressPort(_address_port);
       _midi_device->setOpenFlags(_open_flags);
+      flags |= SC_CONFIG;
     break;
     
     case ModifyMidiDeviceFlags:
@@ -273,6 +286,7 @@ void PendingOperationItem::executeRTStage()
 #endif      
       _midi_device->setrwFlags(_rw_flags);
       _midi_device->setOpenFlags(_open_flags);
+      flags |= SC_CONFIG;
     break;
     
     case ModifyMidiDeviceName:
@@ -280,6 +294,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midiDevice, _name->toLocal8Bit().data());
 #endif      
       _midi_device->setName(*_name);
+      flags |= SC_CONFIG;
     break;
     
     case AddTrack:
@@ -316,12 +331,13 @@ void PendingOperationItem::executeRTStage()
                     break;
               default:
                     fprintf(stderr, "PendingOperationItem::executeRTStage AddTrack: Unknown track type %d\n", _track->type());
-                    return;
+                    return flags;
         }
       }
       
       iTrack track_it = _track_list->index2iterator(_insert_at);
       _track_list->insert(track_it, _track);
+      flags |= SC_TRACK_INSERTED;
 
       // Add routes:
       if(_track->isMidiTrack())
@@ -334,7 +350,8 @@ void PendingOperationItem::executeRTStage()
                   {
                     case Route::MIDI_PORT_ROUTE:  {
                       Route src(_track, r->channel);
-                      MusEGlobal::midiPorts[r->midiPort].outRoutes()->push_back(src);  }
+                      MusEGlobal::midiPorts[r->midiPort].outRoutes()->push_back(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::TRACK_ROUTE:
                     case Route::JACK_ROUTE:
@@ -350,7 +367,8 @@ void PendingOperationItem::executeRTStage()
                   {
                     case Route::MIDI_PORT_ROUTE:  {
                       Route src(_track, r->channel);
-                      MusEGlobal::midiPorts[r->midiPort].inRoutes()->push_back(src);  }
+                      MusEGlobal::midiPorts[r->midiPort].inRoutes()->push_back(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::TRACK_ROUTE:
                     case Route::JACK_ROUTE:
@@ -370,7 +388,8 @@ void PendingOperationItem::executeRTStage()
                     case Route::TRACK_ROUTE: {
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->outRoutes()->push_back(src);  }
+                      r->track->outRoutes()->push_back(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
@@ -380,9 +399,15 @@ void PendingOperationItem::executeRTStage()
                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
                   // Update this track's aux ref count.
                   if(r->track->auxRefCount())
+                  {
                     _track->updateAuxRoute(r->track->auxRefCount(), NULL);
+                    flags |= SC_AUX;
+                  }
                   else if(r->track->type() == Track::AUDIO_AUX)
+                  {
                     _track->updateAuxRoute(1, NULL);
+                    flags |= SC_AUX;
+                  }
             }
             // Add other tracks' input routes from this track
             rl = _track->outRoutes();
@@ -393,7 +418,8 @@ void PendingOperationItem::executeRTStage()
                     case Route::TRACK_ROUTE: {
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->inRoutes()->push_back(src);  }
+                      r->track->inRoutes()->push_back(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
@@ -403,9 +429,15 @@ void PendingOperationItem::executeRTStage()
                   // Is this track an Aux Track or else does it have Aux Tracks routed to it?
                   // Update the other track's aux ref count and all tracks it is connected to.
                   if(_track->auxRefCount())
+                  {
                     r->track->updateAuxRoute(_track->auxRefCount(), NULL);
+                    flags |= SC_AUX;
+                  }
                   else if(_track->type() == Track::AUDIO_AUX)
+                  {
                     r->track->updateAuxRoute(1, NULL);
+                    flags |= SC_AUX;
+                  }
             }      
       }
       chainTrackParts(_track);
@@ -458,17 +490,21 @@ void PendingOperationItem::executeRTStage()
                     break;
               default:
                     fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack: Unknown track type %d\n", _track->type());
-                    return;
+                    return flags;
         }
       }
       _track_list->erase(_track);
+      flags |= SC_TRACK_REMOVED;
 
       // Remove routes:
       if(_track->type() == Track::AUDIO_OUTPUT) 
       {
             // Clear the track's jack ports
             for(int ch = 0; ch < _track->channels(); ++ch)
+            {
               ((AudioOutput*)_track)->setJackPort(ch, 0);
+              flags |= SC_ROUTE;
+            }
             
             // Clear the track's output routes' jack ports
             RouteList* orl = _track->outRoutes();
@@ -477,13 +513,17 @@ void PendingOperationItem::executeRTStage()
               if(r->type != Route::JACK_ROUTE)
                 continue;
               r->jackPort = 0;
+              flags |= SC_ROUTE;
             }
       }
       else if(_track->type() == Track::AUDIO_INPUT) 
       {
             // Clear the track's jack ports
             for(int ch = 0; ch < _track->channels(); ++ch)
+            {
               ((AudioInput*)_track)->setJackPort(ch, 0);
+              flags |= SC_ROUTE;
+            }
             
             // Clear the track's input routes' jack ports
             RouteList* irl = _track->inRoutes();
@@ -492,6 +532,7 @@ void PendingOperationItem::executeRTStage()
               if(r->type != Route::JACK_ROUTE)
                 continue;
               r->jackPort = 0;
+              flags |= SC_ROUTE;
             }
       }
       
@@ -505,7 +546,8 @@ void PendingOperationItem::executeRTStage()
                   {
                     case Route::MIDI_PORT_ROUTE:  {
                       Route src(_track, r->channel);
-                      MusEGlobal::midiPorts[r->midiPort].outRoutes()->removeRoute(src);  }
+                      MusEGlobal::midiPorts[r->midiPort].outRoutes()->removeRoute(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::TRACK_ROUTE:
                     case Route::JACK_ROUTE:
@@ -521,7 +563,8 @@ void PendingOperationItem::executeRTStage()
                   {
                     case Route::MIDI_PORT_ROUTE:  {
                       Route src(_track, r->channel);
-                      MusEGlobal::midiPorts[r->midiPort].inRoutes()->removeRoute(src);  }
+                      MusEGlobal::midiPorts[r->midiPort].inRoutes()->removeRoute(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::TRACK_ROUTE:
                     case Route::JACK_ROUTE:
@@ -541,7 +584,8 @@ void PendingOperationItem::executeRTStage()
                     case Route::TRACK_ROUTE: {
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->outRoutes()->removeRoute(src);  }
+                      r->track->outRoutes()->removeRoute(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
@@ -551,9 +595,15 @@ void PendingOperationItem::executeRTStage()
                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
                   // Update this track's aux ref count.
                   if(r->track->auxRefCount())
+                  {
                     _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
+                    flags |= SC_AUX;
+                  }
                   else if(r->track->type() == Track::AUDIO_AUX)
+                  {
                     _track->updateAuxRoute(-1, NULL);
+                    flags |= SC_AUX;
+                  }
             }
             // Remove other tracks' input routes from this track
             rl = _track->outRoutes();
@@ -564,7 +614,8 @@ void PendingOperationItem::executeRTStage()
                     case Route::TRACK_ROUTE: {
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->inRoutes()->removeRoute(src);  }
+                      r->track->inRoutes()->removeRoute(src);
+                      flags |= SC_ROUTE; }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
@@ -574,9 +625,15 @@ void PendingOperationItem::executeRTStage()
                   // Is this track an Aux Track or else does it have Aux Tracks routed to it?
                   // Update the other track's aux ref count and all tracks it is connected to.
                   if(_track->auxRefCount())
+                  {
                     r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
+                    flags |= SC_AUX;
+                  }
                   else if(_track->type() == Track::AUDIO_AUX)
+                  {
                     r->track->updateAuxRoute(-1, NULL);
+                    flags |= SC_AUX;
+                  }
             }      
       }
 
@@ -602,13 +659,14 @@ void PendingOperationItem::executeRTStage()
       if(_from_idx >= sz)
       {
         fprintf(stderr, "MusE error: PendingOperationItem::executeRTStage MoveTrack from index out of range:%d\n", _from_idx);
-        return;
+        return flags;
       }
       iTrack fromIt = _track_list->begin() + _from_idx;
       Track* track = *fromIt;
       _track_list->erase(fromIt);
       iTrack toIt = (_to_idx >= sz) ? _track_list->end() : _track_list->begin() + _to_idx;
       _track_list->insert(toIt, track);
+      flags |= SC_TRACK_MODIFIED;
     }
     break;
     
@@ -617,6 +675,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTrackName track:%p new_val:%s\n", _track, _name->toLocal8Bit().data());
 #endif      
       _track->setName(*_name);
+      flags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
     break;
     
 
@@ -632,6 +691,7 @@ void PendingOperationItem::executeRTStage()
         if(i->cp == _part) 
           i->is_deleted = false;
       }
+      flags |= SC_PART_INSERTED;
     break;
     
     case DeletePart:
@@ -648,6 +708,7 @@ void PendingOperationItem::executeRTStage()
         if(i->cp == p) 
           i->is_deleted = true;
       }
+      flags |= SC_PART_REMOVED;
     }
     break;
 
@@ -657,6 +718,7 @@ void PendingOperationItem::executeRTStage()
 #endif      
       //_part->type() == Pos::FRAMES ? _part->setLenFrame(_intA) : _part->setLenTick(_intA);
       _part->setLenValue(_intA);
+      flags |= SC_PART_MODIFIED;
     break;
     
     case MovePart:
@@ -666,12 +728,17 @@ void PendingOperationItem::executeRTStage()
       if(_track)
       {
         if(_part->track() && _iPart != _part->track()->parts()->end())
+        {
           _part->track()->parts()->erase(_iPart);
+          flags |= SC_PART_REMOVED;
+        }
         _part->setTrack(_track);
         _track->parts()->add(_part);
+        flags |= SC_PART_INSERTED;
       }
       //_part->setTick(_intA);
       _part->setPosValue(_intA);
+      flags |= SC_PART_MODIFIED;
     break;
 
     case ModifyPartName:
@@ -679,6 +746,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
 #endif      
       _part->setName(*_name);
+      flags |= SC_PART_MODIFIED;
     break;
     
     
@@ -692,7 +760,9 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddEvent post:   ");
       _ev.dump();
 #endif      
+      flags |= SC_EVENT_INSERTED;
     break;
+    
     case DeleteEvent:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteEvent pre:    ");
@@ -703,6 +773,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteEvent post:   ");
       _ev.dump();
 #endif      
+      flags |= SC_EVENT_REMOVED;
     break;
     
     
@@ -711,12 +782,14 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlValList: mcvll:%p mcvl:%p chan:%d\n", _mcvll, _mcvl, _intA);
 #endif      
       _mcvll->add(_intA, _mcvl);
+      flags |= SC_MIDI_CONTROLLER_ADD;
     break;
     case AddMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%d val:%d\n", _mcvl, _part, _intA, _intB);
 #endif      
       _mcvl->insert(std::pair<const int, MidiCtrlVal> (_intA, MidiCtrlVal(_part, _intB))); // FIXME FINDMICHJETZT XTicks!!
+      flags |= SC_MIDI_CONTROLLER;
     break;
     case DeleteMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -724,6 +797,7 @@ void PendingOperationItem::executeRTStage()
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
 #endif      
       _mcvl->erase(_imcv);
+      flags |= SC_MIDI_CONTROLLER;
     break;
     case ModifyMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -731,6 +805,7 @@ void PendingOperationItem::executeRTStage()
                        _imcv->second.part, _imcv->second.val, _intA);
 #endif      
       _imcv->second.val = _intA;
+      flags |= SC_MIDI_CONTROLLER;
     break;
     
     
@@ -740,6 +815,7 @@ void PendingOperationItem::executeRTStage()
                        _tempo_list, _tempo_event, _tempo_event->tempo, _tempo_event->tick);
 #endif      
       _tempo_list->add(_intA, _tempo_event, false);  // Defer normalize until end of stage 2.
+      flags |= SC_TEMPO;
     break;
     
     case DeleteTempo:
@@ -749,6 +825,7 @@ void PendingOperationItem::executeRTStage()
                          _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo);
 #endif      
         _tempo_list->del(_iTEvent, false); // Defer normalize until end of stage 2.
+        flags |= SC_TEMPO;
       }
     break;
     
@@ -758,6 +835,7 @@ void PendingOperationItem::executeRTStage()
                        _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
 #endif      
       _iTEvent->second->tempo = _intA;
+      flags |= SC_TEMPO;
     break;
     
     case SetGlobalTempo:
@@ -765,6 +843,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage SetGlobalTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
 #endif      
       _tempo_list->setGlobalTempo(_intA);
+      flags |= SC_TEMPO;
     break;
 
     
@@ -774,6 +853,7 @@ void PendingOperationItem::executeRTStage()
                        _sig_list, _sig_event, _sig_event->sig.z, _sig_event->sig.n, _sig_event->tick);
 #endif      
       _sig_list->add(_intA, _sig_event, false);  // Defer normalize until end of stage 2.
+      flags |= SC_SIG;
     break;
     
     case DeleteSig:
@@ -783,6 +863,7 @@ void PendingOperationItem::executeRTStage()
                          _sig_list, _iSigEvent->second, _iSigEvent->second->tick,  _iSigEvent->second->sig.z, _iSigEvent->second->sig.n);
 #endif      
         _sig_list->del(_iSigEvent, false); // Defer normalize until end of stage 2.
+        flags |= SC_SIG;
       }
     break;
     
@@ -793,6 +874,7 @@ void PendingOperationItem::executeRTStage()
 #endif      
       _iSigEvent->second->sig.z = _intA;
       _iSigEvent->second->sig.n = _intB;
+      flags |= SC_SIG;
     break;
     
     
@@ -801,6 +883,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddKey: keylist:%p key:%d tick:%d\n", _key_list, _intB, _intA);
 #endif      
       _key_list->add(KeyEvent(key_enum(_intB), _intA)); 
+      flags |= SC_KEY;
     break;
     
     case DeleteKey:
@@ -810,6 +893,7 @@ void PendingOperationItem::executeRTStage()
                          _key_list, _iKeyEvent->second.key, _iKeyEvent->second.tick);
 #endif      
         _key_list->del(_iKeyEvent);
+        flags |= SC_KEY;
       }
     break;
     
@@ -819,6 +903,7 @@ void PendingOperationItem::executeRTStage()
                        _key_list, _iKeyEvent->second.key, _intA, _iKeyEvent->second.tick);
 #endif      
       _iKeyEvent->second.key = key_enum(_intA);
+      flags |= SC_KEY;
     break;
 
     
@@ -827,6 +912,7 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifySongLength: len:%d\n", _intA);
 #endif      
       MusEGlobal::song->setLen(_intA, false); // false = Do not emit update signals here !
+      flags |= SC_EVERYTHING;
     break;
     
     case Uninitialized:
@@ -836,14 +922,16 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
     break;
   }
+  return flags;
 }
 
-void PendingOperationItem::executeNonRTStage()
+SongChangedFlags_t PendingOperationItem::executeNonRTStage()
 {
+  SongChangedFlags_t flags = 0;
   switch(_type)
   {
     case AddRoute:
-     MusEGlobal::song->connectJackRoutes(_src_route, _dst_route);
+      MusEGlobal::song->connectJackRoutes(_src_route, _dst_route);
     break;
     
     case DeleteRoute:
@@ -881,28 +969,32 @@ void PendingOperationItem::executeNonRTStage()
     default:
     break;
   }
+  return flags;
 }
 
-void PendingOperationList::executeRTStage()
+SongChangedFlags_t PendingOperationList::executeRTStage()
 {
 #ifdef _PENDING_OPS_DEBUG_
   fprintf(stderr, "PendingOperationList::executeRTStage executing...\n");
 #endif      
   for(iPendingOperation ip = begin(); ip != end(); ++ip)
-    ip->executeRTStage();
+    _sc_flags |= ip->executeRTStage();
+  return _sc_flags;
 }
 
-void PendingOperationList::executeNonRTStage()
+SongChangedFlags_t PendingOperationList::executeNonRTStage()
 {
 #ifdef _PENDING_OPS_DEBUG_
   fprintf(stderr, "PendingOperationList::executeNonRTStage executing...\n");
 #endif      
   for(iPendingOperation ip = begin(); ip != end(); ++ip)
-    ip->executeNonRTStage();
+    _sc_flags |= ip->executeNonRTStage();
+  return _sc_flags;
 }
 
 void PendingOperationList::clear()
 {
+  _sc_flags = 0;
   _map.clear();
   std::list<PendingOperationItem>::clear();  
 #ifdef _PENDING_OPS_DEBUG_

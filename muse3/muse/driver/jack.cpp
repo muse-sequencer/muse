@@ -941,7 +941,7 @@ void JackAudioDevice::graphChanged()
   
   if(!operations.empty())
   {
-    MusEGlobal::audio->msgExecutePendingOperations(operations);
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
     operations.clear();
   }
 }

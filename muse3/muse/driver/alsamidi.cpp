@@ -1368,7 +1368,7 @@ void alsaScanMidiPorts()
             //{
             //  if(!idling)
             //    MusEGlobal::audio->msgIdle(true);
-            //  //MusEGlobal::audio->msgExecutePendingOperations(operations);
+            //  //MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             //  // Execute directly both stages
             //  operations.executeNonRTStage();
             //  operations.executeRTStage();
