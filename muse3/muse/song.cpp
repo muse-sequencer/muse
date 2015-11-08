@@ -1637,12 +1637,13 @@ void Song::beat()
       
       //First: update cpu load toolbar
 
-      QList<QLabel *> jackCpuLoadLabelList = MusEGlobal::muse->findChildren<QLabel *>("JackCpuLoadToolbarLabel");
-      QList<QLabel *>::const_iterator it;
-      for(it = jackCpuLoadLabelList.begin(); it != jackCpuLoadLabelList.end(); ++it)
+      QList<QToolButton *> cpuLoadActionList = MusEGlobal::muse->findChildren<QToolButton *>("CpuLoadToolbarButton");
+      QList<QToolButton *>::const_iterator it;
+      float fCpuLoad = MusEGlobal::muse->getCPULoad();
+      for(it = cpuLoadActionList.begin(); it != cpuLoadActionList.end(); ++it)
       {
          //(*it)->setText(QString("<b>CPU (%): </b>") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
-         (*it)->setText(QString("<b>CPU (%)</b>: ") + QString("%1").arg((double)MusEGlobal::muse->getCPULoad(), 4, 'f', 1, QChar('0')));
+         (*it)->setText(QString("CPU: ") + QString("%1").arg((double)fCpuLoad, 4, 'f', 1, QChar('0')) + QString(" %"));
       }
 
       // Keep the sync detectors running... 

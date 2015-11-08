@@ -35,6 +35,8 @@ class QString;
 class QAction;
 class QActionGroup;
 class QTimer;
+class QToolButton;
+
 
 namespace MusEGui {
 class MusE;
@@ -153,6 +155,7 @@ extern QAction* punchoutAction;
 extern QAction* recordAction;
 extern QAction* panicAction;
 extern QAction* metronomeAction;
+extern QAction* cpuLoadAction;
 
 extern MusEGui::MusE* muse;
 

@@ -170,6 +170,8 @@ class MusE : public QMainWindow
 
       QFileInfo project;
       QToolBar *tools;
+      QToolBar *cpuLoadToolbar;
+
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
 

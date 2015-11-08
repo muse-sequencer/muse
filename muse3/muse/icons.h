@@ -284,6 +284,8 @@ extern QPixmap* sawIcon;
 extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
 
+extern QIcon* cpuIcon;
+
 } // namespace MusEGui
 
 #endif

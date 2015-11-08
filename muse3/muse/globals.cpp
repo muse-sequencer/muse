@@ -29,6 +29,7 @@
 #include <QActionGroup>
 #include <QDir>
 #include <QFileInfo>
+#include <QToolButton>
 
 #include "globals.h"
 #include "config.h"
@@ -250,6 +251,7 @@ QAction* punchoutAction;
 QAction* recordAction;
 QAction* panicAction;
 QAction* metronomeAction;
+QAction* cpuLoadAction;
 
 MusEGui::MusE* muse = 0;
 
