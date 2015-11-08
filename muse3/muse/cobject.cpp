@@ -159,6 +159,14 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	connect(sw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
 	connect(sw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+
+ /* unconnect parent if window is not mdi */
+ /* to make editor windows not stay on top */
+ if(!isMdiWin())
+ {
+    setParent(0);
+ }
+
 }
 
 
