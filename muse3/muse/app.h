@@ -30,6 +30,7 @@
 
 #include <QFileInfo>
 #include <list>
+#include <time.h>
 
 class QCloseEvent;
 class QMainWindow;
@@ -379,7 +380,7 @@ class MusE : public QMainWindow
 
    private:
       timeval lastCpuTime;
-      timeval lastSysTime;
+      timespec lastSysTime;
       float fAvrCpuLoad;
       int avrCpuLoadCounter;
       float fCurCpuLoad;
