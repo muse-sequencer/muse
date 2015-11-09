@@ -1016,7 +1016,7 @@ bool SimpleSynth::init(const char* name)
    SS_TRACE_IN
          SWITCH_SYNTH_STATE(SS_INITIALIZING);
    gui = new SimpleSynthGui();
-   gui->show();
+   //gui->show();
    gui->setWindowTitle(name);
    SWITCH_SYNTH_STATE(SS_RUNNING);
    SS_TRACE_OUT
