@@ -151,7 +151,7 @@ SimpleSynth::SimpleSynth(int sr)
       channels[i].sample = 0;
       channels[i].originalSample = 0;
       channels[i].playoffset = 0;
-      channels[i].noteoff_ignore = false;
+      channels[i].noteoff_ignore = true /* false */; //ignore note-offs by default (good for drum editors with fixed note lengths)
       channels[i].volume = (double) (100.0/SS_CHANNEL_VOLUME_QUOT );
       channels[i].volume_ctrlval = 100;
       channels[i].pan = 64;
