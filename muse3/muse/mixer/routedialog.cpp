@@ -929,7 +929,21 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             const QRect ico_rect = st->subElementRect(QStyle::SE_ItemViewItemDecoration, &option);
             const QRect text_rect = st->subElementRect(QStyle::SE_ItemViewItemText, &option);
 
-            // Draw the background.
+            // Draw the row background (alternating colours etc.)
+            QPalette::ColorGroup cg = (/* widget ? widget->isEnabled() : */ (option.state & QStyle::State_Enabled)) ?
+                                      QPalette::Normal : QPalette::Disabled;
+            if(cg == QPalette::Normal && !(option.state & QStyle::State_Active))
+              cg = QPalette::Inactive;
+            if((option.state & QStyle::State_Selected) && st->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, &option /*, widget*/))
+              painter->fillRect(option.rect, option.palette.brush(cg, QPalette::Highlight));
+            //else if(option.features & QStyleOptionViewItem::Alternate)
+            // Hm, something else draws the alternating colours, no control over it here. 
+            // Disabled it in the UI so it does not interfere here.
+            //else if(treeWidget()->alternatingRowColors() && (index.row() & 0x01))
+            else if((index.row() & 0x01))
+              painter->fillRect(option.rect, option.palette.brush(cg, QPalette::AlternateBase));
+            
+            // Draw the item background.
             st->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter);
             
             // Draw the check mark
@@ -1067,6 +1081,8 @@ QSize RouteTreeWidgetItem::getSizeHint(int col, int col_width) const
         break;
         
         case NormalItem:
+        break;
+        
         case CategoryItem:
         case RouteItem:
         {
@@ -1079,8 +1095,7 @@ QSize RouteTreeWidgetItem::getSizeHint(int col, int col_width) const
             QRect r = st->itemTextRect(treeWidget()->fontMetrics(), QRect(0, 0, col_width, 32767), 
                                        textAlignment(RouteDialog::ROUTE_NAME_COL) | Qt::TextWordWrap | Qt::TextWrapAnywhere,
                                        !isDisabled(), text(RouteDialog::ROUTE_NAME_COL));
-            
-            return QSize(r.width(), r.height());
+            return r.size();
           }
         }
         break;
@@ -2455,12 +2470,15 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //           option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(),
 //           option.showDecorationSelected);  // REMOVE Tim.
 
-  QStyleOptionViewItem vopt(option);
-  initStyleOption(&vopt, index);
-  
   RouteTreeWidgetItem* item = _tree->itemFromIndex(index);
-  if(item && item->paint(painter, vopt, index))
-    return;
+  if(item)
+  {
+    QStyleOptionViewItem vopt(option);
+    initStyleOption(&vopt, index);
+  
+    if(item->paint(painter, vopt, index))
+      return;
+  }
   QStyledItemDelegate::paint(painter, option, index);
 }  
 
@@ -3025,11 +3043,13 @@ QSize RoutingItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QM
   
   RouteTreeWidgetItem* item = _tree->itemFromIndex(index);
   if(item)
-  { 
-    const QSize sz = item->getSizeHint(option, index);
+  {
+    QStyleOptionViewItem vopt(option);
+    initStyleOption(&vopt, index);
+    
+    const QSize sz = item->getSizeHint(vopt, index);
     if(sz.isValid())
       return sz;
-    //return item->getSizeHint(option, index);
   }
   return QStyledItemDelegate::sizeHint(option, index);
 }  
@@ -6163,13 +6183,13 @@ void RouteDialog::addItems()
             else
             {
               //QPalette pal(QColor(Qt::red));
-              if(routeList->alternatingRowColors())
-              {
-                const int idx = routeList->indexOfTopLevelItem(routesItem);
-                //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
-                br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
-              }
-              else
+//               if(routeList->alternatingRowColors())
+//               {
+//                 const int idx = routeList->indexOfTopLevelItem(routesItem);
+//                 //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
+//                 br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
+//               }
+//               else
                 br = QBrush(Qt::red);
               
               routesItem->setBackground(ROUTE_SRC_COL, br);
@@ -6429,13 +6449,13 @@ void RouteDialog::addItems()
             else
             {
               //QPalette pal(QColor(Qt::red));
-              if(routeList->alternatingRowColors())
-              {
-                const int idx = routeList->indexOfTopLevelItem(routesItem);
-                //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
-                br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
-              }
-              else
+//               if(routeList->alternatingRowColors())
+//               {
+//                 const int idx = routeList->indexOfTopLevelItem(routesItem);
+//                 //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
+//                 br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
+//               }
+//               else
                 br = QBrush(Qt::red);
               
               routesItem->setBackground(ROUTE_DST_COL, br);
