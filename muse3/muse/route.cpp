@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <QWidget>
+#include <QPixmap>
 
 #include "song.h"
 #include "route.h"
@@ -35,6 +36,7 @@
 #include "mididev.h"
 #include "midiport.h"
 #include "operations.h"
+#include "icons.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "libs/strntcpy.h"
@@ -674,6 +676,34 @@ static QString track2name(const Track* n)
       return n->name();
       }
 
+//---------------------------------------------------------
+//   icon
+//---------------------------------------------------------
+
+QPixmap* Route::icon(bool isSource, bool isMidi) const
+{
+  switch(type)
+  {
+    case TRACK_ROUTE:
+      if(track)
+        return track->icon();
+    break;  
+    
+    case JACK_ROUTE:
+      if(isMidi)
+        return isSource ? MusEGui::routesMidiInIcon : MusEGui::routesMidiOutIcon;
+      else
+        return isSource ? MusEGui::routesInIcon : MusEGui::routesOutIcon;
+      
+    case MIDI_DEVICE_ROUTE:
+    break;
+    
+    case MIDI_PORT_ROUTE:
+      return MusEGui::settings_midiport_softsynthsIcon;
+  }
+  return 0;
+}
+      
 //---------------------------------------------------------
 //   name
 //    create string name representation for audio node

@@ -331,37 +331,8 @@ void TList::paint(const QRect& r)
                               {
                               if (header->isSectionHidden(COL_CLASS))
                                 break;
-                              const QPixmap* pm = 0;
-                              switch(type) {
-                                    case MusECore::Track::MIDI:
-                                          pm = addtrack_addmiditrackIcon;
-                                          break;
-                                    case MusECore::Track::NEW_DRUM:
-                                          pm = addtrack_newDrumtrackIcon;
-                                          break;
-                                    case MusECore::Track::DRUM:
-                                          pm = addtrack_drumtrackIcon;
-                                          break;
-                                    case MusECore::Track::WAVE:
-                                          pm = addtrack_wavetrackIcon;
-                                          break;
-                                    case MusECore::Track::AUDIO_OUTPUT:
-                                          pm = addtrack_audiooutputIcon;
-                                          break;
-                                    case MusECore::Track::AUDIO_INPUT:
-                                          pm = addtrack_audioinputIcon;
-                                          break;
-                                    case MusECore::Track::AUDIO_GROUP:
-                                          pm = addtrack_audiogroupIcon;
-                                          break;
-                                    case MusECore::Track::AUDIO_AUX:
-                                          pm = addtrack_auxsendIcon;
-                                          break;
-                                    case MusECore::Track::AUDIO_SOFTSYNTH:
-                                          pm = synthIcon;
-                                          break;
-                                    }
-                              drawCenteredPixmap(p, pm, r);
+                              if(const QPixmap* pm = MusECore::Track::trackTypeIcon(type))
+                                drawCenteredPixmap(p, pm, r);
                               }
                               break;
                         case COL_MUTE:

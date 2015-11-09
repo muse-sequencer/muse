@@ -224,7 +224,7 @@ void AudioTrack::updateInternalSoloStates()
         ir->track->updateInternalSoloStates();
 #ifndef _USE_SIMPLIFIED_SOLO_CHAIN_
       else  
-      // Support Midi Port -> Audio Input solo chains. p4.0.37 Tim.
+      // Support Midi Port -> Audio Input solo chains.
       if(ir->type == Route::MIDI_PORT_ROUTE)    
       {
         const MidiTrackList* ml = MusEGlobal::song->midis();
@@ -268,33 +268,31 @@ void MidiTrack::updateSoloStates(bool noDec)
   _tmpSoloChainNoDec = noDec;
   updateSoloState();
 
-#ifdef _USE_SIMPLIFIED_SOLO_CHAIN_
-    // Support Midi Track to Audio Input track soloing chain routes.
-    // Support omni routes only, because if channels are supported, the graphical router becomes more complicated.
-    const RouteList* rl = outRoutes();
-    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-    {
-      if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && ir->channel == -1)
-        ir->track->updateInternalSoloStates();
-    }
-#else  
   if(outPort() >= 0)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[outPort()];
     MidiDevice *md = mp->device();
     if(md && md->isSynti())
       ((SynthI*)md)->updateInternalSoloStates();
-      
-    // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
-    const int chbits = 1 << outChannel();
-    const RouteList* rl = mp->outRoutes();
-    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-    {
-      if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && (ir->channel & chbits) )
-      {
-        ir->track->updateInternalSoloStates();
-      }  
-    }
+  }
+  
+#ifdef _USE_SIMPLIFIED_SOLO_CHAIN_
+  // Support Midi Track to Audio Input track soloing chain routes.
+  // Support omni routes only, because if channels are supported, the graphical router becomes more complicated.
+  const RouteList* rl = outRoutes();
+  for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && ir->channel == -1)
+      ir->track->updateInternalSoloStates();
+  }
+#else  
+  // Support Midi Port -> Audio Input solo chains.
+  const int chbits = 1 << outChannel();
+  const RouteList* rl = mp->outRoutes();
+  for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+  {
+    if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && (ir->channel & chbits) )
+      ir->track->updateInternalSoloStates();
   }
 #endif
 
@@ -329,28 +327,27 @@ void AudioTrack::updateSoloStates(bool noDec)
     }
   }
   
+  const RouteList* rl = inRoutes();
+  for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
   {
-    const RouteList* rl = inRoutes();
-    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-    {
-      if(ir->type == Route::TRACK_ROUTE)
-        ir->track->updateInternalSoloStates();
+    if(ir->type == Route::TRACK_ROUTE)
+      ir->track->updateInternalSoloStates();
 #ifndef _USE_SIMPLIFIED_SOLO_CHAIN_
-      else  
-      // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
-      if(ir->type == Route::MIDI_PORT_ROUTE)    
+    else  
+    // Support Midi Port -> Audio Input solo chains.
+    if(ir->type == Route::MIDI_PORT_ROUTE)    
+    {
+      const MidiTrackList* ml = MusEGlobal::song->midis();
+      for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
       {
-        const MidiTrackList* ml = MusEGlobal::song->midis();
-        for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
-        {
-          MidiTrack* mt = *im;
-          if(mt->outPort() == ir->midiPort && ((1 << mt->outChannel()) & ir->channel) )
-            mt->updateInternalSoloStates();
-        }
+        MidiTrack* mt = *im;
+        if(mt->outPort() == ir->midiPort && ((1 << mt->outChannel()) & ir->channel) )
+          mt->updateInternalSoloStates();
       }
-#endif            
     }
-  }  
+#endif            
+  }
+  
   _tmpSoloChainDoIns = false;
   {
     const RouteList* rl = outRoutes();

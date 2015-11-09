@@ -27,6 +27,7 @@
 #include <QVector>
 #include <QList>
 #include <QPainter>
+#include <QPalette>
 #include <Qt>
 #include <QMouseEvent>
 #include <QRect>
@@ -35,6 +36,7 @@
 #include <QString>
 #include <QHeaderView>
 #include <QLayout>
+#include <QFlags>
 
 #include "routedialog.h"
 #include "globaldefs.h"
@@ -45,6 +47,7 @@
 #include "globaldefs.h"
 #include "app.h"
 #include "operations.h"
+#include "icons.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -916,27 +919,73 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
         case CategoryItem:
         case RouteItem:
         {
-          QStyle* st = treeWidget()->style();
-          if(st)
+          if(const QStyle* st = treeWidget()->style())
           {
+            st = st->proxy();
             painter->save();
-            if(isSelected())
-              painter->fillRect(option.rect, treeWidget()->palette().highlight());
-            else if(type() == CategoryItem)
-              painter->fillRect(option.rect, treeWidget()->palette().mid());
-            else if(index.row() & 0x01)
-              painter->fillRect(option.rect, treeWidget()->palette().alternateBase());
+            painter->setClipRect(option.rect);
+            
+            const QRect cb_rect = st->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option);
+            const QRect ico_rect = st->subElementRect(QStyle::SE_ItemViewItemDecoration, &option);
+            const QRect text_rect = st->subElementRect(QStyle::SE_ItemViewItemText, &option);
 
-            painter->setFont(font(RouteDialog::ROUTE_NAME_COL));
+            // Draw the background.
+            st->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter);
+            
+            // Draw the check mark
+            if(option.features & QStyleOptionViewItem::HasCheckIndicator) 
+            {
+              QStyleOptionViewItem opt(option);
+              opt.rect = cb_rect;
+              opt.state = opt.state & ~QStyle::State_HasFocus;
+              switch(option.checkState) 
+              {
+                case Qt::Unchecked:
+                    opt.state |= QStyle::State_Off;
+                break;
+                case Qt::PartiallyChecked:
+                    opt.state |= QStyle::State_NoChange;
+                break;
+                case Qt::Checked:
+                    opt.state |= QStyle::State_On;
+                break;
+              }
+              st->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter);
+            }
+            
+            // Draw the icon.
+            QIcon::Mode mode = QIcon::Normal;
+            if(!(option.state & QStyle::State_Enabled))
+              mode = QIcon::Disabled;
+            else if(option.state & QStyle::State_Selected)
+              mode = QIcon::Selected;
+            QIcon::State state = option.state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+            option.icon.paint(painter, ico_rect, option.decorationAlignment, mode, state);
+            
+            // Draw the text.
             st->drawItemText(painter, 
-                             option.rect, 
-                             textAlignment(RouteDialog::ROUTE_NAME_COL) | Qt::TextWordWrap | Qt::TextWrapAnywhere, 
-                             treeWidget()->palette(), 
-                             !isDisabled(), 
-                             text(RouteDialog::ROUTE_NAME_COL),
-                             isSelected() ? QPalette::HighlightedText : QPalette::NoRole
-                             //QPalette::ColorRole textRole = QPalette::NoRole);
-                             );
+                              text_rect, 
+                              textAlignment(RouteDialog::ROUTE_NAME_COL) | Qt::TextWordWrap | Qt::TextWrapAnywhere, 
+                              treeWidget()->palette(), 
+                              !isDisabled(), 
+                              text(RouteDialog::ROUTE_NAME_COL),
+                              isSelected() ? QPalette::HighlightedText : QPalette::Text
+                              );
+            
+            // Draw the focus.
+            if(option.state & QStyle::State_HasFocus)
+            {
+              QStyleOptionFocusRect o;
+              o.QStyleOption::operator=(option);
+              o.rect = st->subElementRect(QStyle::SE_ItemViewItemFocusRect, &option);
+              o.state |= QStyle::State_KeyboardFocusChange;
+              o.state |= QStyle::State_Item;
+              QPalette::ColorGroup cg = 
+                                  (option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled;
+              o.backgroundColor = option.palette.color(cg, 
+                                  (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Window);
+              st->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
+            }
             
             painter->restore();
             return true;
@@ -2406,8 +2455,11 @@ void RoutingItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //           option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(),
 //           option.showDecorationSelected);  // REMOVE Tim.
 
+  QStyleOptionViewItem vopt(option);
+  initStyleOption(&vopt, index);
+  
   RouteTreeWidgetItem* item = _tree->itemFromIndex(index);
-  if(item && item->paint(painter, option, index))
+  if(item && item->paint(painter, vopt, index))
     return;
   QStyledItemDelegate::paint(painter, option, index);
 }  
@@ -4910,6 +4962,7 @@ void RouteDialog::addItems()
             dstCatItem->setFont(ROUTE_NAME_COL, fnt);
             dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
             dstCatItem->setExpanded(true);
+            dstCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
             newDstList->blockSignals(false);
           }
           newDstList->blockSignals(true);
@@ -4920,6 +4973,8 @@ void RouteDialog::addItems()
           newDstList->blockSignals(false);
           //dstCatItem->setExpanded(true); // REMOVE Tim. For test only.
         }
+        if(QPixmap* r_pm = r.icon(false, false))
+          item->setIcon(ROUTE_NAME_COL, QIcon(*r_pm));
         
 //         if(track->isMidiTrack())
 //           if(rcaps._trackChannels._inChannels != 0)
@@ -5128,6 +5183,10 @@ void RouteDialog::addItems()
           routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
           routeList->blockSignals(false);
         }
+        if(QPixmap* src_pm = src.icon(true, false))
+          routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+        if(QPixmap* dst_pm = dst.icon(false, false))
+          routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
       }
 //       else if(track->type() != MusECore::Track::AUDIO_AUX)
 //       {
@@ -5208,6 +5267,7 @@ void RouteDialog::addItems()
             srcCatItem->setFont(ROUTE_NAME_COL, fnt);
             srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
             srcCatItem->setExpanded(true);
+            srcCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
             newSrcList->blockSignals(false);
           }
           newSrcList->blockSignals(true);
@@ -5217,6 +5277,8 @@ void RouteDialog::addItems()
           item->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
+        if(QPixmap* r_pm = r.icon(true, false))
+          item->setIcon(ROUTE_NAME_COL, QIcon(*r_pm));
         
 //         if(track->isMidiTrack())
 //           if(rcaps._trackChannels._outChannels != 0
@@ -5478,6 +5540,10 @@ void RouteDialog::addItems()
           routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
           routeList->blockSignals(false);
         }
+        if(QPixmap* src_pm = src.icon(true, false))
+          routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+        if(QPixmap* dst_pm = dst.icon(false, false))
+          routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
       }
     }
   //}
@@ -5540,6 +5606,10 @@ void RouteDialog::addItems()
         routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
         routeList->blockSignals(false);
       }
+      if(QPixmap* src_pm = src.icon(true, true))
+        routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+      if(QPixmap* dst_pm = dst.icon(false, true))
+        routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
     }
 #endif  // _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
     
@@ -5576,6 +5646,8 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
+          dstCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*settings_midiport_softsynthsIcon));
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -5680,6 +5752,10 @@ void RouteDialog::addItems()
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
               routeList->blockSignals(false);
             }
+            if(QPixmap* src_pm = src.icon(true, true))
+              routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+            if(QPixmap* dst_pm = dst.icon(false, true))
+              routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
 //             if(!r->jackPort)
 //               routesItem->setBackground(ROUTE_SRC_COL, routesItem->background(ROUTE_SRC_COL).color().darker());
           }
@@ -5764,6 +5840,8 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
+          srcCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*settings_midiport_softsynthsIcon));
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -5872,6 +5950,10 @@ void RouteDialog::addItems()
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
               routeList->blockSignals(false);
             }
+            if(QPixmap* src_pm = src.icon(true, true))
+              routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+            if(QPixmap* dst_pm = dst.icon(false, true))
+              routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
 //             if(!r->jackPort)
 //               routesItem->setBackground(ROUTE_DST_COL, routesItem->background(ROUTE_DST_COL).color().darker());
           }
@@ -5977,6 +6059,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
+          dstCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -6058,8 +6141,40 @@ void RouteDialog::addItems()
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
               routeList->blockSignals(false);
             }
-            if(!r->jackPort)
-              routesItem->setBackground(ROUTE_SRC_COL, routesItem->background(ROUTE_SRC_COL).color().darker());
+            if(QPixmap* src_pm = src.icon(true, true))
+              routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+            if(QPixmap* dst_pm = dst.icon(false, true))
+              routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+
+            QBrush br;
+            if(r->jackPort)
+            {
+              if(routeList->alternatingRowColors())
+              {
+                const int idx = routeList->indexOfTopLevelItem(routesItem);
+                br = (idx != -1 && (idx & 0x01)) ? routeList->palette().alternateBase() : routeList->palette().base();
+              }
+              else
+                br = routeList->palette().base();
+              
+              routesItem->setBackground(ROUTE_SRC_COL, br);
+              routesItem->setForeground(ROUTE_SRC_COL, routeList->palette().windowText());
+            }
+            else
+            {
+              //QPalette pal(QColor(Qt::red));
+              if(routeList->alternatingRowColors())
+              {
+                const int idx = routeList->indexOfTopLevelItem(routesItem);
+                //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
+                br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
+              }
+              else
+                br = QBrush(Qt::red);
+              
+              routesItem->setBackground(ROUTE_SRC_COL, br);
+              //routesItem->setForeground(ROUTE_SRC_COL, pal.windowText());
+            }
           }
           break;
           
@@ -6182,6 +6297,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
+          srcCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -6291,8 +6407,40 @@ void RouteDialog::addItems()
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
               routeList->blockSignals(false);
             }
-            if(!r->jackPort)
-              routesItem->setBackground(ROUTE_DST_COL, routesItem->background(ROUTE_DST_COL).color().darker());
+            if(QPixmap* src_pm = src.icon(true, true))
+              routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
+            if(QPixmap* dst_pm = dst.icon(false, true))
+              routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+            
+            QBrush br;
+            if(r->jackPort)
+            {
+              if(routeList->alternatingRowColors())
+              {
+                const int idx = routeList->indexOfTopLevelItem(routesItem);
+                br = (idx != -1 && (idx & 0x01)) ? routeList->palette().alternateBase() : routeList->palette().base();
+              }
+              else
+                br = routeList->palette().base();
+              
+              routesItem->setBackground(ROUTE_DST_COL, br);
+              routesItem->setForeground(ROUTE_DST_COL, routeList->palette().windowText());
+            }
+            else
+            {
+              //QPalette pal(QColor(Qt::red));
+              if(routeList->alternatingRowColors())
+              {
+                const int idx = routeList->indexOfTopLevelItem(routesItem);
+                //br = (idx != -1 && (idx & 0x01)) ? pal.alternateBase() : pal.base();
+                br = (idx != -1 && (idx & 0x01)) ? QBrush(QColor(Qt::red).darker()) : QBrush(Qt::red);
+              }
+              else
+                br = QBrush(Qt::red);
+              
+              routesItem->setBackground(ROUTE_DST_COL, br);
+              //routesItem->setForeground(ROUTE_DST_COL, pal.windowText());
+            }
           }
           break;
           
@@ -6383,6 +6531,8 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
+          srcCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesInIcon));
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -6420,6 +6570,8 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
+          dstCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesOutIcon));
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -6429,6 +6581,8 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
+      const QIcon src_ico(*routesInIcon);
+      const QIcon dst_ico(*routesOutIcon);
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
       {
         const MusECore::Route& in_r = *i;
@@ -6449,6 +6603,8 @@ void RouteDialog::addItems()
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
             routeList->blockSignals(false);
           }
+          routesItem->setIcon(ROUTE_SRC_COL, src_ico);
+          routesItem->setIcon(ROUTE_DST_COL, dst_ico);
         }
       }
     }
@@ -6483,6 +6639,8 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
+          srcCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesMidiInIcon));
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -6520,6 +6678,8 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
+          dstCatItem->setBackground(ROUTE_NAME_COL, palette().mid());
+          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesMidiOutIcon));
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -6529,6 +6689,8 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
+      const QIcon src_ico(*routesMidiInIcon);
+      const QIcon dst_ico(*routesMidiOutIcon);
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
       {
         const MusECore::Route& in_r = *i;
@@ -6549,6 +6711,8 @@ void RouteDialog::addItems()
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
             routeList->blockSignals(false);
           }
+          routesItem->setIcon(ROUTE_SRC_COL, src_ico);
+          routesItem->setIcon(ROUTE_DST_COL, dst_ico);
         }
       }
     }

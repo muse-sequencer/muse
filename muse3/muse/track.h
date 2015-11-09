@@ -41,6 +41,8 @@
 #include "cleftypes.h"
 #include "controlfifo.h"
 
+class QPixmap;
+
 namespace MusECore {
 class Pipeline;
 class PluginI;
@@ -115,6 +117,8 @@ class Track {
       virtual void assign(const Track&, int flags);
       
       static const char* _cname[];
+      static QPixmap* trackTypeIcon(TrackType);
+      QPixmap* icon() const { return trackTypeIcon(type()); }
       
       QString comment() const         { return _comment; }
       void setComment(const QString& s) { _comment = s; }

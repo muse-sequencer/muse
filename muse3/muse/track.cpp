@@ -40,6 +40,7 @@
 #include "dssihost.h"
 #include "gconfig.h"
 #include "operations.h"
+#include "icons.h"
 #include <QMessageBox>
 
 // Undefine if and when multiple output routes are added to midi tracks.
@@ -308,6 +309,38 @@ void Track::internal_assign(const Track& t, int flags)
         _comment      = t.comment();
         _locked       = t.locked();
       }
+}
+
+//---------------------------------------------------------
+//   trackTypeIcon
+//   Static
+//---------------------------------------------------------
+
+QPixmap* Track::trackTypeIcon(TrackType type)
+{
+  switch(type) {
+        case MusECore::Track::MIDI:
+              return MusEGui::addtrack_addmiditrackIcon;
+        case MusECore::Track::NEW_DRUM:
+              return MusEGui::addtrack_newDrumtrackIcon;
+        case MusECore::Track::DRUM:
+              return MusEGui::addtrack_drumtrackIcon;
+        case MusECore::Track::WAVE:
+              return MusEGui::addtrack_wavetrackIcon;
+        case MusECore::Track::AUDIO_OUTPUT:
+              return MusEGui::addtrack_audiooutputIcon;
+        case MusECore::Track::AUDIO_INPUT:
+              return MusEGui::addtrack_audioinputIcon;
+        case MusECore::Track::AUDIO_GROUP:
+              return MusEGui::addtrack_audiogroupIcon;
+        case MusECore::Track::AUDIO_AUX:
+              return MusEGui::addtrack_auxsendIcon;
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+              return MusEGui::synthIcon;
+        default:
+              break;
+        }
+  return 0;        
 }
 
 //---------------------------------------------------------
