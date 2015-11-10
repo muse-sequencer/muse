@@ -71,6 +71,8 @@ enum ExportModeInstr_t
   EXPORT_MODE_INSTR_END = 3
 };
 
+enum RouteNameAliasPreference { RoutePreferCanonicalName, RoutePreferFirstAlias, RoutePreferSecondAlias };
+
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -242,6 +244,7 @@ struct GlobalConfigValues {
       QString beatSample;
       QString accent1Sample;
       QString accent2Sample;
+      RouteNameAliasPreference preferredRouteNameOrAlias;
       };
 
 

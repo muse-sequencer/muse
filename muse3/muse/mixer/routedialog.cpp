@@ -37,9 +37,11 @@
 #include <QHeaderView>
 #include <QLayout>
 #include <QFlags>
+#include <QVariant>
 
 #include "routedialog.h"
 #include "globaldefs.h"
+#include "gconfig.h"
 #include "track.h"
 #include "song.h"
 #include "audio.h"
@@ -3245,6 +3247,16 @@ RouteDialog::RouteDialog(QWidget* parent)
    : QDialog(parent)
 {
   setupUi(this);
+
+  filterSrcButton->setIcon(*routerFilterSourceIcon);
+  filterDstButton->setIcon(*routerFilterDestinationIcon);
+  srcRoutesButton->setIcon(*routerFilterSourceRoutesIcon);
+  dstRoutesButton->setIcon(*routerFilterDestinationRoutesIcon);
+  allMidiPortsButton->setIcon(*settings_midiport_softsynthsIcon);
+  
+  routeAliasList->addItem(tr("Normal"), QVariant::fromValue<int>(MusEGlobal::RoutePreferCanonicalName));
+  routeAliasList->addItem(tr("Alias 1"), QVariant::fromValue<int>(MusEGlobal::RoutePreferFirstAlias));
+  routeAliasList->addItem(tr("Alias 2"), QVariant::fromValue<int>(MusEGlobal::RoutePreferSecondAlias));
   
   //newSrcList->viewport()->setLayoutDirection(Qt::LeftToRight);
   
@@ -3315,7 +3327,7 @@ RouteDialog::RouteDialog(QWidget* parent)
         //setToolTip(routeList->horizontalHeaderItem(i), i);
         }
   
-  routingChanged();
+  songChanged(SC_EVERYTHING);
 
   connect(newSrcList->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), srcTreeScrollBar, SLOT(setRange(int,int))); 
   connect(newDstList->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), dstTreeScrollBar, SLOT(setRange(int,int))); 
@@ -3344,6 +3356,7 @@ RouteDialog::RouteDialog(QWidget* parent)
   connect(filterDstButton, SIGNAL(clicked(bool)), SLOT(filterDstClicked(bool)));
   connect(srcRoutesButton, SIGNAL(clicked(bool)), SLOT(filterSrcRoutesClicked(bool)));
   connect(dstRoutesButton, SIGNAL(clicked(bool)), SLOT(filterDstRoutesClicked(bool)));
+  connect(routeAliasList, SIGNAL(activated(int)), SLOT(preferredRouteAliasChanged(int)));
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 }
 
@@ -3385,6 +3398,29 @@ void RouteDialog::dstScrollBarValueChanged(int value)
 //   
 // }
 
+
+void RouteDialog::preferredRouteAliasChanged(int /*idx*/)
+{
+  if(routeAliasList->currentData().canConvert<int>())
+  {
+    bool ok = false;
+    const int n = routeAliasList->currentData().toInt(&ok);
+    if(ok)
+    {
+      switch(n)
+      {
+        case MusEGlobal::RoutePreferCanonicalName:
+        case MusEGlobal::RoutePreferFirstAlias:
+        case MusEGlobal::RoutePreferSecondAlias:
+          MusEGlobal::config.preferredRouteNameOrAlias = MusEGlobal::RouteNameAliasPreference(n);
+          MusEGlobal::song->update(SC_PORT_ALIAS_PREFERENCE);
+        break;
+        default:
+        break;
+      }
+    }
+  }
+}
 
 void RouteDialog::allMidiPortsClicked(bool v)
 {
@@ -3865,60 +3901,50 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
   //routingChanged();
 }
 
-
-//---------------------------------------------------------
-//   routingChanged
-//---------------------------------------------------------
-
-void RouteDialog::routingChanged()
-{
-  // Refill the lists of available external ports.
-  tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
-  tmpJackInPorts = MusEGlobal::audioDevice->inputPorts();
-  tmpJackMidiOutPorts = MusEGlobal::audioDevice->outputPorts(true);
-  tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
-  removeItems();                // Remove unused items.
-  addItems();                   // Add any new items.
-//   newSrcList->resizeColumnToContents(ROUTE_NAME_COL);
-//   newDstList->resizeColumnToContents(ROUTE_NAME_COL);
-  routeList->resizeColumnToContents(ROUTE_SRC_COL);
-  routeList->resizeColumnToContents(ROUTE_DST_COL);
-  
-  // Now that column resizing is done, update all channel y values in source and destination lists.
-  // Must be done here because it relies on the column width.
-//   QTreeWidgetItemIterator iDstList(newDstList);
-//   while(*iDstList)
-//   {
-//     RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iDstList);
-//     item->computeChannelYValues();
-//     ++iDstList;
-//   }
-//   QTreeWidgetItemIterator iSrcList(newSrcList);
-//   while(*iSrcList)
-//   {
-//     RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(*iSrcList);
-//     item->computeChannelYValues();
-//     ++iSrcList;
-//   }
-  newDstList->computeChannelYValues();
-  newSrcList->computeChannelYValues();
-  newDstList->scheduleDelayedLayout();
-  newSrcList->scheduleDelayedLayout();
-  
-  routeSelectionChanged();      // Init remove button.
-  srcSelectionChanged();        // Init select button.
-  connectionsWidget->update();  // Redraw the connections.
-}
-
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
 void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
 {
-  if (v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP | SC_ROUTE | SC_CONFIG | SC_CHANNELS)) {
-        routingChanged();
-        }
+  if(v & SC_PORT_ALIAS_PREFERENCE)
+  {
+    const int idx = routeAliasList->findData(QVariant::fromValue<int>(MusEGlobal::config.preferredRouteNameOrAlias));
+    if(idx != -1 && idx != routeAliasList->currentIndex())
+    {
+      routeAliasList->blockSignals(true);
+      routeAliasList->setCurrentIndex(idx);
+      routeAliasList->blockSignals(false);
+    }
+  }
+  
+  if(v & (SC_ROUTE | SC_CONFIG))
+  {
+    // Refill the lists of available external ports.
+    tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
+    tmpJackInPorts = MusEGlobal::audioDevice->inputPorts();
+    tmpJackMidiOutPorts = MusEGlobal::audioDevice->outputPorts(true);
+    tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
+  }
+  
+  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP | 
+          SC_ROUTE | SC_CONFIG | SC_CHANNELS | SC_PORT_ALIAS_PREFERENCE)) 
+  {
+    removeItems();                // Remove unused items.
+    addItems();                   // Add any new items.
+    routeList->resizeColumnToContents(ROUTE_SRC_COL);
+    routeList->resizeColumnToContents(ROUTE_DST_COL);
+    
+    // Now that column resizing is done, update all channel y values in source and destination lists.
+    newDstList->computeChannelYValues();
+    newSrcList->computeChannelYValues();
+    newDstList->scheduleDelayedLayout();
+    newSrcList->scheduleDelayedLayout();
+    
+    routeSelectionChanged();      // Init remove button.
+    srcSelectionChanged();        // Init select button.
+    connectionsWidget->update();  // Redraw the connections.
+  }
 }
 
 //---------------------------------------------------------
@@ -5084,7 +5110,7 @@ void RouteDialog::addItems()
             //src = *r;
             //dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       r->channels, -1, 0);
             dst = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, track,       r->channel,       1, -1, 0);
-            srcName = r->name();
+            srcName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
           break;  
           case MusECore::Route::MIDI_DEVICE_ROUTE: 
             continue;
@@ -5443,7 +5469,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, r->remoteChannel, -1, -1, r->persistentJackPortName);
             dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, -1, -1, -1, r->persistentJackPortName);
             //dst = *r;
-            dstName = r->name();
+            dstName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
           break;  
           case MusECore::Route::MIDI_DEVICE_ROUTE: 
             continue;  // TODO
@@ -6137,7 +6163,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::MIDI_DEVICE_ROUTE, -1, md,       r->channel,       1, -1, 0);
             //dst = MusECore::Route(md, r->channel);
             //dst = MusECore::Route(md, -1);
-            QString srcName = r->name();
+            QString srcName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
             QString dstName = mdname;
             const MusECore::Route dst(md, -1);
 
@@ -6403,7 +6429,7 @@ void RouteDialog::addItems()
             //dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, r->remoteChannel, -1, -1, r->persistentJackPortName);
             const MusECore::Route dst = MusECore::Route(MusECore::Route::JACK_ROUTE,  -1, r->jackPort, -1, -1, -1, r->persistentJackPortName);
             //dst = *r;
-            QString dstName = r->name();
+            QString dstName = r->name(MusEGlobal::config.preferredRouteNameOrAlias);
             QString srcName = mdname;
             const MusECore::Route src(md, -1);
 
@@ -6534,7 +6560,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, in_r.name());
+        item->setText(ROUTE_NAME_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -6557,7 +6583,11 @@ void RouteDialog::addItems()
         }
         newSrcList->blockSignals(true);
         //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackLabel );
-        item = new RouteTreeWidgetItem(srcCatItem, QStringList() << in_r.name(), RouteTreeWidgetItem::RouteItem, true, in_r);
+        item = new RouteTreeWidgetItem(srcCatItem, 
+                                       QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       RouteTreeWidgetItem::RouteItem, 
+                                       true, 
+                                       in_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
@@ -6573,7 +6603,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, out_r.name());
+        item->setText(ROUTE_NAME_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -6596,7 +6626,11 @@ void RouteDialog::addItems()
         }
         newDstList->blockSignals(true);
         //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackLabel );
-        item = new RouteTreeWidgetItem(dstCatItem, QStringList() << out_r.name(), RouteTreeWidgetItem::RouteItem, false, out_r);
+        item = new RouteTreeWidgetItem(dstCatItem, 
+                                       QStringList() << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       RouteTreeWidgetItem::RouteItem, 
+                                       false, 
+                                       out_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
@@ -6612,13 +6646,14 @@ void RouteDialog::addItems()
           if(routesItem)
           {
             // Update the text.
-            routesItem->setText(ROUTE_SRC_COL, in_r.name());
-            routesItem->setText(ROUTE_DST_COL, out_r.name());
+            routesItem->setText(ROUTE_SRC_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_DST_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
           }
           else
           {
             routeList->blockSignals(true);
-            routesItem = new QTreeWidgetItem(routeList, QStringList() << in_r.name() << out_r.name());
+            routesItem = new QTreeWidgetItem(routeList, 
+              QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias) << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
             routeList->blockSignals(false);
@@ -6642,7 +6677,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, in_r.name());
+        item->setText(ROUTE_NAME_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -6665,7 +6700,11 @@ void RouteDialog::addItems()
         }
         newSrcList->blockSignals(true);
         //item = new QTreeWidgetItem(srcCatItem, QStringList() << in_r.name() << jackMidiLabel );
-        item = new RouteTreeWidgetItem(srcCatItem, QStringList() << in_r.name(), RouteTreeWidgetItem::RouteItem, true, in_r);
+        item = new RouteTreeWidgetItem(srcCatItem, 
+                                       QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       RouteTreeWidgetItem::RouteItem, 
+                                       true, 
+                                       in_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newSrcList->blockSignals(false);
@@ -6681,7 +6720,7 @@ void RouteDialog::addItems()
       if(item)
       {
         // Update the text.
-        item->setText(ROUTE_NAME_COL, out_r.name());
+        item->setText(ROUTE_NAME_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
       }
       else
       {
@@ -6704,7 +6743,11 @@ void RouteDialog::addItems()
         }
         newDstList->blockSignals(true);
         //item = new QTreeWidgetItem(dstCatItem, QStringList() << out_r.name() << jackMidiLabel );
-        item = new RouteTreeWidgetItem(dstCatItem, QStringList() << out_r.name(), RouteTreeWidgetItem::RouteItem, false, out_r);
+        item = new RouteTreeWidgetItem(dstCatItem, 
+                                       QStringList() << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias), 
+                                       RouteTreeWidgetItem::RouteItem, 
+                                       false, 
+                                       out_r);
         //item->setData(ROUTE_NAME_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
@@ -6720,13 +6763,14 @@ void RouteDialog::addItems()
           if(routesItem)
           {
             // Update the text.
-            routesItem->setText(ROUTE_SRC_COL, in_r.name());
-            routesItem->setText(ROUTE_DST_COL, out_r.name());
+            routesItem->setText(ROUTE_SRC_COL, in_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
+            routesItem->setText(ROUTE_DST_COL, out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
           }
           else
           {
             routeList->blockSignals(true);
-            routesItem = new QTreeWidgetItem(routeList, QStringList() << in_r.name() << out_r.name());
+            routesItem = new QTreeWidgetItem(routeList, 
+              QStringList() << in_r.name(MusEGlobal::config.preferredRouteNameOrAlias) << out_r.name(MusEGlobal::config.preferredRouteNameOrAlias));
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
             routeList->blockSignals(false);

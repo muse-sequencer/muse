@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>268</height>
+    <width>447</width>
+    <height>337</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -46,6 +46,14 @@
         </item>
         <item>
          <widget class="MusEGui::RouteTreeWidget" name="newSrcList">
+          <property name="whatsThis">
+           <string>List of available sources.
+Connect a source to a destination.
+For items having a channel bar, 
+ connections can be Omni Mode
+ (the textual item) or Channel Mode
+ (the Channel bar channels).</string>
+          </property>
           <property name="verticalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
@@ -153,6 +161,12 @@
          </disabled>
         </palette>
        </property>
+       <property name="whatsThis">
+        <string>Connections View window.
+Shows all current connections.
+Thick lines are Omni Routes.
+Thin lines are Channel Routes.</string>
+       </property>
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -164,6 +178,14 @@
         </property>
         <item>
          <widget class="MusEGui::RouteTreeWidget" name="newDstList">
+          <property name="whatsThis">
+           <string>List of available destinations.
+Connect a source to a destination.
+For items having a channel bar, 
+ connections can be Omni Mode
+ (the textual item) or Channel Mode
+ (the Channel bar channels).</string>
+          </property>
           <property name="verticalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
@@ -209,6 +231,9 @@
       </widget>
      </widget>
      <widget class="QTreeWidget" name="routeList">
+      <property name="whatsThis">
+       <string>Itemized list of current connections.</string>
+      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -236,18 +261,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QToolButton" name="filterSrcButton">
-       <property name="text">
-        <string>Filter src</string>
+       <property name="toolTip">
+        <string>Show only selected sources</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="filterDstButton">
-       <property name="text">
-        <string>Filter dst</string>
+       <property name="whatsThis">
+        <string>Show only selected sources</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -256,8 +274,31 @@
      </item>
      <item>
       <widget class="QToolButton" name="srcRoutesButton">
-       <property name="text">
-        <string>Src routes</string>
+       <property name="toolTip">
+        <string>Show only destination routes for selected source</string>
+       </property>
+       <property name="whatsThis">
+        <string>Show only destination routes for selected source</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="filterDstButton">
+       <property name="toolTip">
+        <string>Show only selected destinations</string>
+       </property>
+       <property name="whatsThis">
+        <string>Show only selected destinations</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -266,8 +307,11 @@
      </item>
      <item>
       <widget class="QToolButton" name="dstRoutesButton">
-       <property name="text">
-        <string>Dst routes</string>
+       <property name="toolTip">
+        <string>Show only source routes for selected destination</string>
+       </property>
+       <property name="whatsThis">
+        <string>Show only source routes for selected destination</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -275,12 +319,39 @@
       </widget>
      </item>
      <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="allMidiPortsButton">
-       <property name="text">
-        <string>All midi ports</string>
+       <property name="toolTip">
+        <string>Show all Midi Ports</string>
+       </property>
+       <property name="whatsThis">
+        <string>Show all Midi Ports</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="routeAliasList">
+       <property name="toolTip">
+        <string>Preferred route name or alias</string>
+       </property>
+       <property name="whatsThis">
+        <string>Preferred route name or alias</string>
        </property>
       </widget>
      </item>
@@ -306,7 +377,10 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>connect source to destination</string>
+        <string>Connect source to destination</string>
+       </property>
+       <property name="whatsThis">
+        <string>Connect source to destination</string>
        </property>
        <property name="text">
         <string>Connect</string>
@@ -322,7 +396,10 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>remove selected route</string>
+        <string>Remove selected route</string>
+       </property>
+       <property name="whatsThis">
+        <string>Remove selected route</string>
        </property>
        <property name="text">
         <string>Remove</string>

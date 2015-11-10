@@ -286,6 +286,11 @@ extern QIcon* presetsNewIcon;
 
 extern QIcon* cpuIcon;
 
+extern QPixmap* routerFilterSourceIcon;
+extern QPixmap* routerFilterDestinationIcon;
+extern QPixmap* routerFilterSourceRoutesIcon;
+extern QPixmap* routerFilterDestinationRoutesIcon;
+
 } // namespace MusEGui
 
 #endif
