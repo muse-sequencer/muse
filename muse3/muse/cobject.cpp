@@ -124,7 +124,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     QToolBar* transport_toolbar = addToolBar(tr("Transport"));
 	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+ transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+ transport_toolbar->setIconSize(QSize(22, 22));
+ transport_toolbar->setStyleSheet("QToolButton{padding: 1px;}");
 
 	QToolBar* songpos_tb;
 	songpos_tb = addToolBar(tr("Song Position"));

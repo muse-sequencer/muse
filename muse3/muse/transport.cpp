@@ -402,7 +402,7 @@ Transport::Transport(QWidget* parent, const char* name)
       buttons[4] = newButton(playIcon, tr("play"), true);
       buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
-      buttons[5] = newButton(record_on_Icon, tr("record"), true);
+      buttons[5] = newButton(recordIcon, tr("record"), true);
       buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
