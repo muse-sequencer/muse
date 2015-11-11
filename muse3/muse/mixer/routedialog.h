@@ -340,7 +340,6 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       //RouteTreeItemList _dstFilterRouteItems;
       
       virtual void closeEvent(QCloseEvent*);
-      void routingChanged();
       void removeItems();
       void addItems();
       void getRoutesToDelete(QTreeWidget* routesTree, QVector<QTreeWidgetItem*>& items_to_remove);
@@ -365,6 +364,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void filterDstRoutesClicked(bool v);
       
       void allMidiPortsClicked(bool v);
+      void preferredRouteAliasChanged(int);
       
    signals:
       void closed();

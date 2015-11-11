@@ -272,6 +272,11 @@
 
 #include "xpm/cpu.xpm"
 
+#include "xpm/router_filter_source.xpm"
+#include "xpm/router_filter_destination.xpm"
+#include "xpm/router_filter_source_routes.xpm"
+#include "xpm/router_filter_destination_routes.xpm"
+
 #include "icons.h"
 
 //#if QT_VERSION >= 0x040600
@@ -544,6 +549,12 @@ QIcon* presetsNewIcon;
 
 QIcon* cpuIcon;
 
+QPixmap* routerFilterSourceIcon;
+QPixmap* routerFilterDestinationIcon;
+QPixmap* routerFilterSourceRoutesIcon;
+QPixmap* routerFilterDestinationRoutesIcon;
+
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -810,6 +821,11 @@ void initIcons()
 
       cpuIcon                                       = new MICON(cpu_xpm, NULL);
 
+      routerFilterSourceIcon                        = new MPIXMAP(router_filter_source_xpm, NULL);
+      routerFilterDestinationIcon                   = new MPIXMAP(router_filter_destination_xpm, NULL);
+      routerFilterSourceRoutesIcon                  = new MPIXMAP(router_filter_source_routes_xpm, NULL);
+      routerFilterDestinationRoutesIcon             = new MPIXMAP(router_filter_destination_routes_xpm, NULL);
+      
       }
 
 //---------------------------------------------------------
@@ -1058,6 +1074,13 @@ void deleteIcons()
 
       delete sineIcon;                                      
       delete sawIcon;                                       
+      
+      delete cpuIcon;
+      
+      delete routerFilterSourceIcon;
+      delete routerFilterDestinationIcon;
+      delete routerFilterSourceRoutesIcon;
+      delete routerFilterDestinationRoutesIcon;
       }
 
 } // namespace MusEGui

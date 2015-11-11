@@ -44,6 +44,7 @@
 #include "operations.h"
 
 #include "globaldefs.h"
+#include "gconfig.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -65,15 +66,9 @@
 #define _ALIASES_WIDGET_ACTION_ 0x2000
 #define _OPEN_MIDI_CONFIG_ 0x2001
 #define _OPEN_ROUTING_DIALOG_ 0x2002
-#define _PREFER_CANONICAL_NAMES_ 0
-#define _PREFER_FIRST_ALIASES_ 1
-#define _PREFER_SECOND_ALIASES_ 2
 
 namespace MusEGui {
 
-// TODO: Temporary until a more 'global' variable is added (accessible from graphical router for example).
-int preferredRouteNameOrAlias = _PREFER_CANONICAL_NAMES_;
-  
 //---------------------------------------------------------
 //   addMenuItem
 //---------------------------------------------------------
@@ -656,10 +651,17 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     name_wa->array()->headerSetVisible(false);
     name_wa->array()->setText(0, tr("First "));
     name_wa->array()->setText(1, tr("Second"));
-    if(preferredRouteNameOrAlias == 1)
-      name_wa->array()->setValue(0, true);
-    else if(preferredRouteNameOrAlias == 2)
-      name_wa->array()->setValue(1, true);
+    switch(MusEGlobal::config.preferredRouteNameOrAlias)
+    {
+      case MusEGlobal::RoutePreferFirstAlias:
+        name_wa->array()->setValue(0, true);
+      break;
+      case MusEGlobal::RoutePreferSecondAlias:
+        name_wa->array()->setValue(1, true);
+      break;
+      case MusEGlobal::RoutePreferCanonicalName:
+      break;
+    }
     // Must rebuild array after text changes.
     name_wa->updateChannelArray();
     lb->addAction(name_wa);
@@ -670,17 +672,17 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     act = act_grp->addAction(tr("Show names"));
     act->setCheckable(true);
     act->setData(_SHOW_CANONICAL_NAMES_);
-    if(preferredRouteNameOrAlias == 0)
+    if(MusEGlobal::config.preferredRouteNameOrAlias == MusEGlobal::RoutePreferCanonicalName)
       act->setChecked(true); 
     act = act_grp->addAction(tr("Show first aliases"));
     act->setCheckable(true);
     act->setData(_SHOW_FIRST_ALIASES_);
-    if(preferredRouteNameOrAlias == 1)
+    if(MusEGlobal::config.preferredRouteNameOrAlias == MusEGlobal::RoutePreferFirstAlias)
       act->setChecked(true); 
     act = act_grp->addAction(tr("Show second aliases"));
     act->setCheckable(true);
     act->setData(_SHOW_SECOND_ALIASES_);
-    if(preferredRouteNameOrAlias == 2)
+    if(MusEGlobal::config.preferredRouteNameOrAlias == MusEGlobal::RoutePreferSecondAlias)
       act->setChecked(true); 
     lb->addActions(act_grp->actions());
     lb->addSeparator();
@@ -716,7 +718,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         char good_name[ROUTE_PERSISTENT_NAME_SIZE];
         
         // Get the preferred display name.
-        MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, preferredRouteNameOrAlias);
+        MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, MusEGlobal::config.preferredRouteNameOrAlias);
         wa->setActionText(good_name);
         
         // Get a good routing name.
@@ -1702,7 +1704,7 @@ bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
               void* const port = MusEGlobal::audioDevice->findPort(port_name);
               if(port)
               {
-                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, preferredRouteNameOrAlias);
+                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, MusEGlobal::config.preferredRouteNameOrAlias);
                 const QString str(good_name);
                 if(wa->actionText() != str)
                 {
@@ -1735,7 +1737,7 @@ bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
       switch(r.type)
       {
         case MusECore::Route::JACK_ROUTE:
-          act->setText(r.name(preferredRouteNameOrAlias));
+          act->setText(r.name(MusEGlobal::config.preferredRouteNameOrAlias));
         break;
         
         case MusECore::Route::TRACK_ROUTE:
@@ -1777,7 +1779,7 @@ bool RoutePopupMenu::preferredPortAliasChanged()
               void* const port = MusEGlobal::audioDevice->findPort(port_name);
               if(port)
               {
-                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, preferredRouteNameOrAlias);
+                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, MusEGlobal::config.preferredRouteNameOrAlias);
                 const QString str(good_name);
                 if(wa->actionText() != str)
                 {
@@ -1814,23 +1816,29 @@ bool RoutePopupMenu::preferredPortAliasChanged()
               {
                 int v; 
                 if(wa->array()->value(0))
-                  v = _PREFER_FIRST_ALIASES_;
+                  v = MusEGlobal::RoutePreferFirstAlias;
                 else if(wa->array()->value(1))
-                  v = _PREFER_SECOND_ALIASES_;
+                  v = MusEGlobal::RoutePreferSecondAlias;
                 else 
-                  v = _PREFER_CANONICAL_NAMES_;
+                  v = MusEGlobal::RoutePreferCanonicalName;
                 
-                if(v != preferredRouteNameOrAlias)
+                if(v != MusEGlobal::config.preferredRouteNameOrAlias)
                 {
                   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::preferredPortAliasChanged setting alias array preferredRouteNameOrAlias:%d\n", 
-                          preferredRouteNameOrAlias);
-                  if(preferredRouteNameOrAlias == _PREFER_FIRST_ALIASES_)
-                    wa->array()->setValue(0, true);
-                  else if(preferredRouteNameOrAlias == _PREFER_SECOND_ALIASES_)
-                    wa->array()->setValue(1, true);
-                  else
-                    // Just set any column to false to clear this exclusive array.
-                    wa->array()->setValue(0, false);
+                          MusEGlobal::config.preferredRouteNameOrAlias);
+                  switch(MusEGlobal::config.preferredRouteNameOrAlias)
+                  {
+                    case MusEGlobal::RoutePreferFirstAlias:
+                      wa->array()->setValue(0, true);
+                    break;
+                    case MusEGlobal::RoutePreferSecondAlias:
+                      wa->array()->setValue(1, true);
+                    break;
+                    case MusEGlobal::RoutePreferCanonicalName:
+                      // Just set any column to false to clear this exclusive array.
+                      wa->array()->setValue(0, false);
+                    break;
+                  }
                   
                   changed = true;
                 }
@@ -1854,7 +1862,7 @@ bool RoutePopupMenu::preferredPortAliasChanged()
       {
         case MusECore::Route::JACK_ROUTE:
         {
-          const QString rname = r.name(preferredRouteNameOrAlias);
+          const QString rname = r.name(MusEGlobal::config.preferredRouteNameOrAlias);
           if(act->text() != rname)
           {
             act->setText(rname);
@@ -2624,11 +2632,11 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
           if(wa)
           {
             if(wa->array()->value(0))
-              preferredRouteNameOrAlias = _PREFER_FIRST_ALIASES_;
+              MusEGlobal::config.preferredRouteNameOrAlias = MusEGlobal::RoutePreferFirstAlias;
             else if(wa->array()->value(1))
-              preferredRouteNameOrAlias = _PREFER_SECOND_ALIASES_;
+              MusEGlobal::config.preferredRouteNameOrAlias = MusEGlobal::RoutePreferSecondAlias;
             else
-              preferredRouteNameOrAlias = _PREFER_CANONICAL_NAMES_;
+              MusEGlobal::config.preferredRouteNameOrAlias = MusEGlobal::RoutePreferCanonicalName;
             
             MusEGlobal::song->update(SC_PORT_ALIAS_PREFERENCE);
           }
@@ -2638,21 +2646,23 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
         
         case _SHOW_CANONICAL_NAMES_:
         {
-          preferredRouteNameOrAlias = _PREFER_CANONICAL_NAMES_;
+          MusEGlobal::config.preferredRouteNameOrAlias = MusEGlobal::RoutePreferCanonicalName;
           MusEGlobal::song->update(SC_PORT_ALIAS_PREFERENCE);
         }
         break;
         
         case _SHOW_FIRST_ALIASES_:
         {
-          preferredRouteNameOrAlias = action->isChecked() ? _PREFER_FIRST_ALIASES_ : _PREFER_CANONICAL_NAMES_;
+          MusEGlobal::config.preferredRouteNameOrAlias = action->isChecked() ? 
+            MusEGlobal::RoutePreferFirstAlias : MusEGlobal::RoutePreferCanonicalName;
           MusEGlobal::song->update(SC_PORT_ALIAS_PREFERENCE);
         }
         break;
         
         case _SHOW_SECOND_ALIASES_:
         {
-          preferredRouteNameOrAlias = action->isChecked() ? _PREFER_SECOND_ALIASES_ : _PREFER_CANONICAL_NAMES_;
+          MusEGlobal::config.preferredRouteNameOrAlias = action->isChecked() ? 
+            MusEGlobal::RoutePreferSecondAlias : MusEGlobal::RoutePreferCanonicalName;
           MusEGlobal::song->update(SC_PORT_ALIAS_PREFERENCE);
         }
         break;
