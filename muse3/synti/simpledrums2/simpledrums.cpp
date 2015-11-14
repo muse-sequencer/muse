@@ -163,7 +163,7 @@ SimpleSynth::SimpleSynth(int sr)
       channels[i].route = SS_CHN_ROUTE_MIX;
       for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
          channels[i].sendfxlevel[j] = 0.0;
-      }
+      }      
    }
 
    //Process buffer:
@@ -1018,6 +1018,9 @@ bool SimpleSynth::init(const char* name)
    gui = new SimpleSynthGui();
    //gui->show();
    gui->setWindowTitle(name);
+   for(int i = 0; i < SS_NR_OF_CHANNELS; i++){
+      guiUpdateNoff(i, channels[i].noteoff_ignore); //update nOff gui checkbox (on by default now)
+   }
    SWITCH_SYNTH_STATE(SS_RUNNING);
    SS_TRACE_OUT
          return true;
