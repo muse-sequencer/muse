@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
+    <width>555</width>
     <height>337</height>
    </rect>
   </property>
@@ -69,11 +69,17 @@ For items having a channel bar,
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
           <property name="textElideMode">
            <enum>Qt::ElideMiddle</enum>
           </property>
-          <property name="wordWrap">
-           <bool>true</bool>
+          <property name="rootIsDecorated">
+           <bool>false</bool>
           </property>
           <property name="isInput" stdset="0">
            <bool>true</bool>
@@ -201,11 +207,17 @@ For items having a channel bar,
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
           <property name="textElideMode">
            <enum>Qt::ElideMiddle</enum>
           </property>
-          <property name="wordWrap">
-           <bool>true</bool>
+          <property name="rootIsDecorated">
+           <bool>false</bool>
           </property>
           <property name="isInput" stdset="0">
            <bool>false</bool>
@@ -246,8 +258,8 @@ For items having a channel bar,
       <property name="textElideMode">
        <enum>Qt::ElideMiddle</enum>
       </property>
-      <property name="wordWrap">
-       <bool>true</bool>
+      <property name="rootIsDecorated">
+       <bool>false</bool>
       </property>
       <column>
        <property name="text">
@@ -259,6 +271,9 @@ For items having a channel bar,
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>2</number>
+     </property>
      <item>
       <widget class="QToolButton" name="filterSrcButton">
        <property name="toolTip">
@@ -342,6 +357,26 @@ For items having a channel bar,
       <widget class="Line" name="line_3">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="verticalLayoutButton">
+       <property name="toolTip">
+        <string>Auto adjust column size</string>
+       </property>
+       <property name="whatsThis">
+        <string>Automatically adjusts the source and destination
+ tree widths when the splitters are adjusted.
+This also turns on text word wrap, which may 
+ cause slower response with larger lists.
+</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

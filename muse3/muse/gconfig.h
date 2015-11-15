@@ -245,6 +245,7 @@ struct GlobalConfigValues {
       QString accent1Sample;
       QString accent2Sample;
       RouteNameAliasPreference preferredRouteNameOrAlias;
+      bool routerExpandVertically; // Whether to expand the router items vertically. (Good use of space but slow!)
       };
 
 

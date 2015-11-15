@@ -290,6 +290,7 @@ extern QPixmap* routerFilterSourceIcon;
 extern QPixmap* routerFilterDestinationIcon;
 extern QPixmap* routerFilterSourceRoutesIcon;
 extern QPixmap* routerFilterDestinationRoutesIcon;
+extern QPixmap* routerViewSplitterIcon;
 
 } // namespace MusEGui
 

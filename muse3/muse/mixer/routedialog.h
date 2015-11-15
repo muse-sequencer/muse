@@ -83,6 +83,23 @@ class RouteChannelsList : public QVector<RouteChannelsStruct>
     bool connected(int c) const       { if(c >= size()) return false; return at(c)._connected; }
     void setConnected(int c, bool v)  { if(c >= size()) return; operator[](c)._connected = v; }
     void fillConnected(bool v)        { const int sz = size(); for(int i = 0; i < sz; ++i) operator[](i)._connected = v; }
+    
+    // How many channels are connected.
+    int connectedChannels() const;
+    // Returns the smallest width that can fit a channel bar.
+    static int minimumWidthHint();
+    // Returns the minimum width of the array that will fit into the given width constraint.
+    int widthHint(int width) const;
+    // Returns the minimum height of the array that will fit into the given width constraint.
+    int heightHint(int width) const;
+    // Returns a suitable size based on the given width constraint.
+    QSize sizeHint(int width) const { return QSize(widthHint(width), heightHint(width)); }
+    // How many channels fit into the width.
+    static int channelsPerWidth(int width);
+    // How many groups accommodate the given number of channels, all on a single bar.
+    static int groupsPerChannels(int channels);
+    // How many bars accommodate the item's total channels, for the given number of maximum number of channels on a single bar.
+    int barsPerColChannels(int cc) const;
 };
 
 class RouteTreeWidgetItem : public QTreeWidgetItem
@@ -90,7 +107,9 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
   public:
         enum ItemType { NormalItem = Type, CategoryItem = UserType, RouteItem = UserType + 1, ChannelsItem = UserType + 2};
         enum ItemMode { NormalMode, ExclusiveMode };
-    
+        // A data role to pass the item type from item to delegate.
+        //enum ItemDataRole { TypeRole = Qt::UserRole};
+        
   private:
         bool _isInput;
         MusECore::Route _route;
@@ -157,14 +176,14 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         void fillSelectedChannels(bool v)         { _channels.fillSelectedChannels(v); }
         // Returns the channel, based at rect y, whose rectangle contains pt.
         int channelAt(const QPoint& pt, const QRect& rect) const;
-        // How many non-omni channels are connected. For speed, it looks in the channel y values list, which must be current.
-        int connectedChannels() const;
-        // How many channels fit into the column. If w is -1, it uses the width of the first tree column.
-        int channelsPerWidth(int w = -1) const;
-        // How many groups accommodate the given number of channels, all on a single bar.
-        int groupsPerChannels(int c) const;
-        // How many bars accommodate the item's total channels, for the given number of maximum number of channels on a single bar.
-        int barsPerColChannels(int cc) const;
+//         // How many non-omni channels are connected. For speed, it looks in the channel y values list, which must be current.
+//         int connectedChannels() const;
+//         // How many channels fit into the column. If w is -1, it uses the width of the first tree column.
+//         int channelsPerWidth(int w = -1) const;
+//         // How many groups accommodate the given number of channels, all on a single bar.
+//         int groupsPerChannels(int c) const;
+//         // How many bars accommodate the item's total channels, for the given number of maximum number of channels on a single bar.
+//         int barsPerColChannels(int cc) const;
 
         // For drawing channel lines:
         int channelYValue(int c) const    { return _channels.lineY(c); }
@@ -180,12 +199,17 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         bool mousePressHandler(QMouseEvent* e, const QRect& rect); 
         // Handles painting. Returns true if the painting was handled.
         bool paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+//         // Returns suggested size of item.
+//         QSize getSizeHint(int col, int col_width = -1) const;
         // Returns suggested size of item.
-        QSize getSizeHint(int col, int col_width = -1) const;
-        // Returns suggested size of item.
-        QSize getSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
-        // Returns true if tree should be re laid out (ie. with scheduleDelayedItemsLayout()).
-        bool testForRelayout(int col, int old_width, int new_width) const;
+//         QSize getSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+        // Returns suggested size of item, that will fit into the given width while expanding vertically.
+        // If width is -1, it uses the view width.
+        QSize getSizeHint(int column, int width = -1) const;
+        // Returns true if the item should be re-laid out (ie. with a tree's scheduleDelayedItemsLayout() or a delegate's sizeHintChanged()).
+        // For channel items, it first adjusts the channel bar width to fit the new width.
+        //bool testForRelayout(const QModelIndex& index, int old_width, int new_width) const;
+        bool testForRelayout(int column, int old_width, int new_width);
 };
 
 //---------------------------------------------------------
@@ -234,6 +258,7 @@ class RouteTreeWidget : public QTreeWidget
         Q_PROPERTY(bool isInput READ isInput WRITE setIsInput)
 private:
         bool _isInput;
+        bool _channelWrap;
         
 private slots:
         void headerSectionResized(int logicalIndex, int oldSize, int newSize);
@@ -258,6 +283,9 @@ public:
         bool isInput() { return _isInput; }
         void setIsInput(bool v) { _isInput = v; }
         
+        bool channelWrap() { return _channelWrap; }
+        void setChannelWrap(bool v) { _channelWrap = v; }
+        
         RouteTreeWidgetItem* itemFromIndex(const QModelIndex& index) const;
         RouteTreeWidgetItem* findItem(const MusECore::Route&, int itemType = -1);
         RouteTreeWidgetItem* findCategoryItem(const QString&);
@@ -266,7 +294,7 @@ public:
         
         void getSelectedRoutes(MusECore::RouteList& routes);
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
-        void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
+        //void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
 };
 
 
@@ -297,16 +325,22 @@ class RoutingItemDelegate : public QStyledItemDelegate
   public:
     RoutingItemDelegate(bool is_input, RouteTreeWidget* tree, QWidget *parent = 0);
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-              const QModelIndex &index) const;
-    virtual QSize sizeHint(const QStyleOptionViewItem &option,
-                  const QModelIndex &index) const;
+    virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
     //QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
     //                      const QModelIndex &index) const;
     //void setEditorData(QWidget *editor, const QModelIndex &index) const;
-    void setModelData(QWidget *editor, QAbstractItemModel *model,
-                      const QModelIndex &index) const;
+    virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+    // Exposed as public from protected, so that it may be called from the tree widget.                  
+    virtual void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const 
+      { QStyledItemDelegate::initStyleOption(option, index); }
+      
+//     // Returns true if tree should be re laid out (ie. with scheduleDelayedItemsLayout()).
+//     bool testForRelayout(const QStyleOptionViewItem &option, const QModelIndex& index, int old_width, int new_width);
 
+    // Emits the required sizeHintChanged(index) signal, to notify the tree to relayout the item.
+    virtual void emitSizeHintChanged(const QModelIndex &index) { emit sizeHintChanged(index); }
+    
   protected:
     bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index);
     bool eventFilter(QObject* editor, QEvent* event);
@@ -365,6 +399,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       
       void allMidiPortsClicked(bool v);
       void preferredRouteAliasChanged(int);
+      void verticalLayoutClicked(bool);
       
    signals:
       void closed();

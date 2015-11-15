@@ -276,6 +276,7 @@
 #include "xpm/router_filter_destination.xpm"
 #include "xpm/router_filter_source_routes.xpm"
 #include "xpm/router_filter_destination_routes.xpm"
+#include "xpm/router_view_splitter.xpm"
 
 #include "icons.h"
 
@@ -553,7 +554,7 @@ QPixmap* routerFilterSourceIcon;
 QPixmap* routerFilterDestinationIcon;
 QPixmap* routerFilterSourceRoutesIcon;
 QPixmap* routerFilterDestinationRoutesIcon;
-
+QPixmap* routerViewSplitterIcon;
 
 //---------------------------------------------------------
 //   initIcons
@@ -825,6 +826,7 @@ void initIcons()
       routerFilterDestinationIcon                   = new MPIXMAP(router_filter_destination_xpm, NULL);
       routerFilterSourceRoutesIcon                  = new MPIXMAP(router_filter_source_routes_xpm, NULL);
       routerFilterDestinationRoutesIcon             = new MPIXMAP(router_filter_destination_routes_xpm, NULL);
+      routerViewSplitterIcon                        = new MPIXMAP(router_view_splitter_xpm, NULL);
       
       }
 
@@ -1081,6 +1083,7 @@ void deleteIcons()
       delete routerFilterDestinationIcon;
       delete routerFilterSourceRoutesIcon;
       delete routerFilterDestinationRoutesIcon;
+      delete routerViewSplitterIcon;
       }
 
 } // namespace MusEGui
