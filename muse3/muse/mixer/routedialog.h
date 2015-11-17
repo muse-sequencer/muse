@@ -197,6 +197,8 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
 
         // Handles mouse press events.
         bool mousePressHandler(QMouseEvent* e, const QRect& rect); 
+        // Handles mouse move events.
+        bool mouseMoveHandler(QMouseEvent* e, const QRect& rect); 
         // Handles painting. Returns true if the painting was handled.
         bool paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 //         // Returns suggested size of item.
@@ -265,6 +267,7 @@ private slots:
 
 protected:
         virtual void mousePressEvent(QMouseEvent*);
+        virtual void mouseMoveEvent(QMouseEvent*);
         virtual QItemSelectionModel::SelectionFlags selectionCommand(const QModelIndex& index, const QEvent* event = 0) const;
         virtual void resizeEvent(QResizeEvent*);
         

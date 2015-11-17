@@ -152,7 +152,8 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       act->setMenu(subp);
       for(int row = 0; row < rt_chans; ++row)
       {
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, 0, 0, this, QString::number(row + 1));
         wa->setFont(wa->smallFont());
         wa->array()->headerSetVisible(row == 0);
         r.channel = row;
@@ -363,7 +364,8 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       if(!show_synths && md->isSynti())
         continue;
       
-      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+      //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
       if(row == 0)
       {
         wa->array()->setArrayTitle(tr("Channels"));
@@ -446,7 +448,8 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         continue;
       
       MusECore::Route r(i, -1);
-      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+      //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
       if(row == 0)
       {
         wa->array()->setCheckBoxTitle(tr("Omni"));
@@ -643,7 +646,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
-    RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, redLedIcon, darkRedLedIcon, this, tr("Show aliases:"));
+    //RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, redLedIcon, darkRedLedIcon, this, tr("Show aliases:"));
+    RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, 0, 0, this, tr("Show aliases:"));
     name_wa->setArrayStayOpen(true);
     name_wa->setData(_ALIASES_WIDGET_ACTION_);
     name_wa->array()->setColumnsExclusive(true);
@@ -697,7 +701,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
       {
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, this);
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, this);
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, 0, 0, this);
         if(row == 0)
         {
           wa->array()->headerSetTitle(tr("Jack ports"));
@@ -832,7 +837,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
       case MusECore::Route::JACK_ROUTE:
         if(ir->jackPort == 0 && MusEGlobal::audioDevice->findPort(ir->persistentJackPortName) == 0)
         {
-          RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, 
+          //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, 
+          RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, 0, 0, 
                                                                         this, ir->persistentJackPortName);
           wa->setEnabled(false);
           if(row == 0)
@@ -2827,7 +2833,8 @@ void RoutePopupMenu::prepare()
                 RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu);
                 wa_subp->addAction(new MenuTitleItem(tr("Channels"), this));
                 act->setMenu(wa_subp);
-                RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+                //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+                RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, 0, 0, this);
                 wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
                 int chans = 0;
                 // Is there already a route?

@@ -24,6 +24,7 @@
 #include <QHBoxLayout>
 #include <QSignalMapper>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPaintEvent>
 #include <QString>
 #include <QList>
@@ -414,8 +415,10 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
 {
   QPainter p(this);
   const int cols = _action->array()->columns();
-  p.setFont(_action->font());
   QString a_txt;
+  const QColor clr1(255, 160, 60);
+  const QColor clr2 = clr1.darker(150);
+  
   for(int col = 0; col < cols; ++col)
   {
     const QRect r = _action->array()->rect(col);
@@ -423,14 +426,17 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
       p.fillRect(r, palette().dark());
     else if(col == _action->array()->activeColumn())
       p.fillRect(r, palette().highlight());
-    const QPixmap& pm = _action->array()->value(col) ? *_action->onPixmap() : *_action->offPixmap();
-    const int pm_w = pm.width();
-    const int pm_h = pm.height();
+    const QPixmap* pm = _action->array()->value(col) ? _action->onPixmap() : _action->offPixmap();
+    const int pm_w = pm ? pm->width() : _action->maxPixmapGeometry().width();
+    const int pm_h = pm ? pm->height() : _action->maxPixmapGeometry().height();
     
     int x;
     a_txt = _action->array()->text(col);
     if(!a_txt.isEmpty())
     {
+      p.setFont(_action->font());
+      //p.setPen(palette().text().color());
+      p.setPen(col == _action->array()->activeColumn() ? palette().highlightedText().color() : palette().text().color());
       p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, a_txt);
       x = r.x() + r.width() - pm_w - _action->groupSpacing; // Leave some space at the end.
     }
@@ -444,11 +450,31 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
     int y = r.y();
     if(r.height() > pm_h)
       y += (r.height() - pm_h) / 2;
-    p.drawPixmap(x, y, pm);
+    
+    if(pm)
+      p.drawPixmap(x, y, *pm);
+    else
+    {
+      QPainterPath path;
+      path.addRoundedRect(x, y, pm_w, pm_h, 30, 30);
+      if(_action->array()->value(col))
+      {
+        //QRadialGradient gradient(50, 50, 50, 50, 50);
+        QLinearGradient gradient(x + 1, y + 1, x + pm_w - 2, y + pm_h - 2);
+        gradient.setColorAt(0, clr1);
+        gradient.setColorAt(1, clr2);
+        QBrush brush(gradient);  
+        
+        p.fillPath(path, brush);
+      }
+      p.setPen(col == _action->array()->activeColumn() ? palette().highlightedText().color() : palette().text().color());
+      p.drawPath(path);
+    }
   }
 
   if(_action->array()->headerVisible())
   {
+    p.setPen(palette().text().color());
     for(int col = 0; col < cols; ++col)
     {
       const QRect r = _action->array()->headerRect(col);
@@ -640,15 +666,24 @@ RoutingMatrixWidgetAction::RoutingMatrixWidgetAction(int cols,
   _smallFont = font();
   _smallFont.setPointSize(_smallFont.pointSize() / 2 + 1);
   
-  if(_maxPixmapGeometry.width() < _onPixmap->width())
-    _maxPixmapGeometry.setWidth(_onPixmap->width());
-  if(_maxPixmapGeometry.height() < _onPixmap->height())
-    _maxPixmapGeometry.setHeight(_onPixmap->height());
+  if(_onPixmap)
+  {
+    if(_maxPixmapGeometry.width() < _onPixmap->width())
+      _maxPixmapGeometry.setWidth(_onPixmap->width());
+    if(_maxPixmapGeometry.height() < _onPixmap->height())
+      _maxPixmapGeometry.setHeight(_onPixmap->height());
+  }
+  if(_offPixmap)
+  {
+    if(_maxPixmapGeometry.width() < _offPixmap->width())
+      _maxPixmapGeometry.setWidth(_offPixmap->width());
+    if(_maxPixmapGeometry.height() < _offPixmap->height())
+      _maxPixmapGeometry.setHeight(_offPixmap->height());
+  }
+  // No pixmaps? Set the size for manually painting.
+  if(!_onPixmap && !_offPixmap)
+    _maxPixmapGeometry = QSize(10, 10);
   
-  if(_maxPixmapGeometry.width() < _offPixmap->width())
-    _maxPixmapGeometry.setWidth(_offPixmap->width());
-  if(_maxPixmapGeometry.height() < _offPixmap->height())
-    _maxPixmapGeometry.setHeight(_offPixmap->height());
   updateChannelArray();
 }
 

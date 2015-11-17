@@ -41,6 +41,7 @@ class QResizeEvent;
 class QMouseEvent;
 class QEnterEvent;
 class QLeaveEvent;
+class QSize;
 
 namespace MusEGui {
 
@@ -334,7 +335,7 @@ class RoutingMatrixWidgetAction : public QWidgetAction
     // A smaller font (about half size) than the action's font.
     QFont _smallFont;
     // Maximum dimensions of the on/off pixmaps.
-    QRect _maxPixmapGeometry;
+    QSize _maxPixmapGeometry;
     // NOTE: _hasCheckBox is used instead of QAction::isCheckable()/setCheckable().
     bool _hasCheckBox;
     // Whether the checkbox is currently checked or not.
@@ -382,7 +383,7 @@ class RoutingMatrixWidgetAction : public QWidgetAction
     // Pixmap used for 'off' indicator.
     QPixmap* offPixmap() const { return _offPixmap; }
     // Maximum dimensions of the on/off pixmaps.
-    QRect maxPixmapGeometry() const { return _maxPixmapGeometry; }
+    QSize maxPixmapGeometry() const { return _maxPixmapGeometry; }
     
     // NOTE: Use hasCheckBox() instead of QAction::isCheckable().
     bool hasCheckBox() const { return _hasCheckBox; }

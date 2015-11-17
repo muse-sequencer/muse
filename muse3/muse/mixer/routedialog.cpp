@@ -68,7 +68,7 @@ const QString RouteDialog::midiDevicesCat(QObject::tr("Midi devices:"));
 const QString RouteDialog::jackCat(QObject::tr("Jack:"));
 const QString RouteDialog::jackMidiCat(QObject::tr("Jack midi:"));
 
-const int RouteDialog::channelDotDiameter = 9;
+const int RouteDialog::channelDotDiameter = 12;
 const int RouteDialog::channelDotSpacing = 1;
 const int RouteDialog::channelDotsPerGroup = 4;
 const int RouteDialog::channelDotGroupSpacing = 3;
@@ -803,6 +803,91 @@ bool RouteTreeWidgetItem::mousePressHandler(QMouseEvent* e, const QRect& rect)
 //   QTreeWidget::mousePressEvent(e);
 }
 
+bool RouteTreeWidgetItem::mouseMoveHandler(QMouseEvent* e, const QRect& rect)
+{
+  const Qt::MouseButtons mb = e->buttons();
+  if(mb != Qt::LeftButton)
+    return false;
+  
+  const QPoint pt = e->pos(); 
+  const Qt::KeyboardModifiers km = e->modifiers();
+  
+  bool ctl;
+  switch(_itemMode)
+  {
+    case ExclusiveMode:
+      ctl = false;
+    break;
+    case NormalMode:
+      //ctl = true;
+      //ctl = km & Qt::ControlModifier;
+      ctl = km & Qt::ShiftModifier;
+    break;
+  }
+  //bool shift = km & Qt::ShiftModifier;
+
+//   RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(itemAt(pt));
+//   bool is_cur = item && currentItem() && (item == currentItem());
+
+  //if(is_cur)
+  //  QTreeWidget::mousePressEvent(e);
+  
+  switch(type())
+  {
+    case NormalItem:
+    case CategoryItem:
+    case RouteItem:
+    break;  
+    case ChannelsItem:
+      switch(_route.type)
+      {
+        case MusECore::Route::TRACK_ROUTE:
+          if(_route.track && _route.channel != -1) // && item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
+          {
+            int ch = channelAt(pt, rect);
+            
+            const int ba_sz = _channels.size();
+            bool changed = false;
+            for(int i = 0; i < ba_sz; ++i)
+            {
+              if(i == ch)
+              {
+//                 if(ctl)
+//                 {
+//                   _channels[i].toggleSelected();
+//                   changed = true;
+//                 }
+//                 else
+                {
+                  if(!_channels.at(i)._selected)
+                    changed = true;
+                  _channels[i]._selected = true;
+                }
+              }
+              else if(!ctl)
+              {
+                if(_channels. at(i)._selected)
+                  changed = true;
+                _channels[i]._selected = false;
+              }
+            }
+            return changed;
+          }
+        break;
+        case MusECore::Route::JACK_ROUTE:
+        case MusECore::Route::MIDI_DEVICE_ROUTE:
+        case MusECore::Route::MIDI_PORT_ROUTE:
+        break;
+      }
+      
+    break;  
+  }
+
+  return false;
+  
+//   QTreeWidget::mousePressEvent(e);
+}
+
 // bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 // {
 //   //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint\n");  // REMOVE Tim.
@@ -990,24 +1075,50 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           painter->setClipRect(clip_rect);
           
           if(index.parent().isValid() && (index.parent().row() & 0x01))
-            painter->fillRect(option.rect, rtw->palette().alternateBase());
+            painter->fillRect(option.rect, option.palette.alternateBase());
           int cur_chan = 0;
+
+          // Set a small five-pixel font size for the numbers inside the dots.
+          QFont fnt = font(index.column());
+          //fnt.setStyleStrategy(QFont::NoAntialias);
+          //fnt.setStyleStrategy(QFont::PreferBitmap);
+          // -2 for the border, -2 for the margin, and +1 for setPixelSize which seems to like it.
+          //fnt.setPixelSize(RouteDialog::channelDotDiameter - 2 - 2 + 1); 
+          fnt.setPixelSize(RouteDialog::channelDotDiameter / 2 + 1); 
+          painter->setFont(fnt);
           for(int i = 0; i < chans; ++i)
           {
             const RouteChannelsStruct& ch_struct = _channels.at(i);
             const QRect& ch_rect = ch_struct._buttonRect;
-            painter->setPen(Qt::black);
+            QPainterPath path;
+            path.addRoundedRect(x_offset + ch_rect.x(), option.rect.y() + ch_rect.y(), 
+                                ch_rect.width(), ch_rect.height(), 
+                                30, 30);
             if(ch_struct._selected)
-              painter->fillRect(x_offset + ch_rect.x(), option.rect.y() + ch_rect.y(), 
-                                ch_rect.width(), ch_rect.height(),
-                                option.palette.highlight());
-            painter->drawRoundedRect(x_offset + ch_rect.x(), option.rect.y() + ch_rect.y(), 
-                                      ch_rect.width(), ch_rect.height(),
-                                      30, 30);
+              painter->fillPath(path, option.palette.highlight());
+            //painter->setPen(ch_struct._selected ? option.palette.highlightedText().color() : option.palette.text().color());
+            painter->setPen(option.palette.text().color());
+            painter->drawPath(path);
+
+            //const int ch_num = (i + 1) % 10;
+            if(chans > RouteDialog::channelDotsPerGroup)
+            {
+              //if((i % RouteDialog::channelDotsPerGroup) == 0 || ((i + 1) % 10 == 0))
+              if((i % RouteDialog::channelDotsPerGroup) == 0)
+              {
+                painter->setPen(ch_struct._selected ? option.palette.highlightedText().color() : option.palette.text().color());
+                painter->drawText(x_offset + ch_rect.x(), option.rect.y() + ch_rect.y(), 
+                                 ch_rect.width(), ch_rect.height(), 
+                                 Qt::AlignCenter, 
+                                 //QString::number((ch_num + 1) / 10));
+                                 QString::number(i + 1));
+              }
+            }
+            
             if((cur_chan % 2) == 0)
-              painter->setPen(Qt::darkGray);
+              painter->setPen(option.palette.text().color().lighter());
             else
-              painter->setPen(Qt::black);
+              painter->setPen(option.palette.text().color());
 
             if(ch_struct._connected)
             {
@@ -2438,6 +2549,43 @@ void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
 //   }
 // }
 
+void RouteTreeWidget::mouseMoveEvent(QMouseEvent* e)
+{
+  const QPoint pt = e->pos(); 
+  //Qt::KeyboardModifiers km = e->modifiers();
+  //bool ctl = km & Qt::ControlModifier;
+  //bool shift = km & Qt::ShiftModifier;
+  RouteTreeWidgetItem* item = static_cast<RouteTreeWidgetItem*>(itemAt(pt));
+  bool is_cur = item && currentItem() && (item == currentItem());
+
+  //if(is_cur)
+  //  QTreeWidget::mouseMoveEvent(e);
+  
+  if(item)
+  {
+    bool changed = item->mouseMoveHandler(e, visualItemRect(item));
+    if(changed)
+    {
+      //setCurrentItem(item);
+      //update(visualItemRect(item));
+      setDirtyRegion(visualItemRect(item));
+      //emit itemSelectionChanged();
+    }
+    
+    //if(!is_cur)
+      QTreeWidget::mouseMoveEvent(e);
+
+    if(changed && is_cur)
+      //setCurrentItem(item);
+      emit itemSelectionChanged();
+      
+    //e->accept();
+    return;
+    
+  }
+  QTreeWidget::mouseMoveEvent(e);
+}    
+    
 QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QModelIndex& index, const QEvent* e) const
 {
   QItemSelectionModel::SelectionFlags flags = QTreeWidget::selectionCommand(index, e);
