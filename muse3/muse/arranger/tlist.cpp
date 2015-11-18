@@ -820,6 +820,17 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
             if (section == COL_NAME) {
               editTrackName(t);
             }
+            else if (section == COL_OPORT) {
+              if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) {
+                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
+                if (synth->hasNativeGui()) {
+                  synth->showNativeGui(!synth->nativeGuiVisible());
+                }
+                else if (synth->hasGui()) {
+                  synth->showGui(!synth->guiVisible());
+                }
+              }
+            }
             else if (section == COL_OCHANNEL) {
                   // Enabled for audio tracks. And synth channels cannot be changed ATM.
                   // Default to track port if -1 and track channel if -1.
