@@ -85,6 +85,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void addJackDeviceClicked();
       void addAlsaDeviceClicked();
       void addInstanceClicked();
+      void renameInstanceClicked();
       void removeInstanceClicked();
       //void deviceItemClicked(QTreeWidgetItem*, int);
       void deviceItemClicked(QTableWidgetItem* item);

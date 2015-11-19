@@ -1083,6 +1083,7 @@ MPConfig::MPConfig(QWidget* parent)
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(addSynthDevice, SIGNAL(clicked()), SLOT(addInstanceClicked()));
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
+      connect(renameDevice, SIGNAL(clicked()), SLOT(renameInstanceClicked()));
       connect(removeDevice, SIGNAL(clicked()), SLOT(removeInstanceClicked()));
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(okClicked()));
@@ -1112,28 +1113,41 @@ void MPConfig::deviceSelectionChanged()
 {
   DEBUG_PRST_ROUTES(stderr, "synthesizerConfig::deviceSelectionChanged() currentItem:%p\n", instanceList->currentItem());
   QTableWidgetItem* item = instanceList->currentItem();
-  if(item == 0)
+  if(!item || !item->data(DeviceRole).canConvert<void*>())
   {
+    renameDevice->setEnabled(false);
     removeDevice->setEnabled(false);
     return;
   }
-  if(!item->data(DeviceRole).canConvert<void*>())
-    return;
+  
   MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
-        
-  // Is it an ALSA midi device? 
-  // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
-  if(md->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
+
+  switch(md->deviceType())
   {
-    snd_seq_addr_t* addr = static_cast<snd_seq_addr_t*>(md->inClientPort());
-    // Allow removing ('purging') an unavailable ALSA device.
-    if(addr->client == SND_SEQ_ADDRESS_UNKNOWN || addr->port == SND_SEQ_ADDRESS_UNKNOWN)
+    // Is it an ALSA midi device? 
+    // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
+    case MusECore::MidiDevice::ALSA_MIDI:
+    {
+      snd_seq_addr_t* addr = static_cast<snd_seq_addr_t*>(md->inClientPort());
+      // Allow removing ('purging') an unavailable ALSA device.
+      if(addr->client == SND_SEQ_ADDRESS_UNKNOWN || addr->port == SND_SEQ_ADDRESS_UNKNOWN)
+        removeDevice->setEnabled(true);
+      else
+        removeDevice->setEnabled(false);
+      renameDevice->setEnabled(false);
+      return;
+    }
+    
+    case MusECore::MidiDevice::JACK_MIDI:
+      renameDevice->setEnabled(true);
       removeDevice->setEnabled(true);
-    else
-      removeDevice->setEnabled(false);
-    return;
+    break;
+    
+    case MusECore::MidiDevice::SYNTH_MIDI:
+      renameDevice->setEnabled(false);
+      removeDevice->setEnabled(true);
+    break;
   }
-  removeDevice->setEnabled(true);
 }
 
 //---------------------------------------------------------
@@ -1514,6 +1528,24 @@ void MPConfig::removeInstanceClicked()
       }
       
       }
+
+//---------------------------------------------------------
+//   renameInstanceClicked
+//---------------------------------------------------------
+
+void MPConfig::renameInstanceClicked()
+{
+  QTableWidgetItem* item = instanceList->currentItem();
+  if(!item)
+    return;
+  item = instanceList->item(item->row(), INSTCOL_NAME);
+  if(!item)
+    return;
+  // FIXME: How to know if the table is already in edit mode? The useful state() method is protected,
+  //         and there don't appear to be any signals we can use.
+  if(item->flags().testFlag(Qt::ItemIsEditable) && item->flags().testFlag(Qt::ItemIsEnabled))
+    instanceList->editItem(item);
+}
 
 //---------------------------------------------------------
 //   deviceItemClicked

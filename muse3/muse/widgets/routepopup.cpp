@@ -3668,7 +3668,6 @@ void RoutePopupMenu::prepare()
     break;
     
     case MusECore::Route::MIDI_DEVICE_ROUTE:
-      addGroupingChannelsAction(this);
       addJackPorts(_route, this);
     break;
 

@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>747</width>
+    <width>656</width>
     <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Midi Devices, Ports and Synths Configuration</string>
+   <string>Configure midi devices, midi ports, and synthesizers</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -21,7 +21,7 @@
      </property>
      <widget class="QGroupBox" name="GroupBox2">
       <property name="title">
-       <string>Available Soft Synthesizers</string>
+       <string>Available soft synthesizers</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -81,7 +81,7 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>Useable Devices</string>
+        <string>Useable devices</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -162,6 +162,13 @@
            </spacer>
           </item>
           <item>
+           <widget class="QToolButton" name="renameDevice">
+            <property name="text">
+             <string>Rename</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QToolButton" name="removeDevice">
             <property name="text">
              <string>Remove</string>
@@ -180,7 +187,7 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>Device Port Assignments</string>
+        <string>Device port assignments</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

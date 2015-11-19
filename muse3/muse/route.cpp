@@ -509,13 +509,13 @@ void removeRoute(Route src, Route dst)
       {
         case Route::TRACK_ROUTE:
           dst.channel = src.channel;
-          src.track->inRoutes()->removeRoute(dst);
+          src.track->outRoutes()->removeRoute(dst);
         break;
         case Route::MIDI_DEVICE_ROUTE:
-          src.device->inRoutes()->removeRoute(dst);
+          src.device->outRoutes()->removeRoute(dst);
         break;
         case Route::MIDI_PORT_ROUTE:
-          MusEGlobal::midiPorts[src.midiPort].inRoutes()->removeRoute(dst);
+          MusEGlobal::midiPorts[src.midiPort].outRoutes()->removeRoute(dst);
         break;
         case Route::JACK_ROUTE:
           // Do nothing - it's a direct Jack disconnection!
@@ -555,13 +555,13 @@ void removeRoute(Route src, Route dst)
       switch(src.type)
       {
         case Route::TRACK_ROUTE:
-          src.track->inRoutes()->removeRoute(dst);
+          src.track->outRoutes()->removeRoute(dst);
         break;
         case Route::MIDI_DEVICE_ROUTE:
-          src.device->inRoutes()->removeRoute(dst);
+          src.device->outRoutes()->removeRoute(dst);
         break;
         case Route::MIDI_PORT_ROUTE:
-          MusEGlobal::midiPorts[src.midiPort].inRoutes()->removeRoute(dst);
+          MusEGlobal::midiPorts[src.midiPort].outRoutes()->removeRoute(dst);
         break;
         case Route::JACK_ROUTE:
         break;
