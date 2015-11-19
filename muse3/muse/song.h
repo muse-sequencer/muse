@@ -110,6 +110,7 @@ class AudioDevice;
 #define SC_KEY                 0x40000000   // key map changed
 #define SC_TRACK_SELECTION     0x80000000   // track selection changed
 #define SC_PORT_ALIAS_PREFERENCE 0x100000000  // (Jack) port alias viewing preference has changed
+#define SC_ROUTER_CHANNEL_GROUPING 0x200000000  // Router channel grouping changed
 #define SC_EVERYTHING          -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

@@ -48,6 +48,7 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_PRST_ROUTES_2(dev, format, args...) // fprintf(dev, format, ##args);
 
 #define _USE_CUSTOM_WIDGET_ACTIONS_ 
 
@@ -63,17 +64,47 @@
 #define _SHOW_CANONICAL_NAMES_ 0x1000
 #define _SHOW_FIRST_ALIASES_  0x1001
 #define _SHOW_SECOND_ALIASES_ 0x1002
+
 #define _ALIASES_WIDGET_ACTION_ 0x2000
 #define _OPEN_MIDI_CONFIG_ 0x2001
 #define _OPEN_ROUTING_DIALOG_ 0x2002
+#define _GROUPING_CHANNELS_WIDGET_ACTION_ 0x2003
 
 namespace MusEGui {
 
+
+void RoutePopupMenu::addGroupingChannelsAction(PopupMenu* lb)
+{
+  RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, 0, 0, this, tr("Channel grouping:"));
+  name_wa->setArrayStayOpen(true);
+  name_wa->setData(_GROUPING_CHANNELS_WIDGET_ACTION_);
+  name_wa->array()->setColumnsExclusive(true);
+  name_wa->array()->setExclusiveToggle(false);
+  name_wa->array()->headerSetVisible(false);
+  name_wa->array()->setText(0, tr("Mono "));
+  name_wa->array()->setText(1, tr("Stereo"));
+  switch(MusEGlobal::config.routerGroupingChannels)
+  {
+    case 1:
+      name_wa->array()->setValue(0, true);
+    break;
+    case 2:
+      name_wa->array()->setValue(1, true);
+    break;
+    default:
+    break;
+  }
+  // Must rebuild array after text changes.
+  name_wa->updateChannelArray();
+  lb->addAction(name_wa);
+  lb->addSeparator();
+}         
+  
 //---------------------------------------------------------
 //   addMenuItem
 //---------------------------------------------------------
 
-int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, MusEGui::PopupMenu* lb, 
+int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, 
                                 int id, int channel, int /*channels*/, bool isOutput)
 {
   if(route_track->isMidiTrack())
@@ -150,6 +181,8 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       RoutePopupMenu* subp = new RoutePopupMenu(_route, this, isOutput);
       subp->addAction(new MenuTitleItem(tr("Channels"), this));
       act->setMenu(subp);
+      QActionGroup* act_group = new QActionGroup(this);
+      act_group->setExclusive(false);
       for(int row = 0; row < rt_chans; ++row)
       {
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
@@ -174,8 +207,10 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
         }
         // Must rebuild array after text changes.
         wa->updateChannelArray();
-        subp->addAction(wa);
+//         subp->addAction(wa);
+        act_group->addAction(wa);
       }
+      subp->addActions(act_group->actions());
     }
     
     if(!act->isChecked() && circ_route)  // If circular route exists, allow user to break it, otherwise forbidden.
@@ -189,9 +224,12 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     PopupMenu* subp = new PopupMenu(this, true);
     subp->setTitle(route_track->name());
     subp->addAction(new MenuTitleItem(tr("Channels"), this));
+    QActionGroup* act_group = new QActionGroup(this);
+    act_group->setExclusive(false);
     for(int i = 0; i < rt_chans; ++i)
     {
-      QAction* act = subp->addAction(QString::number(i + 1));
+//       QAction* act = subp->addAction(QString::number(i + 1));
+      QAction* act = act_group->addAction(QString::number(i + 1));
       act->setCheckable(true);
       MusECore::Route r(route_track, i, 1);
       r.remoteChannel = channel;
@@ -211,6 +249,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       if(!act->isChecked() && circ_route)  // If circular route exists, allow user to break it, otherwise forbidden.
         act->setEnabled(false);
     }
+    subp->addActions(act_group->actions());
     lb->addMenu(subp);
 #endif
     
@@ -595,7 +634,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
 //   addSynthPorts
 //---------------------------------------------------------
 
-int RoutePopupMenu::addSynthPorts(MusECore::AudioTrack* t, MusEGui::PopupMenu* lb, int id, int channel, int channels, bool isOutput)
+int RoutePopupMenu::addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput)
 {
       MusECore::SynthIList* al = MusEGlobal::song->syntis();
       for (MusECore::iSynthI i = al->begin(); i != al->end(); ++i) {
@@ -694,6 +733,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
+    QActionGroup* act_group = new QActionGroup(this);
+    act_group->setExclusive(false);
     int row = 0;
     for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip)
     {
@@ -747,10 +788,12 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         }
         // Must rebuild array after text changes.
         wa->updateChannelArray();
-        lb->addAction(wa);
+//         lb->addAction(wa);
+        act_group->addAction(wa);
         ++row;
       }
     }  
+    lb->addActions(act_group->actions());
 
 #else
     
@@ -1104,80 +1147,233 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   if(contextMenu() && contextMenu()->isVisible())
     return;
   
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  
   bool activate = false;
   bool accept = false;
-  
-  RoutingMatrixWidgetAction* mwa = 0;
+
   QAction* action = actionAt(e->pos());
-  if(action)
-  {
-    mwa = qobject_cast<RoutingMatrixWidgetAction*>(action);
-    if(mwa)
-    {
-      RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-      switch(hit._type)
-      {
-        case RoutePopupHit::HitChannel:
-        {
-          mwa->array()->setValue(hit._value, !mwa->array()->value(hit._value));
-          
-          // Reset any other switch bars besides this one which are part of a QActionGroup.
-          // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
-          QActionGroup* act_group = mwa->actionGroup();
-          if(act_group && act_group->isExclusive())
-          {
-            const int sz = act_group->actions().size();
-            for(int i = 0; i < sz; ++i) 
-            {
-              if(RoutingMatrixWidgetAction* act = qobject_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i)))
-              {
-                if(act != mwa)
-                {
-                  // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
-                  act->array()->setValues(0, false, true, true);
-                  act->updateCreatedWidgets(); // Redraw the indicators.
-                }
-              }
-            }  
-          }
-            
-          if(mwa->arrayStayOpen())
-            accept = true;
-          activate = true;
-        }
-        break;
-        
-        case RoutePopupHit::HitMenuItem:
-          mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
-          activate = true;
-        break;
-        
-        case RoutePopupHit::HitChannelBar:
-        case RoutePopupHit::HitSpace:
-          accept = true;
-        break;
-        
-        case RoutePopupHit::HitNone:
-        break;
-      }
-    }
-  }
+  RoutingMatrixWidgetAction* act_mwa = qobject_cast<RoutingMatrixWidgetAction*>(action);
+  
+//   RoutingMatrixWidgetAction* mwa = 0;
+//   QAction* action = actionAt(e->pos());
+//   if(action)
+//   {
+//     mwa = qobject_cast<RoutingMatrixWidgetAction*>(action);
+//     if(mwa)
+//     {
+//       RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+//       switch(hit._type)
+//       {
+//         case RoutePopupHit::HitChannel:
+//         {
+//           mwa->array()->setValue(hit._value, !mwa->array()->value(hit._value));
+//           
+//           // Reset any other switch bars besides this one which are part of a QActionGroup.
+//           // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+//           QActionGroup* act_group = mwa->actionGroup();
+//           if(act_group && act_group->isExclusive())
+//           {
+//             const int sz = act_group->actions().size();
+//             for(int i = 0; i < sz; ++i) 
+//             {
+//               if(RoutingMatrixWidgetAction* act = qobject_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i)))
+//               {
+//                 if(act != mwa)
+//                 {
+//                   // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
+//                   act->array()->setValues(0, false, true, true);
+//                   act->updateCreatedWidgets(); // Redraw the indicators.
+//                 }
+//               }
+//             }  
+//           }
+//             
+//           if(mwa->arrayStayOpen())
+//             accept = true;
+//           activate = true;
+//         }
+//         break;
+//         
+//         case RoutePopupHit::HitMenuItem:
+//           mwa->setCheckBoxChecked(!mwa->checkBoxChecked());
+//           activate = true;
+//         break;
+//         
+//         case RoutePopupHit::HitChannelBar:
+//         case RoutePopupHit::HitSpace:
+//           accept = true;
+//         break;
+//         
+//         case RoutePopupHit::HitNone:
+//         break;
+//       }
+//     }
+//   }
+
+  int ch_hit_clk_idx_min = -1;
+  int ch_hit_clk_idx_max = -1;
+  int ch_hit_clk_ch_start = -1;
+  bool ch_hit_clk_val = false;
+  QActionGroup* ch_hit_clk_act_group = 0;
   
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
   {
     if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
     {
-      if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
-        mwa->updateCreatedWidgets();  // Redraw
+      bool do_upd = false;
+      // Sanity check: Only activate the item(s) if the action truly is the active one.
+      //if(mwa == activeAction())
+      if(mwa == action)
+      {
+        RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+        switch(hit._type)
+        {
+          case RoutePopupHit::HitChannel:
+          {
+            // Support grouping together of channels.
+            ch_hit_clk_idx_min = i;
+            ch_hit_clk_idx_max = ch_hit_clk_idx_min + MusEGlobal::config.routerGroupingChannels;
+            if(ch_hit_clk_idx_max > sz)
+              ch_hit_clk_idx_min = sz - MusEGlobal::config.routerGroupingChannels;
+            ch_hit_clk_ch_start = hit._value - (i - ch_hit_clk_idx_min);
+            const int ch_diff = mwa->array()->columns() - (ch_hit_clk_ch_start + MusEGlobal::config.routerGroupingChannels);
+            if(ch_diff < 0)
+            {
+              ch_hit_clk_idx_min += ch_diff;
+              ch_hit_clk_idx_max += ch_diff;
+              ch_hit_clk_ch_start += ch_diff;
+            }
+            
+            ch_hit_clk_act_group = mwa->actionGroup();
+            ch_hit_clk_val = !mwa->array()->value(hit._value);
+            if(mwa->array()->value(hit._value) != ch_hit_clk_val)
+            {
+              mwa->array()->setValue(hit._value, ch_hit_clk_val);
+              do_upd = true;
+            }
+            if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+              do_upd = true;
+            
+//             // Reset any other switch bars besides this one which are part of a QActionGroup.
+//             // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+//             QActionGroup* act_group = mwa->actionGroup();
+//             if(act_group && act_group->isExclusive())
+//             {
+//               const int sz = act_group->actions().size();
+//               for(int i = 0; i < sz; ++i) 
+//               {
+//                 if(RoutingMatrixWidgetAction* act = qobject_cast<RoutingMatrixWidgetAction*>(act_group->actions().at(i)))
+//                 {
+//                   if(act != mwa)
+//                   {
+//                     // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
+//                     act->array()->setValues(0, false, true, true);
+//                     act->updateCreatedWidgets(); // Redraw the indicators.
+//                   }
+//                 }
+//               }  
+//             }
+              
+            if(mwa->arrayStayOpen())
+              accept = true;
+            activate = true;
+            
+//             // Directly execute the trigger handler.
+//             e->accept();
+//             routePopupActivated(mwa);
+          }
+          break;
+          
+          case RoutePopupHit::HitMenuItem:
+          {
+            const bool chk = !mwa->checkBoxChecked();
+            if(mwa->checkBoxChecked() != chk)
+            {
+              mwa->setCheckBoxChecked(chk);
+              do_upd = true;
+            }
+            activate = true;
+            
+//             // Directly execute the trigger handler.
+//             routePopupActivated(mwa);
+          }
+          break;
+          
+          case RoutePopupHit::HitChannelBar:
+          case RoutePopupHit::HitSpace:
+            accept = true;
+            
+//             e->accept();
+          break;
+          
+          case RoutePopupHit::HitNone:
+          break;
+        }        
+      }
+      if(do_upd)
+        mwa->updateCreatedWidgets();
+    }  
+  }  
+  
+  
+  
+  for(int i = 0; i < sz; ++i)
+  {
+    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+    {
+      bool do_upd = false;
+      // Sanity check: Only activate the item(s) which are not the active one.
+      //if(mwa != activeAction())
+      if(mwa != action)
+      {
+        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent this:%p inactive mwa:%p\n", this, mwa); // REMOVE Tim.
+        
+        if(ch_hit_clk_act_group && ch_hit_clk_act_group == mwa->actionGroup())
+        {
+          if(ch_hit_clk_act_group->isExclusive())
+          {
+            // Reset any other switch bars besides this one which are part of a QActionGroup.
+            // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
+            // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
+            mwa->array()->setValues(0, false, true, true);
+            do_upd = true;
+          }
+          else if(i >= ch_hit_clk_idx_min && i < ch_hit_clk_idx_max)
+          {
+            const int ch = ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min);
+//             mwa->array()->setValue(ch, !mwa->array()->value(ch));
+            if(mwa->array()->value(ch) != ch_hit_clk_val)
+            {
+              mwa->array()->setValue(ch, ch_hit_clk_val);
+              do_upd = true;
+            }
+            
+//             // Directly execute the trigger handler.
+//             e->accept();
+//             routePopupActivated(mwa);
+            
+            DEBUG_PRST_ROUTES_2(stderr, "   ch:%d active col:%d pressed col:%d\n", 
+                              ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+          }
+        }
+//         else 
+        if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+          do_upd = true;
+
+      }
+      if(do_upd)
+        mwa->updateCreatedWidgets();
     }
   }
   
-  if(!action || !mwa)
+  if(!action || !act_mwa)
   {
     e->ignore();
     // Defer to PopupMenu, where we handle regular actions with checkboxes.
     PopupMenu::mouseReleaseEvent(e);
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent defer end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
     return;
   }
 
@@ -1186,7 +1382,8 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
     e->accept();
     if(activate)
       // Directly execute the trigger handler.
-      routePopupActivated(mwa);
+      routePopupActivated(act_mwa);
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
     return;
   }
   
@@ -1195,86 +1392,45 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   {
     e->ignore();
     // If this is the active popup widget let the ancestor activate and close it, otherwise we must close this manually.
-//     QMenu* m = qobject_cast<QMenu*>(QApplication::activePopupWidget());
-//     if(m == this)
-//       PopupMenu::mouseReleaseEvent(e);
-//     else
-//     {
+// //     QMenu* m = qobject_cast<QMenu*>(QApplication::activePopupWidget());
+// //     if(m == this)
+// //       PopupMenu::mouseReleaseEvent(e);
+// //     else
+// //     {
+    
       if(activate)
         // Directly execute the trigger handler.
-        routePopupActivated(mwa);
+        routePopupActivated(act_mwa);
+      
       // Close all the popups.
       closeUp();
-//     }
+// //     }
     return;
   }
 
   e->accept();
   if(activate)
-    routePopupActivated(mwa);
+    routePopupActivated(act_mwa);
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
 }
 
 void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
 {
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+//   e->ignore();
+//   PopupMenu::mousePressEvent(e);
+//   DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent after begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::mousePressEvent this:%p x:%d y:%d\n", this, e->pos().x(), e->pos().y());
+
+  RoutingMatrixWidgetAction* act_mwa = qobject_cast<RoutingMatrixWidgetAction*>(actionAt(e->pos()));
+  
   bool accept = false;
-  const int sz = actions().size();
-  for(int i = 0; i < sz; ++i)
-  {
-    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
-    {
-      RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-      switch(hit._type)
-      {
-        case RoutePopupHit::HitChannel:
-          if(mwa->array()->setPressedColumn(hit._value))
-            mwa->updateCreatedWidgets();
-          accept = true;
-        break;
-        
-        case RoutePopupHit::HitMenuItem:
-          if(mwa->setMenuItemPressed(true))
-            mwa->updateCreatedWidgets();
-          accept = true;
-        break;
-        
-        case RoutePopupHit::HitChannelBar:
-        case RoutePopupHit::HitSpace:
-          if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
-            mwa->updateCreatedWidgets();
-          accept = true;
-        break;
-        
-        case RoutePopupHit::HitNone:
-          if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
-            mwa->updateCreatedWidgets(); // TODO Close the menu instead of letting QMenu do it (below)?
-        break;
-      }
-    }
-  }
-
-  if(accept)
-  {
-//     e->accept();
-//     PopupMenu::mousePressEvent(e);
-//     return;
-  }
-
-  e->ignore();
-  PopupMenu::mousePressEvent(e);
-}
-
-void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
-{
-  DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::mouseMoveEvent this:%p\n", this);
-
-  // Inform the hover handler that it was a mouse hover.
-  _hoverIsFromMouse = true;
-  // Ignore the event and pass it on. Let any new active action and hover signal be generated before the code below is run.
-  e->ignore();
-  PopupMenu::mouseMoveEvent(e);
-  // Clear the flag.
-  _hoverIsFromMouse = false;
+  
+  int ch_hit_clk_idx_min = -1;
+  int ch_hit_clk_idx_max = -1;
+  int ch_hit_clk_ch_start = -1;
+  QActionGroup* ch_hit_clk_act_group = 0;
 
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
@@ -1283,14 +1439,162 @@ void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
     {
       bool do_upd = false;
       // Sanity check: Only activate the item(s) if the action truly is the active one.
-      if(mwa == activeAction())
+      DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p mwa:%p activeAction:%p\n", this, mwa, activeAction()); // REMOVE Tim.
+      //if(mwa == activeAction())
+      if(mwa == act_mwa)
+      {
+        DEBUG_PRST_ROUTES_2(stderr, "  is active\n"); // REMOVE Tim.
+        RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+        switch(hit._type)
+        {
+          case RoutePopupHit::HitChannel:
+          {
+            // Support grouping together of channels.
+            ch_hit_clk_idx_min = i;
+            ch_hit_clk_idx_max = ch_hit_clk_idx_min + MusEGlobal::config.routerGroupingChannels;
+            if(ch_hit_clk_idx_max > sz)
+              ch_hit_clk_idx_min = sz - MusEGlobal::config.routerGroupingChannels;
+            ch_hit_clk_ch_start = hit._value - (i - ch_hit_clk_idx_min);
+            const int ch_diff = mwa->array()->columns() - (ch_hit_clk_ch_start + MusEGlobal::config.routerGroupingChannels);
+            if(ch_diff < 0)
+            {
+              ch_hit_clk_idx_min += ch_diff;
+              ch_hit_clk_idx_max += ch_diff;
+              ch_hit_clk_ch_start += ch_diff;
+            }
+            // Set the pressed value. If the column was already active, update again 
+            //  so that pressed colour overrides highlighted colour.
+            if(mwa->array()->setPressedColumn(hit._value) || mwa->array()->activeColumn() == hit._value)
+              do_upd = true;
+            ch_hit_clk_act_group = mwa->actionGroup();
+            DEBUG_PRST_ROUTES_2(stderr, "   HitChannel ch:%d active col:%d pressed col:%d\n", 
+                             hit._value, mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+            accept = true;
+          }
+          break;
+          
+          case RoutePopupHit::HitMenuItem:
+            if(mwa->setMenuItemPressed(true))
+              do_upd = true;
+            accept = true;
+          break;
+          
+          case RoutePopupHit::HitChannelBar:
+          case RoutePopupHit::HitSpace:
+            if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+              do_upd = true;
+            accept = true;
+          break;
+          
+          case RoutePopupHit::HitNone:
+            if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+              do_upd = true; // TODO Close the menu instead of letting QMenu do it (below)?
+          break;
+        }
+      }
+      if(do_upd)
+        mwa->updateCreatedWidgets();
+    }
+  }
+
+  for(int i = 0; i < sz; ++i)
+  {
+    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+    {
+      bool do_upd = false;
+      // Sanity check: Only activate the item(s) which are not the active one.
+      //if(mwa != activeAction())
+      if(mwa != act_mwa)
+      {
+        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p inactive mwa:%p\n", this, mwa); // REMOVE Tim.
+        if(ch_hit_clk_act_group && 
+           !ch_hit_clk_act_group->isExclusive() && 
+           ch_hit_clk_act_group == mwa->actionGroup() &&
+           i >= ch_hit_clk_idx_min && 
+           i < ch_hit_clk_idx_max)
+        {
+          if(mwa->array()->setPressedColumn(ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min)))
+            do_upd = true;
+          DEBUG_PRST_ROUTES_2(stderr, "   ch:%d active col:%d pressed col:%d\n", 
+                             ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+        }
+        else if(mwa->array()->setPressedColumn(-1))
+          do_upd = true;
+      }
+      if(do_upd)
+        mwa->updateCreatedWidgets();
+    }
+  }
+  
+  
+  if(accept)
+  {
+// //     e->accept();
+// //     PopupMenu::mousePressEvent(e);
+// //     return;
+  }
+
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent before end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  e->ignore();
+  PopupMenu::mousePressEvent(e);
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+}
+
+void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
+{
+  DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::mouseMoveEvent this:%p\n", this);
+
+  RoutingMatrixWidgetAction* act_mwa = qobject_cast<RoutingMatrixWidgetAction*>(actionAt(e->pos()));
+  
+  // Inform the hover handler that it was a mouse hover.
+  _hoverIsFromMouse = true;
+  // Ignore the event and pass it on. Let any new active action and hover signal be generated before the code below is run.
+  e->ignore();
+  PopupMenu::mouseMoveEvent(e);
+  // Clear the flag.
+  _hoverIsFromMouse = false;
+
+  int ch_hit_hvr_idx_min = -1;
+  int ch_hit_hvr_idx_max = -1;
+  int ch_hit_hvr_ch_start = -1;
+  QActionGroup* ch_hit_hvr_act_group = 0;
+
+  int ch_hit_clk_idx_min = -1;
+  int ch_hit_clk_idx_max = -1;
+  int ch_hit_clk_ch_start = -1;
+  QActionGroup* ch_hit_clk_act_group = 0;
+  
+  const int sz = actions().size();
+  for(int i = 0; i < sz; ++i)
+  {
+    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+    {
+      bool do_upd = false;
+      // Sanity check: Only activate the item(s) if the action truly is the active one.
+      //if(mwa == activeAction())
+      if(mwa == act_mwa)
       {
         RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestHover);
         switch(hit._type)
         {
           case RoutePopupHit::HitChannel:
+          {
             // Update the current 'last' hover info.
             _lastHoveredHit = hit;
+            // Support grouping together of channels.
+            ch_hit_hvr_idx_min = i;
+            ch_hit_hvr_idx_max = ch_hit_hvr_idx_min + MusEGlobal::config.routerGroupingChannels;
+            if(ch_hit_hvr_idx_max > sz)
+              ch_hit_hvr_idx_min = sz - MusEGlobal::config.routerGroupingChannels;
+            ch_hit_hvr_ch_start = hit._value - (i - ch_hit_hvr_idx_min);
+            const int ch_diff = mwa->array()->columns() - (ch_hit_hvr_ch_start + MusEGlobal::config.routerGroupingChannels);
+            if(ch_diff < 0)
+            {
+              ch_hit_hvr_idx_min += ch_diff;
+              ch_hit_hvr_idx_max += ch_diff;
+              ch_hit_hvr_ch_start += ch_diff;
+            }
+            // Set the values.
             if(mwa->isSelected())
             {
               mwa->setSelected(false);
@@ -1302,6 +1606,8 @@ void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
               mwa->array()->setActiveColumn(hit._value);
               do_upd = true;
             }
+            ch_hit_hvr_act_group = mwa->actionGroup();
+          }
           break;
           
           case RoutePopupHit::HitMenuItem:
@@ -1334,49 +1640,123 @@ void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
             }
           break;
         }
+//       }
+//       else
+//       {
+//         if(mwa->isSelected())
+//         {
+//           mwa->setSelected(false);
+//           do_upd = true;
+//         }
+//         if(mwa->array()->activeColumn() != -1)
+//         {
+//           mwa->array()->setActiveColumn(-1);
+//           do_upd = true;
+//         }
+//       }
+        
+        if(e->buttons() != Qt::NoButton)
+        {
+          RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
+          switch(hit._type)
+          {
+            case RoutePopupHit::HitChannel:
+            {
+              // Support grouping together of channels.
+              ch_hit_clk_idx_min = i;
+              ch_hit_clk_idx_max = ch_hit_clk_idx_min + MusEGlobal::config.routerGroupingChannels;
+              if(ch_hit_clk_idx_max > sz)
+                ch_hit_clk_idx_min = sz - MusEGlobal::config.routerGroupingChannels;
+              ch_hit_clk_ch_start = hit._value - (i - ch_hit_clk_idx_min);
+              const int ch_diff = mwa->array()->columns() - (ch_hit_clk_ch_start + MusEGlobal::config.routerGroupingChannels);
+              if(ch_diff < 0)
+              {
+                ch_hit_clk_idx_min += ch_diff;
+                ch_hit_clk_idx_max += ch_diff;
+                ch_hit_clk_ch_start += ch_diff;
+              }
+              // Set the value.
+              if(mwa->array()->setPressedColumn(hit._value))
+                do_upd = true;
+              ch_hit_clk_act_group = mwa->actionGroup();
+            }
+            break;
+            
+            case RoutePopupHit::HitMenuItem:
+              if(mwa->setMenuItemPressed(true))
+                do_upd = true;
+            break;
+            
+            case RoutePopupHit::HitChannelBar:
+            case RoutePopupHit::HitSpace:
+            case RoutePopupHit::HitNone:
+              if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
+                do_upd = true;
+            break;
+          }
+        }
       }
-      else
+      if(do_upd)
+        mwa->updateCreatedWidgets();
+    }
+  }
+
+  
+  for(int i = 0; i < sz; ++i)
+  {
+    if(RoutingMatrixWidgetAction* mwa = qobject_cast<RoutingMatrixWidgetAction*>(actions().at(i)))
+    {
+      bool do_upd = false;
+      // Sanity check: Only activate the item(s) which are not the active one.
+      //if(mwa != activeAction())
+      if(mwa != act_mwa)
       {
         if(mwa->isSelected())
         {
           mwa->setSelected(false);
           do_upd = true;
         }
-        if(mwa->array()->activeColumn() != -1)
+        
+        if(ch_hit_hvr_act_group && 
+           !ch_hit_hvr_act_group->isExclusive() && 
+           ch_hit_hvr_act_group == mwa->actionGroup() &&
+           i >= ch_hit_hvr_idx_min && i < ch_hit_hvr_idx_max)
+        {
+          const int ch = ch_hit_hvr_ch_start + (i - ch_hit_hvr_idx_min);
+          if(mwa->array()->activeColumn() != ch)
+          {
+            DEBUG_PRST_ROUTES(stderr, "   Setting inactive column:%d\n", ch);
+            mwa->array()->setActiveColumn(ch);
+            do_upd = true;
+          }
+        }
+        else if(mwa->array()->activeColumn() != -1)
         {
           mwa->array()->setActiveColumn(-1);
           do_upd = true;
         }
-      }
-        
-      if(e->buttons() != Qt::NoButton)
-      {
-        RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
-        switch(hit._type)
+//       }
+
+        if(e->buttons() != Qt::NoButton && 
+           ch_hit_clk_act_group && 
+           !ch_hit_clk_act_group->isExclusive() && 
+           ch_hit_clk_act_group == mwa->actionGroup() &&          
+           i >= ch_hit_clk_idx_min && 
+           i < ch_hit_clk_idx_max)
         {
-          case RoutePopupHit::HitChannel:
-            if(mwa->array()->setPressedColumn(hit._value))
-              do_upd = true;
-          break;
-          
-          case RoutePopupHit::HitMenuItem:
-            if(mwa->setMenuItemPressed(true))
-              do_upd = true;
-          break;
-          
-          case RoutePopupHit::HitChannelBar:
-          case RoutePopupHit::HitSpace:
-          case RoutePopupHit::HitNone:
-            if(mwa->setMenuItemPressed(false) || mwa->array()->setPressedColumn(-1))
-              do_upd = true;
-          break;
+          if(mwa->array()->setPressedColumn(ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min)))
+            do_upd = true;
         }
+        else if(mwa->array()->setPressedColumn(-1))
+          do_upd = true;
       }
       
       if(do_upd)
         mwa->updateCreatedWidgets();
     }
   }
+  
+  
 }
 
 void RoutePopupMenu::routePopupHovered(QAction* action)
@@ -1681,6 +2061,8 @@ void RoutePopupMenu::songChanged(MusECore::SongChangedFlags_t val)
     updateRouteMenus();
   if(val & SC_PORT_ALIAS_PREFERENCE)
     preferredPortAliasChanged();
+  if(val & SC_ROUTER_CHANNEL_GROUPING)
+    routerChannelGroupingChanged();
 }
 
 bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
@@ -1817,37 +2199,32 @@ bool RoutePopupMenu::preferredPortAliasChanged()
             // Check for the 'preferred port alias' action.
             case _ALIASES_WIDGET_ACTION_:
             {
-              // Check for custom widget action.
-              if(RoutingMatrixWidgetAction* wa = qobject_cast<RoutingMatrixWidgetAction*>(act))
+              int v; 
+              if(wa->array()->value(0))
+                v = MusEGlobal::RoutePreferFirstAlias;
+              else if(wa->array()->value(1))
+                v = MusEGlobal::RoutePreferSecondAlias;
+              else 
+                v = MusEGlobal::RoutePreferCanonicalName;
+              
+              if(v != MusEGlobal::config.preferredRouteNameOrAlias)
               {
-                int v; 
-                if(wa->array()->value(0))
-                  v = MusEGlobal::RoutePreferFirstAlias;
-                else if(wa->array()->value(1))
-                  v = MusEGlobal::RoutePreferSecondAlias;
-                else 
-                  v = MusEGlobal::RoutePreferCanonicalName;
-                
-                if(v != MusEGlobal::config.preferredRouteNameOrAlias)
+                DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::preferredPortAliasChanged setting alias array preferredRouteNameOrAlias:%d\n", 
+                        MusEGlobal::config.preferredRouteNameOrAlias);
+                switch(MusEGlobal::config.preferredRouteNameOrAlias)
                 {
-                  DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::preferredPortAliasChanged setting alias array preferredRouteNameOrAlias:%d\n", 
-                          MusEGlobal::config.preferredRouteNameOrAlias);
-                  switch(MusEGlobal::config.preferredRouteNameOrAlias)
-                  {
-                    case MusEGlobal::RoutePreferFirstAlias:
-                      wa->array()->setValue(0, true);
-                    break;
-                    case MusEGlobal::RoutePreferSecondAlias:
-                      wa->array()->setValue(1, true);
-                    break;
-                    case MusEGlobal::RoutePreferCanonicalName:
-                      // Just set any column to false to clear this exclusive array.
-                      wa->array()->setValue(0, false);
-                    break;
-                  }
-                  
-                  changed = true;
+                  case MusEGlobal::RoutePreferFirstAlias:
+                    wa->array()->setValue(0, true);
+                  break;
+                  case MusEGlobal::RoutePreferSecondAlias:
+                    wa->array()->setValue(1, true);
+                  break;
+                  case MusEGlobal::RoutePreferCanonicalName:
+                    // Just set any column to false to clear this exclusive array.
+                    wa->array()->setValue(0, false);
+                  break;
                 }
+                changed = true;
               }
             }
             break;
@@ -1885,6 +2262,81 @@ bool RoutePopupMenu::preferredPortAliasChanged()
     }
   }
   
+  return changed;
+}
+
+bool RoutePopupMenu::routerChannelGroupingChanged()
+{
+  QList<QAction*> list = actions();
+  const int sz = list.size();
+  bool changed = false;
+  for(int i = 0; i < sz; ++i)
+  {
+    QAction* act = list.at(i);
+    // Check for custom widget action.
+    if(RoutingMatrixWidgetAction* wa = qobject_cast<RoutingMatrixWidgetAction*>(act))
+    {
+      // Check for Route data type.
+      // Take care of struct Route first. Add other future custom structures here too.
+      if(act->data().canConvert<MusECore::Route>())
+      {
+        // Nothing to do here yet.
+      }
+      // No Route data type. Check for int data IDs.
+      // Handle future data types above, before this in case those types might be convertable to int.
+      else
+      {
+        bool ok = false;
+        const int n = act->data().toInt(&ok);
+        if(ok)
+        {
+          switch(n)
+          {
+  #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+            // Check for the 'grouping channels' action.
+            case _GROUPING_CHANNELS_WIDGET_ACTION_:
+            {
+              int v; 
+              if(wa->array()->value(0))
+                v = 1;
+              else 
+                v = 2;
+              
+              if(v != MusEGlobal::config.routerGroupingChannels)
+              {
+                DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::routerChannelGroupingChanged setting array routerGroupingChannels:%d\n", 
+                        MusEGlobal::config.routerGroupingChannels);
+                switch(MusEGlobal::config.routerGroupingChannels)
+                {
+                  case 1:
+                    wa->array()->setValue(0, true);
+                    changed = true;
+                  break;
+                  case 2:
+                    wa->array()->setValue(1, true);
+                    changed = true;
+                  break;
+                  default:
+                  break;
+                }
+              }
+            }
+            break;
+  #endif
+            
+            default:
+            break;
+          }
+        }
+      }
+    }
+    // Not a custom widget action. Check for Route data type.
+    // Take care of struct Route first. Add other future custom structures here too.
+    else if(act->data().canConvert<MusECore::Route>())
+    {
+      // Nothing to do here yet.
+    }
+  }
   return changed;
 }
 
@@ -2648,6 +3100,22 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
           }
         }
         break;
+        
+        case _GROUPING_CHANNELS_WIDGET_ACTION_:
+        {
+          // Check for custom widget action.
+          RoutingMatrixWidgetAction* wa = qobject_cast<RoutingMatrixWidgetAction*>(action);
+          if(wa)
+          {
+            if(wa->array()->value(0))
+              MusEGlobal::config.routerGroupingChannels = 1;
+            else
+              MusEGlobal::config.routerGroupingChannels = 2;
+            
+            MusEGlobal::song->update(SC_ROUTER_CHANNEL_GROUPING);
+          }
+        }
+        break;
 #endif
         
         case _SHOW_CANONICAL_NAMES_:
@@ -2686,24 +3154,68 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
   }
   
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::popupActivated: action data is a Route\n");
-  MusECore::Route rem_route = action->data().value<MusECore::Route>();
-      
-  switch(_route.type)
+//   MusECore::Route rem_route = action->data().value<MusECore::Route>();
+  
+  // Support grouping together of channels.
+  int act_group_sz = 0;
+  int act_idx = 0;
+  int act_start = 0;
+  int act_count = 0;
+  bool use_act_list = false;
+  QList < QAction* > act_list; 
+  const QActionGroup* act_group = action->actionGroup();
+  if(act_group && !act_group->isExclusive())
   {
-    case MusECore::Route::TRACK_ROUTE:
-      trackPopupActivated(action, rem_route, operations);
-    break;
-    
-    case MusECore::Route::JACK_ROUTE:
-    break;
-    
-    case MusECore::Route::MIDI_DEVICE_ROUTE:
-      jackRouteActivated(action, _route, rem_route, operations);
-    break;
-    
-    case MusECore::Route::MIDI_PORT_ROUTE:
-    break;
-    
+    act_list = act_group->actions();
+    act_idx = act_list.indexOf(action);
+    if(act_idx != -1)
+    {
+      use_act_list = true;
+      act_group_sz = act_list.size();
+      act_start = act_idx;
+      if((act_start + MusEGlobal::config.routerGroupingChannels) > act_group_sz)
+        act_start = act_group_sz - MusEGlobal::config.routerGroupingChannels;
+      if(act_start < 0 )
+        act_start = 0;
+      act_count = MusEGlobal::config.routerGroupingChannels;
+      if((act_start + act_count) > act_group_sz)
+        act_count = act_group_sz - act_start; 
+    }
+  }
+  
+  while(1)
+  {
+    QAction* act = use_act_list ? act_list.at(act_start) : action;
+//     DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::popupActivated this:%p act:%p active action:%p act_group_sz:%d act_start:%d act_count:%d\n", 
+//             this, act, activeAction(), act_group_sz, act_start, act_count); // REMOVE Tim.
+    if(!act)
+      break;
+    MusECore::Route rem_route = act->data().value<MusECore::Route>();
+    switch(_route.type)
+    {
+      case MusECore::Route::TRACK_ROUTE:
+        trackPopupActivated(act, rem_route, operations);
+      break;
+      
+      case MusECore::Route::JACK_ROUTE:
+      break;
+      
+      case MusECore::Route::MIDI_DEVICE_ROUTE:
+        jackRouteActivated(act, _route, rem_route, operations);
+      break;
+      
+      case MusECore::Route::MIDI_PORT_ROUTE:
+      break;
+      
+    }
+    if(use_act_list)
+    {
+      ++act_start;
+      if(--act_count == 0)
+        break;
+    }
+    else
+      break;
   }
   
   if(!operations.empty())
@@ -2956,6 +3468,8 @@ void RoutePopupMenu::prepare()
       {
         MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
         MusECore::RouteCapabilitiesStruct rcaps = t->routeCapabilities();
+        
+        
         if(_isOutMenu)   
         {
           const int t_ochs = rcaps._trackChannels._outChannels;
@@ -2965,6 +3479,7 @@ void RoutePopupMenu::prepare()
           {
             case MusECore::Track::AUDIO_OUTPUT:
             {
+              addGroupingChannelsAction(this);
               addJackPorts(_route, this);
               
               if(!MusEGlobal::song->inputs()->empty())
@@ -2996,6 +3511,7 @@ void RoutePopupMenu::prepare()
             case MusECore::Track::AUDIO_SOFTSYNTH:
               if(t_ochs > 0)
               {
+                addGroupingChannelsAction(this);
                 addAction(new RoutingMatrixHeaderWidgetAction(tr("Omni"), tr("Tracks"), QString(), this));
                 gid = addWavePorts(        t, this, gid, -1, -1, true);  
                 gid = addOutPorts(         t, this, gid, -1, -1, true);
@@ -3054,6 +3570,7 @@ void RoutePopupMenu::prepare()
           {
             case MusECore::Track::AUDIO_INPUT:
             {
+              addGroupingChannelsAction(this);
               addJackPorts(_route, this);
               
               if(!MusEGlobal::song->outputs()->empty() || !MusEGlobal::song->midis()->empty())
@@ -3096,6 +3613,7 @@ void RoutePopupMenu::prepare()
             case MusECore::Track::AUDIO_SOFTSYNTH:
               if(t_ichs > 0)
               {
+                addGroupingChannelsAction(this);
                 addAction(new RoutingMatrixHeaderWidgetAction(tr("Omni"), tr("Tracks"), QString(), this));
                 gid = addWavePorts( t, this, gid, -1, -1, false);
                 gid = addInPorts(   t, this, gid, -1, -1, false);
@@ -3150,6 +3668,7 @@ void RoutePopupMenu::prepare()
     break;
     
     case MusECore::Route::MIDI_DEVICE_ROUTE:
+      addGroupingChannelsAction(this);
       addJackPorts(_route, this);
     break;
 

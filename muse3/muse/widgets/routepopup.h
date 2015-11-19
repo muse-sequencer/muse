@@ -63,6 +63,7 @@ class RoutePopupMenu : public PopupMenu
     // Recursive. Returns true if any text was changed.
     bool updateItemTexts(PopupMenu* menu = 0); 
     
+    void addGroupingChannelsAction(PopupMenu* lb);
     int addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, int id, int channel, 
                     int channels, bool isOutput);
     int addAuxPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
@@ -70,11 +71,11 @@ class RoutePopupMenu : public PopupMenu
     int addOutPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addGroupPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    void addMidiPorts(MusECore::Track* t, MusEGui::PopupMenu* pup, bool isOutput, bool show_synths, bool want_readable);
-    void addMidiTracks(MusECore::Track* t, MusEGui::PopupMenu* pup, bool isOutput);
-    
+    void addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths, bool want_readable);
+    void addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOutput);
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     void addJackPorts(const MusECore::Route& route, PopupMenu* lb);
+    
     void jackRouteActivated(QAction* action, const MusECore::Route& route, const MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     void audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
@@ -95,6 +96,8 @@ class RoutePopupMenu : public PopupMenu
     virtual void keyPressEvent(QKeyEvent*);
     // Updates item texts and the 'preferred alias action'. Returns true if any action was changed.
     virtual bool preferredPortAliasChanged(); 
+    // Updates items and the 'channel grouping'. Returns true if any action was changed.
+    virtual bool routerChannelGroupingChanged(); 
 
     // For auto-breakup of a too-wide menu. Virtual.
     virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool /*stayOpen*/ = false)

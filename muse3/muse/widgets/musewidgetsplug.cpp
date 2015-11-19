@@ -265,7 +265,8 @@ MusEGlobal::GlobalConfigValues config = {
       QString("klick3.wav"),        // accent1Sample
       QString("klick4.wav"),        // accent2Sample
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
-      false                         // routerExpandVertically
+      false,                        // routerExpandVertically
+      2                             // routerGroupingChannels
       };
 
 //---------------------------------------------------------
