@@ -123,6 +123,9 @@ QString MidiAlsaDevice::open()
 {
       _openFlags &= _rwFlags; // restrict to available bits
 
+      if(!alsaSeq)
+        return QString("ALSA uninitialized");
+      
       snd_seq_port_info_t *pinfo = NULL;
       snd_seq_port_subscribe_t* subs = NULL;
 
@@ -134,7 +137,8 @@ QString MidiAlsaDevice::open()
         if(rv < 0)
         {  
           fprintf(stderr, "MidiAlsaDevice::open Error getting port info: address: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
-          return QString(snd_strerror(rv));
+          _state = QString(snd_strerror(rv));
+          return _state;
         }
         DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open: address: %d:%d\n", adr.client, adr.port);
         // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
@@ -201,12 +205,19 @@ QString MidiAlsaDevice::open()
         }
       }
       else
-        return QString("Unavailable");
-
+      {
+        _state = QString("Unavailable");
+        return _state;
+      }
+      
       if(wer < 0 || rer < 0)
-        return estr;
-        
-      return QString("OK");
+      {
+        _state = estr;
+        return _state;
+      } 
+      
+      _state = QString("OK");
+      return _state;
 }
 
 //---------------------------------------------------------
@@ -215,6 +226,9 @@ QString MidiAlsaDevice::open()
 
 void MidiAlsaDevice::close()
 {
+      if(!alsaSeq)
+        return;
+      
       snd_seq_port_info_t *pinfo;
       snd_seq_port_subscribe_t* subs;
       if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)
@@ -225,6 +239,7 @@ void MidiAlsaDevice::close()
         if(rv < 0)
         {  
           fprintf(stderr, "MidiAlsaDevice::close Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
+          _state = QString("Error on close");
           return;
         }
         // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
@@ -312,6 +327,7 @@ void MidiAlsaDevice::close()
               _readEnable = false;      
         }
       }
+  _state = QString("Closed");
 }
 
 //---------------------------------------------------------
@@ -360,7 +376,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
             e.dump();
             }
             
-      if(adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+      if(!alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
         return true;
       
       int chn = e.channel();
@@ -518,6 +534,9 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
 
 bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       {
+      if(!alsaSeq)
+        return true;
+        
       int error;
 
 #ifdef ALSA_DEBUG
@@ -942,6 +961,12 @@ void MidiAlsaDevice::handleSeek()
 
 bool initMidiAlsa()
       {
+      if(alsaSeq)
+      {
+        DEBUG_PRST_ROUTES(stderr, "initMidiAlsa: alsaSeq already initialized, ignoring\n");
+        return false; 
+      }
+      
       muse_atomic_init(&atomicAlsaMidiScanPending);
       muse_atomic_set(&atomicAlsaMidiScanPending, 0);
       
@@ -986,7 +1011,23 @@ bool initMidiAlsa()
                                 continue;
                           }
                   snd_seq_addr_t adr = *snd_seq_port_info_get_addr(pinfo);
-                  MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
+                  
+                  const QString dev_name(snd_seq_port_info_get_name(pinfo));
+                  MidiDevice* dev = MusEGlobal::midiDevices.find(dev_name, MidiDevice::ALSA_MIDI);
+                  const bool dev_found = dev;
+                  if(dev_found)
+                  {
+                    DEBUG_PRST_ROUTES(stderr, "initMidiAlsa device found:%p %s\n", dev, snd_seq_port_info_get_name(pinfo));
+                    // TODO: Hm, something more than this? Maybe ultimately will have to destroy/recreate the device?
+                    dev->setAddressClient(adr.client);
+                    dev->setAddressPort(adr.port);
+                    // The state should be 'Unavailable', change it to 'Closed' (or 'Open' below).
+                    //if(dev->midiPort() == -1)
+                      dev->setState("Closed");
+                  }
+                  else 
+                    dev = new MidiAlsaDevice(adr, QString(dev_name));
+                  //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
                   if (capability & outCap)
                         flags |= 1;
@@ -1002,7 +1043,15 @@ bool initMidiAlsa()
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
-                  MusEGlobal::midiDevices.add(dev);
+                  if(dev_found)
+                  {
+//                     // The device should be closed right now. Open it if necessary,
+//                     //  which will also change the state to 'Open'.
+//                     if(dev->midiPort() != -1)
+//                       dev->open();
+                  }
+                  else
+                    MusEGlobal::midiDevices.add(dev);
                   }
             }
 
@@ -1033,7 +1082,22 @@ bool initMidiAlsa()
                                 continue;
                           }
                   snd_seq_addr_t adr = *snd_seq_port_info_get_addr(pinfo);
-                  MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
+                  const QString dev_name(snd_seq_port_info_get_name(pinfo));
+                  MidiDevice* dev = MusEGlobal::midiDevices.find(dev_name, MidiDevice::ALSA_MIDI);
+                  const bool dev_found = dev;
+                  if(dev_found)
+                  {
+                    DEBUG_PRST_ROUTES(stderr, "initMidiAlsa device found:%p %s\n", dev, snd_seq_port_info_get_name(pinfo));
+                    // TODO: Hm, something more than this? Maybe ultimately will have to destroy/recreate the device?
+                    dev->setAddressClient(adr.client);
+                    dev->setAddressPort(adr.port);
+                    // The state should be 'Unavailable', change it to 'Closed' (or 'Open' below).
+                    //if(dev->midiPort() == -1)
+                      dev->setState("Closed");
+                  }
+                  else
+                    dev = new MidiAlsaDevice(adr, dev_name);
+                  //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
                   if (capability & outCap)
                         flags |= 1;
@@ -1047,11 +1111,19 @@ bool initMidiAlsa()
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
-                        DEBUG_PRST_ROUTES(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                  DEBUG_PRST_ROUTES(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
-                  MusEGlobal::midiDevices.add(dev);
+                  if(dev_found)
+                  {
+//                     // The device should be closed right now. Open it if necessary,
+//                     //  which will also change the state to 'Open'.
+//                     if(dev->midiPort() != -1)
+//                       dev->open();
+                  }
+                  else
+                    MusEGlobal::midiDevices.add(dev);
                   }
             }
             
@@ -1107,6 +1179,26 @@ bool initMidiAlsa()
             fprintf(stderr, "Alsa: Subscribe System failed: %s", snd_strerror(error));
             return true;
             }
+            
+            
+      // The ALSA devices should be closed right now. Open them if necessary,
+      //  which will also change their states to 'Open'.
+      for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+      {
+        MidiDevice* d = *i;
+        switch(d->deviceType())
+        {
+          case MidiDevice::ALSA_MIDI:
+            if(d->midiPort() != -1)
+              d->open();
+          break;
+
+          case MidiDevice::JACK_MIDI:
+          case MidiDevice::SYNTH_MIDI:
+          break;
+        }
+      }                
+            
       return false;
       }
 
@@ -1149,7 +1241,15 @@ void exitMidiAlsa()
       fprintf(stderr, "MusE: Could not close ALSA sequencer: %s\n", snd_strerror(error));
     
     muse_atomic_destroy(&atomicAlsaMidiScanPending);
-  }  
+  }
+  else
+    fprintf(stderr, "initMidiAlsa: alsaSeq already exited, ignoring\n");
+  
+  alsaSeq = 0;
+  // Be sure to call MusEGlobal::midiSeq->msgUpdatePollFd() or midiSeq->updatePollFd()
+  //  for this to take effect.
+  alsaSeqFdi = -1;
+  alsaSeqFdo = -1;
 }
 
 
@@ -1191,23 +1291,59 @@ static std::list<AlsaPort> portList;
 
 void alsaScanMidiPorts()
       {
-      if(!alsaSeq)
-      {
-        // Reset this now.
-        muse_atomic_set(&atomicAlsaMidiScanPending, 0);
-        return;
-      }
 #ifdef ALSA_DEBUG
-    fprintf(stderr, "alsa scan midi ports\n");
+      fprintf(stderr, "alsa scan midi ports\n");
 #endif
       DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts\n");
       
       bool idling = false;
+      portList.clear();
+      
+      if(!alsaSeq)
+      {
+        // Reset this now.
+        muse_atomic_set(&atomicAlsaMidiScanPending, 0);
+        
+        // Check for devices to disable
+        for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+        {
+          MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
+          if(d == 0) 
+                continue;
+                
+          DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts stopped: disabling device:%p %s\n", 
+                  d, d->name().toLatin1().constData());
+          if(!idling)
+          {
+            // Not much choice but to idle both the audio and midi threads since 
+            //  midi does not idle while audio messages are being processed.
+            MusEGlobal::audio->msgIdle(true);
+            idling = true;
+          }
+          
+          //operations.add(PendingOperationItem(d, SND_SEQ_ADDRESS_UNKNOWN, SND_SEQ_ADDRESS_UNKNOWN, PendingOperationItem::ModifyMidiDeviceAddress));
+          d->adr.client = SND_SEQ_ADDRESS_UNKNOWN;
+          d->adr.port = SND_SEQ_ADDRESS_UNKNOWN;
+          // Close to reset some device members.
+          d->close();
+          // Update the port's state
+          d->setState("Unavailable");
+          if(d->midiPort() != -1)
+            MusEGlobal::midiPorts[d->midiPort()].setState(d->state());
+        }      
+        
+        if(idling)
+        {
+          MusEGlobal::audio->msgIdle(false);
+          // Update the GUI.
+          MusEGlobal::song->update(SC_CONFIG);
+        }
+        return;
+      }
+      
       QString state;
       const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
       const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
-
-      portList.clear();
 
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -1282,8 +1418,9 @@ void alsaScanMidiPorts()
                   // Close to reset some device members.
                   d->close();
                   // Update the port's state
+                  d->setState("Unavailable");
                   if(d->midiPort() != -1)
-                    MusEGlobal::midiPorts[d->midiPort()].setState("Unavailable");
+                    MusEGlobal::midiPorts[d->midiPort()].setState(d->state());
                   }
             }
             
@@ -1299,6 +1436,8 @@ void alsaScanMidiPorts()
                   MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
                   if (d == 0)
                         continue;
+                  DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts add: checking port:%s client:%d port:%d device:%p %s client:%d port:%d\n", 
+                          k->name, k->adr.client, k->adr.port, d, d->name().toLatin1().constData(), d->adr.client, d->adr.port);
                   if (k->adr.client == d->adr.client && k->adr.port == d->adr.port)
                         break;
                   
@@ -1351,14 +1490,27 @@ void alsaScanMidiPorts()
                   }
 
                   // add device
-                  MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr, QString(k->name));
+                  
+                  const QString dev_name(k->name);
+                  MidiDevice* dev = MusEGlobal::midiDevices.find(dev_name, MidiDevice::ALSA_MIDI);
+                  const bool dev_found = dev;
+                  if(dev_found)
+                  {
+                    // TODO: Hm, something more than this? Maybe ultimately will have to destroy/recreate the device?
+                    dev->setAddressClient(k->adr.client);
+                    dev->setAddressPort(k->adr.port);
+                  }
+                  else  
+                    dev = new MidiAlsaDevice(k->adr, dev_name);
+                  //MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr, QString(k->name));
                   dev->setrwFlags(k->flags);
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts op:AddMidiDevice adding:%p %s adr.client:%d adr.port:%d\n", 
-                          dev, dev->name().toLatin1().constData(), dev->adr.client, dev->adr.port);
+                          dev, dev->name().toLatin1().constData(), k->adr.client, k->adr.port);
 
                   //operations.add(PendingOperationItem(MusEGlobal::midiDevices, dev, PendingOperationItem::AddMidiDevice));
                   //MusEGlobal::midiDevices.addOperation(dev, operations);
-                  MusEGlobal::midiDevices.add(dev);
+                  if(!dev_found)
+                    MusEGlobal::midiDevices.add(dev);
                   // Subscribe
                   //dev->open();
                   }
@@ -1407,6 +1559,9 @@ void alsaProcessMidiInput()
 {
       DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
               
+      if(!alsaSeq)
+        return;
+      
       MidiRecordEvent event;
       snd_seq_event_t* ev;
       

@@ -150,7 +150,8 @@ QString MidiJackDevice::open()
   if(!MusEGlobal::checkAudioDevice())
   {
     fprintf(stderr, "MusE: MidiJackDevice::open failed: No audio device\n"); 
-    return QString("Not ready");
+    _state = QString("Not ready");
+    return _state;
   }
    
   QString s;
@@ -300,13 +301,15 @@ QString MidiJackDevice::open()
   }
     
   if(out_fail && in_fail)
-    return QString("R+W Open fail");
-  if(out_fail)
-    return QString("Write open fail");
-  if(in_fail)
-    return QString("Read open fail");
+    _state = QString("R+W Open fail");
+  else if(out_fail)
+    _state = QString("Write open fail");
+  else if(in_fail)
+    _state = QString("Read open fail");
+  else
+    _state = QString("OK");
   
-  return QString("OK");
+  return _state;
 }
 
 //---------------------------------------------------------
@@ -379,6 +382,7 @@ void MidiJackDevice::close()
     if(MusEGlobal::checkAudioDevice())
       MusEGlobal::audioDevice->unregisterPort(o_jp);
   }
+  _state = QString("Closed");
 }
 
 //---------------------------------------------------------

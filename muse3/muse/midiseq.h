@@ -92,6 +92,8 @@ class MidiSeq : public Thread {
       
       virtual void threadStop();
       virtual void threadStart(void*);
+      void addAlsaPollFd();
+      void removeAlsaPollFd();
 
       bool externalPlayState() const { return playStateExt; }
       void setExternalPlayState(bool v) { playStateExt = v; }

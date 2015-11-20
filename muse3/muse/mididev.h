@@ -55,6 +55,7 @@ class MidiDevice {
       int _openFlags;    // configured open flags
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
+      QString _state;
       
       bool _sysexReadingChunks;
       
@@ -113,6 +114,8 @@ class MidiDevice {
       int openFlags() const            { return _openFlags; }
       void setOpenFlags(int val)       { _openFlags = val; }
       void setrwFlags(int val)         { _rwFlags = val; }
+      const QString& state() const     { return _state; }
+      void setState(const QString& s)  { _state = s; }
 
       virtual bool guiVisible() const { return false; }
       virtual void showGui(bool)    { }
