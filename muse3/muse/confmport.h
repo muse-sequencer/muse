@@ -58,7 +58,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       
       enum InstanceRoles { DeviceRole = Qt::UserRole, DeviceTypeRole = Qt::UserRole + 1};
       #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
-      enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_INSTR, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
+      enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_INSTR, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS };
       #else
       enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
                            DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
@@ -74,7 +74,10 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
+      void setInstWhatsThis(QTableWidgetItem *item, int col);
+      void setInstToolTip(QTableWidgetItem *item, int col);
       void addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table);
+      void addInstItem(int row, int col, QTableWidgetItem *item, QTableWidget *table);
 
    private slots:
       void rbClicked(QTableWidgetItem*);
@@ -83,7 +86,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void selectionChanged();
       void deviceSelectionChanged();
       void addJackDeviceClicked();
-      void addAlsaDeviceClicked();
+      void addAlsaDeviceClicked(bool);
       void addInstanceClicked();
       void renameInstanceClicked();
       void removeInstanceClicked();

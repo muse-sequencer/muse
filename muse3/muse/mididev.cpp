@@ -101,6 +101,7 @@ void MidiDevice::init()
       stopPending    = false;         
       seekPending    = false;
       
+      _state         = QString("Closed");
       _readEnable    = false;
       _writeEnable   = false;
       _rwFlags       = 3;

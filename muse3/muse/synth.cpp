@@ -379,7 +379,8 @@ QString SynthI::open()
   _readEnable = false;
   _writeEnable = (_openFlags & 0x01);
 
-  return QString("OK");
+  _state = QString("OK");
+  return _state;
 }
 
 //---------------------------------------------------------
@@ -390,6 +391,7 @@ void SynthI::close()
 {
   _readEnable = false;
   _writeEnable = false;
+  _state = QString("Closed");
 }
 
 //---------------------------------------------------------

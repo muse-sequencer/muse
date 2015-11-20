@@ -935,6 +935,7 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             case DEVCOL_PLAY:   item->setToolTip(tr("Enable writing")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
+            case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
 #endif      
             
             case DEVCOL_INSTR:  item->setToolTip(tr("Port instrument")); break;
@@ -947,7 +948,6 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to these channels")); break;
 #endif
             
-            case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
   }
@@ -973,6 +973,8 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
                   item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
             case DEVCOL_OUTROUTES:
                   item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
+            case DEVCOL_STATE:
+                  item->setWhatsThis(tr("State: result of opening the device")); break;
 #endif
                   
             case DEVCOL_NAME:
@@ -988,13 +990,68 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
 #else                      
                   item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.")); break;
 #endif                      
-            case DEVCOL_STATE:
-                  item->setWhatsThis(tr("State: result of opening the device")); break;
             default:
                   break;
             }
       }
 
+//---------------------------------------------------------
+//   MPConfig::setInstToolTip
+//---------------------------------------------------------
+
+void MPConfig::setInstToolTip(QTableWidgetItem *item, int col)
+      {
+      switch (col) {
+            case INSTCOL_NAME:      item->setToolTip(tr("Midi device name")); break;
+            case INSTCOL_TYPE:      item->setToolTip(tr("Midi device type")); break;
+            case INSTCOL_STATE:     item->setToolTip(tr("Device state")); break;
+
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
+            case INSTCOL_REC:       item->setToolTip(tr("Enable reading")); break;
+            case INSTCOL_PLAY:      item->setToolTip(tr("Enable writing")); break;
+            case INSTCOL_GUI:       item->setToolTip(tr("Enable gui")); break;
+            case INSTCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi")); break;
+            case INSTCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi")); break;
+#endif      
+            
+            default:
+                  break;
+      }
+  }
+
+//---------------------------------------------------------
+//   MPConfig::setInstWhatsThis
+//---------------------------------------------------------
+
+void MPConfig::setInstWhatsThis(QTableWidgetItem *item, int col)
+      {
+      switch (col) {
+            case INSTCOL_NAME:      item->setWhatsThis(tr("Midi device name")); break;
+            case INSTCOL_TYPE:      item->setWhatsThis(tr("Midi device type")); break;
+            case INSTCOL_STATE:     item->setWhatsThis(tr("Result of opening the device:\n"
+                                                          "OK: Assigned to a port and in use\n"
+                                                          "Closed: Unassigned to a port, or closed\n"
+                                                          "R/W Error: Unable to open for read or write\n"
+                                                          "Unavailable: USB midi unplugged, or external\n"
+                                                          " application not running, or synth plugin\n"
+                                                          " not installed etc.\n"
+                                                          "(Jack Midi devices have 'unavailable ports'\n"
+                                                          " in the routes columns.)\n"
+                                                          "Unavailable devices or ports can be purged\n"
+                                                          " with 'Remove' or with the advanced router.")); break;
+
+#ifdef _USE_EXTRA_INSTANCE_COLUMNS_
+            case INSTCOL_REC:       item->setWhatsThis(tr("Enable reading from device")); break;
+            case INSTCOL_PLAY:      item->setWhatsThis(tr("Enable writing to device")); break;
+            case INSTCOL_GUI:       item->setWhatsThis(tr("Enable Graphical User Interface for device")); break;
+            case INSTCOL_INROUTES:  item->setWhatsThis(tr("Connections from Jack Midi ports")); break;
+            case INSTCOL_OUTROUTES: item->setWhatsThis(tr("Connections to Jack Midi ports")); break;
+#endif      
+            
+            default:
+                  break;
+            }
+      }
 
 //---------------------------------------------------------
 //   MPConfig::addItem()
@@ -1003,6 +1060,16 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
 void MPConfig::addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table)
       {
       setWhatsThis(item, col);
+      table->setItem(row, col, item);
+      }
+
+//---------------------------------------------------------
+//   MPConfig::addInstItem()
+//---------------------------------------------------------
+
+void MPConfig::addInstItem(int row, int col, QTableWidgetItem *item, QTableWidget *table)
+      {
+      setInstWhatsThis(item, col);
       table->setItem(row, col, item);
       }
 
@@ -1042,8 +1109,11 @@ MPConfig::MPConfig(QWidget* parent)
 #endif                  
                   << tr("Def in ch")
                   << tr("Def out ch")
-		  << tr("State");
-
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
+		  << tr("State")
+#endif                  
+      ;
+      
       mdevView->setColumnCount(columnnames.size());
       mdevView->setHorizontalHeaderLabels(columnnames);
       for (int i = 0; i < columnnames.size(); ++i) {
@@ -1064,20 +1134,21 @@ MPConfig::MPConfig(QWidget* parent)
                   << tr("GUI")
                   << tr("In")
                   << tr("Out")
+                  << tr("State")
 #endif                  
-                  ; //<< tr("State"); // TODO
+      ;
+                  
       instanceList->setColumnCount(columnnames.size());
       instanceList->setHorizontalHeaderLabels(columnnames);
       for (int i = 0; i < columnnames.size(); ++i) {
-            // TODO
-            //setWhatsThis(instanceList->horizontalHeaderItem(i), i);
-            //setToolTip(instanceList->horizontalHeaderItem(i), i);
+            setInstWhatsThis(instanceList->horizontalHeaderItem(i), i);
+            setInstToolTip(instanceList->horizontalHeaderItem(i), i);
             }
       connect(instanceList, SIGNAL(itemPressed(QTableWidgetItem*)), SLOT(deviceItemClicked(QTableWidgetItem*)));
       connect(instanceList, SIGNAL(itemSelectionChanged()),         SLOT(deviceSelectionChanged()));
       connect(instanceList, SIGNAL(itemChanged(QTableWidgetItem*)), SLOT(DeviceItemRenamed(QTableWidgetItem*)));
       connect(addJACKDevice, SIGNAL(clicked(bool)), SLOT(addJackDeviceClicked()));
-      connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked()));
+      connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked(bool)));
       connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
@@ -1183,16 +1254,21 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             s.setNum(i+1);
             QTableWidgetItem* itemno = new QTableWidgetItem(s);
             addItem(i, DEVCOL_NO, itemno, mdevView);
-            itemno->setTextAlignment(Qt::AlignHCenter);
+            itemno->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
             itemno->setFlags(Qt::ItemIsEnabled);
+            
+#ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
             addItem(i, DEVCOL_STATE, itemstate, mdevView);
             itemstate->setFlags(Qt::ItemIsEnabled);
+#endif
+            
             QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
                            port->instrument()->iname() :
                            tr("<unknown>"));
             addItem(i, DEVCOL_INSTR, iteminstr, mdevView);
             iteminstr->setFlags(Qt::ItemIsEnabled);
+            
             QTableWidgetItem* itemname = new QTableWidgetItem;
             addItem(i, DEVCOL_NAME, itemname, mdevView);
             itemname->setFlags(Qt::ItemIsEnabled);
@@ -1200,15 +1276,15 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 #ifndef _USE_EXTRA_INSTANCE_COLUMNS_
             QTableWidgetItem* itemgui = new QTableWidgetItem;
             addItem(i, DEVCOL_GUI, itemgui, mdevView);
-            itemgui->setTextAlignment(Qt::AlignHCenter);
+            itemgui->setTextAlignment(Qt::AlignCenter);
             itemgui->setFlags(Qt::ItemIsEnabled);
             QTableWidgetItem* itemrec = new QTableWidgetItem;
             addItem(i, DEVCOL_REC, itemrec, mdevView);
-            itemrec->setTextAlignment(Qt::AlignHCenter);
+            itemrec->setTextAlignment(Qt::AlignCenter);
             itemrec->setFlags(Qt::ItemIsEnabled);
             QTableWidgetItem* itemplay = new QTableWidgetItem;
             addItem(i, DEVCOL_PLAY, itemplay, mdevView);
-            itemplay->setTextAlignment(Qt::AlignHCenter);
+            itemplay->setTextAlignment(Qt::AlignCenter);
             itemplay->setFlags(Qt::ItemIsEnabled);
             QTableWidgetItem* itemout = new QTableWidgetItem;
             addItem(i, DEVCOL_OUTROUTES, itemout, mdevView);
@@ -1362,18 +1438,18 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               iitem->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             else
               iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            instanceList->setItem(row_cnt, INSTCOL_NAME, iitem);
+            addInstItem(row_cnt, INSTCOL_NAME, iitem, instanceList);
             iitem = new QTableWidgetItem(md->deviceTypeString());
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            instanceList->setItem(row_cnt, INSTCOL_TYPE, iitem);
+            addInstItem(row_cnt, INSTCOL_TYPE, iitem, instanceList);
 
 #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
             iitem = new QTableWidgetItem;
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            iitem->setTextAlignment(Qt::AlignHCenter);
-            instanceList->setItem(row_cnt, INSTCOL_REC, iitem);
+            iitem->setTextAlignment(Qt::AlignCenter);
+            addInstItem(row_cnt, INSTCOL_REC, iitem, instanceList);
             if(md->rwFlags() & 0x2)
               iitem->setIcon(md->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
@@ -1382,8 +1458,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             iitem = new QTableWidgetItem;
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            iitem->setTextAlignment(Qt::AlignHCenter);
-            instanceList->setItem(row_cnt, INSTCOL_PLAY, iitem);
+            iitem->setTextAlignment(Qt::AlignCenter);
+            addInstItem(row_cnt, INSTCOL_PLAY, iitem, instanceList);
             if(md->rwFlags() & 0x1)
               iitem->setIcon(md->openFlags() & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
@@ -1392,8 +1468,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             iitem = new QTableWidgetItem;
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            iitem->setTextAlignment(Qt::AlignHCenter);
-            instanceList->setItem(row_cnt, INSTCOL_GUI, iitem);
+            iitem->setTextAlignment(Qt::AlignCenter);
+            addInstItem(row_cnt, INSTCOL_GUI, iitem, instanceList);
             if(md->hasNativeGui())
               iitem->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
@@ -1417,8 +1493,14 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               else
                 ir_item->setIcon(QIcon());
             }
-            instanceList->setItem(row_cnt, INSTCOL_OUTROUTES, or_item);
-            instanceList->setItem(row_cnt, INSTCOL_INROUTES, ir_item);
+            addInstItem(row_cnt, INSTCOL_OUTROUTES, or_item, instanceList);
+            addInstItem(row_cnt, INSTCOL_INROUTES, ir_item, instanceList);
+            
+            iitem = new QTableWidgetItem(md->state());
+            iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
+            iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            iitem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            addInstItem(row_cnt, INSTCOL_STATE, iitem, instanceList);
 #endif            
 
             ++row_cnt;
@@ -1427,7 +1509,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 
       instanceList->resizeColumnToContents(INSTCOL_NAME);
       instanceList->resizeColumnToContents(INSTCOL_TYPE);
-      //instanceList->resizeColumnToContents(INSTCOL_STATE); 
+      instanceList->resizeColumnToContents(INSTCOL_STATE); 
       
 #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       instanceList->resizeColumnToContents(INSTCOL_REC);
@@ -1443,7 +1525,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
 #endif
       
       //instanceList->horizontalHeader()->setStretchLastSection( false );
-      instanceList->horizontalHeader()->setDefaultAlignment(Qt::AlignHCenter);
+      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_STATE, QHeaderView::Stretch);
+      instanceList->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
       deviceSelectionChanged();
       
       synthList->resizeColumnToContents(1);
@@ -1649,9 +1732,24 @@ void MPConfig::addJackDeviceClicked()
 //   addAlsaDeviceClicked
 //---------------------------------------------------------
 
-void MPConfig::addAlsaDeviceClicked()
+void MPConfig::addAlsaDeviceClicked(bool v)
 {
-  // TODO
+  MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+  
+  if(v)
+  {
+    MusECore::initMidiAlsa();
+    MusEGlobal::midiSeq->msgUpdatePollFd();
+  }
+  else
+  {
+    MusECore::exitMidiAlsa();
+    MusEGlobal::midiSeq->msgUpdatePollFd();
+  }
+  
+  MusEGlobal::audio->msgIdle(false);
+  MusECore::alsaScanMidiPorts();       // FIXME: Note there's another another idle here !
+  MusEGlobal::song->update(SC_CONFIG);
 }
       
 //---------------------------------------------------------
