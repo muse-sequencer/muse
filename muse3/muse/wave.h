@@ -112,6 +112,9 @@ class SndFile {
       QString strerror() const;
 
       static SndFile* search(const QString& name);
+
+      static SndFile *importAndResample(const QString &path);
+
       friend class SndFileR;
       };
 

@@ -614,7 +614,18 @@ QString SndFile::strerror() const
       buffer[0] = 0;
       sf_error_str(sf, buffer, 128);
       return QString(buffer);
-      }
+}
+
+SndFile *SndFile::importAndResample(const QString &path)
+{
+   if(path.isEmpty())
+      return NULL;
+   QFile f(path);
+   if(!f.exists())
+      return NULL;
+
+   return NULL;
+}
 
 //---------------------------------------------------------
 //   search
@@ -1261,6 +1272,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
             if(QMessageBox::question(this, tr("Import Wavefile"),
                   tr("This wave file has a samplerate of %1,\n"
                   "as opposed to current setting %2.\n"
+                  "File will be resampled from %1 to %2 Hz.\n"
                   "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
                   tr("&Yes"), tr("&No"),
                   QString::null, 0, 1 ))

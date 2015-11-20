@@ -1118,7 +1118,7 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
       for (; i != el->end(); ++i) {
           unsigned evTime = i->time();
           if (evTime == 0)
-                evTime=abs(frameOffset); // will cause frame to be zero, problem?
+                evTime=frameOffset; // will cause frame to be zero, problem?
 
           unsigned frame = evTime - frameOffset;
 
