@@ -44,6 +44,7 @@
 #include "al/sig.h"
 #include "part.h"
 #include "track.h"
+#include "wavepreview.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -1216,8 +1217,24 @@ void MusE::importWave()
               "a wave track"));
             return;
             }
-      QString fn = MusEGui::getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
-         tr("Import Wave File"), 0);                                    
+      MusECore::AudioPreviewDialog afd(this);
+      afd.setDirectory(MusEGlobal::lastWavePath);
+      afd.setWindowTitle(tr("Import Wave File"));
+      /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
+         tr("Import Wave File"), 0);
+*/
+      if(afd.exec() == QFileDialog::Rejected)
+      {
+         return;
+      }
+
+      QStringList filenames = afd.selectedFiles();
+      if(filenames.size() < 1)
+      {
+         return;
+      }
+      QString fn = filenames [0];
+
       if (!fn.isEmpty()) {
             MusEGlobal::lastWavePath = fn;
             importWaveToTrack(fn);
