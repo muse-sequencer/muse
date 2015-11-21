@@ -35,6 +35,8 @@ class QMouseEvent;
 class QPainter;
 class QPainterPath;
 
+#include <QBitmap>
+
 
 namespace MusEGui {
 

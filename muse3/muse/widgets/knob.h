@@ -78,6 +78,15 @@ class Knob : public SliderBase, public ScaleIf
       QColor d_altFaceColor;
       QColor d_markerColor;
 
+      QPixmap knobPng;
+      QPixmap knobPressedPng;
+      QPixmap knobBasePng;
+      QPixmap knobBasePressedPng;
+      QPixmap rimBasePng;
+      QPixmap knobSmallPng;
+      bool bPressed;
+      double centerVal;
+
       void recalcAngle();
       void valueChange();
       void rangeChange();
@@ -87,6 +96,7 @@ class Knob : public SliderBase, public ScaleIf
       virtual void paintEvent(QPaintEvent *);
       virtual void resizeEvent(QResizeEvent *e);
       virtual void mousePressEvent(QMouseEvent *e);
+      virtual void mouseReleaseEvent(QMouseEvent *e);
       double getValue(const QPoint &p);
       void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction );
       void scaleChange()             { repaint(); }
@@ -96,8 +106,8 @@ class Knob : public SliderBase, public ScaleIf
       Knob(QWidget* parent = 0, const char *name = 0);
       ~Knob() {}
 
-      void setRange(double vmin, double vmax, double vstep = 0.0,
-		    int pagesize = 1);
+      void setRange(double vmin, double vmax, double vstep = 0.0, int pagesize = 1);
+      void setRange(double vmin, double vmax, double cval /*center value*/, double vstep, int pagesize);
       void setKnobWidth(int w);
       void setTotalAngle (double angle);
       void setBorderWidth(int bw);

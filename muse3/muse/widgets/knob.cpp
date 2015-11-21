@@ -64,7 +64,7 @@ Knob::Knob(QWidget* parent, const char* name)
       d_maxScaleTicks = 11;
       d_knobWidth     = 30;
       _faceColSel     = false;
-      d_faceColor     = palette().color(QPalette::Window);
+      d_faceColor     = QColor(62, 37, 255);//palette().color(QPalette::Window);
       d_rimColor      = palette().mid().color();
       d_shinyColor    = palette().mid().color();
       d_curFaceColor  = d_faceColor;
@@ -75,9 +75,18 @@ Knob::Knob(QWidget* parent, const char* name)
       l_slope = 0;
       l_const = 100;
 
+      knobPng.load(":/png/knob.png");
+      knobPressedPng.load(":/png/knob-pressed.png");
+      knobBasePng.load(":/png/knob-base.png");
+      knobBasePressedPng.load(":/png/knob-base-pressed.png");
+      knobSmallPng.load(":/png/knob-small.png");
+      rimBasePng.load(":/png/rim-base.png");
+      bPressed = false;
+
       setMinimumSize(30,30);
       setUpdateTime(50);
-      }
+}
+
 
 //------------------------------------------------------------
 //  QwtKnob::setTotalAngle
@@ -113,24 +122,33 @@ void Knob::setTotalAngle (double angle)
 // parameters to the parent class' setRange() function.
 //------------------------------------------------------------
 
-void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
+void Knob::setRange(double vmin, double vmax, double cval /*center value*/, double vstep, int pagesize)
+{
+   //if(vmin == d_minValue && vmax == d_maxValue && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
+   //  return;
+
+   // divide by zero protection. probably too cautious
+   if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
+   {
+      if (vmin * vmax < 0)
+         l_slope = 80.0 / qMax(-vmin, vmax);
+      else
       {
-      //if(vmin == d_minValue && vmax == d_maxValue && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
-      //  return;
-      
-      // divide by zero protection. probably too cautious
-      if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
-            {
-            if (vmin * vmax < 0)
-                  l_slope = 80.0 / qMax(-vmin, vmax);
-            else
-                  {
-                  l_slope = 80.0 / (vmax - vmin);
-                  l_const = 100 - l_slope * vmin;
-                  }
-            }
-      SliderBase::setRange(vmin, vmax, vstep, pagesize);
+         l_slope = 80.0 / (vmax - vmin);
+         l_const = 100 - l_slope * vmin;
       }
+   }
+   SliderBase::setRange(vmin, vmax, vstep, pagesize);
+   centerVal = cval;
+}
+
+
+void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
+{
+
+   setRange(vmin, vmax, vmin, vstep, pagesize);
+
+}
 
 //------------------------------------------------------------
 //   QwtKnob::drawKnob
@@ -349,6 +367,14 @@ void Knob::mousePressEvent(QMouseEvent *e)
     return;
   }
   SliderBase::mousePressEvent(e);
+  bPressed = true;
+  update();
+}
+
+void Knob::mouseReleaseEvent(QMouseEvent *)
+{
+   bPressed = false;
+   update();
 }
 
 //---------------------------------------------------------
@@ -405,12 +431,86 @@ void Knob::paintEvent(QPaintEvent*)
             }
       d_newVal = 0;
 */
-      
+      //calculate angle
       QPainter p(this);
-      p.setRenderHint(QPainter::Antialiasing, true);
-      if(hasScale)
-        d_scale.draw(&p);
-      drawKnob(&p, kRect);
+      double __val = value();
+      double __cval = centerVal;
+      if(minValue() != 0)
+      {
+         __val -= minValue();
+         __cval -= minValue();
+      }
+
+      double __padAngle = 30;
+      double __fullRange = 360 - 2 * __padAngle;
+      double __step = __fullRange / (maxValue() - minValue());
+      double __angle = __val * __step + __padAngle;
+      int __offs = bPressed ? 1 : 0;
+
+      p.drawPixmap(0, 0, rimBasePng);
+
+      //draw knob, pointer and shadow
+      p.drawPixmap(__offs, __offs, knobBasePng);
+      //QTransform curTrans = p.transform();
+      QTransform trans;
+      trans.translate(width()/2 + __offs, height()/2 + __offs);
+      trans.rotate(__angle);
+      trans.translate(-width()/2 - __offs, -height()/2 - __offs);
+      p.setTransform(trans);
+      p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
+      p.drawPixmap(__offs, __offs, knobPng);
+      p.drawPixmap(__offs, __offs, knobSmallPng);
+
+      p.resetTransform();
+
+      //draw gradient arc
+
+
+      double __cangle = __cval * __step + __padAngle;
+      double __adiff = __cangle - __angle;
+      double __arcAngle = (270 - __cangle);
+
+      /*double __rcangle = __cangle * M_PI / 180.0; //in radians
+      //calculate start point of an arc;
+      double __r = (int)((qMin(width(), height()) - 1) / 2);
+      double __sx = round(__r * cos(__rcangle) + (double)(width() / 2));
+      double __sy = round(__r * sin(__rcangle) + (double)(height() / 2));*/
+      //calculate arc angle
+      QRect r(2, 2, width() - 4, height() - 4);
+      /*QPainterPath __path;
+
+      __path.arcMoveTo(r, __arcAngle);
+      __path.arcTo(r, __arcAngle, __adiff);
+      __path.closeSubpath();
+      */
+      //QPen pen(QBrush(gradient), 2);
+      //pen.setCapStyle(Qt::RoundCap);
+      //p.setPen(pen);
+      double __canonicalCenter = __cval / (maxValue() - minValue());
+      double __canonicalVal = __val / (maxValue() - minValue());
+
+      //fprintf(stderr, "__cval = %f, __canonicalCenter = %f, __val = %f, __canonicalVal = %f, __cangle = %f, _angle = %f, __adiff = %f\n", __cval, __canonicalCenter, __val, __canonicalVal, __cangle, __angle, __adiff);
+      QLinearGradient gradient(r.topLeft(), r.topRight());
+      gradient.setStart(__canonicalCenter, 0);
+      gradient.setColorAt(__canonicalCenter, p.background().color());
+      double __endGradiendPoint = (__canonicalCenter >= __canonicalVal) ? 0 : 1;
+      gradient.setColorAt(__endGradiendPoint, d_faceColor /*QColor(62, 37, 255)*/);
+      p.setPen(QPen(QBrush(gradient), 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+      //p.setBrush(gradient);
+      //p.drawPath(__path);
+
+
+
+      //p.drawArc(r, __cangle * 16, __adiff* 16);
+      p.drawArc(r, __arcAngle * 16, __adiff * 16);
+
+
+
+
+      //if(hasScale)
+//        d_scale.draw(&p);
+      //drawKnob(&p, kRect);
       //drawMarker(&p, d_oldAngle, d_curFaceColor);
       //drawMarker(&p, d_angle, d_markerColor);
  

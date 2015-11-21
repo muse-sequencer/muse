@@ -29,6 +29,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QResizeEvent>
+#include <algorithm>
 
 #include "meter.h"
 #include "utils.h"
@@ -163,7 +164,7 @@ void Meter::setVal(double v, double max, bool ovl)
          targetMaxVal = max;
          if(!fallingTimer.isActive())
          {
-            fallingTimer.start(MusEGlobal::config.guiRefresh);
+            fallingTimer.start(1000/std::max(30, MusEGlobal::config.guiRefresh));
          }
       }
       
@@ -188,7 +189,7 @@ void Meter::updateTargetMeterValue()
    }
    else if(targetVal < val)
    {
-      targetValStep = (val - targetVal) / (((double)MusEGlobal::config.guiRefresh + 1) / 7);
+      targetValStep = (val - targetVal) / ((double)(1000 / std::max(30, MusEGlobal::config.guiRefresh + 1)) / 7.0f);
       val -= targetValStep;
       if(val < targetVal)
       {
@@ -278,12 +279,14 @@ void Meter::paintEvent(QPaintEvent* ev)
       // For some reason upon resizing we get double calls here and in resizeEvent.
 
       QPainter p(this);
-      p.setRenderHint(QPainter::Antialiasing);  
-
-      double range = maxScale - minScale;
       int fw = frameWidth();
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
+      p.setRenderHint(QPainter::Antialiasing);
+
+      p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
+
+      double range = maxScale - minScale;      
       const QRect& rect = ev->rect();
       //printf("Meter::paintEvent rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
 
@@ -338,7 +341,7 @@ void Meter::paintEvent(QPaintEvent* ev)
         //
         //QPainterPath path; path.moveTo(fw, cur_ymax); path.lineTo(w, cur_ymax);  // ? Didn't work. No line at all.
         //p.drawPath(path & finalPath);
-        QPainterPath path; path.addRect(fw, cur_ymax, w, 1); path &= finalPath;
+        QPainterPath path; path.addRect(fw, cur_ymax + cur_ymax % 2 + 1, w, 1); path &= finalPath;
         if(!path.isEmpty())
           p.fillPath(path, QBrush(peak_color));
       }
@@ -366,11 +369,11 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
       int fw = frameWidth();
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
-      
+
       // Test OK. We are passed small rectangles on small value changes.
       //printf("Meter::drawVU rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
 
-      QRect pr(0, 0,  w, 0);
+      //QRect pr(0, 0,  w, 0);
       if(mtype == DBMeter)     // Meter type is dB...
       {
         double range = maxScale - minScale;
@@ -570,7 +573,7 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
           if(!path.isEmpty())
             p.fillPath(path, QBrush(lightGradGreen));   // light green
         }
-      }  
+      }
 
 #endif  // NOT   _USE_CLIPPER
 
@@ -581,13 +584,15 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
 //---------------------------------------------------------
 
 void Meter::resizeEvent(QResizeEvent* ev)
-    {  
-      // For some reason upon resizing we get double calls here and in paintEvent.
-      //printf("Meter::resizeEvent w:%d h:%d\n", ev->size().width(), ev->size().height());  
-      cur_yv = -1;  // Force re-initialization.
-      QFrame::resizeEvent(ev);
-      update();
-    }
+{
+   // For some reason upon resizing we get double calls here and in paintEvent.
+   //printf("Meter::resizeEvent w:%d h:%d\n", ev->size().width(), ev->size().height());
+
+   cur_yv = -1;  // Force re-initialization.
+   QFrame::resizeEvent(ev);
+
+   //update(); //according to docs, update will be called automatically
+}
 
 //---------------------------------------------------------
 //   mousePressEvent

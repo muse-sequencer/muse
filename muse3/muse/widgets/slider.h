@@ -72,11 +72,16 @@ class Slider : public SliderBase, public ScaleIf
   uint vertical_hint;
   uint horizontal_hint;
 
+  QPixmap sliderPng;
+  //QPixmap sliderPngPressed;
+  //QPixmap *sliderCurrent;
+  bool bPressed;
+
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
   protected:
-  virtual void drawSlider (QPainter *p, const QRect &r);
+  /* virtual void drawSlider (QPainter *p, const QRect &r); */
   double getValue(const QPoint &p);
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
   virtual void resizeEvent(QResizeEvent *e);
@@ -108,6 +113,10 @@ class Slider : public SliderBase, public ScaleIf
   void setMargins(int x, int y);
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
+public slots:
+  void processSliderPressed(int);
+  void processSliderReleased(int);
+
       };
 
 } // namespace MusEGui
