@@ -502,7 +502,7 @@ void initVST_Native()
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: VST_PATH not set\n");
           const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+          s = std::string(home) + std::string("~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
           vstPath = s.c_str();
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: defaulting to path: %s\n", vstPath);
