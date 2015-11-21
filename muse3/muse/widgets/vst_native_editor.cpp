@@ -133,7 +133,7 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
           int w = pRect->right - pRect->left;
           int h = pRect->bottom - pRect->top;
           if (w > 0 && h > 0)
-                  QWidget::setFixedSize(w, h);
+                  QWidget::setMinimumSize(w, h);
   }
 
   _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
@@ -233,6 +233,12 @@ void VstNativeEditor::moveEvent(QMoveEvent *pMoveEvent)
     //QWidget::update();  // REMOVE Tim. Or keep? Commented in Qtractor.
   }
 #endif
+}
+
+void VstNativeEditor::resizeEvent(QResizeEvent *pResizeEvent)
+{
+   setFixedSize(pResizeEvent->size());
+   pResizeEvent->accept();
 }
 
 } // namespace MusEGui

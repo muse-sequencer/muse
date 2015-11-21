@@ -76,6 +76,7 @@ protected:
     virtual void showEvent(QShowEvent *pShowEvent);
     virtual void closeEvent(QCloseEvent *pCloseEvent);
     virtual void moveEvent(QMoveEvent *pMoveEvent);
+    virtual void resizeEvent(QResizeEvent *pResizeEvent);
 
 public:
     VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = 0);
