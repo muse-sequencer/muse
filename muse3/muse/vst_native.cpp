@@ -462,8 +462,7 @@ static void scanVstNativeDir(const QString& s)
          {
             scanVstNativeDir(fi.absoluteFilePath());
          }
-         else
-            continue;
+         continue;
       }
       if(MusEGlobal::debugMsg)
          fprintf(stderr, "scanVstNativeDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
@@ -512,7 +511,7 @@ void initVST_Native()
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: VST_PATH not set\n");
           const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+          s = std::string(home) + std::string("/.vst:") + std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
           vstPath = s.c_str();
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: defaulting to path: %s\n", vstPath);
