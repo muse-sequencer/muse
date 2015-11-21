@@ -59,7 +59,7 @@ class DoubleRange
 
    public:
       DoubleRange();
-      virtual ~DoubleRange(){};
+      virtual ~DoubleRange(){}
 
       double value() const    { return d_value; }
       virtual void setValue(double);

@@ -1,4 +1,5 @@
-
+21.11.2015:
+        - Auto resample imported wave files to project's sample rate
 18.11.2015:
 	- Added double click on Port column to open the gui of a synth (rj)
 31.10.2015
