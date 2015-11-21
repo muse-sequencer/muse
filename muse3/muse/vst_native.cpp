@@ -446,21 +446,30 @@ _ending: ;
 
 static void scanVstNativeDir(const QString& s)
 {
-      if (MusEGlobal::debugMsg)
-            fprintf(stderr, "scan vst native plugin dir <%s>\n", s.toLatin1().constData());
-      QDir pluginDir(s, QString("*.so"), QDir::Unsorted, QDir::Files);
-      if(!pluginDir.exists())
-        return;
-      QStringList list = pluginDir.entryList();
-      int count = list.count();
-      for(int i = 0; i < count; ++i)
+   if (MusEGlobal::debugMsg)
+      fprintf(stderr, "scan vst native plugin dir <%s>\n", s.toLatin1().constData());
+   QDir pluginDir(s, QString("*.so"), QDir::Unsorted, QDir::Files | QDir::AllDirs);
+   if(!pluginDir.exists())
+      return;
+   QStringList list = pluginDir.entryList();
+   int count = list.count();
+   for(int i = 0; i < count; ++i)
+   {
+      QFileInfo fi(s + QString("/") + list[i]);
+      if(fi.isDir())
       {
-        if(MusEGlobal::debugMsg)
-          fprintf(stderr, "scanVstNativeDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
-
-        QFileInfo fi(s + QString("/") + list[i]);
-        scanVstNativeLib(fi);
+         if((list [i] != ".") && (list [i] != ".."))
+         {
+            scanVstNativeDir(fi.absoluteFilePath());
+         }
+         continue;
       }
+      if(MusEGlobal::debugMsg)
+         fprintf(stderr, "scanVstNativeDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
+
+
+      scanVstNativeLib(fi);
+   }
 }
 
 //---------------------------------------------------------
@@ -502,7 +511,7 @@ void initVST_Native()
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: VST_PATH not set\n");
           const char* home = getenv("HOME");
-          s = std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+          s = std::string(home) + std::string("/.vst:") + std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
           vstPath = s.c_str();
           if (MusEGlobal::debugMsg)
               fprintf(stderr, "scan native vst: defaulting to path: %s\n", vstPath);
