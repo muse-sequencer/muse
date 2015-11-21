@@ -1,0 +1,25 @@
+To get started with MusE why don't you visit the tutorials at <br><a href="http://muse-sequencer.org/index.php/Support">http://muse-sequencer.org</a>
+
+MusE can add effects in realtime for audio tracks,<br>check the effect rack on the mixer strip
+
+For routing and selection dialogs that allow multiple selections<br>use ctrl when clicking to keep the dialog open
+
+MusE can use Windows VST synths if the dssi-vst bridge is installed!
+
+If you regularly make the same type of connections you can make a<br> template-project with all of your basic settings already prewired.<br>Just store the song as a template using the project dialog.
+
+It's possible to create midi filters or generators in any<br>language, see instructions and examples under <br>muse2/share/scripts in the source.
+
+Click on the automation column in the track list to make<br>automation lines visible for a parameter.
+
+Adding effects will add more automatable parameters to the<br>automation column.
+
+Most functions in MusE are reachable from the keyboard.<br>See 'Configure Shortcuts' under 'MusE Settings'.<br>For instance: A - pointer, D - draw, R - erase, S - cut.
+
+Midi parts can be cloned. All clone parts contain the same data,<br>change one and all will be changed.
+
+Parts can be copied and deleted using the standard cut/copy/paste<br>but it is also possible to click and drag parts to duplicate.<br>ctrl+click+drag to duplicate parts<br>ctrl+alt+click+drag to create clones
+
+When using the dark theme, make sure to select Qt theme plastique<br>or the theme will not be consistent.
+
+If it's hard to be precise while moving automation points with the mouse, trying holding the SHIFT key, the movement will be slower.

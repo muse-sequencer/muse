@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+  <song>
+    <info></info>
+    <showinfo>1</showinfo>
+    <automation>0</automation>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <loop>0</loop>
+    <punchin>0</punchin>
+    <punchout>0</punchout>
+    <record>0</record>
+    <solo>0</solo>
+    <type>1</type>
+    <recmode>0</recmode>
+    <cycle>0</cycle>
+    <click>0</click>
+    <quantize>0</quantize>
+    <len>230400</len>
+    <follow>1</follow>
+    <sampleRate>44100</sampleRate>
+    <miditrack>
+      <name>Track 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <selected>1</selected>
+      <device>-1</device>
+      <channel>0</channel>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      <clef>0</clef>
+      </miditrack>
+    <miditrack>
+      <name>Track 2</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>-1</device>
+      <channel>1</channel>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      <clef>0</clef>
+      </miditrack>
+    <miditrack>
+      <name>Track 3</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>-1</device>
+      <channel>2</channel>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      <clef>0</clef>
+      </miditrack>
+    <miditrack>
+      <name>Track 4</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>-1</device>
+      <channel>3</channel>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      <clef>0</clef>
+      </miditrack>
+    <drumtrack>
+      <name>Track 5</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>-1</device>
+      <channel>9</channel>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      <clef>0</clef>
+      </drumtrack>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 1"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 2"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 3"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 4"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 5"/>
+      </Route>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    <keylist>
+    <key at="21474837">
+      <tick>0</tick>
+      <val>1</val>
+      </key>
+    </keylist>
+    <drummap>
+      </drummap>
+    </song>
+  <no_toplevels>
+  </no_toplevels>
+  </muse>

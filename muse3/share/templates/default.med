@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+  <song>
+    <info></info>
+    <showinfo>1</showinfo>
+    <automation>1</automation>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <loop>0</loop>
+    <punchin>0</punchin>
+    <punchout>0</punchout>
+    <record>0</record>
+    <solo>0</solo>
+    <type>1</type>
+    <recmode>0</recmode>
+    <cycle>0</cycle>
+    <click>0</click>
+    <quantize>0</quantize>
+    <len>230400</len>
+    <follow>1</follow>
+    <sampleRate>44100</sampleRate>
+    <AudioOutput>
+      <name>Out 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <selected>1</selected>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>0</automation>
+      <controller id="0" cur="1" color="#ff0000" visible="0">
+        </controller>
+      <controller id="1" cur="0" color="#ff0000" visible="0">
+        </controller>
+      <controller id="2" cur="0" color="#ff0000" visible="0">
+        </controller>
+      </AudioOutput>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
+    <Route channel="1">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_2"/>
+      </Route>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    <keylist>
+    <key at="21474837">
+      <tick>0</tick>
+      <val>1</val>
+      </key>
+    </keylist>
+    <drummap>
+      </drummap>
+    </song>
+  <no_toplevels>
+  </no_toplevels>
+  </muse>
