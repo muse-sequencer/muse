@@ -1274,6 +1274,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       return true;
    }
    track->setChannels(f->channels());
+   track->resetMeter();
    int samples = f->samples();
    if ((unsigned)MusEGlobal::sampleRate != f->samplerate()) {
       if(QMessageBox::question(this, tr("Import Wavefile"),
@@ -1331,7 +1332,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       sfiNew.seekable = 1;
       sfiNew.sections = 0;
 
-      SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_WRITE, &sfiNew);
+      SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
       if(sfNew == NULL)
       {
          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
@@ -1350,75 +1351,135 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true;
       }
 
-      QProgressDialog pDlg(tr("Resampling wave file \"%1\" from %2 to %3 Hz...")
-                           .arg(f.basename()).arg(f.samplerate()).arg(sfiNew.samplerate),
-                           tr("Cancel"), 0, f.samples(), MusEGlobal::muse);
-      pDlg.setWindowModality(Qt::WindowModal);
 
-      SRC_DATA sd;
-      sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
-      sf_count_t szBuf = 8192;
-      float srcBuffer [szBuf];
-      float dstBuffer [szBuf];
-      sf_count_t szBufInFrames = szBuf / f.channels();
-      sf_count_t szFInFrames = f.samples();
-      sf_count_t nFramesRead = 0;
-      sd.end_of_input = 0;
-      bool bEndOfInput = false;
-      pDlg.setValue(0);
-      while(sd.end_of_input == 0)
+
+      float fPeekMax = 1.0f; //if output save file will peek above this walue
+      //it should be normalized later
+      float fNormRatio = 1.0f / fPeekMax;
+      int nTriesMax = 5;
+      int nCurTry = 0;
+      do
       {
-         size_t nFramesBuf = 0;
-         if(bEndOfInput)
-            sd.end_of_input = 1;
+         QProgressDialog pDlg(MusEGlobal::muse);
+         pDlg.setMinimum(0);
+         pDlg.setMaximum(f.samples());
+         pDlg.setCancelButtonText(tr("Cancel"));
+         if(nCurTry == 0)
+         {
+            pDlg.setLabelText(tr("Resampling wave file\n"
+                                    "\"%1\"\n"
+                                    "from %2 to %3 Hz...")
+                                 .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
+         }
          else
          {
-            nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
-            if(nFramesBuf == 0)
-               break;
-            nFramesRead += nFramesBuf;
+            pDlg.setLabelText(tr("Output has clipped\n"
+                                 "Resampling again and normalizing wave file\n"
+                                 "\"%1\"\n"
+                                 "Try %2 of %3...")
+                              .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
          }
+         pDlg.setWindowModality(Qt::WindowModal);
+         src_reset(srState);
+         SRC_DATA sd;
+         sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
+         sf_count_t szBuf = 8192;
+         float srcBuffer [szBuf];
+         float dstBuffer [szBuf];
+         unsigned sChannels = f.channels();
+         sf_count_t szBufInFrames = szBuf / sChannels;
+         sf_count_t szFInFrames = f.samples();
+         sf_count_t nFramesRead = 0;
+         sf_count_t nFramesWrote = 0;
+         sd.end_of_input = 0;
+         bool bEndOfInput = false;
+         pDlg.setValue(0);
 
-         sd.data_in = srcBuffer;
-         sd.data_out = dstBuffer;
-         sd.input_frames = nFramesBuf;
-         sd.output_frames = szBufInFrames;
-         sd.input_frames_used = 0;
-         sd.output_frames_gen = 0;
-         do
+         while(sd.end_of_input == 0)
          {
-            if(src_process(srState, &sd) != 0)
-               break;
-            sd.data_in += sd.input_frames_used * f.channels();
-            sd.input_frames -= sd.input_frames_used;
-
-            if(sd.output_frames_gen > 0)               
-               sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
+            size_t nFramesBuf = 0;
+            if(bEndOfInput)
+               sd.end_of_input = 1;
             else
-               break;
+            {
+               nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
+               if(nFramesBuf == 0)
+                  break;
+               nFramesRead += nFramesBuf;
+            }
 
+            sd.data_in = srcBuffer;
+            sd.data_out = dstBuffer;
+            sd.input_frames = nFramesBuf;
+            sd.output_frames = szBufInFrames;
+            sd.input_frames_used = 0;
+            sd.output_frames_gen = 0;
+            do
+            {
+               if(src_process(srState, &sd) != 0)
+                  break;
+               sd.data_in += sd.input_frames_used * sChannels;
+               sd.input_frames -= sd.input_frames_used;
+
+               if(sd.output_frames_gen > 0)
+               {
+                  nFramesWrote += sd.output_frames_gen;
+                  //detect maximum peek value;
+                  for(unsigned ch = 0; ch < sChannels; ch++)
+                  {
+
+                     for(long k = 0; k < sd.output_frames_gen; k++)
+                     {
+                        dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
+                        float fCurPeek = dstBuffer [k * sChannels + ch];
+                        if(fPeekMax < fCurPeek)
+                        {
+                           //update maximum peek value
+                           fPeekMax = fCurPeek;
+                        }
+                     }
+                  }
+                  sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
+               }
+               else
+                  break;
+
+            }
+            while(true);
+
+            pDlg.setValue(nFramesRead);
+
+            if(nFramesRead >= szFInFrames)
+            {
+               bEndOfInput = true;
+            }
+
+            if(pDlg.wasCanceled())//free all resources
+            {
+               src_delete(srState);
+               sf_close(sfNew);
+               f.close();
+               f = NULL;
+               QFile(fNewPath).remove();
+               return true;
+            }
          }
-         while(true);
 
-         pDlg.setValue(nFramesRead);
+         pDlg.setValue(szFInFrames);
 
-         if(nFramesRead >= szFInFrames)
+         if(fPeekMax > 1.0f) //output has clipped. Normilize it
          {
-            bEndOfInput = true;
+            nCurTry++;
+            sf_seek(sfNew, 0, SEEK_SET);
+            f.seek(0, SEEK_SET);
+            pDlg.setValue(0);
+            fNormRatio = 1.0f / fPeekMax;
+            fPeekMax = 1.0f;
          }
-
-         if(pDlg.wasCanceled())//free all resources
-         {
-            src_delete(srState);
-            sf_close(sfNew);
-            f.close();
-            f = NULL;
-            QFile(fNewPath).remove();
-            return true;
-         }
+         else
+            break;
       }
-
-      pDlg.setValue(szFInFrames);
+      while(nCurTry <= nTriesMax);
 
       src_delete(srState);
 
