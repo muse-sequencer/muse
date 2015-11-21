@@ -32,7 +32,7 @@ WavePreview::~WavePreview()
 long WavePreview::static_srcCallback (void *cb_data, float **data)
 {
    MusECore::WavePreview *wp = (MusECore::WavePreview *)cb_data;
-   wp->nread = sf_readf_float(wp->sf, wp->tmpbuffer, 1);
+   wp->nread = sf_readf_float(wp->sf, wp->tmpbuffer, wp->segSize / wp->sfi.channels);
    *data = wp->tmpbuffer;
    return wp->nread;
 }
@@ -212,6 +212,13 @@ void AudioPreviewDialog::startStopWave()
    }
 }
 
+int AudioPreviewDialog::exec()
+{
+   int r = QFileDialog::exec();
+   MusEGlobal::wavePreview->stop();
+   return r;
+}
+
 AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
    :QFileDialog(parent),
    lastIsPlaying(false)
@@ -256,7 +263,6 @@ void AudioPreviewDialog::timerEvent(QTimerEvent *)
    }
 
 }
-
 
 
 }

@@ -57,7 +57,7 @@ class SndFile {
       SNDFILE* sfUI;
       SF_INFO sfinfo;
       SampleV** cache;
-      int csize;                    //!< frames in cache
+      sf_count_t csize;                    //!< frames in cache
 
       void writeCache(const QString& path);
 
@@ -95,7 +95,7 @@ class SndFile {
       QString canonicalPath() const; //!< path with filename, resolved (no symlinks or . .. etc)
       QString name() const;         //!< filename
 
-      unsigned samples() const;
+      sf_count_t samples() const;
       unsigned channels() const;
       unsigned samplerate() const;
       unsigned format() const;
@@ -106,14 +106,13 @@ class SndFile {
       size_t readWithHeap(int channel, float**, size_t, bool overwrite = true);
       size_t readDirect(float* buf, size_t n)    { return sf_readf_float(sf, buf, n); }
       size_t write(int channel, float**, size_t);
+      size_t writeDirect(float *buf, size_t n) { return sf_writef_float(sf, buf, n); }
 
       off_t seek(off_t frames, int whence);
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true);
       QString strerror() const;
 
       static SndFile* search(const QString& name);
-
-      static SndFile *importAndResample(const QString &path);
 
       friend class SndFileR;
       };

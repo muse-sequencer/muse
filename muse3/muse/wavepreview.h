@@ -51,6 +51,8 @@ private:
 private slots:
     void urlChanged(const QString &str);
     void startStopWave();
+public slots:
+    virtual int exec();
 public:
    AudioPreviewDialog(QWidget *parent);
    ~AudioPreviewDialog();
