@@ -612,10 +612,13 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    int __c = 0;
    int __v = minValue();
    QFont __numberFont;
+   __numberFont.setFamily("Sans");
    __numberFont.setPixelSize(8);
+
    QFont __numberFontBold;
+   __numberFontBold.setFamily("Sans");
    __numberFontBold.setPixelSize(8);
-   __numberFontBold.setBold(true);
+   __numberFontBold.setBold(true);   
    for(double i = -__middleLine - __scaleStep; (int)i > -__sHeight; i -= __scaleStep, __c = ((__c + 1) % 2))
    {
 
