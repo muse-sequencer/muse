@@ -1265,12 +1265,15 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    if (track==NULL)
       track = (MusECore::WaveTrack*)(_arranger->curTrack());
 
+
+
    MusECore::SndFileR f = MusECore::getWave(name, true);
 
    if (f.isNull()) {
       printf("import audio file failed\n");
       return true;
    }
+   track->setChannels(f->channels());
    int samples = f->samples();
    if ((unsigned)MusEGlobal::sampleRate != f->samplerate()) {
       if(QMessageBox::question(this, tr("Import Wavefile"),
@@ -1347,6 +1350,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true;
       }
 
+      QProgressDialog pDlg(tr("Resampling wave file \"%1\" from %2 to %3 Hz...")
+                           .arg(f.basename()).arg(f.samplerate()).arg(sfiNew.samplerate),
+                           tr("Cancel"), 0, f.samples(), MusEGlobal::muse);
+      pDlg.setWindowModality(Qt::WindowModal);
+
       SRC_DATA sd;
       sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
       sf_count_t szBuf = 8192;
@@ -1357,6 +1365,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       sf_count_t nFramesRead = 0;
       sd.end_of_input = 0;
       bool bEndOfInput = false;
+      pDlg.setValue(0);
       while(sd.end_of_input == 0)
       {
          size_t nFramesBuf = 0;
@@ -1391,11 +1400,25 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          }
          while(true);
 
+         pDlg.setValue(nFramesRead);
+
          if(nFramesRead >= szFInFrames)
          {
             bEndOfInput = true;
          }
+
+         if(pDlg.wasCanceled())//free all resources
+         {
+            src_delete(srState);
+            sf_close(sfNew);
+            f.close();
+            f = NULL;
+            QFile(fNewPath).remove();
+            return true;
+         }
       }
+
+      pDlg.setValue(szFInFrames);
 
       src_delete(srState);
 
@@ -1412,8 +1435,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true;
       }
       samples = f->samples();
-   }
-   track->setChannels(f->channels());
+   }   
 
    MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);
    if (tick)
