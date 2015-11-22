@@ -1090,6 +1090,13 @@ void deleteIcons()
       delete sawIcon;                                       
       
       delete cpuIcon;
+
+      delete sliderPngImage;
+
+      delete knobPngImage;
+      delete knobBasePngImage;
+      delete knobSmallPngImage;
+      delete rimBasePngImage;
       
       delete routerFilterSourceIcon;
       delete routerFilterDestinationIcon;
