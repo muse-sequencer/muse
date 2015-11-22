@@ -618,16 +618,20 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    QFont __numberFontBold;
    __numberFontBold.setFamily("Sans");
    __numberFontBold.setPixelSize(8);
-   __numberFontBold.setBold(true);   
+   __numberFontBold.setBold(true);
+   if((int)__scaleStep == 0)
+   {
+      __scaleStep = 1;
+   }
    for(double i = -__middleLine - __scaleStep; (int)i > -__sHeight; i -= __scaleStep, __c = ((__c + 1) % 2))
    {
-
+      //fprintf(stderr, "__middleLine=%f, __scaleStep=%f, i=%f\n", __middleLine, __scaleStep, i);
       if(__c== 0)
       {
          p.drawLine(23, __h - i, 23 - 1, __h - i);
       }
    }
-   __c = 0;   
+   __c = 0;
    for(double i = -__middleLine; i < __maxH; i += __scaleStep, ++__k, ++__v, __c = ((__c + 1) % 2))
    {
       bool __b10 = (__k % 10) ? false : true;
