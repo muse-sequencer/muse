@@ -158,6 +158,8 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
   raise();
   activateWindow();
   ///_sif->idleEditor();  // REMOVE Tim. Or keep.
+
+  resizeTimerId = startTimer(500);
 }
 
 #if defined(Q_WS_X11)
@@ -213,10 +215,14 @@ void VstNativeEditor::showEvent(QShowEvent *pShowEvent)
 
 void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
 {
-  if(_sif)
-    _sif->editorClosed();
-    
-  QWidget::closeEvent(pCloseEvent);
+   if(resizeTimerId)
+   {
+      killTimer(resizeTimerId);
+      resizeTimerId = 0;
+   }
+   if(_sif)
+      _sif->editorClosed();
+   QWidget::closeEvent(pCloseEvent);
 }
 
 //---------------------------------------------------------------------
@@ -237,8 +243,29 @@ void VstNativeEditor::moveEvent(QMoveEvent *pMoveEvent)
 
 void VstNativeEditor::resizeEvent(QResizeEvent *pResizeEvent)
 {
-   setFixedSize(pResizeEvent->size());
+   //setFixedSize(pResizeEvent->size());
    pResizeEvent->accept();
+}
+
+void VstNativeEditor::timerEvent(QTimerEvent *event)
+{
+   if(event->timerId() == resizeTimerId)
+   {
+      MusECore::VstRect* pRect;
+      if(_sif && _sif->dispatch(effEditGetRect, 0, 0, &pRect, 0.0f))
+      {
+              int w = pRect->right - pRect->left;
+              int h = pRect->bottom - pRect->top;
+              if (w > 0 && h > 0)
+              {
+                 if((w != width()) || (h != height()))
+                 {
+                    setFixedSize(w, h);
+                 }
+              }
+      }
+
+   }
 }
 
 } // namespace MusEGui
