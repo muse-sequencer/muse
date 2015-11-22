@@ -29,6 +29,7 @@
 
 #include "utils.h"
 #include "slider.h"
+#include "icons.h"
 
 namespace MusEGui {
 
@@ -80,9 +81,6 @@ Slider::Slider(QWidget *parent, const char *name,
 
       d_fillColor = fillColor;
 
-      sliderPng.load(":/png/slider-vol.png");
-      //sliderPngPressed.load(":/png/slider-vol-pressed.png");
-      //sliderCurrent = &sliderPng;
       d_sliderRect.setRect(0, 0, 8, 8);
       setOrientation(orient);
       connect(this, SIGNAL(sliderPressed(int)), this, SLOT(processSliderPressed(int)));
@@ -587,9 +585,9 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    double __minV = minValue();
    double __maxV = maxValue();
    //int __w = width();
-   double __sHeight = sliderPng.height();
-   double __middleLine = sliderPng.height() / 2;
-   double __h = (double)height() - sliderPng.height();
+   double __sHeight = MusEGui::sliderPngImage->height();
+   double __middleLine = __sHeight / 2;
+   double __h = (double)height() - __sHeight;
    double __scaleStep = (__h / (maxValue() - minValue())) / (double)pageSize();
    double __maxH = __h - __middleLine;
    QColor __bkColor = p.background().color();
@@ -618,10 +616,14 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    QFont __numberFontBold;
    __numberFontBold.setFamily("Sans");
    __numberFontBold.setPixelSize(8);
-   __numberFontBold.setBold(true);   
+   __numberFontBold.setBold(true);
+   if((int)__scaleStep == 0)
+   {
+      __scaleStep = 1;
+   }
    for(double i = -__middleLine - __scaleStep; (int)i > -__sHeight; i -= __scaleStep, __c = ((__c + 1) % 2))
    {
-
+      //fprintf(stderr, "__middleLine=%f, __scaleStep=%f, i=%f\n", __middleLine, __scaleStep, i);
       if(__c== 0)
       {
          p.drawLine(23, __h - i, 23 - 1, __h - i);
@@ -656,7 +658,7 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    int __offs = bPressed ? 1 : 0;
 
    //draw slider button
-   p.drawPixmap(15 + __offs, ypos + __offs, sliderPng);
+   p.drawPixmap(15 + __offs, ypos + __offs, *sliderPngImage);
 
 
 }

@@ -78,12 +78,6 @@ class Knob : public SliderBase, public ScaleIf
       QColor d_altFaceColor;
       QColor d_markerColor;
 
-      QPixmap knobPng;
-      QPixmap knobPressedPng;
-      QPixmap knobBasePng;
-      QPixmap knobBasePressedPng;
-      QPixmap rimBasePng;
-      QPixmap knobSmallPng;
       bool bPressed;
       double centerVal;
 

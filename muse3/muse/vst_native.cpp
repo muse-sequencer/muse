@@ -551,11 +551,11 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QStri
   _outports = plugin->numOutputs;
   _controlInPorts = plugin->numParams;
   _inPlaceCapable = false; //(plugin->flags & effFlagsCanReplacing) && (_inports == _outports) && MusEGlobal::config.vstInPlace;
-#ifndef VST_VESTIGE_SUPPORT
-  _hasChunks = plugin->flags & effFlagsProgramChunks;
-#else
-  _hasChunks = false;
-#endif
+//#ifndef VST_VESTIGE_SUPPORT
+  _hasChunks = plugin->flags & 32 /*effFlagsProgramChunks*/;
+//#else
+ // _hasChunks = false;
+//#endif
   
   _flags = 0;
   _vst_version = 0;
@@ -1886,7 +1886,7 @@ int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
 
 void VstNativeSynthIF::write(int level, Xml& xml) const
 {
-#ifndef VST_VESTIGE_SUPPORT
+//#ifndef VST_VESTIGE_SUPPORT
   if(_synth->hasChunks())
   {
     //---------------------------------------------
@@ -1895,7 +1895,7 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
     fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n", name().toLatin1().constData(), _synth->vstVersion());
     unsigned long len = 0;
     void* p = 0;
-    len = dispatch(effGetChunk, 0, 0, &p, 0.0); // index 0: is bank 1: is program
+    len = dispatch(23 /* effGetChunk */, 0, 0, &p, 0.0); // index 0: is bank 1: is program
     if (len)
     {
       xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);
@@ -1920,9 +1920,9 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
       xml.etag(level--, "midistate");
     }
   }
-#else
-  fprintf(stderr, "support for vst chunks not compiled in!\n");
-#endif
+//#else
+//  fprintf(stderr, "support for vst chunks not compiled in!\n");
+//#endif
 
   //---------------------------------------------
   // dump current state of synth
@@ -2207,7 +2207,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                 {
                   if(_synth->hasChunks())
                   {
-#ifndef VST_VESTIGE_SUPPORT
+//#ifndef VST_VESTIGE_SUPPORT
                     int chunk_flags = data[9];
                     if(chunk_flags & VST_NATIVE_CHUNK_FLAG_COMPRESSED)
                       fprintf(stderr, "chunk flags:%x compressed chunks not supported yet.\n", chunk_flags);
@@ -2215,11 +2215,11 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                     {
                       fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
-                      dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
+                      dispatch(24 /* effSetChunk */, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
-#else
-                    fprintf(stderr, "support for vst chunks not compiled in!\n");
-#endif
+//#else
+//                    fprintf(stderr, "support for vst chunks not compiled in!\n");
+//#endif
                   }
                   // Event not filled.
                   return false;
@@ -2899,7 +2899,7 @@ LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long)
 }
 // FIXME TODO:
 CtrlValueType VstNativeSynthIF::ctrlValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
-CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; };
+CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
 
 } // namespace MusECore
 

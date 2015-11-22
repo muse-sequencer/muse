@@ -70,6 +70,7 @@ class VstNativeEditor : public QWidget
 #endif
 
     MusECore::VstNativeSynthIF* _sif;
+    int resizeTimerId;
         
 protected:
 
@@ -77,6 +78,7 @@ protected:
     virtual void closeEvent(QCloseEvent *pCloseEvent);
     virtual void moveEvent(QMoveEvent *pMoveEvent);
     virtual void resizeEvent(QResizeEvent *pResizeEvent);
+    virtual void timerEvent(QTimerEvent * event);
 
 public:
     VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = 0);

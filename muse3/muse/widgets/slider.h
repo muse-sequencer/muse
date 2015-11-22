@@ -72,9 +72,6 @@ class Slider : public SliderBase, public ScaleIf
   uint vertical_hint;
   uint horizontal_hint;
 
-  QPixmap sliderPng;
-  //QPixmap sliderPngPressed;
-  //QPixmap *sliderCurrent;
   bool bPressed;
 
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
