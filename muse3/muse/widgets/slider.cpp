@@ -627,7 +627,7 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
          p.drawLine(23, __h - i, 23 - 1, __h - i);
       }
    }
-   __c = 0;
+   __c = 0;   
    for(double i = -__middleLine; i < __maxH; i += __scaleStep, ++__k, ++__v, __c = ((__c + 1) % 2))
    {
       bool __b10 = (__k % 10) ? false : true;

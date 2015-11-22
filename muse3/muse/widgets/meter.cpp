@@ -284,7 +284,7 @@ void Meter::paintEvent(QPaintEvent* ev)
       int h  = height() - 2*fw;
       p.setRenderHint(QPainter::Antialiasing);
 
-      p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
+      //p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
 
       double range = maxScale - minScale;      
       const QRect& rect = ev->rect();
