@@ -285,6 +285,7 @@
 //#define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
 //#else
 #define MPIXMAP(a,b) QPixmap(a)
+#define MPNGIMG(a) QPixmap(a)
 #define MICON(a,b) QIcon(QPixmap(a))
 //#endif
 
@@ -549,6 +550,11 @@ QIcon* pianoNewIcon;
 QIcon* presetsNewIcon;
 
 QIcon* cpuIcon;
+QPixmap* sliderPngImage;
+QPixmap* knobPngImage;
+QPixmap* knobBasePngImage;
+QPixmap* rimBasePngImage;
+QPixmap* knobSmallPngImage;
 
 QPixmap* routerFilterSourceIcon;
 QPixmap* routerFilterDestinationIcon;
@@ -821,6 +827,12 @@ void initIcons()
       presetsNewIcon                                       = new MICON(presetsNew_xpm, NULL);
 
       cpuIcon                                       = new MICON(cpu_xpm, NULL);
+      sliderPngImage                                = new MPNGIMG(":/png/slider-vol.png");
+
+      knobPngImage                                       = new MPNGIMG(":/png/knob.png");
+      knobBasePngImage                                   = new MPNGIMG(":/png/knob-base.png");
+      knobSmallPngImage                                  = new MPNGIMG(":/png/knob-small.png");
+      rimBasePngImage                                    = new MPNGIMG(":/png/rim-base.png");
 
       routerFilterSourceIcon                        = new MPIXMAP(router_filter_source_xpm, NULL);
       routerFilterDestinationIcon                   = new MPIXMAP(router_filter_destination_xpm, NULL);

@@ -285,6 +285,11 @@ extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
 
 extern QIcon* cpuIcon;
+extern QPixmap* sliderPngImage;
+extern QPixmap* knobPngImage;
+extern QPixmap* knobBasePngImage;
+extern QPixmap* rimBasePngImage;
+extern QPixmap* knobSmallPngImage;
 
 extern QPixmap* routerFilterSourceIcon;
 extern QPixmap* routerFilterDestinationIcon;

@@ -28,6 +28,7 @@
 #include "knob.h"
 #include <cmath>
 #include "mmath.h"
+#include "icons.h"
 
 #include <QPainter>
 #include <QPalette>
@@ -75,12 +76,6 @@ Knob::Knob(QWidget* parent, const char* name)
       l_slope = 0;
       l_const = 100;
 
-      knobPng.load(":/png/knob.png");
-      knobPressedPng.load(":/png/knob-pressed.png");
-      knobBasePng.load(":/png/knob-base.png");
-      knobBasePressedPng.load(":/png/knob-base-pressed.png");
-      knobSmallPng.load(":/png/knob-small.png");
-      rimBasePng.load(":/png/rim-base.png");
       bPressed = false;
 
       setMinimumSize(30,30);
@@ -447,10 +442,10 @@ void Knob::paintEvent(QPaintEvent*)
       double __angle = __val * __step + __padAngle;
       int __offs = bPressed ? 1 : 0;
 
-      p.drawPixmap(0, 0, rimBasePng);
+      p.drawPixmap(0, 0, *MusEGui::rimBasePngImage);
 
       //draw knob, pointer and shadow
-      p.drawPixmap(__offs, __offs, knobBasePng);
+      p.drawPixmap(__offs, __offs, *MusEGui::knobBasePngImage);
       //QTransform curTrans = p.transform();
       QTransform trans;
       trans.translate(width()/2 + __offs, height()/2 + __offs);
@@ -458,8 +453,8 @@ void Knob::paintEvent(QPaintEvent*)
       trans.translate(-width()/2 - __offs, -height()/2 - __offs);
       p.setTransform(trans);
       p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
-      p.drawPixmap(__offs, __offs, knobPng);
-      p.drawPixmap(__offs, __offs, knobSmallPng);
+      p.drawPixmap(__offs, __offs, *MusEGui::knobPngImage);
+      p.drawPixmap(__offs, __offs, *MusEGui::knobSmallPngImage);
 
       p.resetTransform();
 
