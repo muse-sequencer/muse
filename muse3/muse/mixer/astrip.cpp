@@ -74,7 +74,7 @@
 
 namespace MusEGui {
 
-/*
+
 //---------------------------------------------------------
 //   minimumSizeHint
 //---------------------------------------------------------
@@ -83,9 +83,10 @@ QSize AudioStrip::minimumSizeHint () const
 {
     // We force the width of the size hint to be what we want
     //return QWidget::minimumSizeHint();
-    ///return QSize(66,QWidget::minimumSizeHint().height());
+    return QSize(AUDIO_STRIP_WIDTH, QWidget::minimumSizeHint().height());
 }
 
+/*
 //---------------------------------------------------------
 //   sizeHint
 //---------------------------------------------------------
