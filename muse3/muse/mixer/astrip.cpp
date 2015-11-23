@@ -684,6 +684,7 @@ void AudioStrip::updateChannels()
    stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
    repaint();
    //stereo->setIconSize(stereoIcon->size());
+   fprintf(stderr, "min.w = %d", width());
 }
 
 //---------------------------------------------------------
@@ -800,7 +801,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
       channel       = std::max(2, at->channels());
-      setMinimumWidth(STRIP_WIDTH);
+      setMinimumWidth(AUDIO_STRIP_WIDTH);
       
       int ch = 0;
       for (; ch < channel; ++ch)

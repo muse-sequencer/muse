@@ -49,6 +49,7 @@ class ComboBox;
 class Meter;
 
 static const int STRIP_WIDTH = 65;
+static const int AUDIO_STRIP_WIDTH = 73;
 
 //---------------------------------------------------------
 //   Strip
