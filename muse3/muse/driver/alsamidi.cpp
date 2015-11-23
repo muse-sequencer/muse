@@ -124,7 +124,10 @@ QString MidiAlsaDevice::open()
       _openFlags &= _rwFlags; // restrict to available bits
 
       if(!alsaSeq)
-        return QString("ALSA uninitialized");
+      {
+        _state = QString("Unavailable");
+        return _state;
+      }
       
       snd_seq_port_info_t *pinfo = NULL;
       snd_seq_port_subscribe_t* subs = NULL;
@@ -227,7 +230,10 @@ QString MidiAlsaDevice::open()
 void MidiAlsaDevice::close()
 {
       if(!alsaSeq)
+      {
+        _state = QString("Unavailable");
         return;
+      }
       
       snd_seq_port_info_t *pinfo;
       snd_seq_port_subscribe_t* subs;
@@ -250,6 +256,7 @@ void MidiAlsaDevice::close()
       {
         _readEnable = false;      
         _writeEnable = false;      
+        _state = QString("Unavailable");
       }
       else
         
@@ -326,8 +333,8 @@ void MidiAlsaDevice::close()
               }   
               _readEnable = false;      
         }
+        _state = QString("Closed");
       }
-  _state = QString("Closed");
 }
 
 //---------------------------------------------------------
@@ -1474,8 +1481,11 @@ void alsaScanMidiPorts()
                     d->setrwFlags(k->flags);
                     // FIXME: Re-subscribe to any ports for now, need a time delay to implement unsubscribe-exit events
                     d->setOpenFlags(k->flags);
-                    if(d->midiPort() != -1)
-                      // Re-subscribe, and update the port's state
+                    if(d->midiPort() < 0)
+                      // Keep the device closed and update the state.
+                      d->setState("Closed");
+                    else
+                      // Re-subscribe, open and update the port's state.
                       MusEGlobal::midiPorts[d->midiPort()].setState(d->open());
                     break;
                   }
