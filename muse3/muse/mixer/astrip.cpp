@@ -685,7 +685,7 @@ void AudioStrip::updateChannels()
    stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
    repaint();
    //stereo->setIconSize(stereoIcon->size());
-   fprintf(stderr, "min.w = %d", width());
+   //fprintf(stderr, "min.w = %d", width());
 }
 
 //---------------------------------------------------------
