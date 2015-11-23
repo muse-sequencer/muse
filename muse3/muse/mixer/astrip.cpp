@@ -800,7 +800,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
       channel       = std::max(2, at->channels());
-      ///setMinimumWidth(STRIP_WIDTH);
+      setMinimumWidth(STRIP_WIDTH);
       
       int ch = 0;
       for (; ch < channel; ++ch)
@@ -897,7 +897,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       sliderGrid = new QGridLayout();
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->setContentsMargins(0, 0, 0, 0);
-      sliderGrid->setSpacing(0);
+      sliderGrid->setSpacing(1);
 
       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
 
