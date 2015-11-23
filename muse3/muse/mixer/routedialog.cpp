@@ -278,7 +278,7 @@ void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
               for(int i = 0; i < sz && i < MIDI_CHANNELS; ++i)
               {
                 //if(_channels.testBit(i))
-                if(_channels.channelSelected(i))
+                if(_channels.selected(i))
                 {
                   //r.channel = (1 << i);
                   r.channel = i;
@@ -291,7 +291,7 @@ void RouteTreeWidgetItem::getSelectedRoutes(MusECore::RouteList& routes)
               for(int i = 0; i < sz; ++i)
               {
                 //if(_channels.testBit(i))
-                if(_channels.channelSelected(i))
+                if(_channels.selected(i))
                 {
                   r.channel = i;
                   routes.push_back(r);
@@ -1077,6 +1077,9 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           if(index.parent().isValid() && (index.parent().row() & 0x01))
             painter->fillRect(option.rect, option.palette.alternateBase());
           int cur_chan = 0;
+          //QColor color;
+//           QBrush brush;
+          QPen pen;
 
           // Set a small five-pixel font size for the numbers inside the dots.
           QFont fnt = font(index.column());
@@ -1090,6 +1093,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           {
             const RouteChannelsStruct& ch_struct = _channels.at(i);
             const QRect& ch_rect = ch_struct._buttonRect;
+            
             QPainterPath path;
             path.addRoundedRect(x_offset + ch_rect.x(), option.rect.y() + ch_rect.y(), 
                                 ch_rect.width(), ch_rect.height(), 
@@ -1097,6 +1101,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             if(ch_struct._selected)
               painter->fillPath(path, option.palette.highlight());
             //painter->setPen(ch_struct._selected ? option.palette.highlightedText().color() : option.palette.text().color());
+            //painter->setPen(ch_struct._routeSelected ? Qt::yellow : option.palette.text().color());
             painter->setPen(option.palette.text().color());
             painter->drawPath(path);
 
@@ -1115,29 +1120,63 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
               }
             }
             
-            if((cur_chan % 2) == 0)
-              painter->setPen(option.palette.text().color().lighter());
-            else
-              painter->setPen(option.palette.text().color());
-
             if(ch_struct._connected)
             {
+//             if((cur_chan % 2) == 0)
+//               painter->setPen(option.palette.text().color().lighter());
+//             else
+//               painter->setPen(option.palette.text().color());
+              //painter->setPen(ch_struct._selected ? option.palette.highlight().color() : option.palette.text().color());
+              
+//               if(ch_struct._routeSelected)
+//                 brush = Qt::yellow;
+//                 //brush = Qt::red;
+//                 //brush = QColor(0, 255, 255);
+//                 //brush = option.palette.highlight();
+//               else if(ch_struct._selected)
+//                 brush = option.palette.highlight();
+//               else 
+//                 brush = option.palette.text();
+
+  //             painter->setPen(ch_struct._selected ? option.palette.highlight().color() : option.palette.text().color());
+//               painter->setPen(color);
+
               const int line_x = x_offset + ch_rect.x() + RouteDialog::channelDotDiameter / 2;
               const int line_y = option.rect.y() + ch_struct._lineY;
               if(_isInput)
               {
                 const int ch_y = option.rect.y() + ch_rect.y() -1;
                 DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::paint() input: line_x:%d ch_y:%d line_y:%d view_w:%d\n", line_x, ch_y, line_y, view_width);  // REMOVE Tim.
-
+                pen.setBrush((ch_struct._selected && !ch_struct._routeSelected) ? option.palette.highlight() : option.palette.text());
+                pen.setStyle(Qt::SolidLine);
+                painter->setPen(pen);
                 painter->drawLine(line_x, ch_y, line_x, line_y);
                 painter->drawLine(line_x, line_y, view_width, line_y);
+                if(ch_struct._routeSelected)
+                {
+                  pen.setBrush(Qt::yellow);
+                  pen.setStyle(Qt::DotLine);
+                  painter->setPen(pen);
+                  painter->drawLine(line_x, ch_y, line_x, line_y);
+                  painter->drawLine(line_x, line_y, view_width, line_y);
+                }
               }
               else
               {
-                //const int ch_y = option.rect.y() + RouteDialog::channelBarHeight + ch_rect.y();
                 const int ch_y = option.rect.y() + ch_rect.y() + ch_rect.height();
+                pen.setBrush((ch_struct._selected && !ch_struct._routeSelected) ? option.palette.highlight() : option.palette.text());
+                pen.setStyle(Qt::SolidLine);
+                painter->setPen(pen);
                 painter->drawLine(line_x, ch_y, line_x, line_y);
                 painter->drawLine(x_offset, line_y, line_x, line_y);
+                if(ch_struct._routeSelected)
+                {
+                  pen.setBrush(Qt::yellow);
+                  pen.setStyle(Qt::DotLine);
+                  painter->setPen(pen);
+                  painter->drawLine(line_x, ch_y, line_x, line_y);
+                  painter->drawLine(x_offset, line_y, line_x, line_y);
+                }
               }
               ++cur_chan;
             }
@@ -1828,21 +1867,17 @@ void ConnectionsView::paintEvent(QPaintEvent*)
   if(!_routeDialog)
     return;
 
-//   const int yc = QWidget::pos().y();
-//   const int yo = _routeDialog->newSrcList->pos().y();
-//   const int yi = _routeDialog->newDstList->pos().y();
-
   QPainter painter(this);
-//   int y1;
-//   int y2;
-  int i, rgb[3] = { 0x33, 0x66, 0x99 };
+//   int i, rgb[3] = { 0x33, 0x66, 0x99 };
+  int i, rgb[3] = { 0x33, 0x58, 0x7f };
   //int i, rgb[3] = { 0x00, 0x2c, 0x7f };
 
   // Inline adaptive to darker background themes...
   if(QWidget::palette().window().color().value() < 0x7f)
     for (i = 0; i < 3; ++i) 
       //rgb[i] += 0x33;
-      rgb[i] += 0x66;
+      //rgb[i] += 0x66;
+      rgb[i] += 0x80;
 
   i = 0;
 //   const int x1 = 0;
@@ -1879,6 +1914,9 @@ void ConnectionsView::paintEvent(QPaintEvent*)
     if(!item || item->isHidden() || !item->isSelected())
       continue;
     drawItem(&painter, item, Qt::yellow);
+    //drawItem(&painter, item, Qt::red);
+    //drawItem(&painter, item, QColor(0, 255, 255));
+    //drawItem(&painter, item, palette().highlight().color());
   } 
     
     
@@ -2377,7 +2415,11 @@ void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
     {
       //setCurrentItem(item);
       //update(visualItemRect(item));
-      setDirtyRegion(visualItemRect(item));
+      QRect r(visualItemRect(item));
+      // Need to update from the item's right edge to the viewport right edge,
+      //  for the connector lines.
+      r.setRight(this->viewport()->geometry().right());
+      setDirtyRegion(r);
       //emit itemSelectionChanged();
     }
     
@@ -2703,7 +2745,6 @@ void RouteTreeWidget::scrollBy(int dx, int dy)
   }
 }
 
-
 void RouteTreeWidget::getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts)
 {
   QTreeWidgetItemIterator ii(this);
@@ -2824,6 +2865,81 @@ void RouteTreeWidget::getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remov
     }
   }*/
 }
+
+void RouteTreeWidget::selectRoutes(const QList<QTreeWidgetItem*>& routes, bool doNormalSelections)
+{
+  QTreeWidgetItemIterator ii(this);
+  while(*ii)
+  {
+    RouteTreeWidgetItem* rtwi = static_cast<RouteTreeWidgetItem*>(*ii);
+    switch(rtwi->type())
+    {
+      case RouteTreeWidgetItem::NormalItem:
+      case RouteTreeWidgetItem::CategoryItem:
+      case RouteTreeWidgetItem::RouteItem:
+      break;
+      
+      case RouteTreeWidgetItem::ChannelsItem:
+      {
+        bool do_upd = rtwi->fillChannelsRouteSelected(false);
+        if(doNormalSelections && rtwi->fillSelectedChannels(false))
+          do_upd = true;
+        const MusECore::Route& rtwi_route = rtwi->route();
+        const int sz = routes.size();
+        for(int i = 0; i < sz; ++i)
+        {
+          const QTreeWidgetItem* routes_item = routes.at(i);
+          const MusECore::Route r = 
+            routes_item->data(isInput() ? RouteDialog::ROUTE_SRC_COL : RouteDialog::ROUTE_DST_COL, RouteDialog::RouteRole).value<MusECore::Route>();
+          if(rtwi_route.compare(r))
+          {
+            const int chan = r.channel;
+            if(chan >= 0)
+            {
+              //if(!rtwi->channelRouteSelected(chan))
+              //{
+                rtwi->routeSelectChannel(chan, true);
+                do_upd = true;
+              //}
+              //if(doNormalSelections && !rtwi->channelSelected(chan))
+              if(doNormalSelections)
+              {
+                rtwi->selectChannel(chan, true);
+                do_upd = true;
+              }
+            }
+
+//             const int chans = rtwi->channelCount();
+//             for(int c = 0; c < chans; ++c)
+//             {
+//               // Set both the selected and route selected flags.
+//               if(rtwi->channelSelected(c) != (c == chan))
+//               {
+//                 rtwi->selectChannel(c, c == chan);
+//                 do_upd = true;
+//               }
+//               if(rtwi->channelRouteSelected(c) != (c == chan))
+//               {
+//                 rtwi->routeSelectChannel(c, c == chan);
+//                 do_upd = true;
+//               }
+//             }
+          }
+        }
+        if(do_upd)
+        {
+          QRect r(visualItemRect(rtwi));
+          // Need to update from the item's right edge to the viewport right edge,
+          //  for the connector lines.
+          r.setRight(this->viewport()->geometry().right());
+          setDirtyRegion(r);
+        }
+      }
+      break;
+    }
+    ++ii;
+  }
+}  
 
 //-----------------------------------
 //   RoutingItemDelegate
@@ -4552,10 +4668,13 @@ void RouteDialog::routeSelectionChanged()
   newDstList->blockSignals(true);
   newDstList->setCurrentItem(dstItem);
   newDstList->blockSignals(false);
+  selectRoutes(true);
   if(srcItem)
     newSrcList->scrollToItem(srcItem, QAbstractItemView::PositionAtCenter);
+    //newSrcList->scrollToItem(srcItem, QAbstractItemView::EnsureVisible);
   if(dstItem)
     newDstList->scrollToItem(dstItem, QAbstractItemView::PositionAtCenter);
+    //newDstList->scrollToItem(dstItem, QAbstractItemView::EnsureVisible);
   connectionsWidget->update();
 //   connectButton->setEnabled(MusECore::routeCanConnect(src, dst));
   connectButton->setEnabled(false);
@@ -4923,6 +5042,8 @@ void RouteDialog::srcSelectionChanged()
   if(routesSelCnt == 1)
     routeList->scrollToItem(routesItem, QAbstractItemView::PositionAtCenter);
 
+  selectRoutes(false);
+  
   connectionsWidget->update();
   //connectButton->setEnabled(can_connect && (srcSelSz == 1 || dstSelSz == 1));
   connectButton->setEnabled(canConnect);
@@ -5268,6 +5389,8 @@ void RouteDialog::removeItems()
     for(int i = 0; i < cnt; ++i)
       delete itemsToDelete.at(i);
   }
+
+  selectRoutes(false);
   
   routeList->blockSignals(false);
   newDstList->blockSignals(false);
@@ -5368,6 +5491,12 @@ void RouteDialog::getRoutesToDelete(QTreeWidget* tree, QVector<QTreeWidgetItem*>
   }
 }
 
+void RouteDialog::selectRoutes(bool doNormalSelections)
+{
+  const QList<QTreeWidgetItem*> route_list = routeList->selectedItems();
+  newSrcList->selectRoutes(route_list, doNormalSelections);
+  newDstList->selectRoutes(route_list, doNormalSelections);
+}  
 
 // bool RouteDialog::routeNodeExists(const MusECore::Route& r)
 // {

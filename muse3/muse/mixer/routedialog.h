@@ -59,30 +59,72 @@ typedef QList <QTreeWidgetItem*> RouteTreeItemList;
 
 struct RouteChannelsStruct
 {
+  // Whether the channel is selected (highlight colour).
   bool _selected;
-  //// Contains pre-computed handy y value for drawing connection lines. -1 means not connected.
+  // Whether the channel is selected as part of one or more complete routes (yellow colour).
+  bool _routeSelected;
+  // Whether the channel is connected to any other route (whether to draw a header connector line).
+  bool _connected;
+  // Rectangle of the channel.
+  QRect _buttonRect;
   // Contains pre-computed handy y value for drawing connection lines.
   int _lineY;
-  bool _connected;
-  QRect _buttonRect;
-  RouteChannelsStruct() { _selected = false; _lineY = -1; _connected = false; }
-  void toggleSelected() { _selected = !_selected; }
+  
+  RouteChannelsStruct() : _selected(false), _routeSelected(false), _connected(false), _lineY(-1) { }
+  void toggleSelected()      { _selected = !_selected; }
+  void toggleRouteSelected() { _routeSelected = !_routeSelected; }
+  void toggleConnected()     { _connected = !_connected; }
 };
 
 class RouteChannelsList : public QVector<RouteChannelsStruct>
 {
   public:
-    void fillSelectedChannels(bool v) { const int sz = size(); for(int i = 0; i < sz; ++i) operator[](i)._selected = v; }
-    bool channelSelected(int c) const { if(c >= size()) return false; return at(c)._selected; }
-    void selectChannel(int c, bool v) { if(c >= size()) return; operator[](c)._selected = v; }
-    void toggleChannel(int c)         { if(c >= size()) return; operator[](c)._selected = !at(c)._selected; }
-    int  lineY(int c) const           { if(c >= size()) return -1; return at(c)._lineY; }
-    void setLineY(int c, int v)       { if(c >= size()) return; operator[](c)._lineY = v; }
-    //void fillYValues(bool v)          { const int sz = size(); for(int i = 0; i < sz; ++i) at(i)._lineY = v; }
-    //void computeChannelYValues(); // May be slow. Don't call every draw time, only when routes change. Use channelYValue() to draw.
-    bool connected(int c) const       { if(c >= size()) return false; return at(c)._connected; }
-    void setConnected(int c, bool v)  { if(c >= size()) return; operator[](c)._connected = v; }
-    void fillConnected(bool v)        { const int sz = size(); for(int i = 0; i < sz; ++i) operator[](i)._connected = v; }
+    // Returns true if any channel was changed.
+    bool fillSelected(bool v) { 
+      bool changed = false; const int sz = size(); 
+      for(int i = 0; i < sz; ++i) { 
+        bool& sel = operator[](i)._selected; 
+        if(sel != v) changed = true; 
+        sel = v;
+      } 
+      return changed; 
+    }
+    bool selected(int c) const       { if(c >= size()) return false; return at(c)._selected; }
+    void select(int c, bool v)       { if(c >= size()) return; operator[](c)._selected = v; }
+    void toggleSelected(int c)       { if(c >= size()) return; operator[](c).toggleSelected(); }
+
+    // Returns true if any channel was changed.
+    bool fillRouteSelected(bool v) {
+      bool changed = false; const int sz = size(); 
+      for(int i = 0; i < sz; ++i) {
+        bool& sel = operator[](i)._routeSelected; 
+        if(sel != v) changed = true; 
+        sel = v;
+      }
+      return changed; 
+    }
+    bool routeSelected(int c) const  { if(c >= size()) return false; return at(c)._routeSelected; }
+    void routeSelect(int c, bool v)  { if(c >= size()) return; operator[](c)._routeSelected = v; }
+    void toggleRouteSelected(int c)  { if(c >= size()) return; operator[](c).toggleRouteSelected(); }
+    
+    // Returns true if any channel was changed.
+    bool fillConnected(bool v) {
+      bool changed = false; const int sz = size();
+      for(int i = 0; i < sz; ++i) {
+        bool& sel = operator[](i)._connected; 
+        if(sel != v) changed = true; 
+        sel = v;
+      }
+      return changed; 
+    }
+    bool connected(int c) const      { if(c >= size()) return false; return at(c)._connected; }
+    void setConnected(int c, bool v) { if(c >= size()) return; operator[](c)._connected = v; }
+    void toggleConnected(int c)      { if(c >= size()) return; operator[](c).toggleConnected(); }
+
+    // Pre-computed handy y value for drawing connection lines.
+    int  lineY(int c) const          { if(c >= size()) return -1; return at(c)._lineY; }
+    // Set pre-computed handy y value for drawing connection lines.
+    void setLineY(int c, int v)      { if(c >= size()) return; operator[](c)._lineY = v; }
     
     // How many channels are connected.
     int connectedChannels() const;
@@ -120,6 +162,7 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         void init();
   
   public:
+        // Overrides for QTreeWidgetItem constructor...
         RouteTreeWidgetItem(int type = NormalItem, bool isInput = false, const MusECore::Route& route = MusECore::Route(), ItemMode mode = NormalMode)
                             : QTreeWidgetItem(type), _isInput(isInput), _route(route), _itemMode(mode) { init(); }
                             
@@ -157,23 +200,33 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         // Fills a list of routes with selected items' routes.
         void getSelectedRoutes(MusECore::RouteList& routes);
         
+        // Returns item exclusive mode setting.
         ItemMode itemMode() const         { return _itemMode; }
+        // Sets item exclusive mode setting.
         void setItemMode(ItemMode mode)   { _itemMode = mode; }
         
         // Automatically sets the number of channels. Returns true if channel count was changed.
         bool setChannels();
         // Returns the number of channels.
-        int channelCount() const          { return _channels.size(); }
+        int channelCount() const               { return _channels.size(); }
         // Sets the number of channels.
-        void setChannelCount(int c)       { _channels.resize(c); }
+        void setChannelCount(int c)            { _channels.resize(c); }
         // Returns true if the channel is selected.
-        bool channelSelected(int c) const { return _channels.channelSelected(c); }
+        bool channelSelected(int c) const      { return _channels.selected(c); }
         // Selects the channel.
-        void selectChannel(int c, bool v) { _channels.selectChannel(c, v); }
+        void selectChannel(int c, bool v)      { _channels.select(c, v); }
         // Toggles the channel selection.
-        void toggleChannel(int c)         { _channels.toggleChannel(c); }
-        // Sets all channels' selected state.
-        void fillSelectedChannels(bool v)         { _channels.fillSelectedChannels(v); }
+        void toggleChannel(int c)              { _channels.toggleSelected(c); }
+        // Sets all channels' selected state. Returns true if any channel was changed.
+        bool fillSelectedChannels(bool v)      { return _channels.fillSelected(v); }
+        // Returns true if the channel is route-selected.
+        bool channelRouteSelected(int c) const { return _channels.routeSelected(c); }
+        // Route-selects the channel.
+        void routeSelectChannel(int c, bool v) { _channels.routeSelect(c, v); }
+        // Toggles the channel route-selection.
+        void toggleChannelRouteSelect(int c)   { _channels.toggleRouteSelected(c); }
+        // Sets all channels' route-selected state. Returns true if any channel was changed.
+        bool fillChannelsRouteSelected(bool v) { return _channels.fillRouteSelected(v); }
         // Returns the channel, based at rect y, whose rectangle contains pt.
         int channelAt(const QPoint& pt, const QRect& rect) const;
 //         // How many non-omni channels are connected. For speed, it looks in the channel y values list, which must be current.
@@ -298,6 +351,7 @@ public:
         void getSelectedRoutes(MusECore::RouteList& routes);
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
         //void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
+        void selectRoutes(const QList<QTreeWidgetItem*>& routes, bool doNormalSelections);
 };
 
 
@@ -380,6 +434,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void removeItems();
       void addItems();
       void getRoutesToDelete(QTreeWidget* routesTree, QVector<QTreeWidgetItem*>& items_to_remove);
+      void selectRoutes(bool doNormalSelections);
 
    private slots:
       void routeSelectionChanged();

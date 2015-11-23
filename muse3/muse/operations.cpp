@@ -389,24 +389,25 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->outRoutes()->push_back(src);
-                      flags |= SC_ROUTE; }
+                      flags |= SC_ROUTE;
+                      // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update this track's aux ref count.
+                      if(r->track->auxRefCount())
+                      {
+                        _track->updateAuxRoute(r->track->auxRefCount(), NULL);
+                        flags |= SC_AUX;
+                      }
+                      else if(r->track->type() == Track::AUDIO_AUX)
+                      {
+                        _track->updateAuxRoute(1, NULL);
+                        flags |= SC_AUX;
+                      }
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
-                  }
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update this track's aux ref count.
-                  if(r->track->auxRefCount())
-                  {
-                    _track->updateAuxRoute(r->track->auxRefCount(), NULL);
-                    flags |= SC_AUX;
-                  }
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                  {
-                    _track->updateAuxRoute(1, NULL);
-                    flags |= SC_AUX;
                   }
             }
             // Add other tracks' input routes from this track
@@ -419,24 +420,25 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->inRoutes()->push_back(src);
-                      flags |= SC_ROUTE; }
+                      flags |= SC_ROUTE;
+                      // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update the other track's aux ref count and all tracks it is connected to.
+                      if(_track->auxRefCount())
+                      {
+                        r->track->updateAuxRoute(_track->auxRefCount(), NULL);
+                        flags |= SC_AUX;
+                      }
+                      else if(_track->type() == Track::AUDIO_AUX)
+                      {
+                        r->track->updateAuxRoute(1, NULL);
+                        flags |= SC_AUX;
+                      }
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
-                  }
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.
-                  if(_track->auxRefCount())
-                  {
-                    r->track->updateAuxRoute(_track->auxRefCount(), NULL);
-                    flags |= SC_AUX;
-                  }
-                  else if(_track->type() == Track::AUDIO_AUX)
-                  {
-                    r->track->updateAuxRoute(1, NULL);
-                    flags |= SC_AUX;
                   }
             }      
       }
@@ -585,24 +587,25 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->outRoutes()->removeRoute(src);
-                      flags |= SC_ROUTE; }
+                      flags |= SC_ROUTE; 
+                      // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update this track's aux ref count.
+                      if(r->track->auxRefCount())
+                      {
+                        _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
+                        flags |= SC_AUX;
+                      }
+                      else if(r->track->type() == Track::AUDIO_AUX)
+                      {
+                        _track->updateAuxRoute(-1, NULL);
+                        flags |= SC_AUX;
+                      }
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
-                  }
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update this track's aux ref count.
-                  if(r->track->auxRefCount())
-                  {
-                    _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
-                    flags |= SC_AUX;
-                  }
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                  {
-                    _track->updateAuxRoute(-1, NULL);
-                    flags |= SC_AUX;
                   }
             }
             // Remove other tracks' input routes from this track
@@ -615,24 +618,25 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       Route src(_track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
                       r->track->inRoutes()->removeRoute(src);
-                      flags |= SC_ROUTE; }
+                      flags |= SC_ROUTE;
+                      // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update the other track's aux ref count and all tracks it is connected to.
+                      if(_track->auxRefCount())
+                      {
+                        r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
+                        flags |= SC_AUX;
+                      }
+                      else if(_track->type() == Track::AUDIO_AUX)
+                      {
+                        r->track->updateAuxRoute(-1, NULL);
+                        flags |= SC_AUX;
+                      }
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
-                  }
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.
-                  if(_track->auxRefCount())
-                  {
-                    r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
-                    flags |= SC_AUX;
-                  }
-                  else if(_track->type() == Track::AUDIO_AUX)
-                  {
-                    r->track->updateAuxRoute(-1, NULL);
-                    flags |= SC_AUX;
                   }
             }      
       }
