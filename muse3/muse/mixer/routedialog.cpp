@@ -73,8 +73,10 @@ const int RouteDialog::channelDotSpacing = 1;
 const int RouteDialog::channelDotsPerGroup = 4;
 const int RouteDialog::channelDotGroupSpacing = 3;
 const int RouteDialog::channelDotsMargin = 1;
-const int RouteDialog::channelBarHeight = RouteDialog::channelDotDiameter + RouteDialog::channelDotsMargin;
-const int RouteDialog::channelLinesSpacing = 2;
+const int RouteDialog::channelBarHeight = RouteDialog::channelDotDiameter + 2 * RouteDialog::channelDotsMargin;
+const int RouteDialog::channelLineWidth = 1;
+const int RouteDialog::channelLinesSpacing = 1;
+const int RouteDialog::channelLinesMargin = 1;
 
 std::list<QString> tmpJackInPorts;
 std::list<QString> tmpJackOutPorts;
@@ -165,8 +167,9 @@ int RouteChannelsList::heightHint(int width) const
   if(chans_per_col > chans)
     chans_per_col = chans;
   const int bars = barsPerColChannels(chans_per_col);
-  return bars * RouteDialog::channelBarHeight + 2 * RouteDialog::channelDotsMargin + 
-         connectedChannels() * RouteDialog::channelLinesSpacing;
+  return bars * RouteDialog::channelBarHeight + 
+         connectedChannels() * (RouteDialog::channelLinesSpacing + RouteDialog::channelLineWidth) + 
+         4 * RouteDialog::channelLinesMargin;
 }
 
 //---------------------------------------------------------
@@ -532,11 +535,12 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
   const int x_orig = RouteDialog::channelDotsMargin;
   int x = x_orig;
   //int chan_y = RouteDialog::channelDotsMargin + (_isInput ? chans : 0);
-  int chan_y = RouteDialog::channelDotsMargin;
+  int chan_y = 2 * RouteDialog::channelDotsMargin;
 
   DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() col_width:%d chans_per_w:%d\n", col_width, chans_per_w);  // REMOVE Tim.
   
-  int line_y = RouteDialog::channelDotsMargin + (_isInput ? 0 : RouteDialog::channelBarHeight);
+  int line_y = 2 * RouteDialog::channelLinesMargin + 
+    (_isInput ? 0 : (RouteDialog::channelBarHeight + RouteDialog::channelDotsMargin + RouteDialog::channelLinesMargin));
 
   //QList<int> chan_ys;
   
@@ -614,7 +618,7 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
     const bool new_section = (i % chans_per_w == 0);
 
     if(is_connected)
-      line_y += RouteDialog::channelLinesSpacing;
+      line_y += RouteDialog::channelLineWidth + RouteDialog::channelLinesSpacing;
     
     if(_isInput)
     {
@@ -626,12 +630,13 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
         for( ; cur_chan < i; )
         {
           DEBUG_PRST_ROUTES(stderr, "RouteTreeWidgetItem::computeChannelYValues() i:%d cur_chan:%d x:%d\n", i, cur_chan, x);  // REMOVE Tim.
-          _channels[cur_chan]._buttonRect = QRect(x, line_y, RouteDialog::channelDotDiameter, RouteDialog::channelDotDiameter);
+          _channels[cur_chan]._buttonRect = QRect(x, line_y + RouteDialog::channelLinesMargin, RouteDialog::channelDotDiameter, RouteDialog::channelDotDiameter);
           ++cur_chan;
           x += RouteDialog::channelDotDiameter + RouteDialog::channelDotSpacing;
           if(cur_chan % RouteDialog::channelDotsPerGroup == 0)
             x += RouteDialog::channelDotGroupSpacing;
         }
+        //line_y += RouteDialog::channelLinesMargin;
         //++cur_chan;
       }
     }
@@ -650,7 +655,10 @@ void RouteTreeWidgetItem::computeChannelYValues(int col_width)
     if(new_section)
     {
       x = x_orig;  // Reset
+//       chan_y = line_y + RouteDialog::channelLinesMargin + RouteDialog::channelDotsMargin;
+//       chan_y = line_y + RouteDialog::channelLinesMargin;
       chan_y = line_y;
+//       line_y += (RouteDialog::channelBarHeight + RouteDialog::channelLinesMargin);
       line_y += RouteDialog::channelBarHeight;
     }
     else

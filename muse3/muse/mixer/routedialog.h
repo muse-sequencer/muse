@@ -493,7 +493,9 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       static const int channelDotGroupSpacing;
       static const int channelDotsMargin;
       static const int channelBarHeight;
+      static const int channelLineWidth;
       static const int channelLinesSpacing;
+      static const int channelLinesMargin;
       };
 
 
