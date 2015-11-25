@@ -99,8 +99,9 @@ QT5_WRAP_CPP (widget_mocs
       splitter.h  
       swidget.h  
       tb1.h  
-      tempolabel.h  
-      tools.h  
+      tempolabel.h
+      thinslider.h
+      tools.h
       tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
@@ -232,7 +233,8 @@ file (GLOB widgets_source_files
       swidget.cpp 
       tb1.cpp   
       tempolabel.cpp 
-      tools.cpp 
+      thinslider.cpp
+      tools.cpp
       tracks_duplicate.cpp
       # ttoolbar.cpp 
       ttoolbutton.cpp 
