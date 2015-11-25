@@ -313,7 +313,7 @@ static void usage(const char* prog, const char* txt)
 #endif
 #ifdef VST_NATIVE_SUPPORT
       fprintf(stderr, "   VST_NATIVE_PATH: Override where to look for native vst plugins, or else VST_PATH, or else\n"
-                      "     ~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
+                      "     ~/.vst:~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
 #endif
 #ifdef LV2_SUPPORT
       fprintf(stderr, "   LV2_PATH: Override where to look for LV2 plugins or else\n"
