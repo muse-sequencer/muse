@@ -3223,19 +3223,20 @@ void Song::insertTrack2(Track* track, int idx)
                     case Route::TRACK_ROUTE: {
                       Route src(track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->outRoutes()->push_back(src);  }
+                      r->track->outRoutes()->push_back(src); 
+                      // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update this track's aux ref count.     p4.0.37
+                      if(r->track->auxRefCount())
+                        track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                      else if(r->track->type() == Track::AUDIO_AUX)
+                        track->updateAuxRoute( 1, NULL );
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
                   }
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update this track's aux ref count.     p4.0.37
-                  if(r->track->auxRefCount())
-                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                    track->updateAuxRoute( 1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3245,19 +3246,20 @@ void Song::insertTrack2(Track* track, int idx)
                     case Route::TRACK_ROUTE: {
                       Route src(track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->inRoutes()->push_back(src);  }
+                      r->track->inRoutes()->push_back(src); 
+                      // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update the other track's aux ref count and all tracks it is connected to.
+                      if(track->auxRefCount())
+                        r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                      else if(track->type() == Track::AUDIO_AUX)
+                        r->track->updateAuxRoute( 1, NULL );
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
                   }
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
-                  if(track->auxRefCount())
-                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
-                  else if(track->type() == Track::AUDIO_AUX)
-                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
 }
