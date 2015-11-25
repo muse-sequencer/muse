@@ -79,6 +79,8 @@ Slider::Slider(QWidget *parent, const char *name,
       d_yMargin     = 0;
       d_mMargin    = 1;
 
+      bPressed      = false;
+
       d_fillColor = fillColor;
 
       d_sliderRect.setRect(0, 0, 8, 8);
@@ -595,6 +597,8 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
 
    double ypos = __h - __h * (value()  - __minV) / (__maxV - __minV);
 
+
+
    //draw current value with gradoent rectangle
    p.setPen(__bkColor);
    QLinearGradient __scaleGradient(0, __h, 0, 0);
@@ -602,7 +606,8 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    __scaleGradient.setColorAt(1.0, QColor(62, 37, 255));
    QBrush __gradientBrush(__scaleGradient);
    p.setBrush(__gradientBrush);
-   p.drawRect(15 + 7, ypos + __middleLine, 11, __h - ypos + __middleLine);
+   long __ly = roundl(ypos + __middleLine);
+   p.drawRect(15 + 7, __ly, 11, __h - __ly);
 
    //draw ruler scale
    p.setPen(__bkInvert);
@@ -623,10 +628,11 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
    }
    for(double i = -__middleLine - __scaleStep; (int)i > -__sHeight; i -= __scaleStep, __c = ((__c + 1) % 2))
    {
-      //fprintf(stderr, "__middleLine=%f, __scaleStep=%f, i=%f\n", __middleLine, __scaleStep, i);
+      //fprintf(stderr, "__middleLine=%f, __scaleStep=%f, i=%f\n", __middleLine, __scaleStep, i);      
       if(__c== 0)
       {
-         p.drawLine(23, __h - i, 23 - 1, __h - i);
+         long __ly = roundl(__h - i);
+         p.drawLine(23, __ly, 23 - 1, __ly);
       }
    }
    __c = 0;
@@ -638,10 +644,12 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
          continue;
       }
 
-      p.drawLine(23, __h - i, 23 - (!__b10 ? 2 : 5), __h - i);
+      long __ly = roundl(__h - i);
+
+      p.drawLine(23, __ly, 23 - (!__b10 ? 2 : 5), __ly);
       if(__b10)
       {
-         if(__v <= round(value()))
+         if(__v <= roundl(value()))
          {
             p.setFont(__numberFontBold);
          }
@@ -651,14 +659,16 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
          }
          QString __n = QString::number(__v);
          QRectF __bRect = p.boundingRect(QRectF(0, 0, 8, 8), __n);
-         p.drawText(23 - __bRect.width() - 6, __h - i + 4, __n);
+         p.drawText(23 - __bRect.width() - 6, __ly + 4, __n);
       }
    }
 
    int __offs = bPressed ? 1 : 0;
 
+   //fprintf(stderr, "value() = %f, __minv=%f, __maxV=%f, __h=%f, ypos=%f, __offs=%d\n", value(), __minV, __maxV, __h, ypos, __offs);
+
    //draw slider button
-   p.drawPixmap(15 + __offs, ypos + __offs, *sliderPngImage);
+   p.drawPixmap(15 + __offs, roundl(ypos + __offs), *sliderPngImage);
 
 
 }
