@@ -96,14 +96,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       mx = mc->maxVal();
       
       MusEGui::Knob* knob = new MusEGui::Knob(this);
-      if(ctl == MusECore::CTRL_PANPOT)
-      {
-         knob->setRange(double(mn), double(mx), 0.0, 1.0, 1);
-      }
-      else
-      {
-         knob->setRange(double(mn), double(mx), 1.0);
-      }
+      knob->setRange(double(mn), double(mx), 1.0);
       knob->setId(ctl);
       
       controller[idx].knob = knob;
@@ -220,13 +213,13 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
                           QColor(100, 255, 100));
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
-      slider->setFixedWidth(40);
+      slider->setFixedWidth(20);
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setId(MusECore::CTRL_VOLUME);
 
       meter[0] = new MusEGui::Meter(this, MusEGui::Meter::LinMeter);
       meter[0]->setRange(0, 127.0);
-      meter[0]->setFixedWidth(12);
+      meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 

@@ -29,7 +29,6 @@
 
 #include "utils.h"
 #include "slider.h"
-#include "icons.h"
 
 namespace MusEGui {
 
@@ -79,14 +78,10 @@ Slider::Slider(QWidget *parent, const char *name,
       d_yMargin     = 0;
       d_mMargin    = 1;
 
-      bPressed      = false;
-
       d_fillColor = fillColor;
 
       d_sliderRect.setRect(0, 0, 8, 8);
       setOrientation(orient);
-      connect(this, SIGNAL(sliderPressed(int)), this, SLOT(processSliderPressed(int)));
-      connect(this, SIGNAL(sliderReleased(int)), this, SLOT(processSliderReleased(int)));
       }
 
 //------------------------------------------------------------
@@ -97,21 +92,7 @@ void Slider::setSizeHint(uint w, uint h)
       {
       horizontal_hint = w;
       vertical_hint = h;
-}
-
-void Slider::processSliderPressed(int)
-{
-   //sliderCurrent = &sliderPngPressed;
-   bPressed = true;
-   update();
-}
-
-void Slider::processSliderReleased(int)
-{
-   //sliderCurrent = &sliderPng;
-   bPressed = false;
-   update();
-}
+      }
 
 //------------------------------------------------------------
 //.F  Slider::~Slider
@@ -201,7 +182,7 @@ void Slider::fontChange(const QFont & /*oldFont*/)
 //    drawSlider
 //     Draw the slider into the specified rectangle.  
 //------------------------------------------------------------
-/* replaced by graphical draw of png slider image in paintEvent()
+
 void Slider::drawSlider(QPainter *p, const QRect &r)
 {
     p->setRenderHint(QPainter::Antialiasing);
@@ -411,7 +392,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         }
 
 }
-*/
+
 //------------------------------------------------------------
 //.-
 //.F  Slider::getValue
@@ -570,10 +551,10 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
 //------------------------------------------------------------
 
 void Slider::paintEvent(QPaintEvent* /*ev*/)
-{
-   QPainter p(this);
+      {
+      QPainter p(this);
 
-   /* Scale is not supported
+      /* Scale is not supported
       if (p.begin(this)) {
             if (d_scalePos != None) {
                   p.fillRect(rect(), palette().window());
@@ -583,95 +564,8 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
             }
       p.end();
       */
-   //drawSlider(&p, d_sliderRect);
-   double __minV = minValue();
-   double __maxV = maxValue();
-   //int __w = width();
-   double __sHeight = MusEGui::sliderPngImage->height();
-   double __middleLine = __sHeight / 2;
-   double __h = (double)height() - __sHeight;
-   double __scaleStep = (__h / (maxValue() - minValue())) / (double)pageSize();
-   double __maxH = __h - __middleLine;
-   QColor __bkColor = p.background().color();
-   QColor __bkInvert(255 - __bkColor.red(), 255 - __bkColor.green(), 255 - __bkColor.green());
-
-   double ypos = __h - __h * (value()  - __minV) / (__maxV - __minV);
-
-
-
-   //draw current value with gradoent rectangle
-   p.setPen(__bkColor);
-   QLinearGradient __scaleGradient(0, __h, 0, 0);
-   __scaleGradient.setColorAt(0.0, __bkColor);//QColor(63, 169, 255));
-   __scaleGradient.setColorAt(1.0, QColor(62, 37, 255));
-   QBrush __gradientBrush(__scaleGradient);
-   p.setBrush(__gradientBrush);
-   long __ly = roundl(ypos + __middleLine);
-   p.drawRect(15 + 7, __ly, 11, __h - __ly);
-
-   //draw ruler scale
-   p.setPen(__bkInvert);
-   int __k = 0;
-   int __c = 0;
-   int __v = minValue();
-   QFont __numberFont;
-   __numberFont.setFamily("Sans");
-   __numberFont.setPixelSize(8);
-
-   QFont __numberFontBold;
-   __numberFontBold.setFamily("Sans");
-   __numberFontBold.setPixelSize(8);
-   __numberFontBold.setBold(true);
-   if((int)__scaleStep == 0)
-   {
-      __scaleStep = 1;
-   }
-   for(double i = -__middleLine - __scaleStep; (int)i > -__sHeight; i -= __scaleStep, __c = ((__c + 1) % 2))
-   {
-      //fprintf(stderr, "__middleLine=%f, __scaleStep=%f, i=%f\n", __middleLine, __scaleStep, i);      
-      if(__c== 0)
-      {
-         long __ly = roundl(__h - i);
-         p.drawLine(23, __ly, 23 - 1, __ly);
+      drawSlider(&p, d_sliderRect);
       }
-   }
-   __c = 0;
-   for(double i = -__middleLine; i < __maxH; i += __scaleStep, ++__k, ++__v, __c = ((__c + 1) % 2))
-   {
-      bool __b10 = (__k % 10) ? false : true;
-      if(!__b10 && __c != 0)
-      {
-         continue;
-      }
-
-      long __ly = roundl(__h - i);
-
-      p.drawLine(23, __ly, 23 - (!__b10 ? 2 : 5), __ly);
-      if(__b10)
-      {
-         if(__v <= roundl(value()))
-         {
-            p.setFont(__numberFontBold);
-         }
-         else
-         {
-            p.setFont(__numberFont);
-         }
-         QString __n = QString::number(__v);
-         QRectF __bRect = p.boundingRect(QRectF(0, 0, 8, 8), __n);
-         p.drawText(23 - __bRect.width() - 6, __ly + 4, __n);
-      }
-   }
-
-   int __offs = bPressed ? 1 : 0;
-
-   //fprintf(stderr, "value() = %f, __minv=%f, __maxV=%f, __h=%f, ypos=%f, __offs=%d\n", value(), __minV, __maxV, __h, ypos, __offs);
-
-   //draw slider button
-   p.drawPixmap(15 + __offs, roundl(ypos + __offs), *sliderPngImage);
-
-
-}
 
 //------------------------------------------------------------
 //.F  Slider::resizeEvent

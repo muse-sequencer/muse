@@ -126,7 +126,7 @@ class AudioStrip : public Strip {
    public:
       AudioStrip(QWidget* parent, MusECore::AudioTrack*);
       ~AudioStrip();
-      virtual QSize minimumSizeHint () const;
+      ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;
       };
 

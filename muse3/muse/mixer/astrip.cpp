@@ -25,7 +25,6 @@
 #include <fastlog.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <algorithm>
 
 #include <QLayout>
 #include <QApplication>
@@ -74,7 +73,7 @@
 
 namespace MusEGui {
 
-
+/*
 //---------------------------------------------------------
 //   minimumSizeHint
 //---------------------------------------------------------
@@ -83,10 +82,9 @@ QSize AudioStrip::minimumSizeHint () const
 {
     // We force the width of the size hint to be what we want
     //return QWidget::minimumSizeHint();
-    return QSize(AUDIO_STRIP_WIDTH, QWidget::minimumSizeHint().height());
+    ///return QSize(66,QWidget::minimumSizeHint().height());
 }
 
-/*
 //---------------------------------------------------------
 //   sizeHint
 //---------------------------------------------------------
@@ -643,50 +641,36 @@ void AudioStrip::panLabelChanged(double val)
 //---------------------------------------------------------
                                        
 void AudioStrip::updateChannels()
-{
-   MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
-   int c = t->channels();
-   //printf("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
-
-   if (c > channel) {
-      for (int cc = channel; cc < c; ++cc) {
-         meter[cc] = new MusEGui::Meter(this);
-         //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
-         meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
-         meter[cc]->setFixedWidth(9);
-         connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-         sliderGrid->addWidget(meter[cc], 0, cc+1, Qt::AlignLeft);
-         sliderGrid->setColumnStretch(cc, 50);
-         meter[cc]->show();
+      {
+      MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
+      int c = t->channels();
+      //printf("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
+      
+      if (c > channel) {
+            for (int cc = channel; cc < c; ++cc) {
+                  meter[cc] = new MusEGui::Meter(this);
+                  //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
+                  meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
+                  meter[cc]->setFixedWidth(15);
+                  connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
+                  sliderGrid->addWidget(meter[cc], 0, cc+1, Qt::AlignLeft);
+                  sliderGrid->setColumnStretch(cc, 50);
+                  meter[cc]->show();
+                  }
+            }
+      else if (c < channel) {
+            for (int cc = channel-1; cc >= c; --cc) {
+                  delete meter[cc];
+                  meter[cc] = 0;
+                  }
+            }
+      channel = c;
+      stereo->blockSignals(true);
+      stereo->setChecked(channel == 2);
+      stereo->blockSignals(false);
+      stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
+      //stereo->setIconSize(stereoIcon->size());  
       }
-   }
-   else if (c < channel) {
-      for (int cc = channel-1; cc >= c; --cc) {
-         sliderGrid->removeWidget(meter [cc]);
-         delete meter[cc];
-         meter[cc] = 0;
-      }
-   }
-
-   channel = c;
-
-   for(int i = 0; i < channel; i++){
-      meter [i]->setFixedWidth((channel == 1) ? 16 : 12);
-   }
-
-   QRect r = sliderGrid->geometry();
-   sliderGrid->setGeometry(QRect(0, 0, 0, 0));
-   sliderGrid->setGeometry(r);
-
-
-   stereo->blockSignals(true);
-   stereo->setChecked(channel == 2);
-   stereo->blockSignals(false);
-   stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
-   repaint();
-   //stereo->setIconSize(stereoIcon->size());
-   //fprintf(stderr, "min.w = %d", width());
-}
 
 //---------------------------------------------------------
 //   addKnob
@@ -702,7 +686,7 @@ MusEGui::Knob* AudioStrip::addKnob(Knob::KnobType type, int id, MusEGui::DoubleL
       {
         case Knob::panType:
           knob = new Knob(this);
-          knob->setRange(-1.0, +1.0, 0.0, 0.0, 1);
+          knob->setRange(-1.0, +1.0);
           knob->setToolTip(tr("panorama"));
           knobLabel = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
           knobLabel->setPrecision(2);
@@ -801,8 +785,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
-      channel       = std::max(2, at->channels());
-      setMinimumWidth(AUDIO_STRIP_WIDTH);
+      channel       = at->channels();
+      ///setMinimumWidth(STRIP_WIDTH);
       
       int ch = 0;
       for (; ch < channel; ++ch)
@@ -896,30 +880,29 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //    slider, label, meter
       //---------------------------------------------------
 
-      sliderGrid = new QGridLayout();
+      sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->setContentsMargins(0, 0, 0, 0);
-      sliderGrid->setSpacing(1);
-
+      sliderGrid->setSpacing(0);
+      
       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
 
       slider->setCursorHoming(true);
       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-      slider->setFixedWidth(40);
+      slider->setFixedWidth(20);
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setValue(MusECore::fast_log10(t->volume())*20.0);
 
-      sliderGrid->addWidget(slider, 0, 0, Qt::AlignLeft);
+      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
-            meter[i]->setFixedWidth((channel == 1) ? 16 : 12);
+            meter[i]->setFixedWidth(15);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
             sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
             sliderGrid->setColumnStretch(i, 50);
             }
-      updateChannels();
       sliderGrid->addItem(new QSpacerItem(2,0),0,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
