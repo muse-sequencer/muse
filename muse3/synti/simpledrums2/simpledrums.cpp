@@ -1837,7 +1837,8 @@ void SimpleSynth::guiSendSampleLoaded(bool success, int ch, const char* filename
    memcpy(out+2, filename, strlen(filename)+1);
    //memcpy(out+4, filename, strlen(filename)+1);
    MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, out, len);
-   gui->writeEvent(ev);
+   if(gui)
+      gui->writeEvent(ev);
    SS_TRACE_OUT
 }
 
