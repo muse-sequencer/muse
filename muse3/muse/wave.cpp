@@ -1301,7 +1301,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
       QFileInfo fi(f.name());
       QString projectPath = MusEGlobal::museProject + QDir::separator();
-      QString fExt = fi.completeSuffix();
+      QString fExt = "wav";
       QString fBaseName = fi.baseName();
       QString fNewPath = "";
       bool bNameIsNotUsed = false;
@@ -1326,7 +1326,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
       SF_INFO sfiNew;
       sfiNew.channels = f.channels();
-      sfiNew.format = f.format();
+      sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
       sfiNew.frames = 0;
       sfiNew.samplerate = MusEGlobal::sampleRate;
       sfiNew.seekable = 1;
@@ -1336,7 +1336,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       if(sfNew == NULL)
       {
          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-                               tr("Can't create new wav file in project folder!"));
+                               tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
          return true;
       }
 
