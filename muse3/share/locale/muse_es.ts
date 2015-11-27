@@ -10665,7 +10665,7 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
     <message>
         <location filename="../../muse/wave.cpp" line="+1219"/>
         <location filename="../../muse/app.cpp" line="+2"/>
-        <source>Import Wave File</source>
+        <source>Import Audio File</source>
         <translation>Importar archivo de audio</translation>
     </message>
     <message>

@@ -10830,8 +10830,8 @@ Také můžete v nabídce Soubor vybrat příkaz Uložit.</translation>
     <message>
         <location filename="../../muse/wave.cpp" line="1219"/>
         <location filename="../../muse/app.cpp" line="488"/>
-        <source>Import Wave File</source>
-        <translation>Zavést soubor Wave</translation>
+        <source>Import Audio File</source>
+        <translation>Zavést soubor Audio</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="489"/>

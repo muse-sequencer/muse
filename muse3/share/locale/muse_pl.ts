@@ -10323,8 +10323,8 @@ Można też wybrać &quot;Zapisz&quot; z menu plik, lub &quot;Ctrl-S&quot;.
     <message>
         <location filename="../../muse/wave.cpp" line="+1219"/>
         <location filename="../../muse/app.cpp" line="+2"/>
-        <source>Import Wave File</source>
-        <translation type="unfinished">Import Pliku &amp;Wave</translation>
+        <source>Import Audio File</source>
+        <translation type="unfinished">Import Pliku Audio</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="+1"/>

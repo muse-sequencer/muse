@@ -7840,7 +7840,7 @@ You can also select the Save command from the File menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Import Wave File</source>
+        <source>Import Audio File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

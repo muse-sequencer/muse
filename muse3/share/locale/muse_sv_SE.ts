@@ -8576,7 +8576,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
         <translation>Importera Part</translation>
     </message>
     <message>
-        <source>Import Wave File</source>
+        <source>Import Audio File</source>
         <translation>Importera ljudfil</translation>
     </message>
     <message>

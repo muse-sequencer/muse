@@ -11031,8 +11031,8 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
     <message>
         <location filename="../../muse/wave.cpp" line="+1219"/>
         <location filename="../../muse/app.cpp" line="+2"/>
-        <source>Import Wave File</source>
-        <translation>Importer fichier WAV</translation>
+        <source>Import Audio File</source>
+        <translation>Importer fichier Audio</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="+1"/>

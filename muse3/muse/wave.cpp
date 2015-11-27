@@ -1234,9 +1234,9 @@ void MusE::importWave()
    }
    MusECore::AudioPreviewDialog afd(this);
    afd.setDirectory(MusEGlobal::lastWavePath);
-   afd.setWindowTitle(tr("Import Wave File"));
+   afd.setWindowTitle(tr("Import Audio File"));
    /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
-         tr("Import Wave File"), 0);
+         tr("Import Audio File"), 0);
 */
    if(afd.exec() == QFileDialog::Rejected)
    {

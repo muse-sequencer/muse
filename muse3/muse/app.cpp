@@ -496,7 +496,7 @@ MusE::MusE() : QMainWindow()
       fileExportMidiAction = new QAction(tr("Export Midifile"), this);
       fileImportPartAction = new QAction(tr("Import Part"), this);
 
-      fileImportWaveAction = new QAction(tr("Import Wave File"), this);
+      fileImportWaveAction = new QAction(tr("Import Audio File"), this);
       fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
       quitAction = new QAction(tr("&Quit"), this);

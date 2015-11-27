@@ -10767,8 +10767,8 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
     <message>
         <location filename="../../muse/wave.cpp" line="+1219"/>
         <location filename="../../muse/app.cpp" line="+2"/>
-        <source>Import Wave File</source>
-        <translation>Wavedatei importieren</translation>
+        <source>Import Audio File</source>
+        <translation>Audiodatei importieren</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="+1"/>

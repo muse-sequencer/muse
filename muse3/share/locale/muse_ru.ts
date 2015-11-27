@@ -8479,7 +8479,7 @@ You can also select the Save command from the File menu.</source>
         <translation>Импортировать Партию</translation>
     </message>
     <message>
-        <source>Import Wave File</source>
+        <source>Import Audio File</source>
         <translation>Импортировать Аудио-файл</translation>
     </message>
     <message>

@@ -10031,7 +10031,7 @@ You can also select the Save command from the File menu.</source>
     <message>
         <location filename="../../muse/wave.cpp" line="1219"/>
         <location filename="../../muse/app.cpp" line="488"/>
-        <source>Import Wave File</source>
+        <source>Import Audio File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
