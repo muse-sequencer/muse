@@ -274,6 +274,7 @@ void initLV2()
 
       if(lilv_plugin_is_replaced(plugin))
       {
+         pit = lilv_plugins_next(plugins, pit);
          continue;
       }
 
