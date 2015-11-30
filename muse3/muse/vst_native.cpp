@@ -444,8 +444,11 @@ _ending: ;
 //   scanVstDir
 //---------------------------------------------------------
 
-static void scanVstNativeDir(const QString& s)
+static void scanVstNativeDir(const QString& s, int depth)
 {
+   if(++depth > 2){
+      return;
+   }
    if (MusEGlobal::debugMsg)
       fprintf(stderr, "scan vst native plugin dir <%s>\n", s.toLatin1().constData());
    QDir pluginDir(s, QString("*.so"), QDir::Unsorted, QDir::Files | QDir::AllDirs);
@@ -460,7 +463,7 @@ static void scanVstNativeDir(const QString& s)
       {
          if((list [i] != ".") && (list [i] != ".."))
          {
-            scanVstNativeDir(fi.absoluteFilePath());
+            scanVstNativeDir(fi.absoluteFilePath(), depth);
          }
          continue;
       }
@@ -529,7 +532,7 @@ void initVST_Native()
                   char* buffer = new char[n + 1];
                   strncpy(buffer, p, n);
                   buffer[n] = '\0';
-                  scanVstNativeDir(QString(buffer));
+                  scanVstNativeDir(QString(buffer), 0);
                   delete[] buffer;
                   }
             p = pe;
