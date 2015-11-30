@@ -452,6 +452,14 @@ public:
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
       void setDirty() { emit sigDirty(); }
 
+      /* restarts recording from last start position
+       * if discard is true (default) then
+       * recording will start on existing tracks,
+       * else new copies of armed tracks will be created
+       * and current armed tracks will be muted and unarmed
+       */
+      void restartRecording(bool discard = true);
+
    signals:
       void songChanged(MusECore::SongChangedFlags_t); 
       void posChanged(int, unsigned, bool);

@@ -3592,7 +3592,36 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
             connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
-      return; 
+      return;
+}
+
+void Song::restartRecording(bool discard)
+{
+   if(MusEGlobal::audio->isRecording() && MusEGlobal::audio->isRunning())
+   {
+      MusEGlobal::audioDevice->stopTransport();
+      if(discard)
+      {
+         //clear all recorded midi events and wave files
+         TrackList* tracks = MusEGlobal::song->tracks();
+         for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+         {
+               if(!(*i)->recordFlag())
+                  continue;
+               if ((*i)->isMidiTrack())
+               {
+                  ((MidiTrack *)(*i))->mpevents.clear();
+               }
+               else if ((*i)->type() == Track::WAVE){
+                  ((WaveTrack*)(*i))->setRecFile(NULL);
+                  ((WaveTrack*)(*i))->resetMeter();
+                  ((WaveTrack*)(*i))->prepareRecording();
+               }
+         }
+      }
+      MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+      MusEGlobal::audioDevice->startTransport();
+   }
 }
 
 //---------------------------------------------------------

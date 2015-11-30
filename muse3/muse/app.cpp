@@ -2219,6 +2219,9 @@ void MusE::kbAccel(int key)
       if (key == MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_METRO].key) {
             MusEGlobal::song->setClick(!MusEGlobal::song->click());
             }
+      else if (((int)(key ^ Qt::CTRL) == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) && (key & Qt::CTRL)) {
+         MusEGlobal::song->restartRecording();
+      }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) {
             if (MusEGlobal::audio->isPlaying())
                   MusEGlobal::song->setStop(true);

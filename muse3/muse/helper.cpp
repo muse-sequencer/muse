@@ -638,7 +638,7 @@ QMenu* populateAddSynth(QWidget* parent)
   MusECore::Synth::Type type;
   
   int ii = 0;
-  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i) 
+  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i)
   {
     synth = *i;
     type = synth->synthType();

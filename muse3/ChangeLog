@@ -1,5 +1,7 @@
+01.12.2015
+        - Added recording restart function (CTRL+Space to activate while recording) (danvd)
 21.11.2015:
-        - Auto resample imported wave files to project's sample rate
+        - Auto resample imported wave files to project's sample rate (danvd)
 18.11.2015:
 	- Added double click on Port column to open the gui of a synth (rj)
 31.10.2015
