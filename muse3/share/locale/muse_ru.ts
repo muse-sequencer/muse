@@ -96,7 +96,7 @@ Also please check console output for any further error messages.
     </message>
     <message>
         <source> channel=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>канал=&quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -426,19 +426,19 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Темы</translation>
     </message>
     <message>
         <source>MusE color scheme</source>
-        <translation type="unfinished"></translation>
+        <translation>Цветовая схема MusE</translation>
     </message>
     <message>
         <source>current settings</source>
-        <translation type="unfinished"></translation>
+        <translation>текущие настройки</translation>
     </message>
     <message>
         <source>Change</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменить</translation>
     </message>
 </context>
 <context>
@@ -5638,11 +5638,11 @@ Word-breaking but only with spaces.</source>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation type="unfinished">&amp;ОК</translation>
+        <translation>&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -9118,7 +9118,7 @@ Can not continue.</source>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
     <message>
         <source>Resampling wave file
@@ -9149,15 +9149,15 @@ Conversions may be applied if file is saved!</source>
     </message>
     <message>
         <source>Cpu load</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка ЦП</translation>
     </message>
     <message>
         <source>Measured CPU load</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка ЦП</translation>
     </message>
     <message>
         <source>No CPU load data</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет данных о загрузке ЦП</translation>
     </message>
 </context>
 <context>
@@ -13565,15 +13565,15 @@ Continue?</source>
     </message>
     <message>
         <source>Transport: Restart recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Транспорт: перезапустить запись</translation>
     </message>
     <message>
         <source>Edit selected track name</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать имя выбранной дорожки</translation>
     </message>
     <message>
         <source>Normalize</source>
-        <translation type="unfinished"></translation>
+        <translation>Нормализовать</translation>
     </message>
 </context>
 <context>
