@@ -61,8 +61,7 @@ Q_OBJECT
     int moveDelta;
     PopupMenu* _cur_menu; // For auto-breakup.
     int _cur_menu_count;
-    int _cur_item_width;
-    int _cur_col_count;
+    int _max_items_in_breakup;
 
     QMenu* _contextMenu;
     QAction* _lastHoveredAction;
