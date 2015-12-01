@@ -13565,7 +13565,7 @@ Continue?</source>
     </message>
     <message>
         <source>Transport: Restart recording</source>
-        <translation>Транспорт: перезапустить запись</translation>
+        <translation type="unfinished">Транспорт: Перезапустить запись</translation>
     </message>
     <message>
         <source>Edit selected track name</source>
