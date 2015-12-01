@@ -378,6 +378,8 @@ class MusE : public QMainWindow
 
       void updateWindowMenu();
 
+      void resetXrunsCounter();
+
    private:
       timeval lastCpuTime;
       timespec lastSysTime;

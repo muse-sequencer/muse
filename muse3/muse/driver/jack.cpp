@@ -1148,6 +1148,12 @@ int JackAudioDevice::checkPortRegisterCallback(const jack_port_t* port)
   return 0;
 }
 
+int JackAudioDevice::static_JackXRunCallback(void *)
+{
+   MusEGlobal::audio->incXruns();
+   return 0;
+}
+
 //static int xrun_callback(void*)
 //      {
 //      printf("JACK: xrun\n");
@@ -1181,6 +1187,8 @@ void JackAudioDevice::registerClient()
       jack_set_graph_order_callback(_client, graph_callback, this);
 //      jack_set_xrun_callback(client, xrun_callback, 0);
       jack_set_freewheel_callback (_client, freewheel_callback, 0);
+
+      jack_set_xrun_callback(_client, static_JackXRunCallback, this);
       }
 
 //---------------------------------------------------------

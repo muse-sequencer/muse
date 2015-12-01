@@ -124,6 +124,7 @@ Audio::Audio()
       _bounce       = false;
       _loopFrame    = 0;
       _loopCount    = 0;
+      m_Xruns       = 0;
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);

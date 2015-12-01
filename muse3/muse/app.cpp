@@ -731,6 +731,7 @@ MusE::MusE() : QMainWindow()
       cpuToolBtn->setObjectName("CpuLoadToolbarButton");
       ((QWidgetAction *)MusEGlobal::cpuLoadAction)->setDefaultWidget(cpuToolBtn);
       cpuLoadToolbar->addAction(MusEGlobal::cpuLoadAction);
+      connect(cpuToolBtn, SIGNAL(clicked(bool)), this, SLOT(resetXrunsCounter()));
 
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
@@ -3608,6 +3609,11 @@ void MusE::updateWindowMenu()
   windowsTileAction->setEnabled(there_are_subwins);
   windowsRowsAction->setEnabled(there_are_subwins);
   windowsColumnsAction->setEnabled(there_are_subwins);
+}
+
+void MusE::resetXrunsCounter()
+{
+   MusEGlobal::audio->resetXruns();
 }
 
 void MusE::bringToFront(QWidget* widget)
