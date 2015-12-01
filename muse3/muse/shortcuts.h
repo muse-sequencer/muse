@@ -79,6 +79,7 @@ enum {
       //Transport/Positioning
       SHRT_PLAY_SONG, //Enter
       SHRT_PLAY_TOGGLE, //Space
+      SHRT_REC_RESTART, //Ctrl+Space
       SHRT_STOP, //Insert
       SHRT_GOTO_START, // W
       SHRT_GOTO_LEFT, //End-keypad

@@ -94,6 +94,10 @@ Also please check console output for any further error messages.
         <source>Add New Style Drum Track</source>
         <translation>Добавить трек ударных в новом стиле</translation>
     </message>
+    <message>
+        <source> channel=&quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AboutBox</name>
@@ -142,11 +146,23 @@ Published under the GNU Public License</source>
 Опубликовано на условиях GNU Public License {1999-2012 ?}</translation>
     </message>
     <message>
-        <source>Version 2.2beta2</source>
+        <source>(C) Copyright 1999-2014 Werner Schweer and others.
+See http://www.muse-sequencer.org for new versions and
+more information.
+
+Published under the GNU Public License</source>
+        <translation type="obsolete">(C) Copyright 1999-2010 Werner Schweer и другие.
+На http://www.muse-sequencer.org смотрите новые версии и
+дополнительную информацию.
+
+Опубликовано на условиях GNU Public License {1999-2012 ?} {1999-2014 ?}</translation>
+    </message>
+    <message>
+        <source>Version info (replaced programmatically)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>(C) Copyright 1999-2014 Werner Schweer and others.
+        <source>(C) Copyright 1999-2015 Werner Schweer and others.
 See http://www.muse-sequencer.org for new versions and
 more information.
 
@@ -155,7 +171,15 @@ Published under the GNU Public License</source>
 На http://www.muse-sequencer.org смотрите новые версии и
 дополнительную информацию.
 
-Опубликовано на условиях GNU Public License {1999-2012 ?} {1999-2014 ?}</translation>
+Опубликовано на условиях GNU Public License {1999-2012 ?} {1999-2014 ?} {1999-2015 ?}</translation>
+    </message>
+    <message>
+        <source>System information:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3822,6 +3846,10 @@ Disable to use an alternate standard
         <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Warn if opening file versions different than current version</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LegatoBase</name>
@@ -5263,6 +5291,21 @@ None: Use only if high accuracy is needed for
     <message>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>MusECore::AudioPreviewDialog</name>
+    <message>
+        <source>Auto play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="unfinished">Остановить</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation type="unfinished">Воспроизвести</translation>
     </message>
 </context>
 <context>
@@ -7748,6 +7791,64 @@ Do you want to apply to all existing midi tracks now?</source>
         <source>&lt;none&gt;</source>
         <translation>&lt;ничего&gt;</translation>
     </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Удалить</translation>
+    </message>
+    <message>
+        <source>Midi device name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi device type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections from Jack Midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections to Jack Midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Result of opening the device:
+OK: Assigned to a port and in use
+Closed: Unassigned to a port, or closed
+R/W Error: Unable to open for read or write
+Unavailable: USB midi unplugged, or external
+ application not running, or synth plugin
+ not installed etc.
+(Jack Midi devices have &apos;unavailable ports&apos;
+ in the routes columns.)
+Unavailable devices or ports can be purged
+ with &apos;Remove&apos; or with the advanced router.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Graphical User Interface for device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections from Jack Midi ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections to Jack Midi ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <source>In</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Out</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::MTScale</name>
@@ -8990,15 +9091,72 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Jack cpu load</source>
+        <source>This wave file has a samplerate of %1,
+as opposed to current setting %2.
+File will be resampled from %1 to %2 Hz.
+Do you still want to import it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>CPU load reported by JACK audio server</source>
+        <source>Wave import error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Not connected to JACK</source>
+        <source>There are too many wave files
+of the same base name as imported wave file
+Can not continue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can&apos;t create new wav file in project folder!
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to initialize sample rate converter!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+    <message>
+        <source>Resampling wave file
+&quot;%1&quot;
+from %2 to %3 Hz...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output has clipped
+Resampling again and normalizing wave file
+&quot;%1&quot;
+Try %2 of %3...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File version is %1.%2
+Current version is %3.%4
+Conversions may be applied if file is saved!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opening file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do not warn again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Measured CPU load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No CPU load data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9162,6 +9320,10 @@ Likely the selected track is the wrong type.</source>
     <message>
         <source>Automation:</source>
         <translation type="unfinished">Автоматизация:</translation>
+    </message>
+    <message>
+        <source>Normalize</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9583,6 +9745,33 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
 </context>
 <context>
+    <name>MusEGui::RouteDialog</name>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished">Нормальный </translation>
+    </message>
+    <message>
+        <source>Alias 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alias 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Источник</translation>
+    </message>
+    <message>
+        <source>Destination</source>
+        <translation type="unfinished">Назначение</translation>
+    </message>
+    <message>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished">&lt;ничего&gt;</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::RoutePopupMenu</name>
     <message>
         <source>Channel</source>
@@ -9623,6 +9812,94 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <source>Midi port sends</source>
         <translation>Посылы midi порта</translation>
+    </message>
+    <message>
+        <source>Channel grouping:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mono </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stereo</source>
+        <translation type="unfinished">Стерео</translation>
+    </message>
+    <message>
+        <source>Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi ports/devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Omni</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show aliases:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>First </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Second</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show first aliases</source>
+        <translation type="unfinished">Показать первые псевдонимы</translation>
+    </message>
+    <message>
+        <source>Show second aliases</source>
+        <translation type="unfinished">Показать вторые псевдонимы</translation>
+    </message>
+    <message>
+        <source>Jack ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect</source>
+        <translation type="unfinished">Соединить</translation>
+    </message>
+    <message>
+        <source>Unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open advanced router...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output routes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Input routes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Destinations:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi sends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sources:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10291,18 +10568,6 @@ adjustments may be necessary.</source>
     <message>
         <source>Metronome</source>
         <translation type="unfinished">Метроном</translation>
-    </message>
-    <message>
-        <source>Jack cpu load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>CPU load reported by JACK audio server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Not connected to JACK</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11062,6 +11327,26 @@ to be expanded by more than </source>
         <source>Presets</source>
         <translation>Пресеты</translation>
     </message>
+    <message>
+        <source>Tracks:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi ports:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi devices:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Jack:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Jack midi:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QWidget</name>
@@ -11403,6 +11688,79 @@ p, li { white-space: pre-wrap; }(new line)
         <source>remove selected route</source>
         <translation>Удалить выбранный маршрут</translation>
     </message>
+    <message>
+        <source>List of available sources.
+Connect a source to a destination.
+For items having a channel bar, 
+ connections can be Omni Mode
+ (the textual item) or Channel Mode
+ (the Channel bar channels).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections View window.
+Shows all current connections.
+Thick lines are Omni Routes.
+Thin lines are Channel Routes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List of available destinations.
+Connect a source to a destination.
+For items having a channel bar, 
+ connections can be Omni Mode
+ (the textual item) or Channel Mode
+ (the Channel bar channels).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Itemized list of current connections.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show only selected sources</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show only destination routes for selected source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show only selected destinations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show only source routes for selected destination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show all Midi Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto adjust column size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automatically adjusts the source and destination
+ tree widths when the splitters are adjusted.
+This also turns on text word wrap, which may 
+ cause slower response with larger lists.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preferred route name or alias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect source to destination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove selected route</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SS_PluginChooserBase</name>
@@ -11624,6 +11982,18 @@ p, li { white-space: pre-wrap; }(new line)
         <source>Load sample dialog</source>
         <translation>Загрузить диалог сэмплов</translation>
     </message>
+    <message>
+        <source>Mix</source>
+        <translation type="unfinished">Смешать</translation>
+    </message>
+    <message>
+        <source>Chn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel routing</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SongInfo</name>
@@ -11717,6 +12087,46 @@ p, li { white-space: pre-wrap; }(new line)
     <message>
         <source>&amp;OK</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>Configure midi devices, midi ports, and synthesizers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available soft synthesizers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Useable devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Synth</source>
+        <translation type="unfinished">Синт</translation>
+    </message>
+    <message>
+        <source>ALSA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Удалить</translation>
+    </message>
+    <message>
+        <source>Device port assignments</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13151,6 +13561,18 @@ Continue?</source>
     </message>
     <message>
         <source>Edit: Duplicate track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Restart recording</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit selected track name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
