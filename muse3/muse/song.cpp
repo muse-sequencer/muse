@@ -67,6 +67,7 @@
 #include <sys/wait.h>
 #include "tempo.h"
 #include "route.h"
+#include "libs/strntcpy.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -3600,28 +3601,105 @@ void Song::restartRecording(bool discard)
 {
    if(MusEGlobal::audio->isRecording() && MusEGlobal::audio->isRunning())
    {
-      MusEGlobal::audioDevice->stopTransport();
-      if(discard)
+      //MusEGlobal::audioDevice->stopTransport();
+      if(!discard)
       {
-         //clear all recorded midi events and wave files
-         TrackList* tracks = MusEGlobal::song->tracks();
-         for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+         MusEGlobal::audio->recordStop(true /*restart record*/);
+         processAutomationEvents();
+      }
+      //clear all recorded midi events and wave files
+      TrackList* tracks = MusEGlobal::song->tracks();
+      std::vector<Track *> tVec;
+      for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+      {
+         tVec.push_back((*i));
+      }
+      for(size_t i = 0; i < tVec.size(); i++)
+      {
+         Track *cTrk = tVec [i];
+         if(!cTrk->recordFlag())
+            continue;
+         Track *nTrk = NULL;
+         if(!discard)
          {
-               if(!(*i)->recordFlag())
-                  continue;
-               if ((*i)->isMidiTrack())
+            nTrk = addTrack(cTrk->type());
+            cTrk->setMute(true);
+            MusEGlobal::song->update(SC_MUTE);
+            setRecordFlag(cTrk, false);
+            RouteList *inpR = cTrk->inRoutes();
+            RouteList *outpR = cTrk->inRoutes();
+            RouteList *innR = nTrk->inRoutes();
+            RouteList *outnR = nTrk->inRoutes();
+            innR->clear();
+            outnR->clear();
+            RouteList *rcpR = inpR;
+            RouteList *rcnR = innR;
+            for(int i = 0; i < 2; i++)
+            {
+               for(RouteList::iterator it = rcpR->begin(); it != rcpR->end(); ++it)
                {
-                  ((MidiTrack *)(*i))->mpevents.clear();
+                  Route nR = (*it);
+                  if(cTrk->isMidiTrack())
+                     nR.device = it->device;
+                  else if(cTrk->type() == Track::WAVE)
+                     nR.track = it->track;
+                  rcnR->push_back(nR);
+                  if(nR.type == Route::TRACK_ROUTE)
+                  {
+                     Route nbR = nR;
+                     int ch = nbR.channel;
+                     nbR.channel = nbR.remoteChannel;
+                     nbR.remoteChannel = ch;
+                     nbR.track = nTrk;
+                     //MusELib::strntcpy(nbR.persistentJackPortName, nbR.name().toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+                     if(i == 0)
+                        nR.track->outRoutes()->push_back(nbR);
+                     else
+                        nR.track->inRoutes()->push_back(nbR);
+                  }
                }
-               else if ((*i)->type() == Track::WAVE){
-                  ((WaveTrack*)(*i))->setRecFile(NULL);
-                  ((WaveTrack*)(*i))->resetMeter();
-                  ((WaveTrack*)(*i))->prepareRecording();
+               rcpR = outpR;
+               rcnR = outnR;
+            }
+            setRecordFlag(nTrk, true);
+         }
+         if (cTrk->isMidiTrack())
+         {
+            if(discard)
+            {
+               ((MidiTrack *)cTrk)->mpevents.clear();
+            }
+            else
+            {
+               ((MidiTrack *)nTrk)->setOutPort(((MidiTrack *)cTrk)->outPort());
+               ((MidiTrack *)nTrk)->setOutChannel(((MidiTrack *)cTrk)->outChannel());
+            }
+         }
+         else if (cTrk->type() == Track::WAVE)
+         {
+            if(discard)
+            {
+               ((WaveTrack*)cTrk)->setRecFile(NULL);
+               ((WaveTrack*)cTrk)->resetMeter();
+               ((WaveTrack*)cTrk)->prepareRecording();
+            }
+            else
+            {
+               ((WaveTrack*)nTrk)->setChannels(((WaveTrack*)cTrk)->channels());
+               ((WaveTrack*)nTrk)->setVolume(((WaveTrack*)cTrk)->volume());
+               ((WaveTrack*)nTrk)->setPan(((WaveTrack*)cTrk)->pan());
+               ((WaveTrack*)nTrk)->setGain(((WaveTrack*)cTrk)->gain());
+               const AuxSendValueList &auxList = ((WaveTrack*)cTrk)->getAuxSendValueList();
+               for(size_t i = 0; i < auxList.size(); i++)
+               {
+                  ((WaveTrack*)nTrk)->setAuxSend(i, auxList [i]);
                }
+               ((WaveTrack*)nTrk)->prepareRecording();
+            }
          }
       }
       MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
-      MusEGlobal::audioDevice->startTransport();
+      //MusEGlobal::audioDevice->startTransport();
    }
 }
 

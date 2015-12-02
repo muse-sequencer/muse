@@ -80,6 +80,7 @@ enum {
       SHRT_PLAY_SONG, //Enter
       SHRT_PLAY_TOGGLE, //Space
       SHRT_REC_RESTART, //Ctrl+Space
+      SHRT_REC_RESTART_MULTI, //Shift+Space
       SHRT_STOP, //Insert
       SHRT_GOTO_START, // W
       SHRT_GOTO_LEFT, //End-keypad

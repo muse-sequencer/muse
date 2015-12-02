@@ -1,3 +1,5 @@
+03.12.2015
+        - Added non-discard restart recording function (a-la multi-take, SHIFT+space is default shortcut) (danvd)
 01.12.2015
         - Added recording restart function (CTRL+Space to activate while recording) (danvd)
 21.11.2015:

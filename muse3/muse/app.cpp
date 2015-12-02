@@ -2223,6 +2223,9 @@ void MusE::kbAccel(int key)
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key) {
          MusEGlobal::song->restartRecording();
       }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART_MULTI].key) {
+         MusEGlobal::song->restartRecording(false);
+      }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) {
             if (MusEGlobal::audio->isPlaying())
                   MusEGlobal::song->setStop(true);
