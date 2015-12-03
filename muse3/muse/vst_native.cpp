@@ -476,7 +476,7 @@ static void scanVstNativeLib(QFileInfo& fi)
         AEffect *plugin = getInstance(vstNativeHostCallback);
         if(!plugin)
         {
-          fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\", shell id=%ld\n", fi.filePath().toLatin1().constData(), currentPluginId);
+          fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\", shell id=%ld\n", fi.filePath().toLatin1().constData(), (long)currentPluginId);
           goto _end;
         }
         scanSubPlugin(fi, plugin, currentPluginId, handle);
