@@ -1340,6 +1340,11 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
           }
         }
       }
+      else //force maximize arranger of loaded project
+      {
+         arrangerView->showMaximized();
+         bringToFront(arrangerView);
+      }
       }
 
 //---------------------------------------------------------

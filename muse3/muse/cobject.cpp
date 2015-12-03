@@ -105,7 +105,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	fullscreenAction->setEnabled(!isMdiWin());
 	
 	if (mdisubwin)
-		mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
+ {
+    mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
+    if(_type == ARRANGER)
+      mdisubwin->setWindowState(Qt::WindowMaximized);
+ }
 	else
 		resize(_widthInit[_type], _heightInit[_type]);
 	
