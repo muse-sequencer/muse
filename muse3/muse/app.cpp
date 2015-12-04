@@ -1344,6 +1344,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       {
          arrangerView->showMaximized();
          bringToFront(arrangerView);
+         arrangerView->setFocus();
       }
       }
 
