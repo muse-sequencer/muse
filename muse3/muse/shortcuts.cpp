@@ -56,7 +56,7 @@ void initShortCuts()
       defShrt(SHRT_GOTO_START,    Qt::Key_W,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
       defShrt(SHRT_PLAY_TOGGLE,   Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Play, Stop, Rewind"), GLOBAL_SHRT, "play_toggle");
       defShrt(SHRT_REC_RESTART,   Qt::CTRL + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording"), GLOBAL_SHRT, "rec_restart");
-      defShrt(SHRT_REC_RESTART_MULTI,   Qt::Key_Shift, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording (multi take)"), GLOBAL_SHRT, "rec_restart_multi");
+      defShrt(SHRT_REC_RESTART_MULTI,   Qt::SHIFT + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording (multi take)"), GLOBAL_SHRT, "rec_restart_multi");
       defShrt(SHRT_GOTO_LEFT,     Qt::Key_End,   QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto left marker")  , GLOBAL_SHRT, "goto_left");
       defShrt(SHRT_GOTO_RIGHT,    Qt::Key_PageDown,  QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto right marker") , GLOBAL_SHRT, "goto_right");
       defShrt(SHRT_TOGGLE_LOOP,   Qt::Key_Slash, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Loop section"), GLOBAL_SHRT, "toggle_loop");
