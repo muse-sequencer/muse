@@ -59,11 +59,15 @@ class SndFile {
       SampleV** cache;
       sf_count_t csize;                    //!< frames in cache
 
+      float *writeBuffer;
+      size_t writeSegSize;
+
       void writeCache(const QString& path);
 
       bool openFlag;
       bool writeFlag;
       size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
+      size_t realWrite(int channel, float**, size_t n);
       
    protected:
       int refCount;

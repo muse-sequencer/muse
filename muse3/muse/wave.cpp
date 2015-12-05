@@ -71,6 +71,8 @@ SndFile::SndFile(const QString& name)
       openFlag = false;
       sndFiles.push_back(this);
       refCount=0;
+      writeBuffer = 0;
+      writeSegSize = std::min((size_t)MusEGlobal::segmentSize, (size_t)256);// cache minimum segment size for write operations
       }
 
 SndFile::~SndFile()
@@ -90,6 +92,8 @@ SndFile::~SndFile()
             delete[] cache;
             cache = 0;
             }
+      if(writeBuffer)
+         delete [] writeBuffer;
       }
 
 //---------------------------------------------------------
@@ -459,6 +463,7 @@ void SndFile::setFormat(int fmt, int ch, int rate)
       sfinfo.format     = fmt;
       sfinfo.seekable   = true;
       sfinfo.frames     = 0;
+      writeBuffer = new float [writeSegSize * std::max(2, ch)];
       }
 
 //---------------------------------------------------------
@@ -545,11 +550,28 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
 //---------------------------------------------------------
 
 size_t SndFile::write(int srcChannels, float** src, size_t n)
+{
+   size_t wrFrames = 0;
+
+   if(n == writeSegSize)
+      wrFrames = realWrite(srcChannels, src, n);
+   else
+   {
+
+      while(n > 0)
+      {
+         size_t toWrite = std::max(writeSegSize, n);
+         wrFrames += realWrite(srcChannels, src, toWrite);
+         n -= toWrite;
+      }
+   }
+   return wrFrames;
+}
+
+size_t SndFile::realWrite(int srcChannels, float** src, size_t n)
       {
       int dstChannels = sfinfo.channels;
-      //float buffer[n * dstChannels];
-      float *buffer = new float[n * dstChannels];
-      float *dst      = buffer;
+      float *dst      = writeBuffer;
 
       const float limitValue=0.9999;
 
@@ -588,11 +610,9 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
       else {
             printf("SndFile:write channel mismatch %d -> %d\n",
                srcChannels, dstChannels);
-            delete[] buffer;
             return 0;
             }
-      int nbr = sf_writef_float(sf, buffer, n) ;
-      delete[] buffer;
+      int nbr = sf_writef_float(sf, writeBuffer, n) ;
       return nbr;
       }
 
