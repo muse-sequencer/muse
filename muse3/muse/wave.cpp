@@ -87,8 +87,6 @@ SndFile::~SndFile()
             }
       delete finfo;
       if (cache) {
-            for (unsigned i = 0; i < channels(); ++i)
-                  delete [] cache[i];
             delete[] cache;
             cache = 0;
             }
@@ -100,7 +98,7 @@ SndFile::~SndFile()
 //   openRead
 //---------------------------------------------------------
 
-bool SndFile::openRead(bool createCache)
+bool SndFile::openRead(bool createCache, bool showProgress)
       {
       if (openFlag) {
             printf("SndFile:: already open\n");
@@ -118,7 +116,7 @@ bool SndFile::openRead(bool createCache)
       openFlag  = true;
       if (createCache) {
         QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
-        readCache(cacheName, true);
+        readCache(cacheName, showProgress);
       }
       return false;
       }
@@ -128,7 +126,7 @@ bool SndFile::openRead(bool createCache)
 //    called after recording to file
 //---------------------------------------------------------
 
-void SndFile::update()
+void SndFile::update(bool showProgress)
       {
       close();
 
@@ -136,88 +134,124 @@ void SndFile::update()
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
       ::remove(cacheName.toLocal8Bit().constData());
-      if (openRead()) {
+      if (openRead(true, showProgress)) {
             printf("SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }
+
+void SndFile::updateCacheForPreview()
+{
+   close();
+   if(!openRead(false, false))
+   {
+      sf_count_t newCsize = (samples() + cacheMag - 1)/cacheMag;
+      bool bUpdate = false;
+      sf_count_t cstart = csize;
+      if(!cache)
+      {
+         cache = new SampleVtype[channels()];
+         csize = 0;
+      }
+      if(newCsize != csize)
+      {
+         csize = newCsize;
+         bUpdate = true;
+         for (unsigned ch = 0; ch < channels(); ++ch)
+            cache [ch].resize(csize);
+      }
+      if(bUpdate)
+          createCache("", false, false, cstart);
+   }
+}
+
+//---------------------------------------------------
+//  create cache
+//---------------------------------------------------
+
+void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart)
+{
+   if(cstart >= csize)
+      return;
+   QProgressDialog* progress = 0;
+   if (showProgress) {
+      QString label(QWidget::tr("create peakfile for "));
+      label += basename();
+      progress = new QProgressDialog(label,
+                                     QString::null, 0, csize, 0);
+      progress->setMinimumDuration(0);
+      progress->show();
+   }
+   float data[channels()][cacheMag];
+   float* fp[channels()];
+   for (unsigned k = 0; k < channels(); ++k)
+      fp[k] = &data[k][0];
+   int interval = (csize - cstart) / 10;
+
+   if(!interval)
+      interval = 1;
+   for (int i = cstart; i < csize; i++) {
+      if (showProgress && ((i % interval) == 0))
+         progress->setValue(i);
+      seek(i * cacheMag, 0);
+      read(channels(), fp, cacheMag);
+      for (unsigned ch = 0; ch < channels(); ++ch) {
+         float rms = 0.0;
+         cache[ch][i].peak = 0;
+         for (int n = 0; n < cacheMag; n++) {
+            float fd = data[ch][n];
+            rms += fd * fd;
+            int idata = int(fd * 255.0);
+            if (idata < 0)
+               idata = -idata;
+            if (cache[ch][i].peak < idata)
+               cache[ch][i].peak = idata;
+         }
+         // amplify rms value +12dB
+         int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
+         if (rmsValue > 255)
+            rmsValue = 255;
+         cache[ch][i].rms = rmsValue;
+      }
+   }
+   if (showProgress)
+      progress->setValue(csize);
+   if(bWrite)
+      writeCache(path);
+   if (showProgress)
+      delete progress;
+
+}
 
 //---------------------------------------------------------
 //   readCache
 //---------------------------------------------------------
 
 void SndFile::readCache(const QString& path, bool showProgress)
-      {
-      if (cache) {
-            for (unsigned i = 0; i < channels(); ++i)
-                  delete [] cache[i];
-            delete[] cache;
-            }
-      if (samples() == 0) 
-            return;
-      
-      csize = (samples() + cacheMag - 1)/cacheMag;
-      cache = new SampleV*[channels()];
+{
+   if (cache) {
+      delete[] cache;
+   }
+   if (samples() == 0)
+      return;
+
+   csize = (samples() + cacheMag - 1)/cacheMag;
+   cache = new SampleVtype[channels()];
+   for (unsigned ch = 0; ch < channels(); ++ch)
+   {
+      cache [ch].resize(csize);
+   }
+
+   FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
+   if (cfile) {
       for (unsigned ch = 0; ch < channels(); ++ch)
-            cache[ch] = new SampleV[csize];
+         fread(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
+      fclose(cfile);
+      return;
+   }
 
-      FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
-      if (cfile) {
-            for (unsigned ch = 0; ch < channels(); ++ch)
-                  fread(cache[ch], csize * sizeof(SampleV), 1, cfile);
-            fclose(cfile);
-            return;
-            }
 
-      //---------------------------------------------------
-      //  create cache
-      //---------------------------------------------------
-      QProgressDialog* progress = 0;
-      if (showProgress) {
-            QString label(QWidget::tr("create peakfile for "));
-            label += basename();
-            progress = new QProgressDialog(label,
-               QString::null, 0, csize, 0);
-            progress->setMinimumDuration(0);
-            progress->show();
-            }
-      float data[channels()][cacheMag];
-      float* fp[channels()];
-      for (unsigned k = 0; k < channels(); ++k)
-            fp[k] = &data[k][0];
-      int interval = csize / 10;
-      
-      if(!interval)
-        interval = 1;
-      for (int i = 0; i < csize; i++) {
-            if (showProgress && ((i % interval) == 0))
-                  progress->setValue(i);
-            seek(i * cacheMag, 0);
-            read(channels(), fp, cacheMag);
-            for (unsigned ch = 0; ch < channels(); ++ch) {
-                  float rms = 0.0;
-                  cache[ch][i].peak = 0;
-                  for (int n = 0; n < cacheMag; n++) {
-                        float fd = data[ch][n];
-                        rms += fd * fd;
-                        int idata = int(fd * 255.0);
-                        if (idata < 0)
-                              idata = -idata;
-                        if (cache[ch][i].peak < idata)
-                              cache[ch][i].peak = idata;
-                        }
-                  // amplify rms value +12dB
-                  int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
-                  if (rmsValue > 255)
-                        rmsValue = 255;
-                  cache[ch][i].rms = rmsValue;
-                  }
-            }
-      if (showProgress)
-            progress->setValue(csize);
-      writeCache(path);
-      if (showProgress)
-            delete progress;
-      }
+   createCache(path, showProgress, true);
+}
 
 //---------------------------------------------------------
 //   writeCache
@@ -229,7 +263,7 @@ void SndFile::writeCache(const QString& path)
       if (cfile == 0)
             return;
       for (unsigned ch = 0; ch < channels(); ++ch)
-            fwrite(cache[ch], csize * sizeof(SampleV), 1, cfile);
+            fwrite(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
       fclose(cfile);
       }
 

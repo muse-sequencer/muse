@@ -25,6 +25,7 @@
 #define __WAVE_H__
 
 #include <list>
+#include <vector>
 #include <sndfile.h>
 
 #include <QString>
@@ -45,6 +46,8 @@ struct SampleV {
       unsigned char rms;
       };
 
+typedef std::vector<SampleV> SampleVtype;
+
 class SndFileList;
 
 //---------------------------------------------------------
@@ -56,7 +59,7 @@ class SndFile {
       SNDFILE* sf;
       SNDFILE* sfUI;
       SF_INFO sfinfo;
-      SampleV** cache;
+      SampleVtype* cache;
       sf_count_t csize;                    //!< frames in cache
 
       float *writeBuffer;
@@ -80,16 +83,18 @@ class SndFile {
       static SndFileList sndFiles;
       static void applyUndoFile(const QString* original, const QString* tmpfile, unsigned sx, unsigned ex);
 
+      void updateCacheForPreview();
+      void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
 
-      bool openRead(bool createCache=true);        //!< returns true on error
+      bool openRead(bool createCache=true, bool showProgress=true);        //!< returns true on error
       bool openWrite();       //!< returns true on error
       void close();
       void remove();
 
       bool isOpen() const     { return openFlag; }
       bool isWritable() const { return writeFlag; }
-      void update();
+      void update(bool showProgress = true);
       bool checkCopyOnWrite();      //!< check if the file should be copied before writing to it
 
       QString basename() const;     //!< filename without extension
@@ -144,7 +149,7 @@ class SndFileR {
       int getRefCount() const { return sf->refCount; }
       bool isNull() const     { return sf == 0; }
 
-      bool openRead()         { return sf->openRead();  }
+      bool openRead(bool createCache=true)         { return sf->openRead(createCache);  }
       bool openWrite()        { return sf->openWrite(); }
       void close()            { sf->close();     }
       void remove()           { sf->remove();    }
@@ -152,6 +157,7 @@ class SndFileR {
       bool isOpen() const     { return sf->isOpen(); }
       bool isWritable() const { return sf->isWritable(); }
       void update()           { sf->update(); }
+      void updateCacheForPreview() { sf->updateCacheForPreview(); }
       bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); }
 
       QString basename() const { return sf->basename(); }

@@ -231,6 +231,7 @@ GlobalConfigValues config = {
       true,                         // borderlessMouse
       false,                        // autoSave
       false,                        // scrollableSubMenus
+      true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample

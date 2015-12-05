@@ -2095,6 +2095,92 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   }
 }
 
+void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame, unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight)
+{
+   int h = rectHeight >> 1;
+   int x1 = startX;
+   int x2 = endX;
+   if (f.isNull())
+         return;
+   unsigned channels = f.channels();
+   if (channels == 0) {
+         printf("drawWavePart: channels==0! %s\n", f.name().toLatin1().constData());
+         return;
+         }
+
+   int xScale;
+   int pos;
+   int tickstep = rmapxDev(1);
+   int postick = MusEGlobal::tempomap.frame2tick(rootFrame + startFrame);
+   int eventx = mapx(postick);
+   int drawoffset;
+   if((x1 - eventx) < 0)
+     drawoffset = 0;
+   else
+     drawoffset = rmapxDev(x1 - eventx);
+     postick += drawoffset;
+   pos = samplePos + MusEGlobal::tempomap.tick2frame(postick) - rootFrame - startFrame;
+
+   int i;
+   if(x1 < eventx)
+     i = eventx;
+   else
+     i = x1;
+   int ex = mapx(MusEGlobal::tempomap.frame2tick(rootFrame + startFrame + lengthFrames));
+   if(ex > x2)
+     ex = x2;
+   if (h < 20) {
+         //    combine multi channels into one waveform
+         int y = startY + h;
+         int cc = rectHeight % 2 ? 0 : 1;
+         for (; i < ex; i++) {
+               MusECore::SampleV sa[channels];
+               xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
+               f.read(sa, xScale, pos);
+               postick += tickstep;
+               pos += xScale;
+               int peak = 0;
+               int rms  = 0;
+               for (unsigned k = 0; k < channels; ++k) {
+                     if (sa[k].peak > peak)
+                           peak = sa[k].peak;
+                     rms += sa[k].rms;
+                     }
+               rms /= channels;
+               peak = (peak * (rectHeight-2)) >> 9;
+               rms  = (rms  * (rectHeight-2)) >> 9;
+               p.setPen(MusEGlobal::config.partWaveColorPeak);
+               p.drawLine(i, y - peak - cc, i, y + peak);
+               p.setPen(MusEGlobal::config.partWaveColorRms);
+               p.drawLine(i, y - rms - cc, i, y + rms);
+               }
+         }
+   else {
+         //  multi channel display
+         int hm = rectHeight / (channels * 2);
+         int cc = rectHeight % (channels * 2) ? 0 : 1;
+         for (; i < ex; i++) {
+               int y  = startY + hm;
+               MusECore::SampleV sa[channels];
+               xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
+               f.read(sa, xScale, pos);
+               postick += tickstep;
+               pos += xScale;
+               for (unsigned k = 0; k < channels; ++k) {
+                     int peak = (sa[k].peak * (hm - 1)) >> 8;
+                     int rms  = (sa[k].rms  * (hm - 1)) >> 8;
+                     p.setPen(MusEGlobal::config.partWaveColorPeak);
+                     p.drawLine(i, y - peak - cc, i, y + peak);
+                     p.setPen(MusEGlobal::config.partWaveColorRms);
+                     p.drawLine(i, y - rms - cc, i, y + rms);
+
+                     y  += 2 * hm;
+                     }
+               }
+         }
+
+}
+
 //---------------------------------------------------------
 //   drawWavePart
 //    bb - bounding box of paint area
@@ -2119,90 +2205,16 @@ void PartCanvas::drawWavePart(QPainter& p,
       if (x2 > width())
             x2 = width();
       int hh = pr.height();
-      int h  = hh/2;
-      int y  = pr.y() + h;
+      //int h  = hh/2;
+      int startY  = pr.y();
 
       for (MusECore::ciEvent e = wp->events().begin(); e != wp->events().end(); ++e) {
-            int cc = hh % 2 ? 0 : 1;
-            MusECore::Event event = e->second;
-            MusECore::SndFileR f  = event.sndFile();
-            if (f.isNull())
-                  continue;
-            unsigned channels = f.channels();
-            if (channels == 0) {
-                  printf("drawWavePart: channels==0! %s\n", f.name().toLatin1().constData());
-                  continue;
-                  }
 
-            int xScale;
-            int pos;
-            int tickstep = rmapxDev(1);
-            int postick = MusEGlobal::tempomap.frame2tick(wp->frame() + event.frame());
-            int eventx = mapx(postick);
-            int drawoffset;
-            if((x1 - eventx) < 0)
-              drawoffset = 0;
-            else
-              drawoffset = rmapxDev(x1 - eventx);
-              postick += drawoffset;
-            pos = event.spos() + MusEGlobal::tempomap.tick2frame(postick) - wp->frame() - event.frame();
-            
-            int i;
-            if(x1 < eventx)
-              i = eventx;
-            else  
-              i = x1;
-            int ex = mapx(MusEGlobal::tempomap.frame2tick(wp->frame() + event.frame() + event.lenFrame()));
-            if(ex > x2)
-              ex = x2;
-            if (h < 20) {
-                  //    combine multi channels into one waveform
-                  
-                  for (; i < ex; i++) {
-                        MusECore::SampleV sa[channels];
-                        xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-                        f.read(sa, xScale, pos);
-                        postick += tickstep;
-                        pos += xScale;
-                        int peak = 0;
-                        int rms  = 0;
-                        for (unsigned k = 0; k < channels; ++k) {
-                              if (sa[k].peak > peak)
-                                    peak = sa[k].peak;
-                              rms += sa[k].rms;
-                              }
-                        rms /= channels;
-                        peak = (peak * (hh-2)) >> 9;
-                        rms  = (rms  * (hh-2)) >> 9;
-                        p.setPen(MusEGlobal::config.partWaveColorPeak);
-                        p.drawLine(i, y - peak - cc, i, y + peak);
-                        p.setPen(MusEGlobal::config.partWaveColorRms);
-                        p.drawLine(i, y - rms - cc, i, y + rms);
-                        }
-                  }
-            else {
-                  //  multi channel display
-                  int hm = hh / (channels * 2);
-                  int cc = hh % (channels * 2) ? 0 : 1;
-                  for (; i < ex; i++) {
-                        y  = pr.y() + hm;
-                        MusECore::SampleV sa[channels];
-                        xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-                        f.read(sa, xScale, pos);
-                        postick += tickstep;
-                        pos += xScale;
-                        for (unsigned k = 0; k < channels; ++k) {
-                              int peak = (sa[k].peak * (hm - 1)) >> 8;
-                              int rms  = (sa[k].rms  * (hm - 1)) >> 8;
-                              p.setPen(MusEGlobal::config.partWaveColorPeak);
-                              p.drawLine(i, y - peak - cc, i, y + peak);
-                              p.setPen(MusEGlobal::config.partWaveColorRms);
-                              p.drawLine(i, y - rms - cc, i, y + rms);
-                              
-                              y  += 2 * hm;
-                              }
-                        }
-                  }
+            MusECore::Event event = e->second;
+            MusECore::SndFileR f = event.sndFile();
+            drawWaveSndFile(p, f, event.spos(), wp->frame(), event.frame(), event.lenFrame(), startY, x1, x2, hh);
+
+
             }
       p.restore();
       }
@@ -2976,6 +2988,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 
     // write recording while it happens to get feedback
     // should be enhanced with solution that draws waveform also
+    // ^^ done
     int yPos = yoff;
     if (MusEGlobal::song->record() && MusEGlobal::audio->isPlaying()) {
       for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it) {
@@ -2984,17 +2997,34 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
         if (!th)
           continue;
         if (track->recordFlag()) {
-            QPen pen(Qt::black, 0, Qt::SolidLine);
-            p.setPen(pen);
-            QColor c(MusEGlobal::config.partColors[0]);
-            c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+th));
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            QBrush cc(gradient);
-            p.setBrush(cc);
+           QPen pen(Qt::black, 0, Qt::SolidLine);
+           p.setPen(pen);
+           QColor c(MusEGlobal::config.partColors[0]);
+           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+           QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+th));
+           gradient.setColorAt(0, c);
+           gradient.setColorAt(1, c.darker());
+           QBrush cc(gradient);
+           p.setBrush(cc);
 
-            p.drawRect(startx,yPos, width, th);
+           p.drawRect(startx,yPos, width, th);
+
+           if(track->type() == MusECore::Track::WAVE){
+              if(MusEGlobal::config.liveWaveUpdate){
+                 MusECore::SndFileR fp = ((MusECore::AudioTrack *)track)->recFilePreview();
+                 if(!fp.isNull()){
+                    unsigned int _startFrame = MusEGlobal::tempomap.tick2frame(startPos);
+                    unsigned int _endFrame = MusEGlobal::song->cPos().frame();
+                    unsigned int _lengthFrame = _endFrame - _startFrame;
+                    if(_startFrame <= _endFrame)
+                    {
+                       fp.updateCacheForPreview();
+                       drawWaveSndFile(p, fp, 0, _startFrame, 0, _lengthFrame, yPos, startx, startx + width, th);
+                    }
+                 }
+              }
+
+           }
         }
         yPos+=th;
       }

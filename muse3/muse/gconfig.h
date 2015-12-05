@@ -192,6 +192,7 @@ struct GlobalConfigValues {
       bool startSongLoadConfig;  // Whether to load configuration with the start template or song
       int guiDivision;        // division for tick display
 
+
       QRect geometryMain;
       QRect geometryTransport;
       QRect geometryBigTime;
@@ -238,6 +239,7 @@ struct GlobalConfigValues {
       bool borderlessMouse;
       bool autoSave;
       bool scrollableSubMenus;
+      bool liveWaveUpdate;   //live update wave tracks while recording
       bool warnOnFileVersions; // Warn if file version different than current
       
       QString measSample;
