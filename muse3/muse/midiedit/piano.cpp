@@ -270,6 +270,7 @@ static const char *mk1_xpmC8[] = {
       ".......................................#",
       };
 
+/*
 static const char *mk1_xpmC9[] = {
       "40 9 2 1",
       ". c none",
@@ -285,7 +286,7 @@ static const char *mk1_xpmC9[] = {
       ".......................................#",
       };
 
-
+*/
 static const char *mk1_xpm[] = {
       "40 13 2 1",
       ". c #ff0000",
@@ -487,16 +488,15 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
       curPitch = -1;
       _curSelectedPitch = 60;  // Start with 'C3"
       octave = new QPixmap(oct_xpm);
-      c_keys[0] = new QPixmap(mk1_xpmC9);
-      c_keys[1] = new QPixmap(mk1_xpmC8);
-      c_keys[2] = new QPixmap(mk1_xpmC7);
-      c_keys[3] = new QPixmap(mk1_xpmC6);
-      c_keys[4] = new QPixmap(mk1_xpmC5);
-      c_keys[5] = new QPixmap(mk1_xpmC4);
-      c_keys[6] = new QPixmap(mk1_xpmC3);
-      c_keys[7] = new QPixmap(mk1_xpmC2);
-      c_keys[8] = new QPixmap(mk1_xpmC1);
-      c_keys[9] = new QPixmap(mk1_xpmC0);
+      c_keys[0] = new QPixmap(mk1_xpmC8);
+      c_keys[1] = new QPixmap(mk1_xpmC7);
+      c_keys[2] = new QPixmap(mk1_xpmC6);
+      c_keys[3] = new QPixmap(mk1_xpmC5);
+      c_keys[4] = new QPixmap(mk1_xpmC4);
+      c_keys[5] = new QPixmap(mk1_xpmC3);
+      c_keys[6] = new QPixmap(mk1_xpmC2);
+      c_keys[7] = new QPixmap(mk1_xpmC1);
+      c_keys[8] = new QPixmap(mk1_xpmC0);
 
       mk1 = new QPixmap(mk1_xpm);
       mk2 = new QPixmap(mk2_xpm);
@@ -572,7 +572,7 @@ void Piano::draw(QPainter& p, const QRect& r)
       }
       
       // draw C notes
-      for (int drawKey = 0; drawKey < 10;drawKey++) {
+      for (int drawKey = 0; drawKey < 9;drawKey++) {
         int octaveSize=91;
 
         int drawY = octaveSize * drawKey + 82 - KH*2;
