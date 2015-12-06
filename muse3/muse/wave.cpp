@@ -72,7 +72,7 @@ SndFile::SndFile(const QString& name)
       sndFiles.push_back(this);
       refCount=0;
       writeBuffer = 0;
-      writeSegSize = std::min((size_t)MusEGlobal::segmentSize, (size_t)256);// cache minimum segment size for write operations
+      writeSegSize = std::max((size_t)MusEGlobal::segmentSize, (size_t)256);// cache minimum segment size for write operations
       }
 
 SndFile::~SndFile()
@@ -91,7 +91,8 @@ SndFile::~SndFile()
             cache = 0;
             }
       if(writeBuffer)
-         delete [] writeBuffer;
+         delete [] writeBuffer;\
+         writeBuffer = 0;
       }
 
 //---------------------------------------------------------
@@ -594,7 +595,7 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
 
       while(n > 0)
       {
-         size_t toWrite = std::max(writeSegSize, n);
+         size_t toWrite = std::min(writeSegSize, n);
          wrFrames += realWrite(srcChannels, src, toWrite);
          n -= toWrite;
       }

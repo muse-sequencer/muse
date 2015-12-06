@@ -423,7 +423,7 @@ class AudioTrack : public Track {
 
       SndFileR recFile() const           { return _recFile; }
       SndFileR recFilePreview() const           { return _recFilePreview; }
-      void setRecFile(SndFileR sf)       { _recFile = sf; if(!sf){_recFilePreview = 0;}else{_recFilePreview = new MusECore::SndFile(sf.path());}  }
+      void setRecFile(SndFileR sf)       { _recFile = sf; if(!sf){_recFilePreview = 0;}else{_recFilePreview = new MusECore::SndFile(sf.path()); _recFilePreview.openRead(false);}  }
 
       CtrlListList* controller()         { return &_controller; }
       // For setting/getting the _controls 'port' values.
