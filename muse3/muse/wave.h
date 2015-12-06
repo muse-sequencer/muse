@@ -70,7 +70,7 @@ class SndFile {
       bool openFlag;
       bool writeFlag;
       size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
-      size_t realWrite(int channel, float**, size_t n);
+      size_t realWrite(int channel, float**, size_t n, size_t offs = 0);
       
    protected:
       int refCount;

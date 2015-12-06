@@ -588,31 +588,33 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
 {
    size_t wrFrames = 0;
 
-   if(n == writeSegSize)
-      wrFrames = realWrite(srcChannels, src, n);
+   if(n <= writeSegSize)
+       wrFrames = realWrite(srcChannels, src, n);
    else
    {
-
       while(n > 0)
       {
-         size_t toWrite = std::min(writeSegSize, n);
-         wrFrames += realWrite(srcChannels, src, toWrite);
-         n -= toWrite;
+         size_t nrWrote = realWrite(srcChannels, src, writeSegSize, wrFrames);
+         wrFrames += nrWrote;
+         n -= nrWrote;
       }
    }
    return wrFrames;
 }
 
-size_t SndFile::realWrite(int srcChannels, float** src, size_t n)
+size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs)
       {
       int dstChannels = sfinfo.channels;
       float *dst      = writeBuffer;
+
+      size_t iStart = offs;
+      size_t iEnd = offs + n;
 
       const float limitValue=0.9999;
 
 
       if (srcChannels == dstChannels) {
-            for (size_t i = 0; i < n; ++i) {
+            for (size_t i = iStart; i < iEnd; ++i) {
                   for (int ch = 0; ch < dstChannels; ++ch)
                         if (*(src[ch]+i) > 0)
                           *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
@@ -622,7 +624,7 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n)
             }
       else if ((srcChannels == 1) && (dstChannels == 2)) {
             // mono to stereo
-            for (size_t i = 0; i < n; ++i) {
+            for (size_t i = iStart; i < iEnd; ++i) {
                   float data =  *(src[0]+i);
                   if (data > 0) {
                         *dst++ = data < limitValue ? data : limitValue; 
@@ -636,12 +638,13 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n)
             }
       else if ((srcChannels == 2) && (dstChannels == 1)) {
             // stereo to mono
-            for (size_t i = 0; i < n; ++i)
+            for (size_t i = iStart; i < iEnd; ++i) {
                   if (*(src[0]+i) + *(src[1]+i) > 0)
                     *dst++ = (*(src[0]+i) + *(src[1]+i)) < limitValue ? (*(src[0]+i) + *(src[1]+i)) : limitValue;
                   else
                     *dst++ = (*(src[0]+i) + *(src[1]+i)) > -limitValue ? (*(src[0]+i) + *(src[1]+i)) : -limitValue;
             }
+      }
       else {
             printf("SndFile:write channel mismatch %d -> %d\n",
                srcChannels, dstChannels);
