@@ -83,7 +83,6 @@ class SndFile {
       static SndFileList sndFiles;
       static void applyUndoFile(const QString* original, const QString* tmpfile, unsigned sx, unsigned ex);
 
-      void updateCacheForPreview();
       void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
 
@@ -157,7 +156,6 @@ class SndFileR {
       bool isOpen() const     { return sf->isOpen(); }
       bool isWritable() const { return sf->isWritable(); }
       void update()           { sf->update(); }
-      void updateCacheForPreview() { sf->updateCacheForPreview(); }
       bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); }
 
       QString basename() const { return sf->basename(); }

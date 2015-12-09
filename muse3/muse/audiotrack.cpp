@@ -2312,9 +2312,6 @@ bool AudioTrack::prepareRecording()
             return false;
 
             }
-      _recFilePreview = new SndFile(_recFile.path());
-      if(_recFilePreview.openRead(false))
-         _recFilePreview = NULL;
       return true;      
 }
 double AudioTrack::auxSend(int idx) const

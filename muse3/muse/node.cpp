@@ -2517,7 +2517,7 @@ void AudioTrack::record()
                     _recFile->seek(pos, 0);
                     _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
                   }
-                    
+
                   }
             else {
                   printf("AudioNode::record(): no recFile\n");

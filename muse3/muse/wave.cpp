@@ -46,6 +46,7 @@
 #include "part.h"
 #include "track.h"
 #include "wavepreview.h"
+#include "gconfig.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -72,7 +73,7 @@ SndFile::SndFile(const QString& name)
       sndFiles.push_back(this);
       refCount=0;
       writeBuffer = 0;
-      writeSegSize = std::max((size_t)MusEGlobal::segmentSize, (size_t)256);// cache minimum segment size for write operations
+      writeSegSize = std::max((size_t)MusEGlobal::segmentSize, (size_t)cacheMag);// cache minimum segment size for write operations
       }
 
 SndFile::~SndFile()
@@ -108,10 +109,18 @@ bool SndFile::openRead(bool createCache, bool showProgress)
       QString p = path();
       sfinfo.format = 0;
       sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      sfinfo.format = 0;
-      sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      if (sf == 0 || sfUI == 0)
+      if (sf == 0)
             return true;
+      sfUI = 0;
+      if(createCache){
+         sfinfo.format = 0;
+         sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
+         if (sfUI == 0){
+            sf_close(sf);
+            sf = 0;
+            return true;
+         }
+      }
             
       writeFlag = false;
       openFlag  = true;
@@ -139,31 +148,6 @@ void SndFile::update(bool showProgress)
             printf("SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }
-
-void SndFile::updateCacheForPreview()
-{
-   close();
-   if(!openRead(false, false))
-   {
-      sf_count_t newCsize = (samples() + cacheMag - 1)/cacheMag;
-      bool bUpdate = false;
-      sf_count_t cstart = csize;
-      if(!cache)
-      {
-         cache = new SampleVtype[channels()];
-         csize = 0;
-      }
-      if(newCsize != csize)
-      {
-         csize = newCsize;
-         bUpdate = true;
-         for (unsigned ch = 0; ch < channels(); ++ch)
-            cache [ch].resize(csize);
-      }
-      if(bUpdate)
-          createCache("", false, false, cstart);
-   }
-}
 
 //---------------------------------------------------
 //  create cache
@@ -292,9 +276,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
             
             sf_count_t ret = 0;
             if(sfUI)
-              ret = sf_seek(sfUI, pos, SEEK_SET);
+              ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
             else
-              ret = sf_seek(sf, pos, SEEK_SET);
+              ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
             if(ret == -1)
               return;  
             {
@@ -389,6 +373,7 @@ bool SndFile::openWrite()
             return false;
             }
   QString p = path();
+
       sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
       sfUI = 0;
       if (sf) {
@@ -466,9 +451,9 @@ sf_count_t SndFile::samples() const
       {
       if (!writeFlag) // if file is read only sfinfo is reliable
           return sfinfo.frames;
-      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR);
-      sf_count_t frames = sf_seek(sf, 0, SEEK_END);
-      sf_seek(sf, curPos, SEEK_SET);
+      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR | SFM_READ);
+      sf_count_t frames = sf_seek(sf, 0, SEEK_END | SFM_READ);
+      sf_seek(sf, curPos, SEEK_SET | SFM_READ);
       return frames;
       }
 
@@ -603,56 +588,99 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
 }
 
 size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs)
+{
+   int dstChannels = sfinfo.channels;
+   float *dst      = writeBuffer;
+
+   size_t iStart = offs;
+   size_t iEnd = offs + n;
+
+   const float limitValue=0.9999;
+
+
+   if (srcChannels == dstChannels) {
+      for (size_t i = iStart; i < iEnd; ++i) {
+         for (int ch = 0; ch < dstChannels; ++ch)
+            if (*(src[ch]+i) > 0)
+               *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
+            else
+               *dst++ = *(src[ch]+i) > -limitValue ? *(src[ch]+i) : -limitValue;
+      }
+   }
+   else if ((srcChannels == 1) && (dstChannels == 2)) {
+      // mono to stereo
+      for (size_t i = iStart; i < iEnd; ++i) {
+         float data =  *(src[0]+i);
+         if (data > 0) {
+            *dst++ = data < limitValue ? data : limitValue;
+            *dst++ = data < limitValue ? data : limitValue;
+         }
+         else {
+            *dst++ = data > -limitValue ? data : -limitValue;
+            *dst++ = data > -limitValue ? data : -limitValue;
+         }
+      }
+   }
+   else if ((srcChannels == 2) && (dstChannels == 1)) {
+      // stereo to mono
+      for (size_t i = iStart; i < iEnd; ++i) {
+         if (*(src[0]+i) + *(src[1]+i) > 0)
+            *dst++ = (*(src[0]+i) + *(src[1]+i)) < limitValue ? (*(src[0]+i) + *(src[1]+i)) : limitValue;
+         else
+            *dst++ = (*(src[0]+i) + *(src[1]+i)) > -limitValue ? (*(src[0]+i) + *(src[1]+i)) : -limitValue;
+      }
+   }
+   else {
+      printf("SndFile:write channel mismatch %d -> %d\n",
+             srcChannels, dstChannels);
+      return 0;
+   }
+   int nbr = sf_writef_float(sf, writeBuffer, n) ;
+
+   if(MusEGlobal::config.liveWaveUpdate)
+   { //update cache
+      if(!cache)
       {
-      int dstChannels = sfinfo.channels;
-      float *dst      = writeBuffer;
-
-      size_t iStart = offs;
-      size_t iEnd = offs + n;
-
-      const float limitValue=0.9999;
-
-
-      if (srcChannels == dstChannels) {
-            for (size_t i = iStart; i < iEnd; ++i) {
-                  for (int ch = 0; ch < dstChannels; ++ch)
-                        if (*(src[ch]+i) > 0)
-                          *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
-                        else
-                          *dst++ = *(src[ch]+i) > -limitValue ? *(src[ch]+i) : -limitValue;
-                  }
-            }
-      else if ((srcChannels == 1) && (dstChannels == 2)) {
-            // mono to stereo
-            for (size_t i = iStart; i < iEnd; ++i) {
-                  float data =  *(src[0]+i);
-                  if (data > 0) {
-                        *dst++ = data < limitValue ? data : limitValue; 
-                        *dst++ = data < limitValue ? data : limitValue;
-                        }
-                  else {
-                        *dst++ = data > -limitValue ? data : -limitValue; 
-                        *dst++ = data > -limitValue ? data : -limitValue; 
-                        }
-                  }
-            }
-      else if ((srcChannels == 2) && (dstChannels == 1)) {
-            // stereo to mono
-            for (size_t i = iStart; i < iEnd; ++i) {
-                  if (*(src[0]+i) + *(src[1]+i) > 0)
-                    *dst++ = (*(src[0]+i) + *(src[1]+i)) < limitValue ? (*(src[0]+i) + *(src[1]+i)) : limitValue;
-                  else
-                    *dst++ = (*(src[0]+i) + *(src[1]+i)) > -limitValue ? (*(src[0]+i) + *(src[1]+i)) : -limitValue;
-            }
+         cache = new SampleVtype[sfinfo.channels];
+         csize = 0;
       }
-      else {
-            printf("SndFile:write channel mismatch %d -> %d\n",
-               srcChannels, dstChannels);
-            return 0;
-            }
-      int nbr = sf_writef_float(sf, writeBuffer, n) ;
-      return nbr;
+      sf_count_t cstart = (sfinfo.frames + cacheMag - 1) / cacheMag;
+      sfinfo.frames += n;
+      csize = (sfinfo.frames + cacheMag - 1) / cacheMag;
+      for (int ch = 0; ch < sfinfo.channels; ++ch)
+      {
+         cache [ch].resize(csize);
       }
+
+      for (int i = cstart; i < csize; i++)
+      {
+         for (int ch = 0; ch < sfinfo.channels; ++ch)
+         {
+            float rms = 0.0;
+            cache[ch][i].peak = 0;
+            for (int n = 0; n < cacheMag; n++)
+            {
+               //float fd = data[ch][n];
+               float fd = writeBuffer [n * sfinfo.channels + ch];
+               rms += fd * fd;
+               int idata = int(fd * 255.0);
+               if (idata < 0)
+                  idata = -idata;
+               if (cache[ch][i].peak < idata)
+                  cache[ch][i].peak = idata;
+            }
+            // amplify rms value +12dB
+            int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
+            if (rmsValue > 255)
+               rmsValue = 255;
+            cache[ch][i].rms = rmsValue;
+         }
+      }
+
+   }
+
+   return nbr;
+}
 
 //---------------------------------------------------------
 //   seek

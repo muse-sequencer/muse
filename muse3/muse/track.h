@@ -391,7 +391,6 @@ class AudioTrack : public Track {
       virtual bool getData(unsigned, int, unsigned, float**);
       SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
-      SndFileR _recFilePreview;  //for live wave update while recording
       bool _processed;
       
    public:
@@ -422,8 +421,7 @@ class AudioTrack : public Track {
       void showPendingPluginNativeGuis();
 
       SndFileR recFile() const           { return _recFile; }
-      SndFileR recFilePreview() const           { return _recFilePreview; }
-      void setRecFile(SndFileR sf)       { _recFile = sf; if(!sf){_recFilePreview = 0;}else{_recFilePreview = new MusECore::SndFile(sf.path()); _recFilePreview.openRead(false);}  }
+      void setRecFile(SndFileR sf)       { _recFile = sf; }
 
       CtrlListList* controller()         { return &_controller; }
       // For setting/getting the _controls 'port' values.

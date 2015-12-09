@@ -3011,14 +3011,13 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 
            if(track->type() == MusECore::Track::WAVE){
               if(MusEGlobal::config.liveWaveUpdate){
-                 MusECore::SndFileR fp = ((MusECore::AudioTrack *)track)->recFilePreview();
+                 MusECore::SndFileR fp = ((MusECore::AudioTrack *)track)->recFile();
                  if(!fp.isNull()){
                     unsigned int _startFrame = MusEGlobal::tempomap.tick2frame(startPos);
                     unsigned int _endFrame = MusEGlobal::song->cPos().frame();
                     unsigned int _lengthFrame = _endFrame - _startFrame;
                     if(_startFrame <= _endFrame)
                     {
-                       fp.updateCacheForPreview();
                        drawWaveSndFile(p, fp, 0, _startFrame, 0, _lengthFrame, yPos, startx, startx + width, th);
                     }
                  }
