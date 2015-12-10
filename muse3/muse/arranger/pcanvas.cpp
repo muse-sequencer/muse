@@ -2975,7 +2975,11 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);
-    int width = mapx(MusEGlobal::song->cpos()) - mapx(startPos);
+    if(startx < 0)
+       startx = 0;
+    int width = mapx(MusEGlobal::song->cpos()) - startx;
+
+
 
     if (MusEGlobal::song->cpos() < startPos) {
         p.restore();
@@ -3007,6 +3011,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
            QBrush cc(gradient);
            p.setBrush(cc);
 
+           fprintf(stderr, "startx = %d\n", startx);
            p.drawRect(startx,yPos, width, th);
 
            if(track->type() == MusECore::Track::WAVE){
