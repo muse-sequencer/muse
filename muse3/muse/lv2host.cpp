@@ -1124,10 +1124,10 @@ void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
    if(state == NULL)
       return;
-   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   if(!state->gtk2AllocateCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
    {
+      state->gtk2AllocateCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->setMinimumSize(width, height);
-      ((LV2PluginWrapper_Window *)state->widget)->setMaximumSize(width, height);
    }
 
 
@@ -1138,8 +1138,9 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
    if(state == NULL)
       return;
-   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   if(!state->gtk2ResizeCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
    {
+      state->gtk2ResizeCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
    }
 
@@ -1213,6 +1214,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
    if((state->uiCurrent == NULL) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
    {
       state->uiCurrent = NULL;
+      state->gtk2ResizeCompleted = false;
+      state->gtk2AllocateCompleted = false;
       QAction *aUiTypeSelected = NULL;
       if((synth->_pluginUiTypes.size() == 1) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_USE_FIRST)
       {
@@ -1435,6 +1438,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                      int w = 0;
                      int h = 0;
                      lv2Gtk2Helper_gtk_widget_get_allocationFn(uiW, &w, &h);
+                     win->setMinimumSize(w, h);
                      win->resize(w, h);
                   }
                   //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));

@@ -964,7 +964,9 @@ struct LV2PluginWrapper_State {
       pluginCVPorts(NULL),
       uiControlEvt(128),
       plugControlEvt(128),
-      midiEvent(NULL)
+      midiEvent(NULL),
+      gtk2ResizeCompleted(false),
+      gtk2AllocateCompleted(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -1045,6 +1047,8 @@ struct LV2PluginWrapper_State {
     LV2SimpleRTFifo plugControlEvt;
     std::map<uint32_t, LV2EvBuf *> idx2EvtPorts;
     snd_midi_event_t *midiEvent;
+    bool gtk2ResizeCompleted;
+    bool gtk2AllocateCompleted;
 };
 
 
