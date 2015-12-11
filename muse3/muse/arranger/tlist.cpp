@@ -1989,9 +1989,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
                         MusECore::TrackList* tl = MusEGlobal::song->tracks();
                         int selCnt = 0;
-                        for (MusECore::iTrack t = tl->begin(); t != tl->end(); ++t)
+                        for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it)
                         {
-                          MusECore::Track* tr = *t;
+                          MusECore::Track* tr = *it;
                           if (tr->selected())
                           {
                             selCnt++;
