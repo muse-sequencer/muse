@@ -1210,10 +1210,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    LV2_PLUGIN_UI_TYPES::iterator itUi;
 
-   if(state->uiCurrent == NULL)
+   if((state->uiCurrent == NULL) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
    {
+      state->uiCurrent = NULL;
       QAction *aUiTypeSelected = NULL;
-      if(synth->_pluginUiTypes.size() == 1)
+      if((synth->_pluginUiTypes.size() == 1) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_USE_FIRST)
       {
          state->uiCurrent = synth->_pluginUiTypes.begin()->first;
       }

@@ -97,6 +97,11 @@ struct MixerConfig {
 //---------------------------------------------------------
 //   GlobalConfigValues
 //---------------------------------------------------------
+enum CONF_LV2_UI_BEHAVIOR {
+   CONF_LV2_UI_USE_FIRST = 0,
+   CONF_LV2_UI_ASK_ONCE,
+   CONF_LV2_UI_ASK_ALWAYS
+};
 
 struct GlobalConfigValues {
       int globalAlphaBlend;
@@ -241,6 +246,7 @@ struct GlobalConfigValues {
       bool scrollableSubMenus;
       bool liveWaveUpdate;   //live update wave tracks while recording
       bool warnOnFileVersions; // Warn if file version different than current
+      CONF_LV2_UI_BEHAVIOR lv2UiBehavior;
       
       QString measSample;
       QString beatSample;

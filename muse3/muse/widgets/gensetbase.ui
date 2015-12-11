@@ -1357,6 +1357,27 @@ Adjusts responsiveness of audio controls and
           <string>Behavior</string>
          </property>
          <layout class="QGridLayout" name="gridLayout7">
+          <item row="12" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Track height</string>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="2">
+           <widget class="QCheckBox" name="liveWaveUpdateCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Live update wave parts while recording</string>
+            </property>
+           </widget>
+          </item>
           <item row="2" column="2">
            <widget class="QCheckBox" name="moveArmedCheckBox">
             <property name="sizePolicy">
@@ -1400,13 +1421,6 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="12" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Track height</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="textLabel1_4">
             <property name="text">
@@ -1414,23 +1428,6 @@ Disable to use an alternate standard
             </property>
             <property name="wordWrap">
              <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="textLabel1_4_2">
-            <property name="text">
-             <string>Move single armed track with selection</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Shift + Right click sets left range marker</string>
             </property>
            </widget>
           </item>
@@ -1447,6 +1444,16 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="textLabel1_4_2">
+            <property name="text">
+             <string>Move single armed track with selection</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="2">
            <widget class="QCheckBox" name="lmbDecreasesCheckBox">
             <property name="sizePolicy">
@@ -1460,10 +1467,10 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="7" column="0" colspan="2">
-           <widget class="QLabel" name="label_4">
+          <item row="6" column="0" colspan="2">
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Allow adding hidden tracks in track list menu</string>
+             <string>Shift + Right click sets left range marker</string>
             </property>
            </widget>
           </item>
@@ -1474,16 +1481,10 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
-           <widget class="QLabel" name="label_8">
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
+          <item row="7" column="0" colspan="2">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Borderless zoom/pan mouse (else use alternate method)</string>
+             <string>Allow adding hidden tracks in track list menu</string>
             </property>
            </widget>
           </item>
@@ -1523,13 +1524,16 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="TextLabel1">
-            <property name="text">
-             <string>GUI Refresh Rate</string>
+          <item row="11" column="0" colspan="2">
+           <widget class="QLabel" name="label_8">
+            <property name="toolTip">
+             <string/>
             </property>
-            <property name="wordWrap">
-             <bool>false</bool>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="text">
+             <string>Borderless zoom/pan mouse (else use alternate method)</string>
             </property>
            </widget>
           </item>
@@ -1540,19 +1544,13 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QSpinBox" name="guiRefreshSelect">
-            <property name="suffix">
-             <string>/sec</string>
+          <item row="0" column="0">
+           <widget class="QLabel" name="TextLabel1">
+            <property name="text">
+             <string>GUI Refresh Rate</string>
             </property>
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="value">
-             <number>20</number>
+            <property name="wordWrap">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -1573,13 +1571,19 @@ Otherwise, hold Ctrl to keep them open.</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QLabel" name="TextLabel1_3">
-            <property name="toolTip">
-             <string/>
+          <item row="0" column="2">
+           <widget class="QSpinBox" name="guiRefreshSelect">
+            <property name="suffix">
+             <string>/sec</string>
             </property>
-            <property name="text">
-             <string>Some popup menus stay open (else hold Ctrl)</string>
+            <property name="minimum">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -1597,16 +1601,13 @@ Otherwise, hold Ctrl to keep them open.</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QLabel" name="label_2">
+          <item row="4" column="0" colspan="2">
+           <widget class="QLabel" name="TextLabel1_3">
             <property name="toolTip">
-             <string>In some areas, the middle mouse button decreases
-values, while the right button increases. Users without a
-middle mouse button can select this option to make the
-left button behave like the middle button in such areas.</string>
+             <string/>
             </property>
             <property name="text">
-             <string>Use left mouse button for decreasing values</string>
+             <string>Some popup menus stay open (else hold Ctrl)</string>
             </property>
            </widget>
           </item>
@@ -1630,18 +1631,18 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="15" column="1">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="5" column="0" colspan="2">
+           <widget class="QLabel" name="label_2">
+            <property name="toolTip">
+             <string>In some areas, the middle mouse button decreases
+values, while the right button increases. Users without a
+middle mouse button can select this option to make the
+left button behave like the middle button in such areas.</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
+            <property name="text">
+             <string>Use left mouse button for decreasing values</string>
             </property>
-           </spacer>
+           </widget>
           </item>
           <item row="9" column="0" colspan="2">
            <widget class="QLabel" name="label5">
@@ -1666,6 +1667,19 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
+          <item row="16" column="1">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
           <item row="13" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
@@ -1680,18 +1694,30 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="0">
-           <widget class="QLabel" name="label_10">
+          <item row="15" column="0">
+           <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>Live update wave parts while recording</string>
+             <string>LV2 UI Open behavior</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="2">
-           <widget class="QCheckBox" name="liveWaveUpdateCheckBox">
-            <property name="text">
-             <string/>
-            </property>
+          <item row="15" column="1" colspan="2">
+           <widget class="QComboBox" name="lv2UiBehaviorComboBox">
+            <item>
+             <property name="text">
+              <string>Use first available</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Ask once</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Ask always</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>

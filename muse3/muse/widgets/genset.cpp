@@ -241,6 +241,8 @@ void GlobalSettingsConfig::updateSettings()
 
       trackHeight->setValue(MusEGlobal::config.trackHeight);
 
+      lv2UiBehaviorComboBox->setCurrentIndex(static_cast<int>(MusEGlobal::config.lv2UiBehavior));
+
       updateMdiSettings();
 }
 
@@ -396,6 +398,8 @@ void GlobalSettingsConfig::apply()
         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
 
       MusEGlobal::config.trackHeight = trackHeight->value();
+
+      MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(lv2UiBehaviorComboBox->currentIndex());
 
       applyMdiSettings();
       

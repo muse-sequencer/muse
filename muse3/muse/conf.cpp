@@ -1053,6 +1053,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.warnIfBadTiming = xml.parseInt();
                         else if (tag == "warnOnFileVersions")
                               MusEGlobal::config.warnOnFileVersions = xml.parseInt();
+                        else if (tag == "lv2UiBehavior")
+                              MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(xml.parseInt());
                         else if (tag == "minMeter")
                               MusEGlobal::config.minMeter = xml.parseInt();
                         else if (tag == "minSlider")
@@ -1502,6 +1504,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
       xml.intTag(level, "scrollableSubMenus", MusEGlobal::config.scrollableSubMenus);
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
+      xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
 
 
       for (int i = 0; i < NUM_FONTS; ++i) {
