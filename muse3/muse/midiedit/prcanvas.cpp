@@ -99,6 +99,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       {
       colorMode = 0;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
+      supportsResizeToTheLeft = true;
       
       steprec=new MusECore::StepRec(noteHeldDown);
       
@@ -529,7 +530,7 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
 //   resizeItem
 //---------------------------------------------------------
 
-void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
+void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool rasterize)         // experimental changes to try dynamically extending parts
       {
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
@@ -550,6 +551,15 @@ void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         //
       MusECore::Undo operations;
       int diff = event.tick()+len-part->lenTick();
       
+      if((nevent->mp() != nevent->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
+      {
+         int x = nevent->mp().x();
+         int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
+         if (ntick < 0)
+               ntick = 0;
+         newEvent.setTick(ntick);
+      }
+
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         newEvent.setLenTick(len);
@@ -561,6 +571,7 @@ void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         //
               printf("resizeItem: extending\n");
         }
       }
+
       //else forbid action by not performing it
       MusEGlobal::song->applyOperationGroup(operations);
       songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is neccessary
