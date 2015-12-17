@@ -594,42 +594,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       global_start    = event->globalPos();
       ev_global_pos   = global_start;
       
-      //---------------------------------------------------
-      //    set curItem to item mouse is pointing
-      //    (if any)
-      //---------------------------------------------------
-
-      if (virt())
-            curItem = items.find(start);
-      else {
-            curItem = 0;
-            iCItem ius;
-            bool usfound = false;
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  QRect box = i->second->bbox();
-                  int x = rmapxDev(box.x());
-                  int y = rmapyDev(box.y());
-                  int w = rmapxDev(box.width());
-                  int h = rmapyDev(box.height());
-                  QRect r(x, y, w, h);
-                  r.translate(i->second->pos().x(), i->second->pos().y());
-                  if (r.contains(start)) {
-                        if(i->second->isSelected())
-                        {
-                          curItem = i->second;
-                          break;
-                        }
-                        else
-                        if(!usfound)
-                        {
-                          ius = i;
-                          usfound = true;
-                        }
-                     }
-                  }
-                  if(!curItem && usfound)
-                    curItem = ius->second;
-            }
+      curItem = findCurrentItem(start);
 
       if (curItem && (button == Qt::MidButton)) {
             deleteItem(start); // changed from "start drag" to "delete" by flo93
@@ -1262,6 +1227,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
                   
             case DRAG_OFF:
+                  if(_tool == PencilTool){
+                     if(findCurrentItem(ev_pos)){
+                        QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+                        break;
+                     }
+                  }
+                  setCursor();
                   break;
             }
 
@@ -1535,6 +1507,50 @@ void Canvas::setTool(int t)
 //---------------------------------------------------------
 //   setCursor
 //---------------------------------------------------------
+
+CItem *Canvas::findCurrentItem(const QPoint &cStart)
+{
+   //---------------------------------------------------
+   //    set curItem to item mouse is pointing
+   //    (if any)
+   //---------------------------------------------------
+
+   CItem *item = 0;
+   if (virt())
+      item = items.find(cStart);
+   else {
+      item = 0;
+      iCItem ius;
+      bool usfound = false;
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
+         QRect box = i->second->bbox();
+         int x = rmapxDev(box.x());
+         int y = rmapyDev(box.y());
+         int w = rmapxDev(box.width());
+         int h = rmapyDev(box.height());
+         QRect r(x, y, w, h);
+         r.translate(i->second->pos().x(), i->second->pos().y());
+         if (r.contains(cStart)) {
+            if(i->second->isSelected())
+            {
+               item = i->second;
+               break;
+            }
+            else
+               if(!usfound)
+               {
+                  ius = i;
+                  usfound = true;
+               }
+         }
+      }
+      if(!curItem && usfound)
+         item = ius->second;
+   }
+
+   return item;
+
+}
 
 void Canvas::resizeToTheLeft(const QPoint &pos)
 {

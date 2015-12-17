@@ -55,7 +55,9 @@ class Canvas : public View {
       bool canScrollLeft;
       bool canScrollRight;
       bool canScrollUp;
-      bool canScrollDown;      
+      bool canScrollDown;
+
+      CItem *findCurrentItem(const QPoint &cStart);
       
    protected:
       enum DragMode {
