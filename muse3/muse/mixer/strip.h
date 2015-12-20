@@ -26,19 +26,23 @@
 #define __STRIP_H__
 
 #include <QFrame>
-#include <QIcon>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QLabel>
+//#include <QIcon>
+//#include <QVBoxLayout>
+//#include <QGridLayout>
+//#include <QLabel>
 
 #include "type_defs.h"
 #include "globaldefs.h"
 //#include "route.h"
 
+class QMouseEvent;
+class QResizeEvent;
 class QLabel;
 //class QVBoxLayout;
 class QToolButton;
 class QGridLayout;
+class QLayout;
+class QSize;
 
 namespace MusECore {
 class Track;
@@ -51,20 +55,38 @@ class Meter;
 static const int STRIP_WIDTH = 65;
 static const int AUDIO_STRIP_WIDTH = 73;
 
+struct GridPosStruct
+{
+  int _row;
+  int _col;
+  int _rowSpan;
+  int _colSpan;
+  
+  GridPosStruct() : _row(0), _col(0), _rowSpan(0), _colSpan(0) { }
+  GridPosStruct(int row, int col, int rowSpan, int colSpan)
+              : _row(row), _col(col), _rowSpan(rowSpan), _colSpan(colSpan) { }
+};
+
 //---------------------------------------------------------
 //   Strip
 //---------------------------------------------------------
 
 class Strip : public QFrame {
       Q_OBJECT
-   
+      
    protected:
+      //enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
+ 
+      //ResizeMode _resizeMode;
+      
       MusECore::Track* track;
       QLabel* label;
       //QVBoxLayout* layout;
       QGridLayout* grid;
       int _curGridRow;
       MusEGui::Meter* meter[MAX_CHANNELS];
+      // Extra width applied to the sizeHint, from user expanding the strip.
+      int _userWidth;
       
       QToolButton* record;
       QToolButton* solo;
@@ -75,7 +97,10 @@ class Strip : public QFrame {
       MusEGui::ComboBox* autoType;
       void setLabelText();
       virtual void resizeEvent(QResizeEvent*);
-      virtual void mousePressEvent(QMouseEvent *);
+      virtual void mousePressEvent(QMouseEvent*);
+      //virtual void mouseMoveEvent(QMouseEvent*);
+      //virtual void mouseReleaseEvent(QMouseEvent*);
+      //virtual void leaveEvent(QEvent*);
 
    private slots:
       void recordToggled(bool);
@@ -90,6 +115,7 @@ class Strip : public QFrame {
       void resetPeaks();
       virtual void songChanged(MusECore::SongChangedFlags_t) = 0;
       virtual void configChanged() = 0;
+      virtual void changeUserWidth(int delta);
 
    public:
       Strip(QWidget* parent, MusECore::Track* t);
@@ -97,7 +123,45 @@ class Strip : public QFrame {
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setLabelFont();
+      
+      void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
+      void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);
+      
+      int userWidth() const { return _userWidth; }
+      void setUserWidth(int w);
+      
+      virtual QSize sizeHint() const;
       };
+
+//---------------------------------------------------------
+//   ExpanderHandle
+//---------------------------------------------------------
+
+class ExpanderHandle : public QFrame 
+{
+  Q_OBJECT
+
+  protected:
+    enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
+    
+  private:
+    int _handleWidth;
+    ResizeMode _resizeMode;
+    QPoint _dragLastGlobPos;
+      
+  protected:
+    virtual void mousePressEvent(QMouseEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    //virtual void leaveEvent(QEvent*);
+    virtual QSize sizeHint() const;
+
+  signals:
+    void moved(int xDelta);
+    
+  public:
+    ExpanderHandle(QWidget * parent = 0, int handleWidth = 4, Qt::WindowFlags f = 0);
+};
 
 } // namespace MusEGui
 

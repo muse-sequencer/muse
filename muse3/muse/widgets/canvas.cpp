@@ -61,11 +61,13 @@ namespace MusEGui {
 Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
    : View(parent, sx, sy, name)
       {
+      _cursorOverrideCount = 0;
       canvasTools = 0;
       itemPopupMenu = 0;
       
       button = Qt::NoButton;
       keyState = 0;
+      _mouseGrabbed = false;
 
       canScrollLeft = true;
       canScrollRight = true;
@@ -92,6 +94,10 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
 
 Canvas::~Canvas()
 {
+  // Just in case the ref count is not 0. This is our last chance to clear 
+  //  our contribution to QApplication::setOverrideCursor references.
+  showCursor();
+  
   items.clearDelete();
 
   if(newCItem)
@@ -99,6 +105,40 @@ Canvas::~Canvas()
     if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
       delete newCItem->part();
     delete newCItem;
+  }
+}
+
+void Canvas::showCursor(bool show) 
+{ 
+  if(_cursorOverrideCount > 1)
+    fprintf(stderr, "MusE Warning: _cursorOverrideCount > 1 in Canvas::showCursor(%d)\n", show);
+
+  if(show)
+  {  
+    while(_cursorOverrideCount > 0)
+    {
+      QApplication::restoreOverrideCursor();
+      _cursorOverrideCount--;
+    }
+  }
+  else
+  {
+    _cursorOverrideCount++;
+    QApplication::setOverrideCursor(Qt::BlankCursor); // CAUTION
+  }
+}
+
+void Canvas::setMouseGrab(bool grabbed)
+{
+  if(grabbed && !_mouseGrabbed)
+  {
+    _mouseGrabbed = true;
+    grabMouse(); // CAUTION
+  }
+  else if(!grabbed && _mouseGrabbed)
+  {
+    releaseMouse();
+    _mouseGrabbed = false;
   }
 }
 
@@ -553,9 +593,13 @@ void Canvas::viewKeyReleaseEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
+      showCursor();  
+      
       if (!mousePress(event))
+      {
+          setMouseGrab(false);
           return;
-
+      }
       keyState = event->modifiers();
       button = event->button();
       //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
@@ -564,6 +608,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       // like moving or drawing lasso is performed.
       if (event->buttons() & Qt::RightButton & ~(button)) {
           //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
+          setMouseGrab(false);
           switch (drag) {
               case DRAG_LASSO:
                 drag = DRAG_OFF;
@@ -579,8 +624,10 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       }
 
       // ignore event if (another) button is already active:
-      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(button)) {
+//       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(button)) {  // REMOVE Tim. Trackinfo. Changed.
+      if (event->buttons() ^ button) {
             //printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
+          setMouseGrab(false);
             return;
             }
             
@@ -737,9 +784,24 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                           setCursor();
                           if(MusEGlobal::config.borderlessMouse)
                           {
+                            //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
+                            //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
+                            //   button is pressed and keeps it until the last button is released."
+                            //
+                            // Apparently not. For some reason this was necessary. When the cursor is dragged
+                            //  outside the window, holding left then pressing right mouse button COMPLETELY 
+                            //  bypasses us, leaving the app's default right-click handler to popup, and leaving 
+                            //  us in a really BAD state: mouse is grabbed (and hidden) and no way out !
+                            //
+                            // That is likely just how QWidget works, but here using global cursor overrides 
+                            //  it is disasterous. TESTED: Yes, that is how other controls work. Hitting another 
+                            //  button while the mouse has been dragged outside causes it to bypass us !
+                            setMouseGrab(true); // CAUTION
+                            
                             QRect r = QApplication::desktop()->screenGeometry();
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            //ignore_mouse_move = false;
                           }
                         }
                         break;
@@ -750,9 +812,12 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                           setCursor();
                           if(MusEGlobal::config.borderlessMouse)
                           {
+                            setMouseGrab(true); // CAUTION
+                            
                             QRect r = QApplication::desktop()->screenGeometry();
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            //ignore_mouse_move = false;
                           }
                           // Update the small zoom drawing area
                           QPoint pt = mapFromGlobal(global_start);
@@ -1227,6 +1292,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     {
                       ignore_mouse_move = true;      // Avoid recursion.
                       QCursor::setPos(screen_center);
+                      //ignore_mouse_move = false;
                     }
                   }
                   break;
@@ -1240,6 +1306,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   {
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(screen_center);
+                    //ignore_mouse_move = false;
                   }
                   break;
                   
@@ -1265,7 +1332,12 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       canScrollUp = true;
       canScrollDown = true;
       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
-            return;
+      {
+        // Make sure this is done. See mousePressEvent.
+        showCursor();
+        setMouseGrab(false);
+        return;
+      }
 
       QPoint pos = event->pos();
       bool ctrl = event->modifiers() & Qt::ControlModifier;
@@ -1371,6 +1443,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                     pos = global_start;
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(global_start);
+                    //ignore_mouse_move = false;
                   }
                   break;
                   
@@ -1380,6 +1453,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                     pos = global_start;
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(global_start);
+                    //ignore_mouse_move = false;
                   }
                   break;
             }
@@ -1404,7 +1478,11 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       drag = DRAG_OFF;
       if (redrawFlag)
             redraw();
-      setCursor();
+
+      // Make sure this is done. See mousePressEvent.
+      setCursor(); // Calls showCursor().
+      setMouseGrab(false);
+
       mouseRelease(pos);
 }
 
@@ -1512,6 +1590,7 @@ void Canvas::setTool(int t)
 
 void Canvas::setCursor()
       {
+      showCursor();
       switch (drag) {
             case DRAGX_MOVE:
             case DRAGX_COPY:
@@ -1540,14 +1619,16 @@ void Canvas::setCursor()
 
             case DRAG_PAN:
                   if(MusEGlobal::config.borderlessMouse)
-                    QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.
+                    //QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.  // REMOVE Tim. Trackinfo.
+                    showCursor(false); // CAUTION
                   else
                     QWidget::setCursor(QCursor(Qt::ClosedHandCursor));
                   break;
                   
             case DRAG_ZOOM:
                   if(MusEGlobal::config.borderlessMouse)
-                    QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.
+                    //QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.  // REMOVE Tim. Trackinfo.
+                    showCursor(false); // CAUTION
                   break;
                   
             case DRAG_DELETE:

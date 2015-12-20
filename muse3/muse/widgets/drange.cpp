@@ -28,6 +28,7 @@
 
 #include "mmath.h"
 #include "drange.h"
+#include "fastlog.h"
 
 namespace MusEGui {
 
@@ -63,8 +64,79 @@ DoubleRange::DoubleRange()
       d_value = 0.0;
       d_step  = 0.1;
       d_periodic = false;
+      d_log = false;
+      d_integer = false;
       }
 
+//---------------------------------------------------------
+//   convertTo
+//---------------------------------------------------------
+
+double DoubleRange::convertTo(double x, ConversionMode mode) const
+{
+  switch(mode)
+  {
+    case ConvertNone:
+      return x;
+      
+    case ConvertDefault:
+      if(d_log)
+        return pow(10.0, x*0.05f);
+      if(d_integer)
+        return rint(x);
+      return x;
+    break;
+    
+    case ConvertInt:
+      return rint(x);
+    break;
+    
+    case ConvertLog:
+      return pow(10.0, x*0.05f);
+    break;
+  }
+  return x;
+}
+      
+//---------------------------------------------------------
+//   convertTo
+//---------------------------------------------------------
+
+double DoubleRange::convertFrom(double x, ConversionMode mode) const
+{
+  switch(mode)
+  {
+    case ConvertNone:
+      return x;
+      
+    case ConvertDefault:
+      if(d_log) 
+      {
+        if(x == 0.0f)
+          return d_minValue;
+        else 
+          return MusECore::fast_log10(x) * 20.0f;
+      }
+      else if(d_integer)
+        return rint(x);
+      else 
+        return x;
+    break;
+    
+    case ConvertInt:
+      return rint(x);
+    break;
+    
+    case ConvertLog:
+      if(x == 0.0f)
+        x = d_minValue;
+      else 
+        x = MusECore::fast_log10(x) * 20.0f;
+    break;
+  }
+  return x;
+}
+      
 //---------------------------------------------------------
 //   setNewValue
 //---------------------------------------------------------
@@ -126,9 +198,24 @@ void DoubleRange::setNewValue(double x, bool align)
 //	be mapped to a point in the interval such that
 //---------------------------------------------------------
 
-void DoubleRange::fitValue(double x)
+void DoubleRange::fitValue(double x, ConversionMode mode)
       {
-      setNewValue(x, true);
+//       if(d_log) 
+//       {
+//         if(x == 0.0f)
+//           x = d_minValue;
+//         else 
+//         //{
+//             x = MusECore::fast_log10(x) * 20.0f;
+//             //if(x < d_minValue)
+//             //        x = d_minValue;
+//         //}
+//       }
+//       else if (d_integer)
+//         x = rint(x);
+//       
+//       setNewValue(x, true);
+      setNewValue(convertFrom(x, mode), true);
       }
 
 //---------------------------------------------------------
@@ -143,9 +230,24 @@ void DoubleRange::fitValue(double x)
 //    with an integer number n.
 //---------------------------------------------------------
 
-void DoubleRange::setValue(double x)
+void DoubleRange::setValue(double x, ConversionMode mode)
       {
-      setNewValue(x, false);
+//       if(d_log) 
+//       {
+//         if(x == 0.0f)
+//           x = d_minValue;
+//         else 
+//         //{
+//             x = MusECore::fast_log10(x) * 20.0f;
+//             //if(x < d_minValue)
+//             //        x = d_minValue;
+//         //}
+//       }
+//       else if (d_integer)
+//         x = rint(x);
+//       
+//       setNewValue(x, false);
+      setNewValue(convertFrom(x, mode), false);
       }
 
 //---------------------------------------------------------
@@ -161,8 +263,10 @@ void DoubleRange::setValue(double x)
 //	  to a better one.
 //---------------------------------------------------------
 
-void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize)
+void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize, ConversionMode mode)
       {
+      vmin = convertFrom(vmin, mode);
+      vmax = convertFrom(vmax, mode);
       bool rchg = ((d_maxValue != vmax) || (d_minValue != vmin));
 
       if(!rchg && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
@@ -278,5 +382,80 @@ double DoubleRange::step() const
       {
       return MusECore::qwtAbs(d_step);
       }
+
+//---------------------------------------------------------
+//   value
+//---------------------------------------------------------
+
+double DoubleRange::value(ConversionMode mode) const
+      {
+      return convertTo(d_value, mode);
+      }
+
+//---------------------------------------------------------
+//   minLogValue
+//---------------------------------------------------------
+
+//double AbstractSlider::minValue() const {
+//  return _log ? pow(10.0, _minValue*0.05f) : _minValue;
+//}
+
+//---------------------------------------------------------
+//   setMinLogValue
+//---------------------------------------------------------
+
+void DoubleRange::setMinLogValue(double val) {
+  if (d_log) {
+    if (val == 0.0f) d_minValue = -100;
+    else d_minValue = MusECore::fast_log10(val) * 20.0f;
+  }
+  else d_minValue = val;
+}
+
+//---------------------------------------------------------
+//   maxLogValue
+//---------------------------------------------------------
+
+//double AbstractSlider::maxValue() const {
+//  return _log ? pow(10.0, _maxValue*0.05f) : _maxValue;
+//}
+
+//---------------------------------------------------------
+//   setMaxLogValue
+//---------------------------------------------------------
+
+void DoubleRange::setMaxLogValue(double val) 
+{
+  if (d_log) 
+  {
+    d_maxValue = MusECore::fast_log10(val) * 20.0f;
+  }
+  else d_maxValue = val;
+}
+
+void DoubleRange::setLogRange(double a, double b, double vstep, int pagesize) 
+{
+//   setMinLogValue(a);
+//   setMaxLogValue(b);
+  
+  double mn, mx;
+  if(d_log) 
+  {
+    if(a == 0.0f) 
+      d_minValue = -100;
+    else 
+      mn = MusECore::fast_log10(a) * 20.0f;
+  }
+  else 
+    mn = a;
+
+  if(d_log) 
+    mx = MusECore::fast_log10(b) * 20.0f;
+  else 
+    mx = b;
+  
+  setRange(mn, mx, vstep, pagesize);
+}
+
 
 } // namespace MusEGui

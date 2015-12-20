@@ -212,7 +212,12 @@ void Strip::soloToggled(bool val)
 Strip::Strip(QWidget* parent, MusECore::Track* t)
    : QFrame(parent)
       {
+      setMouseTracking(true);
+      
       _curGridRow = 0;
+      _userWidth = 0;
+      autoType = 0;
+      //_resizeMode = ResizeModeNone;
       setAttribute(Qt::WA_DeleteOnClose);
       iR            = 0;
       oR            = 0;
@@ -234,7 +239,8 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       //setFixedWidth(STRIP_WIDTH);
       //setMinimumWidth(STRIP_WIDTH);     // TESTING Tim.
       //setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding)); // TESTING Tim.
-      setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
+//       setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
+      setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
       
       grid = new QGridLayout();
       grid->setContentsMargins(0, 0, 0, 0);
@@ -288,7 +294,8 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       setLabelFont();
       
       //layout->addWidget(label);
-      grid->addWidget(label, _curGridRow++, 0, 1, 2);
+//       grid->addWidget(label, _curGridRow++, 0, 1, 2);
+      grid->addWidget(label, _curGridRow++, 0, 1, 3); // REMOVE Tim. Trackinfo. Changed. TEST
       }
 
 //---------------------------------------------------------
@@ -299,6 +306,16 @@ Strip::~Strip()
       {
       }
 
+void Strip::addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment)
+{
+  grid->addWidget(w, pos._row, pos._col, pos._rowSpan, pos._colSpan, alignment);
+}
+
+void Strip::addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment)
+{
+  grid->addLayout(l, pos._row, pos._col, pos._rowSpan, pos._colSpan, alignment);
+}
+      
 //---------------------------------------------------------
 //   setAutomationType
 //---------------------------------------------------------
@@ -332,6 +349,23 @@ void Strip::resizeEvent(QResizeEvent* ev)
 
 void Strip::mousePressEvent(QMouseEvent* ev)
 {
+  // Only one button at a time.
+  if(ev->buttons() ^ ev->button())
+  {
+    //_resizeMode = ResizeModeNone;
+    //unsetCursor();
+    ev->accept();
+    return;
+  }
+  
+  //if(_resizeMode == ResizeModeHovering)
+  //{
+    // Switch to dragging mode.
+    //_resizeMode = ResizeModeDragging;
+    //ev->ignore();
+    //return;
+  //}
+  
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
     menu->addAction(tr("Remove track?"));
@@ -348,6 +382,293 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     return;
   }
   QFrame::mousePressEvent(ev);
+}
+
+// REMOVE Tim. Trackinfo. Added.
+// void Strip::mouseMoveEvent(QMouseEvent* ev)
+// {
+//   QFrame::mouseMoveEvent(ev);
+//   const QPoint p = ev->pos();
+//   switch(_resizeMode)
+//   {
+//     case ResizeModeNone:
+//     {
+//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
+//       {
+//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeNone resize area hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeHovering;
+//         setCursor(Qt::SizeHorCursor);
+//       }
+//       ev->ignore();
+//       return;
+//     }
+//     break;
+// 
+//     case ResizeModeHovering:
+//     {
+//       if(p.x() < (width() - frameWidth()) || p.x() >= width() || p.y() < 0 || p.y() >= height())
+//       {
+//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeHovering resize area not hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeNone;
+//         unsetCursor();
+//       }
+//       ev->ignore();
+//       return;
+//     }
+//     break;
+//     
+//     case ResizeModeDragging:
+//     {
+//       //setUserWidth(p.x() - width());
+//       setUserWidth(p.x() + 1);
+//       ev->ignore();
+//       return;
+//     }
+//     break;
+//   }
+// }
+// 
+// void Strip::mouseReleaseEvent(QMouseEvent* ev)
+// {
+//   QFrame::mouseReleaseEvent(ev);
+//   switch(_resizeMode)
+//   {
+//     case ResizeModeNone:
+//     case ResizeModeHovering:
+//       ev->ignore();
+//       return;
+//     break;
+//     
+//     case ResizeModeDragging:
+//     {
+//       const QPoint p = ev->pos();
+//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
+//       {
+//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeHovering;
+//         setCursor(Qt::SizeHorCursor);
+//       }
+//       else
+//       {
+//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area not hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeNone;
+//         unsetCursor();
+//       }
+//       ev->ignore();
+//       return;
+//     }
+//     break;
+//   }
+// }
+// 
+// void Strip::leaveEvent(QEvent* ev)
+// {
+//   ev->ignore();
+//   QFrame::leaveEvent(ev);
+//   switch(_resizeMode)
+//   {
+//     case ResizeModeDragging:
+//       return;
+//     break;
+//     
+//     case ResizeModeHovering:
+//       _resizeMode = ResizeModeNone;
+//       // Fall through...
+//     case ResizeModeNone:
+//       unsetCursor();
+//       return;
+//     break;
+//   }
+// }
+// 
+ 
+QSize Strip::sizeHint() const
+{
+  const QSize sz = QFrame::sizeHint();
+  return QSize(sz.width() + _userWidth, sz.height());
+//   return QSize(_userWidth, sz.height());
+}
+
+void Strip::setUserWidth(int w)
+{
+  _userWidth = w;
+  if(_userWidth < 0)
+    _userWidth = 0;
+  
+//   grid->invalidate();
+//   grid->activate();
+//   grid->update();
+//   adjustSize();
+  updateGeometry();
+}
+
+void Strip::changeUserWidth(int delta)
+{
+  _userWidth += delta;
+  if(_userWidth < 0)
+    _userWidth = 0;
+  updateGeometry();
+}
+
+//---------------------------------------------------------
+//   ExpanderHandle
+//---------------------------------------------------------
+
+ExpanderHandle::ExpanderHandle(QWidget* parent, int handleWidth, Qt::WindowFlags f) 
+              : QFrame(parent, f), _handleWidth(handleWidth)
+{
+  setObjectName("ExpanderHandle");
+  setCursor(Qt::SizeHorCursor);
+  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+  setFixedWidth(_handleWidth);
+  setContentsMargins(0, 0, 0, 0);
+ _resizeMode = ResizeModeNone;
+}
+ 
+void ExpanderHandle::mousePressEvent(QMouseEvent* e)
+{
+  // Only one button at a time.
+//   if(e->buttons() ^ e->button())
+//   {
+//     //_resizeMode = ResizeModeNone;
+//     //unsetCursor();
+//     e->accept();
+//     return;
+//   }
+  
+  //if(_resizeMode == ResizeModeHovering)
+  //{
+    // Switch to dragging mode.
+    //_resizeMode = ResizeModeDragging;
+    //ev->ignore();
+    //return;
+  //}
+
+  switch(_resizeMode)
+  {
+    case ResizeModeNone:
+    case ResizeModeHovering:
+      _dragLastGlobPos = e->globalPos();
+      _resizeMode = ResizeModeDragging;
+      e->accept();
+      return;
+    break;
+    
+    case ResizeModeDragging:
+      e->accept();
+      return;
+    break;
+  }
+  
+  e->ignore();
+  QFrame::mousePressEvent(e);
+}
+
+void ExpanderHandle::mouseMoveEvent(QMouseEvent* e)
+{
+//   const QPoint p = e->pos();
+  switch(_resizeMode)
+  {
+    case ResizeModeNone:
+    {
+//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
+//       {
+//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeNone resize area hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeHovering;
+//         setCursor(Qt::SizeHorCursor);
+//       }
+//       e->accept();
+//       return;
+    }
+    break;
+
+    case ResizeModeHovering:
+    {
+//       if(p.x() < (width() - frameWidth()) || p.x() >= width() || p.y() < 0 || p.y() >= height())
+//       {
+//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeHovering resize area not hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeNone;
+//         unsetCursor();
+//       }
+//       e->accept();
+//       return;
+    }
+    break;
+    
+    case ResizeModeDragging:
+    {
+      const QPoint gp = e->globalPos();
+      const QPoint delta = gp -_dragLastGlobPos;
+      _dragLastGlobPos = gp;
+      emit moved(delta.x());
+      e->accept();
+      return;
+    }
+    break;
+  }
+
+  e->ignore();
+  QFrame::mouseMoveEvent(e);
+}
+
+void ExpanderHandle::mouseReleaseEvent(QMouseEvent* e)
+{
+//   switch(_resizeMode)
+//   {
+//     case ResizeModeNone:
+//     case ResizeModeHovering:
+//     break;
+//     
+//     case ResizeModeDragging:
+//     {
+//       const QPoint p = ev->pos();
+//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
+//       {
+//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeHovering;
+//         setCursor(Qt::SizeHorCursor);
+//       }
+//       else
+//       {
+//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area not hit\n"); // REMOVE Tim. Trackinfo.
+//         _resizeMode = ResizeModeNone;
+//         unsetCursor();
+//       }
+//       ev->ignore();
+//       return;
+//     }
+//     break;
+//   }
+  _resizeMode = ResizeModeNone;
+  e->ignore();
+  QFrame::mouseReleaseEvent(e);
+}
+
+// void ExpanderHandle::leaveEvent(QEvent* e)
+// {
+//   e->ignore();
+//   QFrame::leaveEvent(e);
+//   switch(_resizeMode)
+//   {
+//     case ResizeModeDragging:
+//       return;
+//     break;
+//     
+//     case ResizeModeHovering:
+//       _resizeMode = ResizeModeNone;
+//       Fall through...
+//     case ResizeModeNone:
+//       unsetCursor();
+//       return;
+//     break;
+//   }
+// }
+
+QSize ExpanderHandle::sizeHint() const
+{
+  QSize sz = QFrame::sizeHint();
+  sz.setWidth(_handleWidth);
+  return sz;
 }
 
 

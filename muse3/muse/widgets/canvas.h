@@ -57,6 +57,19 @@ class Canvas : public View {
       bool canScrollUp;
       bool canScrollDown;
       
+      // Whether we have grabbed the mouse.
+      bool _mouseGrabbed;
+      // The number of times we have called QApplication::setOverrideCursor().
+      // This should always be one or zero, anything else is an error, but unforeseen 
+      //  events might cause us to miss a decrement with QApplication::restoreOverrideCursor().
+      int _cursorOverrideCount;
+      
+      // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.
+      // If show is false, calls QApplication::setOverrideCursor with a blank cursor.
+      void showCursor(bool show = true);
+      // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
+      void setMouseGrab(bool grabbed = false);
+      
    protected:
       enum DragMode {
             DRAG_OFF=0, DRAG_NEW,
@@ -206,6 +219,8 @@ class Canvas : public View {
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();
+      // Whether we have grabbed the mouse.
+      bool mouseGrabbed() const { return _mouseGrabbed; }
       bool isSingleSelection() const;
       int selectionSize() const;
       bool itemsAreSelected() const;

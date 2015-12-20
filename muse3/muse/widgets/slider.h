@@ -39,14 +39,19 @@ namespace MusEGui {
 class Slider : public SliderBase, public ScaleIf
       {
   Q_OBJECT
+  Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
+  Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
+  Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
+
 
  public:
-  enum ScalePos { None, Left, Right, Top, Bottom };
+  enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
 
-   private:
-      Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
-      Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
-      Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
+ private:
+  Qt::Orientation d_orient;
+  ScalePos d_scalePos;
+  int d_grooveWidth;
+  QColor d_fillColor;
 
   QRect d_sliderRect;
 
@@ -58,14 +63,10 @@ class Slider : public SliderBase, public ScaleIf
   int d_yMargin;
   int d_mMargin;
 
-  QColor d_fillColor;
-  
   bool d_resized;
   bool d_autoResize;
   double d_scaleStep;
 
-  Qt::Orientation d_orient;
-  ScalePos d_scalePos;
   int d_bgStyle;
   int markerPos;
 
@@ -76,9 +77,15 @@ class Slider : public SliderBase, public ScaleIf
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
   protected:
+  virtual void drawThumb (QPainter *p, const QRect &r);
   virtual void drawSlider (QPainter *p, const QRect &r);
+  
+  //  Determine the value corresponding to a specified mouse location.
+  //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
   double getValue(const QPoint &p);
+  //  Determine scrolling mode and direction.
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
+
   virtual void resizeEvent(QResizeEvent *e);
   virtual void paintEvent (QPaintEvent *e);
   void valueChange();
@@ -90,6 +97,7 @@ class Slider : public SliderBase, public ScaleIf
   Slider(QWidget *parent, const char *name = 0,
          Qt::Orientation orient = Qt::Vertical,
          ScalePos scalePos = None,
+         int grooveWidth = 8, 
          QColor fillColor = QColor(100, 100, 255));
   
   ~Slider();
@@ -106,6 +114,9 @@ class Slider : public SliderBase, public ScaleIf
   void setPageStep(double);
 
   void setMargins(int x, int y);
+  int grooveWidth() const { return d_grooveWidth; }
+  void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
+  
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
       };

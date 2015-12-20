@@ -422,6 +422,9 @@
    </item>
    <item row="16" column="0">
     <widget class="MusEGui::SpinBox" name="iHBank">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>

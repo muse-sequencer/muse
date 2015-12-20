@@ -367,27 +367,126 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
     max = 4;
   if(min < 4)
     min = 4;
-    
-  QRect cr = w->contentsRect();
-  QRect r;
-  QFont fnt = w->font();
-  // An extra amount just to be sure - I found it was still breaking up two words which would fit on one line.
-  int extra = 4;
-  // Allow at least one loop. min can be equal to max.
-  for(int i = max; i >= min; --i)
-  {
-    fnt.setPointSize(i);
-    QFontMetrics fm(fnt);
-    r = fm.boundingRect(s);
-    // Would the text fit within the widget?
-    if((ignoreWidth || (r.width() <= (cr.width() - extra))) && (ignoreHeight || (r.height() <= cr.height())))
-      break;
-  }
-  //printf("autoAdjustFontSize: ptsz:%d widget:%s before setFont x:%d y:%d w:%d h:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height());
+
+// REMOVE Tim. Trackinfo. Changed. TESTING
+//   QRect cr = w->contentsRect();
+//   QRect r;
+//   QFont fnt = w->font();
+//   // An extra amount just to be sure - I found it was still breaking up two words which would fit on one line.
+//   int extra = 4;
+//   // Allow at least one loop. min can be equal to max.
+//   for(int i = max; i >= min; --i)
+//   {
+//     fnt.setPointSize(i);
+//     QFontMetrics fm(fnt);
+//     r = fm.boundingRect(s);
+//     // Would the text fit within the widget?
+//     if((ignoreWidth || (r.width() <= (cr.width() - extra))) && (ignoreHeight || (r.height() <= cr.height())))
+//       break;
+//   }
+//   //printf("autoAdjustFontSize: ptsz:%d widget:%s before setFont x:%d y:%d w:%d h:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height());
+//   
+//   // Here we will always have a font ranging from min to max point size.
+//   w->setFont(fnt);
+//   //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
+
+
+  // REMOVE Tim. Trackinfo. Added. TESTING
+//   QFont fnt = w->font();
+//   //const int req_w = w->fontMetrics().width(s) + 4;
+//   const int req_w = w->fontMetrics().boundingRect(s).width() + 4;
+//   if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+//   {
+//     if(fnt.pointSize() != max)
+//     {
+//       fnt.setPointSize(max);
+//       w->setFont(fnt);
+//     }
+//   }
+//   else
+//   {
+//     float factor = (float)w->rect().width() / (float)req_w;
+//     //if((factor < 1) || (factor > 1.25))
+//     if((factor < 1) || (factor > 1))
+//     {
+//       //qreal new_sz = fnt.pointSizeF() * factor;
+//       int new_sz = (float)fnt.pointSize() * factor;
+//       bool do_check = true;
+//       if(new_sz < min)
+//       {
+//         new_sz = min;
+//         do_check = false;
+//       }
+//       else if(new_sz > max)
+//       {
+//         new_sz = max;
+//         do_check = false;
+//       }
+//         
+//       //if(fnt.pointSizeF() != new_sz)
+//       if(fnt.pointSize() != new_sz)
+//       {
+//         //fnt.setPointSizeF(new_sz);
+//         fnt.setPointSize(new_sz);
+//         if(do_check)
+//         {
+//           const QFontMetrics fm(fnt); 
+//           const int check_w = fm.boundingRect(s).width() + 4;
+//           if(check_w > w->rect().width())
+//           {
+//             --new_sz;
+//             fnt.setPointSize(new_sz);
+//           }
+//         }
+//         w->setFont(fnt);
+//       }
+//     }
+//   }
   
-  // Here we will always have a font ranging from min to max point size.
-  w->setFont(fnt);
-  //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
+  //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+  //QRectF r = boundingRect();
+  QRectF r = w->rect();
+  //QFont f = painter->font();
+  QFont fnt = w->font();
+  
+  //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+  if(ignoreWidth || s.isEmpty()) // Also avoid divide by zero below.
+  {
+    if(fnt.pointSize() != max)
+    {
+      fnt.setPointSize(max);
+      w->setFont(fnt);
+    }
+  }
+  else
+  {
+    //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
+    qreal aspectRatio = w->fontMetrics().lineSpacing() / w->fontMetrics().averageCharWidth();
+    int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (s.length() * 3)) * aspectRatio;
+    fnt.setPixelSize(pixelsize);
+    //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
+    int flags = Qt::AlignCenter;
+    //if ((pixelsize * lod) < 13)
+    //    flags |= Qt::TextWrapAnywhere;
+    QFontMetricsF fm(fnt);
+    QRectF tbr = fm.boundingRect(r,flags,s);
+    pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
+//     if(pixelsize < min)
+//       pixelsize = min;
+//     else if(pixelsize > max)
+//       pixelsize = max;
+    fnt.setPixelSize(pixelsize);
+    const QFontInfo fi(fnt);
+    const int pointsize = fi.pointSize();
+    if(pointsize <= min)
+      fnt.setPointSize(min);
+    else if(pointsize >= max)
+      fnt.setPointSize(max);
+    w->setFont(fnt);
+    //painter->drawText(r,flags,stitle);
+  }
+  
+  
   
   // Force minimum height. Use the expected height for the highest given point size.
   // This way the mixer strips aren't all different label heights, but can be larger if necessary.
@@ -395,7 +494,7 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
   if(ignoreHeight)
   {
     fnt.setPointSize(max);
-    QFontMetrics fm(fnt);
+    const QFontMetrics fm(fnt);
     // Set the label's minimum height equal to the height of the font.
     w->setMinimumHeight(fm.height() + 2 * w->frameWidth());
   }
@@ -419,7 +518,7 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
   return gradient;
 }
 
-QPainterPath roundedPath(QRect r, int xrad, int yrad, Corner roundCorner)
+QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner)
 {
   return roundedPath(r.x(), r.y(),
                        r.width(), r.height(),
@@ -469,6 +568,56 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
     }
 
   return rounded_rect;
+}
+
+void addRoundedPath(QPainterPath* path, const QRect& r, int xrad, int yrad, Corner roundCorner)
+{
+  addRoundedPath(path, r.x(), r.y(),
+                 r.width(), r.height(),
+                 xrad, yrad,
+                 roundCorner);
+}
+
+void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner)
+{
+  QPainterPath& pp = *path;
+  pp.addRect(x, y, w, h);
+
+  if (roundCorner & UpperLeft)
+  {
+    QPainterPath top_left_corner;
+    top_left_corner.addRect(x, y, xrad, yrad);
+    top_left_corner.moveTo(x + xrad, y + yrad);
+    top_left_corner.arcTo(x, y, xrad*2, yrad*2, 180, -90);
+    pp -= top_left_corner;
+  }
+
+  if (roundCorner & UpperRight)
+  {
+    QPainterPath top_right_corner;
+    top_right_corner.addRect(x + w - xrad, y, xrad, yrad);
+    top_right_corner.moveTo(x + w - xrad, y + yrad);
+    top_right_corner.arcTo(x + w - xrad * 2, y, xrad*2, yrad*2, 90, -90);
+    pp -= top_right_corner;
+  }
+
+  if (roundCorner & LowerLeft)
+  {
+    QPainterPath bottom_left_corner;
+    bottom_left_corner.addRect(x, y + h - yrad, xrad, yrad);
+    bottom_left_corner.moveTo(x + xrad, y + h - yrad);
+    bottom_left_corner.arcTo(x, y + h - yrad*2, xrad*2, yrad*2, 180, 90);
+    pp -= bottom_left_corner;
+  }
+
+  if (roundCorner & LowerRight)
+  {
+    QPainterPath bottom_right_corner;
+    bottom_right_corner.addRect(x + w - xrad, y + h - yrad, xrad, yrad);
+    bottom_right_corner.moveTo(x + w - xrad, y + h - yrad);
+    bottom_right_corner.arcTo(x + w - xrad*2, y + h - yrad*2, xrad*2, yrad*2, 270, 90);
+    pp -= bottom_right_corner;
+  }
 }
 
 //---------------------------------------------------------

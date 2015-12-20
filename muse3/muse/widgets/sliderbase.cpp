@@ -28,6 +28,9 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QTimerEvent>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QCursor>
 
 namespace MusEGui {
 
@@ -57,13 +60,18 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
       setObjectName(name);
       _id           = -1;
       _cursorHoming    = false;
+      _borderlessMouse = false;
       _ignoreMouseMove = false;
+      _mouseGrabbed = false;
+      _pressed = false;
+      _firstMouseMoveAfterPress = false;
+      _cursorOverrideCount = 0;
       d_tmrID       = 0;
       d_updTime     = 150;
       d_mass        = 0.0;
       d_tracking    = true;
       d_mouseOffset = 0.0;
-  d_scrollMode  = ScrNone;
+      d_scrollMode  = ScrNone;
       setRange(0.0, 1.0, 0.1);
       }
 
@@ -77,10 +85,46 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 
 SliderBase::~SliderBase()
       {
+      // Just in case the ref count is not 0. This is our last chance to clear 
+      //  our contribution to QApplication::setOverrideCursor references.
+      showCursor();
+  
       if (d_tmrID)
             killTimer(d_tmrID);
       }
 
+void SliderBase::showCursor(bool show) 
+{ 
+  if(_cursorOverrideCount > 1)
+    fprintf(stderr, "MusE Warning: _cursorOverrideCount > 1 in SliderBase::showCursor(%d)\n", show);
+  if(show)
+  {  
+    while(_cursorOverrideCount > 0)
+    {
+      QApplication::restoreOverrideCursor();
+      _cursorOverrideCount--;
+    }
+  }
+  else
+  {
+    _cursorOverrideCount++;
+    QApplication::setOverrideCursor(Qt::BlankCursor);
+  }
+}
+
+void SliderBase::setMouseGrab(bool grabbed)
+{
+  if(grabbed && !_mouseGrabbed)
+  {
+    _mouseGrabbed = true;
+    grabMouse(); // CAUTION
+  }
+  else if(!grabbed && _mouseGrabbed)
+  {
+    releaseMouse();
+    _mouseGrabbed = false;
+  }
+}
 
 //------------------------------------------------------------
 //.F  void SliderBase::wheelEvent(QWheelEvent *e)
@@ -104,8 +148,13 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       } */
       
       e->accept();
-
-      float inc = (maxValue() - minValue()) / 40;
+      // REMOVE Tim. Trackinfo. Added.
+      // Do not allow setting value from the external while mouse is pressed.
+      if(_pressed)
+        return;
+      
+//       float inc = (maxValue() - minValue()) / 40;
+      float inc = (maxValue(ConvertNone) - minValue(ConvertNone)) / 40;
       if (e->modifiers() == Qt::ShiftModifier)
             inc = inc / 10;
 
@@ -113,9 +162,11 @@ void SliderBase::wheelEvent(QWheelEvent *e)
         inc = step();
       
       if(e->delta() > 0)
-            setValue(value()+inc);
+//             setValue(value()+inc);
+            setValue(value(ConvertNone)+inc, ConvertNone);
       else
-            setValue(value()-inc);
+//             setValue(value()-inc);
+            setValue(value(ConvertNone)-inc, ConvertNone);
 
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
@@ -172,12 +223,29 @@ void SliderBase::setUpdateTime(int t)
 
 void SliderBase::mousePressEvent(QMouseEvent *e)
       {
+      e->accept();
       QPoint p = e->pos();
+      
       const Qt::MouseButton button = e->button();
+      const Qt::MouseButtons buttons = e->buttons();
+      fprintf(stderr, "SliderBase::mousePressEvent button:%d buttons:%d\n", button, int(buttons)); // REMOVE Tim. Trackinfo.
       d_timerTick = 0;
+      _pressed = true;
 
       getScrollMode(p, button, d_scrollMode, d_direction);
       stopMoving();
+      showCursor();
+      
+      // Only one mouse button at a time! Otherwise bad things happen.
+      if(buttons ^ button)
+      {
+        // Clear everything.
+        setMouseGrab(false);
+        d_scrollMode = ScrNone;
+        d_direction = 0;
+        _pressed = false;
+        return;
+      }
 
       switch(d_scrollMode) {
             case ScrPage:
@@ -191,19 +259,49 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
   
             case ScrMouse:
                   d_speed = 0;
-                  if(button == Qt::RightButton)
+                  if(!pagingButtons().testFlag(Qt::RightButton) && button == Qt::RightButton)
                   {
+                    d_scrollMode = ScrNone;
+                    d_direction = 0;
                     emit sliderRightClicked(e->globalPos(), _id);
                     break;
                   }  
                   d_time.start();
                   if(_cursorHoming && button == Qt::LeftButton)
                   {
-                    _ignoreMouseMove = true;
+                    _ignoreMouseMove = true; // Avoid recursion.
                     d_mouseOffset = 0.0;
                   }  
+                  else if(_borderlessMouse && button == Qt::LeftButton)
+                  {
+                    d_mouseOffset = 0.0;
+                    _lastGlobalMousePos = e->globalPos();
+
+                    //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
+                    //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
+                    //   button is pressed and keeps it until the last button is released."
+                    //
+                    // Apparently not. For some reason this was necessary. When the cursor is dragged
+                    //  outside the window, holding left then pressing right mouse button COMPLETELY 
+                    //  bypasses us, leaving the app's default right-click handler to popup, and leaving 
+                    //  us in a really BAD state: mouse is grabbed (and hidden) and no way out !
+                    //
+                    // That is likely just how QWidget works, but here using global cursor overrides 
+                    //  it is disasterous. TESTED: Yes, that is how other controls work. Hitting another 
+                    //  button while the mouse has been dragged outside causes it to bypass us !
+                    setMouseGrab(true); // CAUTION
+                    
+                    showCursor(false); // CAUTION
+                    
+                    _firstMouseMoveAfterPress = true;  // Prepare for the first mouse move event after this press.
+//                     _ignoreMouseMove = true; // Avoid recursion.
+//                     const QRect r = QApplication::desktop()->screenGeometry();
+//                     const QPoint pt(r.width()/2, r.height()/2);
+//                     QCursor::setPos(pt);
+                  }  
                   else  
-                    d_mouseOffset = getValue(p) - value();
+//                     d_mouseOffset = getValue(p) - value();
+                    d_mouseOffset = getValue(p) - value(ConvertNone);
                   
                   emit sliderPressed(_id);
                   break;
@@ -227,7 +325,8 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
 //------------------------------------------------------------
 void SliderBase::buttonReleased()
 {
-    if ((!d_tracking) || (value() != prevValue()))
+//     if ((!d_tracking) || (value() != prevValue()))
+    if ((!d_tracking) || valHasChanged())
        emit valueChanged(value(), _id);
 }
 
@@ -246,71 +345,91 @@ void SliderBase::buttonReleased()
 //------------------------------------------------------------
 void SliderBase::mouseReleaseEvent(QMouseEvent *e)
 {
-    int ms = 0;
-    /*double inc = step(); */ // prevent compiler warning: unused variable 
-    _ignoreMouseMove = false;
-    const Qt::MouseButton button = e->button();
-    
-    switch(d_scrollMode)
-    {
+  int ms = 0;
+  /*double inc = step(); */ // prevent compiler warning: unused variable 
+  _ignoreMouseMove = false;
+  const Qt::MouseButton button = e->button();
+  fprintf(stderr, "SliderBase::mouseReleaseEvent button:%d\n", button); // REMOVE Tim. Trackinfo.
+  
+  _pressed = e->buttons() != Qt::NoButton;
 
+  e->accept();
+  switch(d_scrollMode)
+  {
     case ScrMouse:
 
-    if(button == Qt::RightButton)
-    {
-      d_scrollMode = ScrNone;
-      break;
-    }
-    if(_cursorHoming && button == Qt::LeftButton)
-      d_scrollMode = ScrNone;
-    else
-    {
-      setPosition(e->pos());
-      d_direction = 0;
-      d_mouseOffset = 0;
-      if (d_mass > 0.0)
+      if(button == Qt::RightButton)
       {
-          ms = d_time.elapsed();
-          if ((fabs(d_speed) >  0.0) && (ms < 50))
-            d_tmrID = startTimer(d_updTime);
+        d_scrollMode = ScrNone;
+        break;
+      }
+      
+      if(_cursorHoming && button == Qt::LeftButton)
+      {
+        d_scrollMode = ScrNone;
+      }
+      else if(_borderlessMouse && button == Qt::LeftButton)
+      {
+        d_scrollMode = ScrNone;
+        if(!_firstMouseMoveAfterPress)
+        {
+          _ignoreMouseMove = true;      // Avoid recursion.
+          QCursor::setPos(_lastGlobalMousePos);
+          //_ignoreMouseMove = false;
+        }
+//         showCursor();
       }
       else
       {
-          d_scrollMode = ScrNone;
-          buttonReleased();
+        setPosition(e->pos());
+        d_direction = 0;
+        d_mouseOffset = 0;
+        if (d_mass > 0.0)
+        {
+            ms = d_time.elapsed();
+            if ((fabs(d_speed) >  0.0) && (ms < 50))
+              d_tmrID = startTimer(d_updTime);
+        }
+        else
+        {
+            d_scrollMode = ScrNone;
+            buttonReleased();
+        }
       }
-    }
-    emit sliderReleased(_id);
+      emit sliderReleased(_id);
   
-  break;
+    break;
 
     case ScrDirect:
-  
-  setPosition(e->pos());
-  d_direction = 0;
-  d_mouseOffset = 0;
-  d_scrollMode = ScrNone;
-  buttonReleased();
-  break;
+      setPosition(e->pos());
+      d_direction = 0;
+      d_mouseOffset = 0;
+      d_scrollMode = ScrNone;
+      buttonReleased();
+    break;
 
     case ScrPage:
-  stopMoving();
-  d_timerTick = 0;
-  buttonReleased();
-  d_scrollMode = ScrNone;
-  break;
+      stopMoving();
+      d_timerTick = 0;
+      buttonReleased();
+      d_scrollMode = ScrNone;
+    break;
 
     case ScrTimer:
-  stopMoving();
-  d_timerTick = 0;
-  buttonReleased();
-  d_scrollMode = ScrNone;
-  break;
+      stopMoving();
+      d_timerTick = 0;
+      buttonReleased();
+      d_scrollMode = ScrNone;
+    break;
 
     default:
-  d_scrollMode = ScrNone;
-  buttonReleased();
-    }
+      d_scrollMode = ScrNone;
+      buttonReleased();
+  }
+  
+  // Make sure this is done. See mousePressEvent.
+  showCursor();
+  setMouseGrab(false);
 }
 
 
@@ -377,24 +496,65 @@ void SliderBase::setTracking(bool enable)
 //------------------------------------------------------------
 void SliderBase::mouseMoveEvent(QMouseEvent *e)
 {
+    //fprintf(stderr, "SliderBase::mouseMoveEvent _ignoreMouseMove:%d\n", _ignoreMouseMove); // REMOVE Tim. Trackinfo.
+    
+    e->accept();
+
     if(_ignoreMouseMove)
     {
       _ignoreMouseMove = false;
       return;
     }
     
-    double ms = 0.0;
+// //     QPoint p = e->pos();
+//     const Qt::MouseButtons buttons = e->buttons();
+// //     int cur_scr_mode = d_scrollMode;
+// //     getScrollMode(p, button, d_scrollMode, d_direction);
+//     
+//     // Check the mode: If it changed from ScrMouse it's an error, 
+//     //  it means mouse release was not called.
+// //     if(borderlessMouse() && d_scrollMode != ScrMouse && cur_scr_mode == ScrMouse)
+//     if(button == Qt::NoButton)
+//     {
+//       d_scrollMode = ScrNone;
+//       d_direction = 0;
+//       _firstMouseMoveAfterPress = false;
+//       showCursor();
+//       return;
+//     }
+    
     if (d_scrollMode == ScrMouse )
     {
-      setPosition(e->pos());
+      if(borderlessMouse())
+      {
+        const QRect r = QApplication::desktop()->screenGeometry();
+        const QPoint scrn_cntr(r.width()/2, r.height()/2);
+        QPoint delta;
+        if(_firstMouseMoveAfterPress)
+        {
+          _firstMouseMoveAfterPress = false;
+          delta = e->globalPos() - _lastGlobalMousePos;
+        }
+        else
+          delta = e->globalPos() - scrn_cntr;
+        setPosition(delta);
+        _ignoreMouseMove = true;
+        QCursor::setPos(scrn_cntr);
+        //_ignoreMouseMove = false;
+      }
+      else
+        setPosition(e->pos());
+      
       if (d_mass > 0.0)
       {
-          ms = double(d_time.elapsed());
+          double ms = double(d_time.elapsed());
           if (ms < 1.0) ms = 1.0;
-          d_speed = (exactValue() - exactPrevValue()) / ms;
+//           d_speed = (exactValue() - exactPrevValue()) / ms;
+          d_speed = (exactValue(ConvertNone) - exactPrevValue(ConvertNone)) / ms;
           d_time.start();
       }
-      if (value() != prevValue())
+//       if (value() != prevValue())
+      if (valHasChanged())
       {
         emit sliderMoved(value(), _id);
         emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
@@ -403,7 +563,13 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
 
 }
 
-
+void SliderBase::mouseDoubleClickEvent(QMouseEvent* e)
+{
+  fprintf(stderr, "mouseDoubleClickEvent::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
+  emit sliderDoubleClicked(e->pos(), _id, e->buttons(), e->modifiers());
+  e->ignore();
+  QWidget::mouseDoubleClickEvent(e);
+}
 
 //------------------------------------------------------------
 //
@@ -429,7 +595,8 @@ void SliderBase::timerEvent(QTimerEvent*)
   if (d_mass > 0.0)
   {
       d_speed *= exp( - double(d_updTime) * 0.001 / d_mass );
-      newval = exactValue() + d_speed * double(d_updTime);
+//       newval = exactValue() + d_speed * double(d_updTime);
+      newval = exactValue(ConvertNone) + d_speed * double(d_updTime);
       DoubleRange::fitValue(newval);
       // stop if d_speed < one step per second
       if (fabs(d_speed) < 0.001 * fabs(step()))
@@ -448,7 +615,8 @@ void SliderBase::timerEvent(QTimerEvent*)
     case ScrPage:
   DoubleRange::incPages(d_direction);
   
-  if (value() != prevValue())
+//   if (value() != prevValue())
+  if(valHasChanged())
   {
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, false);
@@ -461,9 +629,11 @@ void SliderBase::timerEvent(QTimerEvent*)
   }
   break;
     case ScrTimer:
-  DoubleRange::fitValue(value() +  double(d_direction) * inc);
+//   DoubleRange::fitValue(value() +  double(d_direction) * inc);
+  DoubleRange::fitValue(value(ConvertNone) +  double(d_direction) * inc);
   
-  if (value() != prevValue())
+//   if (value() != prevValue())
+  if (valHasChanged())
   {
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, false);
@@ -563,11 +733,14 @@ void SliderBase::setMass(double val)
 //  @SliderBase::fitValue@
 //------------------------------------------------------------
 
-void SliderBase::setValue(double val)
+void SliderBase::setValue(double val, ConversionMode mode)
       {
+      // Do not allow setting value from the external while mouse is pressed.
+      if(_pressed)  // REMOVE Tim. Trackinfo. Added.
+        return;
       if (d_scrollMode == ScrMouse)
             stopMoving();
-      DoubleRange::setValue(val);
+      DoubleRange::setValue(val, mode);
       }
 
 
@@ -583,10 +756,13 @@ void SliderBase::setValue(double val)
 //.u  See also:
 //  @SliderBase::setValue@
 //------------------------------------------------------------
-void SliderBase::fitValue(double val)
+void SliderBase::fitValue(double val, ConversionMode mode)
 {
+    // Do not allow setting value from the external while mouse is pressed.
+    if(_pressed)  // REMOVE Tim. Trackinfo. Added.
+      return;
     if (d_scrollMode == ScrMouse) stopMoving();
-    DoubleRange::fitValue(val);
+    DoubleRange::fitValue(val, mode);
 }
 
 
@@ -604,6 +780,9 @@ void SliderBase::fitValue(double val)
 //------------------------------------------------------------
 void SliderBase::incValue(int steps)
 {
+    // Do not allow setting value from the external while mouse is pressed.
+    if(_pressed)  // REMOVE Tim. Trackinfo. Added.
+      return;
     if (d_scrollMode == ScrMouse) stopMoving();
     DoubleRange::incValue(steps);
 }
@@ -629,6 +808,9 @@ void SliderBase::incValue(int steps)
 //------------------------------------------------------------
 void SliderBase::stepPages(int pages)
 {
+  // Do not allow setting value from the external while mouse is pressed.
+  if(_pressed)  // REMOVE Tim. Trackinfo. Added.
+    return;
   DoubleRange::incPages(pages);
   emit sliderMoved(value(), _id);
   emit sliderMoved(value(), _id, false);

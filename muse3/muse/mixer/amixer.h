@@ -90,9 +90,10 @@ class AudioMixerApp : public QMainWindow {
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
-      QHBoxLayout* lbox;
+      //QSplitter* splitter;
+      //QHBoxLayout* lbox;  // REMOVE Tim. Trackinfo. Unused.
       //Strip* master;
-      QHBoxLayout* layout;
+      QHBoxLayout* mixerLayout;
       QMenu* menuView;
       MusEGui::RouteDialog* routingDialog;
       QAction* routingId;

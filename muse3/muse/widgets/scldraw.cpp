@@ -25,6 +25,10 @@
 #include <cmath>
 
 #include <QPainter>
+// REMOVE Tim. Trackinfo. Added.
+//#include <QWidget>
+#include <QRect>
+#include <QFontMetrics>
 
 #include "mmath.h"
 #include "scldraw.h"
@@ -268,6 +272,7 @@ void ScaleDraw::drawTick(QPainter *p, double val, int len) const
       break;
 
   case Left:
+  case InsideVertical:
 
       p->drawLine(d_xorg, tval, d_xorg - len, tval);
       break;
@@ -286,6 +291,7 @@ void ScaleDraw::drawTick(QPainter *p, double val, int len) const
       break;
 
   case Top:
+    case InsideHorizontal:
   default:
 
       p->drawLine(tval, d_yorg, tval, d_yorg - len);
@@ -337,6 +343,7 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
 		    label);
 	break;
     case Left:
+    case InsideVertical:
 	p->drawText(d_xorg - d_majLen - d_hpad - fm.width(label),
 		    tval + (fm.ascent() -1) / 2,
 		    label);
@@ -397,6 +404,7 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
 	}
 	break;
     case Top:
+    case InsideHorizontal:
     default:
 	p->drawText(tval - (fm.width(label)-1) / 2, d_yorg - d_majLen - d_vpad, label);
 	break;
@@ -426,6 +434,7 @@ void ScaleDraw::drawBackbone(QPainter *p) const
     switch(d_orient)
     {
     case Left:
+    case InsideVertical:
 	p->drawLine(d_xorg - bw2, d_yorg, d_xorg - bw2, d_yorg + d_len - 1);
 	break;
     case Right:
@@ -443,6 +452,7 @@ void ScaleDraw::drawBackbone(QPainter *p) const
 	break;
 	
     case Top:
+    case InsideHorizontal:
 	p->drawLine(d_xorg, d_yorg - bw2, d_xorg + d_len - 1, d_yorg-bw2);
 	break;
     case Bottom:
@@ -521,6 +531,7 @@ void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o
     {
     case Left:
     case Right:
+    case InsideVertical:
 	setIntRange(d_yorg + d_len - 1, d_yorg);
 	break;
     case Round:
@@ -528,7 +539,7 @@ void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o
 	break;
     case Top:
     case Bottom:
-    default:
+    case InsideHorizontal:
 	setIntRange(d_xorg, d_xorg + d_len - 1);
 	break;
     }
@@ -536,45 +547,242 @@ void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o
 
 
 
+// REMOVE Tim. Trackinfo. Changed.
+// //------------------------------------------------------------
+// //
+// //.F	ScaleDraw::maxWidth
+// //	Return the maximum width of the scale for a specified QPainter
+// //
+// //.u	Syntax
+// //.f	int ScaleDraw::maxWidth(QPainter *p)
+// //
+// //.u	Parameters
+// //.p	QPainter *p -- painter
+// //	bool worst -- if TRUE, assume the worst possible case. If FALSE,
+// //			calculate the real maximum width, which is more
+// //			CPU intensive.
+// //
+// //------------------------------------------------------------
+// int ScaleDraw::maxWidth(QPainter *p, bool worst) const
+// {
+//     int rv = 0;
+//     int bw = p->pen().width();
+// 
+//     QString s;
+// 
+//     QFontMetrics fm = p->fontMetrics();
+// 
+//     rv = maxLabelWidth(p,worst);
+// 
+//     switch (d_orient)
+//     {
+//     case Left:
+//     case Right:
+// 	rv += (bw + d_hpad + d_majLen);
+// 	break;
+//     case Round:
+// 	rv += (bw + d_vpad + d_majLen);
+// 	break;
+//     case Top:
+//     case Bottom:
+//     default:
+// 	rv += d_len;
+//     }
+// 
+//     return rv;
+// 
+// }
+// 
+// //------------------------------------------------------------
+// //
+// //.F	ScaleDraw::maxHeight
+// //	Return the maximum height of the scale for the
+// //	specified painter
+// //
+// //.u	Syntax
+// //.f	int ScaleDraw::maxHeight(QPainter *p)
+// //
+// //.u	Parameters
+// //.p	QPainter *p
+// //
+// //------------------------------------------------------------
+// int ScaleDraw::maxHeight(QPainter *p) const
+// {
+// 
+//     int rv = 0;
+//     int bw = p->pen().width();
+// 
+//     p->save();
+//     QFontMetrics fm = p->fontMetrics();
+// 
+//     switch (d_orient)
+//     {
+//     case Top:
+//     case Bottom:
+//     case Round:
+// 	rv = bw + d_vpad + d_majLen + fm.height();
+// 	break;
+//     case Left:
+//     case Right:
+//     default:
+// 	rv = d_len + ((fm.height() + 1) / 2);
+//     }
+// 
+//     return rv;
+// 
+// }
+// 
+// //------------------------------------------------------------
+// //
+// //.F ScaleDraw:maxBoundingRect
+// //	Return the maximum bounding rectangle of the scale
+// //	for a specified painter
+// //
+// //.u Parameters
+// //.p  QPainter *p -- painter
+// //
+// //.u Description
+// //	The bounding rectangle is not very exact for round scales
+// //	with strange angle ranges.
+// //
+// //------------------------------------------------------------
+// QRect ScaleDraw::maxBoundingRect(QPainter *p) const
+// {
+//     int i, wl; //,wmax;
+//     int a, ar, amin, amax;
+//     double arc;
+// 
+//     QRect r;
+// 
+//     QFontMetrics fm = p->fontMetrics();
+// 
+//     wl = maxLabelWidth(p, true);
+// 
+//     switch(d_orient)
+//     {
+//     case Left:
+// 	
+// 	r = QRect( d_xorg - d_hpad - d_majLen - wl,
+// 		  d_yorg - fm.ascent(),
+// 		  d_majLen + d_hpad + wl,
+// 		  d_len + fm.height());
+// 	break;
+// 	
+//     case Right:
+// 	
+// 	r = QRect( d_xorg,
+// 		  d_yorg - fm.ascent(),
+// 		  d_majLen + d_hpad + wl,
+// 		  d_len + fm.height());
+// 	break;
+// 	
+//     case Top:
+// 	
+// 	r = QRect ( d_xorg - wl / 2,
+// 		   d_yorg - d_majLen - fm.ascent(),
+// 		   d_len + wl,
+// 		   d_majLen + d_vpad + fm.ascent());
+// 	break;
+// 	
+//     case Bottom:
+// 	
+// 	r = QRect ( d_xorg - wl / 2,
+// 		   d_yorg,
+// 		   d_len + wl,
+// 		   d_majLen + d_vpad + fm.height());
+// 	break;
+// 	
+//     case Round:
+// 
+// 	amin = 2880;
+// 	amax = 0;
+// 	ar = 0;
+// 
+// 	for (i=0; i< d_scldiv.majCnt(); i++)
+// 	{
+// 	    a = transform(d_scldiv.majMark(i));
+// 	
+// 	    while (a > 2880) a -= 5760;
+// 	    while (a < - 2880) a += 5760;
+// 
+// 	    ar = MusECore::qwtAbs(a);
+// 
+// 	    if (ar < amin) amin = ar;
+// 	    if (ar > amax) amax = ar;
+// 
+// 	}
+// 
+// 	for (i=0; i< d_scldiv.minCnt(); i++)
+// 	{
+// 	    a = transform(d_scldiv.majMark(i));
+// 	
+// 	    while (a > 2880) a -= 5760;
+// 	    while (a < - 2880) a += 5760;
+// 
+// 	    ar = MusECore::qwtAbs(a);
+// 
+// 	    if (ar < amin) amin = ar;
+// 	    if (ar > amax) amax = ar;
+// 	}
+// 
+// 	arc = double(amin) / 16.0 * M_PI / 180.0;
+// 	r.setTop(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+// 		 + fm.ascent() );
+// 
+// 	arc = double(amax) / 16.0 * M_PI / 180.0;
+// 	r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+// 		    + fm.height() );
+// 
+// 	//wmax = d_len + d_majLen + d_hpad + wl; DELETETHIS
+// 
+// 	r.setLeft(d_xorg - d_majLen - d_hpad - wl);
+// 	r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));
+// 	break;
+//     }
+// 
+//     return r;
+// 
+// }
+
 //------------------------------------------------------------
 //
-//.F	ScaleDraw::maxWidth
-//	Return the maximum width of the scale for a specified QPainter
+//.F    ScaleDraw::maxWidth
+//      Return the maximum width of the scale for a specified QPainter
 //
-//.u	Syntax
-//.f	int ScaleDraw::maxWidth(QPainter *p)
+//.u    Syntax
+//.f    int ScaleDraw::maxWidth(QPainter *p)
 //
-//.u	Parameters
-//.p	QPainter *p -- painter
-//	bool worst -- if TRUE, assume the worst possible case. If FALSE,
-//			calculate the real maximum width, which is more
-//			CPU intensive.
+//.u    Parameters
+//.p    const QFontMetrics& fm -- font metrics used for calculations
+//      bool worst -- if TRUE, assume the worst possible case. If FALSE,
+//                      calculate the real maximum width, which is more
+//                      CPU intensive.
+//      int penWidth -- the width of the pen that will be used to draw the scale
 //
 //------------------------------------------------------------
-int ScaleDraw::maxWidth(QPainter *p, bool worst) const
+int ScaleDraw::maxWidth(const QFontMetrics& fm, bool worst, int penWidth) const
 {
     int rv = 0;
-    int bw = p->pen().width();
 
     QString s;
 
-    QFontMetrics fm = p->fontMetrics();
-
-    rv = maxLabelWidth(p,worst);
+    rv = maxLabelWidth(fm,worst);
 
     switch (d_orient)
     {
     case Left:
     case Right:
-	rv += (bw + d_hpad + d_majLen);
-	break;
+    case InsideVertical:
+        rv += (penWidth + d_hpad + d_majLen);
+        break;
     case Round:
-	rv += (bw + d_vpad + d_majLen);
-	break;
+        rv += (penWidth + d_vpad + d_majLen);
+        break;
     case Top:
     case Bottom:
-    default:
-	rv += d_len;
+    case InsideHorizontal:
+        rv += d_len;
+        break;
     }
 
     return rv;
@@ -583,37 +791,34 @@ int ScaleDraw::maxWidth(QPainter *p, bool worst) const
 
 //------------------------------------------------------------
 //
-//.F	ScaleDraw::maxHeight
-//	Return the maximum height of the scale for the
-//	specified painter
+//.F    ScaleDraw::maxHeight
+//      Return the maximum height of the scale for the
+//      specified painter
 //
-//.u	Syntax
-//.f	int ScaleDraw::maxHeight(QPainter *p)
+//.u    Syntax
+//.f    int ScaleDraw::maxHeight(QPainter *p)
 //
-//.u	Parameters
-//.p	QPainter *p
+//.u    Parameters
+//.p    const QFontMetrics& fm -- font metrics used for calculations
+//      int penWidth -- the width of the pen that will be used to draw the scale
 //
 //------------------------------------------------------------
-int ScaleDraw::maxHeight(QPainter *p) const
+int ScaleDraw::maxHeight(const QFontMetrics& fm, int penWidth) const
 {
-
     int rv = 0;
-    int bw = p->pen().width();
-
-    p->save();
-    QFontMetrics fm = p->fontMetrics();
-
     switch (d_orient)
     {
     case Top:
     case Bottom:
     case Round:
-	rv = bw + d_vpad + d_majLen + fm.height();
-	break;
+    case InsideHorizontal:
+        rv = penWidth + d_vpad + d_majLen + fm.height();
+        break;
     case Left:
     case Right:
-    default:
-	rv = d_len + ((fm.height() + 1) / 2);
+    case InsideVertical:
+        rv = d_len + ((fm.height() + 1) / 2);
+        break;
     }
 
     return rv;
@@ -623,18 +828,18 @@ int ScaleDraw::maxHeight(QPainter *p) const
 //------------------------------------------------------------
 //
 //.F ScaleDraw:maxBoundingRect
-//	Return the maximum bounding rectangle of the scale
-//	for a specified painter
+//      Return the maximum bounding rectangle of the scale
+//      for a specified painter
 //
 //.u Parameters
-//.p  QPainter *p -- painter
+//.p  const QFontMetrics& fm -- font metrics used for calculations
 //
 //.u Description
-//	The bounding rectangle is not very exact for round scales
-//	with strange angle ranges.
+//      The bounding rectangle is not very exact for round scales
+//      with strange angle ranges.
 //
 //------------------------------------------------------------
-QRect ScaleDraw::maxBoundingRect(QPainter *p) const
+QRect ScaleDraw::maxBoundingRect(const QFontMetrics& fm) const
 {
     int i, wl; //,wmax;
     int a, ar, amin, amax;
@@ -642,90 +847,93 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 
     QRect r;
 
-    QFontMetrics fm = p->fontMetrics();
-
-    wl = maxLabelWidth(p, true);
+    wl = maxLabelWidth(fm, true);
 
     switch(d_orient)
     {
     case Left:
-	
-	r = QRect( d_xorg - d_hpad - d_majLen - wl,
-		  d_yorg - fm.ascent(),
-		  d_majLen + d_hpad + wl,
-		  d_len + fm.height());
-	break;
-	
+        
+        r = QRect( d_xorg - d_hpad - d_majLen - wl,
+                  d_yorg - fm.ascent(),
+                  d_majLen + d_hpad + wl,
+                  d_len + fm.height());
+        break;
+        
     case Right:
-	
-	r = QRect( d_xorg,
-		  d_yorg - fm.ascent(),
-		  d_majLen + d_hpad + wl,
-		  d_len + fm.height());
-	break;
-	
+        
+        r = QRect( d_xorg,
+                  d_yorg - fm.ascent(),
+                  d_majLen + d_hpad + wl,
+                  d_len + fm.height());
+        break;
+        
     case Top:
-	
-	r = QRect ( d_xorg - wl / 2,
-		   d_yorg - d_majLen - fm.ascent(),
-		   d_len + wl,
-		   d_majLen + d_vpad + fm.ascent());
-	break;
-	
+        
+        r = QRect ( d_xorg - wl / 2,
+                   d_yorg - d_majLen - fm.ascent(),
+                   d_len + wl,
+                   d_majLen + d_vpad + fm.ascent());
+        break;
+        
     case Bottom:
-	
-	r = QRect ( d_xorg - wl / 2,
-		   d_yorg,
-		   d_len + wl,
-		   d_majLen + d_vpad + fm.height());
-	break;
-	
+        
+        r = QRect ( d_xorg - wl / 2,
+                   d_yorg,
+                   d_len + wl,
+                   d_majLen + d_vpad + fm.height());
+        break;
+        
     case Round:
 
-	amin = 2880;
-	amax = 0;
-	ar = 0;
+        amin = 2880;
+        amax = 0;
+        ar = 0;
 
-	for (i=0; i< d_scldiv.majCnt(); i++)
-	{
-	    a = transform(d_scldiv.majMark(i));
-	
-	    while (a > 2880) a -= 5760;
-	    while (a < - 2880) a += 5760;
+        for (i=0; i< d_scldiv.majCnt(); i++)
+        {
+            a = transform(d_scldiv.majMark(i));
+        
+            while (a > 2880) a -= 5760;
+            while (a < - 2880) a += 5760;
 
-	    ar = MusECore::qwtAbs(a);
+            ar = MusECore::qwtAbs(a);
 
-	    if (ar < amin) amin = ar;
-	    if (ar > amax) amax = ar;
+            if (ar < amin) amin = ar;
+            if (ar > amax) amax = ar;
 
-	}
+        }
 
-	for (i=0; i< d_scldiv.minCnt(); i++)
-	{
-	    a = transform(d_scldiv.majMark(i));
-	
-	    while (a > 2880) a -= 5760;
-	    while (a < - 2880) a += 5760;
+        for (i=0; i< d_scldiv.minCnt(); i++)
+        {
+            a = transform(d_scldiv.majMark(i));
+        
+            while (a > 2880) a -= 5760;
+            while (a < - 2880) a += 5760;
 
-	    ar = MusECore::qwtAbs(a);
+            ar = MusECore::qwtAbs(a);
 
-	    if (ar < amin) amin = ar;
-	    if (ar > amax) amax = ar;
-	}
+            if (ar < amin) amin = ar;
+            if (ar > amax) amax = ar;
+        }
 
-	arc = double(amin) / 16.0 * M_PI / 180.0;
-	r.setTop(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
-		 + fm.ascent() );
+        arc = double(amin) / 16.0 * M_PI / 180.0;
+        r.setTop(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+                 + fm.ascent() );
 
-	arc = double(amax) / 16.0 * M_PI / 180.0;
-	r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
-		    + fm.height() );
+        arc = double(amax) / 16.0 * M_PI / 180.0;
+        r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+                    + fm.height() );
 
-	//wmax = d_len + d_majLen + d_hpad + wl; DELETETHIS
+        //wmax = d_len + d_majLen + d_hpad + wl; DELETETHIS
 
-	r.setLeft(d_xorg - d_majLen - d_hpad - wl);
-	r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));
-	break;
+        r.setLeft(d_xorg - d_majLen - d_hpad - wl);
+        r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));
+        break;
+        
+    case InsideHorizontal:
+    case InsideVertical:
+        return r;
+        break;
     }
 
     return r;
@@ -778,7 +986,6 @@ void ScaleDraw::setAngleRange(double angle1, double angle2)
     d_minAngle = amin;
     d_maxAngle = amax;
     setIntRange(d_minAngle, d_maxAngle);
-
 }
 
 
@@ -808,53 +1015,93 @@ void ScaleDraw::setLabelFormat(char f, int prec)
     d_prec = prec;
 }
 
-//------------------------------------------------------------
-//
-//.F	ScaleDraw::maxLabelWidth
-//	Return the maximum width of a label
-//
-//.u	Syntax
-//.f	int ScaleDraw::maxLabelWidth(QPainter *p, int worst)
-//
-//.u	Parameters
-//.p	QPainter *p -- painter
-//	int worst -- If TRUE, take the worst case. If FALSE, take
-//			the actual width of the largest label.
-//
-//------------------------------------------------------------
-int ScaleDraw::maxLabelWidth(QPainter *p, bool worst) const
-{
+// REMOVE Tim. Trackinfo. Changed.
+// //------------------------------------------------------------
+// //
+// //.F	ScaleDraw::maxLabelWidth
+// //	Return the maximum width of a label
+// //
+// //.u	Syntax
+// //.f	int ScaleDraw::maxLabelWidth(QPainter *p, int worst)
+// //
+// //.u	Parameters
+// //.p	QPainter *p -- painter
+// //	int worst -- If TRUE, take the worst case. If FALSE, take
+// //			the actual width of the largest label.
+// //
+// //------------------------------------------------------------
+// int ScaleDraw::maxLabelWidth(QPainter *p, bool worst) const
+// {
+// 
+//     int i,rv = 0;
+//     double val;
+//     QString s;
+// 
+// 
+//     QFontMetrics fm = p->fontMetrics();
+// 
+//     if (worst)			// worst case
+//     {
+// 	s.setNum(WorstCase, d_fmt, d_prec);
+// 	rv = fm.width(s);
+//     }
+//     else				// actual width
+//     {
+// 	for (i=0;i<d_scldiv.majCnt(); i++)
+// 	{
+//       val = d_scldiv.majMark(i);
+// 	    // correct rounding errors if val = 0
+// 	    if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
+// 	       val = 0.0;
+// 	    s.setNum(val, d_fmt, d_prec);
+// 	    rv = MusECore::qwtMax(rv,fm.width(s));
+// 	}
+//     }
+// 
+// 
+//     return rv;
+// 
+// }
 
+//------------------------------------------------------------
+//
+//.F    ScaleDraw::maxLabelWidth
+//      Return the maximum width of a label
+//
+//.u    Syntax
+//.f    int ScaleDraw::maxLabelWidth(QPainter *p, int worst)
+//
+//.u    Parameters
+//.p    const QFontMetrics& fm -- font metrics used for calculations
+//      int worst -- If TRUE, take the worst case. If FALSE, take
+//                      the actual width of the largest label.
+//
+//------------------------------------------------------------
+int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
+{
     int i,rv = 0;
     double val;
     QString s;
 
-
-    QFontMetrics fm = p->fontMetrics();
-
-    if (worst)			// worst case
+    if (worst)                  // worst case
     {
-	s.setNum(WorstCase, d_fmt, d_prec);
-	rv = fm.width(s);
+        s.setNum(WorstCase, d_fmt, d_prec);
+        rv = fm.width(s);
     }
-    else				// actual width
+    else                                // actual width
     {
-	for (i=0;i<d_scldiv.majCnt(); i++)
-	{
+        for (i=0;i<d_scldiv.majCnt(); i++)
+        {
       val = d_scldiv.majMark(i);
-	    // correct rounding errors if val = 0
-	    if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
-	       val = 0.0;
-	    s.setNum(val, d_fmt, d_prec);
-	    rv = MusECore::qwtMax(rv,fm.width(s));
-	}
+            // correct rounding errors if val = 0
+            if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
+               val = 0.0;
+            s.setNum(val, d_fmt, d_prec);
+            rv = MusECore::qwtMax(rv,fm.width(s));
+        }
     }
-
-
     return rv;
-
 }
-
 
 //------------------------------------------------------------
 //

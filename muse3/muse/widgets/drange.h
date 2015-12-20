@@ -46,13 +46,21 @@ class DoubleRange
       double d_exactPrevValue;
       double d_prevValue;
       bool d_periodic;
+      bool d_log;
+      bool d_integer;
 
       void setNewValue(double x, bool align = false);
 
+   public:
+     enum ConversionMode { ConvertNone, ConvertDefault, ConvertInt, ConvertLog };
+      
    protected:
-      double exactValue() const { return d_exactValue; }
-      double exactPrevValue() const { return d_exactPrevValue; }
-      double prevValue() const { return d_prevValue; }
+      double convertFrom(double x, ConversionMode mode = ConvertDefault) const;
+      double convertTo(double x, ConversionMode mode = ConvertDefault) const;
+      double exactValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactValue, mode); }
+      double exactPrevValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactPrevValue, mode); }
+      double prevValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_prevValue, mode); }
+      bool valHasChanged() const { return d_value != d_prevValue; }
       virtual void valueChange() {}
       virtual void stepChange()  {}
       virtual void rangeChange() {}
@@ -61,22 +69,30 @@ class DoubleRange
       DoubleRange();
       virtual ~DoubleRange(){}
 
-      double value() const    { return d_value; }
-      virtual void setValue(double);
+//       double value() const    { return d_value; }
+      double value(ConversionMode mode = ConvertDefault) const;
+      virtual void setValue(double x, ConversionMode mode = ConvertDefault);
 
-      virtual void fitValue(double);
+      virtual void fitValue(double x, ConversionMode mode = ConvertDefault);
       virtual void incValue(int);
       virtual void incPages(int);
       void setPeriodic(bool tf);
-      void setRange(double vmin, double vmax, double vstep = 0.0,
-         int pagesize = 1);
+      void setRange   (double vmin, double vmax, double vstep = 0.0, int pagesize = 1, ConversionMode mode = ConvertDefault);
+      void setLogRange(double vmin, double vmax, double vstep = 0.0, int pagesize = 1);
       void setStep(double);
 
-      double maxValue() const { return d_maxValue; }
-      double minValue() const { return d_minValue; }
+      double maxValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_maxValue, mode); }
+      void setMaxLogValue(double v);
+      double minValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_minValue, mode); }
+      void setMinLogValue(double v);
       bool periodic()  const  { return d_periodic; }
       int pageSize() const    { return d_pageSize; }
       double step() const;
+      
+      bool log() const        { return d_log; }
+      void setLog(bool v)     { d_log = v; }
+      bool integer() const    { return d_integer; }
+      void setInteger(bool v) { d_integer = v; }
       };
 
 } // namespace MusEGui

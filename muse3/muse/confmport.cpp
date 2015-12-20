@@ -909,7 +909,9 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
                      != MusECore::midiInstruments.end(); ++i) {
                         if ((*i)->iname() == s) {
+                              MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
                               port->setInstrument(*i);
+                              MusEGlobal::audio->msgIdle(false);
                               break;
                               }
                         }
