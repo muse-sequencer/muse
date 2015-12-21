@@ -764,7 +764,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               len = (len *  track->len) / 100;
                               if (len <= 0)     // dont allow zero length
                                     len = 1;
-                              int veloOff = ev.veloOff();
+                              int veloOff = !ev.veloOff();
 
                               if (port == defaultPort) {
                                     // If syncing to external midi sync, we cannot use the tempo map.
