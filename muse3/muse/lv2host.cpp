@@ -842,7 +842,7 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 }
 
 void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, unsigned long nsamp)
-{   
+{
    //send transport events if any
    LV2Synth *synth = state->synth;
    unsigned int cur_frame = MusEGlobal::audio->pos().frame();
@@ -3298,7 +3298,6 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
 #endif
-
       sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
       break;
 
@@ -3307,7 +3306,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEOFF\n");
 #endif
 
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, 0);
+      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
       break;
 
    case ME_PROGRAM:
@@ -3906,17 +3905,14 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                // Returns false if the event was not filled. It was handled, but some other way.
                // Time-stamp the event.
                long ft = start_event->time() - frameOffset - pos - sample;
-               if(ft < 0)
+               if((ft < 0) || (ft >= (long)nsamp))
                {
+                  if(ft > 0)
+                  {
+                     fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                  }
                   ft = nsamp - 1;
                }
-
-               if(ft >= long(nsamp))
-               {
-                  fprintf(stderr, "LV2SynthIF::getData: eventlist event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-                  ft = nsamp - 1;
-               }
-
                if(processEvent(*start_event, evBuf, ft))
                {
 
@@ -3950,14 +3946,12 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                // Time-stamp the event.
                long ft = e.time() - frameOffset - pos  - sample;
 
-               if(ft < 0)
+               if((ft < 0) || (ft > (long)nsamp))
                {
-                  ft = nsamp - 1;
-               }
-
-               if(ft >= (long)nsamp)
-               {
-                  fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                  if(ft > 0)
+                  {
+                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                  }
                   ft = nsamp - 1;
                }
                processEvent(e, evBuf, ft);
@@ -4005,6 +3999,13 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                   lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
                }
             }
+#ifdef LV2_DEBUG_PROCESS
+            //dump atom sequence events to stderr
+            if(evBuf)
+            {
+               evBuf->dump();
+            }
+#endif
 
             lilv_instance_run(_handle, nsamp);
             //notify worker that this run() finished
@@ -5229,6 +5230,49 @@ bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint3
 uint8_t *LV2EvBuf::getRawBuffer()
 {
    return &_buffer [0];
+}
+
+void LV2EvBuf::dump()
+{
+   if(_oldApi){
+      return;
+   }
+
+   int n = 1;
+   LV2_Atom_Sequence *b = (LV2_Atom_Sequence *)&_buffer [0];
+   LV2_ATOM_SEQUENCE_FOREACH(b, s)
+   {
+      if(n == 1)
+      {
+         fprintf(stderr, "-------------- Atom seq dump START---------------\n");
+      }
+      fprintf(stderr, "\tSeq. no.: %d\n", n);
+      fprintf(stderr, "\t\tFrames: %ld\n", s->time.frames);
+      fprintf(stderr, "\t\tSize: %d\n", s->body.size);
+      fprintf(stderr, "\t\tType: %d\n", s->body.type);
+      fprintf(stderr, "\t\tData (hex):\n");
+      uint8_t *d = (uint8_t *)LV2_ATOM_BODY(&s->body);
+      for(uint32_t i = 0; i < s->body.size; i++)
+      {
+         if((i % 10) == 0)
+         {
+            fprintf(stderr, "\n\t\t");
+         }
+         else
+         {
+            fprintf(stderr, " ");
+         }
+         fprintf(stderr, "0x%02X", d [i]);
+      }
+      fprintf(stderr, "\n");
+
+      n++;
+   }
+
+   if(n > 1)
+   {
+      fprintf(stderr, "-------------- Atom seq dump END---------------\n\n");
+   }
 }
 
 LV2SimpleRTFifo::LV2SimpleRTFifo(size_t size):

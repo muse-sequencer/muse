@@ -764,7 +764,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               len = (len *  track->len) / 100;
                               if (len <= 0)     // dont allow zero length
                                     len = 1;
-                              int veloOff = !ev.veloOff();
+                              int veloOff = ev.veloOff();
 
                               if (port == defaultPort) {
                                     // If syncing to external midi sync, we cannot use the tempo map.
@@ -775,7 +775,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                       md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
                                       
                                     md->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
-                                       veloOff ? MusECore::ME_NOTEOFF : MusECore::ME_NOTEON, pitch, veloOff));   
+                                       MusECore::ME_NOTEOFF, pitch, veloOff));
                                     }
                               else { //Handle events to different port than standard.
                                     MidiDevice* mdAlt = MusEGlobal::midiPorts[port].device();
@@ -786,7 +786,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                           mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));                                          
                                           
                                         mdAlt->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
-                                          veloOff ? MusECore::ME_NOTEOFF : MusECore::ME_NOTEON, pitch, veloOff));
+                                          MusECore::ME_NOTEOFF, pitch, veloOff));
                                       }
                                     }
                               

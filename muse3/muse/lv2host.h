@@ -114,6 +114,7 @@ public:
    bool write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_t size, const uint8_t *data);
    bool read(uint32_t *frames, uint32_t  *subframes, uint32_t  *type, uint32_t  *size, uint8_t  **data );
    uint8_t *getRawBuffer();
+   void dump();
 };
 
 class LV2SimpleRTFifo
