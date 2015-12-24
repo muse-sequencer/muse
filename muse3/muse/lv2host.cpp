@@ -3298,7 +3298,14 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
 #endif
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      if(b)
+      {
+         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      }
+      else
+      {
+         sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+      }
       break;
 
    case ME_NOTEOFF:
