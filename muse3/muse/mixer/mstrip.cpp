@@ -224,12 +224,14 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
 // REMOVE Tim. Trackinfo. Added.
       if(midiCtrlNum == MusECore::CTRL_PROGRAM)
       {
-        CompactPatchEdit* control = new CompactPatchEdit(this, 0, Qt::Horizontal, CompactSlider::None);
+//         CompactPatchEdit* control = new CompactPatchEdit(this, 0, Qt::Horizontal, CompactSlider::None);
+        CompactPatchEdit* control = new CompactPatchEdit(0, 0, Qt::Horizontal, CompactSlider::None);
         control->setContentsMargins(0, 0, 0, 0);
         control->setId(midiCtrlNum);
         controller[idx]._patchControl = control;
         controller[idx]._cachedVal = initVal;
-        control->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//         control->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
         control->setToolTip(tt);
         control->setEnabled(enabled);
 
@@ -260,7 +262,8 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
       {
         
       
-        CompactSlider* control = new CompactSlider(this, 0, Qt::Horizontal, CompactSlider::None, label);
+//         CompactSlider* control = new CompactSlider(this, 0, Qt::Horizontal, CompactSlider::None, label);
+        CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
         control->setHasOffMode(true);
   //       CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
         control->setContentsMargins(0, 0, 0, 0);
@@ -273,7 +276,8 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
         control->setId(midiCtrlNum);
         controller[idx]._control = control;
         controller[idx]._cachedVal = initVal;
-        control->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//         control->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
   //       control->setBackgroundRole(QPalette::Mid);
         control->setToolTip(tt);
         control->setEnabled(enabled);
@@ -353,8 +357,8 @@ CompactSlider* MidiStrip::addProperty(QVBoxLayout* rackLayout,
                             double max, 
                             double initVal)
 {
-  CompactSlider* control = new CompactSlider(this, 0, Qt::Horizontal, CompactSlider::None, label);
-//       CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
+//   CompactSlider* control = new CompactSlider(this, 0, Qt::Horizontal, CompactSlider::None, label);
+  CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
   control->setContentsMargins(0, 0, 0, 0);
   control->setMargins(1, 1);
   //control->setTextHighlightMode(CompactSlider::TextHighlightFocus);
@@ -366,7 +370,8 @@ CompactSlider* MidiStrip::addProperty(QVBoxLayout* rackLayout,
 //   controller[idx]._control = control;
 //   controller[idx]._cachedVal = initVal;
   _properties[idx] = control;
-  control->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+  control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//   control->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
 //       control->setBackgroundRole(QPalette::Mid);
   control->setToolTip(toolTipText);
   control->setEnabled(enabled);
@@ -657,8 +662,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
       _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
       
-      _inRoutesPos         = GridPosStruct(_curGridRow + 9, 0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow + 9, 1, 1, 1);
+      //_inRoutesPos         = GridPosStruct(_curGridRow + 9, 0, 1, 1);
+      //_outRoutesPos        = GridPosStruct(_curGridRow + 9, 1, 1, 1);
+      _routesPos        = GridPosStruct(_curGridRow + 9, 0, 1, 2);
       
       _automationPos       = GridPosStruct(_curGridRow + 10, 0, 1, 2);
       
@@ -673,13 +679,14 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 
       
 // REMOVE Tim. Trackinfo. Added.
-      _infoRack = new QFrame(this);
-      //_infoRack = new QFrame();
+//       _infoRack = new QFrame(this);
+      _infoRack = new QFrame();
       _infoRack->setVisible(false); // Not visible unless expanded.
       _infoRack->setLineWidth(1);
       _infoRack->setFrameShape(QFrame::StyledPanel);
       _infoRack->setFrameShadow(QFrame::Raised);
-      _infoRack->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      _infoRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(0, 0, 0, 0);
 
       _infoLayout = new QVBoxLayout(_infoRack);
@@ -707,16 +714,19 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 
       addGridWidget(_infoRack, _propertyRackPos);
                   
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
+//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
                     _infoSpacerTop._row, _infoSpacerTop._col, _infoSpacerTop._rowSpan, _infoSpacerTop._colSpan);
 
       
 //       QWidget* upperScrollW = new QWidget(this);
-      _upperRack = new QFrame(this);
+//       _upperRack = new QFrame(this);
+      _upperRack = new QFrame();
       _upperRack->setLineWidth(1);
       _upperRack->setFrameShape(QFrame::StyledPanel);
       _upperRack->setFrameShadow(QFrame::Raised);
-      _upperRack->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//       _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _upperRack->setContentsMargins(0, 0, 0, 0);
 
       
@@ -729,10 +739,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //upperScrollW->setLayout(_upperScrollLayout);
 
 // REMOVE Tim. Trackinfo. Added.      
-      _instrLabel = new ElidedLabel(this, Qt::ElideMiddle);
+//       _instrLabel = new ElidedLabel(this, Qt::ElideMiddle);
+      _instrLabel = new ElidedLabel(0, Qt::ElideMiddle);
       _instrLabel->setObjectName("MidiStripInstrumentLabel");
-      //_instrLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _instrLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//       _instrLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _instrLabel->setContentsMargins(0, 0, 0, 0);
       if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[t->outPort()].instrument())
       {
@@ -821,8 +832,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None,
-      slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
+//       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
+      slider = new Slider(0, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
                           QColor(100, 255, 100));
+      slider->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
       
@@ -832,20 +845,26 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       fnt.setPointSize(6);
       slider->setFont(fnt);
       
-      slider->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::MinimumExpanding));
+      slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
       
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setId(MusECore::CTRL_VOLUME);
+      //slider->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
 
-      meter[0] = new MusEGui::Meter(this, MusEGui::Meter::LinMeter);
+//       meter[0] = new MusEGui::Meter(this, MusEGui::Meter::LinMeter);
+      meter[0] = new MusEGui::Meter(0, MusEGui::Meter::LinMeter);
+      meter[0]->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       meter[0]->setRange(0, 127.0);
-      meter[0]->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
+      meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
 // REMOVE Tim. Trackinfo. Changed.      
 //       meter[0]->setFixedWidth(15);
       meter[0]->setFixedWidth(8);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
+      sliderGrid->setSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
+      sliderGrid->setHorizontalSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
+      sliderGrid->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
@@ -854,7 +873,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); // REMOVE Tim. Trackinfo. Changed. TEST
       addGridLayout(sliderGrid, _sliderPos); // REMOVE Tim. Trackinfo. Changed. TEST
 
-      sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0, this);
+//       sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0, this);
+      sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0);
+      sl->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
@@ -862,7 +883,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       sl->setToolTip(tr("ctrl-double-click on/off"));
       sl->setFrame(true);
       sl->setPrecision(0);
-      sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
+      sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      //sl->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
       // Set the label's slider 'buddy'.
       sl->setSlider(slider);
       
@@ -897,8 +919,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       }      
       slider->setValue(double(v));
       sl->setValue(dlv);
+      //sl->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
         
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
+//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
                     _infoSpacerBottom._row, _infoSpacerBottom._col, _infoSpacerBottom._rowSpan, _infoSpacerBottom._colSpan);
 
 //      connect(sl, SIGNAL(valueChanged(double,int)), slider, SLOT(setValue(double)));
@@ -922,11 +946,13 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 
       
 //       QWidget* lowerScrollW = new QWidget(this);
-      _lowerRack = new QFrame(this);
+//       _lowerRack = new QFrame(this);
+      _lowerRack = new QFrame();
       _lowerRack->setLineWidth(1);
       _lowerRack->setFrameShape(QFrame::StyledPanel);
       _lowerRack->setFrameShadow(QFrame::Raised);
-      _lowerRack->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+//       _lowerRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _lowerRack->setContentsMargins(0, 0, 0, 0);
 
       
@@ -986,53 +1012,84 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //    record, mixdownfile
       //---------------------------------------------------
 
-      record  = new MusEGui::TransparentToolButton(this);
+//       record  = new MusEGui::TransparentToolButton(this);  // REMOVE Tim. Trackinfo. Changed. TEST
+//       record  = new CompactToolButton(0, track->recordFlag() ? record_on_Icon : record_off_Icon);
+      record  = new CompactToolButton();
       record->setFocusPolicy(Qt::NoFocus);
-      record->setBackgroundRole(QPalette::Mid);
+//       record->setBackgroundRole(QPalette::Mid);  // REMOVE Tim. Trackinfo. Removed. TEST
       record->setCheckable(true);
+      record->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
 //       record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      record->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+      record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
       record->setToolTip(tr("record"));
+      QIcon rec_icon(*record_off_Icon);
+      rec_icon.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
+      record->setIcon(rec_icon);
+      record->setIconSize(record_off_Icon->size());  
       record->setChecked(track->recordFlag());
-      record->setIcon(track->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-      ///record->setIconSize(record_on_Icon->size());  
+//       record->setIcon(track->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
+//       record->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
-      mute  = new QToolButton();
+//       mute  = new QToolButton(); // REMOVE Tim. Trackinfo. Changed. TEST
+//       mute  = new CompactToolButton(0, track->mute() ? muteIconOff : muteIconOn);
+      mute  = new CompactToolButton();
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
+      mute->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       mute->setToolTip(tr("mute"));
+      QIcon mute_icon(*muteIconOn);
+      mute_icon.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
+      mute->setIcon(mute_icon);
+      mute->setIconSize(muteIconOn->size());  
       mute->setChecked(track->mute());
-      mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-      ///mute->setIconSize(muteIconOn->size());  
+//       mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
 //       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      mute->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+      mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
+//       mute->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = new QToolButton();
+//       solo  = new QToolButton();
+      solo  = new CompactToolButton();
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("solo mode"));
+      solo->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       solo->setCheckable(true);
+      QIcon solo_icon_A(*soloIconOff);
+      solo_icon_A.addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
+      solo->setIcon(solo_icon_A);
+      QIcon solo_icon_B(*soloblksqIconOff);
+      solo_icon_B.addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
+//       solo->setIcon(solo_icon_B);
+      solo->setIconSize(soloIconOff->size());  
       solo->setChecked(track->solo());
 //       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      solo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
-      if(track->internalSolo())
-        solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
-      else
-        solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+      solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
+//       if(track->internalSolo())
+//         solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+//       else
+//         solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
       ///solo->setIconSize(soloIconOn->size());  
+//       solo->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       
-      off  = new MusEGui::TransparentToolButton(this);
+//       off  = new MusEGui::TransparentToolButton(this);
+      off  = new CompactToolButton();
+//       off  = new CompactToolButton(0, track->off() ? exit1Icon : exitIcon);
+      off->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       off->setFocusPolicy(Qt::NoFocus);
-      off->setBackgroundRole(QPalette::Mid);
+//       off->setBackgroundRole(QPalette::Mid); // REMOVE Tim. Trackinfo. Removed. TEST
 //       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      off->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+      off->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
       off->setCheckable(true);
       off->setToolTip(tr("off"));
+      QIcon off_icon(*exitIcon);
+      off_icon.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
+      off->setIcon(off_icon);
+      off->setIconSize(exitIcon->size());  
       off->setChecked(track->off());
-      off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-      ///off->setIconSize(exit1Icon->size());  
+//       off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+//       off->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
 //       grid->addWidget(off, _curGridRow, 0);
@@ -1049,49 +1106,85 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //    routing
       //---------------------------------------------------
 
-      iR = new QToolButton();
+//       iR = new QToolButton();  // REMOVE Tim. Trackinfo. Changed. TEST
+      iR = new CompactToolButton(0, *routesMidiInIcon);
+      iR->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       iR->setFocusPolicy(Qt::NoFocus);
       ///iR->setFont(MusEGlobal::config.fonts[1]);
 //       iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-      iR->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+//       iR->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+      iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
       ///iR->setText(tr("iR"));
-      iR->setIcon(QIcon(*routesMidiInIcon));
-      iR->setIconSize(routesMidiInIcon->size());  
+//       iR->setIcon(QIcon(*routesMidiInIcon)); // REMOVE Tim. Trackinfo. Changed. TEST
+      // Give it a wee bit more height.
+      iR->setIconSize(QSize(routesMidiInIcon->width(), routesMidiInIcon->height() + 5)); // REMOVE Tim. Trackinfo. Changed. TEST
+      //iR->setFixedSize(iR->iconSize());
       iR->setCheckable(false);
       iR->setToolTip(tr("input routing"));
+      //iR->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
 //       grid->addWidget(iR, _curGridRow, 0);
 //       grid->addWidget(iR, _curGridRow, 0); // REMOVE Tim. Trackinfo. Changed. TEST
-      addGridWidget(iR, _inRoutesPos); // REMOVE Tim. Trackinfo. Changed. TEST
+//       addGridWidget(iR, _inRoutesPos); // REMOVE Tim. Trackinfo. Changed. TEST
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       
-      oR = new QToolButton();
+//       oR = new QToolButton(); // REMOVE Tim. Trackinfo. Changed. TEST
+      oR = new CompactToolButton(0, *routesMidiOutIcon);
+      oR->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       oR->setFocusPolicy(Qt::NoFocus);
       ///oR->setFont(MusEGlobal::config.fonts[1]);
 //       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+//       oR->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       // REMOVE Tim. Trackinfo. Changed. TEST
       ///oR->setText(tr("oR"));
-      oR->setIcon(QIcon(*routesMidiOutIcon));
-      oR->setIconSize(routesMidiOutIcon->size());  
+//       oR->setIcon(QIcon(*routesMidiOutIcon)); // REMOVE Tim. Trackinfo. Changed. TEST
+      // Give it a wee bit more height.
+      oR->setIconSize(QSize(routesMidiOutIcon->width(), routesMidiOutIcon->height() + 5));  // REMOVE Tim. Trackinfo. Changed. TEST
+      //oR->setFixedSize(oR->iconSize());
       oR->setCheckable(false);
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.
       //oR->setEnabled(false);
       oR->setToolTip(tr("output routing"));
+      //oR->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
 //       grid->addWidget(oR, _curGridRow++, 1);
 //       grid->addWidget(oR, _curGridRow++, 1); // REMOVE Tim. Trackinfo. Changed. TEST
-      addGridWidget(oR, _outRoutesPos); // REMOVE Tim. Trackinfo. Changed. TEST
+//       addGridWidget(oR, _outRoutesPos); // REMOVE Tim. Trackinfo. Changed. TEST
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-
+   
+      // REMOVE Tim. Trackinfo. Added. TEST
+      _midiThru = new CompactToolButton();
+      _midiThru->setFocusPolicy(Qt::NoFocus);
+      _midiThru->setContentsMargins(0, 0, 0, 0);
+      _midiThru->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      _midiThru->setCheckable(true);
+      _midiThru->setToolTip(tr("midi thru"));
+      _midiThru->setWhatsThis(tr("Pass input events through ('thru') to output"));
+      QIcon thruIcon(*midiThruOffIcon);
+      thruIcon.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
+      _midiThru->setIcon(thruIcon);
+      _midiThru->setIconSize(midiThruOffIcon->size());  
+      _midiThru->setChecked(t->recEcho());
+      connect(_midiThru, SIGNAL(toggled(bool)), SLOT(midiThruToggled(bool)));
+      QHBoxLayout* routesLayout = new QHBoxLayout();
+      routesLayout->setContentsMargins(0, 0, 0, 0);
+      routesLayout->setSpacing(0);
+      routesLayout->addWidget(iR);
+      routesLayout->addWidget(_midiThru);
+      routesLayout->addWidget(oR);
+      addGridLayout(routesLayout, _routesPos); 
+      
       //---------------------------------------------------
       //    automation mode
       //---------------------------------------------------
 
-      autoType = new MusEGui::ComboBox();
+      autoType = new ComboBox();
+      autoType->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       autoType->setFocusPolicy(Qt::NoFocus);
       ///autoType->setFont(MusEGlobal::config.fonts[1]);
 //       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      autoType->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+//       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
+      autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
       autoType->setEnabled(false);
       
       // Removed by T356. 
@@ -1182,7 +1275,7 @@ void MidiStrip::updateOffState()
             off->blockSignals(true);
             off->setChecked(track->off());
             off->blockSignals(false);
-            off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+//             off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon)); // REMOVE Tim. Trackinfo. Removed. TEST
             //off->setIconSize(exit1Icon->size());  
             }
       }
@@ -1260,7 +1353,7 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
             //mute->setChecked(track->isMute());  
             mute->setChecked(track->mute());
             mute->blockSignals(false);
-            mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+//             mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn)); // REMOVE Tim. Trackinfo. Removed.
             //mute->setIconSize(muteIconOn->size());  
             updateOffState();
             }
@@ -1306,6 +1399,14 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
         else
           _instrLabel->setText(tr("<unknown>")); // It ignores if already set.
         
+        // Set record echo.
+        if(_midiThru->isChecked() != mt->recEcho())
+        {
+          _midiThru->blockSignals(true);
+          _midiThru->setChecked(mt->recEcho());
+          _midiThru->blockSignals(false);
+        }
+          
         if(_properties[PropertyTransp]->value() != mt->transposition)
         {
           _properties[PropertyTransp]->blockSignals(true);
@@ -1431,6 +1532,19 @@ void MidiStrip::propertyRightClicked(const QPoint& /*p*/, int /*id*/)
 //   }
 //   MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 // }
+
+//---------------------------------------------------------
+//   midiThruToggled
+//---------------------------------------------------------
+
+void MidiStrip::midiThruToggled(bool v)
+{
+  if(MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track))
+  {
+    mt->setRecEcho(v);
+    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+  }
+}
 
 //---------------------------------------------------------
 //   volLabelDoubleClicked
@@ -2645,10 +2759,13 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
   const QSize& newSize = ev->size();
   const int old_w = oldSize.width();
   const int new_w = newSize.width();
-  const int min_w = sizeHint().width();
+  // Get the original size hint (without the user width).
+  const int min_w = sizeHint().width() - userWidth();
+  // Flip at around 1.5 times the original size hint.
+  const int flip_w = min_w + min_w / 2;
   
 //   if(old_w <= 100 && new_w > 100)
-  if(new_w > old_w && new_w >= min_w)
+  if(new_w > old_w && new_w >= flip_w)
   {
 //     grid->removeWidget(_upperScrollArea);
 //     grid->removeWidget(_lowerScrollArea);
@@ -2668,7 +2785,7 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
     _infoRack->setVisible(true); // Visible if expanded.
   }
 //   else if(old_w > 150 && new_w <= 150)
-  else if(new_w < old_w && new_w <= min_w)
+  else if(new_w < old_w && new_w <= flip_w)
   {
 //     grid->removeWidget(_upperScrollArea);
 //     grid->removeWidget(_lowerScrollArea);

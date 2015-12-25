@@ -54,6 +54,7 @@ class CompactPatchEdit;
 class TransparentToolButton;
 class ScrollArea;
 class ElidedLabel;
+class CompactToolButton;
 
 //class CompactControllerRack;
 
@@ -120,13 +121,15 @@ class MidiStrip : public Strip {
       GridPosStruct _recPos;
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
+      //GridPosStruct _inRoutesPos;
+      //GridPosStruct _outRoutesPos;
+      GridPosStruct _routesPos;
       GridPosStruct _automationPos;
       
       MusEGui::Slider* slider;
       MusEGui::DoubleLabel* sl;
-      MusEGui::TransparentToolButton* off;
+//       MusEGui::TransparentToolButton* off;
+      QToolButton* off;
 //       ScrollArea* _upperScrollArea;
 //       ScrollArea* _lowerScrollArea;
       //CompactControllerRack* _upperScrollArea;
@@ -157,6 +160,7 @@ class MidiStrip : public Strip {
       } controller[5];    // pan variation reverb chorus patch
       
 // REMOVE Tim. Trackinfo. Added.
+      CompactToolButton* _midiThru;
       ElidedLabel* _instrLabel;
       int _heartBeatCounter;
       CompactSlider* _properties[5];
@@ -203,6 +207,7 @@ class MidiStrip : public Strip {
       void resizeEvent(QResizeEvent*);
      
    private slots:
+      void midiThruToggled(bool);
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();

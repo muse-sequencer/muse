@@ -43,8 +43,8 @@
 #include "xpm/midi_inputplugins_random_rhythm_generator.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
-#include "xpm/midi_thru_off4.xpm"
-#include "xpm/midi_thru_on4.xpm"
+#include "xpm/midi_thru_off5.xpm"
+#include "xpm/midi_thru_on5.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_follow_song.xpm"
@@ -731,8 +731,8 @@ void initIcons()
       miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
       midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
       miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
-      midiThruOnIcon       = new MPIXMAP(midi_thru_on4_xpm, NULL);      
-      midiThruOffIcon      = new MPIXMAP(midi_thru_off4_xpm, NULL);      
+      midiThruOnIcon       = new MPIXMAP(midi_thru_on5_xpm, NULL);      
+      midiThruOffIcon      = new MPIXMAP(midi_thru_off5_xpm, NULL);      
       
       mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
       mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);

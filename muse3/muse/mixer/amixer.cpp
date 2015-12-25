@@ -143,13 +143,14 @@ ViewWidget::paintEvent
 
 bool ScrollArea::viewportEvent(QEvent* event)
 {
+  event->ignore();
   // Let it do the layout now, before we emit.
   QScrollArea::viewportEvent(event);
   
   if(event->type() == QEvent::LayoutRequest)       
     emit layoutRequest();
          
-  //return false;       
+//   return false;       
   return true;       
 }
 
@@ -281,8 +282,10 @@ void AudioMixerApp::setSizing()
 //             //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
 //             //w += s->width() + 2 * s->frameWidth();
 // //             w += (*si)->width();  // REMOVE Tim. Trackinfo. Changed.
-//             w += (*si)->frameSize().width();
+// //             w += (*si)->frameSize().width();
+//             w += (*si)->sizeHint().width();
 //       }
+      
       w = mixerLayout->minimumSize().width();
       
       //w += 2* style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
@@ -291,9 +294,30 @@ void AudioMixerApp::setSizing()
       
       if(w < 40)
         w = 40;
-      setMaximumWidth(w);      
+//       setMaximumWidth(w);   
+      view->setUpdatesEnabled(false);
+      setUpdatesEnabled(false);
       if(stripList.size() <= 6)
-        view->setMinimumWidth(w);
+//         view->setMinimumWidth(w);
+        setMinimumWidth(w);
+        
+      setMaximumWidth(w);
+//       view->setMaximumWidth(w);      
+
+      setUpdatesEnabled(true);
+      view->setUpdatesEnabled(true);
+      
+//       resize(w, height());
+
+//       if(stripList.size() <= 6)
+//         setFixedWidth(w);
+//       else
+//         setMaximumWidth(w);      
+      
+// REMOVE Tim. Trackinfo. Added.
+//       view->update();
+//       update();
+//       central->update();
 }
 
 //---------------------------------------------------------
@@ -333,6 +357,7 @@ void AudioMixerApp::addStrip(MusECore::Track* t, int idx)
             ExpanderHandle* handle = new ExpanderHandle();
             connect(handle, SIGNAL(moved(int)), strip, SLOT(changeUserWidth(int)));
             connect(strip, SIGNAL(destroyed(QObject*)), handle, SLOT(deleteLater()));
+//             connect(handle, SIGNAL(moved(int)), SLOT(setSizing()));
             mixerLayout->insertWidget(idx * 2, strip);
             mixerLayout->insertWidget(idx * 2 + 1, handle);
             
@@ -415,6 +440,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);  
 ///                  view->setMinimumWidth(w);
                   
+//             setSizing(); // REMOVE Tim. Trackinfo. Added.
             return;
       }
       else if (action == UPDATE_MIDI) 
@@ -465,6 +491,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 ///            if (stripList.size() < 8)
             //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION); 
 ///                  view->setMinimumWidth(w);
+
+//             setSizing(); // REMOVE Tim. Trackinfo. Added.
             return;
       }
 
@@ -555,6 +583,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 ///      if (idx < 8)
       //      view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION); 
 ///            view->setMinimumWidth(w);
+
+//       setSizing(); // REMOVE Tim. Trackinfo. Added.
       }
 
 //---------------------------------------------------------

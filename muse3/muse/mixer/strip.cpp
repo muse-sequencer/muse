@@ -58,7 +58,7 @@ void Strip::setRecordFlag(bool flag)
             record->blockSignals(true);
             record->setChecked(flag);
             record->blockSignals(false);
-            record->setIcon(flag ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
+//             record->setIcon(flag ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));  // REMOVE Tim. Trackinfo. Removed.
             //record->setIconSize(record_on_Icon->size());  
             }
       }
@@ -86,7 +86,7 @@ void Strip::recordToggled(bool val)
             if (!((MusECore::AudioOutput*)track)->recFile())
             {  
                   record->setChecked(false);
-                  record->setIcon(QIcon(*record_off_Icon));
+//                   record->setIcon(QIcon(*record_off_Icon));  // REMOVE Tim. Trackinfo. Removed.
                   //record->setIconSize(record_on_Icon->size());  
             }      
             return;

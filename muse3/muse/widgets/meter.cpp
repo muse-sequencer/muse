@@ -50,7 +50,7 @@ Meter::Meter(QWidget* parent, MeterType type)
       {
       setBackgroundRole(QPalette::NoRole);
       setAttribute(Qt::WA_NoSystemBackground);
-      setAttribute(Qt::WA_StaticContents);
+      setAttribute(Qt::WA_StaticContents);  // REMOVE Tim. Trackinfo. Removed.
       // This is absolutely required for speed! Otherwise painfully slow because of full background 
       //  filling, even when requesting small udpdates! Background is drawn by us. (Just small corners.)
       setAttribute(Qt::WA_OpaquePaintEvent);    
