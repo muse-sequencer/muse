@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
-//  LCD_widgets.cpp
+//  lcd_widgets.cpp
 //  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include <QRect>
 #include <QString>
 
-#include "LCD_widgets.h"
+#include "lcd_widgets.h"
 
 namespace MusEGui {
 

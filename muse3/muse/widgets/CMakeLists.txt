@@ -61,7 +61,7 @@ QT5_WRAP_CPP (widget_mocs
       intlabel.h  
       knob.h  
       knob_and_meter.h  
-      LCD_widgets.h
+      lcd_widgets.h
       lcombo.h  
       menutitleitem.h
       meter.h
@@ -197,7 +197,7 @@ file (GLOB widgets_source_files
       intlabel.cpp 
       knob.cpp 
       knob_and_meter.cpp
-      LCD_widgets.cpp
+      lcd_widgets.cpp
       lcombo.cpp 
       menutitleitem.cpp
       meter.cpp

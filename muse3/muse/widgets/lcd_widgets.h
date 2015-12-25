@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
-//  LCD_widgets.h
+//  lcd_widgets.h
 //  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
