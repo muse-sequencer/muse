@@ -438,7 +438,7 @@ void DoubleRange::setLogRange(double a, double b, double vstep, int pagesize)
 //   setMinLogValue(a);
 //   setMaxLogValue(b);
   
-  double mn, mx;
+  double mn = 0, mx = 0;
   if(d_log) 
   {
     if(a == 0.0f) 

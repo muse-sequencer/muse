@@ -76,7 +76,7 @@ class LCDPainter
       enum TextHighlightMode { TextHighlightNone, TextHighlightAlways, TextHighlightSplit, TextHighlightShadow };
 
   private:
-    bool _digitSegments[10][7];
+    //bool _digitSegments[10][7]; //comment unused private field (to prevent compiler warning)
     
   public:
     LCDPainter();
