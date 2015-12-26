@@ -24,6 +24,7 @@
 #define __SIG_TEMPO_TOOLBAR_H__
 
 #include <QWidget>
+#include <QToolButton>
 #include "type_defs.h"
 
 namespace Awl
@@ -67,6 +68,7 @@ namespace MusEGui
 			QHBoxLayout* layout;
 			QLabel* label;
 			MusEGui::TempoEdit* tempo_edit;
+   QToolButton *tap_button;
 			
 		public:
 			TempoToolbarWidget(QWidget* parent);
