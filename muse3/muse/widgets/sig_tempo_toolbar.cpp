@@ -28,7 +28,6 @@
 
 #include <QLayout>
 #include <QLabel>
-#include <QDateTime>
 
 namespace MusEGui
 {
