@@ -78,10 +78,13 @@ ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 # We should probably not attempt to do this at all.
 # Installation instructions now updated to be more specific, give options.
 #endif (NOT DEFINED CMAKE_BUILD_TYPE)
-#if (NOT CMAKE_BUILD_TYPE)
-#    message("No CMAKE_BUILD_TYPE specified. Setting to Release.")
-#     set(CMAKE_BUILD_TYPE release)
-#endif (NOT CMAKE_BUILD_TYPE)
+
+#UPDATE: most of users even don't know what CMAKE_BUILD_TYPE is.
+#So it will be better to set unspecified build type to RelWithDebInfo
+if (NOT CMAKE_BUILD_TYPE)
+    message("No CMAKE_BUILD_TYPE specified. Setting to RelWithDebInfo.")
+     set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif (NOT CMAKE_BUILD_TYPE)
 
 
 # for debugging the make system uncomment next line:
@@ -504,6 +507,7 @@ ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
 set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations

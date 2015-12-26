@@ -113,6 +113,8 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       lineEditor = 0;
       editMode   = false;
 
+      supportsResizeToTheLeft = true;
+
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
       drag          = DRAG_OFF;
@@ -501,21 +503,32 @@ void PartCanvas::updateSelection()
 //---------------------------------------------------------
 
 void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
-      {
-      MusECore::Track* t = ((NPart*)(i))->track();
-      MusECore::Part*  p = ((NPart*)(i))->part();
+{
+   MusECore::Track* t = ((NPart*)(i))->track();
+   MusECore::Part*  p = ((NPart*)(i))->part();
 
-      int pos = p->tick() + i->width();
-      int snappedpos = pos;
-      if (!noSnap) {
-            snappedpos = AL::sigmap.raster(pos, *_raster);
-            }
-      unsigned int newwidth = snappedpos - p->tick();
-      if (newwidth == 0)
-            newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
+   int pos = p->tick() + i->width();
+   int snappedpos = pos;
+   if (!noSnap) {
+      snappedpos = AL::sigmap.raster(pos, *_raster);
+   }
+   unsigned int newwidth = snappedpos - p->tick();
+   if (newwidth == 0)
+      newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
 
-      MusEGlobal::song->cmdResizePart(t, p, newwidth, !ctrl);
-      }
+   bool doMove = false;
+   int newPos = 0;
+   if((i->mp() != i->pos()) && (resizeDirection == RESIZE_TO_THE_LEFT))
+   {
+      doMove = true;
+      newPos  = i->mp().x();
+      if (newPos < 0)
+         newPos = 0;
+   }
+   MusEGlobal::song->cmdResizePart(t, p, newwidth, doMove, newPos, !ctrl);
+
+
+}
 
 //---------------------------------------------------------
 //   newItem

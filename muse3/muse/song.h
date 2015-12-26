@@ -320,7 +320,7 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, int newPos, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
 
       void addPart(Part* part);
       void removePart(Part* part);

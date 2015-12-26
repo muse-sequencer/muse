@@ -77,6 +77,8 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       vscrollDir = VSCROLL_NONE;
       scrollTimer=NULL;
       ignore_mouse_move = false;
+
+      supportsResizeToTheLeft = false;
       
       scrollSpeed=30;    // hardcoded scroll jump
 
@@ -639,42 +641,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       global_start    = event->globalPos();
       ev_global_pos   = global_start;
       
-      //---------------------------------------------------
-      //    set curItem to item mouse is pointing
-      //    (if any)
-      //---------------------------------------------------
-
-      if (virt())
-            curItem = items.find(start);
-      else {
-            curItem = 0;
-            iCItem ius;
-            bool usfound = false;
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  QRect box = i->second->bbox();
-                  int x = rmapxDev(box.x());
-                  int y = rmapyDev(box.y());
-                  int w = rmapxDev(box.width());
-                  int h = rmapyDev(box.height());
-                  QRect r(x, y, w, h);
-                  r.translate(i->second->pos().x(), i->second->pos().y());
-                  if (r.contains(start)) {
-                        if(i->second->isSelected())
-                        {
-                          curItem = i->second;
-                          break;
-                        }
-                        else
-                        if(!usfound)
-                        {
-                          ius = i;
-                          usfound = true;
-                        }
-                     }
-                  }
-                  if(!curItem && usfound)
-                    curItem = ius->second;
-            }
+      curItem = findCurrentItem(start);
 
       if (curItem && (button == Qt::MidButton)) {
             deleteItem(start); // changed from "start drag" to "delete" by flo93
@@ -754,10 +721,22 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                 }
                                 else {
                                   drag = DRAG_RESIZE;
+                                  resizeDirection = RESIZE_TO_THE_RIGHT;
+                                  if(supportsResizeToTheLeft){
+                                     if(curItem->x() + (curItem->width() / 2) > ev_pos.x()){
+                                        resizeDirection = RESIZE_TO_THE_LEFT;
+                                     }
+                                  }
                                   setCursor();
-                                  int dx = start.x() - curItem->x();
-                                  curItem->setWidth(dx);
-                                  start.setX(curItem->x());
+                                  if(resizeDirection == RESIZE_TO_THE_RIGHT){
+                                    int dx = start.x() - curItem->x();
+                                    curItem->setWidth(dx);
+                                  }else{
+                                    int endX = curItem->x() + curItem->width();
+                                    end = QPoint(endX, curItem->y());
+                                    resizeToTheLeft(ev_pos);
+                                  }
+                                  start = curItem->pos();
                                 }
                               }
                         else {
@@ -1060,7 +1039,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       QPoint dist  = ev_pos - start;
       int ax       = ABS(rmapx(dist.x()));
       int ay       = ABS(rmapy(dist.y()));
-      bool moving  = (ax >= 2) || (ay > 2);
+      bool isMoving  = (ax >= 2) || (ay > 2);
       int modifiers = event->modifiers();
       bool ctrl  = modifiers & Qt::ControlModifier;
       bool shift = modifiers & Qt::ShiftModifier;
@@ -1138,7 +1117,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
       switch (drag) {
             case DRAG_LASSO_START:
-                  if (!moving)
+                  if (!isMoving)
                         break;
                   drag = DRAG_LASSO;
                   setCursor();
@@ -1155,7 +1134,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
-                  if (!moving)
+                  if (!isMoving)
                         break;
                   if (keyState & Qt::ShiftModifier) {
                         if (ax > ay) {
@@ -1263,10 +1242,14 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
             case DRAG_RESIZE:
                   if (curItem && last_dist.x()) {
-                        int w = ev_pos.x() - curItem->x();
-                        if(w < 1)
-                          w = 1;
-                        curItem->setWidth(w);
+                        if(resizeDirection == RESIZE_TO_THE_RIGHT){
+                           int w = ev_pos.x() - curItem->x();
+                           if(w < 1)
+                             w = 1;
+                           curItem->setWidth(w);
+                        }else{
+                           resizeToTheLeft(ev_pos);
+                        }
                         redraw();
                         }
                   break;
@@ -1311,6 +1294,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
                   
             case DRAG_OFF:
+                  if(_tool == PencilTool){
+                     if(findCurrentItem(ev_pos)){
+                        QWidget::setCursor(QCursor(Qt::SizeHorCursor));
+                        break;
+                     }
+                  }
+                  setCursor();
                   break;
             }
 
@@ -1403,8 +1393,16 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  if(curItem)
+                  if(curItem){                    
+                    if(resizeDirection == RESIZE_TO_THE_LEFT){
+                       QPoint rpos = QPoint(raster(pos).x(), curItem->y());
+                       resizeToTheLeft(rpos);
+                       curItem->move(start);
+                    }
                     resizeItem(curItem, shift, ctrl);
+                    updateSelection();
+                    redraw();
+                  }
                   break;
             case DRAG_NEW:
                   if(newCItem)
@@ -1587,6 +1585,63 @@ void Canvas::setTool(int t)
 //---------------------------------------------------------
 //   setCursor
 //---------------------------------------------------------
+
+CItem *Canvas::findCurrentItem(const QPoint &cStart)
+{
+   //---------------------------------------------------
+   //    set curItem to item mouse is pointing
+   //    (if any)
+   //---------------------------------------------------
+
+   CItem *item = 0;
+   if (virt())
+      item = items.find(cStart);
+   else {
+      item = 0;
+      iCItem ius;
+      bool usfound = false;
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
+         QRect box = i->second->bbox();
+         int x = rmapxDev(box.x());
+         int y = rmapyDev(box.y());
+         int w = rmapxDev(box.width());
+         int h = rmapyDev(box.height());
+         QRect r(x, y, w, h);
+         r.translate(i->second->pos().x(), i->second->pos().y());
+         if (r.contains(cStart)) {
+            if(i->second->isSelected())
+            {
+               item = i->second;
+               break;
+            }
+            else
+               if(!usfound)
+               {
+                  ius = i;
+                  usfound = true;
+               }
+         }
+      }
+      if(!curItem && usfound)
+         item = ius->second;
+   }
+
+   return item;
+
+}
+
+void Canvas::resizeToTheLeft(const QPoint &pos)
+{
+   int newX = pos.x();
+   if(end.x() - newX < 1)
+      newX = end.x() - 1;
+   int dx = end.x() - newX;
+   curItem->setWidth(dx);
+   QPoint mp(newX, curItem->y());
+   curItem->setMp(mp);
+   curItem->move(mp);
+   //fprintf(stderr, "newX=%d, dx=%d\n", newX, dx);
+}
 
 void Canvas::setCursor()
       {

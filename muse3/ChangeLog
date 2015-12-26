@@ -1,3 +1,7 @@
+21.12.2015
+        - Rewrited midi events code for lv2 host. Fix for #435 (danvd)
+13.12.2015
+        - Added support to resize notes and parts to the left with pencil tool (issue #292) (danvd)
 11.12.2015
         - Added LV2 UI open behavior (danvd)
 06.12.2015

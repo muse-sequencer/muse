@@ -56,6 +56,8 @@ class Canvas : public View {
       bool canScrollRight;
       bool canScrollUp;
       bool canScrollDown;
+
+      CItem *findCurrentItem(const QPoint &cStart);
       
       // Whether we have grabbed the mouse.
       bool _mouseGrabbed;
@@ -98,21 +100,27 @@ class Canvas : public View {
       enum MenuIdBase {
             TOOLS_ID_BASE=10000
             };
+      enum ResizeDirection {
+            RESIZE_TO_THE_LEFT,
+            RESIZE_TO_THE_RIGHT
+      };
             
       CItemList items;
       CItemList moving;
       CItem* newCItem;
       CItem* curItem;
       MusECore::Part* curPart;
-      int curPartId;
+      int curPartId;      
 
       int canvasTools;
       DragMode drag;
       QRect lasso;
       QPoint start;
+      QPoint end;
       QPoint global_start;
       Tool _tool;
       unsigned pos[3];
+      ResizeDirection resizeDirection;
       
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;
@@ -121,6 +129,9 @@ class Canvas : public View {
       QMenu* itemPopupMenu;
       QMenu* canvasPopupMenu;
 
+      bool supportsResizeToTheLeft;
+
+      void resizeToTheLeft(const QPoint &pos);
       void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
       virtual void viewKeyReleaseEvent(QKeyEvent* event);

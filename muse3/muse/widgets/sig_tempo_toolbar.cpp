@@ -39,12 +39,16 @@ namespace MusEGui
 		tempo_edit->setFocusPolicy(Qt::StrongFocus);
 		
 		label=new QLabel(tr("Tempo: "),this);
+
+  tap_button = new QToolButton(this);
 		
 		layout = new QHBoxLayout(this);
 		layout->setContentsMargins(0,0,0,0);
 		layout->setSpacing(1);
 		layout->addWidget(label);
 		layout->addWidget(tempo_edit);
+
+
 		
 		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
