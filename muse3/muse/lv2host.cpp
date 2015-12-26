@@ -5254,7 +5254,7 @@ void LV2EvBuf::dump()
          fprintf(stderr, "-------------- Atom seq dump START---------------\n");
       }
       fprintf(stderr, "\tSeq. no.: %d\n", n);
-      fprintf(stderr, "\t\tFrames: %ld\n", s->time.frames);
+      fprintf(stderr, "\t\tFrames: %ld\n", (long)s->time.frames);
       fprintf(stderr, "\t\tSize: %d\n", s->body.size);
       fprintf(stderr, "\t\tType: %d\n", s->body.type);
       fprintf(stderr, "\t\tData (hex):\n");
