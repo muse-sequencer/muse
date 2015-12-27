@@ -61,8 +61,6 @@ namespace MusEGui
   connect(tap_button, SIGNAL(clicked(bool)), SLOT(tap_tempo()));
   connect(&tap_timer, SIGNAL(timeout()), SLOT(tap_timer_signal()));
   tap_timer.stop();
-  n_taps = 0;
-  msecs_avg = 0;
 
 		song_changed(-1);
 	}
@@ -96,20 +94,13 @@ namespace MusEGui
     if(tap_timer.isActive())
     {
        qint64 msecs_tap = last_tap_time.msecsTo(local);
-       msecs_avg += msecs_tap;
-       n_taps++;
-       if(n_taps > 2)
-       {
-          msecs_tap = msecs_avg / n_taps;
-          double t_tap = (double)60000.0f / (double)msecs_tap;
-          tempo_edit->setValue(t_tap);
-          emit tempo_edit->tempoChanged(t_tap);
-       }
+       double t_tap = (double)60000.0f / (double)msecs_tap;
+       tempo_edit->setValue(t_tap);
+       emit tempo_edit->tempoChanged(t_tap);
+
     }
     else
     {
-       n_taps = 0;
-       msecs_avg = 0;
        tap_timer.start(2000);
     }
     last_tap_time = local;
