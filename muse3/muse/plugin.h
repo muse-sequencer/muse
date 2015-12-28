@@ -75,7 +75,7 @@ class AudioTrack;
 class Xml;
 
 class MidiController;
-
+class PluginI;
 
 //---------------------------------------------------------
 //   Plugin
