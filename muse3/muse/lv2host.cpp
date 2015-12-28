@@ -1145,7 +1145,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                                             "<b>ldd " LV2_GTK_HELPER "</b><br />"
                                                             "in terminal window.<br />"
                                                             "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                            "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                            "It can be recompiled and reinstalled from muse3/muse/lv2Gtk2Helper folder "
                                                             " from MusE source package. dl error was:"
                                                              ) + QString::fromUtf8(dlerror())+ "<br />"
                                                             "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"

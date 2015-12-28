@@ -16,14 +16,14 @@ Installation from source code:
 Stable source code releases are [here](http://sourceforge.net/project/showfiles.php?group_id=93414).
 Or one of the git branches can be cloned, built, and installed.
 
-Installation instructions are in the [README](muse2/README) file. German version: [README.de](muse2/README.de).
+Installation instructions are in the [README](muse3/README) file. German version: [README.de](muse3/README.de).
 
 Documentation:
 --------------
-[LICENSE](muse2/COPYING)
-[AUTHORS](muse2/AUTHORS)
+[LICENSE](muse3/COPYING)
+[AUTHORS](muse3/AUTHORS)
 
-These and other important documents, READMEs, and addendums are in the [muse2](muse2) directory.
+These and other important documents, READMEs, and addendums are in the [muse3](muse3) directory.
 
-The official MusE manual can be found here in HTML or PDF form in the [muse2/doc](muse2/doc) directory. 
+The official MusE manual can be found here in HTML or PDF form in the [muse3/doc](muse3/doc) directory. 
 The manuals are also installed along with MusE.
