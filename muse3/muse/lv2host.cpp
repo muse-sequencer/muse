@@ -2434,7 +2434,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
    }
 
-   if(_midiInPorts.size() > 0)
+   const LilvPluginClass *cls = lilv_plugin_get_class(_plugin);
+   const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+   const char *clsname = lilv_node_as_uri(ncuri);
+   if((strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0) && (_midiInPorts.size() > 0))
    {
       _isSynth = true;
    }
