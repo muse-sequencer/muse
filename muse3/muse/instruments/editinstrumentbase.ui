@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>772</width>
-    <height>431</height>
+    <height>458</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -279,65 +279,6 @@
                     <property name="sizeHint" stdset="0">
                      <size>
                       <width>373</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout">
-                  <item>
-                   <widget class="QCheckBox" name="checkBoxGM">
-                    <property name="toolTip">
-                     <string>GM patch</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>If set, the patch is available in a 'GM' or 'NO' midi song type.</string>
-                    </property>
-                    <property name="text">
-                     <string>GM</string>
-                    </property>
-                    <property name="shortcut">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="checkBoxGS">
-                    <property name="toolTip">
-                     <string>GS patch</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>If set, the patch is available in a 'GS' or 'NO' midi song type.</string>
-                    </property>
-                    <property name="text">
-                     <string>GS</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="checkBoxXG">
-                    <property name="toolTip">
-                     <string>XG patch</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>If set, the patch is available in an 'XG' or 'NO' midi song type.</string>
-                    </property>
-                    <property name="text">
-                     <string>XG</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
                       <height>20</height>
                      </size>
                     </property>
@@ -2042,9 +1983,6 @@ Caution! Watch out for controllers such as
   <tabstop>spinBoxHBank</tabstop>
   <tabstop>spinBoxLBank</tabstop>
   <tabstop>spinBoxProgram</tabstop>
-  <tabstop>checkBoxGM</tabstop>
-  <tabstop>checkBoxGS</tabstop>
-  <tabstop>checkBoxXG</tabstop>
   <tabstop>ctrlName</tabstop>
   <tabstop>ctrlType</tabstop>
   <tabstop>spinBoxHCtrlNo</tabstop>
@@ -2059,7 +1997,7 @@ Caution! Watch out for controllers such as
  <connections>
   <connection>
    <sender>fileNewAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>fileNew()</slot>
    <hints>
@@ -2075,7 +2013,7 @@ Caution! Watch out for controllers such as
   </connection>
   <connection>
    <sender>fileOpenAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>fileOpen()</slot>
    <hints>
@@ -2091,7 +2029,7 @@ Caution! Watch out for controllers such as
   </connection>
   <connection>
    <sender>fileSaveAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>fileSave()</slot>
    <hints>
@@ -2107,7 +2045,7 @@ Caution! Watch out for controllers such as
   </connection>
   <connection>
    <sender>fileSaveAsAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>fileSaveAs()</slot>
    <hints>
@@ -2123,7 +2061,7 @@ Caution! Watch out for controllers such as
   </connection>
   <connection>
    <sender>fileCloseAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>fileClose()</slot>
    <hints>
@@ -2139,7 +2077,7 @@ Caution! Watch out for controllers such as
   </connection>
   <connection>
    <sender>whatsThisAction</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>EditInstrumentBase</receiver>
    <slot>helpWhatsThis()</slot>
    <hints>
@@ -2160,12 +2098,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>214</x>
-     <y>411</y>
+     <x>271</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
-     <x>289</x>
-     <y>412</y>
+     <x>322</x>
+     <y>374</y>
     </hint>
    </hints>
   </connection>
@@ -2176,12 +2114,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>214</x>
-     <y>411</y>
+     <x>271</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>412</y>
+     <x>385</x>
+     <y>374</y>
     </hint>
    </hints>
   </connection>
@@ -2192,12 +2130,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>214</x>
-     <y>411</y>
+     <x>271</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
-     <x>390</x>
-     <y>412</y>
+     <x>406</x>
+     <y>374</y>
     </hint>
    </hints>
   </connection>
@@ -2208,12 +2146,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>214</x>
-     <y>411</y>
+     <x>271</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
-     <x>436</x>
-     <y>412</y>
+     <x>469</x>
+     <y>374</y>
     </hint>
    </hints>
   </connection>
@@ -2224,12 +2162,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>469</y>
+     <x>286</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>470</y>
+     <x>385</x>
+     <y>434</y>
     </hint>
    </hints>
   </connection>
@@ -2240,12 +2178,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>469</y>
+     <x>286</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
-     <x>436</x>
-     <y>470</y>
+     <x>469</x>
+     <y>434</y>
     </hint>
    </hints>
   </connection>
@@ -2256,12 +2194,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>469</y>
+     <x>286</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
-     <x>289</x>
-     <y>470</y>
+     <x>322</x>
+     <y>434</y>
     </hint>
    </hints>
   </connection>
@@ -2272,12 +2210,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>469</y>
+     <x>286</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
-     <x>390</x>
-     <y>470</y>
+     <x>406</x>
+     <y>434</y>
     </hint>
    </hints>
   </connection>
@@ -2288,12 +2226,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>220</x>
-     <y>440</y>
+     <x>285</x>
+     <y>402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>441</y>
+     <x>385</x>
+     <y>404</y>
     </hint>
    </hints>
   </connection>
@@ -2304,12 +2242,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>220</x>
-     <y>440</y>
+     <x>285</x>
+     <y>402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>436</x>
-     <y>441</y>
+     <x>469</x>
+     <y>404</y>
     </hint>
    </hints>
   </connection>
@@ -2320,12 +2258,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>220</x>
-     <y>440</y>
+     <x>285</x>
+     <y>402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>289</x>
-     <y>441</y>
+     <x>322</x>
+     <y>404</y>
     </hint>
    </hints>
   </connection>
@@ -2336,12 +2274,12 @@ Caution! Watch out for controllers such as
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>220</x>
-     <y>440</y>
+     <x>285</x>
+     <y>402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>390</x>
-     <y>441</y>
+     <x>406</x>
+     <y>404</y>
     </hint>
    </hints>
   </connection>

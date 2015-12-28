@@ -215,14 +215,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       toolBar->addAction(QWhatsThis::createAction(this));
       Help->addAction(QWhatsThis::createAction(this));
 
-      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-      checkBoxGM->setEnabled(false);
-      checkBoxGS->setEnabled(false);
-      checkBoxXG->setEnabled(false);
-      checkBoxGM->setVisible(false);
-      checkBoxGS->setVisible(false);
-      checkBoxXG->setVisible(false);
-        
       // populate instrument list
       oldMidiInstrument = 0;
       oldPatchItem = 0;
@@ -326,12 +318,10 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       changeInstrument();
       
       connect(viewController, SIGNAL(itemSelectionChanged()), SLOT(controllerChanged()));
-      
-      connect(instrumentName, SIGNAL(returnPressed()), SLOT(instrumentNameReturn()));
-      connect(instrumentName, SIGNAL(lostFocus()), SLOT(instrumentNameReturn()));
-      
-      connect(patchNameEdit, SIGNAL(returnPressed()), SLOT(patchNameReturn()));
-      connect(patchNameEdit, SIGNAL(lostFocus()), SLOT(patchNameReturn()));
+
+      connect(instrumentName, SIGNAL(editingFinished()), SLOT(instrumentNameReturn()));
+      connect(patchNameEdit, SIGNAL(editingFinished()), SLOT(patchNameReturn()));
+
       connect(patchDelete, SIGNAL(clicked()), SLOT(deletePatchClicked()));
       connect(patchNew, SIGNAL(clicked()), SLOT(newPatchClicked()));
       connect(patchNewGroup, SIGNAL(clicked()), SLOT(newGroupClicked()));
@@ -344,8 +334,9 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(newController, SIGNAL(clicked()), SLOT(newControllerClicked()));
       connect(addController, SIGNAL(clicked()), SLOT(addControllerClicked()));
       connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged(int)));
-      connect(ctrlName, SIGNAL(returnPressed()), SLOT(ctrlNameReturn()));
-      connect(ctrlName, SIGNAL(lostFocus()), SLOT(ctrlNameReturn()));
+
+      connect(ctrlName, SIGNAL(editingFinished()), SLOT(ctrlNameReturn()));
+
       connect(spinBoxHCtrlNo, SIGNAL(valueChanged(int)), SLOT(ctrlNumChanged()));
       connect(spinBoxLCtrlNo, SIGNAL(valueChanged(int)), SLOT(ctrlNumChanged()));
       connect(spinBoxMin, SIGNAL(valueChanged(int)), SLOT(ctrlMinChanged(int)));
@@ -356,7 +347,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(ctrlShowInMidi,SIGNAL(stateChanged(int)), SLOT(ctrlShowInMidiChanged(int)));
       connect(ctrlShowInDrum,SIGNAL(stateChanged(int)), SLOT(ctrlShowInDrumChanged(int)));
       
-      connect(tabWidget3, SIGNAL(currentChanged(QWidget*)), SLOT(tabChanged(QWidget*)));
+      connect(tabWidget3, SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
       connect(sysexList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
          SLOT(sysexChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
@@ -1257,7 +1248,7 @@ void EditInstrument::changeInstrument()
         sysexList->addItem(item);
         }
   if(sysexList->item(0))
-    sysexList->item(0)->setSelected(true);
+    sysexList->setCurrentItem(sysexList->item(0));
   sysexList->blockSignals(false);
   sysexChanged(sysexList->item(0), 0);
 
@@ -1293,7 +1284,7 @@ void EditInstrument::changeInstrument()
   {
     // This may cause a patchChanged call.
     patchView->blockSignals(true);
-    fc->setSelected(true);
+    patchView->setCurrentItem(fc);
     patchView->blockSignals(false);
   }
       
@@ -1310,7 +1301,7 @@ void EditInstrument::changeInstrument()
   if(ci)
   {
     viewController->blockSignals(true);
-    ci->setSelected(true);
+    viewController->setCurrentItem(ci);
     viewController->blockSignals(false);
   }  
   
@@ -1380,24 +1371,24 @@ void EditInstrument::instrumentChanged()
 
 void EditInstrument::instrumentNameReturn()
 {
-  QListWidgetItem* item = instrumentList->currentItem();
+  MusECore::MidiInstrument* oi = 0;
+  if(oldMidiInstrument)
+    oi = (MusECore::MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
 
-  if (item == 0)
-        return;
+  if(!oi)
+    return;
   QString s = instrumentName->text();
   
-  if(s == item->text()) 
+  if(s == oldMidiInstrument->text()) 
     return;
-  
-  MusECore::MidiInstrument* curins = (MusECore::MidiInstrument*)item->data(Qt::UserRole).value<void*>();
   
   for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
   {
-    if((*i) != curins && s == (*i)->iname()) 
+    if((*i) != oi && s == (*i)->iname()) 
     {
       instrumentName->blockSignals(true);
       // Grab the last valid name from the item text, since the instrument has not been updated yet.
-      instrumentName->setText(item->text());
+      instrumentName->setText(oldMidiInstrument->text());
       instrumentName->blockSignals(false);
       
       QMessageBox::critical(this,
@@ -1411,7 +1402,7 @@ void EditInstrument::instrumentNameReturn()
     }
   }      
   
-  item->setText(s);
+  oldMidiInstrument->setText(s);
   workingInstrument->setIName(s);
   workingInstrument->setDirty(true);
 }
@@ -1453,8 +1444,9 @@ void EditInstrument::deleteInstrument(QListWidgetItem* item)
 //    so that 'Program' default values and text are current in controller tab. 
 //---------------------------------------------------------
 
-void EditInstrument::tabChanged(QWidget* w)
+void EditInstrument::tabChanged(int idx)
 {
+  QWidget* w = tabWidget3->widget(idx);
   if(!w)
     return;
     
@@ -1586,10 +1578,6 @@ void EditInstrument::patchChanged()
         spinBoxProgram->setEnabled(false);
         showPatchInMidiButton->setEnabled(false);
         showPatchInDrumsButton->setEnabled(false);
-        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-        //checkBoxGM->setEnabled(false);
-        //checkBoxGS->setEnabled(false);
-        //checkBoxXG->setEnabled(false);
         return;
       }
       
@@ -1603,10 +1591,6 @@ void EditInstrument::patchChanged()
         spinBoxProgram->setEnabled(true);
         showPatchInMidiButton->setEnabled(true);
         showPatchInDrumsButton->setEnabled(true);
-        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-        //checkBoxGM->setEnabled(true);
-        //checkBoxGS->setEnabled(true);
-        //checkBoxXG->setEnabled(true);
         
         int hb = ((p->hbank + 1) & 0xff);
         int lb = ((p->lbank + 1) & 0xff);
@@ -1616,10 +1600,6 @@ void EditInstrument::patchChanged()
         spinBoxProgram->setValue(pr);
         showPatchInMidiButton->setChecked(!p->drum);
         showPatchInDrumsButton->setChecked(p->drum);
-        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-        //checkBoxGM->setChecked(p->typ & 1);
-        //checkBoxGS->setChecked(p->typ & 2);
-        //checkBoxXG->setChecked(p->typ & 4);
       }  
       else
       // The item is a patch group item.
@@ -1630,10 +1610,6 @@ void EditInstrument::patchChanged()
         spinBoxProgram->setEnabled(false);
         showPatchInMidiButton->setEnabled(false);
         showPatchInDrumsButton->setEnabled(false);
-        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-        //checkBoxGM->setEnabled(false);
-        //checkBoxGS->setEnabled(false);
-        //checkBoxXG->setEnabled(false);
       }  
     }
 
@@ -2971,11 +2947,11 @@ void EditInstrument::newPatchClicked()
       patchNameEdit->setText(patchName);
       
       sitem->setData(0, Qt::UserRole, QVariant::fromValue((void*)(patch)));
-      
+
       // May cause patchChanged call.
       patchView->blockSignals(true);
-      sitem->setSelected(true);
-      patchView->scrollToItem((QTreeWidgetItem*)sitem, QAbstractItemView::EnsureVisible);
+      patchView->setCurrentItem(sitem);
+      patchView->scrollToItem(sitem, QAbstractItemView::EnsureVisible);
       patchView->blockSignals(false);
       
       spinBoxHBank->setEnabled(true);
@@ -2983,10 +2959,6 @@ void EditInstrument::newPatchClicked()
       spinBoxProgram->setEnabled(true);
       showPatchInMidiButton->setEnabled(true);
       showPatchInDrumsButton->setEnabled(true);
-      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-      //checkBoxGM->setEnabled(true);
-      //checkBoxGS->setEnabled(true);
-      //checkBoxXG->setEnabled(true);
       
       oldPatchItem = 0;
       patchChanged();
@@ -3042,7 +3014,7 @@ void EditInstrument::newGroupClicked()
       
       // May cause patchChanged call.
       patchView->blockSignals(true);
-      sitem->setSelected(true);
+      patchView->setCurrentItem(sitem);
       patchView->blockSignals(false);
       
       oldPatchItem = sitem;
@@ -3052,10 +3024,6 @@ void EditInstrument::newGroupClicked()
       spinBoxProgram->setEnabled(false);
       showPatchInMidiButton->setEnabled(false);
       showPatchInDrumsButton->setEnabled(false);
-      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-      //checkBoxGM->setEnabled(false);
-      //checkBoxGS->setEnabled(false);
-      //checkBoxXG->setEnabled(false);
       
       workingInstrument->setDirty(true);
       }
@@ -3337,26 +3305,6 @@ void EditInstrument::updatePatch(MusECore::MidiInstrument* instrument, MusECore:
             p->drum = showPatchInDrumsButton->isChecked();
             instrument->setDirty(true);
             }
-            
-      // there is no logical xor in c++
-// REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
-//       bool a = p->typ & 1;
-//       bool b = p->typ & 2;
-//       bool c = p->typ & 4;
-//       bool aa = checkBoxGM->isChecked();
-//       bool bb = checkBoxGS->isChecked();
-//       bool cc = checkBoxXG->isChecked();
-//       if ((a ^ aa) || (b ^ bb) || (c ^ cc)) {
-//             int value = 0;
-//             if (checkBoxGM->isChecked())
-//                   value |= 1;
-//             if (checkBoxGS->isChecked())
-//                   value |= 2;
-//             if (checkBoxXG->isChecked())
-//                   value |= 4;
-//             p->typ = value;
-//             instrument->setDirty(true);
-//             }
       }
 
 //---------------------------------------------------------
@@ -3672,7 +3620,7 @@ void EditInstrument::populateInitEventList()
     initEventList->addTopLevelItem(item);
   }
   if(initEventList->topLevelItem(0))
-    initEventList->topLevelItem(0)->setSelected(true);
+    initEventList->setCurrentItem(initEventList->topLevelItem(0));
   initEventList->blockSignals(false);
 }
 
