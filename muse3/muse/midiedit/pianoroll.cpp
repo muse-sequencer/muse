@@ -304,7 +304,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       tools2 = new MusEGui::EditToolBar(this, pianorollTools);
       addToolBar(tools2);
-      tools2->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+      tools2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 
       addToolBarBreak();
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);
