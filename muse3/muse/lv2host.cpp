@@ -1146,7 +1146,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                                             "<b>ldd " LV2_GTK_HELPER "</b><br />"
                                                             "in terminal window.<br />"
                                                             "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                            "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                            "It can be recompiled and reinstalled from muse3/muse/lv2Gtk2Helper folder "
                                                             " from MusE source package. dl error was:"
                                                              ) + QString::fromUtf8(dlerror())+ "<br />"
                                                             "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
@@ -2435,7 +2435,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
    }
 
-   if(_midiInPorts.size() > 0)
+   const LilvPluginClass *cls = lilv_plugin_get_class(_plugin);
+   const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+   const char *clsname = lilv_node_as_uri(ncuri);
+   if((strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0) && (_midiInPorts.size() > 0))
    {
       _isSynth = true;
    }

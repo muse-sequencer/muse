@@ -674,7 +674,7 @@ bool RouteTreeWidgetItem::mousePressHandler(QMouseEvent* e, const QRect& rect)
 {
   const QPoint pt = e->pos(); 
   const Qt::KeyboardModifiers km = e->modifiers();
-  bool ctl;
+  bool ctl = false;
   switch(_itemMode)
   {
     case ExclusiveMode:
@@ -820,7 +820,7 @@ bool RouteTreeWidgetItem::mouseMoveHandler(QMouseEvent* e, const QRect& rect)
   const QPoint pt = e->pos(); 
   const Qt::KeyboardModifiers km = e->modifiers();
   
-  bool ctl;
+  bool ctl = false;
   switch(_itemMode)
   {
     case ExclusiveMode:
