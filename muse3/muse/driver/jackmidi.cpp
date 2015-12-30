@@ -39,6 +39,7 @@
 #include "../midiseq.h"
 #include "../midictrl.h"
 #include "../audio.h"
+#include "minstrument.h"
 #include "mpevent.h"
 //#include "sync.h"
 #include "audiodev.h"
@@ -593,6 +594,12 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
 
       switch(type) {
             case ME_NOTEON:
+                 // REMOVE Tim. Noteoff. Added.
+                 // Convert zero-velocity note ons to note offs as per midi spec.
+                 if(b == 0)
+                   event.setType(ME_NOTEOFF);
+                 // Fall through.
+                 
             case ME_NOTEOFF:
             case ME_CONTROLLER:
             case ME_POLYAFTER:
@@ -920,7 +927,64 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   //printf("MidiJackDevice::processEvent time:%d type:%d ch:%d A:%d B:%d\n", t, event.type(), chn, a, b);  
   #endif  
       
-  if(event.type() == ME_PROGRAM) 
+  // REMOVE Tim. Noteoff. Added.
+  MidiInstrument::NoteOffMode nom = MidiInstrument::NoteOffAll; // Default to NoteOffAll in case of no port.
+  const int mport = midiPort();
+  if(mport != -1)
+  {
+    if(MidiInstrument* mi = MusEGlobal::midiPorts[mport].instrument())
+      nom = mi->noteOffMode();
+  }
+  
+  // REMOVE Tim. Noteoff. Added.
+  if(event.type() == ME_NOTEON)
+  {
+    if(b == 0)
+    {
+      // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+      //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+      // Nothing should be setting a Note type Event's on velocity to zero.
+      // But just in case... If we get this warning, it means there is still code to change.
+      fprintf(stderr, "MidiJackDevice::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", t, event.type(), chn, a, b);  
+      switch(nom)
+      {
+        // Instrument uses note offs. Convert to zero-vel note off.
+        case MidiInstrument::NoteOffAll:
+          return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEOFF, a, 0));
+        break;
+        
+        // Instrument uses no note offs at all. Send as-is.
+        case MidiInstrument::NoteOffNone:
+        // Instrument converts all note offs to zero-vel note ons. Send as-is.
+        case MidiInstrument::NoteOffConvertToZVNoteOn:
+          return queueEvent(event);
+        break;
+      }
+    }
+    return queueEvent(event);
+  }
+  else if(event.type() == ME_NOTEOFF)
+  {
+    switch(nom)
+    {
+      // Instrument uses note offs. Send as-is.
+      case MidiInstrument::NoteOffAll:
+        return queueEvent(event);
+      break;
+      
+      // Instrument uses no note offs at all. Send nothing. Eat up the event - return true.
+      case MidiInstrument::NoteOffNone:
+        return true;
+        
+      // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+      case MidiInstrument::NoteOffConvertToZVNoteOn:
+        return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEON, a, 0));
+      break;
+    }
+    return queueEvent(event);
+  }
+  
+  else if(event.type() == ME_PROGRAM) 
   {
     // don't output program changes for GM drum channel
     //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {

@@ -193,6 +193,11 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       setupUi(this);
 
       workingInstrument = new MusECore::MidiInstrument();
+
+      noteOffModeList->addItem(tr("Use note offs"), MusECore::MidiInstrument::NoteOffAll);
+      noteOffModeList->addItem(tr("No note offs"), MusECore::MidiInstrument::NoteOffNone);
+      noteOffModeList->addItem(tr("Convert to 0-vel note ons"), MusECore::MidiInstrument::NoteOffConvertToZVNoteOn);
+      noteOffModeList->setCurrentIndex(0);
       
       ctrlType->addItem(tr("Control7"), MusECore::MidiController::Controller7);
       ctrlType->addItem(tr("Control14"), MusECore::MidiController::Controller14);
@@ -319,6 +324,8 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       
       connect(viewController, SIGNAL(itemSelectionChanged()), SLOT(controllerChanged()));
 
+      connect(noteOffModeList,SIGNAL(activated(int)), SLOT(noteOffModeChanged(int)));
+      
       connect(instrumentName, SIGNAL(editingFinished()), SLOT(instrumentNameReturn()));
       connect(patchNameEdit, SIGNAL(editingFinished()), SLOT(patchNameReturn()));
 
@@ -1197,6 +1204,10 @@ void EditInstrument::changeInstrument()
   workingInstrument->assign( *((MusECore::MidiInstrument*)sel->data(Qt::UserRole).value<void*>()) );
   
   workingInstrument->setDirty(false);
+
+  noteOffModeList->blockSignals(true);
+  noteOffModeList->setCurrentIndex(workingInstrument->noteOffMode());
+  noteOffModeList->blockSignals(false);
   
   // populate patch list
   patchView->blockSignals(true);
@@ -1436,6 +1447,19 @@ void EditInstrument::deleteInstrument(QListWidgetItem* item)
   
   // Delete the instrument.
   delete ins;
+}
+
+//---------------------------------------------------------
+//   noteOffModeChanged
+//---------------------------------------------------------
+
+void EditInstrument::noteOffModeChanged(int idx)
+{
+  MusECore::MidiInstrument::NoteOffMode t = (MusECore::MidiInstrument::NoteOffMode)noteOffModeList->itemData(idx).toInt();
+  if(workingInstrument->noteOffMode() == t)
+    return;
+  workingInstrument->setNoteOffMode(t);
+  workingInstrument->setDirty(true);
 }
 
 //---------------------------------------------------------

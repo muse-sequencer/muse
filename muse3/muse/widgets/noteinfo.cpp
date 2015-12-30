@@ -92,7 +92,9 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(label);
       selVelOn = new SpinBox();
       selVelOn->setFocusPolicy(Qt::StrongFocus);
-      selVelOn->setRange(0, 127);
+      // REMOVE Tim. Noteoff. Changed.
+//       selVelOn->setRange(0, 127);
+      selVelOn->setRange(1, 127);
       selVelOn->setSingleStep(1);
       addWidget(selVelOn);
 
@@ -156,7 +158,9 @@ void NoteInfo::set_mode()
             }
       else {
             selLen->setRange(0, 100000);
-            selVelOn->setRange(0, 127);
+            // REMOVE Tim. Noteoff. Changed.
+//             selVelOn->setRange(0, 127);
+            selVelOn->setRange(1, 127);
             selVelOff->setRange(0, 127);
             }
       blockSignals(false);
@@ -257,6 +261,10 @@ void NoteInfo::setValue(ValType type, int val)
                   selLen->setValue(val);
                   break;
             case VAL_VELON:
+                  // REMOVE Tim. Noteoff. Added.
+                  if(!deltaMode && val == 0)
+                    fprintf(stderr, "NoteInfo::setValue: Warning: Value is zero note on velocity!\n");
+                  
                   selVelOn->setValue(val);
                   break;
             case VAL_VELOFF:
@@ -284,7 +292,13 @@ void NoteInfo::setValues(unsigned tick, int val2, int val3, int val4,
       if (selPitch->value() != val3)
             selPitch->setValue(val3);
       if (selVelOn->value() != val4)
-            selVelOn->setValue(val4);
+      {
+        // REMOVE Tim. Noteoff. Added.
+        if(!deltaMode && val4 == 0)
+          fprintf(stderr, "NoteInfo::setValues: Warning: Zero note on velocity!\n");
+        
+        selVelOn->setValue(val4);
+      }            
       if (selVelOff->value() != val5)
             selVelOff->setValue(val5);
       blockSignals(false);

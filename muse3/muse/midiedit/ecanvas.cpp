@@ -67,7 +67,9 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       playedPitch = -1;
       playedPitchChannel = -1;
       playedPitchPort = -1;
-      playedVelocity = 0;
+      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//       playedVelocity = 0;
+      playedVelocity = 1;
 
       setBg(MusEGlobal::config.midiCanvasBg);
       setAcceptDrops(true);
@@ -511,6 +513,13 @@ void EventCanvas::deselectAll()
 
 void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       {
+      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+      if(velocity == 0)
+      {
+        fprintf(stderr, "EventCanvas::startPlayEvent: Warning: Zero note on velocity!\n");
+        velocity = 1;
+      }
+      
       if (MusEGlobal::debugMsg)
         printf("EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
 
@@ -546,7 +555,9 @@ void EventCanvas::stopPlayEvent()
       MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       playedPitch = playedPitchPort = playedPitchChannel = -1;
-      playedVelocity = 0;
+      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+//       playedVelocity = 0;
+      playedVelocity = 1;
       }
 
 } // namespace MusEGui

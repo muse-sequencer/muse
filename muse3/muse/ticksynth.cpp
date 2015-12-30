@@ -228,6 +228,8 @@ void MetronomeSynthIF::initSamples()
 
 bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
 {
+    if(ev.type() != MusECore::ME_NOTEON)
+      return false;
     if (ev.dataA() == MusECore::measureSound) {
         if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
             data = defaultClickEmphasis;

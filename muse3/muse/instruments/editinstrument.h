@@ -99,6 +99,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       virtual void fileClose();
       virtual void helpWhatsThis();
       void instrumentChanged();
+      void noteOffModeChanged(int);
       void tabChanged(int);
       void patchChanged();
       void controllerChanged();

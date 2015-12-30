@@ -49,6 +49,7 @@
 #include "jackaudio.h"
 #include "midi.h"
 #include "midiport.h"
+#include "minstrument.h"
 #include "stringparam.h"
 #include "plugin.h"
 #include "controlfifo.h"
@@ -1093,6 +1094,9 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
   fprintf(stderr, "DssiSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
   #endif
   
+  // REMOVE Tim. Noteoff. Added.
+  const MidiInstrument::NoteOffMode nom = synti->noteOffMode();
+  
   switch(e.type()) 
   {
     case ME_NOTEON:
@@ -1102,10 +1106,41 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
-      if(b)
-        snd_seq_ev_set_noteon(event, chn, a, b);
+      
+      // REMOVE Tim. Noteoff. Changed.
+//       if(b)
+//         snd_seq_ev_set_noteon(event, chn, a, b);
+//       else
+//         snd_seq_ev_set_noteoff(event, chn, a, 0);
+      if(b == 0)
+      {
+        // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+        //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+        // Nothing should be setting a Note type Event's on velocity to zero.
+        // But just in case... If we get this warning, it means there is still code to change.
+        fprintf(stderr, "DssiSynthIF::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", e.time(), e.type(), chn, a, b);  
+        switch(nom)
+        {
+          // Instrument uses note offs. Convert to zero-vel note off.
+          case MidiInstrument::NoteOffAll:
+            //if(MusEGlobal::midiOutputTrace)
+            //  fprintf(stderr, "MidiOut: DSSI: Following event will be converted to zero-velocity note off:\n");
+            snd_seq_ev_set_noteoff(event, chn, a, 0);
+          break;
+          
+          // Instrument uses no note offs at all. Send as-is.
+          case MidiInstrument::NoteOffNone:
+          // Instrument converts all note offs to zero-vel note ons. Send as-is.
+          case MidiInstrument::NoteOffConvertToZVNoteOn:
+            snd_seq_ev_set_noteon(event, chn, a, b);
+          break;
+        }
+      }
       else
-        snd_seq_ev_set_noteoff(event, chn, a, 0);
+        snd_seq_ev_set_noteon(event, chn, a, b);
+      
+      
+      
     break;
     case ME_NOTEOFF:
       #ifdef DSSI_DEBUG 
@@ -1114,7 +1149,28 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_noteoff(event, chn, a, 0);
+      
+      // REMOVE Tim. Noteoff. Changed.
+//       snd_seq_ev_set_noteoff(event, chn, a, 0);
+      switch(nom)
+      {
+        // Instrument uses note offs. Send as-is.
+        case MidiInstrument::NoteOffAll:
+          snd_seq_ev_set_noteoff(event, chn, a, b);
+        break;
+        
+        // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+        case MidiInstrument::NoteOffNone:
+          return false;
+          
+        // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+        case MidiInstrument::NoteOffConvertToZVNoteOn:
+          //if(MusEGlobal::midiOutputTrace)
+          //  fprintf(stderr, "MidiOut: DSSI: Following event will be converted to zero-velocity note on:\n");
+          snd_seq_ev_set_noteon(event, chn, a, 0);
+        break;
+      }
+                  
     break;
     case ME_PROGRAM:
     {

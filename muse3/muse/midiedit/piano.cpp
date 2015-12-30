@@ -752,7 +752,13 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
             }
       else {
             int velocity = event->x()*127/40;
-            emit keyPressed(keyDown, velocity>127 ? 127 : velocity, shift); //emit keyPressed(keyDown, shift);
+            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//             emit keyPressed(keyDown, velocity>127 ? 127 : velocity, shift); //emit keyPressed(keyDown, shift);
+            if(velocity > 127)
+              velocity = 127;
+            else if(velocity <= 0)
+              velocity = 1;  // Zero note on vel is not allowed.
+            emit keyPressed(keyDown, velocity, shift); //emit keyPressed(keyDown, shift);
             }
             
       if (keyDown != -1 && keyDown != _curSelectedPitch) {

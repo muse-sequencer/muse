@@ -98,7 +98,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       tickValue     = 0;
       lenValue      = 0;
       pitchValue    = 0;
-      veloOnValue   = 0;
+      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//       veloOnValue   = 0;
+      veloOnValue   = 1;
       veloOffValue  = 0;
       firstValueSet = false;
       tickOffset    = 0;
@@ -718,6 +720,12 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*par
         lenValue     = e.lenTick();
         pitchValue   = e.pitch();
         veloOnValue  = e.velo();
+        // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+        if(veloOnValue == 0)
+        {
+          veloOnValue = 1;
+          fprintf(stderr, "PianoRoll::setSelection: Warning: Zero note on velocity!\n");
+        }
         veloOffValue = e.veloOff();
         firstValueSet = true;
       }
@@ -731,12 +739,16 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*par
             }
       else {
             info->setEnabled(false);
-            info->setValues(0, 0, 0, 0, 0);
+            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//             info->setValues(0, 0, 0, 0, 0);
+            info->setValues(0, 0, 0, deltaMode ? 0 : 1, 0);
             firstValueSet = false;
             tickValue     = 0;
             lenValue      = 0;
             pitchValue    = 0;
-            veloOnValue   = 0;
+            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//             veloOnValue   = 0;
+            veloOnValue   = 1;
             veloOffValue  = 0;
             tickOffset    = 0;
             lenOffset     = 0;

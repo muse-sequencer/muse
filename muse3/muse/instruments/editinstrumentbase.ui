@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>772</width>
-    <height>458</height>
+    <width>704</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -58,6 +58,36 @@
          <widget class="QListWidget" name="instrumentList">
           <property name="whatsThis">
            <string>List of defined instruments.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Note off mode:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="noteOffModeList">
+          <property name="toolTip">
+           <string>Note off mode</string>
+          </property>
+          <property name="whatsThis">
+           <string>Selects how to handle note off events.
+The instrument can use note off events,
+ or not at all, or convert them to
+ zero-velocity note on events which helps
+ save midi interface bandwidth.
+Refer to the instrument manufacturer's 
+ midi implementation chart for details.</string>
           </property>
          </widget>
         </item>
@@ -1848,7 +1878,7 @@ Caution! Watch out for controllers such as
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>772</width>
+     <width>704</width>
      <height>21</height>
     </rect>
    </property>

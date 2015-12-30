@@ -168,12 +168,20 @@ struct dumb_patchlist_entry_t
 //---------------------------------------------------------
 
 class MidiInstrument {
+   public:
+     //              NoteOffAll  = Use all note offs.
+     //              NoteOffNone = Do not use any note offs.
+     // NoteOffConvertToZVNoteOn = Convert all note offs to zero-velocity note ons.
+     enum NoteOffMode { NoteOffAll=0, NoteOffNone, NoteOffConvertToZVNoteOn };
+      
+   private:
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
       std::list<patch_drummap_mapping_t> patch_drummap_mapping;
       bool _dirty;
       int _nullvalue;
+      NoteOffMode _noteOffMode;
 
       void init();
 
@@ -225,6 +233,11 @@ class MidiInstrument {
       MidiControllerList* controller() const { return _controller; }
       int nullSendValue() { return _nullvalue; }
       void setNullSendValue(int v) { _nullvalue = v; }
+
+      // Virtual so that inheriters (synths etc) can return whatever they want.
+      virtual NoteOffMode noteOffMode() const { return _noteOffMode; }
+      // For non-synths, users can set this value.
+      void setNoteOffMode(NoteOffMode mode) { _noteOffMode = mode; }
 
       void readMidiState(Xml& xml);
       virtual void reset(int); 
