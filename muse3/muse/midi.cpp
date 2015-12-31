@@ -1278,7 +1278,7 @@ void Audio::processMidi()
                                 {
                                   // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
                                   // If the event is marked as a note with zero velocity (above), do not sound the note.
-                                  if(event.isNote() && event.dataB() != 0)
+                                  if(!event.isNote() || event.dataB() != 0)
                                   {
                                     
                                     // All recorded events arrived in previous period. Shift into this period for playback. 
