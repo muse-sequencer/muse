@@ -760,7 +760,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               if (velo > 127)
                                     velo = 127;
                               if (velo < 1)           // no off event
-                                    velo = 1;
+                                    // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
+                                    //velo = 1;
+                                    continue;
                               len = (len *  track->len) / 100;
                               if (len <= 0)     // dont allow zero length
                                     len = 1;
@@ -1210,7 +1212,10 @@ void Audio::processMidi()
                                             if (velo > 127)
                                                   velo = 127;
                                             if (velo < 1)
-                                                  velo = 1;
+                                                  // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
+                                                  //velo = 1;
+                                                  velo = 0; // Use zero as a marker to tell the playback (below) not to sound the note.
+                                            
                                             event.setB(velo);
                                       }
                                 }
@@ -1271,28 +1276,34 @@ void Audio::processMidi()
   
                                 if (!dev->isSynti()) 
                                 {
-                                  // All recorded events arrived in previous period. Shift into this period for playback. 
-                                  //  frameoffset needed to make process happy.
-                                  unsigned int et = event.time();
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
-                                  unsigned int t = et + frameOffset;
-#endif
-                                  event.setTime(t);  
-                                  // Check if we're outputting to another port than default:
-                                  if (devport == defaultPort) {
-                                        event.setPort(port);
-                                        if(md && track->recEcho())
-                                          md->addScheduledEvent(event);
-                                        }
-                                  else {
-                                        // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
-                                        MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-                                        if(mdAlt && track->recEcho())
-                                          mdAlt->addScheduledEvent(event);
-                                        }
-                                  event.setTime(et);  // Restore for recording.
+                                  // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
+                                  // If the event is marked as a note with zero velocity (above), do not sound the note.
+                                  if(!event.isNote() || event.dataB() != 0)
+                                  {
+                                    
+                                    // All recorded events arrived in previous period. Shift into this period for playback. 
+                                    //  frameoffset needed to make process happy.
+                                    unsigned int et = event.time();
+  #ifdef _AUDIO_USE_TRUE_FRAME_
+                                    unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+  #else
+                                    unsigned int t = et + frameOffset;
+  #endif
+                                    event.setTime(t);  
+                                    // Check if we're outputting to another port than default:
+                                    if (devport == defaultPort) {
+                                          event.setPort(port);
+                                          if(md && track->recEcho())
+                                            md->addScheduledEvent(event);
+                                          }
+                                    else {
+                                          // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
+                                          MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
+                                          if(mdAlt && track->recEcho())
+                                            mdAlt->addScheduledEvent(event);
+                                          }
+                                    event.setTime(et);  // Restore for recording.
+                                  }
                                   
                                   // Shall we activate meters even while rec echo is off? Sure, why not...
                                   if(event.isNote() && event.dataB() > track->activity())
@@ -1417,6 +1428,9 @@ void Audio::processMidi()
                   if (md) {
                     MusECore::MidiPlayEvent evmidi = ev;
                     md->addScheduledEvent(evmidi);
+                    // REMOVE Tim. Noteoff. Added. Ticksynth has been modified too.
+                    // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
+                    evmidi.setType(MusECore::ME_NOTEOFF);
                     evmidi.setB(0);
                     evmidi.setTime(midiClick+10);
                     md->addStuckNote(evmidi);

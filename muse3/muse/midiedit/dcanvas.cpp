@@ -976,6 +976,12 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void DrumCanvas::keyPressed(int index, int velocity)
 {
+      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+      if(velocity > 127)
+        velocity = 127;
+      else if(velocity <= 0)
+        velocity = 1;
+      
       if ((index<0) || (index>=getOurDrumMapSize()))
         return;
       // called from DList - play event
@@ -1260,7 +1266,9 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         if (velo > 127)
                               velo = 127;
                         else if (velo < 0)
-                              velo = 0;
+                              // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                               velo = 0;
+                              velo = 1;
                         newEvent.setVelo(velo);
                         }
                         break;

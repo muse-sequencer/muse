@@ -75,8 +75,6 @@ namespace MusEGui
 
    QTimer tap_timer;
    QDateTime last_tap_time;
-   int n_taps;
-   qint64 msecs_avg;
 			
 		public:
 			TempoToolbarWidget(QWidget* parent);

@@ -58,6 +58,7 @@
 #include "xml.h"
 #include "song.h"
 #include "ctrl.h"
+#include "minstrument.h"
 
 #include "app.h"
 #include "globals.h"
@@ -1145,7 +1146,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                                             "<b>ldd " LV2_GTK_HELPER "</b><br />"
                                                             "in terminal window.<br />"
                                                             "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                            "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                            "It can be recompiled and reinstalled from muse3/muse/lv2Gtk2Helper folder "
                                                             " from MusE source package. dl error was:"
                                                              ) + QString::fromUtf8(dlerror())+ "<br />"
                                                             "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
@@ -2434,7 +2435,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
    }
 
-   if(_midiInPorts.size() > 0)
+   const LilvPluginClass *cls = lilv_plugin_get_class(_plugin);
+   const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+   const char *clsname = lilv_node_as_uri(ncuri);
+   if((strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0) && (_midiInPorts.size() > 0))
    {
       _isSynth = true;
    }
@@ -3292,20 +3296,51 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
    fprintf(stderr, "LV2SynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
 #endif
 
+   // REMOVE Tim. Noteoff. Added.
+   const MidiInstrument::NoteOffMode nom = synti->noteOffMode();
+  
    switch(type)
    {
    case ME_NOTEON:
 #ifdef LV2_DEBUG
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
 #endif
-      if(b)
+      // REMOVE Tim. Noteoff. Changed.
+//       if(b)
+//       {
+//          sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+//       }
+//       else
+//       {
+//          sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+//       }
+      if(b == 0)
       {
-         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+        // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+        //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+        // Nothing should be setting a Note type Event's on velocity to zero.
+        // But just in case... If we get this warning, it means there is still code to change.
+        fprintf(stderr, "LV2SynthIF::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", e.time(), e.type(), chn, a, b);  
+        switch(nom)
+        {
+          // Instrument uses note offs. Convert to zero-vel note off.
+          case MidiInstrument::NoteOffAll:
+            //if(MusEGlobal::midiOutputTrace)
+            //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note off:\n");
+            sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+          break;
+          
+          // Instrument uses no note offs at all. Send as-is.
+          case MidiInstrument::NoteOffNone:
+          // Instrument converts all note offs to zero-vel note ons. Send as-is.
+          case MidiInstrument::NoteOffConvertToZVNoteOn:
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+          break;
+        }
       }
       else
-      {
-         sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
-      }
+        sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      
       break;
 
    case ME_NOTEOFF:
@@ -3313,7 +3348,27 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEOFF\n");
 #endif
 
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      // REMOVE Tim. Noteoff. Changed.
+//       sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      switch(nom)
+      {
+        // Instrument uses note offs. Send as-is.
+        case MidiInstrument::NoteOffAll:
+          sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+        break;
+        
+        // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+        case MidiInstrument::NoteOffNone:
+          return false;
+          
+        // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+        case MidiInstrument::NoteOffConvertToZVNoteOn:
+          //if(MusEGlobal::midiOutputTrace)
+          //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note on:\n");
+          sendLv2MidiEvent(evBuf, frame, (ME_NOTEON | chn) & 0xff, a & 0x7f, 0);
+        break;
+      }
+      
       break;
 
    case ME_PROGRAM:

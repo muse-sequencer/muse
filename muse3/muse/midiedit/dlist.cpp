@@ -696,32 +696,44 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             case COL_LEVEL1:
                   val = dm->lv1 + incVal;
-                  if (val < 0)
-                        val = 0;
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                   if (val < 0)
+//                         val = 0;
+                  if (val <= 0)
+                        val = 1;
                   else if (val > 127)
                         val = 127;
                   dm->lv1 = val;
                   break;
             case COL_LEVEL2:
                   val = dm->lv2 + incVal;
-                  if (val < 0)
-                        val = 0;
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                   if (val < 0)
+//                         val = 0;
+                  if (val <= 0)
+                        val = 1;
                   else if (val > 127)
                         val = 127;
                   dm->lv2 = val;
                   break;
             case COL_LEVEL3:
                   val = dm->lv3 + incVal;
-                  if (val < 0)
-                        val = 0;
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                   if (val < 0)
+//                         val = 0;
+                  if (val <= 0)
+                        val = 1;
                   else if (val > 127)
                         val = 127;
                   dm->lv3 = val;
                   break;
             case COL_LEVEL4:
                   val = dm->lv4 + incVal;
-                  if (val < 0)
-                        val = 0;
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                   if (val < 0)
+//                         val = 0;
+                  if (val <= 0)
+                        val = 1;
                   else if (val > 127)
                         val = 127;
                   dm->lv4 = val;
@@ -730,8 +742,10 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   if (button == Qt::LeftButton)
                   {
                       int velo = 127 * (ev->x() - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
-                      if (velo < 0) velo = 0;
-                      if (velo > 127 ) velo = 127;
+                      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                       if (velo < 0) velo = 0;
+                      if (velo <= 0) velo = 1;  // Zero note on vel is not allowed.
+                      else if (velo > 127 ) velo = 127;
                       emit keyPressed(instrument, velo); //Mapping done on other side, send index
                   }
                   else if (button == Qt::MidButton && dcanvas) // hide that instrument
@@ -1001,8 +1015,11 @@ void DList::returnPressed()
               case COL_LEVEL4:
                   if (val > 127) //Check bounds for lv1-lv4 values
                   val = 127;
-                  if (val < 0)
-                  val = 0;
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                   if (val < 0)
+//                   val = 0;
+                  else if (val <= 0)
+                    val = 1;
                   break;
                   
               case COL_OUTCHANNEL:

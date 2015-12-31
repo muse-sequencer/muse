@@ -1,3 +1,6 @@
+27.12.2015
+        - Midi Instrument Editor: Fixed errors from ancient missing Qt3 signals. 
+          Fixed problems with instrument / patch / controller lists. Tests OK now. (Tim)
 21.12.2015
         - Rewrited midi events code for lv2 host. Fix for #435 (danvd)
 13.12.2015

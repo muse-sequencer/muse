@@ -50,6 +50,7 @@
 #include "tempo.h"
 #include "sync.h"
 #include "al/sig.h"
+#include "minstrument.h"
 
 #include "vst_native.h"
 
@@ -2046,19 +2047,72 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
   fprintf(stderr, "VstNativeSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", type, chn, a, b);
   #endif
 
+  // REMOVE Tim. Noteoff. Added.
+  const MidiInstrument::NoteOffMode nom = synti->noteOffMode();
+  
   switch(type)
   {
     case ME_NOTEON:
       #ifdef VST_NATIVE_DEBUG
       fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_NOTEON\n");
       #endif
-      setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      
+      // REMOVE Tim. Noteoff. Added.
+      if(b == 0)
+      {
+        // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+        //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+        // Nothing should be setting a Note type Event's on velocity to zero.
+        // But just in case... If we get this warning, it means there is still code to change.
+        fprintf(stderr, "VstNativeSynthIF::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", e.time(), e.type(), chn, a, b);  
+        switch(nom)
+        {
+          // Instrument uses note offs. Convert to zero-vel note off.
+          case MidiInstrument::NoteOffAll:
+            //if(MusEGlobal::midiOutputTrace)
+            //  fprintf(stderr, "MidiOut: VST_Native: Following event will be converted to zero-velocity note off:\n");
+            setVstEvent(event, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+          break;
+          
+          // Instrument uses no note offs at all. Send as-is.
+          case MidiInstrument::NoteOffNone:
+          // Instrument converts all note offs to zero-vel note ons. Send as-is.
+          case MidiInstrument::NoteOffConvertToZVNoteOn:
+            setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+          break;
+        }
+      }
+      else
+        
+        setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);      
+      
     break;
     case ME_NOTEOFF:
       #ifdef VST_NATIVE_DEBUG
       fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_NOTEOFF\n");
       #endif
-      setVstEvent(event, (type | chn) & 0xff, a & 0x7f, 0);
+      
+      // REMOVE Tim. Noteoff. Changed.
+//       setVstEvent(event, (type | chn) & 0xff, a & 0x7f, 0);
+      switch(nom)
+      {
+        // Instrument uses note offs. Send as-is.
+        case MidiInstrument::NoteOffAll:
+          setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b);
+        break;
+        
+        // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+        case MidiInstrument::NoteOffNone:
+          return false;
+          
+        // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+        case MidiInstrument::NoteOffConvertToZVNoteOn:
+          //if(MusEGlobal::midiOutputTrace)
+          //  fprintf(stderr, "MidiOut: VST_Native: Following event will be converted to zero-velocity note on:\n");
+          setVstEvent(event, (ME_NOTEON | chn) & 0xff, a & 0x7f, 0);
+        break;
+      }
+      
     break;
     case ME_PROGRAM:
     {

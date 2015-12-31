@@ -305,6 +305,7 @@ iMidiInstrument MidiInstrumentList::find(const MidiInstrument* instr)
 
 void MidiInstrument::init()
       {
+      _noteOffMode = NoteOffAll; // By default, use note offs.
       _tmpMidiStateVersion = 1; // Assume old version. readMidiState will overwrite anyway.
       _nullvalue = -1;
       _initScript = 0;
@@ -390,6 +391,8 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _controller->clear();
 
   _nullvalue = ins._nullvalue;
+  
+  _noteOffMode = ins._noteOffMode;
 
   // Assignment
   for(ciMidiController i = ins._controller->begin(); i != ins._controller->end(); ++i)
@@ -986,9 +989,10 @@ void MidiInstrument::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "name")
                               setIName(xml.s2());
-                        else if(tag == "nullparam") {
+                        else if(tag == "nullparam") 
                               _nullvalue = xml.s2().toInt(&ok, base);
-                        }
+                        else if(tag == "NoteOffMode") 
+                              _noteOffMode = (NoteOffMode)xml.s2().toInt(&ok, base); // Default is NoteOffAll.
                         break;
                   case Xml::TagEnd:
                         if (tag == "MidiInstrument")
@@ -1015,6 +1019,12 @@ void MidiInstrument::write(int level, Xml& xml)
         QString nv;
         nv.setNum(_nullvalue);
         xml.nput(" nullparam=\"%s\"", nv.toLatin1().constData());
+      }
+      if(noteOffMode() != NoteOffAll) // Default is NoteOffAll.
+      {
+        QString nom;
+        nom.setNum(noteOffMode());
+        xml.nput(" NoteOffMode=\"%s\"", nom.toLatin1().constData());
       }
       xml.put(">");
 

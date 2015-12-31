@@ -697,6 +697,12 @@ void PianoCanvas::pianoCmd(int cmd)
 
 void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       {
+      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+      if(velocity > 127)
+        velocity = 127;
+      else if(velocity <= 0)
+        velocity = 1;
+      
       // play note:
       if(_playEvents)
         startPlayEvent(pitch, velocity);
@@ -1047,7 +1053,9 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
                         if (velo > 127)
                               velo = 127;
                         else if (velo < 0)
-                              velo = 0;
+                              // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                               velo = 0;
+                              velo = 1;
                         newEvent.setVelo(velo);
                         }
                         break;
