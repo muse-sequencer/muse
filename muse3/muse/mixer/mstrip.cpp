@@ -633,6 +633,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       inHeartBeat = true;
       _heartBeatCounter = 0;
 
+      // Start the layout in mode A (normal, racks on left).
+      _isExpanded = false;
+      
       // Set the whole strip's font, except for the label.    p4.0.45
       setFont(MusEGlobal::config.fonts[1]);
       
@@ -857,8 +860,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       meter[0]->setRange(0, 127.0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
 // REMOVE Tim. Trackinfo. Changed.      
-//       meter[0]->setFixedWidth(15);
-      meter[0]->setFixedWidth(8);
+      meter[0]->setFixedWidth(15);
+//       meter[0]->setFixedWidth(8);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
@@ -2765,7 +2768,7 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
   const int flip_w = min_w + min_w / 2;
   
 //   if(old_w <= 100 && new_w > 100)
-  if(new_w > old_w && new_w >= flip_w)
+  if(!_isExpanded && new_w > old_w && new_w >= flip_w)
   {
 //     grid->removeWidget(_upperScrollArea);
 //     grid->removeWidget(_lowerScrollArea);
@@ -2776,7 +2779,8 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
 //     grid->removeItem(_lowerScrollLayout);
 //     addGridLayout(_upperScrollLayout, _preScrollAreaPos_B);
 //     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_B);
-    
+
+    _isExpanded = true;
     grid->removeWidget(_upperRack);
     grid->removeWidget(_lowerRack);
     addGridWidget(_upperRack, _preScrollAreaPos_B);
@@ -2785,7 +2789,7 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
     _infoRack->setVisible(true); // Visible if expanded.
   }
 //   else if(old_w > 150 && new_w <= 150)
-  else if(new_w < old_w && new_w <= flip_w)
+  else if(_isExpanded && new_w < old_w && new_w <= flip_w)
   {
 //     grid->removeWidget(_upperScrollArea);
 //     grid->removeWidget(_lowerScrollArea);
@@ -2796,8 +2800,9 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
 //     grid->removeItem(_lowerScrollLayout);
 //     addGridLayout(_upperScrollLayout, _preScrollAreaPos_A);
 //     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_A);
-    
-   _infoRack->setVisible(false); // Not visible unless expanded.
+   
+    _isExpanded = false;
+    _infoRack->setVisible(false); // Not visible unless expanded.
     grid->removeWidget(_upperRack);
     //grid->removeWidget(_infoRack);
     grid->removeWidget(_lowerRack);

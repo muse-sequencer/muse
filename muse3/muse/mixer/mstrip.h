@@ -142,6 +142,8 @@ class MidiStrip : public Strip {
       QVBoxLayout* _infoLayout;
 //       RackLayout* _upperScrollLayout;
 //       RackLayout* _lowerScrollLayout;
+      // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
+      bool _isExpanded;
       
 
 // REMOVE Tim. Trackinfo. Changed.

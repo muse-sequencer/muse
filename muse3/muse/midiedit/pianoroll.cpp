@@ -645,6 +645,8 @@ void PianoRoll::updateTrackInfo()
       }
       if(midiStrip)
       {
+        infoScroll->setUpdatesEnabled(false);
+        midiStrip->setVisible(false);
         infoScrollWidgetLayout->removeWidget(midiStrip);
         midiStrip->deleteLater();
         midiStrip = 0;
@@ -659,6 +661,8 @@ void PianoRoll::updateTrackInfo()
           infoScrollBar->setVisible(true);
         infoScroll->setMinimumWidth(midiStrip->minimumSizeHint().width());
       }
+      if(!infoScroll->updatesEnabled())
+        infoScroll->setUpdatesEnabled(true);
 }
 
 //---------------------------------------------------------
