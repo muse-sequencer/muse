@@ -49,6 +49,11 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   _LBank = new CompactSlider(this, "CompactPatchEditLBank", orient, scalePos, tr("Lo"), QString(), QString(), QString(), fillColor);
   _Prog = new CompactSlider(this, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor);
 
+  _patchNameLabel->setToolTip(tr("Patch name"));
+  _HBank->setToolTip(tr("Patch high-bank number"));
+  _LBank->setToolTip(tr("Patch low-bank number"));
+  _Prog->setToolTip(tr("Patch program"));
+  
   _HBank->setHasOffMode(true);
   _LBank->setHasOffMode(true);
   _Prog->setHasOffMode(true);

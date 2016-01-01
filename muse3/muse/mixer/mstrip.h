@@ -125,6 +125,7 @@ class MidiStrip : public Strip {
       //GridPosStruct _outRoutesPos;
       GridPosStruct _routesPos;
       GridPosStruct _automationPos;
+      GridPosStruct _rightSpacerPos;
       
       MusEGui::Slider* slider;
       MusEGui::DoubleLabel* sl;

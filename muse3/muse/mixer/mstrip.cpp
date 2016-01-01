@@ -232,7 +232,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
         controller[idx]._cachedVal = initVal;
         control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 //         control->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
-        control->setToolTip(tt);
+//         control->setToolTip(tt); // Remove. Has its own tooltips.
         control->setEnabled(enabled);
 
         bool off = false;
@@ -671,6 +671,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       
       _automationPos       = GridPosStruct(_curGridRow + 10, 0, 1, 2);
       
+      _rightSpacerPos      = GridPosStruct(_curGridRow + 10, 2, 1, 1);
+
       volume      = MusECore::CTRL_VAL_UNKNOWN;
 // REMOVE Tim. Trackinfo. Removed.
 //       pan         = MusECore::CTRL_VAL_UNKNOWN;
@@ -684,12 +686,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 // REMOVE Tim. Trackinfo. Added.
 //       _infoRack = new QFrame(this);
       _infoRack = new QFrame();
-      _infoRack->setVisible(false); // Not visible unless expanded.
+//       _infoRack->setVisible(false); // Not visible unless expanded.
       _infoRack->setLineWidth(1);
       _infoRack->setFrameShape(QFrame::StyledPanel);
       _infoRack->setFrameShadow(QFrame::Raised);
-      _infoRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-//       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
+//       _infoRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(0, 0, 0, 0);
 
       _infoLayout = new QVBoxLayout(_infoRack);
@@ -697,10 +699,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       _infoLayout->setContentsMargins(0, 0, 0, 0);
 
       addProperty(_infoLayout, PropertyTransp, tr("Transpose notes up or down"), 
-                  tr("Trans"), SLOT(propertyChanged(double, bool, int)), true, -127, 127, t->transposition);
+                  tr("Tran"), SLOT(propertyChanged(double, bool, int)), true, -127, 127, t->transposition);
       
       addProperty(_infoLayout, PropertyDelay, tr("Offset playback of notes before or after actual note"), 
-                  tr("Delay"), SLOT(propertyChanged(double, bool, int)), true, -1000, 1000, t->delay);
+                  tr("Dly"), SLOT(propertyChanged(double, bool, int)), true, -1000, 1000, t->delay);
       
       addProperty(_infoLayout, PropertyLen, tr("Change note length in percent of actual length"), 
                   tr("Len"), SLOT(propertyChanged(double, bool, int)), true, 25, 200, t->len)->setValSuffix("%");
@@ -710,15 +712,15 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
                                      " the midi note range is 0-127 this <br/>might mean that the"
                                      " notes do not reach <br/>the combined velocity, note + "
                                      " Velocity.</span></p></body></html>"), 
-                  tr("Velo"), SLOT(propertyChanged(double, bool, int)), true, -127, 127, t->velocity);
+                  tr("Vel"), SLOT(propertyChanged(double, bool, int)), true, -127, 127, t->velocity);
 
       addProperty(_infoLayout, PropertyCompr, tr("Compress the notes velocity range, in percent of actual velocity"), 
-                  tr("Comp"), SLOT(propertyChanged(double, bool, int)), true, 25, 200, t->compression)->setValSuffix("%");
+                  tr("Cmp"), SLOT(propertyChanged(double, bool, int)), true, 25, 200, t->compression)->setValSuffix("%");
 
       addGridWidget(_infoRack, _propertyRackPos);
                   
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
-//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
                     _infoSpacerTop._row, _infoSpacerTop._col, _infoSpacerTop._rowSpan, _infoSpacerTop._colSpan);
 
       
@@ -748,6 +750,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       _instrLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 //       _instrLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _instrLabel->setContentsMargins(0, 0, 0, 0);
+      _instrLabel->setToolTip(tr("Instrument"));
       if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[t->outPort()].instrument())
       {
         _instrLabel->setText(minstr->iname());
@@ -761,6 +764,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       _upperScrollLayout->addWidget(_instrLabel);
       connect(_instrLabel, SIGNAL(pressed()), SLOT(instrPopup()));
       
+// REMOVE Tim. Trackinfo. Added.
+      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Prg"), 
+                    SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
+      _upperScrollLayout->addSpacing(2);
+      
 // REMOVE Tim. Trackinfo. Changed.
 //       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
 //       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
@@ -770,9 +778,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       addController(_upperScrollLayout, KNOB_REV_SEND, MusECore::CTRL_REVERB_SEND, tr("ReverbSend"), tr("Rev"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
       addController(_upperScrollLayout, KNOB_CHO_SEND, MusECore::CTRL_CHORUS_SEND, tr("ChorusSend"), tr("Cho"),
-                    SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-// REMOVE Tim. Trackinfo. Added.
-      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Prg"), 
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
 //       controller[KNOB_PROGRAM]._patchControl = 0;
       
@@ -860,8 +865,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       meter[0]->setRange(0, 127.0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
 // REMOVE Tim. Trackinfo. Changed.      
-      meter[0]->setFixedWidth(15);
-//       meter[0]->setFixedWidth(8);
+//       meter[0]->setFixedWidth(15);
+      meter[0]->setFixedWidth(10);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
@@ -924,8 +929,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       sl->setValue(dlv);
       //sl->setVisible(false);  // REMOVE Tim. Trackinfo. Changed. TEST
         
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
-//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+//       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
                     _infoSpacerBottom._row, _infoSpacerBottom._col, _infoSpacerBottom._rowSpan, _infoSpacerBottom._colSpan);
 
 //      connect(sl, SIGNAL(valueChanged(double,int)), slider, SLOT(setValue(double)));
@@ -1188,6 +1193,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
 //       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); // REMOVE Tim. Trackinfo. Changed. TEST
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
+//       autoType->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum); // REMOVE Tim. Trackinfo. Changed. TEST
       autoType->setEnabled(false);
       
       // Removed by T356. 
@@ -1205,6 +1211,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
 //       grid->addWidget(autoType, _curGridRow++, 0, 1, 2); // REMOVE Tim. Trackinfo. Changed. TEST
       addGridWidget(autoType, _automationPos); // REMOVE Tim. Trackinfo. Changed. TEST
+
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored), 
+                    _rightSpacerPos._row, _rightSpacerPos._col, _rightSpacerPos._rowSpan, _rightSpacerPos._colSpan);
+
       
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
@@ -2751,64 +2761,67 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
   ev->ignore();
   Strip::resizeEvent(ev);
 
-//   if(_upperScrollArea)
-//     //_upperScrollArea->setMinimumHeight(_upperScrollLayout->minimumSize().height());
-//     _upperScrollArea->setMinimumHeight(70);
-//   if(_lowerScrollArea)
-//     //_lowerScrollArea->setMinimumHeight(_lowerScrollLayout->minimumSize().height());
-//     _lowerScrollArea->setMinimumHeight(22);
+// //   if(_upperScrollArea)
+// //     //_upperScrollArea->setMinimumHeight(_upperScrollLayout->minimumSize().height());
+// //     _upperScrollArea->setMinimumHeight(70);
+// //   if(_lowerScrollArea)
+// //     //_lowerScrollArea->setMinimumHeight(_lowerScrollLayout->minimumSize().height());
+// //     _lowerScrollArea->setMinimumHeight(22);
+//   
+//   const QSize& oldSize = ev->oldSize();
+//   const QSize& newSize = ev->size();
+//   const int old_w = oldSize.width();
+//   const int new_w = newSize.width();
+//   // Get the original size hint (without the user width).
+//   const int min_w = sizeHint().width() - userWidth();
+//   // Flip at around 1.5 times the original size hint.
+// //   const int flip_w = min_w + min_w / 2;
+//   const int flip_w = min_w * 2;
+//   
+// //   if(old_w <= 100 && new_w > 100)
+//   if(!_isExpanded && new_w > old_w && new_w >= flip_w)
+//   {
+// //     grid->removeWidget(_upperScrollArea);
+// //     grid->removeWidget(_lowerScrollArea);
+// //     addGridWidget(_upperScrollArea, _preScrollAreaPos_B);
+// //     addGridWidget(_lowerScrollArea, _postScrollAreaPos_B);
+// 
+// //     grid->removeItem(_upperScrollLayout);
+// //     grid->removeItem(_lowerScrollLayout);
+// //     addGridLayout(_upperScrollLayout, _preScrollAreaPos_B);
+// //     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_B);
+// 
+//     _isExpanded = true;
+//     grid->removeWidget(_upperRack);
+//     grid->removeWidget(_lowerRack);
+//     addGridWidget(_upperRack, _preScrollAreaPos_B);
+//     //addGridWidget(_infoRack, _propertyRackPos);
+//     addGridWidget(_lowerRack, _postScrollAreaPos_B);
+// //     _infoRack->setVisible(true); // Visible if expanded.
+//   }
+// //   else if(old_w > 150 && new_w <= 150)
+//   else if(_isExpanded && new_w < old_w && new_w <= flip_w)
+//   {
+// //     grid->removeWidget(_upperScrollArea);
+// //     grid->removeWidget(_lowerScrollArea);
+// //     addGridWidget(_upperScrollArea, _preScrollAreaPos_A);
+// //     addGridWidget(_lowerScrollArea, _postScrollAreaPos_A);
+//     
+// //     grid->removeItem(_upperScrollLayout);
+// //     grid->removeItem(_lowerScrollLayout);
+// //     addGridLayout(_upperScrollLayout, _preScrollAreaPos_A);
+// //     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_A);
+//    
+//     _isExpanded = false;
+// //     _infoRack->setVisible(false); // Not visible unless expanded.
+//     grid->removeWidget(_upperRack);
+//     //grid->removeWidget(_infoRack);
+//     grid->removeWidget(_lowerRack);
+//     addGridWidget(_upperRack, _preScrollAreaPos_A);
+//     addGridWidget(_lowerRack, _postScrollAreaPos_A);
+//   }
   
-  const QSize& oldSize = ev->oldSize();
-  const QSize& newSize = ev->size();
-  const int old_w = oldSize.width();
-  const int new_w = newSize.width();
-  // Get the original size hint (without the user width).
-  const int min_w = sizeHint().width() - userWidth();
-  // Flip at around 1.5 times the original size hint.
-  const int flip_w = min_w + min_w / 2;
   
-//   if(old_w <= 100 && new_w > 100)
-  if(!_isExpanded && new_w > old_w && new_w >= flip_w)
-  {
-//     grid->removeWidget(_upperScrollArea);
-//     grid->removeWidget(_lowerScrollArea);
-//     addGridWidget(_upperScrollArea, _preScrollAreaPos_B);
-//     addGridWidget(_lowerScrollArea, _postScrollAreaPos_B);
-
-//     grid->removeItem(_upperScrollLayout);
-//     grid->removeItem(_lowerScrollLayout);
-//     addGridLayout(_upperScrollLayout, _preScrollAreaPos_B);
-//     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_B);
-
-    _isExpanded = true;
-    grid->removeWidget(_upperRack);
-    grid->removeWidget(_lowerRack);
-    addGridWidget(_upperRack, _preScrollAreaPos_B);
-    //addGridWidget(_infoRack, _propertyRackPos);
-    addGridWidget(_lowerRack, _postScrollAreaPos_B);
-    _infoRack->setVisible(true); // Visible if expanded.
-  }
-//   else if(old_w > 150 && new_w <= 150)
-  else if(_isExpanded && new_w < old_w && new_w <= flip_w)
-  {
-//     grid->removeWidget(_upperScrollArea);
-//     grid->removeWidget(_lowerScrollArea);
-//     addGridWidget(_upperScrollArea, _preScrollAreaPos_A);
-//     addGridWidget(_lowerScrollArea, _postScrollAreaPos_A);
-    
-//     grid->removeItem(_upperScrollLayout);
-//     grid->removeItem(_lowerScrollLayout);
-//     addGridLayout(_upperScrollLayout, _preScrollAreaPos_A);
-//     addGridLayout(_lowerScrollLayout, _postScrollAreaPos_A);
-   
-    _isExpanded = false;
-    _infoRack->setVisible(false); // Not visible unless expanded.
-    grid->removeWidget(_upperRack);
-    //grid->removeWidget(_infoRack);
-    grid->removeWidget(_lowerRack);
-    addGridWidget(_upperRack, _preScrollAreaPos_A);
-    addGridWidget(_lowerRack, _postScrollAreaPos_A);
-  }
 }  
 
 } // namespace MusEGui

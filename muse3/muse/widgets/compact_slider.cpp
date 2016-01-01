@@ -2039,10 +2039,11 @@ QSize CompactSlider::sizeHint() const
       return getMinimumSizeHint(fontMetrics(), d_orient, d_scalePos, d_xMargin, d_yMargin);
       }
 
-QSize CompactSlider::minimumSizeHint() const
-{
-  return sizeHint();
-}
+// QSize CompactSlider::minimumSizeHint() const
+// {
+// //   return sizeHint();
+//   return QSize(0, 0);
+// }
       
 //---------------------------------------------------------
 //   setOrientation

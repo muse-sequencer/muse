@@ -283,7 +283,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setAutoHideThumb(bool v) {_autoHideThumb = v; }
     
     virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
+//     virtual QSize minimumSizeHint() const;
   
   public slots:
     void processSliderPressed(int);

@@ -105,18 +105,14 @@ bool ElidedLabel::autoAdjustFontSize()
   
   // In case the max or min was obtained from QFont::pointSize() which returns -1 
   //  if the font is a pixel font, or if min is greater than max...
-  //if(_fontPointMin < 0 || _fontPointMax < 0 || _fontPointMin > _fontPointMax)
-  if(min < 0 || max < 0 || min > max)
-    return false;
-    
-  //int min = _fontPointMin;
-  //int max = _fontPointMax;
   // Limit the minimum and maximum sizes to something at least readable.
   if(max < 4)
     max = 4;
   if(min < 4)
     min = 4;
-
+  if(max < min)
+    max = min;
+    
   //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
   //QRectF r = boundingRect();
   QRectF r = rect();

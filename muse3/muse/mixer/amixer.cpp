@@ -224,10 +224,12 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       ///view = new QScrollArea();
       view = new ScrollArea();
+      view->setContentsMargins(0, 0, 0, 0);
       //view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
       central = new QWidget(view);
+      central->setContentsMargins(0, 0, 0, 0);
       //splitter = new QSplitter(view);
       mixerLayout = new QHBoxLayout();
       central->setLayout(mixerLayout);
@@ -290,7 +292,13 @@ void AudioMixerApp::setSizing()
       
       //w += 2* style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
       // FIXME: When mixer first opened, frameSize is not correct yet, done after main window shown.
-      w += frameSize().width() - width();
+//       w += frameSize().width() - width();
+      
+      if(const QStyle* st = style())
+      {
+        st = st->proxy();
+        w += 2 * st->pixelMetric(QStyle::PM_DefaultFrameWidth);
+      }
       
       if(w < 40)
         w = 40;
