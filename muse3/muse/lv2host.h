@@ -688,7 +688,6 @@ class LV2PluginWrapper: public Plugin
 {
 private:
     LV2Synth *_synth;
-    std::map<void *, LV2PluginWrapper_State *> _states;
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;       
 public:
