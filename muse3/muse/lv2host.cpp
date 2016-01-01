@@ -4786,17 +4786,18 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       return NULL;
    }
 
-   _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
+   //_states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
 
    LV2Synth::lv2state_PostInstantiate(state);
 
-   return (LADSPA_Handle)state->handle;
+   return (LADSPA_Handle)state;
 
 }
 
 void LV2PluginWrapper::connectPort(LADSPA_Handle handle, long unsigned int port, float *value)
 {
-   lilv_instance_connect_port((LilvInstance *)handle, port, (void *)value);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   lilv_instance_connect_port((LilvInstance *)state->handle, port, (void *)value);
 }
 
 int LV2PluginWrapper::incReferences(int ref)
@@ -4806,23 +4807,22 @@ int LV2PluginWrapper::incReferences(int ref)
 }
 void LV2PluginWrapper::activate(LADSPA_Handle handle)
 {
-   lilv_instance_activate((LilvInstance *) handle);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   lilv_instance_activate((LilvInstance *) state->handle);
 }
 void LV2PluginWrapper::deactivate(LADSPA_Handle handle)
 {
-  if (handle)
-  {
-    lilv_instance_deactivate((LilvInstance *) handle);
-  }
+   if (handle)
+   {
+      LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+      lilv_instance_deactivate((LilvInstance *) state->handle);
+   }
 }
 void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 {
    if(handle != NULL)
-   {
-      std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-      assert(it != _states.end()); //this shouldn't happen
-      LV2PluginWrapper_State *state = it->second;
-      _states.erase(it);
+   {      
+      LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
       state->deleteLater = true;
       if(state->pluginWindow != NULL)
@@ -4835,9 +4835,7 @@ void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 
 void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
    LV2Synth::lv2audio_preProcessMidiPorts(state, n);
 
@@ -4977,15 +4975,7 @@ bool LV2PluginWrapper::hasNativeGui()
 void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   //assert(it != _states.end()); //this shouldn't happen
-   if(it == _states.end())
-   {
-      return;
-   }
-
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 
    if(p->track() != NULL)
    {
@@ -5005,24 +4995,13 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
 bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   //assert(it != _states.end()); //this shouldn't happen
-   if(it == _states.end())
-   {
-      return false;
-   }
-
-   LV2PluginWrapper_State *state = it->second;
-   assert(state != NULL);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    return (state->widget != NULL);
 }
 
 void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    if(_controlInPorts == 0)
@@ -5038,9 +5017,7 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
 
 void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    LV2Synth::lv2conf_write(state, level, xml);
@@ -5048,9 +5025,7 @@ void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &
 
 void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    LV2Synth::lv2conf_set(state, customParams);
@@ -5059,13 +5034,7 @@ void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QSt
 void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   if(it == _states.end())
-   {
-      return;
-   }
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    assert(state != NULL);
 
    LV2Synth::lv2state_populatePresetsMenu(state, menu);
@@ -5075,21 +5044,12 @@ void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
 void LV2PluginWrapper::applyPreset(PluginI *p, void *preset)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   if(it == _states.end())
-   {
-      return;
-   }
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    assert(state != NULL);
 
    LV2Synth::lv2state_applyPreset(state, static_cast<LilvNode *>(preset));
 
 }
-
-
-
 
 void LV2PluginWrapper_Worker::run()
 {
