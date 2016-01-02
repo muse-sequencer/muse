@@ -30,6 +30,7 @@
 #include "../midiseq.h"
 #include "../midictrl.h"
 #include "../audio.h"
+#include "minstrument.h"
 #include "utils.h"
 #include "audiodev.h"
 #include "xml.h"
@@ -124,7 +125,10 @@ QString MidiAlsaDevice::open()
       _openFlags &= _rwFlags; // restrict to available bits
 
       if(!alsaSeq)
-        return QString("ALSA uninitialized");
+      {
+        _state = QString("Unavailable");
+        return _state;
+      }
       
       snd_seq_port_info_t *pinfo = NULL;
       snd_seq_port_subscribe_t* subs = NULL;
@@ -227,7 +231,10 @@ QString MidiAlsaDevice::open()
 void MidiAlsaDevice::close()
 {
       if(!alsaSeq)
+      {
+        _state = QString("Unavailable");
         return;
+      }
       
       snd_seq_port_info_t *pinfo;
       snd_seq_port_subscribe_t* subs;
@@ -250,6 +257,7 @@ void MidiAlsaDevice::close()
       {
         _readEnable = false;      
         _writeEnable = false;      
+        _state = QString("Unavailable");
       }
       else
         
@@ -326,8 +334,8 @@ void MidiAlsaDevice::close()
               }   
               _readEnable = false;      
         }
+        _state = QString("Closed");
       }
-  _state = QString("Closed");
 }
 
 //---------------------------------------------------------
@@ -789,10 +797,11 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
         //return true;
         return false;
 
-      if (MusEGlobal::midiOutputTrace) {
-            fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
-            ev.dump();
-            }
+      // REMOVE Tim. Noteoff. Moved below.
+//       if (MusEGlobal::midiOutputTrace) {
+//             fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
+//             e.dump();
+//             }
             
       if(!alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
         return true;
@@ -807,15 +816,71 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
       event.source  = musePort;
       event.dest    = adr;
 
+      // REMOVE Tim. Noteoff. Added.
+      MidiInstrument::NoteOffMode nom = MidiInstrument::NoteOffAll; // Default to NoteOffAll in case of no port.
+      const int mport = midiPort();
+      if(mport != -1)
+      {
+        if(MidiInstrument* mi = MusEGlobal::midiPorts[mport].instrument())
+          nom = mi->noteOffMode();
+      }
+      
       switch(ev.type())
       {
         case ME_NOTEON:
-              snd_seq_ev_set_noteon(&event, chn, a, b);
+          
+              // REMOVE Tim. Noteoff. Added.
+              if(b == 0)
+              {
+                // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+                //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+                // Nothing should be setting a Note type Event's on velocity to zero.
+                // But just in case... If we get this warning, it means there is still code to change.
+                fprintf(stderr, "MidiAlsaDevice::putEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", ev.time(), ev.type(), chn, a, b);  
+                switch(nom)
+                {
+                  // Instrument uses note offs. Convert to zero-vel note off.
+                  case MidiInstrument::NoteOffAll:
+                    if(MusEGlobal::midiOutputTrace)
+                      fprintf(stderr, "MidiOut: Alsa: Following event will be converted to zero-velocity note off:\n");
+                    snd_seq_ev_set_noteoff(&event, chn, a, 0);
+                  break;
+                  
+                  // Instrument uses no note offs at all. Send as-is.
+                  case MidiInstrument::NoteOffNone:
+                  // Instrument converts all note offs to zero-vel note ons. Send as-is.
+                  case MidiInstrument::NoteOffConvertToZVNoteOn:
+                    snd_seq_ev_set_noteon(&event, chn, a, b);
+                  break;
+                }
+              }
+              else
+                
+                snd_seq_ev_set_noteon(&event, chn, a, b);
               break;
         case ME_NOTEOFF:
-// REMOVE Tim. Midi fixes. Changed.
-              //snd_seq_ev_set_noteoff(&event, chn, a, 0);
-              snd_seq_ev_set_noteoff(&event, chn, a, b);
+          
+              // REMOVE Tim. Noteoff. Added.
+              switch(nom)
+              {
+                // Instrument uses note offs. Send as-is.
+                case MidiInstrument::NoteOffAll:
+                  snd_seq_ev_set_noteoff(&event, chn, a, b);
+                break;
+                
+                // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+                case MidiInstrument::NoteOffNone:
+                  return false;
+                  
+                // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+                case MidiInstrument::NoteOffConvertToZVNoteOn:
+                  if(MusEGlobal::midiOutputTrace)
+                    fprintf(stderr, "MidiOut: Alsa: Following event will be converted to zero-velocity note on:\n");
+                  snd_seq_ev_set_noteon(&event, chn, a, 0);
+                break;
+              }
+              // REMOVE Tim. Noteoff. Removed.
+//                   snd_seq_ev_set_noteoff(&event, chn, a, 0);
               break;
         case ME_PROGRAM:
               {
@@ -850,7 +915,8 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
               memcpy(pp, p, n);
               pp += n;
               *pp = 0xf7;
-              return putAlsaEvent(&event);
+              // REMOVE Tim. Noteoff. Changed.
+//               return putAlsaEvent(&event);
               }
         case ME_SONGPOS:
               event.data.control.value = a;
@@ -1166,6 +1232,12 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                     fprintf(stderr, "MidiAlsaDevice::putEvent(): event type %d not implemented\n", ev.type());
                   return true;
             }
+      // REMOVE Tim. Noteoff. Moved from above.
+      if (MusEGlobal::midiOutputTrace) {
+            fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
+            ev.dump();
+            }
+            
       return putAlsaEvent(&event);
       }
 
@@ -2120,8 +2192,11 @@ void alsaScanMidiPorts()
                     d->setrwFlags(k->flags);
                     // FIXME: Re-subscribe to any ports for now, need a time delay to implement unsubscribe-exit events
                     d->setOpenFlags(k->flags);
-                    if(d->midiPort() != -1)
-                      // Re-subscribe, and update the port's state
+                    if(d->midiPort() < 0)
+                      // Keep the device closed and update the state.
+                      d->setState("Closed");
+                    else
+                      // Re-subscribe, open and update the port's state.
                       MusEGlobal::midiPorts[d->midiPort()].setState(d->open());
                     break;
                   }
@@ -2426,10 +2501,21 @@ void alsaProcessMidiInput()
             switch(ev->type) 
             {
                   case SND_SEQ_EVENT_NOTEON:
-                        event.setChannel(ev->data.note.channel);
-                        event.setType(ME_NOTEON);
-                        event.setA(ev->data.note.note);
-                        event.setB(ev->data.note.velocity);
+                        if(ev->data.note.velocity == 0)
+                        {
+                          // Convert zero-velocity note ons to note offs as per midi spec.
+                          event.setChannel(ev->data.note.channel);
+                          event.setType(ME_NOTEOFF);
+                          event.setA(ev->data.note.note);
+                          event.setB(ev->data.note.velocity);
+                        }
+                        else
+                        {
+                          event.setChannel(ev->data.note.channel);
+                          event.setType(ME_NOTEON);
+                          event.setA(ev->data.note.note);
+                          event.setB(ev->data.note.velocity);
+                        }
                         break;
 
                   case SND_SEQ_EVENT_NOTEOFF:

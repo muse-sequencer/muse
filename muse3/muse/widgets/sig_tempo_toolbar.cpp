@@ -29,7 +29,6 @@
 #include <QLayout>
 #include <QLabel>
 
-
 namespace MusEGui
 {
 	TempoToolbarWidget::TempoToolbarWidget(QWidget* p) : QWidget(p)
@@ -39,12 +38,18 @@ namespace MusEGui
 		tempo_edit->setFocusPolicy(Qt::StrongFocus);
 		
 		label=new QLabel(tr("Tempo: "),this);
+
+  tap_button = new QToolButton(this);
+  tap_button->setText(tr("TAP"));
 		
 		layout = new QHBoxLayout(this);
 		layout->setContentsMargins(0,0,0,0);
 		layout->setSpacing(1);
 		layout->addWidget(label);
 		layout->addWidget(tempo_edit);
+  layout->addWidget(tap_button);
+
+
 		
 		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
@@ -52,6 +57,10 @@ namespace MusEGui
 		connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
 		connect(tempo_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
 		connect(tempo_edit, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+
+  connect(tap_button, SIGNAL(clicked(bool)), SLOT(tap_tempo()));
+  connect(&tap_timer, SIGNAL(timeout()), SLOT(tap_timer_signal()));
+  tap_timer.stop();
 
 		song_changed(-1);
 	}
@@ -74,8 +83,33 @@ namespace MusEGui
 		{
 			tempo_edit->setEnabled(MusEGlobal::song->masterFlag());
 			label->setEnabled(MusEGlobal::song->masterFlag());
-		}
-	}
+   tap_button->setEnabled(MusEGlobal::song->masterFlag());
+  }
+ }
+
+ void TempoToolbarWidget::tap_tempo()
+ {
+    QDateTime local(QDateTime::currentDateTime());
+
+    if(tap_timer.isActive())
+    {
+       qint64 msecs_tap = last_tap_time.msecsTo(local);
+       double t_tap = (double)60000.0f / (double)msecs_tap;
+       tempo_edit->setValue(t_tap);
+       emit tempo_edit->tempoChanged(t_tap);
+
+    }
+    else
+    {
+       tap_timer.start(2000);
+    }
+    last_tap_time = local;
+ }
+
+ void TempoToolbarWidget::tap_timer_signal()
+ {
+    tap_timer.stop();
+ }
 
 	SigToolbarWidget::SigToolbarWidget(QWidget* p) : QWidget(p)
 	{
@@ -120,7 +154,7 @@ namespace MusEGui
 		if (type & SC_MASTER)
 		{
 			sig_edit->setEnabled(MusEGlobal::song->masterFlag());
-			label->setEnabled(MusEGlobal::song->masterFlag());
+   label->setEnabled(MusEGlobal::song->masterFlag());
 		}
 	}
 }

@@ -56,6 +56,21 @@ class Canvas : public View {
       bool canScrollRight;
       bool canScrollUp;
       bool canScrollDown;
+
+      CItem *findCurrentItem(const QPoint &cStart);
+      
+      // Whether we have grabbed the mouse.
+      bool _mouseGrabbed;
+      // The number of times we have called QApplication::setOverrideCursor().
+      // This should always be one or zero, anything else is an error, but unforeseen 
+      //  events might cause us to miss a decrement with QApplication::restoreOverrideCursor().
+      int _cursorOverrideCount;
+      
+      // If show is true, calls QApplication::restoreOverrideCursor() until _cursorOverrideCount-- is <= 0.
+      // If show is false, calls QApplication::setOverrideCursor with a blank cursor.
+      void showCursor(bool show = true);
+      // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
+      void setMouseGrab(bool grabbed = false);
       
    protected:
       enum DragMode {
@@ -85,21 +100,27 @@ class Canvas : public View {
       enum MenuIdBase {
             TOOLS_ID_BASE=10000
             };
+      enum ResizeDirection {
+            RESIZE_TO_THE_LEFT,
+            RESIZE_TO_THE_RIGHT
+      };
             
       CItemList items;
       CItemList moving;
       CItem* newCItem;
       CItem* curItem;
       MusECore::Part* curPart;
-      int curPartId;
+      int curPartId;      
 
       int canvasTools;
       DragMode drag;
       QRect lasso;
       QPoint start;
+      QPoint end;
       QPoint global_start;
       Tool _tool;
       unsigned pos[3];
+      ResizeDirection resizeDirection;
       
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;
@@ -108,6 +129,9 @@ class Canvas : public View {
       QMenu* itemPopupMenu;
       QMenu* canvasPopupMenu;
 
+      bool supportsResizeToTheLeft;
+
+      void resizeToTheLeft(const QPoint &pos);
       void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
       virtual void viewKeyReleaseEvent(QKeyEvent* event);
@@ -206,6 +230,8 @@ class Canvas : public View {
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();
+      // Whether we have grabbed the mouse.
+      bool mouseGrabbed() const { return _mouseGrabbed; }
       bool isSingleSelection() const;
       int selectionSize() const;
       bool itemsAreSelected() const;

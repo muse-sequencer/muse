@@ -70,6 +70,8 @@ typedef intptr_t VstIntPtr;
 #include "plugin.h"
 #include "midictrl.h"
 
+#include <semaphore.h>
+
 #endif // VST_NATIVE_SUPPORT
 
 namespace MusEGui {
@@ -117,6 +119,7 @@ class VstNativeSynth : public Synth {
       void* _handle;
       int _vst_version;
       unsigned int _flags;
+      VstIntPtr _id;
       
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
@@ -129,7 +132,7 @@ class VstNativeSynth : public Synth {
       bool _hasChunks;
       
    public:
-      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver);
+      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle);
 
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return VST_NATIVE_SYNTH; }
@@ -176,7 +179,7 @@ class VstNativeSynthIF : public SynthIF
       bool _active;    // Whether it's safe to call effIdle or effEditIdle. 
       MusEGui::VstNativeEditor* _editor;
       bool _guiVisible;
-      bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?
+      bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?      
 
       // Struct array to keep track of pressed flags and so on. // TODO: Not used yet. REMOVE Tim. Or keep.
       VstNativeGuiWidgets* _gw;

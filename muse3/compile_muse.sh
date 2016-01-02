@@ -29,5 +29,7 @@ else
 	mkdir build
 fi
 cd build
-cmake -DCMAKE_BUILD_TYPE=release .. && make && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"
+
+# to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
+cmake -DCMAKE_BUILD_TYPE=release .. && make clean all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"
 

@@ -54,9 +54,9 @@ Step 5:
             If your system locale is set to the same language as your 
             translation, simply start MusE:
 
-                  muse2
+                  muse3
 
             Otherwise, start MusE with the desired locale using the -l flag
 
-                  muse2 -l fr
+                  muse3 -l fr
 

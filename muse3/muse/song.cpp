@@ -67,6 +67,7 @@
 #include <sys/wait.h>
 #include "tempo.h"
 #include "route.h"
+#include "libs/strntcpy.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -1658,10 +1659,11 @@ void Song::beat()
       QList<QToolButton *> cpuLoadActionList = MusEGlobal::muse->findChildren<QToolButton *>("CpuLoadToolbarButton");
       QList<QToolButton *>::const_iterator it;
       float fCpuLoad = MusEGlobal::muse->getCPULoad();
+      long xRunsCount = MusEGlobal::audio->getXruns();
       for(it = cpuLoadActionList.begin(); it != cpuLoadActionList.end(); ++it)
       {
          //(*it)->setText(QString("<b>CPU (%): </b>") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
-         (*it)->setText(QString("CPU: ") + QString("%1").arg((double)fCpuLoad, 4, 'f', 1, QChar('0')) + QString(" %"));
+         (*it)->setText(QString("CPU: %1%, XRUNS: %2").arg((double)fCpuLoad, 4, 'f', 1, QChar('0')).arg(xRunsCount));
       }
 
       // Keep the sync detectors running... 
@@ -3241,19 +3243,20 @@ void Song::insertTrack2(Track* track, int idx)
                     case Route::TRACK_ROUTE: {
                       Route src(track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->outRoutes()->push_back(src);  }
+                      r->track->outRoutes()->push_back(src); 
+                      // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update this track's aux ref count.     p4.0.37
+                      if(r->track->auxRefCount())
+                        track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                      else if(r->track->type() == Track::AUDIO_AUX)
+                        track->updateAuxRoute( 1, NULL );
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
                   }
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update this track's aux ref count.     p4.0.37
-                  if(r->track->auxRefCount())
-                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                    track->updateAuxRoute( 1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3263,19 +3266,20 @@ void Song::insertTrack2(Track* track, int idx)
                     case Route::TRACK_ROUTE: {
                       Route src(track, r->remoteChannel, r->channels);
                       src.remoteChannel = r->channel;
-                      r->track->inRoutes()->push_back(src);  }
+                      r->track->inRoutes()->push_back(src); 
+                      // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                      // Update the other track's aux ref count and all tracks it is connected to.
+                      if(track->auxRefCount())
+                        r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                      else if(track->type() == Track::AUDIO_AUX)
+                        r->track->updateAuxRoute( 1, NULL );
+                    }
                     break;
                     case Route::MIDI_PORT_ROUTE:
                     case Route::JACK_ROUTE:
                     case Route::MIDI_DEVICE_ROUTE:
                     break;
                   }
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
-                  if(track->auxRefCount())
-                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
-                  else if(track->type() == Track::AUDIO_AUX)
-                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
 }
@@ -3608,7 +3612,113 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
             connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
-      return; 
+      return;
+}
+
+void Song::restartRecording(bool discard)
+{
+   if(MusEGlobal::audio->isRecording() && MusEGlobal::audio->isRunning())
+   {
+      //MusEGlobal::audioDevice->stopTransport();
+      if(!discard)
+      {
+         MusEGlobal::audio->recordStop(true /*restart record*/);
+         processAutomationEvents();
+      }
+      //clear all recorded midi events and wave files
+      TrackList* tracks = MusEGlobal::song->tracks();
+      std::vector<Track *> tVec;
+      for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+      {
+         tVec.push_back((*i));
+      }
+      for(size_t i = 0; i < tVec.size(); i++)
+      {
+         Track *cTrk = tVec [i];
+         if(!cTrk->recordFlag())
+            continue;
+         Track *nTrk = NULL;
+         if(!discard)
+         {
+            nTrk = addTrack(cTrk->type());
+            cTrk->setMute(true);
+            MusEGlobal::song->update(SC_MUTE);
+            setRecordFlag(cTrk, false);
+            RouteList *inpR = cTrk->inRoutes();
+            RouteList *outpR = cTrk->inRoutes();
+            RouteList *innR = nTrk->inRoutes();
+            RouteList *outnR = nTrk->inRoutes();
+            innR->clear();
+            outnR->clear();
+            RouteList *rcpR = inpR;
+            RouteList *rcnR = innR;
+            for(int i = 0; i < 2; i++)
+            {
+               for(RouteList::iterator it = rcpR->begin(); it != rcpR->end(); ++it)
+               {
+                  Route nR = (*it);
+                  if(cTrk->isMidiTrack())
+                     nR.device = it->device;
+                  else if(cTrk->type() == Track::WAVE)
+                     nR.track = it->track;
+                  rcnR->push_back(nR);
+                  if(nR.type == Route::TRACK_ROUTE)
+                  {
+                     Route nbR = nR;
+                     int ch = nbR.channel;
+                     nbR.channel = nbR.remoteChannel;
+                     nbR.remoteChannel = ch;
+                     nbR.track = nTrk;
+                     //MusELib::strntcpy(nbR.persistentJackPortName, nbR.name().toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+                     if(i == 0)
+                        nR.track->outRoutes()->push_back(nbR);
+                     else
+                        nR.track->inRoutes()->push_back(nbR);
+                  }
+               }
+               rcpR = outpR;
+               rcnR = outnR;
+            }
+            setRecordFlag(nTrk, true);
+         }
+         if (cTrk->isMidiTrack())
+         {
+            if(discard)
+            {
+               ((MidiTrack *)cTrk)->mpevents.clear();
+            }
+            else
+            {
+               ((MidiTrack *)nTrk)->setOutPort(((MidiTrack *)cTrk)->outPort());
+               ((MidiTrack *)nTrk)->setOutChannel(((MidiTrack *)cTrk)->outChannel());
+            }
+         }
+         else if (cTrk->type() == Track::WAVE)
+         {
+            if(discard)
+            {
+               ((WaveTrack*)cTrk)->setRecFile(NULL);
+               ((WaveTrack*)cTrk)->resetMeter();
+               ((WaveTrack*)cTrk)->prepareRecording();
+            }
+            else
+            {
+               ((WaveTrack*)nTrk)->setChannels(((WaveTrack*)cTrk)->channels());
+               ((WaveTrack*)nTrk)->setVolume(((WaveTrack*)cTrk)->volume());
+               ((WaveTrack*)nTrk)->setPan(((WaveTrack*)cTrk)->pan());
+               ((WaveTrack*)nTrk)->setGain(((WaveTrack*)cTrk)->gain());
+               const AuxSendValueList &auxList = ((WaveTrack*)cTrk)->getAuxSendValueList();
+               for(size_t i = 0; i < auxList.size(); i++)
+               {
+                  ((WaveTrack*)nTrk)->setAuxSend(i, auxList [i]);
+               }
+               ((WaveTrack*)nTrk)->prepareRecording();
+            }
+         }
+      }
+      MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+      //MusEGlobal::audioDevice->startTransport();
+   }
 }
 
 //---------------------------------------------------------

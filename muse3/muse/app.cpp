@@ -496,7 +496,7 @@ MusE::MusE() : QMainWindow()
       fileExportMidiAction = new QAction(tr("Export Midifile"), this);
       fileImportPartAction = new QAction(tr("Import Part"), this);
 
-      fileImportWaveAction = new QAction(tr("Import Wave File"), this);
+      fileImportWaveAction = new QAction(tr("Import Audio File"), this);
       fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
       quitAction = new QAction(tr("&Quit"), this);
@@ -731,6 +731,7 @@ MusE::MusE() : QMainWindow()
       cpuToolBtn->setObjectName("CpuLoadToolbarButton");
       ((QWidgetAction *)MusEGlobal::cpuLoadAction)->setDefaultWidget(cpuToolBtn);
       cpuLoadToolbar->addAction(MusEGlobal::cpuLoadAction);
+      connect(cpuToolBtn, SIGNAL(clicked(bool)), this, SLOT(resetXrunsCounter()));
 
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
@@ -1338,6 +1339,12 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             bringToFront(arrangerView);
           }
         }
+      }
+      else //force maximize arranger of loaded project
+      {
+         arrangerView->showMaximized();
+         bringToFront(arrangerView);
+         arrangerView->setFocus();
       }
       }
 
@@ -2219,6 +2226,12 @@ void MusE::kbAccel(int key)
       if (key == MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_METRO].key) {
             MusEGlobal::song->setClick(!MusEGlobal::song->click());
             }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key) {
+         MusEGlobal::song->restartRecording();
+      }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART_MULTI].key) {
+         MusEGlobal::song->restartRecording(false);
+      }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) {
             if (MusEGlobal::audio->isPlaying())
                   MusEGlobal::song->setStop(true);
@@ -3605,6 +3618,11 @@ void MusE::updateWindowMenu()
   windowsTileAction->setEnabled(there_are_subwins);
   windowsRowsAction->setEnabled(there_are_subwins);
   windowsColumnsAction->setEnabled(there_are_subwins);
+}
+
+void MusE::resetXrunsCounter()
+{
+   MusEGlobal::audio->resetXruns();
 }
 
 void MusE::bringToFront(QWidget* widget)

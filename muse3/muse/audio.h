@@ -173,6 +173,8 @@ class Audio {
       Pos endRecordPos;
       unsigned startExternalRecTick;
       unsigned endExternalRecTick;
+
+      long m_Xruns;
       
       void sendLocalOff();
       bool filterEvent(const MidiPlayEvent* event, int type, bool thru);
@@ -303,7 +305,7 @@ class Audio {
       // This can be called from outside process thread. 
       unsigned framesSinceCycleStart() const;   
       
-      void recordStop();
+      void recordStop(bool restart = false);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
       unsigned long getFrameOffset() const   { return frameOffset; }
@@ -311,6 +313,11 @@ class Audio {
 
       void sendMsgToGui(char c);
       bool bounce() const { return _bounce; }
+
+      long getXruns() { return m_Xruns; }
+      void resetXruns() { m_Xruns = 0; }
+      void incXruns() { m_Xruns++; }
+
       };
 
 extern int processAudio(unsigned long, void*);

@@ -143,6 +143,7 @@ class PartCanvas : public Canvas {
       enum paste_mode_t { PASTEMODE_MIX, PASTEMODE_MOVEALL, PASTEMODE_MOVESOME };
       void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX, bool to_single_track=false, int amount=1, int raster=1536);
       MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL, std::set<MusECore::Track*>* affected_tracks = NULL);
+      void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame, unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight);
       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&);
       void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events, MusECore::MidiTrack* mt, MusECore::MidiPart* pt, const QRect& r, int pTick, int from, int to);
 	  void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart, const QRect& r, int from, int to);

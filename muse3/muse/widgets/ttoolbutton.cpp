@@ -30,6 +30,10 @@
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   TransparentToolButton
+//---------------------------------------------------------
+  
+//---------------------------------------------------------
 //   drawButton
 //---------------------------------------------------------
 
@@ -42,5 +46,49 @@ void TransparentToolButton::drawButton(QPainter* p)
       const QPixmap pm(icon().pixmap(style()->pixelMetric(QStyle::PM_SmallIconSize), mode, state));
       p->drawPixmap(QPoint((w - pm.width())/2, (h - pm.height())/2), pm);
       }
+      
+//---------------------------------------------------------
+//   CompactToolButton
+//---------------------------------------------------------
+
+CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon_A, const QIcon& icon_B, const char* name)
+         : QToolButton(parent), _icon_A(icon_A), _icon_B(icon_B)
+{
+  setObjectName(name);
+  _useIcon_B = false;
+  setIcon(_icon_A);
+}
+
+QSize CompactToolButton::sizeHint() const
+{
+  // TODO Ask style for margins.
+  return QSize(iconSize().width() + 2, iconSize().height() + 2);
+}
+      
+void CompactToolButton::setIconA(const QIcon& ico)
+{
+  _icon_A = ico;
+  if(!_useIcon_B)
+    setIcon(_icon_A);
+}
+
+void CompactToolButton::setIconB(const QIcon& ico)
+{
+  _icon_B = ico;
+  if(_useIcon_B)
+    setIcon(_icon_B);
+}
+
+void CompactToolButton::setCurrentIcon(bool v)
+{
+  if(_useIcon_B == v)
+    return;
+  _useIcon_B = v;
+  if(_useIcon_B)
+    setIcon(_icon_B);
+  else
+    setIcon(_icon_A);
+}
+
 
 } // namespace MusEGui

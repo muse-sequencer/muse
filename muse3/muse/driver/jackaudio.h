@@ -83,6 +83,8 @@ class JackAudioDevice : public AudioDevice {
       // Return 0: No port register found (or it was cancelled by a later unregister)
       //        1: Port register was found.
       int checkPortRegisterCallback(const jack_port_t* port);
+
+      static int static_JackXRunCallback(void *);
      
 
    public:
@@ -154,8 +156,6 @@ class JackAudioDevice : public AudioDevice {
       virtual int setMaster(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
-
-      //virtual float getCPULoad() { return (_client != NULL) ? jack_cpu_load(_client) : 0.0f; }
 
       void graphChanged();
       };

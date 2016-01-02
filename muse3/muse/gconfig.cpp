@@ -231,7 +231,9 @@ GlobalConfigValues config = {
       true,                         // borderlessMouse
       false,                        // autoSave
       false,                        // scrollableSubMenus
+      true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
+      MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample

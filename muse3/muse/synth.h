@@ -261,6 +261,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       SynthI* clone(int flags) const { return new SynthI(*this, flags); }
 
       virtual inline MidiDeviceType deviceType() const { return SYNTH_MIDI; }
+      // Virtual so that inheriters (synths etc) can return whatever they want.
+      virtual inline NoteOffMode noteOffMode() const { return NoteOffAll; }
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);

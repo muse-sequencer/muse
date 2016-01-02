@@ -629,10 +629,17 @@ void CtrlCanvas::updateItems()
                     if(_cnum == MusECore::CTRL_VELOCITY && e.type() == MusECore::Note) 
                     {
                           newev = 0;
+                          // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+                          int vel = e.velo();
+                          if(vel == 0)
+                          {
+                            fprintf(stderr, "CtrlCanvas::updateItems: Warning: Event has zero note on velocity!\n");
+                            vel = 1;
+                          }
                           if (curDrumPitch == -1 || !_perNoteVeloMode) // and NOT >=0
-                                items.add(newev = new CEvent(e, part, e.velo()));
+                                items.add(newev = new CEvent(e, part, vel));
                           else if (e.dataA() == curDrumPitch) //same note. if curDrumPitch==-2, this never is true
-                                items.add(newev = new CEvent(e, part, e.velo()));
+                                items.add(newev = new CEvent(e, part, vel));
                           if(newev && e.selected())
                             selection.push_back(newev);
                     }
@@ -1054,6 +1061,10 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                   ev->setVal(nval);
                   
                   if (type == MusECore::CTRL_VELOCITY) {
+                        // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+                        if(nval > 127) nval = 127;
+                        else if(nval <= 0) nval = 1;  // Zero note on vel is not allowed.
+                    
                         if ((event.velo() != nval)) {
                               MusECore::Event newEvent = event.clone();
                               newEvent.setVelo(nval);
@@ -1099,6 +1110,10 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
             MusECore::Event event      = ev->event();
 
             if (type == MusECore::CTRL_VELOCITY) {
+                  // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+                  if(newval > 127) newval = 127;
+                  else if(newval <= 0) newval = 1;  // Zero note on vel is not allowed.
+                  
                   if ((event.velo() != newval)) {
                         ev->setVal(newval);
                         MusECore::Event newEvent = event.clone();

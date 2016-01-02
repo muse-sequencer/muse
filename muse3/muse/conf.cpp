@@ -720,6 +720,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.autoSave = xml.parseInt();
                         else if (tag == "scrollableSubMenus")
                               MusEGlobal::config.scrollableSubMenus = xml.parseInt();
+                        else if (tag == "liveWaveUpdate")
+                              MusEGlobal::config.liveWaveUpdate = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -1051,6 +1053,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.warnIfBadTiming = xml.parseInt();
                         else if (tag == "warnOnFileVersions")
                               MusEGlobal::config.warnOnFileVersions = xml.parseInt();
+                        else if (tag == "lv2UiBehavior")
+                              MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(xml.parseInt());
                         else if (tag == "minMeter")
                               MusEGlobal::config.minMeter = xml.parseInt();
                         else if (tag == "minSlider")
@@ -1080,7 +1084,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "startSong")
                               MusEGlobal::config.startSong = xml.parse1();
                         else if (tag == "startSongLoadConfig")
-                              MusEGlobal::config.startSongLoadConfig = xml.parseInt();
+                              MusEGlobal::config.startSongLoadConfig = xml.parseInt();                        
                         else if (tag == "newDrumRecordCondition")
                               MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(xml.parseInt());
                         else if (tag == "projectBaseFolder")
@@ -1498,6 +1502,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
       xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
       xml.intTag(level, "scrollableSubMenus", MusEGlobal::config.scrollableSubMenus);
+      xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
+      xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
+
 
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];

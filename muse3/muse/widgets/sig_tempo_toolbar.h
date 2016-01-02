@@ -24,6 +24,10 @@
 #define __SIG_TEMPO_TOOLBAR_H__
 
 #include <QWidget>
+#include <QToolButton>
+#include <QTimer>
+#include <QDateTime>
+
 #include "type_defs.h"
 
 namespace Awl
@@ -45,7 +49,7 @@ namespace MusEGui
 		private:
 			QHBoxLayout* layout;
 			QLabel* label;
-			Awl::SigEdit* sig_edit;
+			Awl::SigEdit* sig_edit;   
 			
 		public:
 			SigToolbarWidget(QWidget* parent);
@@ -67,6 +71,10 @@ namespace MusEGui
 			QHBoxLayout* layout;
 			QLabel* label;
 			MusEGui::TempoEdit* tempo_edit;
+   QToolButton *tap_button;
+
+   QTimer tap_timer;
+   QDateTime last_tap_time;
 			
 		public:
 			TempoToolbarWidget(QWidget* parent);
@@ -78,6 +86,8 @@ namespace MusEGui
 		private slots:
 			void pos_changed(int,unsigned,bool);
 			void song_changed(MusECore::SongChangedFlags_t);
+   void tap_tempo();
+   void tap_timer_signal();
   };
 }
 

@@ -39,6 +39,8 @@ class QLabel;
 class QMenu;
 class QToolButton;
 class QWidget;
+class QShowEvent;
+class QCloseEvent;
 
 namespace MusECore {
 class Xml;
@@ -90,9 +92,10 @@ class AudioMixerApp : public QMainWindow {
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
-      QHBoxLayout* lbox;
+      //QSplitter* splitter;
+      //QHBoxLayout* lbox;  // REMOVE Tim. Trackinfo. Unused.
       //Strip* master;
-      QHBoxLayout* layout;
+      QHBoxLayout* mixerLayout;
       QMenu* menuView;
       MusEGui::RouteDialog* routingDialog;
       QAction* routingId;
@@ -110,7 +113,6 @@ class AudioMixerApp : public QMainWindow {
 
       
 
-      virtual void closeEvent(QCloseEvent*);
       void addStrip(MusECore::Track*, int);
       void showRouteDialog(bool);
 
@@ -142,8 +144,9 @@ class AudioMixerApp : public QMainWindow {
       void showAuxTracksChanged(bool);
       void showSyntiTracksChanged(bool);
 
-   //protected:
+   protected:
    //   virtual bool event(QEvent* event);
+      virtual void closeEvent(QCloseEvent*);
    
    public:
       //AudioMixerApp(QWidget* parent);

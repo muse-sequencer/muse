@@ -62,7 +62,7 @@
 #include "globaldefs.h"
 #include "gconfig.h"
 #include "filedialog.h"
-#include "slider.h"
+#include "thinslider.h"
 #include "midictrl.h"
 #include "plugin.h"
 #include "controlfifo.h"
@@ -3117,17 +3117,17 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
                   if (strcmp(obj->metaObject()->className(), "MusEGui::Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
-                        ((Slider*)obj)->setId(nobj);
-                        ((Slider*)obj)->setCursorHoming(true);
+                        ((ThinSlider*)obj)->setId(nobj);
+                        ((ThinSlider*)obj)->setCursorHoming(true);
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
-                            ((DoubleLabel*)gw[i].widget)->setSlider((Slider*)obj);
+                            ((DoubleLabel*)gw[i].widget)->setSlider((ThinSlider*)obj);
                         }
-                        connect((Slider*)obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
-                        connect((Slider*)obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
-                        connect((Slider*)obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
-                        connect((Slider*)obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
+                        connect((ThinSlider*)obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
+                        connect((ThinSlider*)obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
+                        connect((ThinSlider*)obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
+                        connect((ThinSlider*)obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
                   else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
@@ -3136,7 +3136,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
-                            ((DoubleLabel*)obj)->setSlider((Slider*)gw[i].widget);
+                            ((DoubleLabel*)obj)->setSlider((ThinSlider*)gw[i].widget);
                             break;
                           }
                         }
@@ -3222,8 +3222,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         uint c3 = j * j * j * 43  % 256;
                         QColor color(c1, c2, c3);
 
-                        Slider* s = new Slider(0, "param", Qt::Horizontal,
-                           Slider::None, color);
+                        ThinSlider* s = new ThinSlider(0, "param", Qt::Horizontal,
+                           ThinSlider::None, color);
 
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3233,7 +3233,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           s->setStep(1.0);
                         s->setValue(dval);
                         params[i].actuator = s;
-                        params[i].label->setSlider((Slider*)params[i].actuator);
+                        params[i].label->setSlider((ThinSlider*)params[i].actuator);
                         }
                   params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
                   if (params[i].type == GuiParam::GUI_SLIDER) {
@@ -3376,7 +3376,7 @@ void PluginGui::ctrlPressed(int param)
         id = MusECore::genACnum(id, param);
         if(params[param].type == GuiParam::GUI_SLIDER)
         {
-          double val = ((Slider*)params[param].actuator)->value();
+          double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
                 val = pow(10.0, val/20.0);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
@@ -3420,7 +3420,7 @@ void PluginGui::ctrlReleased(int param)
         id = MusECore::genACnum(id, param);
         if(params[param].type == GuiParam::GUI_SLIDER)
         {
-          double val = ((Slider*)params[param].actuator)->value();
+          double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
                 val = pow(10.0, val/20.0);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
@@ -3489,7 +3489,7 @@ void PluginGui::labelChanged(double val, int param)
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
             dval = rint(val);
       params[param].actuator->blockSignals(true);
-      ((Slider*)params[param].actuator)->setValue(dval);
+      ((ThinSlider*)params[param].actuator)->setValue(dval);
       params[param].actuator->blockSignals(false);
       int id = plugin->id();
       if(track && id != -1)
@@ -3640,7 +3640,7 @@ void PluginGui::updateValues()
                         gp->label->blockSignals(true);
                         gp->actuator->blockSignals(true);
                         gp->label->setValue(lv);
-                        ((Slider*)(gp->actuator))->setValue(sv);
+                        ((ThinSlider*)(gp->actuator))->setValue(sv);
                         gp->label->blockSignals(false);
                         gp->actuator->blockSignals(false);
                         }
@@ -3660,7 +3660,7 @@ void PluginGui::updateValues()
                   widget->blockSignals(true);
                   switch(type) {
                         case GuiWidgets::SLIDER:
-                              ((Slider*)widget)->setValue(val);    // Note conversion to double
+                              ((ThinSlider*)widget)->setValue(val);    // Note conversion to double
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
                               ((DoubleLabel*)widget)->setValue(val);   // Note conversion to double
@@ -3730,11 +3730,11 @@ void PluginGui::updateControls()
                                     sv = rint(v);
                                     v = sv;
                               }
-                              if(((Slider*)(gp->actuator))->value() != sv)
+                              if(((ThinSlider*)(gp->actuator))->value() != sv)
                               {
                                 gp->label->blockSignals(true);
                                 gp->actuator->blockSignals(true);
-                                ((Slider*)(gp->actuator))->setValue(sv);
+                                ((ThinSlider*)(gp->actuator))->setValue(sv);
                                 gp->label->setValue(v);
                                 gp->actuator->blockSignals(false);
                                 gp->label->blockSignals(false);
@@ -3770,8 +3770,8 @@ void PluginGui::updateControls()
                   switch(type) {
                         case GuiWidgets::SLIDER:
                               {
-                                if(((Slider*)widget)->value() != v)
-                                  ((Slider*)widget)->setValue(v);
+                                if(((ThinSlider*)widget)->value() != v)
+                                  ((ThinSlider*)widget)->setValue(v);
                               }
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
@@ -3815,7 +3815,7 @@ void PluginGui::guiParamChanged(int idx)
       double val = 0.0;
       switch(type) {
             case GuiWidgets::SLIDER:
-                  val = ((Slider*)w)->value();
+                  val = ((ThinSlider*)w)->value();
                   break;
             case GuiWidgets::DOUBLE_LABEL:
                   val = ((DoubleLabel*)w)->value();
@@ -3836,7 +3836,7 @@ void PluginGui::guiParamChanged(int idx)
             widget->blockSignals(true);
             switch(type) {
                   case GuiWidgets::SLIDER:
-                        ((Slider*)widget)->setValue(val);
+                        ((ThinSlider*)widget)->setValue(val);
                         break;
                   case GuiWidgets::DOUBLE_LABEL:
                         ((DoubleLabel*)widget)->setValue(val);
@@ -3962,7 +3962,7 @@ void PluginGui::guiSliderPressed(int idx)
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-        double val = ((Slider*)w)->value();
+        double val = ((ThinSlider*)w)->value();
         track->startAutoRecord(id, val);
         // Needed so that paging a slider updates a label or other buddy control.
         for (unsigned long i = 0; i < nobj; ++i) {
@@ -3973,7 +3973,7 @@ void PluginGui::guiSliderPressed(int idx)
               widget->blockSignals(true);
               switch(type) {
                     case GuiWidgets::SLIDER:
-                          ((Slider*)widget)->setValue(val);
+                          ((ThinSlider*)widget)->setValue(val);
                           break;
                     case GuiWidgets::DOUBLE_LABEL:
                           ((DoubleLabel*)widget)->setValue(val);
@@ -4012,7 +4012,7 @@ void PluginGui::guiSliderReleased(int idx)
       {
         id = MusECore::genACnum(id, param);
 
-        double val = ((Slider*)w)->value();
+        double val = ((ThinSlider*)w)->value();
         track->stopAutoRecord(id, val);
       }
 
@@ -4052,7 +4052,7 @@ QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent,
   if(className == QString("MusEGui::DoubleLabel"))
     return new DoubleLabel(parent, name.toLatin1().constData());
   if(className == QString("MusEGui::Slider"))
-    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal);
+    return new ThinSlider(parent, name.toLatin1().constData(), Qt::Horizontal);
 
   return QUiLoader::createWidget(className, parent, name);
 }

@@ -437,7 +437,7 @@ class AudioTrack : public Track {
       void showPendingPluginNativeGuis();
 
       SndFileR recFile() const           { return _recFile; }
-      void setRecFile(SndFileR sf)       { _recFile = sf;   }
+      void setRecFile(SndFileR sf)       { _recFile = sf; }
 
       CtrlListList* controller()         { return &_controller; }
       // For setting/getting the _controls 'port' values.
@@ -525,6 +525,7 @@ class AudioTrack : public Track {
       void eraseRangeACEvents(int, int, int);
       void addACEvent(int, int, double);
       void changeACEvent(int id, int frame, int newframe, double newval);
+      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }
       };
 
 //---------------------------------------------------------

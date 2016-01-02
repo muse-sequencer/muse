@@ -42,6 +42,8 @@ QT5_WRAP_CPP (widget_mocs
       comboQuant.h  
       combobox.h  
       comment.h  
+      compact_patch_edit.h
+      compact_slider.h  
       copy_on_write.h
       ctrlcombo.h  
       custom_widget_actions.h
@@ -50,6 +52,7 @@ QT5_WRAP_CPP (widget_mocs
       doublelabel.h  
       doublespinbox.h  
       editevent.h      
+      elided_label.h
       filedialog.h  
       genset.h  
       mdisettings.h  
@@ -58,9 +61,11 @@ QT5_WRAP_CPP (widget_mocs
       intlabel.h  
       knob.h  
       knob_and_meter.h  
+      lcd_widgets.h
       lcombo.h  
       menutitleitem.h
       meter.h
+      meter_slider.h
       metronome.h  
       midi_audio_control.h  
       midisyncimpl.h  
@@ -83,6 +88,7 @@ QT5_WRAP_CPP (widget_mocs
       poslabel.h  
       projectcreateimpl.h
       routepopup.h  
+      scroll_area.h
       scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
@@ -99,8 +105,9 @@ QT5_WRAP_CPP (widget_mocs
       splitter.h  
       swidget.h  
       tb1.h  
-      tempolabel.h  
-      tools.h  
+      tempolabel.h
+      thinslider.h
+      tools.h
       tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
@@ -170,6 +177,8 @@ file (GLOB widgets_source_files
       comboQuant.cpp 
       combobox.cpp  
       comment.cpp 
+      compact_patch_edit.cpp
+      compact_slider.cpp 
       copy_on_write.cpp
       ctrlcombo.cpp 
       custom_widget_actions.cpp
@@ -179,6 +188,7 @@ file (GLOB widgets_source_files
       doublespinbox.cpp
       drange.cpp
       editevent.cpp
+      elided_label.cpp
       filedialog.cpp 
       genset.cpp 
       mdisettings.cpp 
@@ -187,9 +197,11 @@ file (GLOB widgets_source_files
       intlabel.cpp 
       knob.cpp 
       knob_and_meter.cpp
+      lcd_widgets.cpp
       lcombo.cpp 
       menutitleitem.cpp
       meter.cpp
+      meter_slider.cpp
       metronome.cpp 
       midi_audio_control.cpp 
       midisyncimpl.cpp 
@@ -216,6 +228,7 @@ file (GLOB widgets_source_files
       scldiv.cpp
       scldraw.cpp
       sclif.cpp
+      scroll_area.cpp
       scrollscale.cpp  
       shortcutcapturedialog.cpp 
       shortcutconfig.cpp 
@@ -232,7 +245,8 @@ file (GLOB widgets_source_files
       swidget.cpp 
       tb1.cpp   
       tempolabel.cpp 
-      tools.cpp 
+      thinslider.cpp
+      tools.cpp
       tracks_duplicate.cpp
       # ttoolbar.cpp 
       ttoolbutton.cpp 

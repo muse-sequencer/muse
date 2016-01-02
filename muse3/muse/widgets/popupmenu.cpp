@@ -75,8 +75,7 @@ void PopupMenu::init()
    menuAction()->setData(-1);
    _cur_menu = this;
    _cur_menu_count = 1;
-   _cur_item_width = 0;
-   _cur_col_count = 0;
+   _max_items_in_breakup = 0;
    moveDelta = 0;
    timer = 0;
 
@@ -394,7 +393,15 @@ PopupMenu* PopupMenu::getMenu()
 {  
    // We want the whole thing if multiple monitors.
    // Resonable to assume if X can show this desktop, it can show a menu with the same width?
-   int dw = QApplication::desktop()->width();
+   QList<QAction*> _actions = _cur_menu->actions();
+   int _cnt_actions = _actions.size();
+   if(_max_items_in_breakup == 0 && _cnt_actions > 0)
+   {
+      int dw = QApplication::desktop()->height();
+      int _act_height = _cur_menu->actionGeometry(_actions [0]).height();
+      if(_act_height > 0)
+         _max_items_in_breakup = dw / _act_height - 10;
+   }
    // If we're still only at one column, not much we can do - some item(s) must have had reeeeally long text.
    // Not to worry. Hopefully the auto-scroll will handle it!
    // Use columnCount() + 2 to catch well BEFORE it widens beyond the edge, and leave room for many <More...>
@@ -402,11 +409,12 @@ PopupMenu* PopupMenu::getMenu()
    //          rolling over to zero repeatedly after it reached 15, simply when adding actions! The action width was 52
    //          the number of items when it first rolled over was around 480 = 884, well below my desktop width of 1366.
    //         Apparently there is a limit on the number of columns - whatever, it made the col count limit necessary:
-   if((_cur_col_count > 1 && ((_cur_col_count + 2) * _cur_item_width) >= dw) || _cur_col_count >= 8)
+   //if((_cur_col_count > 1 && ((_cur_col_count + 2) * _cur_item_width) >= dw) || _cur_col_count >= 8)
+
+
+   if((_cnt_actions >= _max_items_in_breakup) && _max_items_in_breakup > 0) //due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
    {
       // This menu is too wide. So make a new one...
-      _cur_item_width = 0;
-      _cur_col_count = 1;
       QString s(tr("<More...> %1").arg(_cur_menu_count));
       _cur_menu = cloneMenu(s, this, _stayOpen);
       ++_cur_menu_count;
@@ -426,12 +434,6 @@ QAction* PopupMenu::addAction(const QString& text)
       return QMenu::addAction(text);
    }
    QAction* act = static_cast<QMenu*>(getMenu())->addAction(text);
-   int w = _cur_menu->actionGeometry(act).width();
-   if(w > _cur_item_width)
-      _cur_item_width = w;
-   int c = _cur_menu->columnCount();
-   if(c > _cur_col_count)
-      _cur_col_count = c;
    return act;
 }
 
@@ -442,12 +444,6 @@ QAction* PopupMenu::addAction(const QIcon& icon, const QString& text)
       return QMenu::addAction(icon, text);
    }
    QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text);
-   int w = _cur_menu->actionGeometry(act).width();
-   if(w > _cur_item_width)
-      _cur_item_width = w;
-   int c = _cur_menu->columnCount();
-   if(c > _cur_col_count)
-      _cur_col_count = c;
    return act;
 }
 
@@ -458,12 +454,6 @@ QAction* PopupMenu::addAction(const QString& text, const QObject* receiver, cons
       return QMenu::addAction(text, receiver, member, shortcut);
    }
    QAction* act = static_cast<QMenu*>(getMenu())->addAction(text, receiver, member, shortcut);
-   int w = _cur_menu->actionGeometry(act).width();
-   if(w > _cur_item_width)
-      _cur_item_width = w;
-   int c = _cur_menu->columnCount();
-   if(c > _cur_col_count)
-      _cur_col_count = c;
    return act;
 }
 
@@ -474,12 +464,6 @@ QAction* PopupMenu::addAction(const QIcon& icon, const QString& text, const QObj
       return QMenu::addAction(icon, text, receiver, member, shortcut);
    }
    QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text, receiver, member, shortcut);
-   int w = _cur_menu->actionGeometry(act).width();
-   if(w > _cur_item_width)
-      _cur_item_width = w;
-   int c = _cur_menu->columnCount();
-   if(c > _cur_col_count)
-      _cur_col_count = c;
    return act;
 }
 
@@ -490,12 +474,6 @@ void PopupMenu::addAction(QAction* action)
       return QMenu::addAction(action);
    }
    static_cast<QMenu*>(getMenu())->addAction(action);
-   int w = _cur_menu->actionGeometry(action).width();
-   if(w > _cur_item_width)
-      _cur_item_width = w;
-   int c = _cur_menu->columnCount();
-   if(c > _cur_col_count)
-      _cur_col_count = c;
 }
 
 //----------------

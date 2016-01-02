@@ -35,6 +35,8 @@
 #include <QString>
 #include <QStringList>
 
+#include <jack/thread.h>
+
 #include "libs/strntcpy.h"
 #include "audio.h"
 #include "globals.h"
@@ -471,22 +473,28 @@ JackAudioDevice::~JackAudioDevice()
 //---------------------------------------------------------
 
 int JackAudioDevice::realtimePriority() const
-      {
-      pthread_t t = jack_client_thread_id(_client);
-      int policy;
-      struct sched_param param;
-      memset(&param, 0, sizeof(param));
-        int rv = pthread_getschedparam(t, &policy, &param);
-      if (rv) {
-            perror("MusE: JackAudioDevice::realtimePriority: Error: Get jack schedule parameter");
-            return 0;
-            }
-      if (policy != SCHED_FIFO) {
-            printf("MusE: JackAudioDevice::realtimePriority: JACK is not running realtime\n");
-            return 0;
-            }
-      return param.sched_priority;
-      }
+{
+   if(!_client)
+      return 0;
+
+   pthread_t t = jack_client_thread_id(_client);
+   if(t == 0)
+      return jack_client_real_time_priority(_client);
+
+   int policy;
+   struct sched_param param;
+   memset(&param, 0, sizeof(param));
+   int rv = pthread_getschedparam(t, &policy, &param);
+   if (rv) {
+      perror("MusE: JackAudioDevice::realtimePriority: Error: Get jack schedule parameter");
+      return 0;
+   }
+   if (policy != SCHED_FIFO) {
+      printf("MusE: JackAudioDevice::realtimePriority: JACK is not running realtime\n");
+      return 0;
+   }
+   return param.sched_priority;
+}
 
 //---------------------------------------------------------
 //   initJackAudio
@@ -1148,6 +1156,12 @@ int JackAudioDevice::checkPortRegisterCallback(const jack_port_t* port)
   return 0;
 }
 
+int JackAudioDevice::static_JackXRunCallback(void *)
+{
+   MusEGlobal::audio->incXruns();
+   return 0;
+}
+
 //static int xrun_callback(void*)
 //      {
 //      printf("JACK: xrun\n");
@@ -1181,6 +1195,8 @@ void JackAudioDevice::registerClient()
       jack_set_graph_order_callback(_client, graph_callback, this);
 //      jack_set_xrun_callback(client, xrun_callback, 0);
       jack_set_freewheel_callback (_client, freewheel_callback, 0);
+
+      jack_set_xrun_callback(_client, static_JackXRunCallback, this);
       }
 
 //---------------------------------------------------------

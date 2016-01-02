@@ -168,7 +168,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setAttribute(Qt::WA_DeleteOnClose);
       track = t;
       itemheight = 19;
-      setFont(MusEGlobal::config.fonts[1]);
+      //setFont(MusEGlobal::config.fonts[1]);
       activeColor = QColor(74, 165, 49);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

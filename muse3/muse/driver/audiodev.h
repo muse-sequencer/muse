@@ -115,7 +115,7 @@ class AudioDevice {
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
-      virtual int setMaster(bool f) = 0;
+      virtual int setMaster(bool f) = 0;      
       };
 
 } // namespace MusECore

@@ -1987,7 +1987,20 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         mode = NORMAL;
                         QMenu* p = new QMenu;
                         // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
+                        MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                        int selCnt = 0;
+                        for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it)
+                        {
+                          MusECore::Track* tr = *it;
+                          if (tr->selected())
+                          {
+                            selCnt++;
+                          }
+                        }
                         p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(1001);
+                        if(selCnt > 1){
+                           p->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"))->setData(1003);
+                        }
                         p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1002);
                         p->addSeparator();
                         
@@ -2025,7 +2038,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                     case 1001:     // delete track
                                           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                                           break;
-
+                                    case 1003:     // delete track(s)
+                                          MusEGlobal::song->startUndo();
+                                          MusEGlobal::audio->msgRemoveTracks();
+                                          MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                                          MusEGlobal::audio->msgUpdateSoloStates();
+                                          break;
                                     case 1002:     // show track comment
                                           {
                                           TrackComment* tc = new TrackComment(t, 0);

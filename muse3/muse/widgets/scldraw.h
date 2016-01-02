@@ -28,6 +28,7 @@
 #include "dimap.h"
 #include "scldiv.h"
 
+class QFontMetrics;
 class QPainter;
 class QRect;
 
@@ -35,7 +36,7 @@ namespace MusEGui {
 
 class ScaleDraw : public DiMap {
    public:
-      enum OrientationX { Bottom, Top, Left, Right, Round };
+      enum OrientationX { Bottom, Top, Left, Right, InsideHorizontal, InsideVertical, Round };
 
    private:
       ScaleDiv d_scldiv;
@@ -80,10 +81,16 @@ class ScaleDraw : public DiMap {
 
       const ScaleDiv& scaleDiv() const { return d_scldiv; }
       OrientationX orientation() const { return d_orient; }
-      QRect maxBoundingRect(QPainter *p) const;
-      int maxWidth(QPainter *p, bool worst = true) const;
-      int maxHeight(QPainter *p) const;
-      int maxLabelWidth(QPainter *p, bool worst = true) const;
+// REMOVE Tim. Trackinfo. Changed.
+//       QRect maxBoundingRect(QPainter *p) const;
+//       int maxWidth(QPainter *p, bool worst = true) const;
+//       int maxHeight(QPainter *p) const;
+//       int maxLabelWidth(QPainter *p, bool worst = true) const;
+      QRect maxBoundingRect(const QFontMetrics& fm) const;
+      int maxWidth(const QFontMetrics& fm, bool worst = true, int penWidth = 1) const;
+      int maxHeight(const QFontMetrics& fm, int penWidth = 1) const;
+      int maxLabelWidth(const QFontMetrics& fm, bool worst = true) const;
+      
       void draw(QPainter *p) const;
       };
 

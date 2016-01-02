@@ -125,6 +125,7 @@ Audio::Audio()
       _bounce       = false;
       _loopFrame    = 0;
       _loopCount    = 0;
+      m_Xruns       = 0;
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
@@ -964,7 +965,7 @@ void Audio::stopRolling()
 //    execution environment: gui thread
 //---------------------------------------------------------
 
-void Audio::recordStop()
+void Audio::recordStop(bool restart)
       {
       MusEGlobal::song->processMasterRec();   
         
@@ -979,7 +980,7 @@ void Audio::recordStop()
       for (iWaveTrack it = wl->begin(); it != wl->end(); ++it) {
             WaveTrack* track = *it;
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
-                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, endRecordPos);   
+                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, restart ? _pos : endRecordPos);
                   // The track's _recFile pointer may have been kept and turned
                   //  into a SndFileR and added to a new part.
                   // Or _recFile may have been discarded (no new recorded part created).
@@ -987,7 +988,8 @@ void Audio::recordStop()
                   //  MusEGlobal::song->setRecordFlag knows about it...
 
                   track->setRecFile(0);              // flush out the old file
-                  MusEGlobal::song->setRecordFlag(track, false);
+                  if(!restart)
+                     MusEGlobal::song->setRecordFlag(track, false);
                   }
             }
       MidiTrackList* ml = MusEGlobal::song->midis();
@@ -1025,7 +1027,8 @@ void Audio::recordStop()
    
       MusEGlobal::audio->msgIdle(false);
       MusEGlobal::song->endUndo(0);
-      MusEGlobal::song->setRecord(false);
+      if(!restart)
+         MusEGlobal::song->setRecord(false);
       }
 
 //---------------------------------------------------------

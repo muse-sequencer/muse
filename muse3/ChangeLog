@@ -1,5 +1,22 @@
+27.12.2015
+        - Midi Instrument Editor: Fixed errors from ancient missing Qt3 signals. 
+          Fixed problems with instrument / patch / controller lists. Tests OK now. (Tim)
+21.12.2015
+        - Rewrited midi events code for lv2 host. Fix for #435 (danvd)
+13.12.2015
+        - Added support to resize notes and parts to the left with pencil tool (issue #292) (danvd)
+11.12.2015
+        - Added LV2 UI open behavior (danvd)
+06.12.2015
+        - Added live update of wave parts while recording (danvd)
+03.12.2015
+        - Added Native VST shell plugins support (danvd)
+03.12.2015
+        - Added non-discard restart recording function (a-la multi-take, SHIFT+space is default shortcut) (danvd)
+01.12.2015
+        - Added recording restart function (CTRL+Space to activate while recording) (danvd)
 21.11.2015:
-        - Auto resample imported wave files to project's sample rate
+        - Auto resample imported wave files to project's sample rate (danvd)
 18.11.2015:
 	- Added double click on Port column to open the gui of a synth (rj)
 31.10.2015

@@ -29,7 +29,8 @@
 
 #include "type_defs.h"
 #include "strip.h"
-#include "knob.h"
+// #include "knob.h" // REMOVE Tim. Trackinfo. Removed.
+// #include "compact_slider.h"
 //#include "route.h"
 
 //class QDialog;
@@ -38,9 +39,6 @@ class QToolButton;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
-
-namespace MusEGui {
-}
 
 namespace MusECore {
 class AudioTrack;
@@ -51,6 +49,7 @@ class DoubleLabel;
 class EffectRack;
 class Knob;
 class Slider;
+class CompactSlider;
 class TransparentToolButton;
   
 //---------------------------------------------------------
@@ -59,20 +58,26 @@ class TransparentToolButton;
 
 class AudioStrip : public Strip {
       Q_OBJECT
+      
+  public:      
+      enum ControllerType { panType = 0, auxType, gainType };
 
+  private:      
       int channel;
       MusEGui::Slider* slider;
       MusEGui::DoubleLabel* sl;
       EffectRack* rack;
 
-      MusEGui::Knob* pan;
-      MusEGui::DoubleLabel* panl;
-
-      MusEGui::Knob* gain;
-      MusEGui::DoubleLabel* gainLabel;
-
-      std::vector<MusEGui::Knob*> auxKnob;
-      std::vector<MusEGui::DoubleLabel*> auxLabel;
+// REMOVE Tim. Trackinfo. Changed.
+//       MusEGui::Knob* pan;
+//       MusEGui::DoubleLabel* panl;
+//       MusEGui::Knob* gain;
+//       MusEGui::DoubleLabel* gainLabel;
+//       std::vector<MusEGui::Knob*> auxKnob;
+//       std::vector<MusEGui::DoubleLabel*> auxLabel;
+      CompactSlider* pan;
+      CompactSlider* gain;
+      std::vector<CompactSlider*> auxControl;
 
       QToolButton* stereo;
       QToolButton* pre;
@@ -88,7 +93,9 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      MusEGui::Knob* addKnob(Knob::KnobType, int, MusEGui::DoubleLabel**, QLabel *name);
+// REMOVE Tim. Trackinfo. Changed.
+//       MusEGui::Knob* addKnob(Knob::KnobType, int, MusEGui::DoubleLabel**, QLabel *name);
+      CompactSlider* addController(ControllerType, int, const QString& label);
       
       void updateOffState();
       void updateVolume();
@@ -111,8 +118,9 @@ class AudioStrip : public Strip {
       void panPressed();
       void panReleased();
       void volLabelChanged(double);
-      void panLabelChanged(double);
-      void auxLabelChanged(double, unsigned int);
+// REMOVE Tim. Trackinfo. Removed.
+//       void panLabelChanged(double);
+//       void auxLabelChanged(double, unsigned int);
       void volumeRightClicked(const QPoint &);
       void panRightClicked(const QPoint &);
 

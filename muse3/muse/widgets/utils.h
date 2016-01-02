@@ -52,8 +52,11 @@ extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
 
-extern QPainterPath roundedPath(QRect r, int xrad, int yrad, Corner roundCorner);
+extern QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner);
 extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner);
+
+extern void addRoundedPath(QPainterPath* path, const QRect& r, int xrad, int yrad, Corner roundCorner);
+extern void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner);
 
 extern QIcon colorRect(const QColor& color, int width, int height);
 extern int get_paste_len();

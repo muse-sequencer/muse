@@ -30,8 +30,9 @@ plug_on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user
 {
    sz_cb_fn fn = reinterpret_cast<sz_cb_fn>(user_data);
    int width = allocation->width;
-   int height = allocation->height;
+   int height = allocation->height;   
    void *arg = static_cast<void *>(g_object_get_data(G_OBJECT(widget), "lv2Gtk2Helper_arg"));
+   gtk_widget_set_size_request( widget, width, height );
    fn(width, height, arg);
 }
 

@@ -143,13 +143,14 @@ ViewWidget::paintEvent
 
 bool ScrollArea::viewportEvent(QEvent* event)
 {
+  event->ignore();
   // Let it do the layout now, before we emit.
   QScrollArea::viewportEvent(event);
   
   if(event->type() == QEvent::LayoutRequest)       
     emit layoutRequest();
          
-  //return false;       
+//   return false;       
   return true;       
 }
 
@@ -223,16 +224,20 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       ///view = new QScrollArea();
       view = new ScrollArea();
-//      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      view->setContentsMargins(0, 0, 0, 0);
+      //view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
       central = new QWidget(view);
-      layout = new QHBoxLayout();
-      central->setLayout(layout);
-      layout->setSpacing(0);
-      layout->setContentsMargins(0, 0, 0, 0);
-      layout->setSpacing(0);
+      central->setContentsMargins(0, 0, 0, 0);
+      //splitter = new QSplitter(view);
+      mixerLayout = new QHBoxLayout();
+      central->setLayout(mixerLayout);
+      mixerLayout->setSpacing(0);
+      mixerLayout->setContentsMargins(0, 0, 0, 0);
+      //layout->setSpacing(0);  // REMOVE Tim. Trackinfo. Duplicate.
       view->setWidget(central);
+      //view->setWidget(splitter);
       view->setWidgetResizable(true);
       
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
@@ -269,26 +274,58 @@ bool AudioMixerApp::event(QEvent* event)
 void AudioMixerApp::setSizing()
 {
       int w = 0;
-      StripList::iterator si = stripList.begin();
-      for (; si != stripList.end(); ++si) 
-      {
-            //w += (*si)->frameGeometry().width();
-            //Strip* s = *si;
-            //printf("AudioMixerApp::setSizing width:%d frame width:%d\n", s->width(), s->frameWidth());  
-            //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
-            //w += s->width() + 2 * s->frameWidth();
-            w += (*si)->width();
-      }
+// REMOVE Tim. Trackinfo. Changed.      
+//       StripList::iterator si = stripList.begin();
+//       for (; si != stripList.end(); ++si) 
+//       {
+//             //w += (*si)->frameGeometry().width();
+//             //Strip* s = *si;
+//             //printf("AudioMixerApp::setSizing width:%d frame width:%d\n", s->width(), s->frameWidth());  
+//             //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
+//             //w += s->width() + 2 * s->frameWidth();
+// //             w += (*si)->width();  // REMOVE Tim. Trackinfo. Changed.
+// //             w += (*si)->frameSize().width();
+//             w += (*si)->sizeHint().width();
+//       }
+      
+      w = mixerLayout->minimumSize().width();
       
       //w += 2* style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
       // FIXME: When mixer first opened, frameSize is not correct yet, done after main window shown.
-      w += frameSize().width() - width();
+//       w += frameSize().width() - width();
+      
+      if(const QStyle* st = style())
+      {
+        st = st->proxy();
+        w += 2 * st->pixelMetric(QStyle::PM_DefaultFrameWidth);
+      }
       
       if(w < 40)
         w = 40;
-      setMaximumWidth(w);      
+//       setMaximumWidth(w);   
+      view->setUpdatesEnabled(false);
+      setUpdatesEnabled(false);
       if(stripList.size() <= 6)
-        view->setMinimumWidth(w);
+//         view->setMinimumWidth(w);
+        setMinimumWidth(w);
+        
+      setMaximumWidth(w);
+//       view->setMaximumWidth(w);      
+
+      setUpdatesEnabled(true);
+      view->setUpdatesEnabled(true);
+      
+//       resize(w, height());
+
+//       if(stripList.size() <= 6)
+//         setFixedWidth(w);
+//       else
+//         setMaximumWidth(w);      
+      
+// REMOVE Tim. Trackinfo. Added.
+//       view->update();
+//       update();
+//       central->update();
 }
 
 //---------------------------------------------------------
@@ -310,18 +347,30 @@ void AudioMixerApp::addStrip(MusECore::Track* t, int idx)
       if (si != stripList.end()
          && nsi != stripList.end()
          && (*nsi)->getTrack() == t) {
-            layout->removeWidget(*si);
-            delete *si;
+            mixerLayout->removeWidget(*si);
+//             delete *si; // REMOVE Tim. Trackinfo. Changed. May cause crashes.
+            (*si)->deleteLater();
             stripList.erase(si);
             }
       else {
             Strip* strip;
             if (t->isMidiTrack())
                   strip = new MidiStrip(central, (MusECore::MidiTrack*)t);
+                  //strip = new MidiStrip(splitter, (MusECore::MidiTrack*)t);
             else
                   strip = new AudioStrip(central, (MusECore::AudioTrack*)t);
-            layout->insertWidget(idx, strip);
+                  //strip = new AudioStrip(splitter, (MusECore::AudioTrack*)t);
+//             layout->insertWidget(idx, strip);
+
+            ExpanderHandle* handle = new ExpanderHandle();
+            connect(handle, SIGNAL(moved(int)), strip, SLOT(changeUserWidth(int)));
+            connect(strip, SIGNAL(destroyed(QObject*)), handle, SLOT(deleteLater()));
+//             connect(handle, SIGNAL(moved(int)), SLOT(setSizing()));
+            mixerLayout->insertWidget(idx * 2, strip);
+            mixerLayout->insertWidget(idx * 2 + 1, handle);
+            
             stripList.insert(si, strip);
+            //strip->setMinimumWidth(strip->sizeHint().width());
             strip->show();  
             }
       }
@@ -334,8 +383,9 @@ void AudioMixerApp::clear()
       {
       StripList::iterator si = stripList.begin();
       for (; si != stripList.end(); ++si) {
-            layout->removeWidget(*si);
-            delete *si;
+            mixerLayout->removeWidget(*si);
+//             delete *si;  // REMOVE Tim. Trackinfo. Changed. Caused crash with setting instrument on midi strip on song->update() call.
+            (*si)->deleteLater();
             }
       stripList.clear();
       oldAuxsSize = -1;
@@ -383,8 +433,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   ++si;
                   if (it != tl->end())
                         continue;
-                  layout->removeWidget(*ssi);
-                  delete *ssi;
+                  mixerLayout->removeWidget(*ssi);
+//                   delete *ssi;  // REMOVE Tim. Trackinfo. Changed. May cause crashes.
+                  (*ssi)->deleteLater();
                   stripList.erase(ssi);
                   }
                   
@@ -397,6 +448,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);  
 ///                  view->setMinimumWidth(w);
                   
+//             setSizing(); // REMOVE Tim. Trackinfo. Added.
             return;
       }
       else if (action == UPDATE_MIDI) 
@@ -418,8 +470,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                      
                   StripList::iterator ssi = si;
                   ++si;
-                  layout->removeWidget(*ssi);
-                  delete *ssi;
+                  mixerLayout->removeWidget(*ssi);
+//                   delete *ssi; // REMOVE Tim. Trackinfo. Changed. May cause crashes.
+                  (*ssi)->deleteLater();
                   stripList.erase(ssi);
             }
             
@@ -446,6 +499,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 ///            if (stripList.size() < 8)
             //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION); 
 ///                  view->setMinimumWidth(w);
+
+//             setSizing(); // REMOVE Tim. Trackinfo. Added.
             return;
       }
 
@@ -536,6 +591,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 ///      if (idx < 8)
       //      view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION); 
 ///            view->setMinimumWidth(w);
+
+//       setSizing(); // REMOVE Tim. Trackinfo. Added.
       }
 
 //---------------------------------------------------------

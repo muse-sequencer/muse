@@ -48,6 +48,7 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
       layout->addSpacing(5);
       layout->addWidget(box);
       layout->addSpacing(5);
+      layout->setContentsMargins(0, 0, 0, 0);
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }
 

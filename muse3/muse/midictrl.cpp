@@ -90,7 +90,9 @@ MidiControllerList defaultMidiController;
 //
 // some global controller which are always available:
 //
-MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       0,      127,      0);
+// REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+// MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       0,      127,      0);
+MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       1,      127,      0);
 MidiController pitchCtrl("PitchBend",             CTRL_PITCH,      -8192,    +8191,      0);
 MidiController programCtrl("Program",             CTRL_PROGRAM,        0, 0xffffff,      0);
 MidiController mastervolCtrl("MasterVolume",      CTRL_MASTER_VOLUME,  0,   0x3fff, 0x3000);
@@ -256,7 +258,9 @@ MidiController::MidiController()
    : _name(QString("Velocity"))
       {
       _num     = CTRL_VELOCITY;
-      _minVal  = 0;
+      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//       _minVal  = 0;
+      _minVal  = 1;
       _maxVal  = 127;
       _initVal = 0;
       _showInTracks = ShowInDrum | ShowInMidi;

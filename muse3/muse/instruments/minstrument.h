@@ -168,6 +168,13 @@ struct dumb_patchlist_entry_t
 //---------------------------------------------------------
 
 class MidiInstrument {
+   public:
+     //              NoteOffAll  = Use all note offs.
+     //              NoteOffNone = Do not use any note offs.
+     // NoteOffConvertToZVNoteOn = Convert all note offs to zero-velocity note ons.
+     enum NoteOffMode { NoteOffAll=0, NoteOffNone, NoteOffConvertToZVNoteOn };
+      
+   private:
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
@@ -175,6 +182,7 @@ class MidiInstrument {
       bool _dirty;
       int _nullvalue;
       bool _waitForLSB; // Whether 14-bit controllers wait for LSB, or MSB and LSB are separate.
+      NoteOffMode _noteOffMode;
 
       void init();
 
@@ -229,6 +237,11 @@ class MidiInstrument {
       bool waitForLSB() { return _waitForLSB; }
       void setWaitForLSB(bool v) { _waitForLSB = v; }
       
+      // Virtual so that inheriters (synths etc) can return whatever they want.
+      virtual NoteOffMode noteOffMode() const { return _noteOffMode; }
+      // For non-synths, users can set this value.
+      void setNoteOffMode(NoteOffMode mode) { _noteOffMode = mode; }
+
       void readMidiState(Xml& xml);
       virtual void reset(int); 
       virtual QString getPatchName(int,int,bool) const;

@@ -1091,10 +1091,12 @@ void MidiTrackInfo::instrPopup()
         {
           if((*i)->iname() == s) 
           {
+            MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
             MusEGlobal::midiPorts[port].setInstrument(*i);
+            MusEGlobal::audio->msgIdle(false);
             // Make sure device initializations are sent if necessary.
             MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
-            MusEGlobal::song->update();
+            MusEGlobal::song->update();  // TODO: Use a specific flag instead of brute force all.
             break;
           }
         }

@@ -2628,7 +2628,9 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         if (velo > 127)
                               velo = 127;
                         else if (velo < 0)
-                              velo = 0;
+                              // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+//                               velo = 0;
+                              velo = 1;
                         newEvent.setVelo(velo);
                         }
                         break;

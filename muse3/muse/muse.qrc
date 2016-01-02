@@ -1,13 +1,8 @@
-<RCC>
-    <qresource prefix="/">
-        <file>style.qss</file>
-        <file>png/slider-vol.png</file>
-        <file>png/slider-vol-pressed.png</file>
-        <file>png/knob-base-pressed.png</file>
-        <file>png/knob-base.png</file>
-        <file>png/knob-pressed.png</file>
-        <file>png/knob.png</file>
-        <file>png/rim-base.png</file>
-        <file>png/knob-small.png</file>
-    </qresource>
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+      <file>style.qss</file>
+      
+   </qresource>
 </RCC>
+

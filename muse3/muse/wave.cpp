@@ -46,6 +46,7 @@
 #include "part.h"
 #include "track.h"
 #include "wavepreview.h"
+#include "gconfig.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -71,6 +72,8 @@ SndFile::SndFile(const QString& name)
       openFlag = false;
       sndFiles.push_back(this);
       refCount=0;
+      writeBuffer = 0;
+      writeSegSize = std::max((size_t)MusEGlobal::segmentSize, (size_t)cacheMag);// cache minimum segment size for write operations
       }
 
 SndFile::~SndFile()
@@ -85,18 +88,19 @@ SndFile::~SndFile()
             }
       delete finfo;
       if (cache) {
-            for (unsigned i = 0; i < channels(); ++i)
-                  delete [] cache[i];
             delete[] cache;
             cache = 0;
             }
+      if(writeBuffer)
+         delete [] writeBuffer;\
+         writeBuffer = 0;
       }
 
 //---------------------------------------------------------
 //   openRead
 //---------------------------------------------------------
 
-bool SndFile::openRead(bool createCache)
+bool SndFile::openRead(bool createCache, bool showProgress)
       {
       if (openFlag) {
             printf("SndFile:: already open\n");
@@ -105,16 +109,24 @@ bool SndFile::openRead(bool createCache)
       QString p = path();
       sfinfo.format = 0;
       sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      sfinfo.format = 0;
-      sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      if (sf == 0 || sfUI == 0)
+      if (sf == 0)
             return true;
+      sfUI = 0;
+      if(createCache){
+         sfinfo.format = 0;
+         sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
+         if (sfUI == 0){
+            sf_close(sf);
+            sf = 0;
+            return true;
+         }
+      }
             
       writeFlag = false;
       openFlag  = true;
       if (createCache) {
         QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
-        readCache(cacheName, true);
+        readCache(cacheName, showProgress);
       }
       return false;
       }
@@ -124,7 +136,7 @@ bool SndFile::openRead(bool createCache)
 //    called after recording to file
 //---------------------------------------------------------
 
-void SndFile::update()
+void SndFile::update(bool showProgress)
       {
       close();
 
@@ -132,88 +144,99 @@ void SndFile::update()
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
       ::remove(cacheName.toLocal8Bit().constData());
-      if (openRead()) {
+      if (openRead(true, showProgress)) {
             printf("SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }
+
+//---------------------------------------------------
+//  create cache
+//---------------------------------------------------
+
+void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart)
+{
+   if(cstart >= csize)
+      return;
+   QProgressDialog* progress = 0;
+   if (showProgress) {
+      QString label(QWidget::tr("create peakfile for "));
+      label += basename();
+      progress = new QProgressDialog(label,
+                                     QString::null, 0, csize, 0);
+      progress->setMinimumDuration(0);
+      progress->show();
+   }
+   float data[channels()][cacheMag];
+   float* fp[channels()];
+   for (unsigned k = 0; k < channels(); ++k)
+      fp[k] = &data[k][0];
+   int interval = (csize - cstart) / 10;
+
+   if(!interval)
+      interval = 1;
+   for (int i = cstart; i < csize; i++) {
+      if (showProgress && ((i % interval) == 0))
+         progress->setValue(i);
+      seek(i * cacheMag, 0);
+      read(channels(), fp, cacheMag);
+      for (unsigned ch = 0; ch < channels(); ++ch) {
+         float rms = 0.0;
+         cache[ch][i].peak = 0;
+         for (int n = 0; n < cacheMag; n++) {
+            float fd = data[ch][n];
+            rms += fd * fd;
+            int idata = int(fd * 255.0);
+            if (idata < 0)
+               idata = -idata;
+            if (cache[ch][i].peak < idata)
+               cache[ch][i].peak = idata;
+         }
+         // amplify rms value +12dB
+         int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
+         if (rmsValue > 255)
+            rmsValue = 255;
+         cache[ch][i].rms = rmsValue;
+      }
+   }
+   if (showProgress)
+      progress->setValue(csize);
+   if(bWrite)
+      writeCache(path);
+   if (showProgress)
+      delete progress;
+
+}
 
 //---------------------------------------------------------
 //   readCache
 //---------------------------------------------------------
 
 void SndFile::readCache(const QString& path, bool showProgress)
-      {
-      if (cache) {
-            for (unsigned i = 0; i < channels(); ++i)
-                  delete [] cache[i];
-            delete[] cache;
-            }
-      if (samples() == 0) 
-            return;
-      
-      csize = (samples() + cacheMag - 1)/cacheMag;
-      cache = new SampleV*[channels()];
+{
+   if (cache) {
+      delete[] cache;
+   }
+   if (samples() == 0)
+      return;
+
+   csize = (samples() + cacheMag - 1)/cacheMag;
+   cache = new SampleVtype[channels()];
+   for (unsigned ch = 0; ch < channels(); ++ch)
+   {
+      cache [ch].resize(csize);
+   }
+
+   FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
+   if (cfile) {
       for (unsigned ch = 0; ch < channels(); ++ch)
-            cache[ch] = new SampleV[csize];
+         fread(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
+      fclose(cfile);
+      return;
+   }
 
-      FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
-      if (cfile) {
-            for (unsigned ch = 0; ch < channels(); ++ch)
-                  fread(cache[ch], csize * sizeof(SampleV), 1, cfile);
-            fclose(cfile);
-            return;
-            }
 
-      //---------------------------------------------------
-      //  create cache
-      //---------------------------------------------------
-      QProgressDialog* progress = 0;
-      if (showProgress) {
-            QString label(QWidget::tr("create peakfile for "));
-            label += basename();
-            progress = new QProgressDialog(label,
-               QString::null, 0, csize, 0);
-            progress->setMinimumDuration(0);
-            progress->show();
-            }
-      float data[channels()][cacheMag];
-      float* fp[channels()];
-      for (unsigned k = 0; k < channels(); ++k)
-            fp[k] = &data[k][0];
-      int interval = csize / 10;
-      
-      if(!interval)
-        interval = 1;
-      for (int i = 0; i < csize; i++) {
-            if (showProgress && ((i % interval) == 0))
-                  progress->setValue(i);
-            seek(i * cacheMag, 0);
-            read(channels(), fp, cacheMag);
-            for (unsigned ch = 0; ch < channels(); ++ch) {
-                  float rms = 0.0;
-                  cache[ch][i].peak = 0;
-                  for (int n = 0; n < cacheMag; n++) {
-                        float fd = data[ch][n];
-                        rms += fd * fd;
-                        int idata = int(fd * 255.0);
-                        if (idata < 0)
-                              idata = -idata;
-                        if (cache[ch][i].peak < idata)
-                              cache[ch][i].peak = idata;
-                        }
-                  // amplify rms value +12dB
-                  int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
-                  if (rmsValue > 255)
-                        rmsValue = 255;
-                  cache[ch][i].rms = rmsValue;
-                  }
-            }
-      if (showProgress)
-            progress->setValue(csize);
-      writeCache(path);
-      if (showProgress)
-            delete progress;
-      }
+   createCache(path, showProgress, true);
+}
 
 //---------------------------------------------------------
 //   writeCache
@@ -225,7 +248,7 @@ void SndFile::writeCache(const QString& path)
       if (cfile == 0)
             return;
       for (unsigned ch = 0; ch < channels(); ++ch)
-            fwrite(cache[ch], csize * sizeof(SampleV), 1, cfile);
+            fwrite(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
       fclose(cfile);
       }
 
@@ -253,9 +276,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
             
             sf_count_t ret = 0;
             if(sfUI)
-              ret = sf_seek(sfUI, pos, SEEK_SET);
+              ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
             else
-              ret = sf_seek(sf, pos, SEEK_SET);
+              ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
             if(ret == -1)
               return;  
             {
@@ -350,6 +373,7 @@ bool SndFile::openWrite()
             return false;
             }
   QString p = path();
+
       sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
       sfUI = 0;
       if (sf) {
@@ -427,9 +451,9 @@ sf_count_t SndFile::samples() const
       {
       if (!writeFlag) // if file is read only sfinfo is reliable
           return sfinfo.frames;
-      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR);
-      sf_count_t frames = sf_seek(sf, 0, SEEK_END);
-      sf_seek(sf, curPos, SEEK_SET);
+      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR | SFM_READ);
+      sf_count_t frames = sf_seek(sf, 0, SEEK_END | SFM_READ);
+      sf_seek(sf, curPos, SEEK_SET | SFM_READ);
       return frames;
       }
 
@@ -459,6 +483,7 @@ void SndFile::setFormat(int fmt, int ch, int rate)
       sfinfo.format     = fmt;
       sfinfo.seekable   = true;
       sfinfo.frames     = 0;
+      writeBuffer = new float [writeSegSize * std::max(2, ch)];
       }
 
 //---------------------------------------------------------
@@ -545,56 +570,117 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
 //---------------------------------------------------------
 
 size_t SndFile::write(int srcChannels, float** src, size_t n)
+{
+   size_t wrFrames = 0;
+
+   if(n <= writeSegSize)
+       wrFrames = realWrite(srcChannels, src, n);
+   else
+   {
+      while(n > 0)
       {
-      int dstChannels = sfinfo.channels;
-      //float buffer[n * dstChannels];
-      float *buffer = new float[n * dstChannels];
-      float *dst      = buffer;
-
-      const float limitValue=0.9999;
-
-
-      if (srcChannels == dstChannels) {
-            for (size_t i = 0; i < n; ++i) {
-                  for (int ch = 0; ch < dstChannels; ++ch)
-                        if (*(src[ch]+i) > 0)
-                          *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
-                        else
-                          *dst++ = *(src[ch]+i) > -limitValue ? *(src[ch]+i) : -limitValue;
-                  }
-            }
-      else if ((srcChannels == 1) && (dstChannels == 2)) {
-            // mono to stereo
-            for (size_t i = 0; i < n; ++i) {
-                  float data =  *(src[0]+i);
-                  if (data > 0) {
-                        *dst++ = data < limitValue ? data : limitValue; 
-                        *dst++ = data < limitValue ? data : limitValue;
-                        }
-                  else {
-                        *dst++ = data > -limitValue ? data : -limitValue; 
-                        *dst++ = data > -limitValue ? data : -limitValue; 
-                        }
-                  }
-            }
-      else if ((srcChannels == 2) && (dstChannels == 1)) {
-            // stereo to mono
-            for (size_t i = 0; i < n; ++i)
-                  if (*(src[0]+i) + *(src[1]+i) > 0)
-                    *dst++ = (*(src[0]+i) + *(src[1]+i)) < limitValue ? (*(src[0]+i) + *(src[1]+i)) : limitValue;
-                  else
-                    *dst++ = (*(src[0]+i) + *(src[1]+i)) > -limitValue ? (*(src[0]+i) + *(src[1]+i)) : -limitValue;
-            }
-      else {
-            printf("SndFile:write channel mismatch %d -> %d\n",
-               srcChannels, dstChannels);
-            delete[] buffer;
-            return 0;
-            }
-      int nbr = sf_writef_float(sf, buffer, n) ;
-      delete[] buffer;
-      return nbr;
+         size_t nrWrote = realWrite(srcChannels, src, writeSegSize, wrFrames);
+         wrFrames += nrWrote;
+         n -= nrWrote;
       }
+   }
+   return wrFrames;
+}
+
+size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs)
+{
+   int dstChannels = sfinfo.channels;
+   float *dst      = writeBuffer;
+
+   size_t iStart = offs;
+   size_t iEnd = offs + n;
+
+   const float limitValue=0.9999;
+
+
+   if (srcChannels == dstChannels) {
+      for (size_t i = iStart; i < iEnd; ++i) {
+         for (int ch = 0; ch < dstChannels; ++ch)
+            if (*(src[ch]+i) > 0)
+               *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
+            else
+               *dst++ = *(src[ch]+i) > -limitValue ? *(src[ch]+i) : -limitValue;
+      }
+   }
+   else if ((srcChannels == 1) && (dstChannels == 2)) {
+      // mono to stereo
+      for (size_t i = iStart; i < iEnd; ++i) {
+         float data =  *(src[0]+i);
+         if (data > 0) {
+            *dst++ = data < limitValue ? data : limitValue;
+            *dst++ = data < limitValue ? data : limitValue;
+         }
+         else {
+            *dst++ = data > -limitValue ? data : -limitValue;
+            *dst++ = data > -limitValue ? data : -limitValue;
+         }
+      }
+   }
+   else if ((srcChannels == 2) && (dstChannels == 1)) {
+      // stereo to mono
+      for (size_t i = iStart; i < iEnd; ++i) {
+         if (*(src[0]+i) + *(src[1]+i) > 0)
+            *dst++ = (*(src[0]+i) + *(src[1]+i)) < limitValue ? (*(src[0]+i) + *(src[1]+i)) : limitValue;
+         else
+            *dst++ = (*(src[0]+i) + *(src[1]+i)) > -limitValue ? (*(src[0]+i) + *(src[1]+i)) : -limitValue;
+      }
+   }
+   else {
+      printf("SndFile:write channel mismatch %d -> %d\n",
+             srcChannels, dstChannels);
+      return 0;
+   }
+   int nbr = sf_writef_float(sf, writeBuffer, n) ;
+
+   if(MusEGlobal::config.liveWaveUpdate)
+   { //update cache
+      if(!cache)
+      {
+         cache = new SampleVtype[sfinfo.channels];
+         csize = 0;
+      }
+      sf_count_t cstart = (sfinfo.frames + cacheMag - 1) / cacheMag;
+      sfinfo.frames += n;
+      csize = (sfinfo.frames + cacheMag - 1) / cacheMag;
+      for (int ch = 0; ch < sfinfo.channels; ++ch)
+      {
+         cache [ch].resize(csize);
+      }
+
+      for (int i = cstart; i < csize; i++)
+      {
+         for (int ch = 0; ch < sfinfo.channels; ++ch)
+         {
+            float rms = 0.0;
+            cache[ch][i].peak = 0;
+            for (int n = 0; n < cacheMag; n++)
+            {
+               //float fd = data[ch][n];
+               float fd = writeBuffer [n * sfinfo.channels + ch];
+               rms += fd * fd;
+               int idata = int(fd * 255.0);
+               if (idata < 0)
+                  idata = -idata;
+               if (cache[ch][i].peak < idata)
+                  cache[ch][i].peak = idata;
+            }
+            // amplify rms value +12dB
+            int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
+            if (rmsValue > 255)
+               rmsValue = 255;
+            cache[ch][i].rms = rmsValue;
+         }
+      }
+
+   }
+
+   return nbr;
+}
 
 //---------------------------------------------------------
 //   seek
@@ -1234,9 +1320,9 @@ void MusE::importWave()
    }
    MusECore::AudioPreviewDialog afd(this);
    afd.setDirectory(MusEGlobal::lastWavePath);
-   afd.setWindowTitle(tr("Import Wave File"));
+   afd.setWindowTitle(tr("Import Audio File"));
    /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
-         tr("Import Wave File"), 0);
+         tr("Import Audio File"), 0);
 */
    if(afd.exec() == QFileDialog::Rejected)
    {
@@ -1301,7 +1387,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
       QFileInfo fi(f.name());
       QString projectPath = MusEGlobal::museProject + QDir::separator();
-      QString fExt = fi.completeSuffix();
+      QString fExt = "wav";
       QString fBaseName = fi.baseName();
       QString fNewPath = "";
       bool bNameIsNotUsed = false;
@@ -1326,7 +1412,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
       SF_INFO sfiNew;
       sfiNew.channels = f.channels();
-      sfiNew.format = f.format();
+      sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
       sfiNew.frames = 0;
       sfiNew.samplerate = MusEGlobal::sampleRate;
       sfiNew.seekable = 1;
@@ -1336,7 +1422,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       if(sfNew == NULL)
       {
          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-                               tr("Can't create new wav file in project folder!"));
+                               tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
          return true;
       }
 

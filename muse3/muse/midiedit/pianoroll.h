@@ -48,6 +48,7 @@ class QToolBar;
 class QToolButton;
 class QWidget;
 class QPoint;
+class QHBoxLayout;
 
 namespace MusECore {
 class MidiPart;
@@ -59,6 +60,8 @@ class Xml;
 
 
 namespace MusEGui {
+
+class MidiStrip;
 class CtrlEdit;
 class MidiTrackInfo;
 class PianoCanvas;
@@ -69,6 +72,7 @@ class Splitter;
 class TimeLabel;
 class Toolbar1;
 class Piano;
+class TrackInfoToolBar;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -78,7 +82,10 @@ class PianoRoll : public MidiEditor {
       Q_OBJECT
     
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      MusEGui::MidiStrip *midiStrip;
       MusEGui::MidiTrackInfo *midiTrackInfo;
+      QScrollBar* infoScrollBar;
+      QHBoxLayout* infoScrollWidgetLayout;
       MusECore::Track* selected;
       
       QAction* editCutAction; 
@@ -139,6 +146,7 @@ class PianoRoll : public MidiEditor {
       QToolButton* speaker;
       QToolBar* tools;
       MusEGui::EditToolBar* tools2;
+      TrackInfoToolBar* trackInfoBar;
 
       int colorMode;
 

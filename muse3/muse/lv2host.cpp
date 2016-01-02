@@ -58,6 +58,7 @@
 #include "xml.h"
 #include "song.h"
 #include "ctrl.h"
+#include "minstrument.h"
 
 #include "app.h"
 #include "globals.h"
@@ -274,6 +275,7 @@ void initLV2()
 
       if(lilv_plugin_is_replaced(plugin))
       {
+         pit = lilv_plugins_next(plugins, pit);
          continue;
       }
 
@@ -636,12 +638,6 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
    state->curFrame = MusEGlobal::audioDevice->getCurFrame();
    lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
-   if(snd_midi_event_new(MusEGlobal::segmentSize * 10, &state->midiEvent) != 0)
-   {
-      abort();
-   }
-   snd_midi_event_no_status(state->midiEvent, 1);
-
    LV2Synth::lv2state_InitMidiPorts(state);
 }
 
@@ -746,12 +742,12 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      lilv_instance_connect_port(state->handle, state->midiInPorts [i].index, (void *)state->midiInPorts [i].buffer->lv2_evbuf_get_buffer());
+      lilv_instance_connect_port(state->handle, state->midiInPorts [i].index, (void *)state->midiInPorts [i].buffer->getRawBuffer());
    }
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {
-     lilv_instance_connect_port(state->handle, state->midiOutPorts [i].index, (void *)state->midiOutPorts [i].buffer->lv2_evbuf_get_buffer());
+     lilv_instance_connect_port(state->handle, state->midiOutPorts [i].index, (void *)state->midiOutPorts [i].buffer->getRawBuffer());
    }
 
    //query for state interface
@@ -843,16 +839,10 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
       state->handle = NULL;
    }
 
-   if(state->midiEvent != NULL)
-   {
-      snd_midi_event_free(state->midiEvent);
-      state->midiEvent = NULL;
-   }
-
    delete state;
 }
 
-void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter)
+void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, unsigned long nsamp)
 {
    //send transport events if any
    LV2Synth *synth = state->synth;
@@ -876,7 +866,6 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
    /* Build an LV2 position object to report change to plugin */
    LV2_Atom_Forge* atomForge = &state->atomForge;
-//#ifdef LV2_NEW_LIB
    lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
    LV2_Atom_Forge_Frame frame;
    lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
@@ -886,19 +875,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
    lv2_atom_forge_float(atomForge, (float)curBpm);
-//#else
-//   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
-//   LV2_Atom_Forge_Frame frame;
-//   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
-//   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
-//   lv2_atom_forge_long(atomForge, curFrame);
-//   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
-//   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
-//   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
-//   lv2_atom_forge_float(atomForge, (float)curBpm);
-//#endif
-buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
-//   }
+   buffer->write(nsamp, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 }
 
 void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
@@ -906,77 +883,53 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
    LV2Synth *synth = state->synth;
    state->midiInPorts = synth->_midiInPorts;
    state->midiOutPorts = synth->_midiOutPorts;
+   state->inPortsMidi= state->midiInPorts.size();
+   state->outPortsMidi = state->midiOutPorts.size();
    //connect midi and control ports
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      LV2EvBuf *buffer = new LV2EvBuf(LV2_RT_FIFO_ITEM_SIZE,
-                                      state->midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
-                                      synth->mapUrid(LV2_ATOM__Chunk),
-                                      synth->mapUrid(LV2_ATOM__Sequence)
-                                     );
-      state->midiInPorts [i].buffer = buffer;
-      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiInPorts [i].index, buffer));
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(state->midiInPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      if(!newEvBuffer)
+      {
+         abort();
+      }
+      state->midiInPorts [i].buffer = newEvBuffer;
+      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiInPorts [i].index, newEvBuffer));
    }
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
-   {
-      LV2EvBuf *buffer = new LV2EvBuf(LV2_RT_FIFO_ITEM_SIZE,
-                                      state->midiOutPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
-                                      synth->mapUrid(LV2_ATOM__Chunk),
-                                      synth->mapUrid(LV2_ATOM__Sequence)
-                                     );
-      state->midiOutPorts [i].buffer = buffer;
-      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiOutPorts [i].index, buffer));
+   {      
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(state->midiOutPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      if(!newEvBuffer)
+      {
+         abort();
+      }
+      state->midiOutPorts [i].buffer = newEvBuffer;
+      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiOutPorts [i].index, newEvBuffer));
    }
 
 }
 
-void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const std::vector<snd_seq_event_t> *events)
+void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp)
 {
-   LV2Synth *synth = state->synth;
-   size_t inp = state->midiInPorts.size();
-   size_t outp = state->midiOutPorts.size();
-   for(size_t j = 0; j < inp; j++)
+   for(size_t j = 0; j < state->inPortsMidi; j++)
    {
-      state->midiInPorts [j].buffer->lv2_evbuf_reset(true);
+      state->midiInPorts [j].buffer->resetBuffer(true);
    }
 
-   for(size_t j = 0; j < outp; j++)
+   for(size_t j = 0; j < state->outPortsMidi; j++)
    {
-      state->midiOutPorts [j].buffer->lv2_evbuf_reset(false);
+      state->midiOutPorts [j].buffer->resetBuffer(false);
    }
 
-   if(inp > 0)
+   if(state->inPortsMidi > 0)
    {
       LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
-      LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
 
       if(state->midiInPorts [0].supportsTimePos)
       {
          //send transport events if any
-         LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
-      }
-
-      if(events != NULL)
-      {
-         //convert snd_seq_event_t[] to raw midi data
-         snd_midi_event_reset_decode(state->midiEvent);
-         uint8_t resMidi [1024];
-
-         std::vector<snd_seq_event_t>::const_iterator it;
-
-         for(it = events->begin(); it != events->end(); ++it)
-         {
-            uint32_t stamp = it->time.tick;
-            uint32_t size = snd_midi_event_decode(state->midiEvent, resMidi, sizeof(resMidi), &(*it));
-            rawMidiBuffer->lv2_evbuf_write(iter,
-                                           stamp,
-                                           0,
-                                           synth->_midi_event_id,
-                                           size, resMidi);
-
-
-         }
+         LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, nsamp);
       }
    }
 
@@ -991,12 +944,8 @@ void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsig
       if(it != state->idx2EvtPorts.end())
       {
          LV2EvBuf *buffer = it->second;
-         LV2EvBuf::LV2_Evbuf_Iterator iter = buffer->lv2_evbuf_end();
          const LV2_Atom* const atom = (const LV2_Atom*)evtBuffer;
-         buffer->lv2_evbuf_write(iter, nsamp, 0, atom->type, atom->size,
-                                 static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
-
-
+         buffer->write(nsamp, 0, atom->type, atom->size,  static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
       }
 
    }
@@ -1019,13 +968,14 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
    {
       if(!state->midiOutPorts [j].old_api)
       {
-         LV2EvBuf::LV2_Evbuf_Iterator it = state->midiOutPorts [j].buffer->lv2_evbuf_begin();
-
-         for(; it.lv2_evbuf_is_valid(); ++it)
+         do
          {
             uint32_t frames, subframes, type, size;
             uint8_t *data = NULL;
-            state->midiOutPorts [j].buffer->lv2_evbuf_get(it, &frames, &subframes, &type, &size, &data);
+            if(!state->midiOutPorts [j].buffer->read(&frames, &subframes, &type, &size, &data))
+            {
+               break;
+            }
             unsigned char atom_data [fifoItemSize];
             LV2_Atom *atom_evt = reinterpret_cast<LV2_Atom *>(atom_data);
             atom_evt->type = type;
@@ -1042,6 +992,7 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
 
             state->plugControlEvt.put(state->midiOutPorts [j].index, sizeof(LV2_Atom) + size, atom_evt);
          }
+         while(true);
 
       }
    }
@@ -1123,10 +1074,10 @@ void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
    if(state == NULL)
       return;
-   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   if(!state->gtk2AllocateCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
    {
+      state->gtk2AllocateCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->setMinimumSize(width, height);
-      ((LV2PluginWrapper_Window *)state->widget)->setMaximumSize(width, height);
    }
 
 
@@ -1137,8 +1088,9 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
    if(state == NULL)
       return;
-   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   if(!state->gtk2ResizeCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
    {
+      state->gtk2ResizeCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
    }
 
@@ -1194,7 +1146,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                                             "<b>ldd " LV2_GTK_HELPER "</b><br />"
                                                             "in terminal window.<br />"
                                                             "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                            "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                            "It can be recompiled and reinstalled from muse3/muse/lv2Gtk2Helper folder "
                                                             " from MusE source package. dl error was:"
                                                              ) + QString::fromUtf8(dlerror())+ "<br />"
                                                             "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
@@ -1209,10 +1161,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    LV2_PLUGIN_UI_TYPES::iterator itUi;
 
-   if(state->uiCurrent == NULL)
+   if((state->uiCurrent == NULL) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
    {
+      state->uiCurrent = NULL;
+      state->gtk2ResizeCompleted = false;
+      state->gtk2AllocateCompleted = false;
       QAction *aUiTypeSelected = NULL;
-      if(synth->_pluginUiTypes.size() == 1)
+      if((synth->_pluginUiTypes.size() == 1) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_USE_FIRST)
       {
          state->uiCurrent = synth->_pluginUiTypes.begin()->first;
       }
@@ -1433,6 +1388,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                      int w = 0;
                      int h = 0;
                      lv2Gtk2Helper_gtk_widget_get_allocationFn(uiW, &w, &h);
+                     win->setMinimumSize(w, h);
                      win->resize(w, h);
                   }
                   //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
@@ -2234,6 +2190,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uTime_beatsPerMinute  = mapUrid(LV2_TIME__beatsPerMinute);
    _uTime_barBeat         = mapUrid(LV2_TIME__barBeat);
    _uAtom_EventTransfer   = mapUrid(LV2_ATOM__eventTransfer);
+   _uAtom_Chunk           = mapUrid(LV2_ATOM__Chunk);
+   _uAtom_Sequence        = mapUrid(LV2_ATOM__Sequence);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
    _fSampleRate = (float)MusEGlobal::sampleRate;
@@ -2450,12 +2408,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
       {
          bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
-         mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */, NULL, portSupportsTimePos));
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */,portSupportsTimePos));
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
       {
          bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
-         mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, NULL, portSupportsTimePos));
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, portSupportsTimePos));
       }
       else if(!optional)
       {
@@ -2479,7 +2437,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
    }
 
-   if(_midiInPorts.size() > 0)
+   const LilvPluginClass *cls = lilv_plugin_get_class(_plugin);
+   const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+   const char *clsname = lilv_node_as_uri(ncuri);
+   if((strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0) && (_midiInPorts.size() > 0))
    {
       _isSynth = true;
    }
@@ -2610,15 +2571,15 @@ const char *LV2Synth::unmapUrid(LV2_URID id)
 
 LV2SynthIF::~LV2SynthIF()
 {
-   if(_uiState != NULL)
+   if(_state != NULL)
    {
-      _uiState->deleteLater = true;
+      _state->deleteLater = true;
       //_uiState->uiTimer->stopNextTime(false);
-      if(_uiState->pluginWindow != NULL)
-         _uiState->pluginWindow->stopNextTime();
+      if(_state->pluginWindow != NULL)
+         _state->pluginWindow->stopNextTime();
       else
-         LV2Synth::lv2state_FreeState(_uiState);
-      _uiState = NULL;
+         LV2Synth::lv2state_FreeState(_state);
+      _state = NULL;
 
    }
 
@@ -2688,7 +2649,7 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
    _audioInSilenceBuf = NULL;
    _ifeatures = NULL;
    _ppifeatures = NULL;
-   _uiState = NULL;
+   _state = NULL;
 }
 
 bool LV2SynthIF::init(LV2Synth *s)
@@ -2697,26 +2658,26 @@ bool LV2SynthIF::init(LV2Synth *s)
 
    //use LV2Synth features as template
 
-   _uiState = new LV2PluginWrapper_State;
-   _uiState->inst = NULL;
-   _uiState->widget = NULL;
-   _uiState->uiInst = NULL;
-   _uiState->plugInst = NULL;
-   _uiState->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
-   _uiState->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
-   _uiState->sif = this;
-   _uiState->synth = _synth;
+   _state = new LV2PluginWrapper_State;
+   _state->inst = NULL;
+   _state->widget = NULL;
+   _state->uiInst = NULL;
+   _state->plugInst = NULL;
+   _state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+   _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+   _state->sif = this;
+   _state->synth = _synth;
 
-   LV2Synth::lv2state_FillFeatures(_uiState);
+   LV2Synth::lv2state_FillFeatures(_state);
 
-   _uiState->handle = _handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, _uiState->_ppifeatures);
+   _state->handle = _handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, _state->_ppifeatures);
 
    if(_handle == NULL)
    {
-      delete [] _uiState->_ppifeatures;
-      _uiState->_ppifeatures = NULL;
-      delete [] _uiState->_ifeatures;
-      _uiState->_ifeatures = NULL;
+      delete [] _state->_ppifeatures;
+      _state->_ppifeatures = NULL;
+      delete [] _state->_ifeatures;
+      _state->_ifeatures = NULL;
       return false;
    }
 
@@ -2724,8 +2685,8 @@ bool LV2SynthIF::init(LV2Synth *s)
    _audioOutPorts = s->_audioOutPorts;
    _controlInPorts = s->_controlInPorts;
    _controlOutPorts = s->_controlOutPorts;
-   _inportsMidi = _uiState->midiInPorts.size();
-   _outportsMidi = _uiState->midiOutPorts.size();
+   _inportsMidi = _state->midiInPorts.size();
+   _outportsMidi = _state->midiOutPorts.size();
 
 
 
@@ -2921,7 +2882,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       }
    }
 
-   LV2Synth::lv2state_PostInstantiate(_uiState);
+   LV2Synth::lv2state_PostInstantiate(_state);
    activate();
 
 
@@ -2932,12 +2893,12 @@ bool LV2SynthIF::init(LV2Synth *s)
 
 void LV2SynthIF::doSelectProgram(unsigned char channel, int bank, int prog)
 {
-   if(_uiState && _uiState->prgIface && (_uiState->prgIface->select_program || _uiState->prgIface->select_program_for_channel))
+   if(_state && _state->prgIface && (_state->prgIface->select_program || _state->prgIface->select_program_for_channel))
    {
-      if(_uiState->newPrgIface)
-         _uiState->prgIface->select_program_for_channel(lilv_instance_get_handle(_uiState->handle), channel, (uint32_t)bank, (uint32_t)prog);
+      if(_state->newPrgIface)
+         _state->prgIface->select_program_for_channel(lilv_instance_get_handle(_state->handle), channel, (uint32_t)bank, (uint32_t)prog);
       else
-         _uiState->prgIface->select_program(lilv_instance_get_handle(_uiState->handle), (uint32_t)bank, (uint32_t)prog);
+         _state->prgIface->select_program(lilv_instance_get_handle(_state->handle), (uint32_t)bank, (uint32_t)prog);
 
 
 
@@ -2958,10 +2919,22 @@ void LV2SynthIF::doSelectProgram(unsigned char channel, int bank, int prog)
       }
 
       //set update ui program flag
-      _uiState->uiChannel = channel;
-      _uiState->uiBank = bank;
-      _uiState->uiProg = prog;
-      _uiState->uiDoSelectPrg = true;
+      _state->uiChannel = channel;
+      _state->uiBank = bank;
+      _state->uiProg = prog;
+      _state->uiDoSelectPrg = true;
+   }
+}
+
+void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, uint8_t a, uint8_t b, uint8_t c)
+{
+   if(evBuf)
+   {
+      uint8_t midiEv [3];
+      midiEv [0] = a;
+      midiEv [1] = b;
+      midiEv [2] = c;
+      evBuf->write(frame, 0, _synth->_midi_event_id, 3, midiEv);
    }
 }
 
@@ -3314,50 +3287,62 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
 
 
 
-bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_t> &events, unsigned long *nevts)
+bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long frame)
 {
    int chn = e.channel();
    int a   = e.dataA();
    int b   = e.dataB();
-
-   *nevts = 1;
-
-   int len = e.len();
-   char ca[len + 2];
-
-   ca[0] = 0xF0;
-   memcpy(ca + 1, (const char *)e.data(), len);
-   ca[len + 1] = 0xF7;
-
-   len += 2;
-
-   snd_seq_event_t event;
+   int type = e.type();
 
 #ifdef LV2_DEBUG
    fprintf(stderr, "LV2SynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
 #endif
 
-   switch(e.type())
+   // REMOVE Tim. Noteoff. Added.
+   const MidiInstrument::NoteOffMode nom = synti->noteOffMode();
+  
+   switch(type)
    {
    case ME_NOTEON:
-#ifdef DSSI_DEBUG
+#ifdef LV2_DEBUG
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
 #endif
-
-      snd_seq_ev_clear(&event);
-      event.queue = SND_SEQ_QUEUE_DIRECT;
-
-      if(b)
+      // REMOVE Tim. Noteoff. Changed.
+//       if(b)
+//       {
+//          sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+//       }
+//       else
+//       {
+//          sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+//       }
+      if(b == 0)
       {
-         snd_seq_ev_set_noteon(&event, chn, a, b);
+        // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+        //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+        // Nothing should be setting a Note type Event's on velocity to zero.
+        // But just in case... If we get this warning, it means there is still code to change.
+        fprintf(stderr, "LV2SynthIF::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", e.time(), e.type(), chn, a, b);  
+        switch(nom)
+        {
+          // Instrument uses note offs. Convert to zero-vel note off.
+          case MidiInstrument::NoteOffAll:
+            //if(MusEGlobal::midiOutputTrace)
+            //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note off:\n");
+            sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+          break;
+          
+          // Instrument uses no note offs at all. Send as-is.
+          case MidiInstrument::NoteOffNone:
+          // Instrument converts all note offs to zero-vel note ons. Send as-is.
+          case MidiInstrument::NoteOffConvertToZVNoteOn:
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+          break;
+        }
       }
       else
-      {
-         snd_seq_ev_set_noteoff(&event, chn, a, 0);
-      }
-
-      events.push_back(event);
-
+        sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      
       break;
 
    case ME_NOTEOFF:
@@ -3365,10 +3350,27 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEOFF\n");
 #endif
 
-      snd_seq_ev_clear(&event);
-      event.queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_noteoff(&event, chn, a, 0);
-      events.push_back(event);
+      // REMOVE Tim. Noteoff. Changed.
+//       sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      switch(nom)
+      {
+        // Instrument uses note offs. Send as-is.
+        case MidiInstrument::NoteOffAll:
+          sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+        break;
+        
+        // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+        case MidiInstrument::NoteOffNone:
+          return false;
+          
+        // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+        case MidiInstrument::NoteOffConvertToZVNoteOn:
+          //if(MusEGlobal::midiOutputTrace)
+          //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note on:\n");
+          sendLv2MidiEvent(evBuf, frame, (ME_NOTEON | chn) & 0xff, a & 0x7f, 0);
+        break;
+      }
+      
       break;
 
    case ME_PROGRAM:
@@ -3491,10 +3493,8 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
 #endif
 
-         snd_seq_ev_clear(&event);
-         event.queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_pitchbend(&event, chn, b);
-         events.push_back(event);
+         b += 8192;
+         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, b & 0x7f, (b >> 7) & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3505,10 +3505,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
 #endif
 
-         snd_seq_ev_clear(&event);
-         event.queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_chanpress(&event, chn, b);
-         events.push_back(event);
+         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, b & 0x7f, 0);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3519,10 +3516,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
 #endif
 
-         snd_seq_ev_clear(&event);
-         event.queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
-         events.push_back(event);
+         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3534,7 +3528,6 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
       // For example sustain footpedal or pitch bend may be supported, but not mapped to any LADSPA port.
       if(ip == _synth->midiCtl2PortMap.end())
       {
-         int ctlnum = a;
 
          if(midiControllerType(a) == MidiController::NRPN14
             || midiControllerType(a) == MidiController::NRPN)
@@ -3546,23 +3539,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
             // 38 + (b & 0x7f) - fourth byte
 
 
-            snd_seq_ev_clear(&event);
-            event.queue = SND_SEQ_QUEUE_DIRECT;
-            snd_seq_ev_set_controller(&event, chn, 99, ((a & 0xff00) >> 8));
-            events.push_back(event);
-            snd_seq_ev_clear(&event);
-            event.queue = SND_SEQ_QUEUE_DIRECT;
-            snd_seq_ev_set_controller(&event, chn, 98, (a & 0xff));
-            events.push_back(event);
-            snd_seq_ev_clear(&event);
-            event.queue = SND_SEQ_QUEUE_DIRECT;
-            snd_seq_ev_set_controller(&event, chn, 6, ((b & 0x3f80) >> 7));
-            events.push_back(event);
-            snd_seq_ev_clear(&event);
-            event.queue = SND_SEQ_QUEUE_DIRECT;
-            snd_seq_ev_set_controller(&event, chn, 38, (b & 0x7f));
-            events.push_back(event);
-            *nevts = 4;
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 99, ((a & 0xff00) >> 8));
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 98, (a & 0xff));
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 6, ((b & 0x3f80) >> 7));
+            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 38, (b & 0x7f));
             return true;
 
          }
@@ -3570,23 +3550,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
          {
             return false;   // Event pointer not filled. Return false.
          }
-         else
-         {
-#ifdef LV2_DEBUG
-            fprintf(stderr, "LV2SynthIF::processEvent non-ladspa midi event is Controller7. Current dataA:%d\n", a);
-#endif
-            a &= 0x7f;
-            ctlnum = DSSI_CC_NUMBER(ctlnum);
-         }
 
          // Fill the event.
 #ifdef LV2_DEBUG
          printf("LV2SynthIF::processEvent non-ladspa filling midi event chn:%d dataA:%d dataB:%d\n", chn, a, b);
 #endif
-         snd_seq_ev_clear(&event);
-         event.queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_controller(&event, chn, a, b);
-         events.push_back(event);
+         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
          return true;
       }
 
@@ -3629,24 +3598,16 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
    break;
 
    case ME_PITCHBEND:
-      snd_seq_ev_clear(&event);
-      event.queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_pitchbend(&event, chn, a);
-      events.push_back(event);
+      a += 8192;
+      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, (a >> 7) & 0x7f);
       break;
 
    case ME_AFTERTOUCH:
-      snd_seq_ev_clear(&event);
-      event.queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_chanpress(&event, chn, a);
-      events.push_back(event);
+      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, 0);
       break;
 
    case ME_POLYAFTER:
-      snd_seq_ev_clear(&event);
-      event.queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
-      events.push_back(event);
+      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
       break;
 
    default:
@@ -3671,10 +3632,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    //unsigned long prop_buf_sz = el->size() + synti->eventFifo.getSize();
    //const unsigned long ev_buf_sz = (prop_buf_sz == 0) ? 1024 : prop_buf_sz;
 
-   //snd_seq_event_t events[ev_buf_sz];
-   std::vector<snd_seq_event_t> events;
-   //events.reserve(ev_buf_sz);
-
    const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
    const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
@@ -3691,6 +3648,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    ciCtrlList icl_first;
    const int plug_id = id();
 
+   LV2EvBuf *evBuf = (_inportsMidi > 0) ? _state->midiInPorts [0].buffer : NULL;
+
    //set freewheeling property if plugin supports it
    if(_synth->_hasFreeWheelPort)
    {
@@ -3703,7 +3662,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    }
 
    if(ports != 0)
-   {
+   {      
       const unsigned long in_ports = _inports;
       if(!atrack->noInRoute())
       {
@@ -3851,7 +3810,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             {
                _controls[k].val = ci.sVal;
             }
-            _uiState->controlsMask [k] = true;
+            _state->controlsMask [k] = true;
 
 #ifdef LV2_DEBUG_PROCESS
             fprintf(stderr, "LV2SynthIF::getData k:%lu val:%f sample:%lu ci.eFrame:%d nsamp:%lu \n", k, _controls[k].val, sample, ci.eFrame, nsamp);
@@ -3933,8 +3892,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          }
          if(v.fromGui) //don't send gui control changes back
          {
-            _uiState->lastControls [index] = v.value;
-            _uiState->controlsMask [index] = false;
+            _state->lastControls [index] = v.value;
+            _state->controlsMask [index] = false;
          }
       }
 
@@ -3953,7 +3912,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
       // Note this means it is still possible to get stuck in the top loop (at least for a while).
       if(nsamp != 0)
       {
-         unsigned long nevents = 0;
+         LV2Synth::lv2audio_preProcessMidiPorts(_state, nsamp);
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
@@ -4030,34 +3989,22 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                }
 
                // Returns false if the event was not filled. It was handled, but some other way.
-               unsigned long nevts = 0;
-               if(processEvent(*start_event, events, &nevts))
+               // Time-stamp the event.
+               long ft = start_event->time() - frameOffset - pos - sample;
+               if((ft < 0) || (ft >= (long)nsamp))
                {
-                  // Time-stamp the event.
-                  int ft = start_event->time() - frameOffset - pos - sample;
-
-                  if(ft < 0)
+                  if(ft > 0)
                   {
-                     ft = 0;
+                     fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
                   }
-
-                  if(ft >= int(nsamp))
-                  {
-                     fprintf(stderr, "LV2SynthIF::getData: eventlist event time:%u out of range. pos:%u offset:%lu ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-                     ft = nsamp - 1;
-                  }
+                  ft = nsamp - 1;
+               }
+               if(processEvent(*start_event, evBuf, ft))
+               {
 
 #ifdef LV2_DEBUG
                   fprintf(stderr, "LV2SynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
 #endif
-
-                  // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
-                  //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  nevts += nevents;
-                  for(; nevents < nevts; nevents++)
-                  {
-                     events[nevents].time.tick = ft;
-                  }
                }
             }
          }
@@ -4082,36 +4029,23 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             {
 
                // Returns false if the event was not filled. It was handled, but some other way.
-               unsigned long nevts = 0;
-               if(processEvent(e, events, &nevts))
+               // Time-stamp the event.
+               long ft = e.time() - frameOffset - pos  - sample;
+
+               if((ft < 0) || (ft > (long)nsamp))
                {
-                  // Time-stamp the event.
-                  int ft = e.time() - frameOffset - pos  - sample;
-
-                  if(ft < 0)
+                  if(ft > 0)
                   {
-                     ft = 0;
+                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
                   }
-
-                  if(ft >= int(nsamp))
-                  {
-                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-                     ft = nsamp - 1;
-                  }
-                  // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
-                  //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  nevts += nevents;
-                  for(; nevents < nevts; nevents++)
-                  {
-                     events[nevents].time.tick = ft;
-                  }
+                  ft = nsamp - 1;
                }
+               processEvent(e, evBuf, ft);
             }
          }
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
-            LV2Synth::lv2audio_preProcessMidiPorts(_uiState, nsamp, &events);
 
             //connect ports
             for(size_t j = 0; j < _inports; ++j)
@@ -4141,31 +4075,38 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             for(size_t j = 0; j < _inportsControl; ++j)
             {
                uint32_t idx = _controlInPorts [j].index;
-               if(_uiState->pluginCVPorts [idx] != NULL)
+               if(_state->pluginCVPorts [idx] != NULL)
                {
                   float cvVal = _controls [j].val;
                   for(size_t jj = 0; jj < nsamp; ++jj)
                   {
-                     _uiState->pluginCVPorts [idx] [jj + sample] = cvVal;
+                     _state->pluginCVPorts [idx] [jj + sample] = cvVal;
                   }
-                  lilv_instance_connect_port(_handle, idx, _uiState->pluginCVPorts [idx] + sample);
+                  lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
                }
             }
+#ifdef LV2_DEBUG_PROCESS
+            //dump atom sequence events to stderr
+            if(evBuf)
+            {
+               evBuf->dump();
+            }
+#endif
 
             lilv_instance_run(_handle, nsamp);
             //notify worker that this run() finished
-            if(_uiState->wrkIface && _uiState->wrkIface->end_run)
-               _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
+            if(_state->wrkIface && _state->wrkIface->end_run)
+               _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
             //notify worker about processed data (if any)
-            if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
+            if(_state->wrkIface && _state->wrkIface->work_response && _state->wrkEndWork)
             {
-               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
-               _uiState->wrkDataSize = 0;
-               _uiState->wrkDataBuffer = NULL;
-               _uiState->wrkEndWork = false;
+               _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataSize, _state->wrkDataBuffer);
+               _state->wrkDataSize = 0;
+               _state->wrkDataBuffer = NULL;
+               _state->wrkEndWork = false;
             }
 
-            LV2Synth::lv2audio_postProcessMidiPorts(_uiState, nsamp);
+            LV2Synth::lv2audio_postProcessMidiPorts(_state, nsamp);
 
 
          }
@@ -4202,12 +4143,12 @@ void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
    *x = *y = *w = *h = 0;
-   if(_uiState->pluginWindow != NULL && !_uiState->hasExternalGui)
+   if(_state->pluginWindow != NULL && !_state->hasExternalGui)
    {
-      QSize sz = _uiState->pluginWindow->size();
+      QSize sz = _state->pluginWindow->size();
       *w = sz.width();
       *h = sz.height();
-      QPoint pos = _uiState->pluginWindow->pos();
+      QPoint pos = _state->pluginWindow->pos();
       *x = pos.x();
       *y = pos.y();
    }
@@ -4256,12 +4197,12 @@ QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
 //   extPrg.useIndex = false;
 //   extPrg.bank = (prog >> 8) & 0xff;
 //   extPrg.prog = prog & 0xff;
-   std::map<uint32_t, uint32_t>::iterator itPrg = _uiState->prg2index.find(prog);
-   if(itPrg == _uiState->prg2index.end())
+   std::map<uint32_t, uint32_t>::iterator itPrg = _state->prg2index.find(prog);
+   if(itPrg == _state->prg2index.end())
       return QString("?");
    uint32_t index = itPrg->second;
-   std::map<uint32_t, lv2ExtProgram>::iterator itIndex = _uiState->index2prg.find(index);
-   if(itIndex == _uiState->index2prg.end())
+   std::map<uint32_t, lv2ExtProgram>::iterator itIndex = _state->index2prg.find(index);
+   if(itIndex == _state->index2prg.end())
       return QString("?");
    return QString(itIndex->second.name);
 
@@ -4297,15 +4238,15 @@ bool LV2SynthIF::initGui()
 
 bool LV2SynthIF::nativeGuiVisible() const
 {
-   if(_uiState != NULL)
+   if(_state != NULL)
    {
-      if(_uiState->hasExternalGui)
+      if(_state->hasExternalGui)
       {
-         return (_uiState->widget != NULL);
+         return (_state->widget != NULL);
       }
-      else if(_uiState->hasGui && _uiState->widget != NULL)
+      else if(_state->hasGui && _state->widget != NULL)
       {
-         return ((QWidget *)_uiState->widget)->isVisible();
+         return ((QWidget *)_state->widget)->isVisible();
       }
    }
 
@@ -4314,7 +4255,7 @@ bool LV2SynthIF::nativeGuiVisible() const
 
 void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
-   LV2Synth::lv2prg_updatePrograms(_uiState);
+   LV2Synth::lv2prg_updatePrograms(_state);
    menu->clear();
    MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
    subMenuPrograms->setTitle(QObject::tr("Midi programs"));
@@ -4327,7 +4268,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    //First: fill programs submenu
    std::map<int, MusEGui::PopupMenu *> submenus;
    std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
-   for(itIndex = _uiState->index2prg.begin(); itIndex != _uiState->index2prg.end(); ++itIndex)
+   for(itIndex = _state->index2prg.begin(); itIndex != _state->index2prg.end(); ++itIndex)
    {
       const lv2ExtProgram &extPrg = itIndex->second;
       //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
@@ -4360,7 +4301,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    }
 
    //Second:: Fill presets submenu
-   LV2Synth::lv2state_populatePresetsMenu(_uiState, subMenuPresets);
+   LV2Synth::lv2state_populatePresetsMenu(_state, subMenuPresets);
 }
 
 void LV2SynthIF::preProcessAlways()
@@ -4399,9 +4340,9 @@ void LV2SynthIF::setGeometry(int x, int y, int w, int h)
 
 void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
 {
-   if(_uiState->pluginWindow && !_uiState->hasExternalGui)
+   if(_state->pluginWindow && !_state->hasExternalGui)
    {
-      _uiState->pluginWindow->move(x, y);
+      _state->pluginWindow->move(x, y);
       //don't resize lv2 uis - this is handles at plugin level
       //_uiState->pluginWindow->resize(w, h);
    }
@@ -4432,25 +4373,25 @@ void LV2SynthIF::showNativeGui(bool bShow)
 {
    if(track() != NULL)
    {
-      if(_uiState->human_id != NULL)
+      if(_state->human_id != NULL)
       {
-         free(_uiState->human_id);
+         free(_state->human_id);
       }
 
-      _uiState->extHost.plugin_human_id = _uiState->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+      _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
    }
 
-   LV2Synth::lv2ui_ShowNativeGui(_uiState, bShow);
+   LV2Synth::lv2ui_ShowNativeGui(_state, bShow);
 }
 
 void LV2SynthIF::write(int level, Xml &xml) const
 {
-   LV2Synth::lv2conf_write(_uiState, level, xml);
+   LV2Synth::lv2conf_write(_state, level, xml);
 }
 
 void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
 {
-   LV2Synth::lv2conf_set(_uiState, customParams);
+   LV2Synth::lv2conf_set(_state, customParams);
 }
 
 
@@ -4589,12 +4530,12 @@ void LV2SynthIF::updateControllers() { }
 
 void LV2SynthIF::populatePresetsMenu(QMenu *menu)
 {
-   LV2Synth::lv2state_populatePresetsMenu(_uiState, menu);
+   LV2Synth::lv2state_populatePresetsMenu(_state, menu);
 }
 
 void LV2SynthIF::applyPreset(void *preset)
 {
-   LV2Synth::lv2state_applyPreset(_uiState, static_cast<LilvNode *>(preset));
+   LV2Synth::lv2state_applyPreset(_state, static_cast<LilvNode *>(preset));
 }
 
 
@@ -4869,17 +4810,18 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       return NULL;
    }
 
-   _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
+   //_states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
 
    LV2Synth::lv2state_PostInstantiate(state);
 
-   return (LADSPA_Handle)state->handle;
+   return (LADSPA_Handle)state;
 
 }
 
 void LV2PluginWrapper::connectPort(LADSPA_Handle handle, long unsigned int port, float *value)
 {
-   lilv_instance_connect_port((LilvInstance *)handle, port, (void *)value);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   lilv_instance_connect_port((LilvInstance *)state->handle, port, (void *)value);
 }
 
 int LV2PluginWrapper::incReferences(int ref)
@@ -4889,23 +4831,22 @@ int LV2PluginWrapper::incReferences(int ref)
 }
 void LV2PluginWrapper::activate(LADSPA_Handle handle)
 {
-   lilv_instance_activate((LilvInstance *) handle);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   lilv_instance_activate((LilvInstance *) state->handle);
 }
 void LV2PluginWrapper::deactivate(LADSPA_Handle handle)
 {
-  if (handle)
-  {
-    lilv_instance_deactivate((LilvInstance *) handle);
-  }
+   if (handle)
+   {
+      LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+      lilv_instance_deactivate((LilvInstance *) state->handle);
+   }
 }
 void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 {
    if(handle != NULL)
-   {
-      std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-      assert(it != _states.end()); //this shouldn't happen
-      LV2PluginWrapper_State *state = it->second;
-      _states.erase(it);
+   {      
+      LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
       state->deleteLater = true;
       if(state->pluginWindow != NULL)
@@ -4918,9 +4859,7 @@ void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 
 void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
    LV2Synth::lv2audio_preProcessMidiPorts(state, n);
 
@@ -5060,15 +4999,7 @@ bool LV2PluginWrapper::hasNativeGui()
 void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   //assert(it != _states.end()); //this shouldn't happen
-   if(it == _states.end())
-   {
-      return;
-   }
-
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 
    if(p->track() != NULL)
    {
@@ -5088,24 +5019,13 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
 bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   //assert(it != _states.end()); //this shouldn't happen
-   if(it == _states.end())
-   {
-      return false;
-   }
-
-   LV2PluginWrapper_State *state = it->second;
-   assert(state != NULL);
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    return (state->widget != NULL);
 }
 
 void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    if(_controlInPorts == 0)
@@ -5121,9 +5041,7 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
 
 void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    LV2Synth::lv2conf_write(state, level, xml);
@@ -5131,9 +5049,7 @@ void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &
 
 void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
-   assert(it != _states.end()); //this shouldn't happen
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
    assert(state != NULL);
 
    LV2Synth::lv2conf_set(state, customParams);
@@ -5142,13 +5058,7 @@ void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QSt
 void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   if(it == _states.end())
-   {
-      return;
-   }
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    assert(state != NULL);
 
    LV2Synth::lv2state_populatePresetsMenu(state, menu);
@@ -5158,21 +5068,12 @@ void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
 void LV2PluginWrapper::applyPreset(PluginI *p, void *preset)
 {
    assert(p->instances > 0);
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
-
-   if(it == _states.end())
-   {
-      return;
-   }
-   LV2PluginWrapper_State *state = it->second;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
    assert(state != NULL);
 
    LV2Synth::lv2state_applyPreset(state, static_cast<LilvNode *>(preset));
 
 }
-
-
-
 
 void LV2PluginWrapper_Worker::run()
 {
@@ -5219,6 +5120,341 @@ void LV2PluginWrapper_Worker::makeWork()
       }
    }
 
+}
+
+LV2EvBuf::LV2EvBuf(bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
+   :_oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
+{
+   _buffer.resize(LV2_EVBUF_SIZE);
+   resetBuffer(_isInput);
+}
+
+size_t LV2EvBuf::mkPadSize(size_t size)
+{
+   return (size + 7U) & (~7U);
+}
+
+void LV2EvBuf::resetPointers(bool r, bool w)
+{
+   if(!r && !w)
+      return;
+   size_t ptr = 0;
+   if(_oldApi)
+   {
+      ptr = sizeof(LV2_Event_Buffer);
+   }
+   else
+   {
+      ptr = sizeof(LV2_Atom_Sequence);
+   }
+
+   if(r)
+   {
+      curRPointer = ptr;
+   }
+   if(w)
+   {
+      curWPointer = ptr;
+   }
+}
+
+void LV2EvBuf::resetBuffer(bool input)
+{
+   _isInput = input;
+   if(_oldApi)
+   {
+      _evbuf = reinterpret_cast<LV2_Event_Buffer *>(&_buffer [0]);
+      _evbuf->capacity = _buffer.size() - sizeof(LV2_Event_Buffer);
+      _evbuf->data = reinterpret_cast<uint8_t *>(_evbuf + 1);
+      _evbuf->event_count = 0;
+      _evbuf->header_size = sizeof(LV2_Event_Buffer);
+      _evbuf->stamp_type = LV2_EVENT_AUDIO_STAMP;
+      _evbuf->size = 0;
+   }
+   else
+   {
+      _seqbuf = reinterpret_cast<LV2_Atom_Sequence *>(&_buffer [0]);
+      if(!_isInput)
+      {
+         _seqbuf->atom.type = _uAtomTypeChunk;
+         _seqbuf->atom.size = _buffer.size() - sizeof(LV2_Atom_Sequence);
+      }
+      else
+      {
+         _seqbuf->atom.type = _uAtomTypeSequence;
+         _seqbuf->atom.size = sizeof(LV2_Atom_Sequence_Body);
+      }
+      _seqbuf->body.unit = 0;
+      _seqbuf->body.pad = 0;
+   }
+   resetPointers(true, true);
+}
+
+bool LV2EvBuf::write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_t size, const uint8_t *data)
+{
+   if(!_isInput)
+      return false;
+   if(_oldApi)
+   {
+      size_t paddedSize = mkPadSize(sizeof(LV2_Event) + size);
+      size_t resSize = curWPointer + paddedSize;
+      if(resSize > _buffer.size())
+      {
+         std::cerr << "LV2 Event buffer overflow! frames=" << frames << ", size=" << size << std::endl;
+         return false;
+      }
+      LV2_Event *ev = reinterpret_cast<LV2_Event *>(&_buffer [curWPointer]);
+      ev->frames = frames;
+      ev->subframes = subframes;
+      ev->type = type;
+      ev->size = size;
+      memcpy((void *)(ev + 1), data, size);
+      curWPointer += paddedSize;
+      _evbuf->size += paddedSize;
+      _evbuf->event_count++;
+   }
+   else
+   {
+      size_t paddedSize = mkPadSize(sizeof(LV2_Atom_Event) + size);
+      size_t resSize = curWPointer + paddedSize;
+      if(resSize > _buffer.size())
+      {
+         std::cerr << "LV2 Atom_Event buffer overflow! frames=" << frames << ", size=" << size << std::endl;
+         return false;
+      }
+
+      LV2_Atom_Event *ev = reinterpret_cast<LV2_Atom_Event *>(&_buffer [curWPointer]);
+      ev->time.frames = frames;
+      ev->body.size = size;
+      ev->body.type = type;
+      memcpy(LV2_ATOM_BODY(&ev->body), data, size);
+      _seqbuf->atom.size += paddedSize;
+      curWPointer += paddedSize;
+   }
+   return true;
+}
+
+bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint32_t *size, uint8_t **data)
+{
+   *frames = *subframes = *type = *size = 0;
+   *data = NULL;
+   if(_isInput)
+      return false;
+   if(_oldApi)
+   {
+      LV2_Event *ev = reinterpret_cast<LV2_Event *>(&_buffer [curRPointer]);
+      if((_evbuf->size + sizeof(LV2_Event_Buffer) - curRPointer) < sizeof(LV2_Event))
+      {
+         return false;
+      }
+      *frames = ev->frames;
+      *subframes = ev->subframes;
+      *type = ev->type;
+      *size = ev->size;
+      *data = reinterpret_cast<uint8_t *>(ev + 1);
+      size_t padSize = mkPadSize(sizeof(LV2_Event) + ev->size);
+      curRPointer += padSize;
+   }
+   else
+   {
+      LV2_Atom_Event *ev = reinterpret_cast<LV2_Atom_Event *>(&_buffer [curRPointer]);
+      if((_seqbuf->atom.size + sizeof(LV2_Atom_Sequence) - curRPointer) < sizeof(LV2_Atom_Event))
+      {
+         return false;
+      }
+      *frames = ev->time.frames;
+      *type = ev->body.type;
+      *size = ev->body.size;
+      *data = reinterpret_cast<uint8_t *>(LV2_ATOM_BODY(&ev->body));
+      size_t padSize = mkPadSize(sizeof(LV2_Atom_Event) + ev->body.size);
+      curRPointer += padSize;
+
+   }
+   return true;
+}
+
+uint8_t *LV2EvBuf::getRawBuffer()
+{
+   return &_buffer [0];
+}
+
+void LV2EvBuf::dump()
+{
+   if(_oldApi){
+      return;
+   }
+
+   int n = 1;
+   LV2_Atom_Sequence *b = (LV2_Atom_Sequence *)&_buffer [0];
+   LV2_ATOM_SEQUENCE_FOREACH(b, s)
+   {
+      if(n == 1)
+      {
+         fprintf(stderr, "-------------- Atom seq dump START---------------\n");
+      }
+      fprintf(stderr, "\tSeq. no.: %d\n", n);
+      fprintf(stderr, "\t\tFrames: %ld\n", (long)s->time.frames);
+      fprintf(stderr, "\t\tSize: %d\n", s->body.size);
+      fprintf(stderr, "\t\tType: %d\n", s->body.type);
+      fprintf(stderr, "\t\tData (hex):\n");
+      uint8_t *d = (uint8_t *)LV2_ATOM_BODY(&s->body);
+      for(uint32_t i = 0; i < s->body.size; i++)
+      {
+         if((i % 10) == 0)
+         {
+            fprintf(stderr, "\n\t\t");
+         }
+         else
+         {
+            fprintf(stderr, " ");
+         }
+         fprintf(stderr, "0x%02X", d [i]);
+      }
+      fprintf(stderr, "\n");
+
+      n++;
+   }
+
+   if(n > 1)
+   {
+      fprintf(stderr, "-------------- Atom seq dump END---------------\n\n");
+   }
+}
+
+LV2SimpleRTFifo::LV2SimpleRTFifo(size_t size):
+   fifoSize(size),
+   itemSize(LV2_RT_FIFO_ITEM_SIZE)
+{
+   eventsBuffer.resize(fifoSize);
+   assert(eventsBuffer.size() == fifoSize);
+   readIndex = writeIndex = 0;
+   for(size_t i = 0; i < fifoSize; ++i)
+   {
+      eventsBuffer [i].port_index = 0;
+      eventsBuffer [i].buffer_size = 0;
+      eventsBuffer [i].data = new char [itemSize];
+   }
+
+}
+
+LV2SimpleRTFifo::~LV2SimpleRTFifo()
+{
+   for(size_t i = 0; i < fifoSize; ++i)
+   {
+      delete [] eventsBuffer [i].data;
+   }
+}
+
+bool LV2SimpleRTFifo::put(uint32_t port_index, uint32_t size, const void *data)
+{
+   if(size > itemSize)
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2SimpleRTFifo:put(): size("<<size<<") is too big" << std::endl;
+#endif
+      return false;
+
+   }
+   size_t i = writeIndex;
+   bool found = false;
+   do
+   {
+      if(eventsBuffer.at(i).buffer_size == 0)
+      {
+         found = true;
+         break;
+      }
+      i++;
+      i %= fifoSize;
+   }
+   while(i != writeIndex);
+
+   if(!found)
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2SimpleRTFifo:put(): fifo is full" << std::endl;
+#endif
+      return false;
+   }
+#ifdef DEBUG_LV2
+   // std::cerr << "LV2SimpleRTFifo:put(): used index = " << i << std::endl;
+#endif
+   memcpy(eventsBuffer.at(i).data, data, size);
+   eventsBuffer.at(i).port_index = port_index;
+   __sync_fetch_and_add(&eventsBuffer.at(i).buffer_size, size);
+   writeIndex = (i + 1) % fifoSize;
+
+   return true;
+
+}
+
+bool LV2SimpleRTFifo::get(uint32_t *port_index, size_t *szOut, char *data_out)
+{
+   size_t i = readIndex;
+   bool found = false;
+   if(eventsBuffer.at(i).buffer_size != 0)
+   {
+      found = true;
+   }
+
+   if(!found)
+   {
+#ifdef DEBUG_LV2
+      //std::cerr << "LV2SimpleRTFifo:get(): fifo is empty" << std::endl;
+#endif
+      return false;
+   }
+#ifdef DEBUG_LV2
+   //std::cerr << "LV2SimpleRTFifo:get(): used index = " << i << std::endl;
+#endif
+   *szOut = eventsBuffer.at(i).buffer_size;
+   *port_index = eventsBuffer [i].port_index;
+   memcpy(data_out, eventsBuffer [i].data, *szOut);
+   __sync_fetch_and_and(&eventsBuffer.at(i).buffer_size, 0);
+   readIndex = (i + 1) % fifoSize;
+   return true;
+}
+
+LV2UridBiMap::LV2UridBiMap() : nextId ( 1 ) {_map.clear(); _rmap.clear();}
+
+LV2UridBiMap::~LV2UridBiMap()
+{
+   LV2_SYNTH_URID_MAP::iterator it = _map.begin();
+   for(;it != _map.end(); ++it)
+   {
+      free((void*)(*it).first);
+   }
+}
+
+LV2_URID LV2UridBiMap::map(const char *uri)
+{
+   std::pair<LV2_SYNTH_URID_MAP::iterator, bool> p;
+   uint32_t id;
+   idLock.lock();
+   LV2_SYNTH_URID_MAP::iterator it = _map.find(uri);
+   if(it == _map.end())
+   {
+      const char *mUri = strdup(uri);
+      p = _map.insert ( std::make_pair ( mUri, nextId ) );
+      _rmap.insert ( std::make_pair ( nextId, mUri ) );
+      nextId++;
+      id = p.first->second;
+   }
+   else
+      id = it->second;
+   idLock.unlock();
+   return id;
+
+}
+
+const char *LV2UridBiMap::unmap(uint32_t id)
+{
+   LV2_SYNTH_URID_RMAP::iterator it = _rmap.find ( id );
+   if ( it != _rmap.end() ) {
+      return it->second;
+   }
+
+   return NULL;
 }
 
 }
