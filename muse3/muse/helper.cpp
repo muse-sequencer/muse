@@ -46,6 +46,7 @@
 #include "menutitleitem.h"
 #include "dssihost.h"
 #include "lv2host.h"
+#include "vst_native.h"
 
 #include <QMenu>
 #include <QApplication>
@@ -649,6 +650,11 @@ QMenu* populateAddSynth(QWidget* parent)
 
 #ifdef LV2_SUPPORT
     if (type == MusECore::Synth::LV2_SYNTH && !((MusECore::LV2Synth*)synth)->isSynth() ) // Place LV2 effects in a separate sub menu
+      type = MusECore::Synth::LV2_EFFECT;
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+    if (type == MusECore::Synth::VST_NATIVE_SYNTH && !((MusECore::VstNativeSynth*)synth)->isSynth() ) // Place VST effects in a separate sub menu
       type = MusECore::Synth::LV2_EFFECT;
 #endif
 

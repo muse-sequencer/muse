@@ -104,21 +104,17 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
-  if(_sif)
-  {
-    _sif->dispatch(effEditClose, 0, 0, NULL, 0.0f);
-    _sif->editorDeleted();
-    _sif = NULL;
-  }
+
 }
 
 //---------------------------------------------------------------------
 // open
 //---------------------------------------------------------------------
 
-void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
+void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativePluginWrapper_State *state)
 {
   _sif = sif;
+  _pstate = state;
 
   // Start the proper (child) editor...
   long  value = 0;
@@ -128,15 +124,26 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
 #endif
 
   MusECore::VstRect* pRect;
-  if(_sif->dispatch(effEditGetRect, 0, 0, &pRect, 0.0f))   
+
+  AEffect *vstPlug = _sif ? _sif->_plugin : _pstate->plugin;
+
+  vstPlug->dispatcher(vstPlug, effEditOpen, 0, value, ptr, 0.0f);
+
+  if(vstPlug->dispatcher(vstPlug, effEditGetRect, 0, 0, &pRect, 0.0f))
   {
           int w = pRect->right - pRect->left;
           int h = pRect->bottom - pRect->top;
           if (w > 0 && h > 0)
+          {
                   QWidget::setMinimumSize(w, h);
+                  if((w != width()) || (h != height()))
+                  {
+                     setFixedSize(w, h);
+                  }
+          }
   }
 
-  _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
+
   //int rv = _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
   //fprintf(stderr, "VstNativeEditor::open effEditOpen returned:%d effEditGetRect rect l:%d r:%d t:%d b:%d\n", rv, pRect->left, pRect->right, pRect->top, pRect->bottom); // REMOVE Tim.
   
@@ -146,11 +153,17 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
     _vstEventProc = getXEventProc(_display, _vstEditor);
 #endif
     
-  if(_sif->track())
+  QString windowTitle = "VST plugin editor";
+  if(_sif && _sif->track())
   {
-    QString title = _sif->track()->name() + ":" + _sif->pluginLabel();
-    setWindowTitle(title);
+     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
   }
+  else if(_pstate && _pstate->pluginI->track())
+  {
+     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
+  }
+
+  setWindowTitle(windowTitle);
 
   //_sif->editorOpened();
   if(!isVisible())
@@ -159,7 +172,7 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
   activateWindow();
   ///_sif->idleEditor();  // REMOVE Tim. Or keep.
 
-  resizeTimerId = startTimer(500);
+  //resizeTimerId = startTimer(500);
 }
 
 #if defined(Q_WS_X11)
@@ -207,6 +220,8 @@ void VstNativeEditor::showEvent(QShowEvent *pShowEvent)
 
   if(_sif)
     _sif->editorOpened();
+  if(_pstate)
+     _pstate->editorOpened();
 }
 
 //---------------------------------------------------------------------
@@ -215,13 +230,27 @@ void VstNativeEditor::showEvent(QShowEvent *pShowEvent)
 
 void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
 {
-   if(resizeTimerId)
+   /*if(resizeTimerId)
    {
       killTimer(resizeTimerId);
       resizeTimerId = 0;
-   }
+   }*/
    if(_sif)
-      _sif->editorClosed();
+   {
+     _sif->dispatch(effEditClose, 0, 0, NULL, 0.0f);
+     _sif->editorClosed();
+     _sif->editorDeleted();
+     _sif = NULL;
+   }
+
+   if(_pstate)
+   {
+      _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, NULL, 0.0f);
+      _pstate->editorClosed();
+      _pstate->editorDeleted();
+      _pstate = NULL;
+   }
+
    QWidget::closeEvent(pCloseEvent);
 }
 
@@ -252,17 +281,22 @@ void VstNativeEditor::timerEvent(QTimerEvent *event)
    if(event->timerId() == resizeTimerId)
    {
       MusECore::VstRect* pRect;
-      if(_sif && _sif->dispatch(effEditGetRect, 0, 0, &pRect, 0.0f))
+      bool bGotRect = false;
+      if(_sif)
+         bGotRect = _sif->dispatch(effEditGetRect, 0, 0, &pRect, 0.0f);
+      else if(_pstate)
+         bGotRect = _pstate->plugin->dispatcher(_pstate->plugin, effEditGetRect, 0, 0, &pRect, 0.0f);
+      if(bGotRect)
       {
-              int w = pRect->right - pRect->left;
-              int h = pRect->bottom - pRect->top;
-              if (w > 0 && h > 0)
-              {
-                 if((w != width()) || (h != height()))
-                 {
-                    setFixedSize(w, h);
-                 }
-              }
+         int w = pRect->right - pRect->left;
+         int h = pRect->bottom - pRect->top;
+         if (w > 0 && h > 0)
+         {
+            if((w != width()) || (h != height()))
+            {
+               setFixedSize(w, h);
+            }
+         }
       }
 
    }

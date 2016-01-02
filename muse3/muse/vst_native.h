@@ -100,7 +100,18 @@ struct VST_Program {
 //   VstNativeSynth
 //---------------------------------------------------------
 
+class VstNativePluginWrapper;
+class VstNativePluginWrapper_State;
+class VstNativeSynthIF;
+
+struct VstNativeSynthOrPlugin
+{
+   VstNativeSynthIF *sif;
+   VstNativePluginWrapper_State *pstate;
+};
+
 class VstNativeSynth : public Synth {
+   friend class VstNativePluginWrapper;
       enum VstPluginFlags
       {
         canSendVstEvents          = 1 << 0,
@@ -137,7 +148,7 @@ class VstNativeSynth : public Synth {
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return VST_NATIVE_SYNTH; }
       virtual void incInstances(int val);
-      virtual AEffect* instantiate(VstNativeSynthIF*);
+      virtual AEffect* instantiate(void *userData);
       virtual SynthIF* createSIF(SynthI*);
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }
@@ -147,6 +158,14 @@ class VstNativeSynth : public Synth {
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
+      bool isSynth() { return (_flags & canReceiveVstMidiEvents) || (_flags & canReceiveVstEvents); }
+
+      static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
+      static int guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned long param_idx, float value);
+      static void guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
+      static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
+      static bool resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h);
+
       };
 
 //---------------------------------------------------------
@@ -189,6 +208,8 @@ class VstNativeSynthIF : public SynthIF
       std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
       float*  _audioInSilenceBuf;            // Just all zeros all the time, so we don't have to clear for silence.
 
+      VstNativeSynthOrPlugin userData;
+
       std::vector<VST_Program> programs;
       void queryPrograms();
       void doSelectProgram(int bankH, int bankL, int prog);
@@ -205,14 +226,12 @@ class VstNativeSynthIF : public SynthIF
 
       virtual bool init(Synth*);
       
-      AEffect* plugin() const { return _plugin; }
-      VstIntPtr hostCallback(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
+      AEffect* plugin() const { return _plugin; }      
       VstIntPtr dispatch(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
                   if(_plugin) return _plugin->dispatcher(_plugin, opcode, index, value, ptr, opt); return 0;  }
-      void idleEditor();
-      bool resizeEditor(int w, int h);
+      void idleEditor();      
       
-      virtual bool initGui()       { return true; };
+      virtual bool initGui()       { return true; }
       virtual void guiHeartBeat();
       virtual bool guiVisible() const;
       virtual void showGui(bool);
@@ -224,7 +243,7 @@ class VstNativeSynthIF : public SynthIF
       virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
       virtual void setNativeGeometry(int, int, int, int);
-      virtual void preProcessAlways() { };
+      virtual void preProcessAlways() { }
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned nframes, float** buffer) ;
       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
@@ -239,10 +258,6 @@ class VstNativeSynthIF : public SynthIF
       virtual float getParameter(unsigned long idx) const;
       virtual void setParameter(unsigned long idx, float value);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
-
-      virtual void guiAutomationBegin(unsigned long param_idx);
-      virtual void guiAutomationEnd(unsigned long param_idx);
-      virtual int guiControlChanged(unsigned long param_idx, float value);
 
       //-------------------------
       // Methods for PluginIBase:
@@ -272,6 +287,96 @@ class VstNativeSynthIF : public SynthIF
       CtrlValueType ctrlValueType(unsigned long i) const;
       CtrlList::Mode ctrlMode(unsigned long i) const;
       };
+
+class VstNativePluginWrapper_State : public QObject
+{
+   Q_OBJECT
+public:
+   AEffect* plugin;
+   VstNativePluginWrapper *pluginWrapper;
+   PluginI *pluginI;
+   std::vector<float *> inPorts;
+   std::vector<float *> outPorts;
+   std::vector<float *> inControlPorts;
+   std::vector<float> inControlLastValues;
+   MusEGui::VstNativeEditor* editor;
+   VstNativeSynthOrPlugin userData;
+   bool guiVisible;
+   bool inProcess;
+   bool active;
+   VstNativePluginWrapper_State()
+   {
+      plugin = 0;
+      pluginWrapper = 0;
+      pluginI = 0;
+      editor = 0;
+      guiVisible = false;
+      userData.sif = 0;
+      userData.pstate = this;
+      inProcess = false;
+      active = false;
+   }
+   virtual ~VstNativePluginWrapper_State() {}
+   void editorDeleted()
+   {
+      editor = 0;
+   }
+   void editorOpened()
+   {
+      guiVisible = true;
+   }
+
+   void editorClosed()
+   {
+      guiVisible = false;
+   }
+protected slots:
+   virtual void heartBeat();
+};
+
+class VstNativePluginWrapper: public Plugin
+{
+   friend class MusEGui::VstNativeEditor;
+   friend class VstNativeSynth;
+private:
+    VstNativeSynth *_synth;
+    LADSPA_Descriptor _fakeLd;
+    LADSPA_PortDescriptor *_fakePds;    
+    std::vector<float> inControlDefaults;
+    std::vector<VstParameterProperties> inControlProperties;
+    std::vector<std::string> portNames;
+public:
+    VstNativePluginWrapper ( VstNativeSynth *s );
+    VstNativeSynth *synth() {
+        return _synth;
+    }
+    virtual ~VstNativePluginWrapper();
+    virtual LADSPA_Handle instantiate ( PluginI * );
+    virtual int incReferences ( int ref );
+    virtual void activate ( LADSPA_Handle handle );
+    virtual void deactivate ( LADSPA_Handle handle );
+    virtual void cleanup ( LADSPA_Handle handle );
+    virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
+    virtual void apply ( LADSPA_Handle handle, unsigned long n );
+    virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
+
+    virtual LADSPA_PortRangeHint range ( unsigned long i );
+    virtual void range (unsigned long, float *min, float *max ) const;
+
+    virtual float defaultValue ( unsigned long port ) const;
+    virtual const char *portName (unsigned long port );
+    virtual CtrlValueType ctrlValueType ( unsigned long ) const;
+    virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
+    virtual bool hasNativeGui();
+    virtual void showNativeGui ( PluginI *p, bool bShow );
+    virtual bool nativeGuiVisible ( PluginI *p );
+    virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
+    virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+
+    VstIntPtr dispatch(VstNativePluginWrapper_State *state, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
+                if(state->plugin) return state->plugin->dispatcher(state->plugin, opcode, index, value, ptr, opt); else return 0;  }
+};
+
 
 #endif // VST_NATIVE_SUPPORT
 

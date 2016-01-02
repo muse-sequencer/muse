@@ -1,3 +1,5 @@
+02.01.2016
+        - Added Native VST FX support (rack insert plugins) (danvd)
 27.12.2015
         - Midi Instrument Editor: Fixed errors from ancient missing Qt3 signals. 
           Fixed problems with instrument / patch / controller lists. Tests OK now. (Tim)

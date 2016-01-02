@@ -104,6 +104,8 @@ class Plugin {
       bool _isLV2Plugin;
       // Hack: Special flag required.
       bool _isDssiVst;
+      bool _isVstNativeSynth;
+      bool _isVstNativePlugin;
 
       #ifdef DSSI_SUPPORT
       const DSSI_Descriptor* dssi_descr;
@@ -139,6 +141,8 @@ class Plugin {
       bool isDssiSynth() const  { return _isDssiSynth; }
       inline bool isLV2Plugin() const { return _isLV2Plugin; } //inline it to use in RT audio thread
       bool isLV2Synth() const { return _isLV2Synth; }
+      inline bool isVstNativePlugin() const { return _isVstNativePlugin; } //inline it to use in RT audio thread
+      bool isVstNativeSynth() const { return _isVstNativeSynth; }
 
       virtual LADSPA_Handle instantiate(PluginI *);
       virtual void activate(LADSPA_Handle handle) {
@@ -313,7 +317,11 @@ class PluginIBase
 class PluginI : public PluginIBase {
 #ifdef LV2_SUPPORT
     friend class LV2PluginWrapper;
-    friend class LV2Synth;
+    friend class LV2Synth;    
+#endif
+#ifdef VST_NATIVE_SUPPORT
+    friend class VstNativeSynth;
+    friend class VstNativePluginWrapper;
 #endif
       Plugin* _plugin;
       int channel;
@@ -390,6 +398,7 @@ class PluginI : public PluginIBase {
       void showGui(bool);
       bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }
       bool isLV2Plugin() const { return _plugin->isLV2Plugin(); }
+      bool isVstNativePlugin() const { return _plugin->isVstNativePlugin(); }
       void showNativeGui();
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
@@ -440,6 +449,7 @@ class Pipeline : public std::vector<PluginI*> {
       void showGui(int, bool);
       bool isDssiPlugin(int) const;
       bool isLV2Plugin(int idx) const;
+      bool isVstNativePlugin(int idx) const;
       bool has_dssi_ui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);
@@ -552,7 +562,7 @@ class PluginGui : public QMainWindow {
       void guiContextMenuReq(int idx);
 
    protected slots:
-      void heartBeat();
+      virtual void heartBeat();
 
    public:
       PluginGui(MusECore::PluginIBase*);

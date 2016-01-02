@@ -50,6 +50,8 @@ typedef void (*XEventProc)(XEvent *);
 
 namespace MusECore {
 class VstNativeSynthIF;
+class VstNativePluginWrapper;
+class VstNativePluginWrapper_State;
 }
 
 #endif  // VST_NATIVE_SUPPORT
@@ -70,6 +72,7 @@ class VstNativeEditor : public QWidget
 #endif
 
     MusECore::VstNativeSynthIF* _sif;
+    MusECore::VstNativePluginWrapper_State* _pstate;
     int resizeTimerId;
         
 protected:
@@ -84,7 +87,7 @@ public:
     VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = 0);
     ~VstNativeEditor();
 
-    void open(MusECore::VstNativeSynthIF* sif);
+    void open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativePluginWrapper_State *state);
     //void close();
 
 #if defined(Q_WS_X11)

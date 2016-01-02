@@ -79,6 +79,10 @@
 #include "lv2host.h"
 #endif
 
+#ifdef VST_NATIVE_SUPPORT
+#include "vst_native.h"
+#endif
+
 #include "audio.h"
 #include "al/dsp.h"
 
@@ -640,6 +644,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
   _isDssiSynth = isDssiSynth;
   _isLV2Plugin = false;
   _isLV2Synth = false;
+  _isVstNativePlugin = false;
+  _isVstNativeSynth = false;
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -716,7 +722,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 
 Plugin::~Plugin()
 {
-  if(plugin && !isLV2Plugin())
+  if(plugin && !isLV2Plugin() && !isVstNativePlugin())
   //  delete plugin;
     printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
@@ -1479,6 +1485,16 @@ bool Pipeline::isLV2Plugin(int idx) const
    return false;
 }
 
+bool Pipeline::isVstNativePlugin(int idx) const
+{
+   PluginI* p = (*this)[idx];
+   if(p)
+     return p->isVstNativePlugin();
+
+   return false;
+
+}
+
 //---------------------------------------------------------
 //   has_dssi_ui
 //---------------------------------------------------------
@@ -1490,9 +1506,15 @@ bool Pipeline::has_dssi_ui(int idx) const
   {
 #ifdef LV2_SUPPORT
     if(p->plugin() && p->plugin()->isLV2Plugin())
-      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
-    else
+      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();    
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+    if(p->plugin() && p->plugin()->isVstNativePlugin())
+      return ((VstNativePluginWrapper *)p->plugin())->hasNativeGui();
+#endif
+
+
       return !p->dssi_ui_filename().isEmpty();
   }
 
@@ -1524,6 +1546,15 @@ void Pipeline::showNativeGui(int idx, bool flag)
          }
 
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p && p->plugin()->isVstNativePlugin())
+         {
+            ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, flag);
+            return;
+         }
+
+#endif
       #ifdef OSC_SUPPORT
 
       if (p)
@@ -1546,6 +1577,14 @@ void Pipeline::deleteGui(int idx)
          if(p && p->plugin()->isLV2Plugin())
          {
             ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, false);
+         }
+
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p && p->plugin()->isVstNativePlugin())
+         {
+            ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
 
 #endif
@@ -1585,9 +1624,15 @@ bool Pipeline::nativeGuiVisible(int idx)
 #ifdef LV2_SUPPORT
          if(p->plugin()->isLV2Plugin())
             return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
-#else
-            return p->nativeGuiVisible();
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p->plugin()->isVstNativePlugin())
+            return ((VstNativePluginWrapper *)p->plugin())->nativeGuiVisible(p);
+#endif
+
+            return p->nativeGuiVisible();
+
       }
       return false;
       }
@@ -1912,13 +1957,28 @@ void PluginI::setCustomData(const std::vector<QString> &customParams)
 {
    if(_plugin == NULL)
       return;
-   if(!_plugin->isLV2Plugin()) //now only do it for lv2 plugs
-      return;
+
 #ifdef LV2_SUPPORT
-   LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
-   for(int i = 0; i < instances; ++i)
+   if(_plugin->isLV2Plugin()) //now only do it for lv2 plugs
    {
-      lv2Plug->setCustomData(handle [i], customParams);
+
+      LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+      for(int i = 0; i < instances; ++i)
+      {
+         lv2Plug->setCustomData(handle [i], customParams);
+      }
+   }
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+   if(_plugin->isVstNativePlugin()) //now only do it for lv2 plugs
+   {
+
+      VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+      for(int i = 0; i < instances; ++i)
+      {
+         vstPlug->setCustomData(handle [i], customParams);
+      }
    }
 #endif
 }
@@ -2145,6 +2205,18 @@ void PluginI::writeConfiguration(int level, Xml& xml)
          if(instances > 0)
          {
             lv2Plug->writeConfiguration(handle [0], level, xml);
+         }
+      }
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+      if(_plugin != NULL && _plugin->isVstNativePlugin())//save vst plugin state custom data before controls
+      {
+         VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+         //for multi-instance plugins write only first instance's state
+         if(instances > 0)
+         {
+            vstPlug->writeConfiguration(handle [0], level, xml);
          }
       }
 #endif
@@ -2415,6 +2487,17 @@ void PluginI::showNativeGui()
     return;
   }
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+  if(plugin() && plugin()->isVstNativePlugin())
+  {
+    if(((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((VstNativePluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((VstNativePluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if (_plugin)
   {
@@ -2436,6 +2519,14 @@ void PluginI::showNativeGui(bool flag)
     return;
   }
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+  if(plugin() && plugin()->isVstNativePlugin())
+  {
+    ((VstNativePluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if(_plugin)
   {
@@ -2454,6 +2545,10 @@ bool PluginI::nativeGuiVisible()
 #ifdef LV2_SUPPORT
     if(plugin() && plugin()->isLV2Plugin())
       return ((LV2PluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
+#ifdef VST_NATIVE_SUPPORT
+    if(plugin() && plugin()->isVstNativePlugin())
+      return ((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();
