@@ -846,6 +846,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       slider->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
+      slider->setScaleMaxMinor(5);
+      slider->setScale(double(mn), double(mx), 10.0, false);
+      slider->setScaleBackBone(false);
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider->setFixedWidth(20);

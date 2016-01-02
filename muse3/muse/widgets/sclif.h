@@ -53,6 +53,7 @@ class ScaleIf
 	void setScale(const ScaleDiv &s);
 	void setScaleMaxMajor( int ticks);
 	void setScaleMaxMinor( int ticks);
+        void setScaleBackBone(bool v) { d_scale.setBackBone(v); }
 	void autoScale();
 
 	int scaleMaxMinor() const {return d_maxMinor;}
