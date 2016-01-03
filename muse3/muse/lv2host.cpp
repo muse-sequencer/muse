@@ -4705,6 +4705,8 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
    plugin = &_fakeLd;
    _isDssi = false;
    _isDssiSynth = false;
+   _isVstNativePlugin = false;
+   _isVstNativeSynth = false;
 
 #ifdef DSSI_SUPPORT
    dssi_descr = NULL;

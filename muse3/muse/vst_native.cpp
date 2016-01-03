@@ -315,7 +315,6 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
    int vendorVersion;
    QString vendorVersionString;
    std::vector<Synth*>::iterator is;
-   MusECore::PluginList::iterator isp;
    int vst_version = 0;
    VstNativeSynth* new_synth = NULL;
 
@@ -358,29 +357,20 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
      //productString = fi.completeBaseName();
      productString = effectName;
 
-   bool insertSynth = true;
-   bool insertPlugin = true;
    // Make sure it doesn't already exist.
    for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
      if((*is)->name() == effectName && (*is)->baseName() == fi.completeBaseName())
-       insertSynth = false;
-
-   for(isp = MusEGlobal::plugins.begin(); isp != MusEGlobal::plugins.end(); ++isp)
-     if((*isp)->name() == effectName && (*isp)->lib(true) == fi.completeBaseName())
-       insertPlugin = false;
-
-   if(!insertSynth && !insertPlugin)
-      return false;
+     {
+        fprintf(stderr, "VST %s already exists!\n", (char *)effectName.toUtf8().constData());
+       return false;
+     }
 
    // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
    vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
    bool isSynth = true;
    if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
    {
-     if(MusEGlobal::debugMsg)
-       fprintf(stderr, "Plugin is not a synth\n");
      isSynth = false;
-     //return false;
    }
 
    vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
@@ -396,10 +386,7 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
              vst_version
              );
 
-   if(insertSynth)
-   {
-      MusEGlobal::synthis.push_back(new_synth);
-   }
+   MusEGlobal::synthis.push_back(new_synth);
 
    if(new_synth->inPorts() > 0 && new_synth->outPorts() > 0)
    {
@@ -626,6 +613,8 @@ void initVST_Native()
                   p++;
             }
       }
+
+
 
 //---------------------------------------------------------
 //   VstNativeSynth
@@ -3126,6 +3115,8 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s)
    plugin = &_fakeLd;
    _isDssi = false;
    _isDssiSynth = false;
+   _isLV2Plugin = false;
+   _isLV2Synth = false;
 
 #ifdef DSSI_SUPPORT
    dssi_descr = NULL;
