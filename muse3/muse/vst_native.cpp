@@ -374,15 +374,17 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
 
    // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
    vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+   bool isSynth = true;
    if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
    {
      if(MusEGlobal::debugMsg)
        fprintf(stderr, "Plugin is not a synth\n");
-     return false;
+     isSynth = false;
+     //return false;
    }
 
    vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
-   new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString, id, handle);
+   new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString, id, handle, isSynth);
 
    if(MusEGlobal::debugMsg)
      fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
@@ -629,7 +631,7 @@ void initVST_Native()
 //   VstNativeSynth
 //---------------------------------------------------------
 
-VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle)
+VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle, bool isSynth)
   : Synth(fi, label, desc, maker, ver)
 {
   _handle = dlHandle;
@@ -674,6 +676,7 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QStri
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"midiProgramNames", 0.0f) > 0)
       _flags |= canMidiProgramNames;
   }
+  _isSynth = isSynth;
 }
 
 //---------------------------------------------------------
@@ -802,25 +805,26 @@ AEffect* VstNativeSynth::instantiate(void* userData)
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-  if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
+  /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
       fprintf(stderr, "Plugin is not a synth\n");
     goto _error;
-  }
+  }*/
 
   ++_instances;
   _handle = hnd;
 
   //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
-
+/*
 _error:
   //plugin->dispatcher(plugin, effMainsChanged, 0, 0, NULL, 0);
   plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
   if(_id == 0)
     dlclose(hnd);
   return NULL;
+  */
 }
 
 //---------------------------------------------------------
@@ -3208,7 +3212,6 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
    {
       refillDefCtrls = true;
       inControlDefaults.resize(_controlInPorts);
-      inControlProperties.resize(_controlInPorts);
       portNames.resize(_inports + _outports + _controlInPorts);
    }
    memset(&state->inPorts [0], 0, _inports * sizeof(float *));
@@ -3217,22 +3220,12 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
 
    if(refillDefCtrls)
    {
-      bool bGenericControlName = true;
       for(size_t i = 0; i < _controlInPorts; i++)
       {
          if(state->plugin->getParameter)
          {
             state->inControlLastValues [i] = inControlDefaults [i] = state->plugin->getParameter(state->plugin, i);
-         }
-         if(_synth->vstVersion() >= 2)
-         {
-            memset(&inControlProperties [i], 0, sizeof(inControlProperties));
-            VstIntPtr ret = dispatch(state, effGetParameterProperties, i, 0, &inControlProperties [i], 0);
-            if(ret == 1)
-            {
-               bGenericControlName = false;
-            }
-         }
+         }         
       }
 
 
@@ -3252,9 +3245,12 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
          }
          else if(i < _inports + _outports + _controlInPorts)
          {
-            if(!bGenericControlName)
+            char buf[256];
+            memset(buf, 0, sizeof(buf));
+            dispatch(state, effGetParamName, i - _inports - _outports, 0, buf, 0);
+            if(strlen(buf) > 0)
             {
-               portNames [i] = inControlProperties [i - _inports - _outports].label;
+               portNames [i] = buf;
             }
             else
             {

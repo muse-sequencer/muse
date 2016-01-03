@@ -131,6 +131,7 @@ class VstNativeSynth : public Synth {
       int _vst_version;
       unsigned int _flags;
       VstIntPtr _id;
+      bool _isSynth;
       
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
@@ -143,10 +144,10 @@ class VstNativeSynth : public Synth {
       bool _hasChunks;
       
    public:
-      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle);
+      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle, bool isSynth);
 
       virtual ~VstNativeSynth() {}
-      virtual Type synthType() const { return VST_NATIVE_SYNTH; }
+      virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
       virtual void incInstances(int val);
       virtual AEffect* instantiate(void *userData);
       virtual SynthIF* createSIF(SynthI*);
@@ -158,7 +159,7 @@ class VstNativeSynth : public Synth {
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
-      bool isSynth() { return (_flags & canReceiveVstMidiEvents) || (_flags & canReceiveVstEvents); }
+      bool isSynth() { return _isSynth; }
 
       static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
       static int guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned long param_idx, float value);
@@ -342,8 +343,7 @@ private:
     VstNativeSynth *_synth;
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;    
-    std::vector<float> inControlDefaults;
-    std::vector<VstParameterProperties> inControlProperties;
+    std::vector<float> inControlDefaults;    
     std::vector<std::string> portNames;
 public:
     VstNativePluginWrapper ( VstNativeSynth *s );
