@@ -63,6 +63,8 @@ class ScaleDraw : public DiMap {
 
       char d_fmt;
       int d_prec;
+      
+      bool d_drawBackBone;
 	
       void drawTick(QPainter *p, double val, int len) const;
       void drawBackbone(QPainter *p) const;
@@ -78,7 +80,8 @@ class ScaleDraw : public DiMap {
       void setGeometry(int xorigin, int yorigin, int length, OrientationX o);
       void setAngleRange(double angle1, double angle2);
       void setLabelFormat(char f, int prec);
-
+      void setBackBone(bool v) { d_drawBackBone = v; }
+      
       const ScaleDiv& scaleDiv() const { return d_scldiv; }
       OrientationX orientation() const { return d_orient; }
 // REMOVE Tim. Trackinfo. Changed.

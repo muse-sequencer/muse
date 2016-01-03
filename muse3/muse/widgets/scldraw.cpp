@@ -121,6 +121,8 @@ ScaleDraw::ScaleDraw()
     d_fmt = 'g';
     d_prec = 4;
 
+    d_drawBackBone = true;
+    
     // initialize scale and geometry
     setGeometry(0,0,100,Bottom);
     setScale(0,100,0,0,10);
@@ -239,7 +241,7 @@ void ScaleDraw::draw(QPainter *p) const
     //
     // draw backbone
     //
-    //if (d_baseEnabled)
+    if (d_drawBackBone)
        drawBackbone(p);
 
 }

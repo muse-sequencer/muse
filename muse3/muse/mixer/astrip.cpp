@@ -1573,6 +1573,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       slider->setCursorHoming(true);
       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+      slider->setScaleMaxMinor(5);
+      slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 10.0, false);
+      slider->setScaleBackBone(false);
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider->setFixedWidth(20);
