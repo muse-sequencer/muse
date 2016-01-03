@@ -1866,6 +1866,9 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
       _meter[c] = meter[c];
       if(_meter[c] > _peak[c])
         _peak[c] = _meter[c];
+
+      if(_meter [c] > 1.0f)
+         _isClipped = true;
     }
     
     if(isMute())

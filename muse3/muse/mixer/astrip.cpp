@@ -104,19 +104,67 @@ QSize AudioStrip::sizeHint () const
 //---------------------------------------------------------
 
 void AudioStrip::heartBeat()
+{
+   QByteArray clipperTxt = QString::fromUtf8("-\u221E").toUtf8();
+   double clipperVal = 0.0f;
+   for (int ch = 0; ch < track->channels(); ++ch) {
+      if (meter[ch]) {
+         //int meterVal = track->meter(ch);
+         //int peak  = track->peak(ch);
+         //meter[ch]->setVal(meterVal, peak, false);
+         meter[ch]->setVal(track->meter(ch), track->peak(ch), false);
+      }
+      clipperVal += track->peak(ch);
+   }
+   if(_lastClipperPeak != clipperVal)
+   {
+      _lastClipperPeak = clipperVal;
+      if(clipperVal != 0.0f)
       {
-        for (int ch = 0; ch < track->channels(); ++ch) {
-          if (meter[ch]) {
-            //int meterVal = track->meter(ch);
-            //int peak  = track->peak(ch);
-            //meter[ch]->setVal(meterVal, peak, false);
-            meter[ch]->setVal(track->meter(ch), track->peak(ch), false);
-          }
-        }
-        Strip::heartBeat();
-                  updateVolume();
-                  updatePan();
+         clipperVal /= track->channels();
+         clipperVal = MusECore::fast_log10(clipperVal) * 20.0;
+         if(clipperVal >= -60.0f)
+         {
+            int iCval = abs((int)(clipperVal * 10));
+            int c1 = (iCval / 100);
+            int c2 = (iCval - c1*100) / 10;
+            int c3 = iCval - c1 * 100 - c2 * 10;
+            int cIdx = 0;
+            char bufTxt [256];
+            if(clipperVal < 0)
+            {
+               bufTxt [cIdx++] = '-';
             }
+            bufTxt [cIdx++] = '0' + c1;
+            bufTxt [cIdx++] = '0' + c2;
+            bufTxt [cIdx++] = ',';
+            bufTxt [cIdx++] = '0' + c3;
+            bufTxt [cIdx++] = 0;
+            clipperTxt = bufTxt;
+         }
+      }
+      txtCliper->setText(clipperTxt);
+   }
+   Strip::heartBeat();
+   updateVolume();
+   updatePan();
+
+   if(track->isClipped() != _isClipped)
+   {
+      _isClipped = track->isClipped();
+      if(_isClipped)
+      {
+         txtCliper->setProperty("clipped", "true");
+      }
+      else
+      {
+         txtCliper->setProperty("clipped", "false");
+      }
+      txtCliper->style()->unpolish(txtCliper);
+      txtCliper->style()->polish(txtCliper);
+      txtCliper->update();
+   }
+}
 
 // REMOVE Tim. Trackinfo. Changed.      
 // //---------------------------------------------------------
@@ -853,7 +901,16 @@ void AudioStrip::panReleased()
 //---------------------------------------------------------
 void AudioStrip::panRightClicked(const QPoint &p)
 {
-  MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)track, p, MusECore::AC_PAN);
+   MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)track, p, MusECore::AC_PAN);
+}
+
+void AudioStrip::resetClipper()
+{
+   if(track)
+   {
+      track->resetClipper();
+      resetPeaks();
+   }
 }
 
 // REMOVE Tim. Trackinfo. Removed.
@@ -892,7 +949,7 @@ void AudioStrip::updateChannels()
                   meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
                   meter[cc]->setFixedWidth(15);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-                  sliderGrid->addWidget(meter[cc], 0, cc+1, Qt::AlignLeft);
+                  sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
                   sliderGrid->setColumnStretch(cc, 50);
                   meter[cc]->show();
                   }
@@ -904,6 +961,8 @@ void AudioStrip::updateChannels()
                   }
             }
       channel = c;
+      sliderGrid->removeWidget(txtCliper);
+      sliderGrid->addWidget(txtCliper, 0, 0, 1, -1);
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
@@ -1462,6 +1521,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       record        = 0;
       off           = 0;
+      _isClipped    = false;
+      _lastClipperPeak = -100.0;
       
       // Set the whole strip's font, except for the label.    p4.0.45
       setFont(MusEGlobal::config.fonts[1]);
@@ -1560,9 +1621,24 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //---------------------------------------------------
 
       sliderGrid = new QGridLayout(); 
-      sliderGrid->setRowStretch(0, 100);
-      sliderGrid->setContentsMargins(0, 0, 0, 0);
+      sliderGrid->setRowStretch(2, 100);
+      sliderGrid->setContentsMargins(0, 1, 0, 0);
       sliderGrid->setSpacing(0);
+
+      /*-------------- clipper label -------------------*/
+      txtCliper = new ClipperLabel(this);
+      txtCliper->setText(tr("clip"));
+      QFont clipFont = font();
+      clipFont.setPointSize(8);
+      txtCliper->setFont(clipFont);
+      txtCliper->setAlignment(Qt::AlignCenter);
+      txtCliper->setStyleSheet("[clipped = \"true\"]{color: white; border-width: 1px; border-color: blue; background-color: red; border-style: outset; border-radius: 5;}"
+                               "[clipped = \"false\"]{color: black; border-width: 1px; border-color: blue; background-color: white; border-style: outset; border-radius: 5;}");
+      txtCliper->setContentsMargins(0, 1, 0, 1);
+      txtCliper->setProperty("clipped", "false");
+      connect(txtCliper, SIGNAL(clicked()), SLOT(resetClipper()));
+      sliderGrid->addWidget(txtCliper, 0, 0, 1, -1);
+      sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
    
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
@@ -1584,17 +1660,17 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setValue(MusECore::fast_log10(t->volume())*20.0);
 
-      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
+      sliderGrid->addWidget(slider, 2, 0, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
             meter[i]->setFixedWidth(15);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-            sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
+            sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
             sliderGrid->setColumnStretch(i, 50);
             }
-      sliderGrid->addItem(new QSpacerItem(2,0),0,3);
+      sliderGrid->addItem(new QSpacerItem(2,0),2,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
       sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);

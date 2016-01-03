@@ -26,6 +26,7 @@
 #define __ASTRIP_H__
 
 #include <vector>
+#include <QLabel>
 
 #include "type_defs.h"
 #include "strip.h"
@@ -51,6 +52,20 @@ class Knob;
 class Slider;
 class CompactSlider;
 class TransparentToolButton;
+
+/* clickable label */
+
+class ClipperLabel : public QLabel
+{
+Q_OBJECT
+public:
+    explicit ClipperLabel(QWidget* parent=0 ) : QLabel(parent) {}
+    ~ClipperLabel() {}
+signals:
+    void clicked();
+protected:
+    void mousePressEvent(QMouseEvent*) { emit clicked(); }
+};
   
 //---------------------------------------------------------
 //   AudioStrip
@@ -90,6 +105,10 @@ class AudioStrip : public Strip {
       bool _volPressed;
       bool _panPressed;
 
+      ClipperLabel *txtCliper;
+      bool _isClipped;
+      double _lastClipperPeak;
+
       //QToolButton* iR;
       //QToolButton* oR;
       
@@ -123,6 +142,8 @@ class AudioStrip : public Strip {
 //       void auxLabelChanged(double, unsigned int);
       void volumeRightClicked(const QPoint &);
       void panRightClicked(const QPoint &);
+
+      void resetClipper();
 
    protected slots:
       virtual void heartBeat();

@@ -874,7 +874,7 @@ void Audio::startRolling()
           }  
         }
       }  
-      
+
       if (MusEGlobal::precountEnableFlag
          && MusEGlobal::song->click()
          && !MusEGlobal::extSyncFlag.value()
