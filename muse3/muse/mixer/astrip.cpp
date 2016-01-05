@@ -105,7 +105,6 @@ QSize AudioStrip::sizeHint () const
 
 void AudioStrip::heartBeat()
 {
-   QByteArray clipperTxt = QString::fromUtf8("-\u221E").toUtf8();
    double clipperVal = 0.0f;
    for (int ch = 0; ch < track->channels(); ++ch) {
       if (meter[ch]) {
@@ -116,54 +115,13 @@ void AudioStrip::heartBeat()
       }
       clipperVal += track->peak(ch);
    }
-   if(_lastClipperPeak != clipperVal)
-   {
-      _lastClipperPeak = clipperVal;
-      if(clipperVal != 0.0f)
-      {
-         clipperVal /= track->channels();
-         clipperVal = MusECore::fast_log10(clipperVal) * 20.0;
-         if(clipperVal >= -60.0f)
-         {
-            int iCval = abs((int)(clipperVal * 10));
-            int c1 = (iCval / 100);
-            int c2 = (iCval - c1*100) / 10;
-            int c3 = iCval - c1 * 100 - c2 * 10;
-            int cIdx = 0;
-            char bufTxt [256];
-            if(clipperVal < 0)
-            {
-               bufTxt [cIdx++] = '-';
-            }
-            bufTxt [cIdx++] = '0' + c1;
-            bufTxt [cIdx++] = '0' + c2;
-            bufTxt [cIdx++] = ',';
-            bufTxt [cIdx++] = '0' + c3;
-            bufTxt [cIdx++] = 0;
-            clipperTxt = bufTxt;
-         }
-      }
-      txtCliper->setText(clipperTxt);
-   }
-   Strip::heartBeat();
+   clipperVal /= track->channels();
+   _clipperLabel->setVal(clipperVal);
    updateVolume();
    updatePan();
 
-   if(track->isClipped() != _isClipped)
-   {
-      _isClipped = track->isClipped();
-      if(_isClipped)
-      {
-         txtCliper->setProperty("clipped", "true");
-      }
-      else
-      {
-         txtCliper->setProperty("clipped", "false");
-      }
-      txtCliper->style()->unpolish(txtCliper);
-      txtCliper->style()->polish(txtCliper);
-      txtCliper->update();
-   }
+   _clipperLabel->setClipper(track->isClipped());
+
 }
 
 // REMOVE Tim. Trackinfo. Changed.      
@@ -961,8 +919,8 @@ void AudioStrip::updateChannels()
                   }
             }
       channel = c;
-      sliderGrid->removeWidget(txtCliper);
-      sliderGrid->addWidget(txtCliper, 0, 0, 1, -1);
+      sliderGrid->removeWidget(_clipperLabel);
+      sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
@@ -1521,8 +1479,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       record        = 0;
       off           = 0;
-      _isClipped    = false;
-      _lastClipperPeak = -100.0;
       
       // Set the whole strip's font, except for the label.    p4.0.45
       setFont(MusEGlobal::config.fonts[1]);
@@ -1625,19 +1581,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       sliderGrid->setContentsMargins(0, 1, 0, 0);
       sliderGrid->setSpacing(0);
 
-      /*-------------- clipper label -------------------*/
-      txtCliper = new ClipperLabel(this);
-      txtCliper->setText(tr("clip"));
-      QFont clipFont = font();
-      clipFont.setPointSize(8);
-      txtCliper->setFont(clipFont);
-      txtCliper->setAlignment(Qt::AlignCenter);
-      txtCliper->setStyleSheet("[clipped = \"true\"]{color: white; border-width: 1px; border-color: blue; background-color: red; border-style: outset; border-radius: 5;}"
-                               "[clipped = \"false\"]{color: black; border-width: 1px; border-color: blue; background-color: white; border-style: outset; border-radius: 5;}");
-      txtCliper->setContentsMargins(0, 1, 0, 1);
-      txtCliper->setProperty("clipped", "false");
-      connect(txtCliper, SIGNAL(clicked()), SLOT(resetClipper()));
-      sliderGrid->addWidget(txtCliper, 0, 0, 1, -1);
+      /*-------------- clipper label -------------------*/      
+      _clipperLabel = new ClipperLabel(this);
+      connect(_clipperLabel, SIGNAL(clicked()), SLOT(resetClipper()));
+      sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
    
 // REMOVE Tim. Trackinfo. Changed.      

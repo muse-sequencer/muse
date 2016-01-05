@@ -708,7 +708,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   QByteArray ba = info.filePath().toLatin1();
   const char* path = ba.constData();
   void* hnd = _handle;
-  int vst_version;
+  //int vst_version;
 
   if(hnd == NULL)
   {
@@ -793,7 +793,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
   /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
