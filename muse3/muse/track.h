@@ -107,6 +107,8 @@ class Track {
 
       bool _locked;
       bool _selected;
+      bool _isClipped; //used in audio mixer strip. Persistent.
+
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -213,6 +215,8 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
+      inline bool isClipped() { return _isClipped; }
+      void resetClipper() { _isClipped = false; }
 
       };
 
@@ -507,7 +511,7 @@ class AudioTrack : public Track {
       void eraseRangeACEvents(int, int, int);
       void addACEvent(int, int, double);
       void changeACEvent(int id, int frame, int newframe, double newval);
-      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }
+      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }      
       };
 
 //---------------------------------------------------------

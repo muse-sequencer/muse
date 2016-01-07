@@ -382,8 +382,11 @@ void GlobalSettingsConfig::apply()
             w->resize(MusEGlobal::config.geometryBigTime.size());
             w->move(MusEGlobal::config.geometryBigTime.topLeft());
             }
-      MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
-      MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
+      if(!MusEGlobal::muse->isMaximized() && !MusEGlobal::muse->isMinimized())
+      {
+         MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
+         MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
+      }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate

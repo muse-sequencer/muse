@@ -1638,15 +1638,20 @@ void Song::beat()
       
       //First: update cpu load toolbar
 
-      QList<QToolButton *> cpuLoadActionList = MusEGlobal::muse->findChildren<QToolButton *>("CpuLoadToolbarButton");
-      QList<QToolButton *>::const_iterator it;
+      QToolButton *cpuLoadToolButton = (QToolButton *)(((QWidgetAction *)MusEGlobal::cpuLoadAction)->defaultWidget());
       float fCpuLoad = MusEGlobal::muse->getCPULoad();
       long xRunsCount = MusEGlobal::audio->getXruns();
-      for(it = cpuLoadActionList.begin(); it != cpuLoadActionList.end(); ++it)
-      {
-         //(*it)->setText(QString("<b>CPU (%): </b>") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
-         (*it)->setText(QString("CPU: %1%, XRUNS: %2").arg((double)fCpuLoad, 4, 'f', 1, QChar('0')).arg(xRunsCount));
-      }
+      int iCval = abs((int)(fCpuLoad * 10));
+      int c1 = (iCval / 100);
+      int c2 = (iCval - c1*100) / 10;
+      int c3 = iCval - c1 * 100 - c2 * 10;
+      char bufTxt [5];
+      bufTxt [0] = '0' + c1;
+      bufTxt [1] = '0' + c2;
+      bufTxt [2] = ',';
+      bufTxt [3] = '0' + c3;
+      bufTxt [4] = 0;
+      cpuLoadToolButton->setText(QString("CPU: %1%, XRUNS: %2").arg(bufTxt).arg(xRunsCount));
 
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)

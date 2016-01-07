@@ -38,6 +38,7 @@ QT5_WRAP_CPP (widget_mocs
       canvas.h  
       checkbox.h
       choose_sysex.h
+      clipper_label.h
       colorframe.h
       comboQuant.h  
       combobox.h  
@@ -116,7 +117,7 @@ QT5_WRAP_CPP (widget_mocs
       vscale.h
       visibletracks.h
       vst_native_editor.h
-      warn_bad_timing.h
+      warn_bad_timing.h      
       )
 
 ##
@@ -172,6 +173,7 @@ file (GLOB widgets_source_files
       checkbox.cpp 
       choose_sysex.cpp
       citem.cpp
+      clipper_label.cpp
       colorframe.cpp
       comboQuant.cpp 
       combobox.cpp  

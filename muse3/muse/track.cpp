@@ -259,11 +259,13 @@ Track::Track(Track::TrackType t)
 {
       init();
       _type = t;
+      _isClipped = false;
 }
 
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
+  _isClipped = false;
 
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.

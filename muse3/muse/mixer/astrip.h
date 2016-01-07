@@ -32,6 +32,7 @@
 // #include "knob.h" // REMOVE Tim. Trackinfo. Removed.
 // #include "compact_slider.h"
 //#include "route.h"
+#include "clipper_label.h"
 
 //class QDialog;
 class QToolButton;
@@ -51,7 +52,7 @@ class Knob;
 class Slider;
 class CompactSlider;
 class TransparentToolButton;
-  
+
 //---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
@@ -90,6 +91,8 @@ class AudioStrip : public Strip {
       bool _volPressed;
       bool _panPressed;
 
+      ClipperLabel *_clipperLabel;
+
       //QToolButton* iR;
       //QToolButton* oR;
       
@@ -123,6 +126,8 @@ class AudioStrip : public Strip {
 //       void auxLabelChanged(double, unsigned int);
       void volumeRightClicked(const QPoint &);
       void panRightClicked(const QPoint &);
+
+      void resetClipper();
 
    protected slots:
       virtual void heartBeat();

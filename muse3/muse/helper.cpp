@@ -648,16 +648,6 @@ QMenu* populateAddSynth(QWidget* parent)
       type = MusECore::Synth::VST_SYNTH;
 #endif
 
-#ifdef LV2_SUPPORT
-    if (type == MusECore::Synth::LV2_SYNTH && !((MusECore::LV2Synth*)synth)->isSynth() ) // Place LV2 effects in a separate sub menu
-      type = MusECore::Synth::LV2_EFFECT;
-#endif
-
-#ifdef VST_NATIVE_SUPPORT
-    if (type == MusECore::Synth::VST_NATIVE_SYNTH && !((MusECore::VstNativeSynth*)synth)->isSynth() ) // Place VST effects in a separate sub menu
-      type = MusECore::Synth::LV2_EFFECT;
-#endif
-
     if(type >= ntypes)
       continue; 
     smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toUtf8().constData()), ii) );

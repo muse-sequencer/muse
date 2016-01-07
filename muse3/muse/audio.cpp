@@ -874,26 +874,29 @@ void Audio::startRolling()
           }  
         }
       }  
-      
-      if (MusEGlobal::precountEnableFlag
-         && MusEGlobal::song->click()
-         && !MusEGlobal::extSyncFlag.value()
-         && MusEGlobal::song->record()) {
-          printf("state = PRECOUNT!\n");
-            state = PRECOUNT;
-            int z, n;
-            if (MusEGlobal::precountFromMastertrackFlag)
-                  AL::sigmap.timesig(curTickPos, z, n);
-            else {
-                  z = MusEGlobal::precountSigZ;
-                  n = MusEGlobal::precountSigN;
-                  }
-            clickno       = z * MusEGlobal::preMeasures;
-            clicksMeasure = z;
-            ticksBeat     = (MusEGlobal::config.division * 4)/n;
 
-            }
-      else {
+      /// dennis: commented check for pre-count. Something seems to be
+      /// missing here because the state is not set to PLAY so that the
+      /// sequencer doesn't start rolling in record mode.
+//      if (MusEGlobal::precountEnableFlag
+//         && MusEGlobal::song->click()
+//         && !MusEGlobal::extSyncFlag.value()
+//         && MusEGlobal::song->record()) {
+//          printf("state = PRECOUNT!\n");
+//            state = PRECOUNT;
+//            int z, n;
+//            if (MusEGlobal::precountFromMastertrackFlag)
+//                  AL::sigmap.timesig(curTickPos, z, n);
+//            else {
+//                  z = MusEGlobal::precountSigZ;
+//                  n = MusEGlobal::precountSigN;
+//                  }
+//            clickno       = z * MusEGlobal::preMeasures;
+//            clicksMeasure = z;
+//            ticksBeat     = (MusEGlobal::config.division * 4)/n;
+
+//            }
+//      else {
             //
             // compute next midi metronome click position
             //
@@ -903,7 +906,7 @@ void Audio::startRolling()
             if (tick)
                   beat += 1;
             midiClick = AL::sigmap.bar2tick(bar, beat, 0);
-            }
+//            }
 
       // reenable sustain 
       for (int i = 0; i < MIDI_PORTS; ++i) {

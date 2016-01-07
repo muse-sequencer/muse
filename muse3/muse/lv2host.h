@@ -302,7 +302,7 @@ private:
     std::map<QString, LilvNode *> _presets;
 public:
     virtual Type synthType() const {
-        return LV2_SYNTH;
+        return _isSynth ? LV2_SYNTH : LV2_EFFECT;
     }
     LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin );
     virtual ~LV2Synth();

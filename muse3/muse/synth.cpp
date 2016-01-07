@@ -200,7 +200,7 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
          {
             if( ((*i)->baseName() == sclass) &&
                 (label.isEmpty() || ((*i)->name() == label)) &&
-                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType()) )
+                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType() || (type == Synth::LV2_SYNTH && (*i)->synthType() == Synth::LV2_EFFECT)) )
               return *i;
          }
       fprintf(stderr, "synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
