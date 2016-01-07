@@ -713,7 +713,8 @@ void ThinSlider::rangeChange()
 void ThinSlider::setMargins(int hor, int vert)
 {
     d_xMargin = MusECore::qwtMax(0, hor);
-    d_yMargin = MusECore::qwtMin(0, vert);
+//     d_yMargin = MusECore::qwtMin(0, vert); // REMOVE Tim. Trackinfo. BUG Controls were not being given total space. FIXED! Surely this was wrong!
+    d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
 }
 

@@ -409,7 +409,7 @@ void KnobWithMeter::paintEvent(QPaintEvent* e)
       QPainter p(this);
       p.setRenderHint(QPainter::Antialiasing, true);
       if(hasScale)
-        d_scale.draw(&p);
+        d_scale.draw(&p, palette());
       
       ///drawKnob(&p, kRect);
       drawKnob(&p, r);

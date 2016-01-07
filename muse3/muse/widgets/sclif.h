@@ -41,6 +41,7 @@ class ScaleIf
 	ScaleDraw d_scale;
 	int d_maxMajor;
 	int d_maxMinor;
+        double d_scaleStep;
 	bool hasUserScale() {return d_userScale;}
 	virtual void scaleChange() = 0;
 
@@ -58,6 +59,7 @@ class ScaleIf
 
 	int scaleMaxMinor() const {return d_maxMinor;}
 	int scaleMaxMajor() const {return d_maxMinor;}
+        double scaleStep() const { return d_scaleStep; }
       };
 
 } // namespace MusEGui

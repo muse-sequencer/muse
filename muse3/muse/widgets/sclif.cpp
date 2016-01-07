@@ -64,6 +64,7 @@ ScaleIf::ScaleIf()
       d_userScale = false;
       d_maxMajor = 5;
       d_maxMinor = 3;
+      d_scaleStep = 0.0;
       d_scale.setScale(0.0,100.0,d_maxMajor, d_maxMinor);
       }
 
@@ -120,6 +121,7 @@ void ScaleIf::setScale(double vmin, double vmax, int logarithmic)
 
 void ScaleIf::setScale(double vmin, double vmax, double step, int logarithmic)
       {
+      d_scaleStep = step;
       ScaleDiv oldscl(d_scale.scaleDiv());
 
       d_scale.setScale(vmin, vmax, d_maxMajor, d_maxMinor, step, logarithmic);

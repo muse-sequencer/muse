@@ -1025,8 +1025,8 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
           control->setRange(-1.0, +1.0);
           control->setValueDecimals(2);
           //control->setValue(0);
-          pal.setColor(QPalette::Active, QPalette::Mid, Qt::darkYellow); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Mid, Qt::darkYellow); // Border
+          pal.setColor(QPalette::Active, QPalette::Button, Qt::darkYellow); // Border
+          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::darkYellow); // Border
           control->setPalette(pal);
         break;
         case auxType:
@@ -1035,8 +1035,8 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
           control->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
           control->setValueDecimals(0);
           //control->setValue(0);
-          pal.setColor(QPalette::Active, QPalette::Mid, Qt::blue); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Mid, Qt::blue); // Border
+          pal.setColor(QPalette::Active, QPalette::Button, Qt::blue); // Border
+          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::blue); // Border
           control->setPalette(pal);
         break;
         case gainType:
@@ -1044,8 +1044,8 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
           control->setToolTip(tr("calibration gain"));
           control->setRange(1.0, 20.0);
           control->setValueDecimals(1);
-          pal.setColor(QPalette::Active, QPalette::Mid, Qt::yellow); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Mid, Qt::yellow); // Border
+          pal.setColor(QPalette::Active, QPalette::Button, Qt::yellow); // Border
+          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::yellow); // Border
           control->setPalette(pal);
         break;
         default:
@@ -1566,15 +1566,20 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
    
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
-      slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14);
-      QFont fnt = font();
-      fnt.setPointSize(6);
-      slider->setFont(fnt);
+//       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(62, 37, 255));
+      slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
+//       QFont fnt = font();
+//       fnt.setPointSize(8);
+//       QFont fnt;
+//       fnt.setFamily("Sans");
+//       fnt.setPointSize(font().pointSize());
+//       slider->setFont(fnt);
 
       slider->setCursorHoming(true);
+      slider->setThumbLength(1);
       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-      slider->setScaleMaxMinor(5);
-      slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 10.0, false);
+//       slider->setScaleMaxMinor(5);
+      slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
       slider->setScaleBackBone(false);
       
 // REMOVE Tim. Trackinfo. Changed.      

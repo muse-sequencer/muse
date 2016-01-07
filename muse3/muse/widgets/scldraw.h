@@ -28,21 +28,29 @@
 #include "dimap.h"
 #include "scldiv.h"
 
+class QPalette;
 class QFontMetrics;
 class QPainter;
 class QRect;
+class QString;
 
 namespace MusEGui {
 
 class ScaleDraw : public DiMap {
    public:
       enum OrientationX { Bottom, Top, Left, Right, InsideHorizontal, InsideVertical, Round };
+      enum TextHighlightMode { TextHighlightNone, 
+                               TextHighlightAlways, 
+                               TextHighlightSplit, 
+                               TextHighlightShadow,
+                               TextHighlightSplitAndShadow };
 
    private:
       ScaleDiv d_scldiv;
       static const int minLen;
       OrientationX d_orient;
-	
+      TextHighlightMode d_textHighlightMode;
+      
       int d_xorg;
       int d_yorg;
       int d_len;
@@ -65,10 +73,10 @@ class ScaleDraw : public DiMap {
       int d_prec;
       
       bool d_drawBackBone;
-	
-      void drawTick(QPainter *p, double val, int len) const;
-      void drawBackbone(QPainter *p) const;
-      void drawLabel(QPainter *p, double val) const;
+      
+      void drawTick(QPainter *p, const QPalette& palette, double curValue, double val, int len) const;
+      void drawBackbone(QPainter *p, const QPalette& palette, double curValue) const;
+      void drawLabel(QPainter *p, const QPalette& palette, double curValue, double val) const;
 	
    public:
 
@@ -84,6 +92,9 @@ class ScaleDraw : public DiMap {
       
       const ScaleDiv& scaleDiv() const { return d_scldiv; }
       OrientationX orientation() const { return d_orient; }
+      TextHighlightMode textHighlightMode() const { return d_textHighlightMode; }
+      void setTextHighlightMode(TextHighlightMode mode) { d_textHighlightMode = mode; }
+      
 // REMOVE Tim. Trackinfo. Changed.
 //       QRect maxBoundingRect(QPainter *p) const;
 //       int maxWidth(QPainter *p, bool worst = true) const;
@@ -93,8 +104,9 @@ class ScaleDraw : public DiMap {
       int maxWidth(const QFontMetrics& fm, bool worst = true, int penWidth = 1) const;
       int maxHeight(const QFontMetrics& fm, int penWidth = 1) const;
       int maxLabelWidth(const QFontMetrics& fm, bool worst = true) const;
+      int scaleWidth(int penWidth = 1) const;
       
-      void draw(QPainter *p) const;
+      void draw(QPainter *p, const QPalette& palette, double curValue = 0.0); // const;
       };
 
 } // namespace MusEGui
