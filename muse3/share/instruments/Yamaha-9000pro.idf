@@ -100,8 +100,8 @@
             <Patch name="Crunch Gtr" hbank="0" lbank="113" prog="30"/>
             <Patch name="Carlos Gtr" hbank="0" lbank="119" prog="26"/>
             <Patch name="60's Clean" hbank="0" lbank="117" prog="27"/>
-            <Patch name="Live! Class" hbank="0" lbank="116" prog="24"/>
-            <Patch name="Coll! JSolo" hbank="0" lbank="115" prog="26"/>
+            <Patch name="Live! Class" hbank="0" lbank="115" prog="24"/>
+            <Patch name="Coll! JSolo" hbank="0" lbank="116" prog="26"/>
             <Patch name="VintageOpen" hbank="0" lbank="123" prog="27"/>
             <Patch name="Folk Guitar" hbank="0" lbank="112" prog="25"/>
             <Patch name="Solid Chord" hbank="0" lbank="121" prog="27"/>
