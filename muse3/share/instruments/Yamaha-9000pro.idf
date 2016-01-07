@@ -100,8 +100,8 @@
             <Patch name="Crunch Gtr" hbank="0" lbank="113" prog="30"/>
             <Patch name="Carlos Gtr" hbank="0" lbank="119" prog="26"/>
             <Patch name="60's Clean" hbank="0" lbank="117" prog="27"/>
-            <Patch name="Live! Class" hbank="0" lbank="115" prog="24"/>
-            <Patch name="Coll! JSolo" hbank="0" lbank="116" prog="26"/>
+            <Patch name="Live! Class" hbank="0" lbank="116" prog="24"/>
+            <Patch name="Coll! JSolo" hbank="0" lbank="115" prog="26"/>
             <Patch name="VintageOpen" hbank="0" lbank="123" prog="27"/>
             <Patch name="Folk Guitar" hbank="0" lbank="112" prog="25"/>
             <Patch name="Solid Chord" hbank="0" lbank="121" prog="27"/>
@@ -148,7 +148,7 @@
             <Patch name="Funk Bass" hbank="0" lbank="112" prog="37"/>
             <Patch name="Aco.Bass" hbank="0" lbank="112" prog="32"/>
             <Patch name="Fretless" hbank="0" lbank="112" prog="35"/>
-            <Patch name="Bass&amp;Cymbal" hbank="0" lbank="114" prog="32"/>
+            <Patch name="Bass&amp;&amp;Cymbal" hbank="0" lbank="114" prog="32"/>
             <Patch name="Fusion Bass" hbank="0" lbank="113" prog="36"/>
             <Patch name="Rave Bass" hbank="0" lbank="114" prog="38"/>
             <Patch name="Dance Bass" hbank="0" lbank="113" prog="39"/>
@@ -288,7 +288,7 @@
             <Patch name="Bagpipe" hbank="0" lbank="112" prog="109"/>
         </PatchGroup>
 
-        <PatchGroup name="Choir & Pad">
+        <PatchGroup name="Choir &amp;&amp; Pad">
             <Patch name="Live!Gospel" hbank="0" lbank="116" prog="52"/>
             <Patch name="Live! Humm" hbank="0" lbank="118" prog="52"/>
             <Patch name="Hah Choir" hbank="0" lbank="114" prog="52"/>
@@ -1127,7 +1127,7 @@
             <Patch name="VL! Slapper" hbank="33" lbank="0" prog="9"/>
         </PatchGroup>
 
-        <PatchGroup name="PLG150-VL: 08 Ethnic & Strings">
+        <PatchGroup name="PLG150-VL: 08 Ethnic &amp;&amp; Strings">
             <Patch name="Stone Henge" hbank="33" lbank="0" prog="4"/>
             <Patch name="Sitar!" hbank="33" lbank="0" prog="58"/>
             <Patch name="Rock Harp" hbank="33" lbank="1" prog="121"/>
@@ -1577,7 +1577,7 @@
             <Patch name="Chrs FMP" hbank="80" lbank="843" prog="5"/>
         </PatchGroup>
 
-        <PatchGroup name="PLG150-PF: 11 Harpsicord & Clavinet">
+        <PatchGroup name="PLG150-PF: 11 Harpsicord &amp;&amp; Clavinet">
             <Patch name="Harpsi 1" hbank="80" lbank="0" prog="6"/>
             <Patch name="Harpsi 2" hbank="80" lbank="64" prog="6"/>
             <Patch name="RichHpsi" hbank="80" lbank="67" prog="6"/>
@@ -1716,7 +1716,7 @@
             <Patch name="Soft Bow" hbank="83" lbank="74" prog="50"/>
             <Patch name="DX-AnSt3" hbank="83" lbank="65" prog="51"/>
             <Patch name="Aftrnoon" hbank="83" lbank="73" prog="51"/>
-            <Patch name="Str&Brs" hbank="35" lbank="1" prog="85"/>
+            <Patch name="Str&amp;&amp;Brs" hbank="35" lbank="1" prog="85"/>
             <Patch name="SyBr Pd6" hbank="83" lbank="69" prog="90"/>
             <Patch name="ORCHESTR" hbank="35" lbank="0" prog="6"/>
             <Patch name="GrngePad" hbank="83" lbank="0" prog="94"/>
@@ -1846,6 +1846,7 @@
             <Patch name="TrcrBell" hbank="35" lbank="1" prog="116"/>
         </PatchGroup>
 
+        <!-- Drum Maps -->
         <Drummaps>
             <entry>
                 <!-- Standard Kit 1 -->
@@ -3721,6 +3722,7 @@
             </entry>
         </Drummaps>
 
+        <!-- Controllers -->
         <Controller name="Pitch Bend" type="Pitch"/>
         <Controller name="Program Change" type="Program"/>
         <Controller name="Polyphonic After Touch" type="PolyAftertouch"/>
@@ -3730,16 +3732,20 @@
         <Controller name="Portamento Time" l="5"/>
         <Controller name="Main Volume" l="7" init="100"/>
         <Controller name="Panpot" l="10" min="-64" max="63" init="0"/>
+
         <Controller name="Expression" l="11"/>
         <Controller name="Sustain" l="64"/>
         <Controller name="Portamento" l="65"/>
+        <Controller name="Portamento Control" l="84"/>
         <Controller name="Sostenuto" l="66"/>
         <Controller name="Soft Pedal" l="67"/>
-        <Controller name="Harmonic Content" l="71"/>
-        <Controller name="Release Time" l="72"/>
-        <Controller name="Attack Time" l="73"/>
-        <Controller name="Brightness" l="74"/>
-        <Controller name="Portamento Control" l="84"/>
+
+        <Controller name="Harmonic Content (Resonance)" l="71" min="-64" max="63"/>
+        <Controller name="Brightness (Cutoff Frequency)" l="74" min="-64" max="63"/>
+
+        <Controller name="EG Release Time" l="72" min="-64" max="63"/>
+        <Controller name="EG Attack Time" l="73" min="-64" max="63"/>
+
         <Controller name="Effect 1 Depth (Reverb)" l="91" init="0"/>
         <Controller name="Effect 3 Depth (Chorus)" l="93" init="0"/>
         <Controller name="Effect 4 Depth (Variation)" l="94" init="0"/>
@@ -3747,18 +3753,21 @@
         <Controller name="Pitch Bend Sensitivity" type="RPN" h="0" l="0" max="24" init="2"/>
         <Controller name="Fine Tune" type="RPN" h="0" l="1" min="-64" max="63" init="0"/>
         <Controller name="Coarse Tune" type="RPN" h="0" l="2" min="-64" max="63" init="0"/>
-        <Controller name="Null" type="RPN" h="127" l="127"/>
+        <Controller name="RPN Reset (Null)" type="RPN" h="127" l="127"/>
 
         <Controller name="Vibrato Rate" type="NRPN" h="1" l="8"/>
         <Controller name="Vibrato Depth" type="NRPN" h="1" l="9"/>
         <Controller name="Vibrato Delay" type="NRPN" h="1" l="10"/>
+
         <Controller name="Filter Cutoff Frequency" type="NRPN" h="1" l="32" min="-64" max="63" init="0"/>
         <Controller name="Filter Resonance" type="NRPN" h="1" l="33" min="-64" max="63" init="0"/>
         <Controller name="HPF Cutoff Frequency" type="NRPN" h="1" l="36" min="-64" max="63" init="0"/>
+
         <Controller name="EQ Bass" type="NRPN" h="1" l="48" min="-64" max="63" init="0"/>
         <Controller name="EQ Treble" type="NRPN" h="1" l="49" min="-64" max="63" init="0"/>
         <Controller name="EQ Bass Frequency" type="NRPN" h="1" l="52"/>
         <Controller name="EQ Treble Frequency" type="NRPN" h="1" l="54"/>
+
         <Controller name="EG Attack Time" type="NRPN" h="1" l="99"/>
         <Controller name="EG Decay Time" type="NRPN" h="1" l="100"/>
         <Controller name="EG Release" type="NRPN" h="1" l="102"/>
@@ -3799,6 +3808,7 @@
         <Controller name="VH Lead Gender Type" type="NRPN" h="3" l="0"/>
         <Controller name="VH Lead Gender Amount" type="NRPN" h="3" l="1"/>
 
+        <!-- SysEx -->
         <SysEx name="GM On (not needed for 9000pro)">
             <comment>Switch General Midi mode on: Ignored by the 9000pro</comment>
             <data>f0 7e 7f 09 01 f7</data>
@@ -3903,10 +3913,10 @@ Overall volume of all parts
 
 0xF0 0x7F 0x7F 0x04 0x01 ll mm 0xF7
 
-ll: Volume LSB
+ll: Volume LSB (Ignored)
 mm: Volume MSB
             </comment>
-            <data>f0 7f 7f 04 01 00 00 f7</data>
+            <data>f0 7f 7f 04 01 00 7f f7</data>
         </SysEx>
 
         <SysEx name="XG Parameter Change">
@@ -3948,7 +3958,7 @@ Request parameter value
 
 0xF0 0x43 0x3? 0x4C ah am al 0xF7
 
-0x3?: Device Number (Transmit: 0x30, Receive 0x10 - 0x3F)
+0x3?: Device Number
 ah: Address High
 am: Address Mid
 al: Address Low
@@ -3962,7 +3972,7 @@ Request bulk dump
 
 0xF0 0x43 0x2? 0x4C ah am al 0xF7
 
-0x2?: Device Number (Transmit: 0x20, Receive 0x10 - 0x2F)
+0x2?: Device Number
 ah: Address High
 am: Address Mid
 al: Address Low
