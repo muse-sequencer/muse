@@ -645,9 +645,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
-      // Set the whole strip's font, except for the label.    p4.0.45
+      // Set the whole strip's font, except for the label.
 // REMOVE Tim. Trackinfo. Changed.  
-//       setFont(MusEGlobal::config.fonts[1]);
+      setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
       
       // Clear so the meters don't start off by showing stale values.
@@ -1402,7 +1402,7 @@ void MidiStrip::configChanged()
   if(font() != MusEGlobal::config.fonts[1])
   {
     //fprintf(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize()); // REMOVE Tim. Trackinfo.
-// REMOVE Tim. Trackinfo. Changed.  
+// REMOVE Tim. Trackinfo. Changed.  // May need to keep this,
 //     setFont(MusEGlobal::config.fonts[1]);
     setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     // Update in case font changed.

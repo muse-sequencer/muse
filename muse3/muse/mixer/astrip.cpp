@@ -1511,7 +1511,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       off           = 0;
       
       // Set the whole strip's font, except for the label.    p4.0.45
-      //setFont(MusEGlobal::config.fonts[1]);  // REMOVE Tim. Trackinfo. Changed.
+// REMOVE Tim. Trackinfo. Changed.
+      // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
+      setFont(MusEGlobal::config.fonts[1]);  
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
