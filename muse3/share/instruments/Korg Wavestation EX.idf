@@ -1,0 +1,447 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Korg Wavestation EX">
+    <PatchGroup name="WS Factory ROM1 (ROM1)">
+      <Patch name="The Wave Song" hbank="0" lbank="1" prog="0" />
+      <Patch name="Deep Atmosphere" hbank="0" lbank="1" prog="1" />
+      <Patch name="Sting Waves" hbank="0" lbank="1" prog="2" />
+      <Patch name="Metropolitan" hbank="0" lbank="1" prog="3" />
+      <Patch name="Mini Lead" hbank="0" lbank="1" prog="4" />
+      <Patch name="Tack Horns" hbank="0" lbank="1" prog="5" />
+      <Patch name="Guardians" hbank="0" lbank="1" prog="6" />
+      <Patch name="DigitalResWave" hbank="0" lbank="1" prog="7" />
+      <Patch name="Sandman" hbank="0" lbank="1" prog="8" />
+      <Patch name="Time Traveler" hbank="0" lbank="1" prog="9" />
+      <Patch name="Song Bells" hbank="0" lbank="1" prog="10" />
+      <Patch name="Analog Punch" hbank="0" lbank="1" prog="11" />
+      <Patch name="Cosmic Zone" hbank="0" lbank="1" prog="12" />
+      <Patch name="Super Clav" hbank="0" lbank="1" prog="13" />
+      <Patch name="Toy Box" hbank="0" lbank="1" prog="14" />
+      <Patch name="Analog Brass" hbank="0" lbank="1" prog="15" />
+      <Patch name="Modernesque" hbank="0" lbank="1" prog="16" />
+      <Patch name="Octave Strings" hbank="0" lbank="1" prog="17" />
+      <Patch name="Glass Tambu" hbank="0" lbank="1" prog="18" />
+      <Patch name="Vektar" hbank="0" lbank="1" prog="19" />
+      <Patch name="Whisper Voices" hbank="0" lbank="1" prog="20" />
+      <Patch name="Vulcan Harp" hbank="0" lbank="1" prog="21" />
+      <Patch name="Quarks" hbank="0" lbank="1" prog="22" />
+      <Patch name="Vocalise" hbank="0" lbank="1" prog="23" />
+      <Patch name="Gig Split" hbank="0" lbank="1" prog="24" />
+      <Patch name="Touch Brass" hbank="0" lbank="1" prog="25" />
+      <Patch name="Tine Piano" hbank="0" lbank="1" prog="26" />
+      <Patch name="Warm Strings" hbank="0" lbank="1" prog="27" />
+      <Patch name="Chiffy Kalimba" hbank="0" lbank="1" prog="28" />
+      <Patch name="Northern Lights" hbank="0" lbank="1" prog="29" />
+      <Patch name="Bottled Air" hbank="0" lbank="1" prog="30" />
+      <Patch name="Rock Stack" hbank="0" lbank="1" prog="31" />
+      <Patch name="Excalibur" hbank="0" lbank="1" prog="32" />
+      <Patch name="Wave Tables" hbank="0" lbank="1" prog="33" />
+      <Patch name="Bells" hbank="0" lbank="1" prog="34" />
+      <Patch name="Prophet Horn" hbank="0" lbank="1" prog="35" />
+      <Patch name="Mahogany" hbank="0" lbank="1" prog="36" />
+      <Patch name="Round Wound" hbank="0" lbank="1" prog="37" />
+      <Patch name="Digi Harp" hbank="0" lbank="1" prog="38" />
+      <Patch name="Motion Mix" hbank="0" lbank="1" prog="39" />
+      <Patch name="Stereo Waves" hbank="0" lbank="1" prog="40" />
+      <Patch name="Screamer" hbank="0" lbank="1" prog="41" />
+      <Patch name="Paradise" hbank="0" lbank="1" prog="42" />
+      <Patch name="Digital Touch" hbank="0" lbank="1" prog="43" />
+      <Patch name="Voice &amp;&amp; Bell" hbank="0" lbank="1" prog="44" />
+      <Patch name="Resonant Synth" hbank="0" lbank="1" prog="45" />
+      <Patch name="RhythmOfTheWave" hbank="0" lbank="1" prog="46" />
+      <Patch name="Introspective" hbank="0" lbank="1" prog="47" />
+      <Patch name="Wave Mallet" hbank="0" lbank="1" prog="48" />
+      <Patch name="StationPlatform" hbank="0" lbank="1" prog="49" />
+    </PatchGroup>
+    <PatchGroup name="WS Factory RAM1 (RAM1)">
+      <Patch name="Ski Jam" hbank="0" lbank="0" prog="0" />
+      <Patch name="Entropy" hbank="0" lbank="0" prog="1" />
+      <Patch name="Pinger" hbank="0" lbank="0" prog="2" />
+      <Patch name="Reswacker" hbank="0" lbank="0" prog="3" />
+      <Patch name="LeadRockGuitar" hbank="0" lbank="0" prog="4" />
+      <Patch name="Softwaves" hbank="0" lbank="0" prog="5" />
+      <Patch name="Cascade Falls" hbank="0" lbank="0" prog="6" />
+      <Patch name="Blow The Bottle" hbank="0" lbank="0" prog="7" />
+      <Patch name="Magic Guitar" hbank="0" lbank="0" prog="8" />
+      <Patch name="Will I Dream?" hbank="0" lbank="0" prog="9" />
+      <Patch name="Fire Dance" hbank="0" lbank="0" prog="10" />
+      <Patch name="AnalogLoveThang" hbank="0" lbank="0" prog="11" />
+      <Patch name="Panned Waves" hbank="0" lbank="0" prog="12" />
+      <Patch name="Super Res" hbank="0" lbank="0" prog="13" />
+      <Patch name="Ballerina Bells" hbank="0" lbank="0" prog="14" />
+      <Patch name="Soft Analog" hbank="0" lbank="0" prog="15" />
+      <Patch name="Mod Wheel Air" hbank="0" lbank="0" prog="16" />
+      <Patch name="Bowed Strings" hbank="0" lbank="0" prog="17" />
+      <Patch name="Pluckrimba" hbank="0" lbank="0" prog="18" />
+      <Patch name="Vector Guitar" hbank="0" lbank="0" prog="19" />
+      <Patch name="Midnight Run" hbank="0" lbank="0" prog="20" />
+      <Patch name="African Sunset" hbank="0" lbank="0" prog="21" />
+      <Patch name="Harmonic Motion" hbank="0" lbank="0" prog="22" />
+      <Patch name="Air Chorus&amp;&amp;Bell" hbank="0" lbank="0" prog="23" />
+      <Patch name="SunGlasses Kid" hbank="0" lbank="0" prog="24" />
+      <Patch name="Stabby Horns" hbank="0" lbank="0" prog="25" />
+      <Patch name="Soft EP w/Tine" hbank="0" lbank="0" prog="26" />
+      <Patch name="Artificial Strg" hbank="0" lbank="0" prog="27" />
+      <Patch name="The Pied Piper" hbank="0" lbank="0" prog="28" />
+      <Patch name="Vox Concrete" hbank="0" lbank="0" prog="29" />
+      <Patch name="Snake Charmer" hbank="0" lbank="0" prog="30" />
+      <Patch name="Rock Tine Piano" hbank="0" lbank="0" prog="31" />
+      <Patch name="Pressure Glass" hbank="0" lbank="0" prog="32" />
+      <Patch name="Vox Arpeggios" hbank="0" lbank="0" prog="33" />
+      <Patch name="Struck Bell" hbank="0" lbank="0" prog="34" />
+      <Patch name="Upright &amp;&amp; Oboe" hbank="0" lbank="0" prog="35" />
+      <Patch name="Refinery" hbank="0" lbank="0" prog="36" />
+      <Patch name="Kick up da Bass" hbank="0" lbank="0" prog="37" />
+      <Patch name="Syn Vox" hbank="0" lbank="0" prog="38" />
+      <Patch name="Kingdom Come" hbank="0" lbank="0" prog="39" />
+      <Patch name="Cat&apos;s Eye" hbank="0" lbank="0" prog="40" />
+      <Patch name="Jazz Mutes" hbank="0" lbank="0" prog="41" />
+      <Patch name="VS Bell Pad" hbank="0" lbank="0" prog="42" />
+      <Patch name="Spectra" hbank="0" lbank="0" prog="43" />
+      <Patch name="New Sparkle" hbank="0" lbank="0" prog="44" />
+      <Patch name="Vektor Organ" hbank="0" lbank="0" prog="45" />
+      <Patch name="Alien Dreams" hbank="0" lbank="0" prog="46" />
+      <Patch name="End Of Voltare" hbank="0" lbank="0" prog="47" />
+      <Patch name="Kilimanjaro" hbank="0" lbank="0" prog="48" />
+      <Patch name="DebussyOnWheels" hbank="0" lbank="0" prog="49" />
+    </PatchGroup>
+    <PatchGroup name="WS Factory RAM2 (RAM2)">
+      <Patch name="Pharoah&apos;s Jig" hbank="0" lbank="0" prog="50" />
+      <Patch name="CityOfTomorrow" hbank="0" lbank="0" prog="51" />
+      <Patch name="Spectrumize" hbank="0" lbank="0" prog="52" />
+      <Patch name="Fuzzy Pop Clav" hbank="0" lbank="0" prog="53" />
+      <Patch name="ZZ Lead" hbank="0" lbank="0" prog="54" />
+      <Patch name="Wack Flute" hbank="0" lbank="0" prog="55" />
+      <Patch name="Glitter Vox" hbank="0" lbank="0" prog="56" />
+      <Patch name="Bee Hive" hbank="0" lbank="0" prog="57" />
+      <Patch name="Waves On Wheels" hbank="0" lbank="0" prog="58" />
+      <Patch name="21st Century" hbank="0" lbank="0" prog="59" />
+      <Patch name="SustainPedalJam" hbank="0" lbank="0" prog="60" />
+      <Patch name="Nasty Harmonics" hbank="0" lbank="0" prog="61" />
+      <Patch name="Glider" hbank="0" lbank="0" prog="62" />
+      <Patch name="Mr.Wave Table" hbank="0" lbank="0" prog="63" />
+      <Patch name="Alpine Bells" hbank="0" lbank="0" prog="64" />
+      <Patch name="The Big Brass" hbank="0" lbank="0" prog="65" />
+      <Patch name="Gentle Winds" hbank="0" lbank="0" prog="66" />
+      <Patch name="String&amp;&amp;Woodwind" hbank="0" lbank="0" prog="67" />
+      <Patch name="Rain Chiffs" hbank="0" lbank="0" prog="68" />
+      <Patch name="Guitar Rez" hbank="0" lbank="0" prog="69" />
+      <Patch name="ScrittiFunk" hbank="0" lbank="0" prog="70" />
+      <Patch name="SonarBellString" hbank="0" lbank="0" prog="71" />
+      <Patch name="NewZealand Vice" hbank="0" lbank="0" prog="72" />
+      <Patch name="Sunday Morning" hbank="0" lbank="0" prog="73" />
+      <Patch name="Split on Sunset" hbank="0" lbank="0" prog="74" />
+      <Patch name="Brass Orchestra" hbank="0" lbank="0" prog="75" />
+      <Patch name="Digipno&amp;&amp;Breath" hbank="0" lbank="0" prog="76" />
+      <Patch name="LassieComeHome" hbank="0" lbank="0" prog="77" />
+      <Patch name="MellowSquarePad" hbank="0" lbank="0" prog="78" />
+      <Patch name="Antarctica" hbank="0" lbank="0" prog="79" />
+      <Patch name="Echo Hunters" hbank="0" lbank="0" prog="80" />
+      <Patch name="Organomics" hbank="0" lbank="0" prog="81" />
+      <Patch name="Trans Atlantic" hbank="0" lbank="0" prog="82" />
+      <Patch name="The Wave Guitar" hbank="0" lbank="0" prog="83" />
+      <Patch name="Bell Tree" hbank="0" lbank="0" prog="84" />
+      <Patch name="Palo Alto Pad" hbank="0" lbank="0" prog="85" />
+      <Patch name="Thick Pick" hbank="0" lbank="0" prog="86" />
+      <Patch name="Skip&apos;s BoomBass" hbank="0" lbank="0" prog="87" />
+      <Patch name="Folk Guitar" hbank="0" lbank="0" prog="88" />
+      <Patch name="Ivesian Split" hbank="0" lbank="0" prog="89" />
+      <Patch name="Saturn Rings" hbank="0" lbank="0" prog="90" />
+      <Patch name="Rotary Organ" hbank="0" lbank="0" prog="91" />
+      <Patch name="Star Bell Sweep" hbank="0" lbank="0" prog="92" />
+      <Patch name="Pop Box" hbank="0" lbank="0" prog="93" />
+      <Patch name="Xnaos Split" hbank="0" lbank="0" prog="94" />
+      <Patch name="Rock Steady" hbank="0" lbank="0" prog="95" />
+      <Patch name="20Sec. Invasion" hbank="0" lbank="0" prog="96" />
+      <Patch name="Chronos" hbank="0" lbank="0" prog="97" />
+      <Patch name="Mambo Marimba!" hbank="0" lbank="0" prog="98" />
+      <Patch name="The Big Pad" hbank="0" lbank="0" prog="99" />
+    </PatchGroup>
+    <PatchGroup name="WS EX Factory RAM3 (RAM1)">
+      <Patch name="Grand Piano 16&apos;" hbank="1" lbank="0" prog="0" />
+      <Patch name="Cello Ensemble" hbank="1" lbank="0" prog="1" />
+      <Patch name="Alto Sax" hbank="1" lbank="0" prog="2" />
+      <Patch name="Acoustic Guitar" hbank="1" lbank="0" prog="3" />
+      <Patch name="Dyno Slap Bass" hbank="1" lbank="0" prog="4" />
+      <Patch name="Mono Synth Lead" hbank="1" lbank="0" prog="5" />
+      <Patch name="African Kalimba" hbank="1" lbank="0" prog="6" />
+      <Patch name="Drum Kit" hbank="1" lbank="0" prog="7" drum="1" />
+      <Patch name="Snap Synth" hbank="1" lbank="0" prog="8" />
+      <Patch name="The Wave Police" hbank="1" lbank="0" prog="9" />
+      <Patch name="Piano Layers" hbank="1" lbank="0" prog="10" />
+      <Patch name="Harp &amp;&amp; Strings" hbank="1" lbank="0" prog="11" />
+      <Patch name="CuCu Flute" hbank="1" lbank="0" prog="12" />
+      <Patch name="Nylon Guitar" hbank="1" lbank="0" prog="13" />
+      <Patch name="Sweet Fretless" hbank="1" lbank="0" prog="14" />
+      <Patch name="Synth Stabs" hbank="1" lbank="0" prog="15" />
+      <Patch name="Attack Bell" hbank="1" lbank="0" prog="16" />
+      <Patch name="Dream of Java" hbank="1" lbank="0" prog="17" />
+      <Patch name="Funkanette" hbank="1" lbank="0" prog="18" />
+      <Patch name="A Touch of Rain" hbank="1" lbank="0" prog="19" />
+      <Patch name="Grand Piano 8&apos;" hbank="1" lbank="0" prog="20" />
+      <Patch name="Analog Strings" hbank="1" lbank="0" prog="21" />
+      <Patch name="Breath Horns" hbank="1" lbank="0" prog="22" />
+      <Patch name="12-StringGuitar" hbank="1" lbank="0" prog="23" />
+      <Patch name="SynthBass Split" hbank="1" lbank="0" prog="24" />
+      <Patch name="Accordion" hbank="1" lbank="0" prog="25" />
+      <Patch name="Soft Kalimba" hbank="1" lbank="0" prog="26" />
+      <Patch name="Vel.DrumVocoder" hbank="1" lbank="0" prog="27" />
+      <Patch name="Fire &amp;&amp; Ice" hbank="1" lbank="0" prog="28" />
+      <Patch name="Dr.Wave" hbank="1" lbank="0" prog="29" />
+      <Patch name="The Piano Pad" hbank="1" lbank="0" prog="30" />
+      <Patch name="Fr.Horn&amp;&amp;Strings" hbank="1" lbank="0" prog="31" />
+      <Patch name="Pan Flute" hbank="1" lbank="0" prog="32" />
+      <Patch name="Solo Harp" hbank="1" lbank="0" prog="33" />
+      <Patch name="Maxi Synth Bass" hbank="1" lbank="0" prog="34" />
+      <Patch name="Wide Open Synth" hbank="1" lbank="0" prog="35" />
+      <Patch name="Flash Pad" hbank="1" lbank="0" prog="36" />
+      <Patch name="Tropical Forest" hbank="1" lbank="0" prog="37" />
+      <Patch name="Brass Stabs" hbank="1" lbank="0" prog="38" />
+      <Patch name="Rain Dance" hbank="1" lbank="0" prog="39" />
+      <Patch name="Bass&amp;&amp;PianoSplit" hbank="1" lbank="0" prog="40" />
+      <Patch name="Piano&amp;&amp;Strings8&apos;" hbank="1" lbank="0" prog="41" />
+      <Patch name="OrchestralSplit" hbank="1" lbank="0" prog="42" />
+      <Patch name="Catalina Island" hbank="1" lbank="0" prog="43" />
+      <Patch name="Resonant Waves" hbank="1" lbank="0" prog="44" />
+      <Patch name="Spank-a-lead" hbank="1" lbank="0" prog="45" />
+      <Patch name="Marimba" hbank="1" lbank="0" prog="46" />
+      <Patch name="Buzzzwacker" hbank="1" lbank="0" prog="47" />
+      <Patch name="SynthKlavier" hbank="1" lbank="0" prog="48" />
+      <Patch name="BamBam Drum Jam" hbank="1" lbank="0" prog="49" />
+    </PatchGroup>
+    <Controller name="BankSelMSB" l="0" max="0" init="0" />
+    <Controller name="Modulation" l="1" />
+    <Controller name="Foot Ctrl" l="4" />
+    <Controller name="DataEntMSB" l="6" />
+    <Controller name="Volume" l="7" />
+    <Controller name="Joy X-Axis" l="16" />
+    <Controller name="Joy Y-Axis" l="17" />
+    <Controller name="BankSelLSB" l="32" max="1" init="1" />
+    <Controller name="DataEntLSB" l="38" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="RPN LSB" l="100" />
+    <Controller name="RPN MSB" l="101" />
+    <Controller name="Reset Ctrl" l="121" />
+    <Controller name="AllNoteOff" l="123" />
+    <Controller name="Pitch" type="Pitch" />
+    <Controller name="Program" type="Program" init="0xff0100" />
+    <Controller name="Aftertouch" type="Aftertouch" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Init>
+    </Init>
+    <Drummaps>
+      <entry>
+        <patch_collection />
+        <drummap>
+          <entry pitch="35">
+            <name></name>
+          </entry>
+          <entry pitch="36">
+            <name>Kick</name>
+          </entry>
+          <entry pitch="37">
+            <name></name>
+          </entry>
+          <entry pitch="38">
+            <name>AmbiKick</name>
+          </entry>
+          <entry pitch="39">
+            <name>Crack Snar</name>
+          </entry>
+          <entry pitch="40">
+            <name>Crack Snar Low</name>
+          </entry>
+          <entry pitch="41">
+            <name>Snare</name>
+          </entry>
+          <entry pitch="42">
+            <name>Snare High</name>
+          </entry>
+          <entry pitch="43">
+            <name>Sidestick</name>
+          </entry>
+          <entry pitch="44">
+            <name>Sidestick High</name>
+          </entry>
+          <entry pitch="45">
+            <name>Tenny Hit</name>
+          </entry>
+          <entry pitch="46">
+            <name>Tenny Hit High</name>
+          </entry>
+          <entry pitch="47">
+            <name>Tom Low</name>
+          </entry>
+          <entry pitch="48">
+            <name>Tom Lo-Mid</name>
+          </entry>
+          <entry pitch="49">
+            <name></name>
+          </entry>
+          <entry pitch="50">
+            <name>Tom Mid</name>
+          </entry>
+          <entry pitch="51">
+            <name></name>
+          </entry>
+          <entry pitch="52">
+            <name>Tom High</name>
+          </entry>
+          <entry pitch="53">
+            <name>HiHat Closed</name>
+          </entry>
+          <entry pitch="54">
+            <name>HiHat Closed Low</name>
+          </entry>
+          <entry pitch="55">
+            <name>HiHat Open</name>
+          </entry>
+          <entry pitch="56">
+            <name>HiHat Open Low</name>
+          </entry>
+          <entry pitch="57">
+            <name>Conga Low</name>
+          </entry>
+          <entry pitch="58">
+            <name></name>
+          </entry>
+          <entry pitch="59">
+            <name>Conga Mid</name>
+          </entry>
+          <entry pitch="60">
+            <name>Conga High</name>
+          </entry>
+          <entry pitch="61">
+            <name></name>
+          </entry>
+          <entry pitch="62">
+            <name>Claves</name>
+          </entry>
+          <entry pitch="63">
+            <name>Claves High</name>
+          </entry>
+          <entry pitch="64">
+            <name>Tick Hit</name>
+          </entry>
+          <entry pitch="65">
+            <name>Pot Hit</name>
+          </entry>
+          <entry pitch="66">
+            <name></name>
+          </entry>
+          <entry pitch="67">
+            <name>Hammer</name>
+          </entry>
+          <entry pitch="68">
+            <name></name>
+          </entry>
+          <entry pitch="69">
+            <name>Thong</name>
+          </entry>
+          <entry pitch="70">
+            <name></name>
+          </entry>
+          <entry pitch="71">
+            <name>Noise Vibe</name>
+          </entry>
+          <entry pitch="72">
+            <name>Piano Hit</name>
+          </entry>
+          <entry pitch="73">
+            <name></name>
+          </entry>
+          <entry pitch="74">
+            <name>&quot;Tuunn&quot;</name>
+          </entry>
+          <entry pitch="75">
+            <name></name>
+          </entry>
+          <entry pitch="76">
+            <name>&quot;Pehh&quot;</name>
+          </entry>
+          <entry pitch="77">
+            <name>&quot;Thuum&quot;</name>
+          </entry>
+          <entry pitch="78">
+            <name></name>
+          </entry>
+          <entry pitch="79">
+            <name>&quot;Kaahh&quot;</name>
+          </entry>
+          <entry pitch="80">
+            <name></name>
+          </entry>
+          <entry pitch="81">
+            <name>&quot;Tchh&quot;</name>
+          </entry>
+          <entry pitch="83">
+            <name>&quot;Pan&quot;</name>
+          </entry>
+          <entry pitch="84">
+            <name>&quot;Ti&quot;</name>
+          </entry>
+          <entry pitch="86">
+            <name>&quot;Cap&quot;</name>
+          </entry>
+          <entry pitch="88">
+            <name>&quot;Chhi&quot;</name>
+          </entry>
+          <entry pitch="89">
+            <name>&quot;Tinn&quot;</name>
+          </entry>
+          <entry pitch="91">
+            <name>&quot;Haaa&quot;</name>
+          </entry>
+          <entry pitch="93">
+            <name>Crickets</name>
+          </entry>
+          <entry pitch="94">
+            <name>Noise 2 Mid</name>
+          </entry>
+          <entry pitch="95">
+            <name>Noise 2 Low</name>
+          </entry>
+          <entry pitch="96">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="97">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="98">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="99">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="100">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="101">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="102">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="103">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="104">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="105">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="106">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="107">
+            <name>Noise 2 High</name>
+          </entry>
+          <entry pitch="108">
+            <name>Noise 2 High</name>
+          </entry>
+          </drummap>
+      </entry>
+    </Drummaps>
+  </MidiInstrument>
+</muse>
