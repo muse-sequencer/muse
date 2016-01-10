@@ -1868,7 +1868,9 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
         _peak[c] = _meter[c];
 
       if(_meter [c] > 1.0f)
-         _isClipped = true;
+// REMOVE Tim. Trackinfo. Changed.
+//          _isClipped = true;
+         _isClipped[c] = true;
     }
     
     if(isMute())

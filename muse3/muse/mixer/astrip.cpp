@@ -71,6 +71,7 @@
 //#include "popupmenu.h"
 #include "routepopup.h"
 #include "ctrl.h"
+#include "utils.h"
 
 namespace MusEGui {
 
@@ -105,22 +106,32 @@ QSize AudioStrip::sizeHint () const
 
 void AudioStrip::heartBeat()
 {
-   double clipperVal = 0.0f;
-   for (int ch = 0; ch < track->channels(); ++ch) {
+// REMOVE Tim. Trackinfo. Removed.
+//    double clipperVal = 0.0f;
+   const int tch = track->channels();
+   for (int ch = 0; ch < tch; ++ch) {
       if (meter[ch]) {
          //int meterVal = track->meter(ch);
          //int peak  = track->peak(ch);
          //meter[ch]->setVal(meterVal, peak, false);
          meter[ch]->setVal(track->meter(ch), track->peak(ch), false);
       }
-      clipperVal += track->peak(ch);
+// REMOVE Tim. Trackinfo. Changed.      
+//       clipperVal += track->peak(ch);
+      if(_clipperLabel[ch])
+      {
+        _clipperLabel[ch]->setVal(track->peak(ch));
+        _clipperLabel[ch]->setClipped(track->isClipped(ch));
+      }
    }
-   clipperVal /= track->channels();
-   _clipperLabel->setVal(clipperVal);
+// REMOVE Tim. Trackinfo. Removed.
+//    clipperVal /= track->channels();
+//    _clipperLabel->setVal(clipperVal);
    updateVolume();
    updatePan();
 
-   _clipperLabel->setClipper(track->isClipped());
+// REMOVE Tim. Trackinfo. Removed.
+//    _clipperLabel->setClipper(track->isClipped());
 
 }
 
@@ -170,7 +181,12 @@ void AudioStrip::configChanged()
 { 
   // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
-    setFont(MusEGlobal::config.fonts[1]);
+  {
+// REMOVE Tim. Trackinfo. Changed.  
+//     setFont(MusEGlobal::config.fonts[1]);
+    //fprintf(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize()); // REMOVE Tim. Trackinfo.
+    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+  }
   
   // Set the strip label's font.
   setLabelFont();
@@ -902,11 +918,18 @@ void AudioStrip::updateChannels()
       
       if (c > channel) {
             for (int cc = channel; cc < c; ++cc) {
+                  // REMOVE Tim. Trackinfo. Added.
+                  _clipperLabel[cc] = new ClipperLabel();
+                  setClipperTooltip(cc);
+                  _clipperLayout->addWidget(_clipperLabel[cc]);
+                  connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
+            
                   meter[cc] = new MusEGui::Meter(this);
                   //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
                   meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
-                  meter[cc]->setFixedWidth(15);
-                  connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
+                  meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
+//                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
+                  connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
                   sliderGrid->setColumnStretch(cc, 50);
                   meter[cc]->show();
@@ -914,13 +937,20 @@ void AudioStrip::updateChannels()
             }
       else if (c < channel) {
             for (int cc = channel-1; cc >= c; --cc) {
-                  delete meter[cc];
+                  // REMOVE Tim. Trackinfo. Added.
+                  if(_clipperLabel[cc])
+                    delete _clipperLabel[cc];
+                  _clipperLabel[cc] = 0;
+                  
+                  if(meter[cc])
+                    delete meter[cc];
                   meter[cc] = 0;
                   }
             }
       channel = c;
-      sliderGrid->removeWidget(_clipperLabel);
-      sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
+// REMOVE Tim. Trackinfo. Removed.
+//       sliderGrid->removeWidget(_clipperLabel);
+//       sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
@@ -1481,18 +1511,29 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       off           = 0;
       
       // Set the whole strip's font, except for the label.    p4.0.45
-      setFont(MusEGlobal::config.fonts[1]);
+      //setFont(MusEGlobal::config.fonts[1]);  // REMOVE Tim. Trackinfo. Changed.
+      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
-      
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
       channel       = at->channels();
       ///setMinimumWidth(STRIP_WIDTH);
       
       int ch = 0;
       for (; ch < channel; ++ch)
+      {
             meter[ch] = new MusEGui::Meter(this);
+// REMOVE Tim. Trackinfo. Added.
+            _clipperLabel[ch] = new ClipperLabel(this);
+            setClipperTooltip(ch);
+            connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
+            
+      }
       for (; ch < MAX_CHANNELS; ++ch)
+      {
             meter[ch] = 0;
+// REMOVE Tim. Trackinfo. Removed.
+            _clipperLabel[ch] = 0;
+      }
 
       //---------------------------------------------------
       //    plugin rack
@@ -1577,15 +1618,24 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //---------------------------------------------------
 
       sliderGrid = new QGridLayout(); 
-      sliderGrid->setRowStretch(2, 100);
-      sliderGrid->setContentsMargins(0, 1, 0, 0);
+//       sliderGrid->setRowStretch(2, 100);  // REMOVE Tim. Trackinfo. Removed. TEST
+//       sliderGrid->setContentsMargins(0, 1, 0, 0);   // REMOVE Tim. Trackinfo. Changed. TEST
+      sliderGrid->setContentsMargins(0, 0, 0, 0);
       sliderGrid->setSpacing(0);
 
       /*-------------- clipper label -------------------*/      
-      _clipperLabel = new ClipperLabel(this);
-      connect(_clipperLabel, SIGNAL(clicked()), SLOT(resetClipper()));
-      sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
+// REMOVE Tim. Trackinfo. Changed.      
+//       _clipperLabel = new ClipperLabel(this);
+//       connect(_clipperLabel, SIGNAL(clicked()), SLOT(resetClipper()));
+//       sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
+//       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
+      _clipperLayout = new QHBoxLayout();
+      _clipperLayout->setSpacing(0);
+      for(int ch = 0; ch < channel; ++ch)
+        _clipperLayout->addWidget(_clipperLabel[ch]);
+      sliderGrid->addLayout(_clipperLayout, 0, 0, 1, -1, Qt::AlignCenter);
       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
+      
    
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
@@ -1607,7 +1657,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider->setFixedWidth(20);
-      slider->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+//       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setValue(MusECore::fast_log10(t->volume())*20.0);
@@ -1617,10 +1668,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
-            meter[i]->setFixedWidth(15);
-            connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
+            meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
+            meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding); // REMOVE Tim. Trackinfo. Added.
+//             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
+            connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
             sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
-            sliderGrid->setColumnStretch(i, 50);
+//             sliderGrid->setColumnStretch(i, 50); // REMOVE Tim. Trackinfo. Removed.
             }
       sliderGrid->addItem(new QSpacerItem(2,0),2,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
@@ -1819,6 +1872,25 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       }
 
+// REMOVE Tim. Trackinfo. Added.
+void AudioStrip::setClipperTooltip(int ch)
+{
+  QString clip_tt;
+  switch(ch)
+  {
+    case 0:
+      clip_tt = tr("L meter peak/clip");
+    break;
+    case 1:
+      clip_tt = tr("R meter peak/clip");
+    break;
+    default:
+      clip_tt = locale().toString(ch);
+    break;
+  }
+  _clipperLabel[ch]->setToolTip(clip_tt);
+}
+      
 //---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------

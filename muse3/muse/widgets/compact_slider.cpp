@@ -1210,7 +1210,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   
   if((!_autoHideThumb || _mouseOverThumb) && d_thumbLength > 0)
   {
-    fprintf(stderr, "CompactSlider::PaintEvent _mouseOverThumb:%d\n", _mouseOverThumb); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "CompactSlider::PaintEvent _mouseOverThumb:%d\n", _mouseOverThumb); // REMOVE Tim. Trackinfo.
     const QRect thumb_rect((d_orient == Qt::Horizontal) ?
                           QRect(d_sliderRect.x() + d_valuePixel - d_thumbHalf, 
                                 d_sliderRect.y() + d_thumbWidthMargin,
@@ -1227,6 +1227,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   const QRect text_area(d_sliderRect.adjusted(1, 1, -1, -1));
   const QString elided_label_text = fontMetrics().elidedText(d_labelText, Qt::ElideMiddle, text_area.width());
   //const QRect elided_label_text_rect = fontMetrics().boundingRect(elided_label_text);
+  //fprintf(stderr, "CompactSlider::PaintEvent locale:%s\n", locale().name().toLatin1().constData()); // REMOVE Tim. Trackinfo.
   const QString comp_val_text = isOff() ? d_offText :
                                 ((val <= minV && !d_specialValueText.isEmpty()) ? 
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
@@ -1396,7 +1397,7 @@ void CompactSlider::mouseMoveEvent(QMouseEvent *e)
 
 void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
 {
-  fprintf(stderr, "CompactSlider::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
   const Qt::MouseButtons buttons = e->buttons();
   const Qt::KeyboardModifiers keys = e->modifiers();
   //const bool left_btn = buttons & Qt::LeftButton;
@@ -1405,7 +1406,7 @@ void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
   
   if(buttons == Qt::LeftButton && _mouseOverThumb && !_editMode)
   {  
-    fprintf(stderr, "   left button\n"); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "   left button\n"); // REMOVE Tim. Trackinfo.
     //if(_mouseOverThumb && !_editMode)
     //{
       //if(ctrl_key)
@@ -1462,7 +1463,7 @@ void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
 
 void CompactSlider::editorReturnPressed()
 {
-  fprintf(stderr, "CompactSlider::editorReturnPressed\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::editorReturnPressed\n"); // REMOVE Tim. Trackinfo.
   _editMode = false;
   if(_editor)
   {
@@ -1476,7 +1477,7 @@ void CompactSlider::editorReturnPressed()
 
 void CompactSlider::editorEscapePressed()
 {
-  fprintf(stderr, "CompactSlider::editorEscapePressed\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::editorEscapePressed\n"); // REMOVE Tim. Trackinfo.
   _editMode = false;
   if(_editor)
   {
@@ -1826,7 +1827,7 @@ void CompactSlider::showEditor()
   
   if(!_editor)
   {
-    fprintf(stderr, "   creating editor\n"); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "   creating editor\n"); // REMOVE Tim. Trackinfo.
     _editor = new PopupDoubleSpinBox(this);
     _editor->setFrame(false);
     _editor->setFocusPolicy(Qt::WheelFocus);
@@ -1845,7 +1846,7 @@ void CompactSlider::showEditor()
   if (w < _editor->sizeHint().width()) 
     w = _editor->sizeHint().width();
   _editor->setGeometry(0, 0, w, height());
-  fprintf(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height()); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height()); // REMOVE Tim. Trackinfo.
   _editor->selectAll();
   _editMode = true;     
   _editor->show();
@@ -1864,7 +1865,7 @@ void CompactSlider::getMouseOverThumb(QPoint &p)
 //   if(_mouseOverThumb != v && !(bPressed && !v))
   if(_mouseOverThumb != v && !(_pressed && !v))
   {
-    fprintf(stderr, "CompactSlider::getMouseOverThumb setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "CompactSlider::getMouseOverThumb setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim. Trackinfo.
     _mouseOverThumb = v;
   }
   const bool hv = rect().contains(p);

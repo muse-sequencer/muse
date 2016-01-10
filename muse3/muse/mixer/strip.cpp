@@ -48,6 +48,9 @@ using MusECore::UndoOp;
 
 namespace MusEGui {
 
+// REMOVE Tim. Trackinfo. Added.
+const int Strip::FIXED_METER_WIDTH = 10;
+
 //---------------------------------------------------------
 //   setRecordFlag
 //---------------------------------------------------------

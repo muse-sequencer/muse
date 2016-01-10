@@ -71,6 +71,7 @@
 #include "compact_patch_edit.h"
 #include "scroll_area.h"
 #include "elided_label.h"
+#include "utils.h"
 
 #include "synth.h"
 #ifdef LV2_SUPPORT
@@ -645,7 +646,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       _isExpanded = false;
       
       // Set the whole strip's font, except for the label.    p4.0.45
-      setFont(MusEGlobal::config.fonts[1]);
+// REMOVE Tim. Trackinfo. Changed.  
+//       setFont(MusEGlobal::config.fonts[1]);
+      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
       
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
@@ -901,12 +904,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 // REMOVE Tim. Trackinfo. Changed.      
 //       meter[0]->setFixedWidth(15);
-      meter[0]->setFixedWidth(10);
+      meter[0]->setFixedWidth(FIXED_METER_WIDTH);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
-      sliderGrid->setHorizontalSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
+      //sliderGrid->setHorizontalSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
       sliderGrid->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
 //       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
@@ -1342,23 +1345,22 @@ void MidiStrip::updateRackSizes(bool upper, bool lower)
   if(upper)
   {
     // Make room for 3 CompactSliders and one CompactPatchEdit.
-    // TODO: Add the instrument select label height.
+    // TODO: Add the instrument select label height!
+
+// REMOVE Tim. Trackinfo.    
+//     const int csh = CompactSlider::getMinimumSizeHint(fm,
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height();
+//     const int cpeh = CompactPatchEdit::getMinimumSizeHint(fm, 
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height();
+//     const int ilh = _instrLabel->sizeHint().height();
     
-//     _upperScrollArea->setFixedHeight(
-//     _upperRack->setFixedHeight(
-    const int csh = CompactSlider::getMinimumSizeHint(fm,
-                                            Qt::Horizontal, 
-                                            CompactSlider::None, 
-                                            xMarginHorSlider, yMarginHorSlider).height();
-    const int cpeh = CompactPatchEdit::getMinimumSizeHint(fm, 
-                                            Qt::Horizontal, 
-                                            CompactSlider::None, 
-                                            xMarginHorSlider, yMarginHorSlider).height();
-    const int ilh = _instrLabel->sizeHint().height();
-    fprintf(stderr, "MidiStrip::updateRackSizes: CompactSlider h:%d CompactPatchEdit h:%d instrLabel h:%d upper frame w:%d \n", 
-                     csh, cpeh, ilh, _upperRack->frameWidth()); // REMOVE Tim. Trackinfo.
+//     fprintf(stderr, "MidiStrip::updateRackSizes: CompactSlider h:%d CompactPatchEdit h:%d instrLabel h:%d upper frame w:%d \n", 
+//                      csh, cpeh, ilh, _upperRack->frameWidth()); // REMOVE Tim. Trackinfo.
     
-    // This must *exclude* the frame width.
     _upperRack->setMinimumHeight(
       3 * CompactSlider::getMinimumSizeHint(fm,
                                             Qt::Horizontal, 
@@ -1372,25 +1374,19 @@ void MidiStrip::updateRackSizes(bool upper, bool lower)
       
       _instrLabel->sizeHint().height() +
       
-//       2 * _upperScrollArea->frameWidth());
-//       2 * _upperRack->frameWidth());
       2 * rackFrameWidth);
   }
   if(lower)
   {
     // Make room for 1 CompactSlider (Pan, so far).
     
-//     _lowerScrollArea->setFixedHeight(
-//     _lowerRack->setFixedHeight(
-    fprintf(stderr, "MidiStrip::updateRackSizes: lower frame w:%d \n", _lowerRack->frameWidth()); // REMOVE Tim. Trackinfo.
-    // This must *exclude* the frame width.
+    //fprintf(stderr, "MidiStrip::updateRackSizes: lower frame w:%d \n", _lowerRack->frameWidth()); // REMOVE Tim. Trackinfo.
+    
     _lowerRack->setMinimumHeight(
       1 * CompactSlider::getMinimumSizeHint(fm, 
                                             Qt::Horizontal, 
                                             CompactSlider::None, 
                                             xMarginHorSlider, yMarginHorSlider).height() + 
-//       2 * _lowerScrollArea->frameWidth());
-//       2 * _lowerRack->frameWidth());
       2 * rackFrameWidth);
   }
 }
@@ -1405,7 +1401,10 @@ void MidiStrip::configChanged()
   // Set the whole strip's font, except for the label.    p4.0.45
   if(font() != MusEGlobal::config.fonts[1])
   {
-    setFont(MusEGlobal::config.fonts[1]);
+    //fprintf(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize()); // REMOVE Tim. Trackinfo.
+// REMOVE Tim. Trackinfo. Changed.  
+//     setFont(MusEGlobal::config.fonts[1]);
+    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     // Update in case font changed.
     updateRackSizes(true, true);
   }

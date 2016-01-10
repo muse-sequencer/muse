@@ -40,6 +40,7 @@ class QToolButton;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
+class QHBoxLayout;
 
 namespace MusECore {
 class AudioTrack;
@@ -91,10 +92,17 @@ class AudioStrip : public Strip {
       bool _volPressed;
       bool _panPressed;
 
-      ClipperLabel *_clipperLabel;
+// REMOVE Tim. Trackinfo. Changed.
+//       ClipperLabel *_clipperLabel;
+      ClipperLabel* _clipperLabel[MAX_CHANNELS];
+      QHBoxLayout* _clipperLayout;
 
       //QToolButton* iR;
       //QToolButton* oR;
+      
+// REMOVE Tim. Trackinfo. Added.
+      void setClipperTooltip(int ch);
+      
       
 // REMOVE Tim. Trackinfo. Changed.
 //       MusEGui::Knob* addKnob(Knob::KnobType, int, MusEGui::DoubleLabel**, QLabel *name);

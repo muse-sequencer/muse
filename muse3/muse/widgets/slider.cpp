@@ -1013,7 +1013,7 @@ void Slider::adjustScale()
 //     }    
   }
   
-  fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep);
+  //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep); // REMOVE Tim. Trackinfo.
   //setScaleMaxMinor(maxMin);
   d_maxMajor = maxMaj;
   d_maxMinor = maxMin;

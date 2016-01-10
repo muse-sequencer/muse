@@ -101,13 +101,16 @@ class Track {
       int _lastActivity;
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
+      // REMOVE Tim. Trackinfo. Added.
+      bool _isClipped[MAX_CHANNELS]; //used in audio mixer strip. Persistent.
 
       int _y;
       int _height;            // visual height in arranger
 
       bool _locked;
       bool _selected;
-      bool _isClipped; //used in audio mixer strip. Persistent.
+      // REMOVE Tim. Trackinfo. Removed.
+//       bool _isClipped; //used in audio mixer strip. Persistent.
 
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
@@ -215,9 +218,11 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
-      inline bool isClipped() { return _isClipped; }
-      void resetClipper() { _isClipped = false; }
-
+// REMOVE Tim. Trackinfo. Changed.
+//       inline bool isClipped() { return _isClipped; }
+//       void resetClipper() { _isClipped = false; }
+      inline bool isClipped(int ch) const { if(ch >= MAX_CHANNELS) return false; return _isClipped[ch]; }
+      void resetClipper() { for(int ch = 0; ch < MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
 
 //---------------------------------------------------------
