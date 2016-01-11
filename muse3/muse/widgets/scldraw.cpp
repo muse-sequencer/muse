@@ -35,6 +35,7 @@
 #include "mmath.h"
 #include "scldraw.h"
 
+#include <stdio.h> // REMOVE Tim. Trackinfo. For fprintf.
 
 namespace MusEGui {
 
@@ -498,8 +499,10 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     break;
     
     case TextHighlightSplitAndShadow:
+      //fprintf(stderr, "ScaleDraw::drawLabel val:%.15f curValue:%.15f\n", val, curValue); // REMOVE Tim. Trackinfo.
       if(val > curValue)
       {
+        //fprintf(stderr, "   drawing normal\n"); // REMOVE Tim. Trackinfo.
         p->setPen(palette.text().color());
         p->drawText(x0, y0, label);
       }

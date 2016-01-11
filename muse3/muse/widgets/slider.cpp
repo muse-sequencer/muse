@@ -73,6 +73,7 @@ Slider::Slider(QWidget *parent, const char *name,
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
+      d_fillThumb = true;
 
       d_scaleDist   = 4;
       d_scaleStep   = 0.0;
@@ -197,13 +198,26 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
   thumbGrad.setColorAt(1, thumb_edge);
   
   const double rpos = (value(ConvertNone) - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
-  
+
   if(d_orient == Qt::Horizontal)
   {
+    int crh, thh;
+//     if(d_scalePos == InsideHorizontal)
+//     {
+//       crh = height() - r.y() - d_yMargin - 2 * d_mMargin;
+//       thh = height() - r.y() - d_yMargin - d_mMargin;
+//     }
+//     else
+    {
+      crh = r.height() - 2 * d_mMargin;
+      thh = r.height();
+    }
+    
     const QRect cr(r.x(),
                    r.y() + d_mMargin,
                    r.width(),
-                   r.height() - 2*d_mMargin);
+                   //r.height() - 2*d_mMargin);
+                   crh);
     
     const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
     const int ipos =  cr.x() + dist1;
@@ -214,7 +228,8 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     //
         
     QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(), 
-                                          d_thumbLength, r.height(), 
+                                          //d_thumbLength, r.height(), 
+                                          d_thumbLength, thh, 
                                           2, 2, 
                                           (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
 
@@ -223,16 +238,35 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     thumbGrad.setStart(QPointF(ipos, 0));
     thumbGrad.setFinalStop(QPointF(ipos + d_thumbLength, 0));
         
-    p->fillPath(thumb_rect, QBrush(thumbGrad));
+    if(d_fillThumb)
+      p->fillPath(thumb_rect, QBrush(thumbGrad));
+    else
+    {
+      p->setPen(pal.shadow().color());
+      p->drawPath(thumb_rect);
+    }
         
     // center line
     p->fillRect(ipos + d_thumbHalf, cr.y(), 1, cr.height(), pal.dark().color());
   }
   else
   {
+    int crw, thw;
+//     if(d_scalePos == InsideVertical)
+//     {
+//       crw = width() - r.x() - d_xMargin - 2 * d_mMargin;
+//       thw = width() - r.x() - d_xMargin - d_mMargin;
+//     }
+//     else
+    {
+      crw = r.width() - 2 * d_mMargin;
+      thw = r.width();
+    }
+    
     const QRect cr(r.x() + d_mMargin,
                    r.y(),
-                   r.width() - 2*d_mMargin,
+                   //r.width() - 2*d_mMargin,
+                   crw,
                    r.height());
     
     const int dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
@@ -244,7 +278,8 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     //
         
     QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos, 
-                                          r.width(), d_thumbLength,
+                                          //r.width(), d_thumbLength,
+                                          thw, d_thumbLength,
                                           2, 2, 
                                           (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
         
@@ -253,7 +288,13 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     thumbGrad.setStart(QPointF(0, ipos));
     thumbGrad.setFinalStop(QPointF(0, ipos + d_thumbLength));
         
-    p->fillPath(thumb_rect, QBrush(thumbGrad));
+    if(d_fillThumb)
+      p->fillPath(thumb_rect, QBrush(thumbGrad));
+    else
+    {
+      p->setPen(pal.shadow().color());
+      p->drawPath(thumb_rect);
+    }
         
     // center line
     p->fillRect(cr.x(), ipos + d_thumbHalf, cr.width(), 1, pal.dark().color());
@@ -361,7 +402,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 	   
         p->fillPath(bg_rect, d_fillColor);
 	   
-        const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
+        const int dist1 = int(double(cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * rpos);
         const int ipos =  cr.x() + dist1;
         markerPos = ipos + d_thumbHalf;
 	   
@@ -373,8 +414,8 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         e_mask.setStart(QPointF(0, cr.y()));
         e_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
 
-        QPainterPath e_rect = MusECore::roundedPath(ipos + d_thumbLength, cr.y(), 
-                                          cr.width() - d_thumbLength - dist1, cr.height(), 
+        QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(), 
+                                          cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(), 
                                           xrad, yrad, (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
    
         p->fillPath(e_rect, QBrush(e_mask));
@@ -470,8 +511,8 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         f_mask.setStart(QPointF(cr.x(), markerPos));
         f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
             
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + d_thumbLength, 
-                                          cr.width(), cr.height() - d_thumbLength - dist1,
+        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), 
+                                          cr.width(), cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1,
                                           xrad, yrad, (MusECore::Corner) (MusECore::LowerLeft | MusECore::LowerRight) );
 	    
         p->fillPath(f_rect, QBrush(f_mask));

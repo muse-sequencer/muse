@@ -52,6 +52,7 @@ class Slider : public SliderBase, public ScaleIf
   ScalePos d_scalePos;
   int d_grooveWidth;
   QColor d_fillColor;
+  bool d_fillThumb;
 
   QRect d_sliderRect;
 
@@ -120,6 +121,9 @@ class Slider : public SliderBase, public ScaleIf
   void setMargins(int x, int y);
   int grooveWidth() const { return d_grooveWidth; }
   void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
+  
+  bool fillThumb() const { return d_fillThumb; }
+  void setFillThumb(bool v) { d_fillThumb = v; update(); }
   
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
