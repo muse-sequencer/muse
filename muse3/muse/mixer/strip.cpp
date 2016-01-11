@@ -112,7 +112,9 @@ void Strip::setLabelFont()
 {
   // Use the new font #6 I created just for these labels (so far).
   // Set the label's font.
+// REMOVE Tim. Trackinfo. Changed.
   label->setFont(MusEGlobal::config.fonts[6]);
+  label->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[6]));
   // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
   MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
 }

@@ -456,7 +456,9 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
     if(fnt.pointSize() != max)
     {
       fnt.setPointSize(max);
+// REMOVE Tim. Trackinfo. Changed.
       w->setFont(fnt);
+//       w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     }
   }
   else
@@ -483,7 +485,9 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
       fnt.setPointSize(min);
     else if(pointsize >= max)
       fnt.setPointSize(max);
+// REMOVE Tim. Trackinfo. Changed.
     w->setFont(fnt);
+//     w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     //painter->drawText(r,flags,stitle);
   }
   
@@ -787,7 +791,13 @@ QString font2StyleSheet(const QFont& fnt)
     break;
   }
   
-  return QString("font: %1 %2 %3pt \"%4\"; ").arg(wt).arg(st).arg(fnt.pointSize()).arg(fnt.family());
+  QString sz;
+  if(fnt.pointSize() > 0)
+    sz = QString("%1pt").arg(fnt.pointSize());
+  else if(fnt.pixelSize() > 0)
+    sz = QString("%1px").arg(fnt.pixelSize());
+  
+  return QString("font: %1 %2 %3 \"%4\"; ").arg(wt).arg(st).arg(sz).arg(fnt.family());
 }
 
 } // namespace MusECore
