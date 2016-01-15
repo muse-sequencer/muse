@@ -847,7 +847,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             //  if the IDs didn't match it means we can just let k catch up with icl.
             ci.sFrame   = 0;
             ci.eFrame   = -1;
-            ci.sVal     = _controls[k].val;
+            ci.sVal     = _controls[k].dval;
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -952,11 +952,12 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         unsigned long k;
         //const float up_fact = 1.002711275;      // 3.01.. dB / 256
         //const float down_fact = 0.997296056;
-        const float up_fact = 1.003471749;      // 3.01.. dB / 200
-        const float down_fact = 0.996540262;
+        const double up_fact = 1.003471749;      // 3.01.. dB / 200
+        const double down_fact = 0.996540262;
+
         float *sp1, *sp2, *dp1, *dp2;
         sp1 = sp2 = dp1 = dp2 = NULL;
-        float _volume, v, _pan, v1, v2;
+        double _volume, v, _pan, v1, v2;
 
         if(trackChans == 1)
         {
@@ -1002,7 +1003,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               for(int ch = start_ch; ch < trackChans; ++ch)
                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
             }
-            _controls[AC_VOLUME].val = _volume;    // Update the port.
+            _controls[AC_VOLUME].dval = _volume;    // Update the port.
           }
           else
           {
@@ -1010,7 +1011,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               _volume = vol_ctrl->interpolate(pos, vol_interp);
             else
               _volume = vol_interp.sVal;
-            _controls[AC_VOLUME].val = _volume;    // Update the port.
+            _controls[AC_VOLUME].dval = _volume;    // Update the port.
             v = _volume * _gain;
             if(v > _curVolume)
             {
@@ -1105,8 +1106,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             }
             *dp2++ = *sp2++ * _curVol2;
           }
-          _controls[AC_VOLUME].val = _volume;    // Update the ports.
-          _controls[AC_PAN].val = _pan;          
+          _controls[AC_VOLUME].dval = _volume;    // Update the ports.
+          _controls[AC_PAN].dval = _pan;          
         }
         else
         {
@@ -1118,8 +1119,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             _pan = pan_ctrl->interpolate(pos, pan_interp);
           else
             _pan = pan_interp.sVal;
-          _controls[AC_VOLUME].val = _volume;    // Update the ports.
-          _controls[AC_PAN].val = _pan;
+          _controls[AC_VOLUME].dval = _volume;    // Update the ports.
+          _controls[AC_PAN].dval = _pan;
           v = _volume * _gain;
           v1  = v * (1.0 - _pan);
           v2  = v * (1.0 + _pan);
@@ -1608,7 +1609,7 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
 
   float* buffer[srcTotalOutChans];  
   float data[nframes * srcTotalOutChans];
-  float meter[trackChans];
+  double meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
@@ -1867,7 +1868,7 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
       if(_meter[c] > _peak[c])
         _peak[c] = _meter[c];
 
-      if(_meter [c] > 1.0f)
+      if(_meter [c] > 1.0)
 // REMOVE Tim. Trackinfo. Changed.
 //          _isClipped = true;
          _isClipped[c] = true;
@@ -1913,7 +1914,7 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
       unsigned naux = al->size();
       for(unsigned k = 0; k < naux; ++k)
       {
-        float m = _auxSend[k];
+        double m = _auxSend[k];
         if(m <= 0.0001)           // optimize
           continue;
         AudioAux* a = (AudioAux*)((*al)[k]);
@@ -2822,7 +2823,7 @@ void Fifo::add()
 //   setParam
 //---------------------------------------------------------
 
-void AudioTrack::setParam(unsigned long i, float val)
+void AudioTrack::setParam(unsigned long i, double val)
 {
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
@@ -2831,9 +2832,9 @@ void AudioTrack::setParam(unsigned long i, float val)
 //   param
 //---------------------------------------------------------
 
-float AudioTrack::param(unsigned long i) const
+double AudioTrack::param(unsigned long i) const
 {
-  return _controls[i].val;
+  return _controls[i].dval;
 }
 
 //---------------------------------------------------------

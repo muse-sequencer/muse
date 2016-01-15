@@ -532,7 +532,7 @@ void VstSynthIF::deactivate3()
 //   getParameter
 //---------------------------------------------------------
 
-float VstSynthIF::getParameter(unsigned long idx) const
+double VstSynthIF::getParameter(unsigned long idx) const
       {
       return _fst->plugin->getParameter(_fst->plugin, idx);
       }
@@ -541,7 +541,7 @@ float VstSynthIF::getParameter(unsigned long idx) const
 //   setParameter
 //---------------------------------------------------------
 
-void VstSynthIF::setParameter(unsigned long idx, float value)
+void VstSynthIF::setParameter(unsigned long idx, double value)
       {
       _fst->plugin->setParameter(_fst->plugin, idx, value);
       }
@@ -561,8 +561,7 @@ void VstSynthIF::write(int level, Xml& xml) const
       AEffect* plugin = _fst->plugin;
       int params = plugin->numParams;
       for (int i = 0; i < params; ++i) {
-            float f = plugin->getParameter(plugin, i);
-            xml.floatTag(level, "param", f);
+            xml.doubleTag(level, "param", plugin->getParameter(plugin, i));
             }
       }
 

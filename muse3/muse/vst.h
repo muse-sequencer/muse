@@ -96,15 +96,15 @@ class VstSynthIF : public SynthIF
       virtual QString getPatchName(int, int, bool) const { return ""; }
       virtual void populatePatchPopup(PopupMenu*, int, bool) {};
       virtual void write(int level, Xml& xml) const;
-      virtual float getParameter(unsigned long idx) const;
-      virtual void setParameter(unsigned long idx, float value);
+      virtual double getParameter(unsigned long idx) const;
+      virtual void setParameter(unsigned long idx, double value);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
 
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
 
-      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, double /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 } // namespace MusECore

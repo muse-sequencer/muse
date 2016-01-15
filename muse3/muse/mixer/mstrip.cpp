@@ -22,8 +22,6 @@
 //
 //=========================================================
 
-#include <fastlog.h>
-
 #include <QLayout>
 #include <QAction>
 #include <QApplication>
@@ -38,8 +36,6 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QScrollArea>
-
-#include <math.h>
 
 #include "app.h"
 #include "midi.h"
@@ -72,6 +68,7 @@
 #include "scroll_area.h"
 #include "elided_label.h"
 #include "utils.h"
+#include "muse_math.h"
 
 #include "synth.h"
 #ifdef LV2_SUPPORT
@@ -203,7 +200,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
       {
       //int ctl = MusECore::CTRL_PANPOT, mn, mx, v;
       int mn, mx, v;
-      const int chan  = ((MusECore::MidiTrack*)track)->outChannel();
+      const int chan  = static_cast<MusECore::MidiTrack*>(track)->outChannel();
 //       switch(idx)
 //       {
 //         //case KNOB_PAN:
@@ -224,7 +221,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
 //           ctl = MusECore::CTRL_PROGRAM;
 //         break;
 //       }
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[((MusECore::MidiTrack*)track)->outPort()];
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[static_cast<MusECore::MidiTrack*>(track)->outPort()];
       MusECore::MidiController* mc = mp->midiController(midiCtrlNum);
       mn = mc->minVal();
       mx = mc->maxVal();
@@ -790,7 +787,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       connect(_instrLabel, SIGNAL(pressed()), SLOT(instrPopup()));
       
 // REMOVE Tim. Trackinfo. Added.
-      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Prg"), 
+      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Pro"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
       _upperScrollLayout->addSpacing(upperRackSpacerHeight);
       
@@ -798,11 +795,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
 //       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
 //       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
-      addController(_upperScrollLayout, KNOB_VAR_SEND, MusECore::CTRL_VARIATION_SEND, tr("VariationSend"), tr("Var"),
+      addController(_upperScrollLayout, KNOB_VAR_SEND, MusECore::CTRL_VARIATION_SEND, tr("VariationSend\n(Ctrl-double-click on/off)"), tr("Var"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-      addController(_upperScrollLayout, KNOB_REV_SEND, MusECore::CTRL_REVERB_SEND, tr("ReverbSend"), tr("Rev"),
+      addController(_upperScrollLayout, KNOB_REV_SEND, MusECore::CTRL_REVERB_SEND, tr("ReverbSend\n(Ctrl-double-click on/off)"), tr("Rev"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-      addController(_upperScrollLayout, KNOB_CHO_SEND, MusECore::CTRL_CHORUS_SEND, tr("ChorusSend"), tr("Cho"),
+      addController(_upperScrollLayout, KNOB_CHO_SEND, MusECore::CTRL_CHORUS_SEND, tr("ChorusSend\n(Ctrl-double-click on/off)"), tr("Cho"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
 //       controller[KNOB_PROGRAM]._patchControl = 0;
       
@@ -926,7 +923,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
-      sl->setToolTip(tr("ctrl-double-click on/off"));
+      sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
       sl->setFrame(true);
       sl->setPrecision(0);
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -956,7 +953,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
           dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
         else
         {  
-          dlv = -MusECore::fast_log10(float(127*127)/float(v*v))*20.0;
+          dlv = -muse_val2dbr(double(127*127)/double(v*v));
           if(dlv > sl->maxValue())
             dlv = sl->maxValue();
         }    
@@ -1015,7 +1012,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //_lowerScrollLayout->setSizeConstraint(QLayout::SetNoConstraint);
       
 //        addController(_lowerScrollLayout, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(setPan(double, bool)), true, MusECore::CTRL_VAL_UNKNOWN);
-      addController(_lowerScrollLayout, KNOB_PAN, MusECore::CTRL_PANPOT, tr("Pan/Balance"), tr("Pan"), 
+      addController(_lowerScrollLayout, KNOB_PAN, MusECore::CTRL_PANPOT, tr("Pan/Balance\n(Ctrl-double-click on/off)"), tr("Pan"), 
                     SLOT(ctrlChanged(double, bool, int)), true, MusECore::CTRL_VAL_UNKNOWN);
 
 // Keep this if dynamic layout (flip to right side) is desired.
@@ -1528,7 +1525,7 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
 
 void MidiStrip::controlRightClicked(const QPoint &p, int id)
 {
-  MusEGlobal::song->execMidiAutomationCtlPopup((MusECore::MidiTrack*)track, 0, p, id);
+  MusEGlobal::song->execMidiAutomationCtlPopup(static_cast<MusECore::MidiTrack*>(track), 0, p, id);
 }
 
 void MidiStrip::propertyRightClicked(const QPoint& /*p*/, int /*id*/)
@@ -1633,8 +1630,8 @@ void MidiStrip::volLabelDoubleClicked()
   //int mn, mx, v;
   //int num = MusECore::CTRL_VOLUME;
   const int num = MusECore::CTRL_VOLUME;
-  const int outport = ((MusECore::MidiTrack*)track)->outPort();
-  const int chan = ((MusECore::MidiTrack*)track)->outChannel();
+  const int outport = static_cast<MusECore::MidiTrack*>(track)->outPort();
+  const int chan = static_cast<MusECore::MidiTrack*>(track)->outChannel();
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
   MusECore::MidiController* mc = mp->midiController(num);
   
@@ -2041,7 +2038,7 @@ void MidiStrip::updateControls()
               }  
               else
               {  
-                double v = -MusECore::fast_log10(float(127*127)/float(ivol*ivol))*20.0;
+                double v = -muse_val2dbr(double(127*127)/double(ivol*ivol));
                 if(v > sl->maxValue())
                 {
                   //printf("MidiStrip::updateControls setting volume slider label\n");
@@ -2463,7 +2460,7 @@ void MidiStrip::ctrlChanged(double v, bool off, int num)
       if (inHeartBeat)
             return;
       int val = lrint(v);
-      MusECore::MidiTrack* t = (MusECore::MidiTrack*) track;
+      MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
       int port     = t->outPort();
       int chan  = t->outChannel();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -2656,7 +2653,7 @@ void MidiStrip::instrPopup()
 
 void MidiStrip::volLabelChanged(double val)
 {
-  val = sqrt( float(127*127) / pow(10.0, -val/20.0) );
+  val = sqrt( double(127*127) / muse_db2val(-val) );
   ctrlChanged(val, false, MusECore::CTRL_VOLUME);
 }
       

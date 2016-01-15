@@ -50,9 +50,9 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   _Prog = new CompactSlider(this, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor);
 
   _patchNameLabel->setToolTip(tr("Patch name"));
-  _HBank->setToolTip(tr("Patch high-bank number"));
-  _LBank->setToolTip(tr("Patch low-bank number"));
-  _Prog->setToolTip(tr("Patch program"));
+  _HBank->setToolTip(tr("Patch high-bank number\n(Ctrl-double-click on/off)"));
+  _LBank->setToolTip(tr("Patch low-bank number\n(Ctrl-double-click on/off)"));
+  _Prog->setToolTip(tr("Patch program\n(Ctrl-double-click on/off)"));
   
   _HBank->setHasOffMode(true);
   _LBank->setHasOffMode(true);

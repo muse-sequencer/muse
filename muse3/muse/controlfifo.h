@@ -40,7 +40,7 @@ struct ControlEvent
   // Whether or not the event is from a synth or effect's own GUI.
   bool fromGui;
   unsigned long idx;
-  float value;
+  double value;
   unsigned long frame;    
 };
 

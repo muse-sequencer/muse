@@ -35,7 +35,7 @@
 #include "mmath.h"
 #include "scldraw.h"
 
-#include <stdio.h> // REMOVE Tim. Trackinfo. For fprintf.
+//#include <stdio.h> // REMOVE Tim. Trackinfo. For fprintf.
 
 namespace MusEGui {
 
@@ -214,7 +214,7 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
     for (i=0; i< majCnt; i++)
     {
         val = d_scldiv.majMark(i);
-        drawLabel(p, palette, curValue, val);
+        drawLabel(p, palette, curValue, val, i == 0);
     }
     p->setPen(palette.text().color());
     
@@ -340,7 +340,7 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
 //.p  QPainter *p,  double val
 //
 //------------------------------------------------------------
-void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue, double val) const
+void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue, double val, bool isSpecialText) const
 {
 
     static QString label;
@@ -359,7 +359,10 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < MusECore::qwtAbs(step_eps * d_scldiv.majStep())))
        val = 0.0;
 
-    label.setNum(val, d_fmt, d_prec);
+    if(isSpecialText && !_specialText.isEmpty())
+      label = _specialText;
+    else
+      label.setNum(val, d_fmt, d_prec);
 
     switch(d_orient)
     {
@@ -499,7 +502,7 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     break;
     
     case TextHighlightSplitAndShadow:
-      //fprintf(stderr, "ScaleDraw::drawLabel val:%.15f curValue:%.15f\n", val, curValue); // REMOVE Tim. Trackinfo.
+      //fprintf(stderr, "ScaleDraw::drawLabel val:%.20f curValue:%.20f\n", val, curValue); // REMOVE Tim. Trackinfo.
       if(val > curValue)
       {
         //fprintf(stderr, "   drawing normal\n"); // REMOVE Tim. Trackinfo.

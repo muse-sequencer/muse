@@ -22,7 +22,6 @@
 //
 //=========================================================
 
-#include <fastlog.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -72,9 +71,23 @@
 #include "routepopup.h"
 #include "ctrl.h"
 #include "utils.h"
+#include "muse_math.h"
 
 namespace MusEGui {
 
+const double AudioStrip::volSliderStep =  0.5;
+const double AudioStrip::volSliderMax  = 10.0;
+const int    AudioStrip::volSliderPrec =    1;
+
+const double AudioStrip::auxSliderStep =  1.0;
+const double AudioStrip::auxSliderMax  = 10.0;
+const int    AudioStrip::auxSliderPrec =    0;
+
+const double AudioStrip::gainSliderStep = 1.0;
+const double AudioStrip::gainSliderMin  = 1.0;
+const double AudioStrip::gainSliderMax = 20.0;
+const int    AudioStrip::gainSliderPrec =   1;
+  
 /*
 //---------------------------------------------------------
 //   minimumSizeHint
@@ -193,21 +206,25 @@ void AudioStrip::configChanged()
   setLabelText();        
   
   // Adjust minimum volume slider and label values.
-  slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-  sl->setRange(MusEGlobal::config.minSlider, 10.0);
+//   slider->setRange(MusEGlobal::config.minSlider - volSliderStep, volSliderMax, volSliderStep);
+  slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
+  slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
+  sl->setRange(MusEGlobal::config.minSlider, volSliderMax);
+  sl->setOff(MusEGlobal::config.minSlider);
   
   // Adjust minimum aux slider values.
   int n = auxControl.size();
   for (int idx = 0; idx < n; ++idx) 
   {
     auxControl[idx]->blockSignals(true);
-    auxControl[idx]->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+//     auxControl[idx]->setRange(MusEGlobal::config.minSlider - auxSliderStep, auxSliderMax, auxSliderStep);
+    auxControl[idx]->setRange(MusEGlobal::config.minSlider, auxSliderMax, auxSliderStep);
     auxControl[idx]->blockSignals(false);
   }
   
   // Adjust minimum meter values.
   for(int c = 0; c < channel; ++c) 
-    meter[c]->setRange(MusEGlobal::config.minMeter, 10.0);
+    meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
 }
 
 void AudioStrip::updateRouteButtons()
@@ -370,7 +387,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
 
       updateRouteButtons();
     
-      MusECore::AudioTrack* src = (MusECore::AudioTrack*)track;
+      MusECore::AudioTrack* src = static_cast<MusECore::AudioTrack*>(track);
       gain->setValue(src->gain());
 
       // Do channels before MusEGlobal::config...
@@ -428,9 +445,18 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       if (val & SC_AUX) {
             int n = auxControl.size();
             for (int idx = 0; idx < n; ++idx) {
-                  double val = MusECore::fast_log10(src->auxSend(idx)) * 20.0;
+                  double val = src->auxSend(idx);
+                  if(val == 0.0)
+                    val = MusEGlobal::config.minSlider;
+                  else
+                  {
+                    val = muse_val2dbr(val);
+                    if(val < MusEGlobal::config.minSlider)
+                      val = MusEGlobal::config.minSlider;
+                  }
                   auxControl[idx]->blockSignals(true);
                   auxControl[idx]->setValue(val);
+//                   auxControl[idx]->setValueState(val, val <= MusEGlobal::config.minSlider);
                   auxControl[idx]->blockSignals(false);
                   }
             }
@@ -491,13 +517,22 @@ void AudioStrip::updateVolume()
 {
       if(_volPressed) // Inhibit the controller stream if control is currently pressed.
         return;
-      double vol = ((MusECore::AudioTrack*)track)->volume();
+      double vol = static_cast<MusECore::AudioTrack*>(track)->volume();
       if (vol != volume)
       {
-          //printf("AudioStrip::updateVolume setting slider and label\n");
+          double val;
+          if(vol == 0.0)
+            val = MusEGlobal::config.minSlider;
+          else
+          {  
+            val = muse_val2dbr(vol);
+            if(val < MusEGlobal::config.minSlider)
+              val = MusEGlobal::config.minSlider;
+          }
+          
           slider->blockSignals(true);
           sl->blockSignals(true);
-          double val = MusECore::fast_log10(vol) * 20.0;
+          // Slider::fitValue should not be required since the log function is accurate but rounded to the nearest .000001
           slider->setValue(val);
           sl->setValue(val);
           sl->blockSignals(false);
@@ -537,10 +572,9 @@ void AudioStrip::updatePan()
 {
       if(_panPressed) // Inhibit the controller stream if control is currently pressed.
         return;
-      double v = ((MusECore::AudioTrack*)track)->pan();
+      double v = static_cast<MusECore::AudioTrack*>(track)->pan();
       if (v != panVal)
       {
-          //printf("AudioStrip::updatePan setting slider and label\n");
           pan->blockSignals(true);
           pan->setValue(v);
           pan->blockSignals(false);
@@ -657,7 +691,7 @@ void AudioStrip::updateOffState()
 
 void AudioStrip::preToggled(bool val)
       {
-      MusEGlobal::audio->msgSetPrefader((MusECore::AudioTrack*)track, val);
+      MusEGlobal::audio->msgSetPrefader(static_cast<MusECore::AudioTrack*>(track), val);
       resetPeaks();
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -673,7 +707,7 @@ void AudioStrip::stereoToggled(bool val)
 //      stereo->setIcon(nc == 2 ? *stereoIcon : *monoIcon);
       if (oc == nc)
             return;
-      MusEGlobal::audio->msgSetChannels((MusECore::AudioTrack*)track, nc);
+      MusEGlobal::audio->msgSetChannels(static_cast<MusECore::AudioTrack*>(track), nc);
       MusEGlobal::song->update(SC_CHANNELS);
       }
 
@@ -684,13 +718,11 @@ void AudioStrip::stereoToggled(bool val)
 void AudioStrip::auxChanged(double val, int idx)
       {
       double vol;
-      if (val <= MusEGlobal::config.minSlider) {
-            vol = 0.0;
-            val -= 1.0; // display special value "off"
-            }
+      if (val <= MusEGlobal::config.minSlider)
+        vol = 0.0;
       else
-            vol = pow(10.0, val/20.0);
-      MusEGlobal::audio->msgSetAux((MusECore::AudioTrack*)track, idx, vol);
+        vol = muse_db2val(val);
+      MusEGlobal::audio->msgSetAux(static_cast<MusECore::AudioTrack*>(track), idx, vol);
       MusEGlobal::song->update(SC_AUX);
       }
 
@@ -700,7 +732,7 @@ void AudioStrip::auxChanged(double val, int idx)
 
 void AudioStrip::gainChanged(double val)
       {
-      ((MusECore::AudioTrack*)track)->setGain(val);
+      static_cast<MusECore::AudioTrack*>(track)->setGain(val);
       }
 
 // REMOVE Tim. Trackinfo. Removed.
@@ -736,12 +768,10 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
         return;
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       double vol;
-      if (val <= MusEGlobal::config.minSlider) {
-            vol = 0.0;
-            val -= 1.0; // display special value "off"
-            }
+      if (val <= MusEGlobal::config.minSlider)
+        vol = 0.0;
       else
-            vol = pow(10.0, val/20.0);
+        vol = muse_db2val(val);
       volume = vol;
       if (!shift_pressed) t->recordAutomation(MusECore::AC_VOLUME, vol);  // with shift, we get straight lines :)
       t->setParam(MusECore::AC_VOLUME, vol);                              // Schedules a timed control change.
@@ -760,12 +790,10 @@ void AudioStrip::volumePressed()
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       double val = slider->value();
       double vol;
-      if (val <= MusEGlobal::config.minSlider) {
-            vol = 0.0;
-            //val -= 1.0; // display special value "off"
-            }
+      if (val <= MusEGlobal::config.minSlider)
+        vol = 0.0;
       else
-            vol = pow(10.0, val/20.0);
+        vol = muse_db2val(val);
       volume = vol;
       t->startAutoRecord(MusECore::AC_VOLUME, vol);
       t->setVolume(vol);
@@ -794,7 +822,7 @@ void AudioStrip::volumeReleased()
 //---------------------------------------------------------
 void AudioStrip::volumeRightClicked(const QPoint &p)
 {
-  MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)track, p, MusECore::AC_VOLUME);
+  MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_VOLUME);
 }
 
 //---------------------------------------------------------
@@ -809,10 +837,10 @@ void AudioStrip::volLabelChanged(double val)
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
-            val -= 1.0; // display special value "off"
+            val = MusEGlobal::config.minSlider;
             }
       else
-            vol = pow(10.0, val/20.0);
+            vol = muse_db2val(val); 
       volume = vol;
       slider->blockSignals(true);
       slider->setValue(val);                   
@@ -875,7 +903,7 @@ void AudioStrip::panReleased()
 //---------------------------------------------------------
 void AudioStrip::panRightClicked(const QPoint &p)
 {
-   MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)track, p, MusECore::AC_PAN);
+   MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_PAN);
 }
 
 void AudioStrip::resetClipper()
@@ -912,7 +940,7 @@ void AudioStrip::resetClipper()
                                        
 void AudioStrip::updateChannels()
       {
-      MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       int c = t->channels();
       //printf("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
       
@@ -926,7 +954,7 @@ void AudioStrip::updateChannels()
             
                   meter[cc] = new MusEGui::Meter(this);
                   //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
-                  meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
+                  meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
 //                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
@@ -1078,9 +1106,10 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
         break;
         case auxType:
           control = new CompactSlider(this, "MixerStripAudioAux", Qt::Horizontal, CompactSlider::None, label);
-          control->setToolTip(tr("aux send level"));
-          control->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-          control->setValueDecimals(0);
+          control->setToolTip(tr("aux send level (dB)"));
+          control->setRange(MusEGlobal::config.minSlider, auxSliderMax, auxSliderStep);
+          control->setValueDecimals(auxSliderPrec);
+          control->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character.
           //control->setValue(0);
           pal.setColor(QPalette::Active, QPalette::Button, Qt::blue); // Border
           pal.setColor(QPalette::Inactive, QPalette::Button, Qt::blue); // Border
@@ -1089,8 +1118,8 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
         case gainType:
           control = new CompactSlider(this, "MixerStripAudioGain", Qt::Horizontal, CompactSlider::None, label);
           control->setToolTip(tr("calibration gain"));
-          control->setRange(1.0, 20.0);
-          control->setValueDecimals(1);
+          control->setRange(gainSliderMin, gainSliderMax, gainSliderStep);
+          control->setValueDecimals(gainSliderPrec);
           pal.setColor(QPalette::Active, QPalette::Button, Qt::yellow); // Border
           pal.setColor(QPalette::Inactive, QPalette::Button, Qt::yellow); // Border
           control->setPalette(pal);
@@ -1516,7 +1545,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       setFont(MusEGlobal::config.fonts[1]);  
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
-      MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       channel       = at->channels();
       ///setMinimumWidth(STRIP_WIDTH);
       
@@ -1600,7 +1629,15 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
                   CompactSlider* control = addController(auxType, idx, title);
 
                   auxControl.push_back(control);
-                  double val = MusECore::fast_log10(t->auxSend(idx))*20.0;
+                  double val = t->auxSend(idx);
+                  if(val == 0.0)
+                    val = MusEGlobal::config.minSlider;
+                  else
+                  {
+                    val = muse_val2dbr(val);
+                    if(val < MusEGlobal::config.minSlider)
+                      val = MusEGlobal::config.minSlider;
+                  }
                   control->setValue(val);
                   
                   // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
@@ -1652,10 +1689,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       slider->setCursorHoming(true);
       slider->setThumbLength(1);
-      slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0); // REMOVE Tim. Trackinfo. Changed.
-      //slider->setRange(MusEGlobal::config.minSlider-0.5, 10.0, 0.5);
+//       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0); // REMOVE Tim. Trackinfo. Changed.
+//       slider->setRange(MusEGlobal::config.minSlider - volSliderStep, volSliderMax, volSliderStep);
+      slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
 //       slider->setScaleMaxMinor(5);
-      slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
+//       slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
+      slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
+      slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
       slider->setScaleBackBone(false);
       //slider->setFillThumb(false);
       
@@ -1665,13 +1705,24 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       
       ///slider->setFont(MusEGlobal::config.fonts[1]);
-      slider->setValue(MusECore::fast_log10(t->volume())*20.0);
+      
+      double track_vol = t->volume();
+      if(track_vol == 0.0)
+        track_vol = MusEGlobal::config.minSlider;
+      else
+      {
+        track_vol = muse_val2dbr(track_vol);
+        if(track_vol < MusEGlobal::config.minSlider)
+          track_vol = MusEGlobal::config.minSlider;
+      }
+      // Slider::fitValue() not required so far. The log function is accurate but rounded to the nearest .000001
+      slider->setValue(track_vol);
 
       sliderGrid->addWidget(slider, 2, 0, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
-            meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
+            meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
             meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
             meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding); // REMOVE Tim. Trackinfo. Added.
 //             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
@@ -1682,15 +1733,18 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       sliderGrid->addItem(new QSpacerItem(2,0),2,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
-      sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);
+      sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
       sl->setSlider(slider);
       ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
+      sl->setToolTip(tr("Volume/gain"));
       sl->setSuffix(tr("dB"));
+      sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + tr("dB"));
+      sl->setOff(MusEGlobal::config.minSlider);
       sl->setFrame(true);
-      sl->setPrecision(0);
+      sl->setPrecision(volSliderPrec);
       sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
-      sl->setValue(MusECore::fast_log10(t->volume()) * 20.0);
+      sl->setValue(track_vol);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
       connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));

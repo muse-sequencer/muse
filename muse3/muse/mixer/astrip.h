@@ -149,6 +149,19 @@ class AudioStrip : public Strip {
       ~AudioStrip();
       ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;
+      
+      static const double volSliderStep;
+      static const double volSliderMax;
+      static const int    volSliderPrec;
+      
+      static const double auxSliderStep;
+      static const double auxSliderMax;
+      static const int    auxSliderPrec;
+      
+      static const double gainSliderStep;
+      static const double gainSliderMin;
+      static const double gainSliderMax;
+      static const int    gainSliderPrec;
       };
 
 } // namespace MusEGui

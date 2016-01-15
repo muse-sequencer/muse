@@ -25,6 +25,7 @@
 #ifndef __SCLDRAW_H__
 #define __SCLDRAW_H__
 
+#include <QString>
 #include "dimap.h"
 #include "scldiv.h"
 
@@ -50,6 +51,7 @@ class ScaleDraw : public DiMap {
       static const int minLen;
       OrientationX d_orient;
       TextHighlightMode d_textHighlightMode;
+      QString _specialText;   // Text to show if value = min
       
       int d_xorg;
       int d_yorg;
@@ -76,7 +78,7 @@ class ScaleDraw : public DiMap {
       
       void drawTick(QPainter *p, const QPalette& palette, double curValue, double val, int len) const;
       void drawBackbone(QPainter *p, const QPalette& palette, double curValue) const;
-      void drawLabel(QPainter *p, const QPalette& palette, double curValue, double val) const;
+      void drawLabel(QPainter *p, const QPalette& palette, double curValue, double val, bool isSpecialText = false) const;
 	
    public:
 
@@ -94,6 +96,8 @@ class ScaleDraw : public DiMap {
       OrientationX orientation() const { return d_orient; }
       TextHighlightMode textHighlightMode() const { return d_textHighlightMode; }
       void setTextHighlightMode(TextHighlightMode mode) { d_textHighlightMode = mode; }
+      QString specialText() const           { return _specialText; }
+      void setSpecialText(const QString& s) { _specialText = s; }
       
 // REMOVE Tim. Trackinfo. Changed.
 //       QRect maxBoundingRect(QPainter *p) const;

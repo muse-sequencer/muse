@@ -1840,7 +1840,7 @@ void VstNativeSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/
 //   getParameter
 //---------------------------------------------------------
 
-float VstNativeSynthIF::getParameter(unsigned long idx) const
+double VstNativeSynthIF::getParameter(unsigned long idx) const
       {
       if(idx >= _synth->inControls())
       {
@@ -1855,7 +1855,7 @@ float VstNativeSynthIF::getParameter(unsigned long idx) const
 //   setParameter
 //---------------------------------------------------------
 
-void VstNativeSynthIF::setParameter(unsigned long idx, float value)
+void VstNativeSynthIF::setParameter(unsigned long idx, double value)
       {
       addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
       }
@@ -2070,10 +2070,7 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
 
   int params = _plugin->numParams;
   for (int i = 0; i < params; ++i)
-  {
-    float f = _plugin->getParameter(_plugin, i);
-    xml.floatTag(level, "param", f);
-  }
+    xml.doubleTag(level, "param", _plugin->getParameter(_plugin, i));
 }
 
 //---------------------------------------------------------
@@ -3038,9 +3035,9 @@ void VstNativeSynthIF::deactivate()
 
 unsigned long VstNativeSynthIF::parameters() const                { return _synth ? _synth->inControls() : 0; }
 unsigned long VstNativeSynthIF::parametersOut() const             { return 0; }
-void VstNativeSynthIF::setParam(unsigned long i, float val)       { setParameter(i, val); }
-float VstNativeSynthIF::param(unsigned long i) const              { return getParameter(i); }
-float VstNativeSynthIF::paramOut(unsigned long) const           { return 0.0; }
+void VstNativeSynthIF::setParam(unsigned long i, double val)       { setParameter(i, val); }
+double VstNativeSynthIF::param(unsigned long i) const              { return getParameter(i); }
+double VstNativeSynthIF::paramOut(unsigned long) const            { return 0.0; }
 const char* VstNativeSynthIF::paramName(unsigned long i)          
 {
   if(!_plugin)
@@ -3399,7 +3396,7 @@ void VstNativePluginWrapper::range(unsigned long, float *min, float *max) const
    *max = 1.0f;
 }
 
-float VstNativePluginWrapper::defaultValue(unsigned long port) const
+double VstNativePluginWrapper::defaultValue(unsigned long port) const
 {
    return inControlDefaults [port];
 }

@@ -4132,7 +4132,7 @@ void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
    return;
 }
 
-float LV2SynthIF::getParameter(long unsigned int n) const
+double LV2SynthIF::getParameter(long unsigned int n) const
 {
    if(n >= _inportsControl)
    {
@@ -4148,7 +4148,7 @@ float LV2SynthIF::getParameter(long unsigned int n) const
    return _controls[n].val;
 }
 
-float LV2SynthIF::getParameterOut(long unsigned int n) const
+double LV2SynthIF::getParameterOut(long unsigned int n) const
 {
    if(n >= _outportsControl)
    {
@@ -4325,7 +4325,7 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
 
 }
 
-void LV2SynthIF::setParameter(long unsigned int idx, float value)
+void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
    addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
 }
@@ -4371,7 +4371,7 @@ void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
 }
 
 
-float LV2SynthIF::param(long unsigned int i) const
+double LV2SynthIF::param(long unsigned int i) const
 {
    return getParameter(i);
 }
@@ -4483,12 +4483,12 @@ LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
 
 
 
-float LV2SynthIF::paramOut(long unsigned int i) const
+double LV2SynthIF::paramOut(long unsigned int i) const
 {
    return getParameterOut(i);
 }
 
-void LV2SynthIF::setParam(long unsigned int i, float val)
+void LV2SynthIF::setParam(long unsigned int i, double val)
 {
    setParameter(i, val);
 }
@@ -4921,7 +4921,7 @@ void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
    *max = _synth->_pluginControlsMax [i];
 }
 
-float LV2PluginWrapper::defaultValue(unsigned long port) const
+double LV2PluginWrapper::defaultValue(unsigned long port) const
 {
    return _synth->_pluginControlsDefault [port];
 }

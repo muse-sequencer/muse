@@ -33,6 +33,7 @@
 #include "fastlog.h"
 #include "mmath.h"
 #include "utils.h"
+#include "muse_math.h"
 
 namespace MusEGui {
 
@@ -78,7 +79,7 @@ void VerticalMeter::setVal(double v) //, double max, bool ovl)
 
       if(mtype == DBMeter)
       {
-        double minScaleLin = pow(10.0, minScale/20.0);
+        double minScaleLin = muse_db2val(minScale);
         if((v >= minScaleLin && val != v) || val >= minScaleLin)
         {
           val = v;

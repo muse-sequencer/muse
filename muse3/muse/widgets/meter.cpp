@@ -38,6 +38,7 @@
 #include "utils.h"
 #include "gconfig.h"
 #include "fastlog.h"
+#include "muse_math.h"
 
 // Just an experiment. Some undesirable effects, see below...
 //#define _USE_CLIPPER 1 
@@ -76,6 +77,7 @@ Meter::Meter(QWidget* parent, MeterType type)
       setStyleSheet("font: 9px \"Sans\"; ");
       
       mtype = type;
+      _showText   = false;
       overflow    = false;
       cur_yv      = -1;     // Flag as -1 to initialize in paint.
       last_yv     = 0;
@@ -217,7 +219,7 @@ void Meter::setVal(double v, double max, bool ovl)
 
       if(mtype == DBMeter)
       {
-        double minScaleLin = pow(10.0, minScale/20.0);
+        double minScaleLin = muse_db2val(minScale);
         if((v >= minScaleLin && targetVal != v) || targetVal >= minScaleLin)
         {
           targetVal = v;
@@ -282,7 +284,8 @@ void Meter::updateTargetMeterValue()
 //        cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
      const double v = (mtype == DBMeter) ? (MusECore::fast_log10(maxVal) * 20.0) : maxVal;
      cur_ymax = maxVal == 0 ? fw : int(((maxScale - v) * h)/range);
-     updateText(v);
+     if(_showText)
+       updateText(v);
      
      if(cur_ymax > h) cur_ymax = h;
      // Not using regions. Just lump them together.
@@ -454,21 +457,24 @@ void Meter::paintEvent(QPaintEvent* ev)
     //const int txtYOff = -(fw + (h > _textSize.width() ? (h - _textSize.width()) / 2 : 0));
     //const int txtXOff = fw ;
     //const int txtYOff = -h;
-    const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
-    if(!textDrawn && rr.intersects(_textRect))
+    if(_showText)
     {
-      textDrawn = true;
-      //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());  // REMOVE Tim. Trackinfo.
-      //p.setFont(_textFont);
-      p.setPen(Qt::white);
-      p.rotate(90);
-      p.translate(0, -frameGeometry().width());
-      //p.drawText(txtXOff, txtYOff, _textSize.width(), _textSize.height(), Qt::AlignLeft | Qt::AlignVCenter, _text);
-      p.drawText(_textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
-      //p.drawPixmap(fw, fw, _textPM);
-      // Restore.
-      p.translate(0, frameGeometry().width());
-      p.rotate(-90);
+      const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
+      if(!textDrawn && rr.intersects(_textRect))
+      {
+        textDrawn = true;
+        //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());  // REMOVE Tim. Trackinfo.
+        //p.setFont(_textFont);
+        p.setPen(Qt::white);
+        p.rotate(90);
+        p.translate(0, -frameGeometry().width());
+        //p.drawText(txtXOff, txtYOff, _textSize.width(), _textSize.height(), Qt::AlignLeft | Qt::AlignVCenter, _text);
+        p.drawText(_textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
+        //p.drawPixmap(fw, fw, _textPM);
+        // Restore.
+        p.translate(0, frameGeometry().width());
+        p.rotate(-90);
+      }
     }
   }
 }

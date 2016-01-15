@@ -121,8 +121,8 @@ class MetronomeSynthIF : public SynthIF
       virtual QString getPatchName(int, int, bool) const { return ""; }
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
       virtual void write(int, Xml&) const {}
-      virtual float getParameter(unsigned long) const  { return 0.0; }
-      virtual void setParameter(unsigned long, float) {}
+      virtual double getParameter(unsigned long) const  { return 0.0; }
+      virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
 
       //-------------------------

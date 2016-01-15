@@ -55,6 +55,8 @@ class ScaleIf
 	void setScaleMaxMajor( int ticks);
 	void setScaleMaxMinor( int ticks);
         void setScaleBackBone(bool v) { d_scale.setBackBone(v); }
+        QString specialText() const           { return d_scale.specialText(); }
+        void setSpecialText(const QString& s) { d_scale.setSpecialText(s); }
 	void autoScale();
 
 	int scaleMaxMinor() const {return d_maxMinor;}

@@ -102,9 +102,9 @@ void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
 bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
 unsigned long SynthIF::parameters() const                { return 0; }
 unsigned long SynthIF::parametersOut() const             { return 0; }
-void SynthIF::setParam(unsigned long, float)       { }
-float SynthIF::param(unsigned long) const              { return 0.0; }
-float SynthIF::paramOut(unsigned long) const           { return 0.0; }
+void SynthIF::setParam(unsigned long, double)       { }
+double SynthIF::param(unsigned long) const              { return 0.0; }
+double SynthIF::paramOut(unsigned long) const          { return 0.0; }
 const char* SynthIF::paramName(unsigned long)          { return NULL; }
 const char* SynthIF::paramOutName(unsigned long)       { return NULL; }
 LADSPA_PortRangeHint SynthIF::range(unsigned long)
@@ -582,7 +582,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
             }
 
       unsigned long idx = 0;
-      for (std::vector<float>::iterator i = initParams.begin(); i != initParams.end(); ++i, ++idx)
+      for (std::vector<double>::iterator i = initParams.begin(); i != initParams.end(); ++i, ++idx)
             _sif->setParameter(idx, *i);
 
       // p3.3.40 Since we are done with the (sometimes huge) initial parameters list, clear it.
@@ -917,7 +917,7 @@ void SynthI::read(Xml& xml)
                         else if (tag == "midistate")
                               readMidiState(xml);
                         else if (tag == "param") {
-                              float val = xml.parseFloat();
+                              double val = xml.parseDouble();
                               initParams.push_back(val);
                               }
                         else if (tag == "stringParam")
