@@ -122,15 +122,14 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	panic_toolbar->setObjectName("panic");
 	panic_toolbar->addAction(MusEGlobal::panicAction);
 
-    QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
-    metronome_toolbar->setObjectName("metronome");
-    metronome_toolbar->addAction(MusEGlobal::metronomeAction);
+  QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
+  metronome_toolbar->setObjectName("metronome");
+  metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-    QToolBar* transport_toolbar = addToolBar(tr("Transport"));
+  QToolBar* transport_toolbar = addToolBar(tr("Transport"));
 	transport_toolbar->setObjectName("transport");
- transport_toolbar->addActions(MusEGlobal::transportAction->actions());
- transport_toolbar->setIconSize(QSize(22, 22));
- transport_toolbar->setStyleSheet("QToolButton{padding: 1px;}");
+  transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+  transport_toolbar->setIconSize(QSize(22, 22));
 
 	QToolBar* songpos_tb;
 	songpos_tb = addToolBar(tr("Song Position"));

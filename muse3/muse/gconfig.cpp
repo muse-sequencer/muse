@@ -182,12 +182,14 @@ GlobalConfigValues config = {
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
          QString("Mixer A"),
+         QStringList(),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
          true, true, true, true, true
          },
       {
          QString("Mixer B"),
+         QStringList(),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
          true, true, true, true, true

@@ -60,7 +60,7 @@ class Knob;
 class RouteDialog;
 class Slider;
 class Strip;
-typedef std::list<Strip*> StripList;
+typedef QList<Strip*> StripList;
 
 //---------------------------------------------------------
 //   ScrollArea
@@ -87,16 +87,27 @@ class ScrollArea : public QScrollArea
 class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
+      enum DisplayOrder {
+        STRIPS_TRADITIONAL_VIEW = -1004,
+        STRIPS_EDITED_VIEW = -1003,
+        STRIPS_ARRANGER_VIEW = -1002,
+      };
+      enum StripMenuOperations {
+        UNHIDE_STRIPS = -1000,
+        UNHANDLED_NUMBER = -1001
+      };
       //QString name;
       MusEGlobal::MixerConfig* cfg;
       StripList stripList;
+      DisplayOrder displayOrder;
+
       QScrollArea* view;
       QWidget* central;
       //QSplitter* splitter;
       //QHBoxLayout* lbox;  // REMOVE Tim. Trackinfo. Unused.
       //Strip* master;
       QHBoxLayout* mixerLayout;
-      QMenu* menuView;
+      QMenu* menuStrips;
       MusEGui::RouteDialog* routingDialog;
       QAction* routingId;
       int oldAuxsSize;
@@ -111,16 +122,28 @@ class AudioMixerApp : public QMainWindow {
       QAction* showAuxTracksId;
       QAction* showSyntiTracksId;
 
-      
+      bool mixerClicked;
 
+      //virtual void closeEvent(QCloseEvent*);
+
+      bool stripIsVisible(Strip* s);
+      void redrawMixer();
       void addStrip(MusECore::Track*, int);
+      void addStrip(MusECore::Track* t) { addStrip(t,-1); }
       void showRouteDialog(bool);
+
+      void updateStripList();
+      void fillStripListTraditional();
+      Strip* findStripForTrack(StripList &s, MusECore::Track *t);
 
       enum UpdateAction {
             NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
             };
-      void updateMixer(UpdateAction);
-      
+      void initMixer();
+      void addStripsTraditionalLayout();
+      void addStripToLayoutIfVisible(Strip *s);
+
+
    signals:
       void closed();
       //void layoutRequest();
@@ -143,18 +166,25 @@ class AudioMixerApp : public QMainWindow {
       void showGroupTracksChanged(bool);
       void showAuxTracksChanged(bool);
       void showSyntiTracksChanged(bool);
+      void stripsMenu();
+      void handleMenu(QAction *);
 
    protected:
    //   virtual bool event(QEvent* event);
       virtual void closeEvent(QCloseEvent*);
    
+      void mousePressEvent(QMouseEvent* ev);
+      void mouseReleaseEvent(QMouseEvent* ev);
+
    public:
       //AudioMixerApp(QWidget* parent);
       AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
       //void write(Xml&, const char* name);
       //void write(int level, Xml& xml, const char* name);
       void write(int level, MusECore::Xml& xml);
-      void clear();
+      void clearAndDelete();
+      void moveStrip(Strip *s);
+      bool isMixerClicked() { return mixerClicked; }
       };
 
 } // namespace MusEGui

@@ -1175,9 +1175,9 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       if (mixer1)
-            mixer1->clear();
+            mixer1->clearAndDelete();
       if (mixer2)
-            mixer2->clear();
+            mixer2->clearAndDelete();
       _arranger->clear();      // clear track info
       if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
             return;

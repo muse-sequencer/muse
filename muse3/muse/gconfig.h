@@ -79,6 +79,7 @@ enum RouteNameAliasPreference { RoutePreferCanonicalName, RoutePreferFirstAlias,
 
 struct MixerConfig {
       QString name;
+      QStringList trackOrder;
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;

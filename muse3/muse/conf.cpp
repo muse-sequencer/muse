@@ -1948,6 +1948,8 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showAuxTracks = xml.parseInt();
                         else if (tag == "showSyntiTracks")
                               showSyntiTracks = xml.parseInt();
+                        else if (tag == "TrackName")
+                              trackOrder.append(xml.parse1());
                         else
                               xml.unknown("Mixer");
                         break;
