@@ -1,3 +1,6 @@
+15.01.2016
+        - Routing popup menu: Fix stereo grouping mode not connecting both channels
+           if second channel is clicked. (Tim)
 14.01.2016
       By Tim:
         - System-wide accuracy fixes, part 1:
