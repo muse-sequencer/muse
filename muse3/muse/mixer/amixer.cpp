@@ -174,7 +174,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       setWindowTitle(cfg->name);
       setWindowIcon(*museIcon);
       mixerClicked=false;
-      displayOrder = STRIPS_TRADITIONAL_VIEW;
+
+      //cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
       MusEGui::populateAddTrack(menuConfig,true);
@@ -263,21 +264,21 @@ void AudioMixerApp::stripsMenu()
   QAction *act;
 
   act = menuStrips->addAction(tr("Traditional order"));
-  act->setData(STRIPS_TRADITIONAL_VIEW);
+  act->setData(MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW);
   act->setCheckable(true);
-  if (displayOrder == STRIPS_TRADITIONAL_VIEW)
+  if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW)
     act->setChecked(true);
 
   act = menuStrips->addAction(tr("Arranger order"));
-  act->setData(STRIPS_ARRANGER_VIEW);
+  act->setData(MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW);
   act->setCheckable(true);
-  if (displayOrder == STRIPS_ARRANGER_VIEW)
+  if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW)
     act->setChecked(true);
 
   act = menuStrips->addAction(tr("User order"));
-  act->setData(STRIPS_EDITED_VIEW);
+  act->setData(MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW);
   act->setCheckable(true);
-  if (displayOrder == STRIPS_EDITED_VIEW)
+  if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW)
     act->setChecked(true);
 
   menuStrips->addSeparator();
@@ -312,12 +313,12 @@ void AudioMixerApp::handleMenu(QAction *act)
     foreach (Strip *s, stripList) {
       s->setStripVisible(true);
     }
-  } else if (operation == STRIPS_TRADITIONAL_VIEW) {
-    displayOrder = STRIPS_TRADITIONAL_VIEW;
-  } else if (operation == STRIPS_ARRANGER_VIEW) {
-    displayOrder = STRIPS_ARRANGER_VIEW;
-  } else if (operation == STRIPS_EDITED_VIEW) {
-    displayOrder = STRIPS_EDITED_VIEW;
+  } else if (operation == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW) {
+    cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
+  } else if (operation == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
+    cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW;
+  } else if (operation == MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW) {
+    cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   }
   redrawMixer();
 }
@@ -369,13 +370,13 @@ void AudioMixerApp::redrawMixer()
 {
   // empty layout
   if (DEBUG_MIXER)
-    printf("redrawMixer type %d, mixerLayout count %d\n", displayOrder, mixerLayout->count());
+    printf("redrawMixer type %d, mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
   while (mixerLayout->count() > 0) {
     mixerLayout->removeItem(mixerLayout->itemAt(0));
   }
 
-  switch (displayOrder) {
-    case STRIPS_ARRANGER_VIEW:
+  switch (cfg->displayOrder) {
+    case MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW:
       {
       if (DEBUG_MIXER)
           printf("Draw strips with arranger view\n");
@@ -393,7 +394,7 @@ void AudioMixerApp::redrawMixer()
         }
       }
       break;
-    case STRIPS_EDITED_VIEW:
+    case MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW:
       {
         if (DEBUG_MIXER)
           printf("Draw strips with edited view\n");
@@ -408,7 +409,7 @@ void AudioMixerApp::redrawMixer()
           printf("mixerLayout count is now %d\n", mixerLayout->count());
       }
       break;
-    case STRIPS_TRADITIONAL_VIEW:
+    case MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW:
       {
         if (DEBUG_MIXER)
           printf("TRADITIONAL VIEW mixerLayout count is now %d\n", mixerLayout->count());
@@ -497,7 +498,7 @@ void AudioMixerApp::moveStrip(Strip *s)
   mixerClicked = false;
   if (DEBUG_MIXER)
     printf("Recreate stripList\n");
-  if (displayOrder == STRIPS_ARRANGER_VIEW) {
+  if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
     // refresh stripList before doing the  move since it
     // likely does not contain the same view as displayed
     StripList oldList = stripList;
@@ -511,7 +512,7 @@ void AudioMixerApp::moveStrip(Strip *s)
           stripList.append(*si);
         }
     }
-  } else if (displayOrder == STRIPS_TRADITIONAL_VIEW)
+  } else if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW)
   {
     fillStripListTraditional();
   }
@@ -539,7 +540,7 @@ void AudioMixerApp::moveStrip(Strip *s)
       break;
     }
   }
-  displayOrder = STRIPS_EDITED_VIEW;
+  cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   redrawMixer();
   update();
 }
@@ -960,9 +961,13 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
   xml.intTag(level, "showAuxTracks",    cfg->showAuxTracks);
   xml.intTag(level, "showSyntiTracks",  cfg->showSyntiTracks);
 
+  xml.intTag(level, "displayOrder", cfg->displayOrder);
+
+  // specific to store made to song file - this is not part of MixerConfig::write
   StripList::iterator si = stripList.begin();
   for (; si != stripList.end(); ++si) {
     xml.strTag(level, "TrackName", (*si)->getTrack()->name());
+    xml.intTag(level, "StripVisible", (*si)->getStripVisible());
   }
 
   xml.etag(level, "Mixer");

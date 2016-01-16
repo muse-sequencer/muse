@@ -87,11 +87,6 @@ class ScrollArea : public QScrollArea
 class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
-      enum DisplayOrder {
-        STRIPS_TRADITIONAL_VIEW = -1004,
-        STRIPS_EDITED_VIEW = -1003,
-        STRIPS_ARRANGER_VIEW = -1002,
-      };
       enum StripMenuOperations {
         UNHIDE_STRIPS = -1000,
         UNHANDLED_NUMBER = -1001
@@ -99,7 +94,6 @@ class AudioMixerApp : public QMainWindow {
       //QString name;
       MusEGlobal::MixerConfig* cfg;
       StripList stripList;
-      DisplayOrder displayOrder;
 
       QScrollArea* view;
       QWidget* central;
