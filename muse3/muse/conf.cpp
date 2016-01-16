@@ -1952,8 +1952,8 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showSyntiTracks = xml.parseInt();
                         else if (tag == "displayOrder")
                               displayOrder = (DisplayOrder)xml.parseInt();
-                        else if (tag == "TrackName")
-                              trackOrder.append(xml.parse1());
+                        else if (tag == "StripName")
+                              stripOrder.append(xml.parse1());
                         else if (tag == "StripVisible")
                               stripVisibility.append(xml.parseInt() == 0 ? false : true );
                         else

@@ -368,9 +368,9 @@ bool AudioMixerApp::stripIsVisible(Strip* s)
 
 void AudioMixerApp::redrawMixer()
 {
-  // empty layout
   if (DEBUG_MIXER)
     printf("redrawMixer type %d, mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
+  // empty layout
   while (mixerLayout->count() > 0) {
     mixerLayout->removeItem(mixerLayout->itemAt(0));
   }
@@ -658,7 +658,7 @@ void AudioMixerApp::setSizing()
 //   addStrip
 //---------------------------------------------------------
 
-void AudioMixerApp::addStrip(MusECore::Track* t, int newIndex)
+void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
 {
     if (DEBUG_MIXER)
       printf("addStrip\n");
@@ -672,17 +672,11 @@ void AudioMixerApp::addStrip(MusECore::Track* t, int newIndex)
     connect(handle, SIGNAL(moved(int)), strip, SLOT(changeUserWidth(int)));
     connect(strip, SIGNAL(destroyed(QObject*)), handle, SLOT(deleteLater()));
 
-
-    if (newIndex == -1) {
-      if (DEBUG_MIXER)
-        printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());
-      stripList.append(strip);
-    }
-    else {
-      // insert at pos
-      stripList.insert(newIndex, strip);
-    }
-    strip->show();
+    if (DEBUG_MIXER)
+      printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());
+    stripList.append(strip);
+    strip->setVisible(visible);
+    strip->setStripVisible(visible);
 }
 
 //---------------------------------------------------------
@@ -700,7 +694,7 @@ void AudioMixerApp::clearAndDelete()
     (*si)->deleteLater();
   }
   stripList.clear();
-  cfg->trackOrder.clear();
+  cfg->stripOrder.clear();
   oldAuxsSize = -1;
 }
 
@@ -711,9 +705,9 @@ void AudioMixerApp::clearAndDelete()
 void AudioMixerApp::initMixer()
 {
   if (DEBUG_MIXER)
-    printf("initMixer\n");
+    printf("initMixer %d\n", cfg->stripOrder.size());
   setWindowTitle(cfg->name);
-  clearAndDelete();
+  //clearAndDelete();
 
   showMidiTracksId->setChecked(cfg->showMidiTracks);
   showDrumTracksId->setChecked(cfg->showDrumTracks);
@@ -727,22 +721,23 @@ void AudioMixerApp::initMixer()
 
   int auxsSize = MusEGlobal::song->auxs()->size();
   oldAuxsSize = auxsSize;
+  MusECore::TrackList *tl = MusEGlobal::song->tracks();
+  MusECore::TrackList::iterator tli = tl->begin();
 
-  if (cfg->trackOrder.size() > 0) {
-    MusECore::TrackList *tl = MusEGlobal::song->tracks();
-    foreach(QString name, cfg->trackOrder) {
+  if (cfg->stripOrder.size() > 0) {
+    for (int i=0; i < cfg->stripOrder.size(); i++) {
       MusECore::TrackList::iterator tli = tl->begin();
+      if (DEBUG_MIXER)
+        printf ("processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLatin1().data(), cfg->stripVisibility.at(i));
       for (;tli != tl->end(); tli++) {
-        if ((*tli)->name() == name) {
-          addStrip(*tli);
+        if ((*tli)->name() == cfg->stripOrder.at(i)) {
+          addStrip(*tli, cfg->stripVisibility.at(i));
           break;
         }
       }
     }
   }
   else {
-    MusECore::TrackList *tl = MusEGlobal::song->tracks();
-    MusECore::TrackList::iterator tli = tl->begin();
     for (;tli != tl->end(); tli++) {
       addStrip(*tli);
     }
@@ -966,7 +961,7 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
   // specific to store made to song file - this is not part of MixerConfig::write
   StripList::iterator si = stripList.begin();
   for (; si != stripList.end(); ++si) {
-    xml.strTag(level, "TrackName", (*si)->getTrack()->name());
+    xml.strTag(level, "StripName", (*si)->getTrack()->name());
     xml.intTag(level, "StripVisible", (*si)->getStripVisible());
   }
 

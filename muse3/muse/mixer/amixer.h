@@ -122,8 +122,8 @@ class AudioMixerApp : public QMainWindow {
 
       bool stripIsVisible(Strip* s);
       void redrawMixer();
-      void addStrip(MusECore::Track*, int);
-      void addStrip(MusECore::Track* t) { addStrip(t,-1); }
+      void addStrip(MusECore::Track* t, bool visible=true);
+      //void addStrip(MusECore::Track* t);
       void showRouteDialog(bool);
 
       void updateStripList();

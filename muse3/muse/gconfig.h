@@ -84,7 +84,7 @@ struct MixerConfig {
         STRIPS_ARRANGER_VIEW = -1002,
       };
       QString name;
-      QStringList trackOrder;
+      QStringList stripOrder;
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;
