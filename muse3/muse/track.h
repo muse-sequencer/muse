@@ -780,6 +780,16 @@ template<class T> class tracklist : public std::vector<Track*> {
                         }
                   }
             }
+      // Returns the number of selected tracks in this list.
+      int countSelected() const {
+            int c = 0;
+            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+                  if ((*i)->selected()) {
+                        ++c;
+                        }
+                  }
+            return c;
+            }
       };
 
 typedef tracklist<Track*> TrackList;
@@ -813,6 +823,10 @@ typedef tracklist<AudioAux*> AuxList;
 typedef tracklist<SynthI*>::iterator iSynthI;
 typedef tracklist<SynthI*>::const_iterator ciSynthI;
 typedef tracklist<SynthI*> SynthIList;
+
+// Fills selected list (if valid) with selected tracks in the given list.
+// Returns the number of selected tracks in the given list.
+extern int trackListSelectedTracks(TrackList* list, TrackList* selected);
 
 extern void addPortCtrlEvents(MidiTrack* t);
 extern void removePortCtrlEvents(MidiTrack* t);

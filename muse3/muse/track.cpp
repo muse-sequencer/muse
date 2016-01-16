@@ -61,6 +61,25 @@ const char* Track::_cname[] = {
 
 bool MidiTrack::_isVisible=true;
 
+
+//---------------------------------------------------------
+//   trackListSelectedTracks
+//   Fills selected list (if valid) with selected tracks in the given list.
+//   Returns the number of selected tracks in the given list.
+//---------------------------------------------------------
+
+int trackListSelectedTracks(TrackList* list, TrackList* selected) {
+      int c = 0;
+      for (ciTrack i = list->begin(); i != list->end(); ++i) {
+            if ((*i)->selected()) {
+                  ++c;
+                  if(selected)
+                    selected->push_back((*i));
+                  }
+            }
+      return c;
+      }
+
 //---------------------------------------------------------
 //   addPortCtrlEvents
 //---------------------------------------------------------

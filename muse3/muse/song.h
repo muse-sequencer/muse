@@ -350,6 +350,10 @@ public:
       GroupList* groups()       { return &_groups;  }
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
+      // Fills selected list (if valid) with selected tracks in _tracks.
+      // Returns the number of selected tracks in _tracks.
+      int selectedTracks(TrackList* selected) {
+        return trackListSelectedTracks(&_tracks, selected); }
       
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;

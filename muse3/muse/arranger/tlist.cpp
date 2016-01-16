@@ -754,14 +754,10 @@ MusECore::Track* TList::y2Track(int y) const
 
 void TList::editTrackNameSlot()
 {
-  if (countSelected() == 1) {
-    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-    for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
-      if ((*t)->selected()){
-        editTrackName(*t);
-        break;
-      }
-  }
+  MusECore::TrackList tracks;
+  const int sz = MusEGlobal::song->selectedTracks(&tracks);
+  if (sz == 1) 
+    editTrackName(tracks.front());
 }
 
 void TList::editTrackName(MusECore::Track *t)
@@ -1329,17 +1325,6 @@ void TList::keyPressEvent(QKeyEvent* e)
   emit keyPressExt(e); //redirect keypress events to main app
 }
 
-int TList::countSelected()
-{
-  // check for single selection
-  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-  int nselect = 0;
-  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
-        if ((*t)->selected())
-              ++nselect;
-  return nselect;
-}
-
 //---------------------------------------------------------
 //   moveSelection
 //---------------------------------------------------------
@@ -1348,7 +1333,7 @@ void TList::moveSelection(int n)
       {
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
 
-      int nselect = countSelected();
+      int nselect = tracks->countSelected();
       if (nselect != 1)
             return;
       MusECore::Track* selTrack = 0;
@@ -1898,7 +1883,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             case COL_CLASS:
                 {
                   bool allSelected=false;
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                     allSelected=true;
 
                   if (t->isMidiTrack())
@@ -1921,7 +1906,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   mode = START_DRAG;
                   bool turnOff = (button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier);
 
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
@@ -1943,7 +1928,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                }
             case COL_SOLO:
                   mode = START_DRAG;
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
