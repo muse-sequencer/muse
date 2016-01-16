@@ -3024,7 +3024,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
            QBrush cc(gradient);
            p.setBrush(cc);
 
-           fprintf(stderr, "startx = %d\n", startx);
+           //fprintf(stderr, "startx = %d\n", startx);
            p.drawRect(startx,yPos, width, th);
 
            if(track->type() == MusECore::Track::WAVE){

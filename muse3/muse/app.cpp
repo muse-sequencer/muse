@@ -441,7 +441,10 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon), tr("Play"), MusEGlobal::transportAction);
+      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
+                     tr("Play") + " (" + shrtToStr(MusEGui::SHRT_PLAY_TOGGLE)
+                         + ")<br>"+ tr("Restart rec")+" (" + QKeySequence(MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key).toString() + ")",
+                     MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
       MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
@@ -577,6 +580,8 @@ MusE::MusE() : QMainWindow()
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual"), this);
       helpHomepageAction = new QAction(tr("&MusE Homepage"), this);
+      helpDidYouKnow = new QAction(tr("&Did you know?"), this);
+
       helpReportAction = new QAction(tr("&Report Bug..."), this);
       helpAboutAction = new QAction(tr("&About MusE"), this);
 
@@ -668,6 +673,7 @@ MusE::MusE() : QMainWindow()
       connect(helpManualAction, SIGNAL(triggered()), SLOT(startHelpBrowser()));
       connect(helpHomepageAction, SIGNAL(triggered()), SLOT(startHomepageBrowser()));
       connect(helpReportAction, SIGNAL(triggered()), SLOT(startBugBrowser()));
+      connect(helpDidYouKnow, SIGNAL(triggered()), SLOT(showDidYouKnowDialog()));
       connect(helpAboutAction, SIGNAL(triggered()), SLOT(about()));
 
       //--------------------------------------------------
@@ -904,6 +910,7 @@ MusE::MusE() : QMainWindow()
 
       menu_help->addAction(helpManualAction);
       menu_help->addAction(helpHomepageAction);
+      menu_help->addAction(helpDidYouKnow);
       menu_help->addSeparator();
       menu_help->addAction(helpReportAction);
       menu_help->addSeparator();
