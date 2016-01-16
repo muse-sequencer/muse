@@ -25,6 +25,8 @@
 
 #include <QMouseEvent>
 
+#include "muse_math.h"
+
 namespace Awl {
 
 //---------------------------------------------------------
@@ -82,7 +84,7 @@ void VolSlider::setValue(double val)
 
 double VolSlider::value() const
       {
-      return _log ? (_value <= _minValue) ? 0.0f : pow(10.0, _value*0.05f)
+      return _log ? (_value <= _minValue) ? 0.0 : muse_db2val(_value)
                   : _value;
       }
 

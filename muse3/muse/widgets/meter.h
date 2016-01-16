@@ -34,6 +34,7 @@ class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 class QPainterPath;
+class QFont;
 
 #include <QBitmap>
 
@@ -95,6 +96,15 @@ class Meter : public QFrame {
       double minScale, maxScale;
       int yellowScale, redScale;
       int cur_yv, last_yv, cur_ymax, last_ymax;
+      // REMOVE Tim. Trackinfo. Added.
+      bool _showText;
+      //QPixmap _textPM;
+      //QFont _textFont;
+      QString _text;
+      //QSize _textSize;
+      QRect _textRect;
+      //void updateTextPM(double val);
+      void updateText(double val);
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
 
@@ -111,6 +121,9 @@ class Meter : public QFrame {
    public:
       Meter(QWidget* parent, MeterType type = DBMeter);
       void setRange(double min, double max);
+
+      bool showText() const { return _showText; }
+      void setShowText(bool v) { _showText = v; update(); }
       };
 
 } // namespace MusEGui

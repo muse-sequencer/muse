@@ -101,13 +101,16 @@ class Track {
       int _lastActivity;
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
+      // REMOVE Tim. Trackinfo. Added.
+      bool _isClipped[MAX_CHANNELS]; //used in audio mixer strip. Persistent.
 
       int _y;
       int _height;            // visual height in arranger
 
       bool _locked;
       bool _selected;
-      bool _isClipped; //used in audio mixer strip. Persistent.
+      // REMOVE Tim. Trackinfo. Removed.
+//       bool _isClipped; //used in audio mixer strip. Persistent.
 
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
@@ -215,9 +218,11 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
-      inline bool isClipped() { return _isClipped; }
-      void resetClipper() { _isClipped = false; }
-
+// REMOVE Tim. Trackinfo. Changed.
+//       inline bool isClipped() { return _isClipped; }
+//       void resetClipper() { _isClipped = false; }
+      inline bool isClipped(int ch) const { if(ch >= MAX_CHANNELS) return false; return _isClipped[ch]; }
+      void resetClipper() { for(int ch = 0; ch < MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
 
 //---------------------------------------------------------
@@ -356,9 +361,9 @@ class AudioTrack : public Track {
       unsigned long _controlPorts;
       Port* _controls;             // For internal controllers like volume and pan. Plugins/synths have their own.
 
-      float _curVolume;
-      float _curVol1;
-      float _curVol2;
+      double _curVolume;
+      double _curVol1;
+      double _curVol2;
       
       bool _prefader;               // prefader metering
       AuxSendValueList _auxSend;
@@ -430,8 +435,9 @@ class AudioTrack : public Track {
       CtrlListList* controller()         { return &_controller; }
       // For setting/getting the _controls 'port' values.
       unsigned long parameters() const { return _controlPorts; }
-      void setParam(unsigned long i, float val); 
-      float param(unsigned long i) const;
+      
+      void setParam(unsigned long i, double val); 
+      double param(unsigned long i) const;
 
       virtual void setChannels(int n);
       virtual void setTotalOutChannels(int num);
@@ -495,7 +501,7 @@ class AudioTrack : public Track {
       virtual void setAutomationType(AutomationType t);
       void processAutomationEvents();
       CtrlRecList* recEvents()                         { return &_recEvents; }
-      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // return true if event cannot be delivered
+      bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // return true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id) const;
       // Enable all track and plugin controllers, and synth controllers if applicable.

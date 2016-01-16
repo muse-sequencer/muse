@@ -868,7 +868,7 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
 //   getParameter
 //---------------------------------------------------------
 
-float DssiSynthIF::getParameter(unsigned long n) const
+double DssiSynthIF::getParameter(unsigned long n) const
 {
   if(n >= _synth->_controlInPorts)
   {
@@ -885,7 +885,7 @@ float DssiSynthIF::getParameter(unsigned long n) const
 //   getParameter
 //---------------------------------------------------------
 
-float DssiSynthIF::getParameterOut(unsigned long n) const
+double DssiSynthIF::getParameterOut(unsigned long n) const
 {
   if(n >= _synth->_controlOutPorts)
   {
@@ -903,7 +903,7 @@ float DssiSynthIF::getParameterOut(unsigned long n) const
 //   setParameter
 //---------------------------------------------------------
 
-void DssiSynthIF::setParameter(unsigned long n, float v)
+void DssiSynthIF::setParameter(unsigned long n, double v)
 {
   addScheduledControlEvent(n, v, MusEGlobal::audio->curFrame());   
 }
@@ -1053,10 +1053,7 @@ void DssiSynthIF::write(int level, Xml& xml) const
       
       // Store controls as parameters...
       for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
-      {
-        float f = _controls[c].val;
-        xml.floatTag(level, "param", f);
-      }  
+        xml.doubleTag(level, "param", _controls[c].val);
 }
 
 //---------------------------------------------------------
@@ -2483,9 +2480,9 @@ void DssiSynthIF::deactivate()
 
 unsigned long DssiSynthIF::parameters() const                { return _synth ? _synth->_controlInPorts : 0; }
 unsigned long DssiSynthIF::parametersOut() const             { return _synth ? _synth->_controlOutPorts : 0; }
-void DssiSynthIF::setParam(unsigned long i, float val)  { setParameter(i, val); }
-float DssiSynthIF::param(unsigned long i) const              { return getParameter(i); }
-float DssiSynthIF::paramOut(unsigned long i) const           { return getParameterOut(i); }
+void DssiSynthIF::setParam(unsigned long i, double val)      { setParameter(i, val); }
+double DssiSynthIF::param(unsigned long i) const             { return getParameter(i); }
+double DssiSynthIF::paramOut(unsigned long i) const          { return getParameterOut(i); }
 const char* DssiSynthIF::paramName(unsigned long i)          { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
 const char* DssiSynthIF::paramOutName(unsigned long i)       { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
 LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx]; }

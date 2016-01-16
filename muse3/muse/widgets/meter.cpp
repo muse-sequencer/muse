@@ -29,12 +29,16 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QResizeEvent>
+#include <QVector>
+#include <QLocale>
 #include <algorithm>
+#include <lo/lo_osc_types.h>
 
 #include "meter.h"
 #include "utils.h"
 #include "gconfig.h"
 #include "fastlog.h"
+#include "muse_math.h"
 
 // Just an experiment. Some undesirable effects, see below...
 //#define _USE_CLIPPER 1 
@@ -56,7 +60,24 @@ Meter::Meter(QWidget* parent, MeterType type)
       setAttribute(Qt::WA_OpaquePaintEvent);    
       //setFrameStyle(QFrame::Raised | QFrame::StyledPanel);
 
+      // REMOVE Tim. Trackinfo. Added
+      //_textFont.setStyleStrategy(QFont::NoAntialias);
+      //_textFont.setStyleStrategy(QFont::PreferBitmap);
+      //_textFont.setHintingPreference(QFont::PreferVerticalHinting);
+      //_textFont.setFamily("Sans");
+      //_textFont.setPixelSize(7);
+      //_textFont = font();
+//       QFont fnt;
+//       fnt.setFamily("Sans");
+//       fnt.setPixelSize(9);
+//       //fnt.setStyleStrategy(QFont::PreferBitmap);
+//       fnt.setStyleStrategy(QFont::NoAntialias);
+//       fnt.setHintingPreference(QFont::PreferVerticalHinting);
+//       setFont(fnt);
+      setStyleSheet("font: 9px \"Sans\"; ");
+      
       mtype = type;
+      _showText   = false;
       overflow    = false;
       cur_yv      = -1;     // Flag as -1 to initialize in paint.
       last_yv     = 0;
@@ -130,8 +151,63 @@ Meter::Meter(QWidget* parent, MeterType type)
 
       connect(&fallingTimer, SIGNAL(timeout()), this, SLOT(updateTargetMeterValue()));
 
+//       updateText(targetVal);
       }
 
+//---------------------------------------------------------
+//   updateText
+//---------------------------------------------------------
+
+void Meter::updateText(double val)
+{
+  if(val >= -60.0f)
+    _text = locale().toString(val, 'f', 1);
+  else
+  {
+    _text = QString("-");
+    _text += QChar(0x221e); // The infinty character
+  }
+  
+  const QFontMetrics fm = fontMetrics();
+  //const QFontMetrics fm(_textFont);
+  //// Rotate 90 deg.
+  //_textSize = fm.boundingRect(txt).size().transposed();
+  const QSize sz = fm.boundingRect(_text).size();
+  const int txtw = sz.width();
+  const int txth = sz.height();
+//   if(_textPM.isNull() || _textPM.size().width() < w || _textPM.size().height() < h)
+//     _textPM = QPixmap(w, h);
+//   QPainter p;
+//   p.begin(&_textPM);
+// //   p.eraseRect(0, 0, w, h);
+//   p.fillRect(0, 0, w, h, Qt::darkYellow);
+//   p.rotate(90);
+//   p.setPen(Qt::cyan);
+//   // Rotate 90 deg.
+//   //p.drawText(0, 0, h, w, Qt::AlignLeft | Qt::AlignTop, txt);
+//   p.drawText(0, 0, txt);
+//   p.end();
+  
+  // Set the text size, incrementally expanding. Ensure that paint will erase the last largest size.
+  // Rotate 90 degrees.
+  const int fw = frameWidth();
+  const int w  = width() - 2*fw;
+  const int txtYOff = fw + (w > txth ? (w - txth) / 2 : 0);
+  
+  _textRect.setX(fw);
+  _textRect.setY(txtYOff);
+  
+  if(txtw > _textRect.width())
+    _textRect.setWidth(txtw);
+  if(txth > _textRect.height())
+    _textRect.setHeight(txth);
+  
+  const QRect rr(_textRect.y(), _textRect.x(), _textRect.height(), _textRect.width()); // Rotate -90 degrees.
+  update(rr);
+  //QRect ur(_textRect.y(), _textRect.x(), _textRect.height(), _textRect.width());
+  //update(ur);
+}
+      
 //---------------------------------------------------------
 //   setVal
 //---------------------------------------------------------
@@ -143,7 +219,7 @@ void Meter::setVal(double v, double max, bool ovl)
 
       if(mtype == DBMeter)
       {
-        double minScaleLin = pow(10.0, minScale/20.0);
+        double minScaleLin = muse_db2val(minScale);
         if((v >= minScaleLin && targetVal != v) || targetVal >= minScaleLin)
         {
           targetVal = v;
@@ -201,10 +277,16 @@ void Meter::updateTargetMeterValue()
    if(maxVal != targetMaxVal)
    {
      maxVal = targetMaxVal;
-     if(mtype == DBMeter)
-       cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
-     else
-       cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
+// REMOVE Tim. Trackinfo. Changed.     
+//      if(mtype == DBMeter)
+//        cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
+//      else
+//        cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
+     const double v = (mtype == DBMeter) ? (MusECore::fast_log10(maxVal) * 20.0) : maxVal;
+     cur_ymax = maxVal == 0 ? fw : int(((maxScale - v) * h)/range);
+     if(_showText)
+       updateText(v);
+     
      if(cur_ymax > h) cur_ymax = h;
      // Not using regions. Just lump them together.
      udRect = QRect(fw, last_ymax, w, 1) | QRect(fw, cur_ymax, w, 1);
@@ -275,90 +357,127 @@ void Meter::setRange(double min, double max)
 //---------------------------------------------------------
 
 void Meter::paintEvent(QPaintEvent* ev)
-      {
-      // For some reason upon resizing we get double calls here and in resizeEvent.
+{
+  // For some reason upon resizing we get double calls here and in resizeEvent.
 
-      QPainter p(this);
-      int fw = frameWidth();
-      int w  = width() - 2*fw;
-      int h  = height() - 2*fw;
-      p.setRenderHint(QPainter::Antialiasing);
+  QPainter p(this);
+  const int fw = frameWidth();
+  const int w  = width() - 2*fw;
+  const int h  = height() - 2*fw;
+  p.setRenderHint(QPainter::Antialiasing);
 
-      //p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
+  //p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
 
-      double range = maxScale - minScale;      
-      const QRect& rect = ev->rect();
-      //printf("Meter::paintEvent rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
+  const double range = maxScale - minScale;     
+  
+//       const QRect& rect = ev->rect(); // REMOVE Tim. Trackinfo. Changed.
+  bool textDrawn = false;
+  const int rectCount = ev->region().rectCount();
+  QVector<QRect> rects = ev->region().rects();
+  for(int ri = 0; ri < rectCount; ++ri)
+  {
+    const QRect& rect = rects.at(ri);
+    
+    //printf("Meter::paintEvent rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
+    
+    // REMOVE Tim. Trackinfo. Tested OK! Small non-overlapping rectangles.
+    //fprintf(stderr, "Meter::paintEvent rcount:%d ridx:%d rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", 
+    //                rectCount, ri, rect.x(), rect.y(), rect.width(), rect.height(), w, h);
 
-      QPainterPath drawingPath, updatePath, finalPath, cornerPath;
-      //bool updFull = false;
-      
-      // Initialize. Can't do in ctor, must be done after layouts have been done. Most reliable to do it here.
-      if(cur_yv == -1) 
-      {
-        if(mtype == DBMeter)
-        {  
-          cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
-        }  
-        else
-        {  
-          cur_yv = val == 0 ? h : int(((maxScale - val) * h)/range);
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
-        }  
-        if(cur_yv > h) cur_yv = h;
-        last_yv = cur_yv;
-        if(cur_ymax > h) cur_ymax = h;
-        last_ymax = cur_ymax;
-        //updFull = true;
-        updatePath.addRect(fw, fw, w, h);  // Update the whole thing
-      }
+    QPainterPath drawingPath, updatePath, finalPath, cornerPath;
+    //bool updFull = false;
+    
+    // Initialize. Can't do in ctor, must be done after layouts have been done. Most reliable to do it here.
+    if(cur_yv == -1) 
+    {
+      if(mtype == DBMeter)
+      {  
+        cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
+        cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
+      }  
       else
-        updatePath.addRect(rect.x(), rect.y(), rect.width(), rect.height());  // Update only the requested rectangle
-      
-      drawingPath.addRoundedRect(fw, fw, w, h, xrad, yrad);  // The actual desired shape of the meter
-      finalPath = drawingPath & updatePath;
+      {  
+        cur_yv = val == 0 ? h : int(((maxScale - val) * h)/range);
+        cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
+      }  
+      if(cur_yv > h) cur_yv = h;
+      last_yv = cur_yv;
+      if(cur_ymax > h) cur_ymax = h;
+      last_ymax = cur_ymax;
+      //updFull = true;
+      updatePath.addRect(fw, fw, w, h);  // Update the whole thing
+    }
+    else
+      updatePath.addRect(rect.x(), rect.y(), rect.width(), rect.height());  // Update only the requested rectangle
+    
+    drawingPath.addRoundedRect(fw, fw, w, h, xrad, yrad);  // The actual desired shape of the meter
+    finalPath = drawingPath & updatePath;
 
-      // Draw corners as normal background colour.
-      cornerPath = updatePath - finalPath;            // Elegantly simple. Path subtraction! Wee...
-      if(!cornerPath.isEmpty())
-        p.fillPath(cornerPath, palette().window());  
-      
+    // Draw corners as normal background colour.
+    cornerPath = updatePath - finalPath;            // Elegantly simple. Path subtraction! Wee...
+    if(!cornerPath.isEmpty())
+      p.fillPath(cornerPath, palette().window());  
+    
 #ifdef _USE_CLIPPER
-      p.setClipPath(finalPath);       //  Meh, nice but not so good. Clips at edge so antialising has no effect! Can it be done ?
+    p.setClipPath(finalPath);       //  Meh, nice but not so good. Clips at edge so antialising has no effect! Can it be done ?
 #endif
-      
-      // Draw the red, green, and yellow sections.
-      drawVU(p, rect, finalPath, cur_yv);
-      
-      // Draw the peak white line.
-      //if(updFull || (cur_ymax >= rect.y() && cur_ymax < rect.height()))
-      {
-        p.setRenderHint(QPainter::Antialiasing, false);  // No antialiasing. Makes the line fuzzy, double height, or not visible at all.
+    
+    // Draw the red, green, and yellow sections.
+    drawVU(p, rect, finalPath, cur_yv);
+    
+    // Draw the peak white line.
+    //if(updFull || (cur_ymax >= rect.y() && cur_ymax < rect.height()))
+    {
+      p.setRenderHint(QPainter::Antialiasing, false);  // No antialiasing. Makes the line fuzzy, double height, or not visible at all.
 
-        //p.setPen(peak_color);
-        //p.drawLine(fw, cur_ymax, w, cur_ymax); // Undesirable. Draws outside the top rounded corners.
-        //
-        //QPainterPath path; path.moveTo(fw, cur_ymax); path.lineTo(w, cur_ymax);  // ? Didn't work. No line at all.
-        //p.drawPath(path & finalPath);
-        QPainterPath path; path.addRect(fw, cur_ymax + cur_ymax % 2 + 1, w, 1); path &= finalPath;
-        if(!path.isEmpty())
-          p.fillPath(path, QBrush(peak_color));
-      }
-      
-      // Draw the transparent layer on top of everything to give a 3d look
-      p.setRenderHint(QPainter::Antialiasing);  
-      maskGrad.setStart(QPointF(fw, fw));
-      maskGrad.setFinalStop(QPointF(w, fw));
+      //p.setPen(peak_color);
+      //p.drawLine(fw, cur_ymax, w, cur_ymax); // Undesirable. Draws outside the top rounded corners.
+      //
+      //QPainterPath path; path.moveTo(fw, cur_ymax); path.lineTo(w, cur_ymax);  // ? Didn't work. No line at all.
+      //p.drawPath(path & finalPath);
+      QPainterPath path; path.addRect(fw, cur_ymax + cur_ymax % 2 + 1, w, 1); path &= finalPath;
+      if(!path.isEmpty())
+        p.fillPath(path, QBrush(peak_color));
+    }
+    
+    // Draw the transparent layer on top of everything to give a 3d look
+    p.setRenderHint(QPainter::Antialiasing);  
+    maskGrad.setStart(QPointF(fw, fw));
+    maskGrad.setFinalStop(QPointF(w, fw));
 #ifdef _USE_CLIPPER
-      p.fillRect(rect, QBrush(maskGrad));
+    p.fillRect(rect, QBrush(maskGrad));
 #else
-      //QPainterPath path; path.addRect(fw, fw, w);
-      //p.fillPath(finalPath & path, QBrush(maskGrad));
-      p.fillPath(finalPath, QBrush(maskGrad));
+    //QPainterPath path; path.addRect(fw, fw, w);
+    //p.fillPath(finalPath & path, QBrush(maskGrad));
+    p.fillPath(finalPath, QBrush(maskGrad));
 #endif      
-      
+
+    // REMOVE Tim. Trackinfo. Added.
+    //const int txtXOff = fw + (w > _textSize.height() ? (w - _textSize.height()) / 2 : 0);
+    //const int txtYOff = -(fw + (h > _textSize.width() ? (h - _textSize.width()) / 2 : 0));
+    //const int txtXOff = fw ;
+    //const int txtYOff = -h;
+    if(_showText)
+    {
+      const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
+      if(!textDrawn && rr.intersects(_textRect))
+      {
+        textDrawn = true;
+        //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());  // REMOVE Tim. Trackinfo.
+        //p.setFont(_textFont);
+        p.setPen(Qt::white);
+        p.rotate(90);
+        p.translate(0, -frameGeometry().width());
+        //p.drawText(txtXOff, txtYOff, _textSize.width(), _textSize.height(), Qt::AlignLeft | Qt::AlignVCenter, _text);
+        p.drawText(_textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
+        //p.drawPixmap(fw, fw, _textPM);
+        // Restore.
+        p.translate(0, frameGeometry().width());
+        p.rotate(-90);
       }
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   drawVU

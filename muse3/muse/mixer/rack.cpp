@@ -69,20 +69,50 @@ class EffectRackDelegate : public QStyledItemDelegate {
                    const QStyleOptionViewItem & option, 
                    const QModelIndex & index ) const;
       EffectRackDelegate(QObject * parent, MusECore::AudioTrack* at );
+      
+      // REMOVE Tim. Trackinfo. Added.
+      virtual QSize sizeHint(const QStyleOptionViewItem& option, 
+                             const QModelIndex& index) const;
+      static const int itemXMargin;
+      static const int itemYMargin;
+      static const int itemTextXMargin;
+      static const int itemTextYMargin;
 };
+
+// REMOVE Tim. Trackinfo. Added.
+const int EffectRackDelegate::itemXMargin = 1;
+const int EffectRackDelegate::itemYMargin = 1;
+const int EffectRackDelegate::itemTextXMargin = 1;
+const int EffectRackDelegate::itemTextYMargin = 1;
 
 EffectRackDelegate::EffectRackDelegate(QObject * parent, MusECore::AudioTrack* at ) : QStyledItemDelegate(parent) { 
       er = (EffectRack*) parent; 
       tr = at;
 }
 
+// REMOVE Tim. Trackinfo. Added.
+QSize EffectRackDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+{
+//   QSize sz = QStyledItemDelegate::sizeHint(option, index);
+//   sz.setWidth(sz.width() + 2 * itemXMargin + 2 * itemTextXMargin);
+//   sz.setHeight(sz.height() + 2 * itemYMargin + 2 * itemTextYMargin);
+//   //fprintf(stderr, "EffectRackDelegate::sizeHint: sz:%d\n", sz.height()); // REMOVE Tim. Trackinfo.
+//   return sz;
+  return QSize(10, option.fontMetrics.height() + 2 * itemYMargin + 2 * itemTextYMargin);
+}
+
 void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const {
       painter->save();
       painter->setRenderHint(QPainter::Antialiasing);
 
-      QRect rr = er->visualItemRect(er->item(index.row()));
-      QRect cr = QRect(rr.x()+1, rr.y()+1, 
-                       rr.width()-2, rr.height() -2);
+// REMOVE Tim. Trackinfo. Changed.
+//       QRect rr = er->visualItemRect(er->item(index.row()));
+      const QRect rr = option.rect;
+// REMOVE Tim. Trackinfo. Changed.
+//       QRect cr = QRect(rr.x()+1, rr.y()+1, 
+//                        rr.width()-2, rr.height() -2);
+      QRect cr = QRect(rr.x()+itemXMargin, rr.y()+itemYMargin, 
+                       rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
       painter->fillRect(rr, option.palette.dark().color().darker(130));
 
       QColor mask_edge = QColor(110, 110, 110, 55);
@@ -117,10 +147,18 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
             painter->setPen(QPen(QColor(48,48,48)));
       else
             painter->setPen(QPen(Qt::black));
-  
-      painter->drawText(cr.x()+2, cr.y()+1, 
-                        cr.width()-2, cr.height()-1, 
-                        Qt::AlignLeft, name);
+
+// REMOVE Tim. Trackinfo. Changed.
+//       painter->drawText(cr.x()+2, cr.y()+1, 
+//                         cr.width()-2, cr.height()-1, 
+//                         Qt::AlignLeft, name);
+      //painter->drawText(rr.x() + 2, rr.y(), rr.width() - 2, rr.height(), Qt::AlignLeft | Qt::AlignVCenter, name);
+      painter->drawText(cr.x() + itemTextXMargin, 
+                        cr.y() + itemTextYMargin, 
+                        cr.width() - 2 * itemTextXMargin, 
+                        cr.height() - 2 * itemTextYMargin, 
+                        Qt::AlignLeft | Qt::AlignVCenter, 
+                        name);
 
       painter->restore();
 }
@@ -149,12 +187,13 @@ RackSlot::~RackSlot()
 //   RackSlot
 //---------------------------------------------------------
 
-RackSlot::RackSlot(QListWidget* b, MusECore::AudioTrack* t, int i, int h)
+RackSlot::RackSlot(QListWidget* b, MusECore::AudioTrack* t, int i, int /*h*/)
    : QListWidgetItem(b)
       {
       node = t;
       idx  = i;
-      setSizeHint(QSize(10,h));
+      // REMOVE Tim. Trackinfo. Removed.
+      //setSizeHint(QSize(10,h));
       }
 
 //---------------------------------------------------------
@@ -227,8 +266,19 @@ void EffectRack::songChanged(MusECore::SongChangedFlags_t typ)
 
 QSize EffectRack::minimumSizeHint() const
       {
+        // REMOVE Tim. Trackinfo. Changed.
       // FIXME(Orcan): Why do we have to manually add 6 pixels?
-      return QSize(10, itemheight * PipelineDepth + 6);
+//       return QSize(10, itemheight * PipelineDepth + 6);
+//       fprintf(stderr, "EffectRack::minimumSizeHint: fm h:%d h:%d\n", fontMetrics().height(),  // REMOVE Tim. Trackinfo.
+//                        (fontMetrics().height() + 
+//                         2 * EffectRackDelegate::itemYMargin + 
+//                         2 * EffectRackDelegate::itemTextYMargin) * 
+//                         PipelineDepth);
+      //fprintf(stderr, "EffectRack::minimumSizeHint: fw:%d\n", frameWidth());  // REMOVE Tim. Trackinfo.
+      return QSize(10, 
+        2 * frameWidth() + 
+        (fontMetrics().height() + 2 * EffectRackDelegate::itemYMargin + 2 * EffectRackDelegate::itemTextYMargin) 
+        * PipelineDepth);
       }
 
 //---------------------------------------------------------
@@ -237,7 +287,10 @@ QSize EffectRack::minimumSizeHint() const
 
 QSize EffectRack::sizeHint() const
       {
+      //fprintf(stderr, "EffectRack::sizeHint: h:%d\n", QListWidget::sizeHint().height()); // REMOVE Tim. Trackinfo.
+      // REMOVE Tim. Trackinfo. Changed.
       return minimumSizeHint();
+      //return QListWidget::sizeHint();
       }
 
 

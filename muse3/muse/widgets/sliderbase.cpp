@@ -228,7 +228,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
       
       const Qt::MouseButton button = e->button();
       const Qt::MouseButtons buttons = e->buttons();
-      fprintf(stderr, "SliderBase::mousePressEvent button:%d buttons:%d\n", button, int(buttons)); // REMOVE Tim. Trackinfo.
+      //fprintf(stderr, "SliderBase::mousePressEvent button:%d buttons:%d\n", button, int(buttons)); // REMOVE Tim. Trackinfo.
       d_timerTick = 0;
       _pressed = true;
 
@@ -349,7 +349,7 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
   /*double inc = step(); */ // prevent compiler warning: unused variable 
   _ignoreMouseMove = false;
   const Qt::MouseButton button = e->button();
-  fprintf(stderr, "SliderBase::mouseReleaseEvent button:%d\n", button); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "SliderBase::mouseReleaseEvent button:%d\n", button); // REMOVE Tim. Trackinfo.
   
   _pressed = e->buttons() != Qt::NoButton;
 
@@ -565,7 +565,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
 
 void SliderBase::mouseDoubleClickEvent(QMouseEvent* e)
 {
-  fprintf(stderr, "mouseDoubleClickEvent::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "mouseDoubleClickEvent::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
   emit sliderDoubleClicked(e->pos(), _id, e->buttons(), e->modifiers());
   e->ignore();
   QWidget::mouseDoubleClickEvent(e);

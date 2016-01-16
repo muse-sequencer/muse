@@ -87,6 +87,7 @@
 #include "al/dsp.h"
 
 #include "config.h"
+#include "muse_math.h"
 
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN
@@ -906,7 +907,7 @@ void Plugin::range(unsigned long i, float* min, float* max) const
 //   defaultValue
 //---------------------------------------------------------
 
-float Plugin::defaultValue(unsigned long port) const
+double Plugin::defaultValue(unsigned long port) const
 {
     float val;
     ladspaDefaultValue(plugin, port, &val);
@@ -1259,7 +1260,7 @@ void Pipeline::initBuffers()
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame)
+bool Pipeline::addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame)
 {
   // If a track controller, or the special dssi synth controller block, just return.
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
@@ -1703,7 +1704,7 @@ PluginIBase::~PluginIBase()
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame)
+bool PluginIBase::addScheduledControlEvent(unsigned long i, double val, unsigned frame)
 {
   if(i >= parameters())
   {
@@ -1936,7 +1937,7 @@ void PluginI::setChannels(int c)
 //   setParam
 //---------------------------------------------------------
 
-void PluginI::setParam(unsigned long i, float val)
+void PluginI::setParam(unsigned long i, double val)
 {
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
@@ -1945,7 +1946,7 @@ void PluginI::setParam(unsigned long i, float val)
 //   defaultValue
 //---------------------------------------------------------
 
-float PluginI::defaultValue(unsigned long param) const
+double PluginI::defaultValue(unsigned long param) const
 {
   if(param >= controlPorts)
     return 0.0;
@@ -2087,7 +2088,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           if(pd & LADSPA_PORT_INPUT)
           {
             controls[curPort].idx = k;
-            float val = _plugin->defaultValue(k);
+            double val = _plugin->defaultValue(k);
             controls[curPort].val    = val;
             controls[curPort].tmpVal = val;
             controls[curPort].enCtrl  = true;
@@ -2176,7 +2177,7 @@ void PluginI::activate()
 //    set plugin instance controller value by name
 //---------------------------------------------------------
 
-bool PluginI::setControl(const QString& s, float val)
+bool PluginI::setControl(const QString& s, double val)
       {
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
@@ -2223,7 +2224,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
-            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
+            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(double(controls[i].tmpVal)).toLatin1().constData());
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
@@ -2246,7 +2247,7 @@ bool PluginI::loadControl(Xml& xml)
       QString file;
       QString label;
       QString name("mops");
-      float val = 0.0;
+      double val = 0.0;
 
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2263,7 +2264,7 @@ bool PluginI::loadControl(Xml& xml)
                         if (tag == "name")
                               name = xml.s2();
                         else if (tag == "val")
-                              val = xml.s2().toFloat();
+                              val = xml.s2().toDouble();
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
@@ -3436,7 +3437,7 @@ void PluginGui::ctrlPressed(int param)
         {
           double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = pow(10.0, val/20.0);
+                val = muse_db2val(val);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
                 val = rint(val);
           params[param].label->blockSignals(true);
@@ -3480,7 +3481,7 @@ void PluginGui::ctrlReleased(int param)
         {
           double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = pow(10.0, val/20.0);
+                val = muse_db2val(val);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
                 val = rint(val);
           track->stopAutoRecord(id, val);
@@ -3516,7 +3517,7 @@ void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
       MusECore::AudioTrack* track = plugin->track();
 
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            val = pow(10.0, val/20.0);
+            val = muse_db2val(val);
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
             val = rint(val);
 
@@ -3714,7 +3715,7 @@ void PluginGui::updateValues()
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
                   unsigned long param = gw[i].param;
-                  float val = plugin->param(param);
+                  double val = plugin->param(param);
                   widget->blockSignals(true);
                   switch(type) {
                         case GuiWidgets::SLIDER:

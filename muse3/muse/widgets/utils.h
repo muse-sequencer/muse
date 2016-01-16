@@ -26,6 +26,7 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
+class QFont;
 class QFrame;
 class QString;
 class QWidget;
@@ -62,6 +63,8 @@ extern QIcon colorRect(const QColor& color, int width, int height);
 extern int get_paste_len();
 
 extern bool getUniqueFileName(const QString& filename, QString& newAbsFilePath);
+
+extern QString font2StyleSheet(const QFont& fnt);
 
 } // namespace MusECore
 

@@ -252,6 +252,8 @@ void Track::init()
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
+            // REMOVE Tim. Trackinfo. Added.
+            _isClipped[i] = false;
             }
       }
 
@@ -259,13 +261,15 @@ Track::Track(Track::TrackType t)
 {
       init();
       _type = t;
-      _isClipped = false;
+// REMOVE Tim. Trackinfo. Removed.
+//       _isClipped = false;
 }
 
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
-  _isClipped = false;
+  // REMOVE Tim. Trackinfo. Removed.
+//   _isClipped = false;
 
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.
@@ -274,6 +278,8 @@ Track::Track(const Track& t, int flags)
   for (int i = 0; i < MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
         _peak[i]  = 0.0;
+        // REMOVE Tim. Trackinfo. Added.
+        _isClipped[i] = false;
         }
 }
 

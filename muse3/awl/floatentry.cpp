@@ -29,6 +29,8 @@
 #include <QContextMenuEvent>
 #include <QTimer>
 
+#include "muse_math.h"
+
 #define TIMER1    400
 #define TIMER2    200
 #define TIMEC     7
@@ -359,7 +361,7 @@ double FloatEntry::value() const
       {
       double rv;
       if (_log)
-            rv = pow(10.0, _value * 0.05f);
+            rv = muse_db2val(_value);
       else
             rv = _value;
       return rv;

@@ -41,6 +41,7 @@ class ScaleIf
 	ScaleDraw d_scale;
 	int d_maxMajor;
 	int d_maxMinor;
+        double d_scaleStep;
 	bool hasUserScale() {return d_userScale;}
 	virtual void scaleChange() = 0;
 
@@ -54,10 +55,13 @@ class ScaleIf
 	void setScaleMaxMajor( int ticks);
 	void setScaleMaxMinor( int ticks);
         void setScaleBackBone(bool v) { d_scale.setBackBone(v); }
+        QString specialText() const           { return d_scale.specialText(); }
+        void setSpecialText(const QString& s) { d_scale.setSpecialText(s); }
 	void autoScale();
 
 	int scaleMaxMinor() const {return d_maxMinor;}
 	int scaleMaxMajor() const {return d_maxMinor;}
+        double scaleStep() const { return d_scaleStep; }
       };
 
 } // namespace MusEGui

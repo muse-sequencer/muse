@@ -52,8 +52,9 @@ namespace MusEGui {
 class ComboBox;
 class Meter;
 
-static const int STRIP_WIDTH = 65;
-static const int AUDIO_STRIP_WIDTH = 73;
+// REMOVE Tim. Trackinfo. Removed. Unused.
+// static const int STRIP_WIDTH = 65;
+// static const int AUDIO_STRIP_WIDTH = 73;
 
 struct GridPosStruct
 {
@@ -126,6 +127,9 @@ class Strip : public QFrame {
       bool getStripVisible() { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
 
+// REMOVE Tim. Trackinfo. Added.
+      static const int FIXED_METER_WIDTH;
+      
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setLabelFont();

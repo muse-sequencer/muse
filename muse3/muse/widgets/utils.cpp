@@ -37,6 +37,7 @@
 #include <QPainter>
 #include <QPointF>
 #include <QFileInfo>
+#include <QFont>
 
 #include "audio.h"
 #include "audiodev.h"
@@ -455,7 +456,9 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
     if(fnt.pointSize() != max)
     {
       fnt.setPointSize(max);
+// REMOVE Tim. Trackinfo. Changed.
       w->setFont(fnt);
+//       w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     }
   }
   else
@@ -482,7 +485,9 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
       fnt.setPointSize(min);
     else if(pointsize >= max)
       fnt.setPointSize(max);
+// REMOVE Tim. Trackinfo. Changed.
     w->setFont(fnt);
+//     w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     //painter->drawText(r,flags,stitle);
   }
   
@@ -747,5 +752,52 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
       return false;
        }
 
+// REMOVE Tim. Trackinfo. Added.  
+QString font2StyleSheet(const QFont& fnt)
+{
+  QString st;
+  switch(fnt.style())
+  {
+    case QFont::StyleNormal:
+      st = "normal";
+    break;
+    case QFont::StyleItalic:
+      st = "italic";
+    break;
+    case QFont::StyleOblique:
+      st = "oblique";
+    break;
+  }
+  
+  QString wt;
+  switch(fnt.weight())
+  {
+    case QFont::Normal:
+      wt = "normal";
+    break;
+    case QFont::Bold:
+      wt = "bold";
+    break;
+    default:
+      // QFont::weight() : "Qt uses a weighting scale from 0 to 99..."
+      // Stylesheets : "The weight of a font:"
+      // normal 
+      // | bold 
+      // | 100 
+      // | 200 
+      // ... 
+      // | 900      
+      wt = QString::number( (int)(((double)fnt.weight() / 99.0) * 8) * 100 + 100 );
+    break;
+  }
+  
+  QString sz;
+  if(fnt.pointSize() > 0)
+    sz = QString("%1pt").arg(fnt.pointSize());
+  else if(fnt.pixelSize() > 0)
+    sz = QString("%1px").arg(fnt.pixelSize());
+  
+  return QString("font: %1 %2 %3 \"%4\"; ").arg(wt).arg(st).arg(sz).arg(fnt.family());
+}
 
 } // namespace MusECore

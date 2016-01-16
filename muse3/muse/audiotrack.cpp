@@ -193,7 +193,7 @@ void AudioTrack::initBuffers()
     ciCtrlList icl = _controller.begin();
     for(unsigned long k = 0; k < _controlPorts; ++k)
     {
-      float val = 0.0;
+      double val = 0.0;
       if(icl != _controller.end())
       {
         // Since the list is sorted by id, if no match is found just let k catch up to the id.
@@ -204,8 +204,7 @@ void AudioTrack::initBuffers()
         }
       }
       _controls[k].idx    = k;
-      _controls[k].val    = val;
-      _controls[k].tmpVal = val;
+      _controls[k].dval    = val;
       _controls[k].enCtrl = true;
     }
   }
@@ -1168,7 +1167,7 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
 //   returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame) 
 {
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
   {
@@ -1387,7 +1386,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
       xml.intTag(level, "automation", int(automationType()));
-      xml.floatTag(level, "gain", _gain);
+      xml.doubleTag(level, "gain", _gain);
       if (hasAuxSend()) {
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1472,7 +1471,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
       else if (tag == "gain")
-            _gain = xml.parseFloat();
+            _gain = xml.parseDouble();
       else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
       else if (tag == "controller") {

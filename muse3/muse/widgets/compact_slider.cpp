@@ -250,7 +250,7 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       d_valPrefix = valPrefix;
       d_valSuffix = valSuffix;
       d_specialValueText = specialValueText;
-      _textHighlightMode = TextHighlightFocus;
+      _textHighlightMode = TextHighlightSplit;
       _valueDecimals = 2;
       _off = false;
       d_offText = tr("off");
@@ -1052,7 +1052,9 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
 
 //     const QColor& margin_color = option.palette.mid().color();
 //     const QColor border_color = hasFocus() ? option.palette.highlight().color().lighter() : margin_color;
-    const QColor& margin_color = pal.mid().color();
+//     const QColor& margin_color = pal.mid().color();
+//     const QColor& margin_color = pal.window().color().lighter(125);
+    const QColor& margin_color = pal.button().color();
     //const QColor border_color = hasFocus() ? pal.highlight().color().lighter() : margin_color;
     QColor border_color;
     
@@ -1068,6 +1070,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       case TextHighlightShadow:
       case TextHighlightSplit:
       case TextHighlightHover:
+      case TextHighlightSplitAndShadow:
         border_color = hasFocus() ? pal.highlight().color().lighter() : margin_color;
       break;
     }
@@ -1076,14 +1079,14 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     if(d_yMargin)
     {
       // Top
-      p.fillRect(0, 
-                 0, 
+      p.fillRect(geo.x(), 
+                 geo.y(), 
                  geo.width(), 
                  d_yMargin, 
                  border_color);
     
       // Bottom
-      p.fillRect(0, 
+      p.fillRect(geo.x(), 
                  geo.height() - d_yMargin, 
                  geo.width(), 
                  d_yMargin, 
@@ -1093,15 +1096,15 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     if(d_xMargin)
     {
       // Left
-      p.fillRect(0, 
-                 0, 
+      p.fillRect(geo.x(), 
+                 geo.y(), 
                  d_xMargin, 
                  geo.height(), 
                  border_color);
       
       // Right
       p.fillRect(geo.width() - d_xMargin, 
-                 0, 
+                 geo.y(), 
                  d_xMargin, 
                  geo.height(), 
                  border_color);
@@ -1149,7 +1152,8 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   cornerPath -= onPath;
 //   cornerPath -= offPath;
   if(!cornerPath.isEmpty())
-    p.fillPath(cornerPath, palette().dark());
+//     p.fillPath(cornerPath, palette().dark());
+    p.fillPath(cornerPath, palette().window().color().darker(125));
 
 // //   const int val_pix_range = ((d_orient == Qt::Horizontal) ? active_area.width(): active_area.height()) - 2 * active_thumb_margin;
 //   const int val_width_range = ((d_orient == Qt::Horizontal) ? d_sliderRect.width(): d_sliderRect.height());
@@ -1206,7 +1210,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   
   if((!_autoHideThumb || _mouseOverThumb) && d_thumbLength > 0)
   {
-    fprintf(stderr, "CompactSlider::PaintEvent _mouseOverThumb:%d\n", _mouseOverThumb); // REMOVE Tim.
+    //fprintf(stderr, "CompactSlider::PaintEvent _mouseOverThumb:%d\n", _mouseOverThumb); // REMOVE Tim. Trackinfo.
     const QRect thumb_rect((d_orient == Qt::Horizontal) ?
                           QRect(d_sliderRect.x() + d_valuePixel - d_thumbHalf, 
                                 d_sliderRect.y() + d_thumbWidthMargin,
@@ -1223,6 +1227,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   const QRect text_area(d_sliderRect.adjusted(1, 1, -1, -1));
   const QString elided_label_text = fontMetrics().elidedText(d_labelText, Qt::ElideMiddle, text_area.width());
   //const QRect elided_label_text_rect = fontMetrics().boundingRect(elided_label_text);
+  //fprintf(stderr, "CompactSlider::PaintEvent locale:%s\n", locale().name().toLatin1().constData()); // REMOVE Tim. Trackinfo.
   const QString comp_val_text = isOff() ? d_offText :
                                 ((val <= minV && !d_specialValueText.isEmpty()) ? 
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
@@ -1237,12 +1242,14 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       const QRect text_area_shadow = text_area_text.adjusted(1, 1, 1, 1);
       
       // Text shadow:
-      p.setPen(pal.text().color());
+      //p.setPen(pal.shadow().color());
+      p.setPen(Qt::black);
       p.drawText(text_area_shadow, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area_shadow, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
       
       // Text:
-      p.setPen(pal.highlightedText().color());
+      //p.setPen(pal.brightText().color());
+      p.setPen(Qt::white);
       p.drawText(text_area_text, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area_text, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
     } 
@@ -1255,16 +1262,15 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     break;
 
     case TextHighlightAlways:
-      p.setPen(pal.highlightedText().color());
+      p.setPen(pal.brightText().color());
       p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
     break;
 
     case TextHighlightSplit:
-    {
       // Highlighted section:
       p.setClipRect(bar_area);
-      p.setPen(pal.highlightedText().color());
+      p.setPen(pal.brightText().color());
       p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
       
@@ -1276,25 +1282,52 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       
       // Restore the clipper to full size.
       //p.setClipRect(geo);
-    }
     break;
     
     case TextHighlightHover:
-      p.setPen(_hovered ? pal.highlightedText().color() : pal.text().color());
+      p.setPen(_hovered ? pal.brightText().color() : pal.text().color());
       p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
     break;
     
     case TextHighlightFocus:
-      p.setPen(hasFocus() ? pal.highlightedText().color() : pal.text().color());
+      p.setPen(hasFocus() ? pal.brightText().color() : pal.text().color());
       p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
     break;
     
     case TextHighlightHoverOrFocus:
-      p.setPen((_hovered || hasFocus()) ? pal.highlightedText().color() : pal.text().color());
+      p.setPen((_hovered || hasFocus()) ? pal.brightText().color() : pal.text().color());
       p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+    break;
+    
+    case TextHighlightSplitAndShadow:
+    {
+      const QRect text_area_text = text_area.adjusted(0, 0, -1, -1);
+      const QRect text_area_shadow = text_area_text.adjusted(1, 1, 1, 1);
+
+      // Highlighted section:
+      p.setClipRect(bar_area);
+      // Text shadow:
+      //p.setPen(pal.shadow().color());
+      p.setPen(Qt::black);
+      p.drawText(text_area_shadow, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(text_area_shadow, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      // Text:
+      //p.setPen(pal.brightText().color());
+      p.setPen(Qt::white);
+      p.drawText(text_area_text, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(text_area_text, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      
+      // Normal non-highlighted section:
+      p.setClipRect(bkg_area);
+      p.setPen(pal.text().color());
+      p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      //p.drawText(text_area_shadow, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      //p.drawText(text_area_shadow, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+    }
     break;
   }
   
@@ -1347,11 +1380,11 @@ void CompactSlider::mouseMoveEvent(QMouseEvent *e)
 //   getScrollMode(p, Qt::LeftButton, scrollMode, direction);
 //   const bool v = scrollMode == ScrMouse;
 //   
-//   fprintf(stderr, "CompactSlider::mouseMoveEvent _mouseOverThumb:%d v:%d\n", _mouseOverThumb, v); // REMOVE Tim.
+//   fprintf(stderr, "CompactSlider::mouseMoveEvent _mouseOverThumb:%d v:%d\n", _mouseOverThumb, v); // REMOVE Tim. Trackinfo.
 // //   if(_mouseOverThumb != v && !(left_btn && !v))
 //   if(_mouseOverThumb != v && !(bPressed && !v))
 //   {
-//     fprintf(stderr, "   setting _mouseOverThumb to v:%d\n", v); // REMOVE Tim.
+//     fprintf(stderr, "   setting _mouseOverThumb to v:%d\n", v); // REMOVE Tim. Trackinfo.
 //     _mouseOverThumb = v;
 //     update();
 //   }
@@ -1364,7 +1397,7 @@ void CompactSlider::mouseMoveEvent(QMouseEvent *e)
 
 void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
 {
-  fprintf(stderr, "CompactSlider::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::mouseDoubleClickEvent\n"); // REMOVE Tim. Trackinfo.
   const Qt::MouseButtons buttons = e->buttons();
   const Qt::KeyboardModifiers keys = e->modifiers();
   //const bool left_btn = buttons & Qt::LeftButton;
@@ -1373,7 +1406,7 @@ void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
   
   if(buttons == Qt::LeftButton && _mouseOverThumb && !_editMode)
   {  
-    fprintf(stderr, "   left button\n"); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "   left button\n"); // REMOVE Tim. Trackinfo.
     //if(_mouseOverThumb && !_editMode)
     //{
       //if(ctrl_key)
@@ -1430,7 +1463,7 @@ void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
 
 void CompactSlider::editorReturnPressed()
 {
-  fprintf(stderr, "CompactSlider::editorReturnPressed\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::editorReturnPressed\n"); // REMOVE Tim. Trackinfo.
   _editMode = false;
   if(_editor)
   {
@@ -1444,7 +1477,7 @@ void CompactSlider::editorReturnPressed()
 
 void CompactSlider::editorEscapePressed()
 {
-  fprintf(stderr, "CompactSlider::editorEscapePressed\n"); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "CompactSlider::editorEscapePressed\n"); // REMOVE Tim. Trackinfo.
   _editMode = false;
   if(_editor)
   {
@@ -1521,6 +1554,7 @@ void CompactSlider::enterEvent(QEvent *e)
       case TextHighlightAlways:
       case TextHighlightNone:
       case TextHighlightShadow:
+      case TextHighlightSplitAndShadow:
       case TextHighlightSplit:
       case TextHighlightFocus:
       break;
@@ -1549,6 +1583,7 @@ void CompactSlider::leaveEvent(QEvent *e)
         case TextHighlightAlways:
         case TextHighlightNone:
         case TextHighlightShadow:
+        case TextHighlightSplitAndShadow:
         case TextHighlightSplit:
         case TextHighlightFocus:
         break;
@@ -1697,20 +1732,22 @@ void CompactSlider::resizeEvent(QResizeEvent *e)
   int y = d_sliderRect.y();
   int w = d_sliderRect.width();
   int h = d_sliderRect.height();
-  const int margin = d_thumbHalf / 4;
-  
-  switch(d_orient)
-  {
-    case Qt::Vertical:
-      x += margin;
-      w -= 2 * margin;
-    break;
-    
-    case Qt::Horizontal:
-      y += margin;
-      h -= 2 * margin;
-    break;
-  }
+
+// For an indented on area:  
+//   const int margin = d_thumbHalf / 4;
+//   const int margin = 0;
+//   switch(d_orient)
+//   {
+//     case Qt::Vertical:
+//       x += margin;
+//       w -= 2 * margin;
+//     break;
+//     
+//     case Qt::Horizontal:
+//       y += margin;
+//       h -= 2 * margin;
+//     break;
+//   }
   
   _onPixmap  = QPixmap(w, h);
   _offPixmap = QPixmap(w, h);
@@ -1746,7 +1783,8 @@ void CompactSlider::resizeEvent(QResizeEvent *e)
   QLinearGradient linearGrad_a(x, y1, x, y2);
   
   const QColor c1 = pal.highlight().color().darker(125);
-  const QColor c2 = pal.highlight().color().lighter();
+//   const QColor c2 = pal.highlight().color().lighter();
+  const QColor c2 = pal.highlight().color();
   
   linearGrad_a.setColorAt(0, c1);
   linearGrad_a.setColorAt(0.5, c2);
@@ -1789,7 +1827,7 @@ void CompactSlider::showEditor()
   
   if(!_editor)
   {
-    fprintf(stderr, "   creating editor\n"); // REMOVE Tim. Trackinfo.
+    //fprintf(stderr, "   creating editor\n"); // REMOVE Tim. Trackinfo.
     _editor = new PopupDoubleSpinBox(this);
     _editor->setFrame(false);
     _editor->setFocusPolicy(Qt::WheelFocus);
@@ -1808,7 +1846,7 @@ void CompactSlider::showEditor()
   if (w < _editor->sizeHint().width()) 
     w = _editor->sizeHint().width();
   _editor->setGeometry(0, 0, w, height());
-  fprintf(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height()); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height()); // REMOVE Tim. Trackinfo.
   _editor->selectAll();
   _editMode = true;     
   _editor->show();
@@ -1827,7 +1865,7 @@ void CompactSlider::getMouseOverThumb(QPoint &p)
 //   if(_mouseOverThumb != v && !(bPressed && !v))
   if(_mouseOverThumb != v && !(_pressed && !v))
   {
-    fprintf(stderr, "CompactSlider::getMouseOverThumb setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim.
+    //fprintf(stderr, "CompactSlider::getMouseOverThumb setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim. Trackinfo.
     _mouseOverThumb = v;
   }
   const bool hv = rect().contains(p);
@@ -1922,7 +1960,7 @@ void CompactSlider::valueChange()
 //       //if(_mouseOverThumb != v && !(left_btn && !v))
 //       if(_mouseOverThumb != v && !(bPressed && !v))
 //       {
-//         fprintf(stderr, "CompactSlider::valueChange setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim.
+//         fprintf(stderr, "CompactSlider::valueChange setting _mouseOverThumb:%d to v:%d\n", _mouseOverThumb, v); // REMOVE Tim. Trackinfo.
 //         _mouseOverThumb = v;
 //       }
 
@@ -1971,7 +2009,8 @@ void CompactSlider::rangeChange()
 void CompactSlider::setMargins(int hor, int vert)
 {
     d_xMargin = MusECore::qwtMax(0, hor);
-    d_yMargin = MusECore::qwtMin(0, vert);
+//     d_yMargin = MusECore::qwtMin(0, vert); // REMOVE Tim. Trackinfo. BUG Controls were not being given total space. FIXED! Surely this was wrong!
+    d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
 }
 
@@ -2118,21 +2157,22 @@ void CompactSlider::updatePainterPaths()
   int y = d_sliderRect.y();
   int w = d_sliderRect.width();
   int h = d_sliderRect.height();
-  const int xmargin = w / 6;
-  const int ymargin = h / 6;
-  
-  switch(d_orient)
-  {
-    case Qt::Vertical:
-      x += xmargin;
-      w -= 2 * xmargin;
-    break;
-    
-    case Qt::Horizontal:
-      y += ymargin;
-      h -= 2 * ymargin;
-    break;
-  }
+
+// For an indented on area:  
+//   const int xmargin = w / 6;
+//   const int ymargin = h / 6;
+//   switch(d_orient)
+//   {
+//     case Qt::Vertical:
+//       x += xmargin;
+//       w -= 2 * xmargin;
+//     break;
+//     
+//     case Qt::Horizontal:
+//       y += ymargin;
+//       h -= 2 * ymargin;
+//     break;
+//   }
 
   const int x1 = x;
 //   const int x1_a = x;

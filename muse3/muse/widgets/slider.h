@@ -52,6 +52,7 @@ class Slider : public SliderBase, public ScaleIf
   ScalePos d_scalePos;
   int d_grooveWidth;
   QColor d_fillColor;
+  bool d_fillThumb;
 
   QRect d_sliderRect;
 
@@ -85,6 +86,8 @@ class Slider : public SliderBase, public ScaleIf
   double getValue(const QPoint &p);
   //  Determine scrolling mode and direction.
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
+  // Adjust scale so marks are not too close together.
+  void adjustScale();
 
   virtual void resizeEvent(QResizeEvent *e);
   virtual void paintEvent (QPaintEvent *e);
@@ -94,11 +97,13 @@ class Slider : public SliderBase, public ScaleIf
   void fontChange(const QFont &oldFont);
 
   public:
+  
   Slider(QWidget *parent, const char *name = 0,
          Qt::Orientation orient = Qt::Vertical,
          ScalePos scalePos = None,
          int grooveWidth = 8, 
-         QColor fillColor = QColor(100, 100, 255));
+         QColor fillColor = QColor(), 
+         ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone);
   
   ~Slider();
   void setThumbLength(int l);
@@ -116,6 +121,9 @@ class Slider : public SliderBase, public ScaleIf
   void setMargins(int x, int y);
   int grooveWidth() const { return d_grooveWidth; }
   void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
+  
+  bool fillThumb() const { return d_fillThumb; }
+  void setFillThumb(bool v) { d_fillThumb = v; update(); }
   
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);

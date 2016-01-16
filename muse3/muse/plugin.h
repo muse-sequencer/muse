@@ -182,7 +182,7 @@ class Plugin {
             return plugin->PortRangeHints[i];
             }
 
-      virtual float defaultValue(unsigned long port) const;
+      virtual double defaultValue(unsigned long port) const;
       virtual void range(unsigned long i, float*, float*) const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
@@ -239,8 +239,24 @@ class PluginList : public std::list<Plugin *> {
 
 struct Port {
       unsigned long idx;
-      float val;
-      float tmpVal;
+      
+      //   NOTE: These values represent the lowest level of control value storage.
+      //         The choice of float or double depends on the underlying system using this scruct.
+      //         For example plugins and synthesizers usually use floats to represent control values
+      //          and they are directly pointed to this float, while our own track controls 
+      //          (volume, pan etc.) take advantage of the double precision.
+      //         Double precision is preferred if possible because above this lowest level all other 
+      //          controller usage is in double precision. Thus our very own track controllers are 
+      //          perfectly matched double precision throughout the system.
+      union {
+        float val;
+        double dval;
+        };
+      union {
+        float tmpVal; // TODO Try once again and for all to remove this, was it really required?
+        //double dtmpVal; // Not used, should not be required.
+        };
+      
       bool enCtrl;  // Enable controller stream.
       CtrlInterpolate interp;
       };
@@ -284,12 +300,12 @@ class PluginIBase
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
 
-      virtual bool addScheduledControlEvent(unsigned long i, float val, unsigned frame);    // returns true if event cannot be delivered
+      virtual bool addScheduledControlEvent(unsigned long i, double val, unsigned frame);    // returns true if event cannot be delivered
       virtual unsigned long parameters() const = 0;
       virtual unsigned long parametersOut() const = 0;
-      virtual void setParam(unsigned long i, float val) = 0;
-      virtual float param(unsigned long i) const = 0;
-      virtual float paramOut(unsigned long i) const = 0;
+      virtual void setParam(unsigned long i, double val) = 0;
+      virtual double param(unsigned long i) const = 0;
+      virtual double paramOut(unsigned long i) const = 0;
       virtual const char* paramName(unsigned long i) = 0;
       virtual const char* paramOutName(unsigned long i) = 0;
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
@@ -393,7 +409,7 @@ class PluginI : public PluginIBase {
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);
       bool loadControl(Xml& xml);
-      bool setControl(const QString& s, float val);
+      bool setControl(const QString& s, double val);
       void showGui();
       void showGui(bool);
       bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }
@@ -407,11 +423,11 @@ class PluginI : public PluginIBase {
 
       unsigned long parameters() const           { return controlPorts; }
       unsigned long parametersOut() const           { return controlOutPorts; }
-      void setParam(unsigned long i, float val);
-      void putParam(unsigned long i, float val) { controls[i].val = controls[i].tmpVal = val; }
-      float param(unsigned long i) const        { return controls[i].val; }
-      float paramOut(unsigned long i) const        { return controlsOut[i].val; }
-      float defaultValue(unsigned long param) const;
+      void setParam(unsigned long i, double val);
+      void putParam(unsigned long i, double val) { controls[i].val = controls[i].tmpVal = val; }
+      double param(unsigned long i) const        { return controls[i].val; }
+      double paramOut(unsigned long i) const        { return controlsOut[i].val; }
+      double defaultValue(unsigned long param) const;
       const char* paramName(unsigned long i)     { return _plugin->portName(controls[i].idx); }
       const char* paramOutName(unsigned long i)     { return _plugin->portName(controlsOut[i].idx); }
       LADSPA_PortDescriptor portd(unsigned long i) const { return _plugin->portd(controls[i].idx); }
@@ -460,7 +476,7 @@ class Pipeline : public std::vector<PluginI*> {
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
-      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
+      bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // returns true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
       };

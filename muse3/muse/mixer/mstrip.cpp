@@ -22,8 +22,6 @@
 //
 //=========================================================
 
-#include <fastlog.h>
-
 #include <QLayout>
 #include <QAction>
 #include <QApplication>
@@ -38,8 +36,6 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QScrollArea>
-
-#include <math.h>
 
 #include "app.h"
 #include "midi.h"
@@ -71,6 +67,8 @@
 #include "compact_patch_edit.h"
 #include "scroll_area.h"
 #include "elided_label.h"
+#include "utils.h"
+#include "muse_math.h"
 
 #include "synth.h"
 #ifdef LV2_SUPPORT
@@ -78,6 +76,13 @@
 #endif
 
 namespace MusEGui {
+
+// REMOVE Tim. Trackinfo. Added.
+const int MidiStrip::xMarginHorSlider = 1;
+const int MidiStrip::yMarginHorSlider = 1;
+const int MidiStrip::upperRackSpacerHeight = 2;
+const int MidiStrip::rackFrameWidth = 1;
+
 
 // REMOVE Tim. Trackinfo. Changed. Moved into class.
 //enum { KNOB_PAN = 0, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
@@ -195,7 +200,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
       {
       //int ctl = MusECore::CTRL_PANPOT, mn, mx, v;
       int mn, mx, v;
-      const int chan  = ((MusECore::MidiTrack*)track)->outChannel();
+      const int chan  = static_cast<MusECore::MidiTrack*>(track)->outChannel();
 //       switch(idx)
 //       {
 //         //case KNOB_PAN:
@@ -216,7 +221,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
 //           ctl = MusECore::CTRL_PROGRAM;
 //         break;
 //       }
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[((MusECore::MidiTrack*)track)->outPort()];
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[static_cast<MusECore::MidiTrack*>(track)->outPort()];
       MusECore::MidiController* mc = mp->midiController(midiCtrlNum);
       mn = mc->minVal();
       mx = mc->maxVal();
@@ -267,7 +272,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
         control->setHasOffMode(true);
   //       CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
         control->setContentsMargins(0, 0, 0, 0);
-        control->setMargins(1, 1);
+        control->setMargins(xMarginHorSlider, yMarginHorSlider);
         //control->setTextHighlightMode(CompactSlider::TextHighlightFocus);
 
   //       control->setFont(MusEGlobal::config.fonts[1]);
@@ -281,6 +286,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
   //       control->setBackgroundRole(QPalette::Mid);
         control->setToolTip(tt);
         control->setEnabled(enabled);
+        //control->setVisible(false); //
 
         bool off = false;
         v = mp->hwCtrlState(chan, midiCtrlNum);
@@ -360,7 +366,7 @@ CompactSlider* MidiStrip::addProperty(QVBoxLayout* rackLayout,
 //   CompactSlider* control = new CompactSlider(this, 0, Qt::Horizontal, CompactSlider::None, label);
   CompactSlider* control = new CompactSlider(0, 0, Qt::Horizontal, CompactSlider::None, label);
   control->setContentsMargins(0, 0, 0, 0);
-  control->setMargins(1, 1);
+  control->setMargins(xMarginHorSlider, yMarginHorSlider);
   //control->setTextHighlightMode(CompactSlider::TextHighlightFocus);
 
 //       control->setFont(MusEGlobal::config.fonts[1]);
@@ -636,8 +642,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
-      // Set the whole strip's font, except for the label.    p4.0.45
-      setFont(MusEGlobal::config.fonts[1]);
+      // Set the whole strip's font, except for the label.
+// REMOVE Tim. Trackinfo. Changed.  
+      setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
+      setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
       
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
@@ -687,16 +695,22 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       _infoRack = new QFrame(this);
       _infoRack = new QFrame();
 //       _infoRack->setVisible(false); // Not visible unless expanded.
-      _infoRack->setLineWidth(1);
-      _infoRack->setFrameShape(QFrame::StyledPanel);
-      _infoRack->setFrameShadow(QFrame::Raised);
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+//       _infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _infoRack->setLineWidth(rackFrameWidth);
+      _infoRack->setMidLineWidth(0);
 //       _infoRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
-      _infoRack->setContentsMargins(0, 0, 0, 0);
+//       _infoRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
       _infoLayout = new QVBoxLayout(_infoRack);
       _infoLayout->setSpacing(0);
       _infoLayout->setContentsMargins(0, 0, 0, 0);
+//       _infoLayout->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
       addProperty(_infoLayout, PropertyTransp, tr("Transpose notes up or down"), 
                   tr("Tran"), SLOT(propertyChanged(double, bool, int)), true, -127, 127, t->transposition);
@@ -717,6 +731,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       addProperty(_infoLayout, PropertyCompr, tr("Compress the notes velocity range, in percent of actual velocity"), 
                   tr("Cmp"), SLOT(propertyChanged(double, bool, int)), true, 25, 200, t->compression)->setValSuffix("%");
 
+      _infoLayout->addStretch();
       addGridWidget(_infoRack, _propertyRackPos);
                   
 //       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding), 
@@ -727,21 +742,28 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       QWidget* upperScrollW = new QWidget(this);
 //       _upperRack = new QFrame(this);
       _upperRack = new QFrame();
-      _upperRack->setLineWidth(1);
-      _upperRack->setFrameShape(QFrame::StyledPanel);
-      _upperRack->setFrameShadow(QFrame::Raised);
-      _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+//       _upperRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _upperRack->setLineWidth(rackFrameWidth);
+      _upperRack->setMidLineWidth(0);
+      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
+      _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 //       _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
-      _upperRack->setContentsMargins(0, 0, 0, 0);
+      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
       
 //       _upperScrollLayout = new QVBoxLayout(upperScrollW);
       _upperScrollLayout = new QVBoxLayout(_upperRack);
+//       _upperScrollLayout = new QVBoxLayout(this);
 //       _upperScrollLayout = new RackLayout();
       _upperScrollLayout->setSpacing(0);
       _upperScrollLayout->setContentsMargins(0, 0, 0, 0);
       //_upperScrollLayout->setSizeConstraint(QLayout::SetNoConstraint);
       //upperScrollW->setLayout(_upperScrollLayout);
+      //addGridWidget(_upperRack, _preScrollAreaPos_A);
 
 // REMOVE Tim. Trackinfo. Added.      
 //       _instrLabel = new ElidedLabel(this, Qt::ElideMiddle);
@@ -765,19 +787,19 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       connect(_instrLabel, SIGNAL(pressed()), SLOT(instrPopup()));
       
 // REMOVE Tim. Trackinfo. Added.
-      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Prg"), 
+      addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Pro"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-      _upperScrollLayout->addSpacing(2);
+      _upperScrollLayout->addSpacing(upperRackSpacerHeight);
       
 // REMOVE Tim. Trackinfo. Changed.
 //       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
 //       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
 //       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
-      addController(_upperScrollLayout, KNOB_VAR_SEND, MusECore::CTRL_VARIATION_SEND, tr("VariationSend"), tr("Var"),
+      addController(_upperScrollLayout, KNOB_VAR_SEND, MusECore::CTRL_VARIATION_SEND, tr("VariationSend\n(Ctrl-double-click on/off)"), tr("Var"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-      addController(_upperScrollLayout, KNOB_REV_SEND, MusECore::CTRL_REVERB_SEND, tr("ReverbSend"), tr("Rev"),
+      addController(_upperScrollLayout, KNOB_REV_SEND, MusECore::CTRL_REVERB_SEND, tr("ReverbSend\n(Ctrl-double-click on/off)"), tr("Rev"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
-      addController(_upperScrollLayout, KNOB_CHO_SEND, MusECore::CTRL_CHORUS_SEND, tr("ChorusSend"), tr("Cho"),
+      addController(_upperScrollLayout, KNOB_CHO_SEND, MusECore::CTRL_CHORUS_SEND, tr("ChorusSend\n(Ctrl-double-click on/off)"), tr("Cho"),
                     SLOT(ctrlChanged(double, bool, int)), false, MusECore::CTRL_VAL_UNKNOWN);
 //       controller[KNOB_PROGRAM]._patchControl = 0;
       
@@ -792,7 +814,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       spinbox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
 //       _upperScrollLayout->addWidget(spinbox);
       
+// Keep this if dynamic layout (flip to right side) is desired.
       _upperScrollLayout->addStretch();
+//       _upperScrollLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 
       
       
@@ -826,6 +850,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //grid->addWidget(_upperScrollArea, _curGridRow++, 0, 1, 3);  // REMOVE Tim. Trackinfo. Changed. TEST
 //       addGridWidget(_upperScrollArea, _preScrollAreaPos_A);
       //addGridLayout(_upperScrollLayout, _preScrollAreaPos_A);
+      
       addGridWidget(_upperRack, _preScrollAreaPos_A);
       
       //---------------------------------------------------
@@ -841,22 +866,28 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None,
 //       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
-      slider = new Slider(0, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
-                          QColor(100, 255, 100));
+//       slider = new Slider(0, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(100, 255, 100));
+//       slider = new Slider(0, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(62, 37, 255));
+      slider = new Slider(0, "vol", Qt::Vertical, Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
       slider->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       slider->setCursorHoming(true);
+      slider->setThumbLength(1);
       slider->setRange(double(mn), double(mx), 1.0);
-      slider->setScaleMaxMinor(5);
+//       slider->setScaleMaxMinor(5);
       slider->setScale(double(mn), double(mx), 10.0, false);
       slider->setScaleBackBone(false);
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider->setFixedWidth(20);
-      QFont fnt = font();
-      fnt.setPointSize(6);
-      slider->setFont(fnt);
+//       QFont fnt = font();
+//       fnt.setPointSize(8);
+//       QFont fnt;
+//       fnt.setFamily("Sans");
+//       fnt.setPointSize(font().pointSize());
+//       slider->setFont(fnt);
       
-      slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+//       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+      slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       
       ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setId(MusECore::CTRL_VOLUME);
@@ -866,17 +897,18 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       meter[0] = new MusEGui::Meter(0, MusEGui::Meter::LinMeter);
       meter[0]->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       meter[0]->setRange(0, 127.0);
-      meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+//       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+      meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 // REMOVE Tim. Trackinfo. Changed.      
 //       meter[0]->setFixedWidth(15);
-      meter[0]->setFixedWidth(10);
+      meter[0]->setFixedWidth(FIXED_METER_WIDTH);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
-      sliderGrid->setHorizontalSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
+      //sliderGrid->setHorizontalSpacing(0);  // REMOVE Tim. Trackinfo. Changed. TEST
       sliderGrid->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
-      sliderGrid->setRowStretch(0, 100);
+//       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
       
@@ -891,7 +923,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
-      sl->setToolTip(tr("ctrl-double-click on/off"));
+      sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
       sl->setFrame(true);
       sl->setPrecision(0);
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -921,7 +953,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
           dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
         else
         {  
-          dlv = -MusECore::fast_log10(float(127*127)/float(v*v))*20.0;
+          dlv = -muse_val2dbr(double(127*127)/double(v*v));
           if(dlv > sl->maxValue())
             dlv = sl->maxValue();
         }    
@@ -959,12 +991,17 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 //       QWidget* lowerScrollW = new QWidget(this);
 //       _lowerRack = new QFrame(this);
       _lowerRack = new QFrame();
-      _lowerRack->setLineWidth(1);
-      _lowerRack->setFrameShape(QFrame::StyledPanel);
-      _lowerRack->setFrameShadow(QFrame::Raised);
-      _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+//       _lowerRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _lowerRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _lowerRack->setLineWidth(rackFrameWidth);
+      _lowerRack->setMidLineWidth(0);
+      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
+      _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 //       _lowerRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
-      _lowerRack->setContentsMargins(0, 0, 0, 0);
+      _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
       
 //       _lowerScrollLayout = new QVBoxLayout(lowerScrollW);
@@ -975,10 +1012,13 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //_lowerScrollLayout->setSizeConstraint(QLayout::SetNoConstraint);
       
 //        addController(_lowerScrollLayout, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(setPan(double, bool)), true, MusECore::CTRL_VAL_UNKNOWN);
-       addController(_lowerScrollLayout, KNOB_PAN, MusECore::CTRL_PANPOT, tr("Pan/Balance"), tr("Pan"), 
-                     SLOT(ctrlChanged(double, bool, int)), true, MusECore::CTRL_VAL_UNKNOWN);
-   
+      addController(_lowerScrollLayout, KNOB_PAN, MusECore::CTRL_PANPOT, tr("Pan/Balance\n(Ctrl-double-click on/off)"), tr("Pan"), 
+                    SLOT(ctrlChanged(double, bool, int)), true, MusECore::CTRL_VAL_UNKNOWN);
+
+// Keep this if dynamic layout (flip to right side) is desired.
        _lowerScrollLayout->addStretch();
+//       _lowerScrollLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+       
 
       
       
@@ -1302,34 +1342,49 @@ void MidiStrip::updateRackSizes(bool upper, bool lower)
   if(upper)
   {
     // Make room for 3 CompactSliders and one CompactPatchEdit.
+    // TODO: Add the instrument select label height!
+
+// REMOVE Tim. Trackinfo.    
+//     const int csh = CompactSlider::getMinimumSizeHint(fm,
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height();
+//     const int cpeh = CompactPatchEdit::getMinimumSizeHint(fm, 
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height();
+//     const int ilh = _instrLabel->sizeHint().height();
     
-//     _upperScrollArea->setFixedHeight(
-    _upperRack->setFixedHeight(
-//     _upperRack->setMinimumHeight(
+//     fprintf(stderr, "MidiStrip::updateRackSizes: CompactSlider h:%d CompactPatchEdit h:%d instrLabel h:%d upper frame w:%d \n", 
+//                      csh, cpeh, ilh, _upperRack->frameWidth()); // REMOVE Tim. Trackinfo.
+    
+    _upperRack->setMinimumHeight(
       3 * CompactSlider::getMinimumSizeHint(fm,
                                             Qt::Horizontal, 
                                             CompactSlider::None, 
-                                            1, 1).height() + 
+                                            xMarginHorSlider, yMarginHorSlider).height() + 
       1 * CompactPatchEdit::getMinimumSizeHint(fm, 
                                             Qt::Horizontal, 
                                             CompactSlider::None, 
-                                            1, 1).height() +
-//       2 * _upperScrollArea->frameWidth());
-      2 * _upperRack->frameWidth());
+                                            xMarginHorSlider, yMarginHorSlider).height() +
+      upperRackSpacerHeight +
+      
+      _instrLabel->sizeHint().height() +
+      
+      2 * rackFrameWidth);
   }
   if(lower)
   {
     // Make room for 1 CompactSlider (Pan, so far).
     
-//     _lowerScrollArea->setFixedHeight(
-    _lowerRack->setFixedHeight(
-//     _lowerRack->setMinimumHeight(
+    //fprintf(stderr, "MidiStrip::updateRackSizes: lower frame w:%d \n", _lowerRack->frameWidth()); // REMOVE Tim. Trackinfo.
+    
+    _lowerRack->setMinimumHeight(
       1 * CompactSlider::getMinimumSizeHint(fm, 
                                             Qt::Horizontal, 
                                             CompactSlider::None, 
-                                            1, 1).height() + 
-//       2 * _lowerScrollArea->frameWidth());
-      2 * _lowerRack->frameWidth());
+                                            xMarginHorSlider, yMarginHorSlider).height() + 
+      2 * rackFrameWidth);
   }
 }
       
@@ -1343,11 +1398,15 @@ void MidiStrip::configChanged()
   // Set the whole strip's font, except for the label.    p4.0.45
   if(font() != MusEGlobal::config.fonts[1])
   {
-    setFont(MusEGlobal::config.fonts[1]);
-    //_upperScrollArea->updateMinimumSize();
-    //_lowerScrollArea->updateMinimumSize();
+    //fprintf(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize()); // REMOVE Tim. Trackinfo.
+// REMOVE Tim. Trackinfo. Changed.  // May need to keep this,
+//     setFont(MusEGlobal::config.fonts[1]);
+    setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    // Update in case font changed.
     updateRackSizes(true, true);
   }
+  // Update always, in case style, stylesheet, or font changed.
+  //updateRackSizes(true, true);
   
   // Set the strip label's font.
   setLabelFont();
@@ -1466,7 +1525,7 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
 
 void MidiStrip::controlRightClicked(const QPoint &p, int id)
 {
-  MusEGlobal::song->execMidiAutomationCtlPopup((MusECore::MidiTrack*)track, 0, p, id);
+  MusEGlobal::song->execMidiAutomationCtlPopup(static_cast<MusECore::MidiTrack*>(track), 0, p, id);
 }
 
 void MidiStrip::propertyRightClicked(const QPoint& /*p*/, int /*id*/)
@@ -1571,8 +1630,8 @@ void MidiStrip::volLabelDoubleClicked()
   //int mn, mx, v;
   //int num = MusECore::CTRL_VOLUME;
   const int num = MusECore::CTRL_VOLUME;
-  const int outport = ((MusECore::MidiTrack*)track)->outPort();
-  const int chan = ((MusECore::MidiTrack*)track)->outChannel();
+  const int outport = static_cast<MusECore::MidiTrack*>(track)->outPort();
+  const int chan = static_cast<MusECore::MidiTrack*>(track)->outChannel();
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
   MusECore::MidiController* mc = mp->midiController(num);
   
@@ -1979,7 +2038,7 @@ void MidiStrip::updateControls()
               }  
               else
               {  
-                double v = -MusECore::fast_log10(float(127*127)/float(ivol*ivol))*20.0;
+                double v = -muse_val2dbr(double(127*127)/double(ivol*ivol));
                 if(v > sl->maxValue())
                 {
                   //printf("MidiStrip::updateControls setting volume slider label\n");
@@ -2401,7 +2460,7 @@ void MidiStrip::ctrlChanged(double v, bool off, int num)
       if (inHeartBeat)
             return;
       int val = lrint(v);
-      MusECore::MidiTrack* t = (MusECore::MidiTrack*) track;
+      MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
       int port     = t->outPort();
       int chan  = t->outChannel();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -2594,7 +2653,7 @@ void MidiStrip::instrPopup()
 
 void MidiStrip::volLabelChanged(double val)
 {
-  val = sqrt( float(127*127) / pow(10.0, -val/20.0) );
+  val = sqrt( double(127*127) / muse_db2val(-val) );
   ctrlChanged(val, false, MusECore::CTRL_VOLUME);
 }
       

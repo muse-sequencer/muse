@@ -76,8 +76,9 @@ class CompactSlider : public SliderBase, public ScaleIf
       enum ScalePos { None, Left, Right, Top, Bottom, Embedded };
       enum TextHighlightMode { TextHighlightNone, 
                                TextHighlightAlways, 
-                               TextHighlightSplit, 
+                               TextHighlightSplit,
                                TextHighlightShadow,
+                               TextHighlightSplitAndShadow,
                                TextHighlightHover,
                                TextHighlightFocus,
                                TextHighlightHoverOrFocus };

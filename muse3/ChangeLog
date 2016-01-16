@@ -1,5 +1,37 @@
 08.01.2016
         - Fixed icon pos for transport toolbar (rj)
+15.01.2016
+        - Routing popup menu: Fix stereo grouping mode not connecting both channels
+           if second channel is clicked. (Tim)
+14.01.2016
+      By Tim:
+        - System-wide accuracy fixes, part 1:
+          Enforcement of audio controller double-precision floating point accuracy internally, 
+           all the way up to the lowest-level structure Port (in plugin.h). Port now has a double value
+           besides the existing float value. All track, plugin, and synth code changed to use double-precision 
+           wherever possible (only Track can take advantage of double - plugins/synths only use floats).
+           
+        - Due to inaccuracy in log*() functions, muse_math.h was added where special macros are defined for:
+           muse_log10r() and muse_val2dbr() (round to the nearest .000001), and muse_db2val().
+          These use log10 and pow10. Some critical code will use the poor-accuracy fast_log*() functions 
+           in fastlog.h for speed, while other code takes advatage of (requires) our more accurate macros.
+        - Audio strips: Ensured and verified accuracy and round-trip consistency of vol, aux, gain sliders
+           and labels, and their controllers.
+          Fixed strip slider problems honouring Settings 'Slider minimum value'. 
+          This value now means 'off' or 'muted' (-inf dB), not some value below it like before. Test OK.
+13.01.2016
+      By Tim:
+        - More note-off fixes related to 21.12.2015: Added Instrument Definition Files NoteOffMode attribute.
+          Enforcement of internal note-off velocity usage, and no internal midi Event zero note-on velocities.
+        - Fixed old -l locale switch problem by adding QLocale::setDefault();
+12.01.2016
+      By Tim:
+        - Mixer makeover in progress:
+        - Replaced strip knobs with horizontal sliders.
+        - General redesign of strip look and sliders.
+        - Strips are expandable now with a right-edge 'handle'.
+        - Fixed old mixer problem with unpainted areas (solved by QWidget::setUpdatesEnabled()).
+>>>>>>> 56e383b764e09056b9ef5003977e3efa55663b82
 06.01.2016
         - Added 'clipper led' to mixer's audio strips (danvd)
 02.01.2016

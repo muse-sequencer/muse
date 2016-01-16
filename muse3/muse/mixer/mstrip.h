@@ -248,6 +248,11 @@ class MidiStrip : public Strip {
 
    public:
       MidiStrip(QWidget* parent, MusECore::MidiTrack*);
+      
+      static const int xMarginHorSlider;
+      static const int yMarginHorSlider;
+      static const int upperRackSpacerHeight;
+      static const int rackFrameWidth;
       };
 
 } // namespace MusEGui
