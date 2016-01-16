@@ -29,7 +29,7 @@
 //#include <QIcon>
 //#include <QVBoxLayout>
 //#include <QGridLayout>
-//#include <QLabel>
+#include <QLabel>
 
 #include "type_defs.h"
 #include "globaldefs.h"
@@ -74,7 +74,10 @@ struct GridPosStruct
 
 class Strip : public QFrame {
       Q_OBJECT
-      
+
+   QPoint mouseWidgetOffset;
+   bool dragOn;
+   bool _visible;
    protected:
       //enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
  
@@ -98,10 +101,9 @@ class Strip : public QFrame {
       MusEGui::ComboBox* autoType;
       void setLabelText();
       virtual void resizeEvent(QResizeEvent*);
-      virtual void mousePressEvent(QMouseEvent*);
-      //virtual void mouseMoveEvent(QMouseEvent*);
-      //virtual void mouseReleaseEvent(QMouseEvent*);
-      //virtual void leaveEvent(QEvent*);
+      virtual void mousePressEvent(QMouseEvent *);
+      virtual void mouseReleaseEvent(QMouseEvent *);
+      virtual void mouseMoveEvent(QMouseEvent *);
 
    private slots:
       void recordToggled(bool);
@@ -121,12 +123,17 @@ class Strip : public QFrame {
    public:
       Strip(QWidget* parent, MusECore::Track* t);
       ~Strip();
+
+      bool getStripVisible() { return _visible; }
+      void setStripVisible(bool v) { _visible = v; }
+
 // REMOVE Tim. Trackinfo. Added.
       static const int FIXED_METER_WIDTH;
       
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setLabelFont();
+      QString getLabelText() { return label->text(); }
       
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
       void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);

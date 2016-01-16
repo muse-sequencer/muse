@@ -1,3 +1,13 @@
+16.01.2016:
+        - Added ability to rearrange mixer A and/or sync it to the arranger look
+          Features:
+            - Traditional look
+            - Sync to arranger
+            - Manually rearrange mixer with drag and drop
+            - Allow individual strips to be hidden (reenable them from the view menu)
+          Still bugs to iron out and allow mixer B to also work (rj)
+08.01.2016
+        - Fixed icon pos for transport toolbar (rj)
 15.01.2016
         - Routing popup menu: Fix stereo grouping mode not connecting both channels
            if second channel is clicked. (Tim)
@@ -29,6 +39,7 @@
         - General redesign of strip look and sliders.
         - Strips are expandable now with a right-edge 'handle'.
         - Fixed old mixer problem with unpainted areas (solved by QWidget::setUpdatesEnabled()).
+>>>>>>> 56e383b764e09056b9ef5003977e3efa55663b82
 06.01.2016
         - Added 'clipper led' to mixer's audio strips (danvd)
 02.01.2016

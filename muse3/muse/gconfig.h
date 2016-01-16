@@ -78,7 +78,13 @@ enum RouteNameAliasPreference { RoutePreferCanonicalName, RoutePreferFirstAlias,
 //---------------------------------------------------------
 
 struct MixerConfig {
+  enum DisplayOrder {
+        STRIPS_TRADITIONAL_VIEW = -1004,
+        STRIPS_EDITED_VIEW = -1003,
+        STRIPS_ARRANGER_VIEW = -1002,
+      };
       QString name;
+      QStringList stripOrder;
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;
@@ -89,6 +95,8 @@ struct MixerConfig {
       bool showGroupTracks;
       bool showAuxTracks;
       bool showSyntiTracks;
+      DisplayOrder displayOrder;
+      QList<bool> stripVisibility;
 
       void write(int level, MusECore::Xml& xml);
       void read(MusECore::Xml& xml);

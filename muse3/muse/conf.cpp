@@ -1908,7 +1908,9 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showGroupTracks",  showGroupTracks);
       xml.intTag(level, "showAuxTracks",    showAuxTracks);
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
-      
+
+      xml.intTag(level, "displayOrder", displayOrder);
+
       xml.etag(level, "Mixer");
       }
 
@@ -1948,6 +1950,12 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showAuxTracks = xml.parseInt();
                         else if (tag == "showSyntiTracks")
                               showSyntiTracks = xml.parseInt();
+                        else if (tag == "displayOrder")
+                              displayOrder = (DisplayOrder)xml.parseInt();
+                        else if (tag == "StripName")
+                              stripOrder.append(xml.parse1());
+                        else if (tag == "StripVisible")
+                              stripVisibility.append(xml.parseInt() == 0 ? false : true );
                         else
                               xml.unknown("Mixer");
                         break;

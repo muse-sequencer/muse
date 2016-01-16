@@ -43,6 +43,7 @@
 #include "utils.h"
 #include "icons.h"
 #include "undo.h"
+#include "amixer.h"
 
 using MusECore::UndoOp;
 
@@ -222,7 +223,9 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       _curGridRow = 0;
       _userWidth = 0;
       autoType = 0;
+      _visible = true;
       //_resizeMode = ResizeModeNone;
+      dragOn=false;
       setAttribute(Qt::WA_DeleteOnClose);
       iR            = 0;
       oR            = 0;
@@ -371,18 +374,40 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     //return;
   //}
   
+  //  printf("strip mouse press event! %d\n",(int)ev->button());
+  QPoint mousePos = QCursor::pos();
+  mouseWidgetOffset = pos() - mousePos;
+
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
-    menu->addAction(tr("Remove track?"));
+    QAction *act = menu->addAction(tr("Remove track"));
+    act->setData(int(0));
+    menu->addSeparator();
+    act = menu->addAction(tr("Hide strip"));
+    act->setData(int(1));
     QPoint pt = QCursor::pos();
-    QAction* act = menu->exec(pt, 0);
+    act = menu->exec(pt, 0);
     if (!act)
     {
       delete menu;
       QFrame::mousePressEvent(ev);
       return;
     }
-    MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+
+    printf("Menu finished, data returned %d\n", act->data().toInt());
+
+    if (act->data().toInt() == 0)
+    {
+      printf("Strip:: delete track\n");
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+    }
+    else if (act->data().toInt() == 1)
+    {
+      printf("Strip:: setStripVisible false \n");
+      setStripVisible(false);
+      setVisible(false);
+      MusEGlobal::song->update();
+    }
     ev->accept();
     return;
   }
@@ -675,6 +700,39 @@ QSize ExpanderHandle::sizeHint() const
   sz.setWidth(_handleWidth);
   return sz;
 }
+
+
+void Strip::mouseReleaseEvent(QMouseEvent*)
+{
+  //printf("strip mouse release event! %d\n",(int)ev->button());
+  if (dragOn) {
+    ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->moveStrip(this);
+  }
+  dragOn=false;
+  //QFrame::mouseReleaseEvent(ev);
+
+}
+
+void Strip::mouseMoveEvent(QMouseEvent*)
+{
+  bool isMoveStarted = false;
+
+  if (MusEGlobal::muse->mixer1Window()) {
+   isMoveStarted = ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->isMixerClicked();
+  }
+  if (isMoveStarted)
+  {
+    // we are located in the mixer and will try to move strip
+    QPoint mousePos = QCursor::pos();
+    move(mousePos + mouseWidgetOffset);
+    dragOn = true;
+  }
+  else {
+    //printf("NO MOVE\n");
+  }
+  //QFrame::mouseMoveEvent(ev);
+}
+
 
 
 } // namespace MusEGui

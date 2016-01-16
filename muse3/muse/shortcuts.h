@@ -73,6 +73,8 @@ struct shortcut_cg
       const char* name;
       };
 
+QString shrtToStr(long int shrt);
+
 typedef struct shortcut ShortCut ;
 
 enum {

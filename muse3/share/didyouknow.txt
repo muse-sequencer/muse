@@ -23,3 +23,7 @@ Parts can be copied and deleted using the standard cut/copy/paste<br>but it is a
 When using the dark theme, make sure to select Qt theme plastique<br>or the theme will not be consistent.
 
 If it's hard to be precise while moving automation points with the mouse, trying holding the SHIFT key, the movement will be slower.
+
+During recording it is often useful to restart the recording since the previous take wasn't perfect or you simply want several takes<br>
+While recording press shift+space (default shortcut), a new track is created and the recording is restarted from the initial position.<br>
+If recording was done on multiple tracks, all the armed tracks will be duplicated.

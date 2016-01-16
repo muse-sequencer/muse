@@ -411,4 +411,9 @@ void readShortCuts(MusECore::Xml& xml)
             }
       }
 
+QString shrtToStr(long int shrt)
+{
+ return QKeySequence(shortcuts[shrt].key).toString();
+}
+
 } // namespace MusEGui
