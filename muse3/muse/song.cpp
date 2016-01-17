@@ -527,6 +527,8 @@ void Song::deselectTracks()
       {
       for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t)
             (*t)->setSelected(false);
+      // Static.
+      Track::clearSelectionOrderCounter();
       }
 
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)

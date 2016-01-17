@@ -84,6 +84,11 @@ class Track {
       static bool _tmpSoloChainDoIns;
       static bool _tmpSoloChainNoDec;
       
+      // Every time a track is selected, the track's _selectionOrder is set to this value,
+      //  and then this value is incremented. The value is reset to zero occasionally, 
+      //  for example whenever Song::deselectTracks() is called.
+      static int _selectionOrderCounter;
+      
       RouteList _inRoutes;
       RouteList _outRoutes;
       bool _nodeTraversed;   // Internal anti circular route traversal flag.
@@ -109,6 +114,9 @@ class Track {
 
       bool _locked;
       bool _selected;
+      // The selection order of this track, compared to other selected tracks.
+      // The selected track with the highest selected order is the most recent selected.
+      int _selectionOrder;
       // REMOVE Tim. Trackinfo. Removed.
 //       bool _isClipped; //used in audio mixer strip. Persistent.
 
@@ -134,7 +142,15 @@ class Track {
       void setHeight(int n)           { _height = n;    }
 
       bool selected() const           { return _selected; }
-      void setSelected(bool f)        { _selected = f; }
+      // Try to always call this instead of setting _selected, because it also sets _selectionOrder.
+      void setSelected(bool f);
+      // The order of selection of this track, compared to other selected tracks. 
+      // The selected track with the highest selected order is the most recent selected.
+      int selectionOrder() const       { return _selectionOrder; }
+      // Resets the static selection counter. Optional. (Range is huge, unlikely would have to call). 
+      // Called for example whenever Song::deselectTracks() is called.
+      static void clearSelectionOrderCounter(){ _selectionOrderCounter = 0; }
+
       bool locked() const             { return _locked; }
       void setLocked(bool b)          { _locked = b; }
 
@@ -790,6 +806,23 @@ template<class T> class tracklist : public std::vector<Track*> {
                   }
             return c;
             }
+      // Returns the current (most recent) selected track, or null if none.
+      // It returns the track with the highest _selectionOrder.
+      // This helps with multi-selection common-property editing.
+      T currentSelection() const {
+            T cur = 0;
+            int c = 0;
+            int so;
+            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+                  T t = *i;
+                  so = t->selectionOrder();
+                  if (t->selected() && so >= c) {
+                        cur = t;
+                        c = so;
+                        }
+                  }
+            return cur;
+            }
       };
 
 typedef tracklist<Track*> TrackList;
@@ -823,10 +856,6 @@ typedef tracklist<AudioAux*> AuxList;
 typedef tracklist<SynthI*>::iterator iSynthI;
 typedef tracklist<SynthI*>::const_iterator ciSynthI;
 typedef tracklist<SynthI*> SynthIList;
-
-// Fills selected list (if valid) with selected tracks in the given list.
-// Returns the number of selected tracks in the given list.
-extern int trackListSelectedTracks(TrackList* list, TrackList* selected);
 
 extern void addPortCtrlEvents(MidiTrack* t);
 extern void removePortCtrlEvents(MidiTrack* t);

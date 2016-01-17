@@ -754,10 +754,14 @@ MusECore::Track* TList::y2Track(int y) const
 
 void TList::editTrackNameSlot()
 {
-  MusECore::TrackList tracks;
-  const int sz = MusEGlobal::song->selectedTracks(&tracks);
-  if (sz == 1) 
-    editTrackName(tracks.front());
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  if (tracks->countSelected() == 1) {
+    for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+      if ((*t)->selected()){
+        editTrackName(*t);
+        break;
+      }
+  }
 }
 
 void TList::editTrackName(MusECore::Track *t)
@@ -943,14 +947,14 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                   for (no=0;no<MIDI_PORTS;no++)
                     if (MusEGlobal::midiPorts[no].device()==NULL)
                     {
-                      MusECore::ciTrack it;
-                      for (it=MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
+                      MusECore::ciMidiTrack it;
+                      for (it=MusEGlobal::song->midis()->begin(); it!=MusEGlobal::song->midis()->end(); ++it)
                       {
-                        MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(*it);
-                        if (mt && mt!=t && mt->outPort()==no)
+                        MusECore::MidiTrack* mt=*it;
+                        if (mt!=t && mt->outPort()==no)
                           break;
                       }
-                      if (it == MusEGlobal::song->tracks()->end())
+                      if (it == MusEGlobal::song->midis()->end())
                         break;
                     }
 

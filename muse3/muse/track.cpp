@@ -52,6 +52,7 @@ unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
+int Track::_selectionOrderCounter = 0;
 
 const char* Track::_cname[] = {
       "Midi", "Drum", "NewStyleDrum", "Wave",
@@ -61,24 +62,6 @@ const char* Track::_cname[] = {
 
 bool MidiTrack::_isVisible=true;
 
-
-//---------------------------------------------------------
-//   trackListSelectedTracks
-//   Fills selected list (if valid) with selected tracks in the given list.
-//   Returns the number of selected tracks in the given list.
-//---------------------------------------------------------
-
-int trackListSelectedTracks(TrackList* list, TrackList* selected) {
-      int c = 0;
-      for (ciTrack i = list->begin(); i != list->end(); ++i) {
-            if ((*i)->selected()) {
-                  ++c;
-                  if(selected)
-                    selected->push_back((*i));
-                  }
-            }
-      return c;
-      }
 
 //---------------------------------------------------------
 //   addPortCtrlEvents
@@ -266,6 +249,7 @@ void Track::init()
       _off           = false;
       _channels      = 0;           // 1 - mono, 2 - stereo
       _selected      = false;
+      _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
@@ -331,6 +315,7 @@ void Track::internal_assign(const Track& t, int flags)
         _off          = t._off;
         _channels     = t._channels;
         _selected     = t.selected();
+        _selectionOrder = t.selectionOrder();
         _y            = t._y;
         _height       = t._height;
         _comment      = t.comment();
@@ -439,13 +424,24 @@ void Track::clearRecAutomation(bool clearList)
 }
 
 //---------------------------------------------------------
+//   setSelected
+//---------------------------------------------------------
+
+void Track::setSelected(bool f)
+{ 
+  if(f && !_selected)
+    _selectionOrder = _selectionOrderCounter++;
+  _selected = f; 
+}
+
+//---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
 
 void Track::dump() const
       {
-      printf("Track <%s>: typ %d, parts %zd sel %d\n",
-         _name.toLatin1().constData(), _type, _parts.size(), _selected);
+      printf("Track <%s>: typ %d, parts %zd sel %d sel order%d\n",
+         _name.toLatin1().constData(), _type, _parts.size(), _selected, _selectionOrder);
       }
 
 //---------------------------------------------------------
@@ -1222,7 +1218,10 @@ void Track::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "height", _height);
       xml.intTag(level, "locked", _locked);
       if (_selected)
+      {
             xml.intTag(level, "selected", _selected);
+            xml.intTag(level, "selectionOrder", _selectionOrder);
+      }
       }
 
 //---------------------------------------------------------
@@ -1258,6 +1257,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _locked = xml.parseInt();
       else if (tag == "selected")
             _selected = xml.parseInt();
+      else if (tag == "selectionOrder")
+            _selectionOrder = xml.parseInt();
       else
             return true;
       return false;
