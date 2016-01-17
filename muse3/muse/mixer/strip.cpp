@@ -702,9 +702,9 @@ QSize ExpanderHandle::sizeHint() const
 }
 
 
-void Strip::mouseReleaseEvent(QMouseEvent*)
+void Strip::mouseReleaseEvent(QMouseEvent* ev)
 {
-  //printf("strip mouse release event! %d\n",(int)ev->button());
+  printf("strip mouse release event! %d\n",(int)ev->button());
   if (dragOn) {
     ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->moveStrip(this);
   }
@@ -717,18 +717,23 @@ void Strip::mouseMoveEvent(QMouseEvent*)
 {
   bool isMoveStarted = false;
 
+  if (dragOn)
+    printf("mouseMoveEvent and dragOn set!\n");
+  
   if (MusEGlobal::muse->mixer1Window()) {
    isMoveStarted = ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->isMixerClicked();
   }
   if (isMoveStarted)
   {
+    printf("mouseMoveEvent isMoveStarted is set!\n");
+
     // we are located in the mixer and will try to move strip
     QPoint mousePos = QCursor::pos();
     move(mousePos + mouseWidgetOffset);
     dragOn = true;
   }
   else {
-    //printf("NO MOVE\n");
+    printf("NO MOVE\n");
   }
   //QFrame::mouseMoveEvent(ev);
 }
