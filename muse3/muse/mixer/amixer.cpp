@@ -694,6 +694,7 @@ void AudioMixerApp::clearAndDelete()
     //(*si)->deleteLater();
     delete (*si);
   }
+
   stripList.clear();
   cfg->stripOrder.clear();
   oldAuxsSize = -1;
