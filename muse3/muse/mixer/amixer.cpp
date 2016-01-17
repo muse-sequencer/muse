@@ -762,7 +762,7 @@ void AudioMixerApp::configChanged()
 void AudioMixerApp::updateStripList()
 {
   if (DEBUG_MIXER)
-    printf("updateStripList stripList %d tracks %ld\n", stripList.size(), MusEGlobal::song->tracks()->size());
+    printf("updateStripList stripList %d tracks %ld\n", stripList.size(), (long)MusEGlobal::song->tracks()->size());
   MusECore::TrackList *tl = MusEGlobal::song->tracks();
   // check for superfluous strips
   StripList::iterator si = stripList.begin();
@@ -809,7 +809,7 @@ void AudioMixerApp::updateStripList()
 void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
 {
   if (DEBUG_MIXER)
-    printf("AudioMixerApp::songChanged %lX\n", flags);
+    printf("AudioMixerApp::songChanged %zX\n", flags);
   // Is it simply a midi controller value adjustment? Forget it.
   if(flags == SC_MIDI_CONTROLLER)
     return;
