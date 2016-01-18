@@ -605,6 +605,7 @@ void Strip::mouseMoveEvent(QMouseEvent*)
     QPoint mousePos = QCursor::pos();
     move(mousePos + mouseWidgetOffset);
     dragOn = true;
+    this->raise();
   }
   else {
     printf("NO MOVE\n");

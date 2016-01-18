@@ -40,6 +40,7 @@
 #include "icons.h"
 #include "amixer.h"
 #include "song.h"
+#include "audio.h"
 
 #include "astrip.h"
 #include "mstrip.h"
@@ -499,22 +500,28 @@ void AudioMixerApp::moveStrip(Strip *s)
   if (DEBUG_MIXER)
     printf("Recreate stripList\n");
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
-    // refresh stripList before doing the  move since it
-    // likely does not contain the same view as displayed
-    StripList oldList = stripList;
-    stripList.clear();
-    MusECore::TrackList *tl = MusEGlobal::song->tracks();
-    MusECore::TrackList::iterator tli = tl->begin();
-    for (; tli != tl->end(); tli++) {
-      StripList::iterator si = oldList.begin();
-      for (; si !=oldList.end(); si++)
-        if ((*si)->getTrack() == *tli) {
-          stripList.append(*si);
-        }
+
+    for (int i=0; i< stripList.size(); i++)
+    {
+      Strip *s2 = stripList.at(i);
+      if (s2 == s) continue;
+
+      if (DEBUG_MIXER)
+        printf("loop loop %d %d width %d\n", s->pos().x(),s2->pos().x(), s2->width());
+      if (s->pos().x()+s->width()/2 < s2->pos().x()+s2->width() // upper limit
+          && s->pos().x()+s->width()/2 > s2->pos().x() ) // lower limit
+      {
+        // found relevant pos.
+        int sTrack = MusEGlobal::song->tracks()->index(s->getTrack());
+        int dTrack = MusEGlobal::song->tracks()->index(s2->getTrack());
+        MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
+      }
     }
+
   } else if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW)
   {
     fillStripListTraditional();
+    cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   }
   if (DEBUG_MIXER)
     printf("moveStrip %s! stripList.size = %d\n", s->getLabelText().toLatin1().data(), stripList.size());
@@ -540,7 +547,6 @@ void AudioMixerApp::moveStrip(Strip *s)
       break;
     }
   }
-  cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   redrawMixer();
   update();
 }

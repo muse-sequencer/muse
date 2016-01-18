@@ -1,3 +1,6 @@
+18.01.2016:
+        - Strips are raised when dragged in mixer (they should also get a solid background)
+        - When sorting mixer as arranger moving strips in mixer affects arranger also (rj)
 16.01.2016:
         - Added ability to rearrange mixer A and/or sync it to the arranger look
           Features:
