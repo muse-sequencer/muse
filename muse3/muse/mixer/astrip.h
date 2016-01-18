@@ -145,7 +145,7 @@ class AudioStrip : public Strip {
       virtual void songChanged(MusECore::SongChangedFlags_t);
 
    public:
-      AudioStrip(QWidget* parent, MusECore::AudioTrack*);
+      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false);
       ~AudioStrip();
       ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;

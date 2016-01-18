@@ -633,8 +633,8 @@ CompactSlider* MidiStrip::addProperty(QVBoxLayout* rackLayout,
 //   MidiStrip
 //---------------------------------------------------------
 
-MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
-   : Strip(parent, t)
+MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
+   : Strip(parent, t, hasHandle)
       {
       inHeartBeat = true;
       _heartBeatCounter = 0;

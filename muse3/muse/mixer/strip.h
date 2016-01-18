@@ -69,6 +69,36 @@ struct GridPosStruct
 };
 
 //---------------------------------------------------------
+//   ExpanderHandle
+//---------------------------------------------------------
+
+class ExpanderHandle : public QFrame 
+{
+  Q_OBJECT
+
+  protected:
+    enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
+    
+  private:
+    int _handleWidth;
+    ResizeMode _resizeMode;
+    QPoint _dragLastGlobPos;
+      
+  protected:
+    virtual void mousePressEvent(QMouseEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    //virtual void leaveEvent(QEvent*);
+    virtual QSize sizeHint() const;
+
+  signals:
+    void moved(int xDelta);
+    
+  public:
+    ExpanderHandle(QWidget * parent = 0, int handleWidth = 4, Qt::WindowFlags f = 0);
+};
+
+//---------------------------------------------------------
 //   Strip
 //---------------------------------------------------------
 
@@ -91,6 +121,7 @@ class Strip : public QFrame {
       MusEGui::Meter* meter[MAX_CHANNELS];
       // Extra width applied to the sizeHint, from user expanding the strip.
       int _userWidth;
+      ExpanderHandle* _handle;
       
       QToolButton* record;
       QToolButton* solo;
@@ -121,7 +152,7 @@ class Strip : public QFrame {
       virtual void changeUserWidth(int delta);
 
    public:
-      Strip(QWidget* parent, MusECore::Track* t);
+      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false);
       ~Strip();
 
       bool getStripVisible() { return _visible; }
@@ -143,36 +174,6 @@ class Strip : public QFrame {
       
       virtual QSize sizeHint() const;
       };
-
-//---------------------------------------------------------
-//   ExpanderHandle
-//---------------------------------------------------------
-
-class ExpanderHandle : public QFrame 
-{
-  Q_OBJECT
-
-  protected:
-    enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
-    
-  private:
-    int _handleWidth;
-    ResizeMode _resizeMode;
-    QPoint _dragLastGlobPos;
-      
-  protected:
-    virtual void mousePressEvent(QMouseEvent*);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    virtual void mouseReleaseEvent(QMouseEvent*);
-    //virtual void leaveEvent(QEvent*);
-    virtual QSize sizeHint() const;
-
-  signals:
-    void moved(int xDelta);
-    
-  public:
-    ExpanderHandle(QWidget * parent = 0, int handleWidth = 4, Qt::WindowFlags f = 0);
-};
 
 } // namespace MusEGui
 

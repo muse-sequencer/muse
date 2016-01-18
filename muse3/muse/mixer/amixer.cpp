@@ -664,13 +664,9 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
       printf("addStrip\n");
     Strip* strip;
     if (t->isMidiTrack())
-          strip = new MidiStrip(central, (MusECore::MidiTrack*)t);
+          strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true);
     else
-          strip = new AudioStrip(central, (MusECore::AudioTrack*)t);
-
-    ExpanderHandle* handle = new ExpanderHandle();
-    connect(handle, SIGNAL(moved(int)), strip, SLOT(changeUserWidth(int)));
-    connect(strip, SIGNAL(destroyed(QObject*)), handle, SLOT(deleteLater()));
+          strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true);
 
     if (DEBUG_MIXER)
       printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());

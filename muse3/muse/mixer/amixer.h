@@ -60,7 +60,18 @@ class Knob;
 class RouteDialog;
 class Slider;
 class Strip;
+// class ExpanderHandle;
+
+// struct StripItem {
+//   Strip* _strip;
+//   ExpanderHandle* _handle;
+//   
+//   StripItem() : _strip(0), _handle(0) { }
+//   StripItem(Strip* strip, ExpanderHandle* handle) : _strip(strip), _handle(handle) { }
+// };
+
 typedef QList<Strip*> StripList;
+// typedef QList<StripItem> StripList;
 
 //---------------------------------------------------------
 //   ScrollArea

@@ -49,7 +49,6 @@ using MusECore::UndoOp;
 
 namespace MusEGui {
 
-// REMOVE Tim. Trackinfo. Added.
 const int Strip::FIXED_METER_WIDTH = 10;
 
 //---------------------------------------------------------
@@ -62,8 +61,6 @@ void Strip::setRecordFlag(bool flag)
             record->blockSignals(true);
             record->setChecked(flag);
             record->blockSignals(false);
-//             record->setIcon(flag ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));  // REMOVE Tim. Trackinfo. Removed.
-            //record->setIconSize(record_on_Icon->size());  
             }
       }
 
@@ -90,8 +87,6 @@ void Strip::recordToggled(bool val)
             if (!((MusECore::AudioOutput*)track)->recFile())
             {  
                   record->setChecked(false);
-//                   record->setIcon(QIcon(*record_off_Icon));  // REMOVE Tim. Trackinfo. Removed.
-                  //record->setIconSize(record_on_Icon->size());  
             }      
             return;
             }
@@ -174,20 +169,12 @@ void Strip::setLabelText()
           label->setText(track->name());
       }
       QPalette palette;
-      //palette.setColor(label->backgroundRole(), c);
       QLinearGradient gradient(label->geometry().topLeft(), label->geometry().bottomLeft());
-      //gradient.setColorAt(0, c.darker());
-      //gradient.setColorAt(0, c);
-      //gradient.setColorAt(1, c.darker());
       gradient.setColorAt(0, c);
       gradient.setColorAt(0.5, c.lighter());
       gradient.setColorAt(1, c);
-      //palette.setBrush(QPalette::Button, gradient);
-      //palette.setBrush(QPalette::Window, gradient);
       palette.setBrush(label->backgroundRole(), gradient);
       label->setPalette(palette);
-      
-      //label->setStyleSheet(QString("background-color: ") + c.name());
 }
 
 //---------------------------------------------------------
@@ -215,7 +202,7 @@ void Strip::soloToggled(bool val)
 //    create mixer strip
 //---------------------------------------------------------
 
-Strip::Strip(QWidget* parent, MusECore::Track* t)
+Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
    : QFrame(parent)
       {
       setMouseTracking(true);
@@ -224,7 +211,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       _userWidth = 0;
       autoType = 0;
       _visible = true;
-      //_resizeMode = ResizeModeNone;
       dragOn=false;
       setAttribute(Qt::WA_DeleteOnClose);
       iR            = 0;
@@ -234,27 +220,31 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       setFrameStyle(Panel | Raised);
       setLineWidth(2);
       
-      // NOTE: Workaround for freakin' improper disabled button text colour (at least with Oxygen colours). 
-      // Just set the parent palette.
-      //QPalette pal(palette());
-      //pal.setColor(QPalette::Disabled, QPalette::ButtonText, 
-      //             pal.color(QPalette::Disabled, QPalette::WindowText));
-      //setPalette(pal);
-      
       track    = t;
       meter[0] = 0;
       meter[1] = 0;
-      //setFixedWidth(STRIP_WIDTH);
-      //setMinimumWidth(STRIP_WIDTH);     // TESTING Tim.
-      //setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding)); // TESTING Tim.
-//       setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
       
       grid = new QGridLayout();
       grid->setContentsMargins(0, 0, 0, 0);
       grid->setSpacing(0);
-      setLayout(grid);
-
+      
+      _handle = 0;
+      if(hasHandle)
+      {
+        _handle = new ExpanderHandle();
+        connect(_handle, SIGNAL(moved(int)), SLOT(changeUserWidth(int)));
+        QHBoxLayout* hlayout = new QHBoxLayout(this);
+        hlayout->setContentsMargins(0, 0, 0, 0);
+        hlayout->setSpacing(0);
+        hlayout->addLayout(grid);
+        hlayout->addWidget(_handle);
+      }
+      else
+      {
+        setLayout(grid);
+      }
+        
       //---------------------------------------------
       //    label
       //---------------------------------------------
@@ -264,20 +254,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       // Not sure why...
       label = new QLabel(this);
       label->setObjectName(track->cname());
-      
-      // Moved by Tim. p3.3.9
-      //setLabelText();
-      //label->setFont(MusEGlobal::config.fonts[1]);
-      
-      //printf("Strip::Strip w:%d frw:%d layoutmarg:%d lx:%d ly:%d lw:%d lh:%d\n", STRIP_WIDTH, frameWidth(), layout->margin(), label->x(), label->y(), label->width(), label->height());
-      
-      // Tested: The label's width is 100. It does not become STRIP_WIDTH - 2*layout->margin
-      //  until the mixer is shown in MusE::showMixer.
-      // Therefore 'fake' set the size of the label now.
-      // Added by Tim. p3.3.9
-      //label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*frameWidth() - 2*layout->margin(), label->height());
-      ///label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*grid->margin(), label->height());
-      
       label->setTextFormat(Qt::PlainText);
       
       // Unfortunately for the mixer labels, QLabel doesn't support the BreakAnywhere flag.
@@ -294,15 +270,11 @@ Strip::Strip(QWidget* parent, MusECore::Track* t)
       label->setLineWidth(2);
       label->setFrameStyle(Sunken | StyledPanel);
       
-      //label->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum));
       label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
       
-      // Added by Tim. p3.3.9
       setLabelText();
       setLabelFont();
       
-      //layout->addWidget(label);
-//       grid->addWidget(label, _curGridRow++, 0, 1, 2);
       grid->addWidget(label, _curGridRow++, 0, 1, 3); // REMOVE Tim. Trackinfo. Changed. TEST
       }
 
@@ -413,104 +385,6 @@ void Strip::mousePressEvent(QMouseEvent* ev)
   }
   QFrame::mousePressEvent(ev);
 }
-
-// REMOVE Tim. Trackinfo. Added.
-// void Strip::mouseMoveEvent(QMouseEvent* ev)
-// {
-//   QFrame::mouseMoveEvent(ev);
-//   const QPoint p = ev->pos();
-//   switch(_resizeMode)
-//   {
-//     case ResizeModeNone:
-//     {
-//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
-//       {
-//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeNone resize area hit\n"); // REMOVE Tim. Trackinfo.
-//         _resizeMode = ResizeModeHovering;
-//         setCursor(Qt::SizeHorCursor);
-//       }
-//       ev->ignore();
-//       return;
-//     }
-//     break;
-// 
-//     case ResizeModeHovering:
-//     {
-//       if(p.x() < (width() - frameWidth()) || p.x() >= width() || p.y() < 0 || p.y() >= height())
-//       {
-//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeHovering resize area not hit\n"); // REMOVE Tim. Trackinfo.
-//         _resizeMode = ResizeModeNone;
-//         unsetCursor();
-//       }
-//       ev->ignore();
-//       return;
-//     }
-//     break;
-//     
-//     case ResizeModeDragging:
-//     {
-//       //setUserWidth(p.x() - width());
-//       setUserWidth(p.x() + 1);
-//       ev->ignore();
-//       return;
-//     }
-//     break;
-//   }
-// }
-// 
-// void Strip::mouseReleaseEvent(QMouseEvent* ev)
-// {
-//   QFrame::mouseReleaseEvent(ev);
-//   switch(_resizeMode)
-//   {
-//     case ResizeModeNone:
-//     case ResizeModeHovering:
-//       ev->ignore();
-//       return;
-//     break;
-//     
-//     case ResizeModeDragging:
-//     {
-//       const QPoint p = ev->pos();
-//       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
-//       {
-//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area hit\n"); // REMOVE Tim. Trackinfo.
-//         _resizeMode = ResizeModeHovering;
-//         setCursor(Qt::SizeHorCursor);
-//       }
-//       else
-//       {
-//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area not hit\n"); // REMOVE Tim. Trackinfo.
-//         _resizeMode = ResizeModeNone;
-//         unsetCursor();
-//       }
-//       ev->ignore();
-//       return;
-//     }
-//     break;
-//   }
-// }
-// 
-// void Strip::leaveEvent(QEvent* ev)
-// {
-//   ev->ignore();
-//   QFrame::leaveEvent(ev);
-//   switch(_resizeMode)
-//   {
-//     case ResizeModeDragging:
-//       return;
-//     break;
-//     
-//     case ResizeModeHovering:
-//       _resizeMode = ResizeModeNone;
-//       // Fall through...
-//     case ResizeModeNone:
-//       unsetCursor();
-//       return;
-//     break;
-//   }
-// }
-// 
  
 QSize Strip::sizeHint() const
 {

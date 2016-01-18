@@ -1528,8 +1528,8 @@ AudioStrip::~AudioStrip()
 //    create mixer strip
 //---------------------------------------------------------
 
-AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
-   : Strip(parent, at)
+AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle)
+   : Strip(parent, at, hasHandle)
       {
       volume        = -1.0;
       panVal        = 0;
