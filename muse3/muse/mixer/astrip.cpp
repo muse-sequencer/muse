@@ -820,7 +820,7 @@ void AudioStrip::volumeReleased()
 //---------------------------------------------------------
 //   volumeRightClicked
 //---------------------------------------------------------
-void AudioStrip::volumeRightClicked(const QPoint &p)
+void AudioStrip::volumeRightClicked(QPoint p)
 {
   MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_VOLUME);
 }
@@ -901,7 +901,7 @@ void AudioStrip::panReleased()
 //---------------------------------------------------------
 //   panRightClicked
 //---------------------------------------------------------
-void AudioStrip::panRightClicked(const QPoint &p)
+void AudioStrip::panRightClicked(QPoint p)
 {
    MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_PAN);
 }
@@ -1160,7 +1160,7 @@ CompactSlider* AudioStrip::addController(ControllerType type, int id, const QStr
             connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
             connect(control, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
             connect(control, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
-            connect(control, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(panRightClicked(const QPoint &)));
+            connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(panRightClicked(QPoint)));
             }
       else if (type == auxType){
 //             knobLabel->setReadOnly(true);
@@ -1751,7 +1751,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeChanged(double,int,bool)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
-      connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(volumeRightClicked(const QPoint &)));
+      connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
       grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter);
 
       //---------------------------------------------------

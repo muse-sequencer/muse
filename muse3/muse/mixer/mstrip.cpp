@@ -259,8 +259,10 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
 
         rackLayout->addWidget(control);
    
-        connect(control, SIGNAL(patchNameClicked()), SLOT(patchPopup()));
-        connect(control, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
+        //connect(control, SIGNAL(patchNameClicked()), SLOT(patchPopup()));
+        connect(control, SIGNAL(patchNameClicked(QPoint,int)), SLOT(patchPopup()));
+        connect(control, SIGNAL(patchNameRightClicked(QPoint,int)), SLOT(controlRightClicked(QPoint,int)));
+        connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controlRightClicked(QPoint,int)));
         connect(control, SIGNAL(valueStateChanged(double,bool,int)), slot);
       }
       else
@@ -345,7 +347,7 @@ void MidiStrip::addController(QVBoxLayout* rackLayout, ControlType idx, int midi
   //       connect(dl, SIGNAL(valueChanged(double, int)), slot);
   //       connect(dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked(int)));
         //connect(control, SIGNAL(sliderMoved(double,int)), slot);
-        connect(control, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
+        connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controlRightClicked(QPoint,int)));
         //connect(control, SIGNAL(valueChanged(double, int)), slot);
         connect(control, SIGNAL(valueStateChanged(double,bool,int)), slot);
         //connect(control, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked(int)));
@@ -386,7 +388,7 @@ CompactSlider* MidiStrip::addProperty(QVBoxLayout* rackLayout,
   
   rackLayout->addWidget(control); // REMOVE Tim. Trackinfo. Changed. TEST
   
-  connect(control, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(propertyRightClicked(const QPoint &, int)));
+  connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
   connect(control, SIGNAL(valueStateChanged(double,bool,int)), slot);
   
   return control;
@@ -784,7 +786,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       else
         _instrLabel->setText(tr("<unknown>"));
       _upperScrollLayout->addWidget(_instrLabel);
-      connect(_instrLabel, SIGNAL(pressed()), SLOT(instrPopup()));
+      connect(_instrLabel, SIGNAL(pressed(QPoint,Qt::MouseButtons,Qt::KeyboardModifiers)), SLOT(instrPopup()));
       
 // REMOVE Tim. Trackinfo. Added.
       addController(_upperScrollLayout, KNOB_PROGRAM, MusECore::CTRL_PROGRAM, tr("Program"), tr("Pro"),
@@ -971,7 +973,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
 //      connect(sl, SIGNAL(valueChanged(double,int)), slider, SLOT(setValue(double)));
 //      connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));
       connect(slider, SIGNAL(sliderMoved(double,int)), SLOT(setVolume(double)));
-      connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
+      connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controlRightClicked(QPoint,int)));
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
 //       connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked(int)));
       connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(volLabelDoubleClicked()));
@@ -1523,12 +1525,12 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
 //   controlRightClicked
 //---------------------------------------------------------
 
-void MidiStrip::controlRightClicked(const QPoint &p, int id)
+void MidiStrip::controlRightClicked(QPoint p, int id)
 {
   MusEGlobal::song->execMidiAutomationCtlPopup(static_cast<MusECore::MidiTrack*>(track), 0, p, id);
 }
 
-void MidiStrip::propertyRightClicked(const QPoint& /*p*/, int /*id*/)
+void MidiStrip::propertyRightClicked(QPoint /*p*/, int /*id*/)
 {
   
 }

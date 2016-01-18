@@ -88,7 +88,7 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   layout->addWidget(_LBank);
   layout->addWidget(_Prog);
   
-  //connect(_patchNameLabel, SIGNAL(valueStateChanged(double,bool,int)), SLOT(HBankValueStateChanged(double,bool,int)));
+  connect(_patchNameLabel, SIGNAL(pressed(QPoint,Qt::MouseButtons,Qt::KeyboardModifiers)), SLOT(patchNamePressed(QPoint,Qt::MouseButtons,Qt::KeyboardModifiers)));
   
   connect(_HBank, SIGNAL(valueStateChanged(double,bool,int)), 
                   SLOT(HBankValueStateChanged(double,bool,int)));
@@ -240,26 +240,27 @@ void CompactPatchEdit::setPatchName(const QString& patchName)
   _patchNameLabel->setText(patchName); 
 }
 
-void CompactPatchEdit::mousePressEvent(QMouseEvent* e)
-{
-  if(_patchNameLabel->rect().contains(e->pos()))
-  {
-    if(e->buttons() == Qt::LeftButton)
-    {
-      e->accept();
-      emit patchNameClicked();
-      return;
-    }
-    else if(e->buttons() == Qt::RightButton)
-    {
-      e->accept();
-      emit patchNameRightClicked();
-      return;
-    }
-  }
-  e->ignore();
-  QFrame::mousePressEvent(e);
-}
+// REMOVE Tim. Trackinfo.
+// void CompactPatchEdit::mousePressEvent(QMouseEvent* e)
+// {
+//   if(_patchNameLabel->rect().contains(e->pos()))
+//   {
+//     if(e->buttons() == Qt::LeftButton)
+//     {
+//       e->accept();
+//       emit patchNameClicked();
+//       return;
+//     }
+//     else if(e->buttons() == Qt::RightButton)
+//     {
+//       e->accept();
+//       emit patchNameRightClicked();
+//       return;
+//     }
+//   }
+//   e->ignore();
+//   QFrame::mousePressEvent(e);
+// }
 
 void CompactPatchEdit::HBankValueStateChanged(double val, bool off, int /*id*/)
 {
@@ -342,9 +343,17 @@ void CompactPatchEdit::ProgDoubleClicked(QPoint /*p*/, int /*id*/, Qt::MouseButt
   }
 }
 
-void CompactPatchEdit::anySliderRightClicked(const QPoint &p, int /*id*/)
+void CompactPatchEdit::anySliderRightClicked(QPoint p, int /*id*/)
 {
   emit sliderRightClicked(p, _id);
+}
+
+void CompactPatchEdit::patchNamePressed(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers /*keys*/)
+{
+  if(buttons == Qt::LeftButton)
+    emit patchNameClicked(p, _id);
+  else if(buttons == Qt::RightButton)
+    emit patchNameRightClicked(mapToGlobal(p), _id);
 }
 
 

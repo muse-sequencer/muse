@@ -718,14 +718,16 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
 
 void Arranger::trackSelectionChanged()
       {
-      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-      MusECore::Track* track = 0;
-      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-            if ((*t)->selected()) {
-                  track = *t;
-                  break;
-                  }
-            }
+// REMOVE Tim. Trackinfo. Removed
+//       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+//       MusECore::Track* track = 0;
+//       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//             if ((*t)->selected()) {
+//                   track = *t;
+//                   break;
+//                   }
+//             }
+      MusECore::Track* track = MusEGlobal::song->tracks()->currentSelection();
       if (track == selected)
             return;
       selected = track;

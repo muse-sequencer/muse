@@ -583,7 +583,7 @@ void Strip::mouseReleaseEvent(QMouseEvent* ev)
     ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->moveStrip(this);
   }
   dragOn=false;
-  //QFrame::mouseReleaseEvent(ev);
+  QFrame::mouseReleaseEvent(ev);
 
 }
 

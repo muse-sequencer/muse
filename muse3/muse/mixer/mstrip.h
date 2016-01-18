@@ -233,8 +233,8 @@ class MidiStrip : public Strip {
 //       void labelDoubleClicked(int);
       void volLabelDoubleClicked();
       void volLabelChanged(double);
-      void controlRightClicked(const QPoint&, int);
-      void propertyRightClicked(const QPoint&, int);
+      void controlRightClicked(QPoint, int);
+      void propertyRightClicked(QPoint, int);
       void instrPopup();
       void patchPopup();
       void patchPopupActivated(QAction*);

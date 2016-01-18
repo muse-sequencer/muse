@@ -132,8 +132,8 @@ class AudioStrip : public Strip {
 // REMOVE Tim. Trackinfo. Removed.
 //       void panLabelChanged(double);
 //       void auxLabelChanged(double, unsigned int);
-      void volumeRightClicked(const QPoint &);
-      void panRightClicked(const QPoint &);
+      void volumeRightClicked(QPoint);
+      void panRightClicked(QPoint);
 
       void resetClipper();
 
