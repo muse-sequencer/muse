@@ -298,7 +298,7 @@ void AudioMixerApp::stripsMenu()
     i++;
   }
   if (h==0) {
-    act = menuStrips->addAction(tr("No hidden strips"));
+    act = menuStrips->addAction(tr("(no hidden strips)"));
     act->setData(UNHANDLED_NUMBER);
   }
 }

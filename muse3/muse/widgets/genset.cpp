@@ -562,7 +562,7 @@ void GlobalSettingsConfig::browseStartSongFile()
 
 void GlobalSettingsConfig::startSongReset()
 {
-  startSongEntry->setText(MusEGlobal::museGlobalShare + QString("/templates/default.med"));
+  startSongEntry->setText("default.med");
   readMidiConfigFromSongCheckBox->setChecked(false);
 }
 

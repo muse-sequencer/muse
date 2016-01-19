@@ -1033,6 +1033,8 @@ void MusE::loadDefaultSong(int argc, char** argv)
         else
         {
           name = MusEGlobal::config.startSong;
+          if (name == "default.med")
+              name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
         useTemplate = true;
