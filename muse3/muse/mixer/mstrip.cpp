@@ -1461,11 +1461,10 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved. 
       }  
       
-      if(val & SC_MIDI_TRACK_PROP)
+      if(val & SC_MIDI_INSTRUMENT)
       {
         MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
-        const int outPort    = mt->outPort();
-        if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[outPort].instrument())
+        if(MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[mt->outPort()].instrument())
         {
           _instrLabel->setText(minstr->iname()); // It ignores if already set.
           if(minstr->isSynti())
@@ -1475,6 +1474,11 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
         }
         else
           _instrLabel->setText(tr("<unknown>")); // It ignores if already set.
+      }
+      
+      if(val & SC_MIDI_TRACK_PROP)
+      {
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
         
         // Set record echo.
         if(_midiThru->isChecked() != mt->recEcho())
@@ -1682,16 +1686,6 @@ void MidiStrip::offToggled(bool val)
       track->setOff(val);
       MusEGlobal::song->update(SC_MUTE);
       }
-
-/*
-//---------------------------------------------------------
-//   routeClicked
-//---------------------------------------------------------
-
-void MidiStrip::routeClicked()
-      {
-      }
-*/
 
 //---------------------------------------------------------
 //   heartBeat
@@ -2628,7 +2622,7 @@ void MidiStrip::instrPopup()
         MusEGlobal::audio->msgIdle(false);
         // Make sure device initializations are sent if necessary.
         MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
-        MusEGlobal::song->update(); // TODO: Use a specific flag instead of brute force all.
+        MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
         break;
       }
     }

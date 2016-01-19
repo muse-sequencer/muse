@@ -1020,7 +1020,7 @@ void MidiTrackInfo::patchPopupActivated(QAction* act)
 {
   if(act && selected) 
   {
-    MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+    MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(selected);
     const int channel = track->outChannel();
     const int port    = track->outPort();
     MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
@@ -1096,7 +1096,7 @@ void MidiTrackInfo::instrPopup()
             MusEGlobal::audio->msgIdle(false);
             // Make sure device initializations are sent if necessary.
             MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
-            MusEGlobal::song->update();  // TODO: Use a specific flag instead of brute force all.
+            MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
             break;
           }
         }
@@ -1487,12 +1487,31 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         
       if(!selected)
         return;
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+      MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(selected);
 
       ++_blockHeartbeatCount;
       
       setLabelText();
       setLabelFont();
+
+      const int outChannel = track->outChannel();
+      const int outPort    = track->outPort();
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
+      MusECore::MidiInstrument* instr = mp->instrument();
+      
+      if(flags & (SC_MIDI_INSTRUMENT))  
+      {
+        if(instr)
+        {
+          instrPushButton->setText(instr->iname());
+          if(instr->isSynti())
+            instrPushButton->setEnabled(false);
+          else
+            instrPushButton->setEnabled(true);
+        }
+        else
+          instrPushButton->setText(tr("<unknown>"));
+      }
         
       if(flags & (SC_MIDI_TRACK_PROP))  
       {
@@ -1512,9 +1531,6 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         iLen->blockSignals(false);
         iKompr->blockSignals(false);
         
-        int outChannel = track->outChannel();
-        int outPort    = track->outPort();
-  
         iOutput->blockSignals(true);
         iOutput->clear();
   
@@ -1534,18 +1550,6 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
               }
         iOutput->blockSignals(false);
         
-        MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[outPort].instrument();
-        if(minstr)
-        {
-          instrPushButton->setText(minstr->iname());
-          if(minstr->isSynti())
-            instrPushButton->setEnabled(false);
-          else
-            instrPushButton->setEnabled(true);
-        }
-        else
-          instrPushButton->setText(tr("<unknown>"));
-        
         iOutputChannel->blockSignals(true);
         iOutputChannel->setValue(outChannel+1);
         iOutputChannel->blockSignals(false);
@@ -1560,9 +1564,6 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         recEchoButton->setIcon(track->recEcho() ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
       }
         
-      int outChannel = track->outChannel();
-      int outPort    = track->outPort();
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
       int nprogram = mp->hwCtrlState(outChannel, MusECore::CTRL_PROGRAM);
       if(nprogram == MusECore::CTRL_VAL_UNKNOWN)
       {
@@ -1582,15 +1583,14 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
           iPatch->setText(tr("<unknown>"));
         else
         {
-          MusECore::MidiInstrument* instr = mp->instrument();
-          iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
+          if(instr)
+            iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
         }         
       }
       else
       {
             program = nprogram;
 
-            MusECore::MidiInstrument* instr = mp->instrument();
             iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack()));
 
             int hb = ((program >> 16) & 0xff) + 1;

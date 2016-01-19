@@ -69,7 +69,6 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
       #endif     
       
-      PopupMenu* instrPopup;
       PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);

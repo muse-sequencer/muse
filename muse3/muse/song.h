@@ -98,8 +98,8 @@ class AudioDevice;
 #define SC_CHANNELS            0x40000
 #define SC_CONFIG              0x80000     // midiPort-midiDevice
 #define SC_DRUMMAP             0x100000    // must update drumeditor
-#define SC_MIXER_VOLUME        0x200000
-#define SC_MIXER_PAN           0x400000
+#define SC_MIDI_INSTRUMENT     0x200000    // A midi port or device's instrument has changed
+//#define SC_MIXER_PAN           0x400000  // Not used
 #define SC_AUTOMATION          0x800000
 #define SC_AUX                 0x1000000   // mixer aux changed
 #define SC_RACK                0x2000000   // mixer rack changed

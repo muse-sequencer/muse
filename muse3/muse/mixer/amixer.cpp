@@ -836,7 +836,7 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
         action = STRIP_INSERTED;
         updateStripList();
   }
-  else if (flags & SC_MIDI_TRACK_PROP) {
+  else if (flags & (SC_MIDI_TRACK_PROP | SC_MIDI_INSTRUMENT)) {
         action = UPDATE_MIDI;
   }
 
