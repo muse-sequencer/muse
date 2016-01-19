@@ -51,7 +51,7 @@
 
 #define __WIDTH_COMPENSATION 4
 
-#define DEBUG_MIXER 1
+#define DEBUG_MIXER 0
 
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
