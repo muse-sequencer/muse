@@ -1808,8 +1808,11 @@ void PluginI::init()
       handle            = 0;
       controls          = 0;
       controlsOut       = 0;
+      controlsOutDummy  = 0;
       controlPorts      = 0;
       controlOutPorts   = 0;
+      _audioInSilenceBuf = 0;
+      _audioOutDummyBuf  = 0;
       //_gui              = 0;
       _on               = true;
       initControlValues = false;
@@ -1838,6 +1841,14 @@ PluginI::~PluginI()
             deactivate();
             _plugin->incReferences(-1);
             }
+
+      if(_audioInSilenceBuf)
+        free(_audioInSilenceBuf);
+      if(_audioOutDummyBuf)
+        free(_audioOutDummyBuf);
+      
+      if (controlsOutDummy)
+            delete[] controlsOutDummy;
       if (controlsOut)
             delete[] controlsOut;
       if (controls)
@@ -1891,46 +1902,106 @@ void PluginI::setChannels(int c)
       if (ni == instances)
             return;
 
-      // remove old instances:
-      deactivate();
-      delete[] handle;
-      instances = ni;
-      handle    = new LADSPA_Handle[instances];
-      for (int i = 0; i < instances; ++i) {
-            handle[i] = _plugin->instantiate(this);
-            if (handle[i] == NULL) {
-                  printf("cannot instantiate instance %d\n", i);
-                  return;
-                  }
-            }
-
-      unsigned long curPort = 0;
-      unsigned long curOutPort = 0;
-      unsigned long ports   = _plugin->ports();
-      for (unsigned long k = 0; k < ports; ++k)
+      LADSPA_Handle* handles = new LADSPA_Handle[ni];
+      
+      if(ni > instances)
       {
-            LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL)
+        for(int i = 0; i < ni; ++i)
+        {
+          if(i < instances)
+            // Transfer existing handle from old array to new array.
+            handles[i] = handle[i];
+          else
+          {
+            // Create a new plugin instance with handle.
+            handles[i] = _plugin->instantiate(this);
+            if(handles[i] == NULL) 
             {
-                  if(pd & LADSPA_PORT_INPUT)
-                  {
-                    for (int i = 0; i < instances; ++i)
-                          _plugin->connectPort(handle[i], k, &controls[curPort].val);
-                    controls[curPort].idx = k;
-                    ++curPort;
-                  }
-                  else
-                  if(pd & LADSPA_PORT_OUTPUT)
-                  {
-                    for (int i = 0; i < instances; ++i)
-                          _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
-                    controlsOut[curOutPort].idx = k;
-                    ++curOutPort;
-                  }
+              fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
+              
+              // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert(). 
+              // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
+              for(int k = i; k < ni; ++k)
+                handles[i] = NULL;
+              ni = i + 1;
+              //channel = ?;
+              break;
             }
+          }
+        }
+      }
+      else
+      {
+        for(int i = 0; i < instances; ++i)
+        {
+          if(i < ni)
+            // Transfer existing handle from old array to new array.
+            handles[i] = handle[i];
+          else
+          {
+            // Delete existing plugin instance.
+            // Previously we deleted all the instances and rebuilt from scratch.
+            // One side effect of this: Since a GUI is constructed only on the first handle, 
+            //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
+            _plugin->deactivate(handle[i]);
+            _plugin->cleanup(handle[i]);
+          }
+        }
       }
 
-      activate();
+      // Delete the old array, and set the new array.
+      delete[] handle;
+      handle = handles;
+
+      // Connect ports:
+      unsigned long curPort = 0;
+      unsigned long curOutPort = 0;
+      unsigned long ports = _plugin->ports();
+      for(unsigned long k = 0; k < ports; ++k)
+      {
+        LADSPA_PortDescriptor pd = _plugin->portd(k);
+        if(pd & LADSPA_PORT_CONTROL)
+        {
+          if(pd & LADSPA_PORT_INPUT)
+          {
+            for(int i = instances; i < ni; ++i)
+              _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            controls[curPort].idx = k;
+            ++curPort;
+          }
+          else if(pd & LADSPA_PORT_OUTPUT)
+          {
+            // Connect only the first instance's output controls. 
+            // We don't have a mechanism to display the other instances' outputs.
+            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+            // Connect the rest to dummy ports.
+            for(int i = 1; i < ni; ++i)
+              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            controlsOut[curOutPort].idx = k;
+            ++curOutPort;
+          }
+        }
+      }
+
+      // Activate new instances.
+      for(int i = instances; i < ni; ++i)
+        _plugin->activate(handle[i]);
+
+      // Initialize control values.
+      if(initControlValues) 
+      {
+        for(unsigned long i = 0; i < controlPorts; ++i) 
+          controls[i].val = controls[i].tmpVal;
+      }
+      else
+      {
+        // get initial control values from plugin
+        for(unsigned long i = 0; i < controlPorts; ++i) 
+          controls[i].tmpVal = controls[i].val;
+      }            
+
+      // Finally, set the new number of instances.
+      instances = ni;
 }
 
 //---------------------------------------------------------
@@ -2077,7 +2148,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
       controls    = new Port[controlPorts];
       controlsOut = new Port[controlOutPorts];
-
+      controlsOutDummy = new Port[controlOutPorts];
+      
       unsigned long curPort = 0;
       unsigned long curOutPort = 0;
       for(unsigned long k = 0; k < ports; ++k)
@@ -2103,12 +2175,45 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
             controlsOut[curOutPort].val     = 0.0;
             controlsOut[curOutPort].tmpVal  = 0.0;
             controlsOut[curOutPort].enCtrl  = false;
-            for(int i = 0; i < instances; ++i)
-              _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
+            // Connect only the first instance's output controls. 
+            // We don't have a mechanism to display the other instances' outputs.
+            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+            // Connect the rest to dummy ports.
+            for(int i = 1; i < instances; ++i)
+              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
             ++curOutPort;
           }
         }
       }
+      
+      int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+      if(rv != 0)
+      {
+          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+      }
+
+      if(MusEGlobal::config.useDenormalBias)
+      {
+          for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+          {
+            _audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+          }
+      }
+      else
+      {
+          memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+      }
+
+      rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+      if(rv != 0)
+      {
+          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+      }
+
       activate();
       return false;
       }
@@ -2123,8 +2228,12 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
-                        _plugin->connectPort(handle[i], k, src[port] + offset);
-                        port = (port + 1) % ports;
+                        if(port < ports)
+                          _plugin->connectPort(handle[i], k, src[port] + offset);
+                        else
+                          // Connect to an input silence buffer.
+                          _plugin->connectPort(handle[i], k, _audioInSilenceBuf + offset);
+                        ++port;
                         }
                   }
             }
@@ -2132,8 +2241,12 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioOut(k)) {
-                        _plugin->connectPort(handle[i], k, dst[port] + offset);
-                        port = (port + 1) % ports;  // overwrite output?
+                        if(port < ports)
+                          _plugin->connectPort(handle[i], k, dst[port] + offset);
+                        else
+                          // Connect to a dummy buffer.
+                          _plugin->connectPort(handle[i], k, _audioOutDummyBuf + offset);
+                        ++port;
                         }
                   }
             }

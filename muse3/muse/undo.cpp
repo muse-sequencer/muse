@@ -1513,9 +1513,7 @@ void Song::revertOperationGroup1(Undo& operations)
                   case UndoOp::ModifyTrackChannel:
                         if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                            break;
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_oldPropValue != mt->outChannel()) 
                           {
                                 MusEGlobal::audio->msgIdle(true);
@@ -1529,9 +1527,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         {
                             if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
-                              if (at == 0)
-                                break;
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (i->_oldPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
                                     updateFlags |= SC_CHANNELS;
@@ -2016,20 +2012,12 @@ void Song::executeOperationGroup1(Undo& operations)
                   case UndoOp::ModifyTrackChannel:
                         if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                            break;
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_newPropValue != mt->outChannel()) 
                           {
                                 MusEGlobal::audio->msgIdle(true);
                                 mt->setOutChanAndUpdate(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(false);
-                                // DELETETHIS 5
-                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
-                                //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
-                                //      }
-                                //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
                                 updateFlags |= SC_MIDI_TRACK_PROP;               
                           }
@@ -2038,9 +2026,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         {
                             if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
-                              if (at == 0)
-                                break;
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (i->_newPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
                                     updateFlags |= SC_CHANNELS;

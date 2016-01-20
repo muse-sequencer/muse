@@ -348,10 +348,14 @@ class PluginI : public PluginIBase {
       LADSPA_Handle* handle;         // per instance
       Port* controls;
       Port* controlsOut;
+      Port* controlsOutDummy;
 
       unsigned long controlPorts;
       unsigned long controlOutPorts;
 
+      float *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
+      float *_audioOutDummyBuf;  // A place to connect unused outputs.
+      
       bool _on;
       bool initControlValues;
       QString _name;
