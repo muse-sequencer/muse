@@ -118,6 +118,7 @@ class TList : public QWidget {
       void toggleMute(MusECore::Track *t, bool turnOff);
       void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
       void editTrackName(MusECore::Track *t);
+      void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);
 
 
    protected:

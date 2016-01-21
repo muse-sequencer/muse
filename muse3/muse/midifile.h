@@ -71,7 +71,11 @@ struct MidiFileTrack {
             }
       };
 
-typedef std::list<MidiFileTrack*> MidiFileTrackList;
+class MidiFileTrackList : public std::list<MidiFileTrack*>
+{
+  public:
+    void clearDelete();
+};
 typedef MidiFileTrackList::iterator iMidiFileTrack;
 typedef MidiFileTrackList::const_iterator ciMidiFileTrack;
 
@@ -125,10 +129,8 @@ class MidiFile {
       MidiFilePortMap* usedPortMap() { return _usedPortMap; }
       MidiFileTrackList* trackList()  { return _tracks; }
       int tracks() const              { return ntracks; }
-      void setTrackList(MidiFileTrackList* tr, int n) {
-            _tracks = tr;
-            ntracks = n;
-            }
+      // Takes ownership of list and its contents.
+      void setTrackList(MidiFileTrackList* tr, int n);
       void setDivision(int d)         { _division = d; }
       int division() const            { return _division; }
       };

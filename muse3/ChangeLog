@@ -1,3 +1,27 @@
+21.01.2016:
+        - Midi import: Ignore empty tracks with zero data. Fixed corruption if so.
+        - Midi import/export: Delete allocated memory.
+      *New: Midi export now has 'Use running status', and the instr/mode + port/device 
+             metas can now be turned off for a 'cleaner' file.
+20.01.2016:
+        - Fixed mixer crash when deleting track in updateStripList. (Tim)
+        - Fixed audio rack plugin problems: From README.effects-rack:
+            "For mono tracks with plugins having more than one audio input or output,
+              MusE uses the first input or output and ignores the rest."
+          This was not happening. It was using the second output. Fixed.
+          Optimization: When changing track channels: Previously we deleted all rack plugin 
+           instances and rebuilt them. Now it only deletes or rebuilds what is necessary.
+          Fixed: A good side effect of the above is that rack plugin GUIs no longer 
+           disappear when changing track channels :-)
+          Fixed: Multiple-instance plugin GUIs were being updated from the last instance's
+           control values. Now they are updated from the first instance (ie. 'left').
+        - Arranger fixes: Fixed problems with channel unwanted double increments. 
+          Fixed problems with popup editors, click/doubleclick passing to parent,
+           for example channel editor box causing 'track lock' column icon to light.
+      *Arranger Feature - Multiple selected tracks common property editing:
+        - You can now edit a property and it will change all the selected tracks.
+          Currently works for track channel column and midi output port.
+          
 18.01.2016:
         - Strips are raised when dragged in mixer (they should also get a solid background)
         - When sorting mixer as arranger moving strips in mixer affects arranger also (rj)

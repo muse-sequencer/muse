@@ -244,7 +244,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       central->setLayout(mixerLayout);
       mixerLayout->setSpacing(0);
       mixerLayout->setContentsMargins(0, 0, 0, 0);
-      //layout->setSpacing(0);  // REMOVE Tim. Trackinfo. Duplicate.
       view->setWidget(central);
       //view->setWidget(splitter);
       view->setWidgetResizable(true);
@@ -774,8 +773,7 @@ void AudioMixerApp::updateStripList()
       
   MusECore::TrackList *tl = MusEGlobal::song->tracks();
   // check for superfluous strips
-  StripList::iterator si = stripList.begin();
-  for (; si != stripList.end(); ++si) {
+  for (StripList::iterator si = stripList.begin(); si != stripList.end(); ) {
     MusECore::TrackList::iterator tli = tl->begin();
     bool found = false;
     for (; tli != tl->end();++tli) {
@@ -787,9 +785,12 @@ void AudioMixerApp::updateStripList()
     if (!found) {
       if (DEBUG_MIXER)
         printf("Did not find track for strip %s - Removing\n", (*si)->getLabelText().toLatin1().data());
-      (*si)->deleteLater();
+      //(*si)->deleteLater();
+      delete (*si);
       si = stripList.erase(si);
     }
+    else
+      ++si;
   }
 
   // check for new tracks

@@ -2595,6 +2595,9 @@ LV2SynthIF::~LV2SynthIF()
       free((*_itA).buffer);
    }
 
+   if(_audioInSilenceBuf)
+     free(_audioInSilenceBuf);
+  
    if(_audioInBuffers)
    {
       delete [] _audioInBuffers;
