@@ -157,6 +157,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                       pitch = ev.pitch();
 
                 int velo  = ev.velo();
+                int veloOff  = ev.veloOff();
                 int len   = ev.lenTick();
 
                 //---------------------------------------
@@ -179,6 +180,12 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                             velo = 127;
                       if (velo < 1)           // no off event
                             velo = 1;
+                            // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
+                            // Although we might not actually play such an event in the midi.cpp engine, 
+                            //  I don't like the idea of discarding the event during export.
+                            // Keeping the notes is more important than the velocities, I'd say.
+                            //break;
+                      
                       len = (len *  track->len) / 100;
                       }
                 if (len <= 0)
@@ -188,7 +195,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                 if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
                   mpevlist->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEON, pitch, 0));
                 else  
-                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEOFF, pitch, velo));
+                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff));
                 }
                 break;
 
@@ -436,8 +443,7 @@ void MusE::exportMidi()
             {
               if(port >= 0 && port < MIDI_PORTS)
               {
-                if(MusEGlobal::config.exportPortsDevices == MusEGlobal::EXPORT_PORTS_DEVICES_ALL || 
-                  MusEGlobal::config.exportPortsDevices == MusEGlobal::PORT_NUM_META)  
+                if(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META)
                 {
                   unsigned char port_char = (unsigned char)port;
                   MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, &port_char, 1);
@@ -446,8 +452,7 @@ void MusE::exportMidi()
                   l->add(ev);
                 }
                 
-                if(MusEGlobal::config.exportPortsDevices == MusEGlobal::EXPORT_PORTS_DEVICES_ALL || 
-                  MusEGlobal::config.exportPortsDevices == MusEGlobal::DEVICE_NAME_META)
+                if(MusEGlobal::config.exportPortsDevices & MusEGlobal::DEVICE_NAME_META)
                 {
                   MusECore::MidiDevice* dev = MusEGlobal::midiPorts[port].device();
                   const char* str;
@@ -485,8 +490,7 @@ void MusE::exportMidi()
                     //--------------------------
                     // Port midi init sequence
                     //--------------------------
-                    if(MusEGlobal::config.exportModeInstr == MusEGlobal::EXPORT_MODE_INSTR_ALL || 
-                      MusEGlobal::config.exportModeInstr == MusEGlobal::MODE_SYSEX)  
+                    if(MusEGlobal::config.exportModeInstr & MusEGlobal::MODE_SYSEX)
                     {
                       MusECore::EventList* el = instr->midiInit();
                       if(!el->empty())
@@ -497,8 +501,7 @@ void MusE::exportMidi()
                     // Instrument Name meta
                     //--------------------------
                     if(!instr->iname().isEmpty() && 
-                      (MusEGlobal::config.exportModeInstr == MusEGlobal::EXPORT_MODE_INSTR_ALL || 
-                      MusEGlobal::config.exportModeInstr == MusEGlobal::INSTRUMENT_NAME_META))
+                      (MusEGlobal::config.exportModeInstr & MusEGlobal::INSTRUMENT_NAME_META))
                     {
                       const char* str;
                       int len;
@@ -526,6 +529,7 @@ void MusE::exportMidi()
             }
             
       mf.setDivision(MusEGlobal::config.midiDivision);
+      // Takes ownership of mtl and its contents.
       mf.setTrackList(mtl, i);
       mf.write();
 

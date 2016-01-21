@@ -165,13 +165,14 @@ GlobalConfigValues config = {
       1,                            // smf export file format
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
+      true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.
       true,                         // importInstrNameMetas Import Prefer Instrument Name metas over Mode sysexes if both exist.
-      EXPORT_PORTS_DEVICES_ALL,     // exportPortsDevices Export port number metas and/or device name metas.
+      PORT_NUM_META | DEVICE_NAME_META,  // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
       true,                         // exportPortDeviceSMF0 Export a port and/or device meta even for SMF0.
-      EXPORT_MODE_INSTR_ALL,        // exportModeInstr Export mode sysexes and/or instrument name metas.
+      MODE_SYSEX | INSTRUMENT_NAME_META, // exportModeInstr. Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString("GM"),                // importMidiDefaultInstr Default to this instrument not Generic, if no match found
       1,                            // startMode
       QString(""),                  // start song path

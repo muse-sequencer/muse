@@ -1,3 +1,8 @@
+21.01.2016:
+        - Midi import: Ignore empty tracks with zero data. Fixed corruption if so.
+        - Midi import/export: Delete allocated memory.
+      *New: Midi export now has 'Use running status', and the instr/mode + port/device 
+             metas can now be turned off for a 'cleaner' file.
 20.01.2016:
         - Fixed mixer crash when deleting track in updateStripList. (Tim)
         - Fixed audio rack plugin problems: From README.effects-rack:
