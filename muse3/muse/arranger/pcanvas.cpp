@@ -2163,9 +2163,12 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                peak = (peak * (rectHeight-2)) >> 9;
                rms  = (rms  * (rectHeight-2)) >> 9;
                p.setPen(MusEGlobal::config.partWaveColorPeak);
-               p.drawLine(i, y - peak - cc, i, y + peak);
+               p.drawLine(i, y - peak - cc-1, i, y + peak+1);
                p.setPen(MusEGlobal::config.partWaveColorRms);
-               p.drawLine(i, y - rms - cc, i, y + rms);
+               if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
+                 p.drawLine(i, y - rms - cc, i, y + rms);
+               else // WaveOutLine
+                 p.drawLine(i, y - peak - cc, i, y + peak);
                }
          }
    else {
@@ -2182,10 +2185,15 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                for (unsigned k = 0; k < channels; ++k) {
                      int peak = (sa[k].peak * (hm - 1)) >> 8;
                      int rms  = (sa[k].rms  * (hm - 1)) >> 8;
+                     int outer = peak +1;
+                     int inner = peak; //-1 < 0 ? 0 : peak -1;
                      p.setPen(MusEGlobal::config.partWaveColorPeak);
-                     p.drawLine(i, y - peak - cc, i, y + peak);
+                     p.drawLine(i, y - outer - cc , i, y + outer);
                      p.setPen(MusEGlobal::config.partWaveColorRms);
-                     p.drawLine(i, y - rms - cc, i, y + rms);
+                     if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
+                       p.drawLine(i, y - rms - cc, i, y + rms);
+                     else // WaveOutLine
+                       p.drawLine(i, y - inner - cc, i, y + inner);
 
                      y  += 2 * hm;
                      }

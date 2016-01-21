@@ -73,6 +73,7 @@ enum ExportModeInstr_t
 
 enum RouteNameAliasPreference { RoutePreferCanonicalName, RoutePreferFirstAlias, RoutePreferSecondAlias };
 
+enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -169,6 +170,8 @@ struct GlobalConfigValues {
       QColor partWaveColorRms;
       QColor partMidiDarkEventColor;
       QColor partMidiLightEventColor;
+
+      WaveDrawing waveDrawing;
 
       int division;
       int rtcTicks;

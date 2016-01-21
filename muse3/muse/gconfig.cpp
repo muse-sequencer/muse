@@ -25,6 +25,21 @@
 
 namespace MusEGlobal {
 
+/*   --- PLEASE READ BEFORE EDITING ---
+ *
+ * The values below are default init parameters for most MusE
+ * configuration parameters.
+ * They are however NOT certain to have this value!
+ *
+ * This is for two reasons:
+ * 1) MusE has a config file which overrides these values
+ * 2) When no configuration file exists a default TEMPLATE
+ *    is loaded from the share dir which overwrites most
+ *    of these values.
+ *    In a perfect world it would overwrite all values and
+ *    these would be removed.
+ */
+
 GlobalConfigValues config = {
       170,                        // globalAlphaBlend    
       {
@@ -133,8 +148,7 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
       Qt::gray,                     // midiCanvasBeatColor
-      Qt::black,                // midiCanvasBarColor
-
+      Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
       Qt::black,                    // waveRmsColor
@@ -146,6 +160,7 @@ GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
 
+      WaveOutLine,                  // waveDrawing
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences

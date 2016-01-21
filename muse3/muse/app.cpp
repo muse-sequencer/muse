@@ -290,6 +290,7 @@ void addProject(const QString& name)
 
 MusE::MusE() : QMainWindow()
       {
+
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
@@ -2081,12 +2082,23 @@ void MusE::showDidYouKnowDialog()
           return;
         }
 
-        // All tip is on one line. empty lines or lines starting with # are ignored
+        // All tips are separated by an empty line. Lines starting with # are ignored
+        QString tipMessage = "";
         while (!file.atEnd())  {
-          QString str = file.readLine();
-          if (!str.simplified().isEmpty() && str.at(0) != QChar('#'))
-            dyk.tipList.append(str);
+          QString line = file.readLine();
+
+          if (!line.simplified().isEmpty() && line.at(0) != QChar('#'))
+            tipMessage.append(line);
+
+          if (!tipMessage.isEmpty() && line.simplified().isEmpty()) {
+            dyk.tipList.append(tipMessage);
+            tipMessage="";
+          }
         }
+        if (!tipMessage.isEmpty()) {
+          dyk.tipList.append(tipMessage);
+        }
+
         std::random_shuffle(dyk.tipList.begin(),dyk.tipList.end());
 
         dyk.show();
@@ -2563,6 +2575,7 @@ void MusE::changeConfig(bool writeFlag)
 
       loadTheme(MusEGlobal::config.style);
       QApplication::setFont(MusEGlobal::config.fonts[0]);
+
       if(!MusEGlobal::config.styleSheetFile.isEmpty())
         loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
 
