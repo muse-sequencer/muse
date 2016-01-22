@@ -738,6 +738,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   }
                                   start = curItem->pos();
                                 }
+                                deselectAll();
+                                if (curItem)
+                                      selectItem(curItem, true);
                               }
                         else {
                               drag = DRAG_NEW;
@@ -749,10 +752,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                     drag = DRAG_OFF;
                                     setCursor();
                                     }
+                              deselectAll();
+                              // selectItem() will be called in viewMouseReleaseEvent().
                               }
-                        deselectAll();
-                        if (curItem)
-                              selectItem(curItem, true);
                         updateSelection();
                         redraw();
                         break;

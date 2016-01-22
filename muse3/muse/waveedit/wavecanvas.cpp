@@ -1463,6 +1463,7 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
             x=pframe;
       event.setFrame(x - pframe);
       event.setLenFrame(w);
+      event.setSelected(true);
 
       MusECore::Undo operations;
       int diff = event.endFrame() - part->lenFrame();

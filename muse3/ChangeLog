@@ -2,6 +2,7 @@
         - raise config dialogs after apply to keep them visible (rj)
         - removed startSong from the config in the default case 
           as we already know what should be there (rj)
+        - Pianoroll/drum editor: Ensure new events are selected. (Tim)
 21.01.2016:
         - Midi import: Ignore empty tracks with zero data. Fixed corruption if so. (Tim)
         - Midi import/export: Delete allocated memory.
