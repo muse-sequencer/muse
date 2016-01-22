@@ -342,7 +342,6 @@ void Appearance::resetValues()
       global_bg->takeChildren();
       user_bg->takeChildren();
 
-      printf("config->waveDrawing = %d\n", config->waveDrawing);
       if (config->waveDrawing == MusEGlobal::WaveRmsPeak)
         radioButtonDrawRmsPeak->setChecked(true);
       else
@@ -653,6 +652,7 @@ void Appearance::apply()
       MusEGlobal::config = *config;
 
       MusEGlobal::muse->changeConfig(true);
+      raise();
       }
 
 //---------------------------------------------------------

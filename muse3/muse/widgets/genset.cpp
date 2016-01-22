@@ -176,7 +176,8 @@ void GlobalSettingsConfig::updateSettings()
       
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
 
-      startSongEntry->setText(MusEGlobal::config.startSong);
+
+      startSongEntry->setText(MusEGlobal::config.startSong == "" ? "<default>" : MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
       readMidiConfigFromSongCheckBox->setChecked(MusEGlobal::config.startSongLoadConfig);
       
@@ -291,7 +292,7 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       
-      MusEGlobal::config.startSong   = startSongEntry->text();
+      MusEGlobal::config.startSong   = startSongEntry->text() == "<default>" ? "" : startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       MusEGlobal::config.startSongLoadConfig = readMidiConfigFromSongCheckBox->isChecked();
 
@@ -407,6 +408,7 @@ void GlobalSettingsConfig::apply()
       applyMdiSettings();
       
       MusEGlobal::muse->changeConfig(true);    // save settings
+      raise();
       }
 
 //---------------------------------------------------------
@@ -562,7 +564,7 @@ void GlobalSettingsConfig::browseStartSongFile()
 
 void GlobalSettingsConfig::startSongReset()
 {
-  startSongEntry->setText("default.med");
+  startSongEntry->setText("<default>");
   readMidiConfigFromSongCheckBox->setChecked(false);
 }
 

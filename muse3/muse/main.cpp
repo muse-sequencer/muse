@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
       if(!cConfExists)
       {
         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
-        MusEGlobal::config.startSong = QString("default.med");
+        MusEGlobal::config.startSong = "";
       }
       
       // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
