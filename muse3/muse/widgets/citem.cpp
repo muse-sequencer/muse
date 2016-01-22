@@ -76,8 +76,7 @@ void CItem::setSelected(bool f)
 
 CItem* CItemList::find(const QPoint& pos) const
       {
-      rciCItem ius;
-      bool usfound = false;
+      CItem* item = 0;
       for (rciCItem i = rbegin(); i != rend(); ++i) {
             if (i->second->contains(pos))
             {
@@ -86,18 +85,12 @@ CItem* CItemList::find(const QPoint& pos) const
               
               else
               {
-                if(!usfound)
-                { 
-                  ius = i;    
-                  usfound = true;
-                }  
+                if(!item)
+                  item = i->second;    
               }  
             }      
           }
-      if(usfound)
-        return ius->second;
-      else
-        return 0;
+      return item;
       }
 
 //---------------------------------------------------------

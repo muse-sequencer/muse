@@ -10,6 +10,8 @@
         - New wavedrawing mode (set to default) with drawing only a tiny outline of the wave (rj)
         - DidYouKnow dialog now allows multiline help texts (rj)
         - Several of the colors written to the config were not properly read back, now fixed (rj)
+        - Fix drum editor: In Canvas::findCurrentItem: Selecting notes required 2 clicks, 
+           this also fixes dragging of selected same-time notes not dragging correct notes. (Tim)
 20.01.2016:
         - Fixed mixer crash when deleting track in updateStripList. (Tim)
         - Fixed audio rack plugin problems: From README.effects-rack:

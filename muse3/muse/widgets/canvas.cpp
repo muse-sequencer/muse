@@ -1597,10 +1597,7 @@ CItem *Canvas::findCurrentItem(const QPoint &cStart)
    if (virt())
       item = items.find(cStart);
    else {
-      item = 0;
-      iCItem ius;
-      bool usfound = false;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (ciCItem i = items.begin(); i != items.end(); ++i) {
          QRect box = i->second->bbox();
          int x = rmapxDev(box.x());
          int y = rmapyDev(box.y());
@@ -1610,24 +1607,16 @@ CItem *Canvas::findCurrentItem(const QPoint &cStart)
          r.translate(i->second->pos().x(), i->second->pos().y());
          if (r.contains(cStart)) {
             if(i->second->isSelected())
-            {
-               item = i->second;
-               break;
-            }
+              return i->second;
             else
-               if(!usfound)
-               {
-                  ius = i;
-                  usfound = true;
-               }
+            {
+              if(!item)
+                item = i->second;
+            }
          }
       }
-      if(!curItem && usfound)
-         item = ius->second;
    }
-
    return item;
-
 }
 
 void Canvas::resizeToTheLeft(const QPoint &pos)
