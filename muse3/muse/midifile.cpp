@@ -812,6 +812,7 @@ bool MidiFile::read()
                       // Empty track with zero data length. Ignore the track, reset the error, and continue.
                       case MF_MTRK_ZERO_DATA:
                         _error = MF_NO_ERROR;
+                        ++tracks_found;
                       break;
                       
                       // All other errors stop.
@@ -843,6 +844,7 @@ bool MidiFile::read()
                         // Empty track with zero data length. Ignore the track, reset the error, and continue.
                         case MF_MTRK_ZERO_DATA:
                           _error = MF_NO_ERROR;
+                          ++tracks_found;
                         break;
                         
                         // All other errors stop.
