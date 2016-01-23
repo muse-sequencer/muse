@@ -974,8 +974,11 @@ void CompactSlider::getPixelValues()
 
 void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
 {
-  QPainter p(this);
   const QRect& geo = rect();
+  if(geo.width() <= 0 || geo.height() <= 0)
+    return;
+  
+  QPainter p(this);
   
   const QPalette& pal = palette();
 
@@ -1808,14 +1811,17 @@ void CompactSlider::resizeEvent(QResizeEvent *e)
 //     linearDarkGrad.setColorAt(1-(double)h2/(double)mh, Qt::darkYellow);
 //     linearDarkGrad.setColorAt(1, Qt::darkGreen);
 
-  QPainter p;
-  p.begin(&_onPixmap);
-  p.fillRect(0, 0, w, h, linearGrad_a);
-  p.end();
-  p.begin(&_offPixmap);
-    //p.fillRect(0, 0, w, h, linearGrad_b);
-    p.fillRect(0, 0, w, h, pal.window());
-  p.end();
+  if(w > 0 && h > 0)
+  {
+    QPainter p;
+    p.begin(&_onPixmap);
+    p.fillRect(0, 0, w, h, linearGrad_a);
+    p.end();
+    p.begin(&_offPixmap);
+      //p.fillRect(0, 0, w, h, linearGrad_b);
+      p.fillRect(0, 0, w, h, pal.window());
+    p.end();
+  }
 
   updatePainterPaths();
 }

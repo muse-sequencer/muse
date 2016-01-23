@@ -56,6 +56,8 @@ ElidedLabel::ElidedLabel(QWidget* parent,
 void ElidedLabel::paintEvent(QPaintEvent* e)
 {
   QFrame::paintEvent(e);
+  if(rect().width() <= 0 || rect().height() <= 0)
+    return;
   QPainter painter(this);
   painter.setFont(_curFont);
   QFontMetrics fm = painter.fontMetrics();
