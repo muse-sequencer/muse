@@ -1481,6 +1481,8 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          bool bEndOfInput = false;
          pDlg.setValue(0);
 
+         f.seek(0, SEEK_SET);
+
          while(sd.end_of_input == 0)
          {
             size_t nFramesBuf = 0;
