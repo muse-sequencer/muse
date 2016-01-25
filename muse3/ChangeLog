@@ -1,3 +1,5 @@
+25.01.2016:
+        - added midi drum name to simpledrums sample config (rj)
 22.01.2016:
         - raise config dialogs after apply to keep them visible (rj)
         - removed startSong from the config in the default case 
