@@ -422,7 +422,7 @@ ExpanderHandle::ExpanderHandle(QWidget* parent, int handleWidth, Qt::WindowFlags
               : QFrame(parent, f), _handleWidth(handleWidth)
 {
   setObjectName("ExpanderHandle");
-  setCursor(Qt::SizeHorCursor);
+  setCursor(Qt::SplitHCursor);
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
   setFixedWidth(_handleWidth);
   setContentsMargins(0, 0, 0, 0);

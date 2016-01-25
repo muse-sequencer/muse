@@ -55,7 +55,7 @@ enum ERROR {
       MF_READ,
       MF_WRITE,
       MF_MTRK,
-      MF_MTRK_ZERO_DATA,
+      //MF_MTRK_ZERO_DATA,
       MF_MTHD,
       MF_FORMAT
       };
@@ -258,11 +258,7 @@ bool MidiFile::readTrack(MidiFileTrack* t)
             }
       int len    = readLong();       // len
       if(len <= 0)
-      {
-        fprintf(stderr, "MidiFile::readTrack: Warning: Empty track with zero data length. Ignoring.\n");
-        _error = MF_MTRK_ZERO_DATA;
-        return true;
-      }
+        return false;
       
       int endPos = curPos + len;
       status     = -1;
@@ -796,67 +792,30 @@ bool MidiFile::read()
       if (len > 6)
             skip(len-6); // skip excess bytes
 
-      int tracks_found = 0;
       switch (format) {
             case 0:
                   {
                   MidiFileTrack* t = new MidiFileTrack;
-                  //_tracks->push_back(t);
-                  //if (readTrack(t))
-                  //      return true;
                   if (readTrack(t))
                   {
                     delete t;
-                    switch(_error)
-                    {
-                      // Empty track with zero data length. Ignore the track, reset the error, and continue.
-                      case MF_MTRK_ZERO_DATA:
-                        _error = MF_NO_ERROR;
-                      break;
-                      
-                      // All other errors stop.
-                      default:
-                        return true;
-                      break;
-                    }
+                    return true;
                   }
                   else
-                  {
-                    ++tracks_found;
                     _tracks->push_back(t);
-                  }
                   }
                   break;
             case 1:
-                  //for (i = 0; i < ntracks; ++i) {
-                  for (i = 0; i < ntracks; ) 
+                  for (i = 0; i < ntracks; ++i)
                   {
                     MidiFileTrack* t = new MidiFileTrack;
-                    //_tracks->push_back(t);
-                    //if (readTrack(t))
-                    //      return true;
                     if (readTrack(t))
                     {
                       delete t;
-                      switch(_error)
-                      {
-                        // Empty track with zero data length. Ignore the track, reset the error, and continue.
-                        case MF_MTRK_ZERO_DATA:
-                          _error = MF_NO_ERROR;
-                        break;
-                        
-                        // All other errors stop.
-                        default:
-                          return true;
-                        break;
-                      }
+                      return true;
                     }
                     else
-                    {
-                      ++tracks_found;
                       _tracks->push_back(t);
-                      ++i;
-                    }
                   }
                   break;
             default:
@@ -864,12 +823,6 @@ bool MidiFile::read()
                   return true;
             }
             
-      if(tracks_found != ntracks)
-      {
-        fprintf(stderr, "MidiFile::read: Number of tracks found:%d is less than file value:%d. Adjusting value...\n", tracks_found, ntracks);
-        ntracks = tracks_found;
-      }
-      
       return false;
       }
 

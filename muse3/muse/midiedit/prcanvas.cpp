@@ -505,6 +505,7 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       event.setLenTick(w);
             
       event.setPitch(y2pitch(item->y()));
+      event.setSelected(true);
 
       MusECore::Undo operations;
       int diff = event.endTick()-part->lenTick();
