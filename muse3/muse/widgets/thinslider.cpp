@@ -550,7 +550,7 @@ void ThinSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &s
 //.f  void ThinSlider::paintEvent(QPaintEvent *e)
 //------------------------------------------------------------
 
-void ThinSlider::paintEvent(QPaintEvent* /*ev*/)
+void ThinSlider::paintEvent(QPaintEvent* ev)
       {
       QPainter p(this);
 
@@ -565,6 +565,8 @@ void ThinSlider::paintEvent(QPaintEvent* /*ev*/)
       p.end();
       */
       drawSlider(&p, d_sliderRect);
+      p.setPen(Qt::red);
+      p.drawRect(ev->rect());
       }
 
 //------------------------------------------------------------
@@ -805,12 +807,12 @@ void ThinSlider::setOrientation(Qt::Orientation o)
 
       switch(d_orient) {
             case Qt::Vertical:
-                  horizontal_hint = 16;
+                  horizontal_hint = 32;
                   vertical_hint = 64;
                   break;
             case Qt::Horizontal:
                   horizontal_hint = 64;
-                  vertical_hint = 16;
+                  vertical_hint = 32;
                   break;
             }
       }

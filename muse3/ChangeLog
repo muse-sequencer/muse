@@ -1,3 +1,6 @@
+28.01.2016:
+        - print DSP load in CPU toolbar
+        - allow gain in channelstrip to attenuate also (rj)
 25.01.2016:
         - added midi drum name to simpledrums sample config (rj)
 22.01.2016:
