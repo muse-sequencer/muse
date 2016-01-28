@@ -728,6 +728,7 @@ MusE::MusE() : QMainWindow()
 
       cpuLoadToolbar = addToolBar(tr("Cpu load"));
       cpuLoadToolbar->setObjectName("CpuLoadToolbar");
+      cpuLoadToolbar->setToolTip(tr("CPU load averaged over each gui-update period, DSP load read from JACK and finally, number of xruns (reset by clicking)"));
       MusEGlobal::cpuLoadAction = new QWidgetAction(cpuLoadToolbar);
       MusEGlobal::cpuLoadAction->setWhatsThis(tr("Measured CPU load"));
       MusEGlobal::cpuLoadAction->setObjectName("CpuLoadToolbarAction");

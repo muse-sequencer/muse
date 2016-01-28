@@ -71,7 +71,9 @@ class AudioDevice {
       //virtual void* registerInPort(const char* name) = 0;
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
-      
+
+      virtual float getDSP_Load() = 0;
+
       virtual PortType portType(void*) const = 0;
       virtual PortDirection portDirection(void*) const = 0;
       virtual void unregisterPort(void*) = 0;
