@@ -1642,6 +1642,7 @@ void Song::beat()
 
       QToolButton *cpuLoadToolButton = (QToolButton *)(((QWidgetAction *)MusEGlobal::cpuLoadAction)->defaultWidget());
       float fCpuLoad = MusEGlobal::muse->getCPULoad();
+      float fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
       long xRunsCount = MusEGlobal::audio->getXruns();
       int iCval = abs((int)(fCpuLoad * 10));
       int c1 = (iCval / 100);
@@ -1653,7 +1654,7 @@ void Song::beat()
       bufTxt [2] = ',';
       bufTxt [3] = '0' + c3;
       bufTxt [4] = 0;
-      cpuLoadToolButton->setText(QString("CPU: %1%, XRUNS: %2").arg(bufTxt).arg(xRunsCount));
+      cpuLoadToolButton->setText(QString("CPU:%1% DSP: %2% XRUNS: %3").arg(bufTxt).arg(fDspLoad,0,'g',1).arg(xRunsCount));
 
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)
