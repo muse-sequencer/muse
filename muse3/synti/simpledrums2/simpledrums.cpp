@@ -462,6 +462,9 @@ bool SimpleSynth::setController(int channel, int id, int val)
       id = (id % SS_NR_OF_CHANNEL_CONTROLLERS);
 
       switch (id) {
+      case SS_MASTER_CTRL_VOLUME:
+        printf("got mastervolume\n");
+        break;
       case SS_CHANNEL_CTRL_VOLUME:
          if (SS_DEBUG_MIDI)
             printf("Received channel ctrl volume %d for channel %d\n", val, ch);

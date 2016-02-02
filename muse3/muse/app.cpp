@@ -2509,7 +2509,7 @@ void MusE::configAppearance()
       {
       if (!appearance)
             // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
-            appearance = new MusEGui::Appearance(_arranger);
+            appearance = new MusEGui::Appearance(_arranger, this);
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();

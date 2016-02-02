@@ -1209,6 +1209,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit editTrackNameSig();
             return;
             }
+      else if (key == shortcuts[SHRT_MUTE_CURRENT_TRACKS].key) {
+            emit muteSelectedTracks();
+            return;
+            }
+      else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key) {
+            emit soloSelectedTracks();
+            return;
+            }
       // Shortcuts that require selected parts from here
       if (!curItem) {
           if (items.size()==0) {
