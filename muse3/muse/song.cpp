@@ -991,7 +991,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
       if (recordFlag != f) {
             if (f && autoRecEnable) {
                 bool alreadyRecEnabled = false;
-                Track *selectedTrack = 0;
+                TrackList selectedTracks;
                 // loop through list and check if any track is rec enabled
                 // if not then rec enable the selected track
                 MusECore::WaveTrackList* wtl = waves();
@@ -1002,7 +1002,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                           break;
                           }
                       if((*i)->selected())
-                          selectedTrack = (*i);
+                          selectedTracks.push_back(*i);
                       }
                 if (!alreadyRecEnabled) {
                       MidiTrackList* mtl = midis();
@@ -1013,11 +1013,12 @@ void Song::setRecord(bool f, bool autoRecEnable)
                                 break;
                                 }
                             if((*it)->selected())
-                                selectedTrack = (*it);
+                                selectedTracks.push_back(*it);
                             }
                       }
-                if (!alreadyRecEnabled && selectedTrack) {
-                      setRecordFlag(selectedTrack, true);
+                if (!alreadyRecEnabled && selectedTracks.size() >0) {
+                      foreach (Track *t, selectedTracks)
+                        setRecordFlag(t, true);
                       }
                 else if (alreadyRecEnabled)  {
                       // do nothing
@@ -1031,7 +1032,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                       }
                 // prepare recording of wave files for all record enabled wave tracks
                 for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
-                      if((*i)->recordFlag() || (selectedTrack == (*i) && autoRecEnable)) // prepare if record flag or if it is set to recenable
+                      if((*i)->recordFlag()) // || (selectedTracks.find(*i)!=wtl->end() && autoRecEnable)) // prepare if record flag or if it is set to recenable
                       {                                                                  // setRecordFlag may take too long time to complete
                                                                                          // so we try this case specifically
                         (*i)->prepareRecording();

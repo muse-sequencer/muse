@@ -256,7 +256,7 @@ void SndFile::writeCache(const QString& path)
 //   read
 //---------------------------------------------------------
 
-void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
+void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allowSeek)
       {
       if(overwrite)
         for (unsigned ch = 0; ch < channels(); ++ch) {
@@ -264,9 +264,11 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
             s[ch].rms = 0;
             }
             
-      if (pos > samples())
+      // only check pos if seek is allowed
+      // for realtime drawing of the wave
+      // seek may cause writing errors
+      if (allowSeek && pos > samples())
             return;
-      
 
       if (mag < cacheMag) {
             float data[channels()][mag];
@@ -342,7 +344,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
             int rest = csize - (pos/cacheMag);
             int end  = mag;
             if (rest < mag)
-                              end = rest;
+                  end = rest;
 
             for (unsigned ch = 0; ch < channels(); ++ch) {
                   int rms = 0;
@@ -356,7 +358,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
                   if(overwrite)
                     s[ch].rms = rms / mag;
                   
-                  else  
+                  else
                     s[ch].rms += rms / mag;
                   }
             }
@@ -451,9 +453,12 @@ sf_count_t SndFile::samples() const
       {
       if (!writeFlag) // if file is read only sfinfo is reliable
           return sfinfo.frames;
-      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR | SFM_READ);
-      sf_count_t frames = sf_seek(sf, 0, SEEK_END | SFM_READ);
-      sf_seek(sf, curPos, SEEK_SET | SFM_READ);
+      SNDFILE* sfPtr = sf;
+      if (sfUI)
+        sfPtr = sfUI;
+      sf_count_t curPos = sf_seek(sfPtr, 0, SEEK_CUR | SFM_READ);
+      sf_count_t frames = sf_seek(sfPtr, 0, SEEK_END | SFM_READ);
+      sf_seek(sfPtr, curPos, SEEK_SET | SFM_READ);
       return frames;
       }
 

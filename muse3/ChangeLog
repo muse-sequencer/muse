@@ -1,3 +1,6 @@
+06.02.2016:
+        - Fixed wave writing corruption when realtime wavedrawing was enabled (rj)
+        - Arm all selected tracks in the arranger when clicking REC (rj)
 29.01.2016:
         - add shortcuts for mute tracks (SHIFT+m) and solo tracks (SHIFT+S) (rj)
 28.01.2016:

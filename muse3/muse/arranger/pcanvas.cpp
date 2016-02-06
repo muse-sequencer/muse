@@ -2157,7 +2157,7 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
          for (; i < ex; i++) {
                MusECore::SampleV sa[channels];
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-               f.read(sa, xScale, pos);
+               f.read(sa, xScale, pos, true, false);
                postick += tickstep;
                pos += xScale;
                int peak = 0;
@@ -2187,7 +2187,7 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                int y  = startY + hm;
                MusECore::SampleV sa[channels];
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-               f.read(sa, xScale, pos);
+               f.read(sa, xScale, pos, true, false);
                postick += tickstep;
                pos += xScale;
                for (unsigned k = 0; k < channels; ++k) {
