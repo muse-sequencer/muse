@@ -1,3 +1,5 @@
+07.02.2016:
+        - Added widgets dependency on instruments, liste and deicsonze targets (Orcan)
 06.02.2016:
         - Fixed wave writing corruption when realtime wavedrawing was enabled (rj)
         - Arm all selected tracks in the arranger when clicking REC (rj)
