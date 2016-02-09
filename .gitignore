@@ -1,5 +1,5 @@
-muse2/build
+muse3/build
 *~
-muse2/*.kdev4
-muse2/CMakeLists.txt.user
+muse3/*.kdev4
+muse3/CMakeLists.txt.user
 

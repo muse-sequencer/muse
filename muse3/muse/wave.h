@@ -119,7 +119,7 @@ class SndFile {
       size_t writeDirect(float *buf, size_t n) { return sf_writef_float(sf, buf, n); }
 
       off_t seek(off_t frames, int whence);
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true);
+      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
       static SndFile* search(const QString& name);
@@ -189,8 +189,8 @@ class SndFileR {
       off_t seek(off_t frames, int whence) {
             return sf ? sf->seek(frames, whence) : 0;
             }
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true) {
-            if(sf) sf->read(s, mag, pos, overwrite);
+      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
+            if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
             }
       QString strerror() const { return sf ? sf->strerror() : QString(); }
       };

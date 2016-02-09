@@ -894,7 +894,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
          abort();
       }
       state->midiInPorts [i].buffer = newEvBuffer;
-      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiInPorts [i].index, newEvBuffer));
+      state->idx2EvtPorts.insert(std::make_pair(state->midiInPorts [i].index, newEvBuffer));
    }
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
@@ -905,7 +905,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
          abort();
       }
       state->midiOutPorts [i].buffer = newEvBuffer;
-      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiOutPorts [i].index, newEvBuffer));
+      state->idx2EvtPorts.insert(std::make_pair(state->midiOutPorts [i].index, newEvBuffer));
    }
 
 }
@@ -1693,9 +1693,9 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
          extPrg.useIndex = true;
          extPrg.name = QString(pDescr->name);
 
-         state->index2prg.insert(std::make_pair<uint32_t, lv2ExtProgram>(iPrg, extPrg));
+         state->index2prg.insert(std::make_pair(iPrg, extPrg));
          uint32_t midiprg = ((extPrg.bank & 0xff) << 8) + extPrg.prog;
-         state->prg2index.insert(std::make_pair<uint32_t, uint32_t>(midiprg, iPrg));
+         state->prg2index.insert(std::make_pair(midiprg, iPrg));
          ++iPrg;
       }
    }
@@ -2102,7 +2102,7 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
          if (pLabels != NULL)
          {
             const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
-            synth->_presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
+            synth->_presets.insert(std::make_pair(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
             lilv_nodes_free(pLabels);
          }
          else
@@ -2470,7 +2470,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
             const char *strUiType = lilv_node_as_string(pluginUIType); //internal uis are preferred
             std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << strUiType << std::endl;
 #endif
-            _pluginUiTypes.insert(std::make_pair<const LilvUI *, std::pair<bool, const LilvNode *> >(ui, std::make_pair<bool, const LilvNode *>(false, pluginUIType)));
+            _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(false, pluginUIType)));
          }
          else
          {
@@ -2492,7 +2492,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 #ifdef DEBUG_LV2
                   std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
 #endif
-                  _pluginUiTypes.insert(std::make_pair<const LilvUI *, std::pair<bool, const LilvNode *> >(ui, std::make_pair<bool, const LilvNode *>(true, pluginUIType)));
+                  _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(true, pluginUIType)));
                }
 
                nit = lilv_nodes_next(nUiClss, nit);
@@ -4270,7 +4270,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
           submenu = new MusEGui::PopupMenu(menu->parent());
           submenu->setTitle(QString("Bank #") + QString::number(bank + 1));
           subMenuPrograms->addMenu(submenu);
-          submenus.insert(std::make_pair<int, MusEGui::PopupMenu *>(bank, submenu));
+          submenus.insert(std::make_pair(bank, submenu));
 
       }
 

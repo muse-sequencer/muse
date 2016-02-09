@@ -1872,6 +1872,16 @@ void JackAudioDevice::unregisterPort(void* p)
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 
+float AudioDevice::getDSP_Load()
+{
+  return 0.0f;
+}
+
+float JackAudioDevice::getDSP_Load()
+{
+  return jack_cpu_load(_client);
+}
+
 AudioDevice::PortType JackAudioDevice::portType(void* p) const
 { 
   if(!p)

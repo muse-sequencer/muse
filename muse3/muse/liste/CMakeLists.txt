@@ -66,6 +66,7 @@ set_target_properties( liste
 target_link_libraries ( liste
       ${QT_LIBRARIES}
       awl
+      widgets
       )
 
 ##

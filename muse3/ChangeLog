@@ -1,3 +1,36 @@
+09.02.2016: 
+        (By Tim)
+        - Non-shared event lists followup: Wave event sndfile handles are now truly
+           unique - overlapping multiple compressed audio file instances will play 
+           now instead of halting MusE.
+          TODO: When a wave part is edited, ensure other instances' caches are updated.
+          Note: The master sndfile list is now meaningless. (It now allows MULTIPLE instances of SAME wave file.)
+                It will either soon be REMOVED, or embellished/re-purposed. As will the Clip List Editor. 
+                It is kept for now, so that the Clip List Editor can help debug what is going on.
+        - Fixed crashes when using wave editing functions. Possibly fixes recording spikes too?
+        - Close or re-open sndfiles in deleted or undeleted wave tracks/parts/events.
+        - Fixed part copying in Duplicate Tracks function. Dialog added new modes.
+        - Revert old: Do not auto-snap newly recorded wave parts to the grid. (Importing never did this.)
+        - Streamlined some complex multi-cycle operations (stopRolling, recordStop, deleteTracks etc.) 
+           into single undoable operation lists (one cycle).
+        - Eliminated the (very old) brief total audio dropout on transport stop or rec stop.
+        - Fixed the (very old) audio FIFO underrun copious errors, at song load then play.
+        - Added undo of recorded audio automation controller events.
+        - Good speed ups to midi sustain controller real-time stop/start disabling/reenabling loops.
+          (Rearranged the loops - it was iterating all 200 ports x 16 channels).
+        - Still some related finishing work to do...
+07.02.2016:
+        - Added widgets dependency on instruments, liste and deicsonze targets (Orcan)
+06.02.2016:
+        - Fixed wave writing corruption when realtime wavedrawing was enabled (rj)
+        - Arm all selected tracks in the arranger when clicking REC (rj)
+29.01.2016:
+        - add shortcuts for mute tracks (SHIFT+m) and solo tracks (SHIFT+S) (rj)
+28.01.2016:
+        - print DSP load in CPU toolbar
+        - allow gain in channelstrip to attenuate also (rj)
+25.01.2016:
+        - added midi drum name to simpledrums sample config (rj)
 22.01.2016:
         - raise config dialogs after apply to keep them visible (rj)
         - removed startSong from the config in the default case 

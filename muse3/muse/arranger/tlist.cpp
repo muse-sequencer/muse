@@ -712,6 +712,38 @@ MusECore::Track* TList::y2Track(int y) const
       return 0;
       }
 
+void TList::muteSelectedTracksSlot()
+{
+  bool stateDefined=false;
+  bool setTo;
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+  {
+    if ((*t)->selected()){
+      if (!stateDefined)
+        setTo = !(*t)->isMute();
+      (*t)->setMute(setTo);
+    }
+  }
+  update();
+}
+
+void TList::soloSelectedTracksSlot()
+{
+  bool stateDefined=false;
+  bool setTo;
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+  {
+    if ((*t)->selected()){
+      if (!stateDefined)
+        setTo = !(*t)->soloMode();
+      (*t)->setSolo(setTo);
+    }
+  }
+  update();
+}
+
 void TList::editTrackNameSlot()
 {
   MusECore::TrackList* tracks = MusEGlobal::song->tracks();

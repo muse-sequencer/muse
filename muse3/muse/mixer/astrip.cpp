@@ -83,8 +83,8 @@ const double AudioStrip::auxSliderStep =  1.0;
 const double AudioStrip::auxSliderMax  = 10.0;
 const int    AudioStrip::auxSliderPrec =    0;
 
-const double AudioStrip::gainSliderStep = 1.0;
-const double AudioStrip::gainSliderMin  = 1.0;
+const double AudioStrip::gainSliderStep = 0.1;
+const double AudioStrip::gainSliderMin  = 0.5;
 const double AudioStrip::gainSliderMax = 20.0;
 const int    AudioStrip::gainSliderPrec =   1;
   

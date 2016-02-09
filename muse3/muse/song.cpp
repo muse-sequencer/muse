@@ -988,7 +988,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
       if (recordFlag != f) {
             if (f && autoRecEnable) {
                 bool alreadyRecEnabled = false;
-                Track *selectedTrack = 0;
+                TrackList selectedTracks;
                 // loop through list and check if any track is rec enabled
                 // if not then rec enable the selected track
                 MusECore::WaveTrackList* wtl = waves();
@@ -999,7 +999,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                           break;
                           }
                       if((*i)->selected())
-                          selectedTrack = (*i);
+                          selectedTracks.push_back(*i);
                       }
                 if (!alreadyRecEnabled) {
                       MidiTrackList* mtl = midis();
@@ -1010,11 +1010,12 @@ void Song::setRecord(bool f, bool autoRecEnable)
                                 break;
                                 }
                             if((*it)->selected())
-                                selectedTrack = (*it);
+                                selectedTracks.push_back(*it);
                             }
                       }
-                if (!alreadyRecEnabled && selectedTrack) {
-                      setRecordFlag(selectedTrack, true);
+                if (!alreadyRecEnabled && selectedTracks.size() >0) {
+                      foreach (Track *t, selectedTracks)
+                        setRecordFlag(t, true);
                       }
                 else if (alreadyRecEnabled)  {
                       // do nothing
@@ -1028,7 +1029,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                       }
                 // prepare recording of wave files for all record enabled wave tracks
                 for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
-                      if((*i)->recordFlag() || (selectedTrack == (*i) && autoRecEnable)) // prepare if record flag or if it is set to recenable
+                      if((*i)->recordFlag()) // || (selectedTracks.find(*i)!=wtl->end() && autoRecEnable)) // prepare if record flag or if it is set to recenable
                       {                                                                  // setRecordFlag may take too long time to complete
                                                                                          // so we try this case specifically
                         (*i)->prepareRecording();
@@ -1633,7 +1634,9 @@ void Song::beat()
 
       QToolButton *cpuLoadToolButton = (QToolButton *)(((QWidgetAction *)MusEGlobal::cpuLoadAction)->defaultWidget());
       float fCpuLoad = MusEGlobal::muse->getCPULoad();
+      float fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
       long xRunsCount = MusEGlobal::audio->getXruns();
+      // CPU
       int iCval = abs((int)(fCpuLoad * 10));
       int c1 = (iCval / 100);
       int c2 = (iCval - c1*100) / 10;
@@ -1644,7 +1647,19 @@ void Song::beat()
       bufTxt [2] = ',';
       bufTxt [3] = '0' + c3;
       bufTxt [4] = 0;
-      cpuLoadToolButton->setText(QString("CPU: %1%, XRUNS: %2").arg(bufTxt).arg(xRunsCount));
+
+      // DSP
+      int iCval2 = abs((int)(fDspLoad * 10));
+      int c2_1 = (iCval2 / 100);
+      int c2_2 = (iCval2 - c2_1*100) / 10;
+      int c2_3 = iCval2 - c2_1 * 100 - c2_2 * 10;
+      char bufTxt2 [5];
+      bufTxt2 [0] = '0' + c2_1;
+      bufTxt2 [1] = '0' + c2_2;
+      bufTxt2 [2] = ',';
+      bufTxt2 [3] = '0' + c2_3;
+      bufTxt2 [4] = 0;
+      cpuLoadToolButton->setText(QString("CPU:%1% DSP: %2% XRUNS: %3").arg(bufTxt).arg(bufTxt2).arg(xRunsCount));
 
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)
