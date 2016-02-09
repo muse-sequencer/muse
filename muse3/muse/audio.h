@@ -298,7 +298,7 @@ class Audio {
       unsigned curFrame() const;
       unsigned curSyncFrame() const { return syncFrame; }
       unsigned curFramePos() const;
-      void recordStop(bool restart = false);
+      void recordStop(bool restart = false, Undo* operations = NULL);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
       unsigned long getFrameOffset() const   { return frameOffset; }

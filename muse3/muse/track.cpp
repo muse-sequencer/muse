@@ -685,17 +685,22 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         // TODO FINDMICH "assign" ordering as well
       }
 
-      if(flags & ASSIGN_PARTS)
+      const bool dup = flags & ASSIGN_DUPLICATE_PARTS;
+      const bool cpy = flags & ASSIGN_COPY_PARTS;
+      const bool cln = flags & ASSIGN_CLONE_PARTS;
+      if(dup || cpy || cln)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
               Part* dpart;
-              if (spart->hasClones())
-                  dpart = spart->createNewClone();
-              else
-                  dpart = spart->duplicate();
-
+              if(dup)
+                dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
+              else if(cpy)
+                dpart = spart->duplicate();
+              else if(cln)
+                dpart = spart->createNewClone();
+              dpart->setTrack(this);
               parts()->add(dpart);
               }
       }
@@ -913,7 +918,6 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   
   if(!operations.empty())
   {
-    operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //     MusEGlobal::song->update(SC_ROUTE);
   }

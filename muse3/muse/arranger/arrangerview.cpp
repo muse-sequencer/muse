@@ -537,18 +537,13 @@ void ArrangerView::cmd(int cmd)
 
                       if (btn == QMessageBox::Cancel)
                           break;
-                      MusEGlobal::song->startUndo();
-                      MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
-                      MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                      MusEGlobal::audio->msgRemoveTracks();
                   }
 
                   break;
             case CMD_DELETE_TRACK: // from menu
                   {
-                  MusEGlobal::song->startUndo();
                   MusEGlobal::audio->msgRemoveTracks();
-                  MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
-                  MusEGlobal::audio->msgUpdateSoloStates();
                   }
                   break;
 

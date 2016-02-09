@@ -2065,7 +2065,11 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
         for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) 
         {
           MusECore::WaveEventSelection w = *i;
+          if(w.event.empty())
+            continue;
           MusECore::SndFileR file = w.event.sndFile();
+          if(file.isNull())
+            continue;
           if(file.checkCopyOnWrite())
           {
             std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin();
@@ -2110,8 +2114,10 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
           for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++)
           {
             MusECore::WaveEventSelection w = *i;
+            if(w.event.empty())
+              continue;
             MusECore::SndFileR file = w.event.sndFile();
-            if(!file.checkCopyOnWrite()) // Make sure to re-check
+            if(file.isNull() || !file.checkCopyOnWrite()) // Make sure to re-check
               continue;
             QString filePath = MusEGlobal::museProject + QString("/") + file.name();
             QString newFilePath;
@@ -2191,7 +2197,11 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
          MusEGlobal::song->startUndo();
          for (MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) {
                MusECore::WaveEventSelection w = *i;
+               if(w.event.empty())
+                 continue;
                MusECore::SndFileR file         = w.event.sndFile();
+               if(file.isNull())
+                 continue;
                unsigned sx            = w.startframe;
                unsigned ex            = w.endframe;
                unsigned file_channels = file.channels();
@@ -2288,7 +2298,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                      }
 
                // Undo handling
-               MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, sx, ex);
+               MusEGlobal::song->cmdChangeWave(w.event, tmpWavFile, sx, ex);
                MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
                }
          MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);

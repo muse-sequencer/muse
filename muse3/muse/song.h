@@ -77,41 +77,42 @@ class AudioDevice;
 //  be taken (redraw, refill lists etc.) upon the signal's reception.
 // NOTE: Use the SongChangedFlags_t typedef in type_defs.h to support all the bits.
 
-#define SC_TRACK_INSERTED      1
-#define SC_TRACK_REMOVED       2
-#define SC_TRACK_MODIFIED      4
-#define SC_PART_INSERTED       8
-#define SC_PART_REMOVED        0x10
-#define SC_PART_MODIFIED       0x20
-#define SC_EVENT_INSERTED      0x40
-#define SC_EVENT_REMOVED       0x80
-#define SC_EVENT_MODIFIED      0x100
-#define SC_SIG                 0x200       // timing signature
-#define SC_TEMPO               0x400       // tempo map changed
-#define SC_MASTER              0x800       // master flag changed
-#define SC_SELECTION           0x1000      // event selection. part and track selection have their own.
-#define SC_MIDI_CONTROLLER     0x2000      // must update midi mixer
-#define SC_MUTE                0x4000
-#define SC_SOLO                0x8000
-#define SC_RECFLAG             0x10000
-#define SC_ROUTE               0x20000
-#define SC_CHANNELS            0x40000
-#define SC_CONFIG              0x80000     // midiPort-midiDevice
-#define SC_DRUMMAP             0x100000    // must update drumeditor
-#define SC_MIDI_INSTRUMENT     0x200000    // A midi port or device's instrument has changed
-//#define SC_MIXER_PAN           0x400000  // Not used
-#define SC_AUTOMATION          0x800000
-#define SC_AUX                 0x1000000   // mixer aux changed
-#define SC_RACK                0x2000000   // mixer rack changed
-#define SC_CLIP_MODIFIED       0x4000000
-#define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
-#define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
-#define SC_PART_SELECTION      0x20000000   // part selection changed
-#define SC_KEY                 0x40000000   // key map changed
-#define SC_TRACK_SELECTION     0x80000000   // track selection changed
-#define SC_PORT_ALIAS_PREFERENCE 0x100000000  // (Jack) port alias viewing preference has changed
-#define SC_ROUTER_CHANNEL_GROUPING 0x200000000  // Router channel grouping changed
-#define SC_EVERYTHING          -1           // global update
+#define SC_TRACK_INSERTED             1
+#define SC_TRACK_REMOVED              2
+#define SC_TRACK_MODIFIED             4
+#define SC_PART_INSERTED              8
+#define SC_PART_REMOVED               0x10
+#define SC_PART_MODIFIED              0x20
+#define SC_EVENT_INSERTED             0x40
+#define SC_EVENT_REMOVED              0x80
+#define SC_EVENT_MODIFIED             0x100
+#define SC_SIG                        0x200        // timing signature
+#define SC_TEMPO                      0x400        // tempo map changed
+#define SC_MASTER                     0x800        // master flag changed
+#define SC_SELECTION                  0x1000       // event selection. part and track selection have their own.
+#define SC_MIDI_CONTROLLER            0x2000       // must update midi mixer
+#define SC_MUTE                       0x4000
+#define SC_SOLO                       0x8000
+#define SC_RECFLAG                    0x10000
+#define SC_ROUTE                      0x20000
+#define SC_CHANNELS                   0x40000
+#define SC_CONFIG                     0x80000      // midiPort-midiDevice
+#define SC_DRUMMAP                    0x100000     // must update drumeditor
+#define SC_MIDI_INSTRUMENT            0x200000     // A midi port or device's instrument has changed
+#define SC_AUDIO_CONTROLLER           0x400000     // An audio controller value was added deleted or modified.
+#define SC_AUTOMATION                 0x800000
+#define SC_AUX                        0x1000000    // mixer aux changed
+#define SC_RACK                       0x2000000    // mixer rack changed
+#define SC_CLIP_MODIFIED              0x4000000
+#define SC_MIDI_CONTROLLER_ADD        0x8000000    // a hardware midi controller was added or deleted
+#define SC_MIDI_TRACK_PROP            0x10000000   // a midi track's properties changed (channel, compression etc)
+#define SC_PART_SELECTION             0x20000000   // part selection changed
+#define SC_KEY                        0x40000000   // key map changed
+#define SC_TRACK_SELECTION            0x80000000   // track selection changed
+#define SC_PORT_ALIAS_PREFERENCE      0x100000000  // (Jack) port alias viewing preference has changed
+#define SC_ROUTER_CHANNEL_GROUPING    0x200000000  // Router channel grouping changed
+#define SC_AUDIO_CONTROLLER_LIST      0x400000000  // An audio controller list was added deleted or modified.
+#define SC_EVERYTHING                 -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
 
@@ -284,7 +285,8 @@ class Song : public QObject {
       bool click() const            { return _click; }
       bool quantize() const         { return _quantize; }
       void setStopPlay(bool);
-      void stopRolling();
+      // Fills operations if given, otherwise creates and executes its own operations list.
+      void stopRolling(Undo* operations = 0);
       void abortRolling();
 
       //-----------------------------------------
@@ -302,15 +304,15 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
-      void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
+      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos, Undo& operations);
+      void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned, Undo& operations);
 
       // May be called from GUI or audio thread. Also selects events in clone parts. Safe for now because audio/midi processing doesn't 
       //  depend on it, and all calls to part altering functions from GUI are synchronized with (wait for) audio thread.
       void selectEvent(Event&, Part*, bool select);   
       void selectAllEvents(Part*, bool select); // See selectEvent().  
 
-      void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex); // FIXME TODO broken, fix that.
+      void cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex);
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
@@ -364,7 +366,8 @@ public:
       // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
       void reenableTouchedControllers();  
       void clearRecAutomation(bool clearList);
-      void processAutomationEvents();
+      // Fills operations if given, otherwise creates and executes its own operations list.
+      void processAutomationEvents(Undo* operations = 0);
       void processMasterRec();
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
@@ -381,7 +384,7 @@ public:
       void startUndo();
       void endUndo(MusECore::SongChangedFlags_t);
 
-    void undoOp(UndoOp::UndoType type, const QString& changedFile, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
+      void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);

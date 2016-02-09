@@ -56,17 +56,14 @@ class Fifo {
    public:
       Fifo();
       ~Fifo();
-      void clear() {
-            ridx = 0;
-            widx = 0;
-            muse_atomic_set(&count, 0);
-            }
+      void clear();
       bool put(int, unsigned long, float** buffer, unsigned pos);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
       void add();
       bool get(int, unsigned long, float** buffer, unsigned* pos);
       void remove();
       int getCount();
+      bool isEmpty();
       };
 
 } // namespace MusECore

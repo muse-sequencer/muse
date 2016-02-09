@@ -860,8 +860,7 @@ void PartList::movePartOperation(Part* part, int new_pos, PendingOperationList& 
   
   addPortCtrlEvents(part, new_pos, part->lenValue(), track, ops);
 }
-      
-      
+
 //---------------------------------------------------------
 //   addPart
 //---------------------------------------------------------
@@ -1110,6 +1109,44 @@ int WavePart::hasHiddenEvents() const
   return _hiddenEvents;
 }
 
+bool WavePart::openAllEvents()
+{
+  bool opened = false;
+  const EventList& el = events();
+  for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
+  {
+    const Event& e = ie->second;
+    if(e.empty())
+      continue;
+    SndFileR f = e.sndFile();
+    if(!f.isNull() && !f.isOpen())
+    {
+      opened = true;
+      f.openRead();
+    }
+  }
+  return opened;
+}
+      
+bool WavePart::closeAllEvents()
+{
+  bool closed = false;
+  const EventList& el = events();
+  for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
+  {
+    const Event& e = ie->second;
+    if(e.empty())
+      continue;
+    SndFileR f = e.sndFile();
+    if(!f.isNull() && f.isOpen())
+    {
+      closed = true;
+      f.close();
+    }
+  }
+  return closed;
+}
+      
 //---------------------------------------------------------
 //   ClonePart
 //---------------------------------------------------------

@@ -44,7 +44,8 @@
 #include "gconfig.h"
 #include "pos.h"
 #include "ticksynth.h"
-#include "operations.h"
+//#include "operations.h"
+#include "undo.h"
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -67,8 +68,7 @@ extern unsigned int volatile midiExtSyncTicks;
 }
 
 namespace MusECore {
-  
-  
+
 void initAudio()   
 {
       MusEGlobal::audio = new Audio();
@@ -245,7 +245,7 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
-      //printf("Audio::sync: state:%d jackState:%d\n", state, jackState);  
+      //fprintf(stderr, "Audio::sync() begin: state:%d jackState:%d frame:%u pos frame:%u\n", state, jackState, frame, _pos.frame());
         
       bool done = true;
       if (state == LOOP1)
@@ -259,6 +259,7 @@ bool Audio::sync(int jackState, unsigned frame)
 
             if (state != START_PLAY) {
                 Pos p(frame, false);
+                //fprintf(stderr, "   state != START_PLAY, calling seek...\n");
                 seek(p);
                 if (!_freewheel)
                       done = MusEGlobal::audioPrefetch->seekDone();
@@ -268,12 +269,13 @@ bool Audio::sync(int jackState, unsigned frame)
             else {
                 if (frame != _pos.frame()) {
                         // seek during seek
+                            //fprintf(stderr, "   state == START_PLAY, calling seek...\n");
                             seek(Pos(frame, false));
                         }
                 done = MusEGlobal::audioPrefetch->seekDone();
                   }
             }
-      //printf("Audio::sync: done:%d\n", done);  
+      //fprintf(stderr, "Audio::sync() end: state:%d pos frame:%u\n", state, _pos.frame());
       return done;
       
       }
@@ -409,10 +411,10 @@ void Audio::process(unsigned frames)
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_              
       bool use_jack_timebase = false;
 #endif
-      
+
       if (isPlaying()) {
             if (!freewheel())
-                  MusEGlobal::audioPrefetch->msgTick();
+                  MusEGlobal::audioPrefetch->msgTick(isRecording(), true);
 
             if (_bounce && _pos >= MusEGlobal::song->rPos()) {
                   _bounce = false;
@@ -468,13 +470,13 @@ void Audio::process(unsigned frames)
                         // clear sustain
                         for (int i = 0; i < MIDI_PORTS; ++i) {
                             MidiPort* mp = &MusEGlobal::midiPorts[i];
+                            if(!mp->device())
+                              continue;
                             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                                 if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                                    if (mp->device()!=NULL) {
-                                        MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                                        // may cause problems, called from audio thread
-                                        mp->device()->putEvent(ev);
-                                        }
+                                    const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+                                    // may cause problems, called from audio thread
+                                    mp->device()->putEvent(ev);
                                     }
                                 }
                             }
@@ -754,7 +756,7 @@ void Audio::seek(const Pos& p)
       {
       if (_pos == p) {
             if(MusEGlobal::debugMsg)
-              printf("Audio::seek already there\n");
+              fprintf(stderr, "Audio::seek already at frame:%u\n", p.frame());
             return;        
             }
       if (MusEGlobal::heavyDebugMsg)
@@ -839,12 +841,9 @@ void Audio::startRolling()
       }
       if (MusEGlobal::song->record()) {
             recording      = true;
-            TrackList* tracks = MusEGlobal::song->tracks();
-            for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                  if ((*i)->isMidiTrack())
-                        continue;
-                  if ((*i)->type() == Track::WAVE)
-                        ((WaveTrack*)(*i))->resetMeter();
+            WaveTrackList* tracks = MusEGlobal::song->waves();
+            for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                        (*i)->resetMeter();
                   }
             }
       state = PLAY;
@@ -911,12 +910,12 @@ void Audio::startRolling()
       // reenable sustain 
       for (int i = 0; i < MIDI_PORTS; ++i) {
           MidiPort* mp = &MusEGlobal::midiPorts[i];
+          if(!mp->device())
+            continue;
           for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
               if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                  if(mp->device() != NULL) {
-                        MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
+                        const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
                         mp->device()->putEvent(ev);    
-                        }
                   }
               }
           }
@@ -945,10 +944,13 @@ void Audio::stopRolling()
       }
 #endif
       
+      // There may be disk read/write fifo buffers waiting to be emptied. Send one last tick to the disk thread.
+      if(!freewheel())
+        MusEGlobal::audioPrefetch->msgTick(recording, false);
+      
       WaveTrackList* tracks = MusEGlobal::song->waves();
       for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
-            WaveTrack* track = *i;
-            track->resetMeter();
+            (*i)->resetMeter();
             }
       recording    = false;
       endRecordPos = _pos;
@@ -961,31 +963,24 @@ void Audio::stopRolling()
 //    execution environment: gui thread
 //---------------------------------------------------------
 
-void Audio::recordStop(bool restart)
+void Audio::recordStop(bool restart, Undo* ops)
       {
       MusEGlobal::song->processMasterRec();   
         
       if (MusEGlobal::debugMsg)
         printf("recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
 
-      MusEGlobal::audio->msgIdle(true); // gain access to all data structures
-
-      MusEGlobal::song->startUndo();
+      Undo loc_ops;
+      Undo& operations = ops ? (*ops) : loc_ops;
+      
       WaveTrackList* wl = MusEGlobal::song->waves();
 
       for (iWaveTrack it = wl->begin(); it != wl->end(); ++it) {
             WaveTrack* track = *it;
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
-                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, restart ? _pos : endRecordPos);
-                  // The track's _recFile pointer may have been kept and turned
-                  //  into a SndFileR and added to a new part.
-                  // Or _recFile may have been discarded (no new recorded part created).
-                  // Regardless, we are done with the pointer itself. Set to zero so
-                  //  MusEGlobal::song->setRecordFlag knows about it...
-
-                  track->setRecFile(0);              // flush out the old file
+                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, restart ? _pos : endRecordPos, operations);
                   if(!restart)
-                     MusEGlobal::song->setRecordFlag(track, false);
+                    operations.push_back(UndoOp(UndoOp::SetTrackRecord, track, false, true)); // True = non-undoable.
                   }
             }
       MidiTrackList* ml = MusEGlobal::song->midis();
@@ -999,9 +994,10 @@ void Audio::recordStop(bool restart)
             // Do SysexMeta. Do loops.
             buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
             MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
-                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
-            mt->events.clear();
-            mt->mpevents.clear();
+                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick(),
+                 operations);
+            mt->events.clear();    // ** Driver should not be touching this right now.
+            mt->mpevents.clear();  // ** Driver should not be touching this right now.
             }
       
       //
@@ -1016,13 +1012,14 @@ void Audio::recordStop(bool restart)
         {            
           MusEGlobal::song->bounceOutput = 0;
           ao->setRecFile(NULL); // if necessary, this automatically deletes _recFile
-          ao->setRecordFlag1(false);
-          msgSetRecord(ao, false);
+          operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, true));  // True = non-undoable.
         }
       }  
-   
-      MusEGlobal::audio->msgIdle(false);
-      MusEGlobal::song->endUndo(0);
+
+      // Operate on a local list if none was given.
+      if(!ops)
+        MusEGlobal::song->applyOperationGroup(loc_ops);
+      
       if(!restart)
          MusEGlobal::song->setRecord(false);
       }

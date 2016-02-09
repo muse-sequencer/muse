@@ -52,7 +52,7 @@ struct DrumMap;
 struct ControlEvent;
 struct Port;
 class PendingOperationList;
-
+class Undo;
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -67,8 +67,16 @@ class Track {
          MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
+      // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
+      // (Safe, but it will choose one action over the other.)
       enum AssignFlags {
-         ASSIGN_PROPERTIES=1, ASSIGN_PARTS=2, ASSIGN_PLUGINS=4, ASSIGN_STD_CTRLS=8, ASSIGN_PLUGIN_CTRLS=16, ASSIGN_ROUTES=32, ASSIGN_DEFAULT_ROUTES=64, ASSIGN_DRUMLIST=128 };
+         ASSIGN_PROPERTIES=1, 
+         ASSIGN_DUPLICATE_PARTS=2, ASSIGN_COPY_PARTS=4, ASSIGN_CLONE_PARTS=8, 
+         ASSIGN_PLUGINS=16, 
+         ASSIGN_STD_CTRLS=32, ASSIGN_PLUGIN_CTRLS=64, 
+         ASSIGN_ROUTES=128, ASSIGN_DEFAULT_ROUTES=256, 
+         ASSIGN_DRUMLIST=512 };
+         
    private:
       TrackType _type;
       QString _comment;
@@ -187,6 +195,10 @@ class Track {
 
       virtual Track* newTrack() const = 0;
       virtual Track* clone(int flags) const    = 0;
+      // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
+      virtual bool openAllParts() { return false; };
+      // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
+      virtual bool closeAllParts() { return false; };
 
       virtual bool setRecordFlag1(bool f) = 0;
       virtual void setRecordFlag2(bool f) = 0;
@@ -470,9 +482,12 @@ class AudioTrack : public Track {
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
       
+      // Puts to the recording fifo.
       void putFifo(int channels, unsigned long n, float** bp);
-
+      // Transfers the recording fifo to _recFile.
       void record();
+      // Returns the recording fifo current count.
+      int recordFifoCount() { return fifo.getCount(); }
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);
@@ -515,7 +530,8 @@ class AudioTrack : public Track {
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
       virtual void setAutomationType(AutomationType t);
-      void processAutomationEvents();
+      // Fills operations if given, otherwise creates and executes its own operations list.
+      void processAutomationEvents(Undo* operations = 0);
       CtrlRecList* recEvents()                         { return &_recEvents; }
       bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // return true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
@@ -681,6 +697,10 @@ class WaveTrack : public AudioTrack {
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
       virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
+      // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
+      bool openAllParts();
+      // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
+      bool closeAllParts();
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;

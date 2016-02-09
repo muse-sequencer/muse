@@ -29,6 +29,7 @@
 #include "type_defs.h"
 #include "event.h"
 #include "midictrl.h" 
+#include "ctrl.h"
 #include "tempo.h" 
 #include "al/sig.h" 
 #include "keyevent.h"
@@ -51,16 +52,19 @@ struct PendingOperationItem
                               AddMidiDevice,     DeleteMidiDevice,       
                               ModifyMidiDeviceAddress,        ModifyMidiDeviceFlags,        ModifyMidiDeviceName,
                               AddTrack,          DeleteTrack, MoveTrack,                    ModifyTrackName,
-                              AddPart,           DeletePart,  MovePart,  ModifyPartLength,  ModifyPartName,
+                              SetTrackRecord,    SetTrackMute, SetTrackSolo,
+                              AddPart,           DeletePart,  MovePart, ModifyPartLength,   ModifyPartName,
                               AddEvent,          DeleteEvent,
-                              AddMidiCtrlVal,    DeleteMidiCtrlVal,      ModifyMidiCtrlVal, AddMidiCtrlValList,
-                              AddTempo,          DeleteTempo,            ModifyTempo,       SetGlobalTempo, 
-                              AddSig,            DeleteSig,              ModifySig,
-                              AddKey,            DeleteKey,              ModifyKey,
+                              AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
+                              AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+                              AddTempo,          DeleteTempo,           ModifyTempo,        SetGlobalTempo, 
+                              AddSig,            DeleteSig,             ModifySig,
+                              AddKey,            DeleteKey,             ModifyKey,
                               AddAuxSendValue,   
                               AddRoute,          DeleteRoute, 
-                              AddRouteNode,      DeleteRouteNode,        ModifyRouteNode,
-                              UpdateSoloStates
+                              AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
+                              UpdateSoloStates,
+                              EnableAllAudioControllers
                               }; 
                               
   PendingOperationType _type;
@@ -73,6 +77,7 @@ struct PendingOperationItem
   
   union {
     MidiCtrlValListList* _mcvll;
+    CtrlListList* _aud_ctrl_list_list;
     TempoList* _tempo_list;  
     AL::SigList* _sig_list; 
     KeyList* _key_list;
@@ -89,6 +94,7 @@ struct PendingOperationItem
     MidiDevice* _midi_device;
     Track* _track;
     MidiCtrlValList* _mcvl;
+    CtrlList* _aud_ctrl_list;
     TEvent* _tempo_event; 
     AL::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
@@ -98,6 +104,8 @@ struct PendingOperationItem
   Event _ev;
   iEvent _iev;
   iMidiCtrlVal _imcv;
+  iCtrl _iCtrl;
+  iCtrlList _iCtrlList;
   iTEvent _iTEvent;
   AL::iSigEvent _iSigEvent;
   iKeyEvent _iKeyEvent;
@@ -109,12 +117,14 @@ struct PendingOperationItem
   
   union {
     int _intA;
+    bool _boolA;
     const QString *_name;
     double _aux_send_value;
     int _insert_at;
     int _from_idx;
     int _address_client;
     int _rw_flags;
+    int _frame;
   };
   
   union {
@@ -122,8 +132,14 @@ struct PendingOperationItem
     int _to_idx;
     int _address_port;
     int _open_flags;
+    int _ctl_num;
   };
 
+  union {
+    int _intC;
+    int _ctl_val;
+    double _ctl_dbl_val;
+  };
 
   PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
     { _type = type; _track_list = tl; }
@@ -162,6 +178,7 @@ struct PendingOperationItem
     
   PendingOperationItem(MidiDevice* midi_device, const QString* new_name, PendingOperationType type = ModifyMidiDeviceName)
     { _type = type; _midi_device = midi_device; _name = new_name; }
+
     
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
     { _type = type; _track_list = tl; _track = track; _insert_at = insert_at; _void_track_list = sec_track_list; }
@@ -174,6 +191,9 @@ struct PendingOperationItem
 
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
+    
+  PendingOperationItem(Track* track, bool v, PendingOperationType type) // type is SetTrackRecord, SetTrackMute, SetTrackSolo
+    { _type = type; _track = track; _boolA = v; }
     
     
   PendingOperationItem(Part* part, const QString* new_name, PendingOperationType type = ModifyPartName)
@@ -204,7 +224,7 @@ struct PendingOperationItem
     { _type = type; _part = part; _iev = iev; _ev = iev->second; }
 
 
-    PendingOperationItem(MidiCtrlValListList* mcvll, MidiCtrlValList* mcvl, int channel, int control_num, PendingOperationType type = AddMidiCtrlValList)
+  PendingOperationItem(MidiCtrlValListList* mcvll, MidiCtrlValList* mcvl, int channel, int control_num, PendingOperationType type = AddMidiCtrlValList)
     { _type = type; _mcvll = mcvll; _mcvl = mcvl; _intA = channel; _intB = control_num; }
     
   PendingOperationItem(MidiCtrlValList* mcvl, Part* part, int tick, int val, PendingOperationType type = AddMidiCtrlVal)
@@ -216,7 +236,21 @@ struct PendingOperationItem
   // NOTE: mcvl is supplied in case the operation needs to be merged, or transformed into an AddMidiCtrlVal.
   PendingOperationItem(MidiCtrlValList* mcvl, const iMidiCtrlVal& imcv, int val, PendingOperationType type = ModifyMidiCtrlVal)
     { _type = type; _mcvl = mcvl; _imcv = imcv; _intA = val; }
-  
+
+    
+  PendingOperationItem(const iCtrlList& ictl_l, CtrlList* ctrl_l, PendingOperationType type = ModifyAudioCtrlValList)
+    { _type = type; _iCtrlList = ictl_l; _aud_ctrl_list = ctrl_l; }
+    
+  PendingOperationItem(CtrlList* ctrl_l, int frame, double ctrl_val, PendingOperationType type = AddAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _frame = frame; _ctl_dbl_val = ctrl_val; }
+    
+  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, PendingOperationType type = DeleteAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; }
+    
+  // NOTE: ctrl_l is supplied in case the operation needs to be merged, or transformed into an AddAudioCtrlVal.
+  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, double ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _ctl_dbl_val = ctrl_val; }
+    
   
   // NOTE: 'tick' is the desired tick. te is a new TEvent with tempo and (same) desired tick. Swapping with NEXT event is done.
   PendingOperationItem(TempoList* tl, TEvent* te, int tick, PendingOperationType type = AddTempo)
@@ -259,6 +293,9 @@ struct PendingOperationItem
     
   PendingOperationItem(int len, PendingOperationType type = ModifySongLength)
     { _type = type; _intA = len; }
+
+  PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers (so far).
+    { _type = type; }
 
   PendingOperationItem()
     { _type = Uninitialized; }

@@ -153,6 +153,7 @@ bool MusE::seqStart()
             return true;
             }
 
+      // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
       if (!MusEGlobal::audio->start()) {
           QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
               tr("Was not able to start audio, check if jack is running.\n"));
@@ -203,7 +204,8 @@ bool MusE::seqStart()
 
       MusEGlobal::audioPrefetch->start(pfprio);
 
-      MusEGlobal::audioPrefetch->msgSeek(0, true); // force
+      // In case prefetch is not filled, do it now.
+      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
 
       MusEGlobal::midiSeq->start(midiprio);
 

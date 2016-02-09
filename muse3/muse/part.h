@@ -124,6 +124,10 @@ class Part : public PosLen {
       virtual int hasHiddenEvents() const { return _hiddenEvents; }
       
       iEvent addEvent(Event& p); // this does not care about clones! If the part is a clone, be sure to execute this on all clones (with duplicated Events, that is!)
+      // Returns true if any event was opened. Does not operate on the part's clones, if any.
+      virtual bool openAllEvents() { return false; };
+      // Returns true if any event was closed. Does not operate on the part's clones, if any.
+      virtual bool closeAllEvents() { return false; };
 
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
       
@@ -172,6 +176,10 @@ class WavePart : public Part {
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
       int hasHiddenEvents() const;
+      // Returns true if any event was opened. Does not operate on the part's clones, if any.
+      bool openAllEvents();
+      // Returns true if any event was closed. Does not operate on the part's clones, if any.
+      bool closeAllEvents();
 
       virtual void dump(int n = 0) const;
       };

@@ -81,9 +81,13 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::DeleteTrack:
     case PendingOperationItem::MoveTrack:
     case PendingOperationItem::ModifyTrackName:
+    case PendingOperationItem::SetTrackRecord:
+    case PendingOperationItem::SetTrackMute:
+    case PendingOperationItem::SetTrackSolo:
     case PendingOperationItem::ModifyPartName:
     case PendingOperationItem::ModifySongLength:
     case PendingOperationItem::AddMidiCtrlValList:
+    case PendingOperationItem::ModifyAudioCtrlValList:
     case PendingOperationItem::SetGlobalTempo:
     case PendingOperationItem::AddRoute:
     case PendingOperationItem::DeleteRoute:
@@ -91,6 +95,7 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::DeleteRouteNode:
     case PendingOperationItem::ModifyRouteNode:
     case PendingOperationItem::UpdateSoloStates:
+    case PendingOperationItem::EnableAllAudioControllers:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -123,6 +128,16 @@ int PendingOperationItem::getIndex() const
     
     case PendingOperationItem::ModifyMidiCtrlVal:
       return _imcv->first;  // Tick
+
+    
+    case PendingOperationItem::AddAudioCtrlVal:
+      return _frame;  // Frame
+    
+    case PendingOperationItem::DeleteAudioCtrlVal:
+      return _iCtrl->first;  // Frame
+    
+    case PendingOperationItem::ModifyAudioCtrlVal:
+      return _iCtrl->first;  // Frame
 
     
     case PendingOperationItem::AddTempo:
@@ -682,7 +697,31 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       flags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
     break;
     
-
+    case SetTrackRecord:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackRecord track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setRecordFlag2(_boolA);
+      flags |= SC_RECFLAG;
+    break;
+    
+    case SetTrackMute:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackMute track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setMute(_boolA);
+      flags |= SC_MUTE;
+    break;
+    
+    case SetTrackSolo:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackSolo track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setSolo(_boolA);
+      flags |= SC_SOLO;
+    break;
+    
+    
     case AddPart:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage AddPart part:%p\n", _part);
@@ -813,6 +852,44 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     break;
     
     
+    case ModifyAudioCtrlValList:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlValList: old ctrl_l:%p new ctrl_l:%p\n", _iCtrlList->second, _aud_ctrl_list);
+#endif      
+      CtrlList* orig = _iCtrlList->second;
+      _iCtrlList->second = _aud_ctrl_list;
+      // Transfer the original pointer back to _aud_ctrl_list so it can be deleted in the non-RT stage.
+      _aud_ctrl_list = orig;
+      flags |= SC_AUDIO_CONTROLLER_LIST;
+    }
+    break;
+    case AddAudioCtrlVal:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%d val:%f\n", 
+              _aud_ctrl_list, _frame, _ctl_dbl_val);
+#endif      
+      _aud_ctrl_list->insert(std::pair<const int, CtrlVal> (_frame, CtrlVal(_frame, _ctl_dbl_val)));
+      flags |= SC_AUDIO_CONTROLLER;
+    break;
+    case DeleteAudioCtrlVal:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteAudioCtrlVal: ctrl_l:%p ctrl_num:%d frame:%d val:%f\n", 
+                       _aud_ctrl_list, _aud_ctrl_list->id(), _iCtrl->first, _iCtrl->second.val);
+#endif      
+      _aud_ctrl_list->erase(_iCtrl);
+      flags |= SC_AUDIO_CONTROLLER;
+    break;
+    case ModifyAudioCtrlVal:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%d old_val:%f new_val:%f\n", 
+                       _iCtrl->first, _iCtrl->second.val, _ctl_dbl_val);
+#endif      
+      _iCtrl->second.val = _ctl_dbl_val;
+      flags |= SC_AUDIO_CONTROLLER;
+    break;
+    
+    
     case AddTempo:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage AddTempo: tempolist:%p tempo:%p %d tick:%d\n", 
@@ -919,6 +996,25 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       flags |= SC_EVERYTHING;
     break;
     
+    case EnableAllAudioControllers:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage EnableAllAudioControllers\n");
+#endif
+      TrackList* tl = MusEGlobal::song->tracks();
+      for (iTrack it = tl->begin(); it != tl->end(); ++it)
+      {
+        Track* t = *it;
+        if(t->isMidiTrack())
+          continue;
+        AudioTrack *at = static_cast<AudioTrack*>(t);
+        // Re-enable all track and plugin controllers, and synth controllers if applicable.
+        at->enableAllControllers();
+        flags |= SC_AUDIO_CONTROLLER;
+      }
+    }
+    break;
+    
     case Uninitialized:
     break;
     
@@ -941,7 +1037,7 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
     case DeleteRoute:
       MusEGlobal::song->connectJackRoutes(_src_route, _dst_route, true);
     break;
-    
+
     case DeleteTempo:
       {
 #ifdef _PENDING_OPS_DEBUG_
@@ -970,6 +1066,12 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
       }
     break;
     
+    case ModifyAudioCtrlValList:
+      // At this point _aud_ctrl_list is the original list that was replaced. Delete it now.
+      if(_aud_ctrl_list)
+        delete _aud_ctrl_list;
+    break;
+    
     default:
     break;
   }
@@ -983,6 +1085,14 @@ SongChangedFlags_t PendingOperationList::executeRTStage()
 #endif      
   for(iPendingOperation ip = begin(); ip != end(); ++ip)
     _sc_flags |= ip->executeRTStage();
+  
+  // To avoid doing this item by item, do it here.
+  if(_sc_flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
+  {
+    MusEGlobal::song->updateSoloStates();
+    _sc_flags |= SC_SOLO;
+  } 
+  
   return _sc_flags;
 }
 
@@ -1013,7 +1123,7 @@ bool PendingOperationList::add(PendingOperationItem op)
   switch(op._type)
   {
     // For these special allocation ops, searching has already been done before hand. Just add them.
-    case PendingOperationItem::AddMidiCtrlVal:
+    case PendingOperationItem::AddMidiCtrlValList:
     case PendingOperationItem::AddTempo:
     case PendingOperationItem::AddSig:
     {
@@ -1203,6 +1313,59 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::SetTrackRecord:
+        if(poi._type == PendingOperationItem::SetTrackRecord && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackRecord. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetTrackMute:
+        if(poi._type == PendingOperationItem::SetTrackMute && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackMute. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetTrackSolo:
+        if(poi._type == PendingOperationItem::SetTrackSolo && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackSolo. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
       
       case PendingOperationItem::AddPart:
         if(poi._type == PendingOperationItem::AddPart && poi._part_list == op._part_list && poi._part == op._part)  
@@ -1348,6 +1511,85 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           // Simply replace the add value with the modify value.
           poi._intB = op._intA; 
+          return true;
+        }
+      break;
+      
+      
+      case PendingOperationItem::ModifyAudioCtrlValList:
+        if(poi._type == PendingOperationItem::ModifyAudioCtrlValList && 
+          // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+          (poi._iCtrlList->second == op._iCtrlList->second || poi._aud_ctrl_list == op._iCtrlList->second))
+        {
+          // Simply replace the list.
+          poi._aud_ctrl_list = op._aud_ctrl_list; 
+          return true;
+        }
+      break;
+      
+      case PendingOperationItem::AddAudioCtrlVal:
+        if(poi._type == PendingOperationItem::AddAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Simply replace the value.
+          poi._ctl_dbl_val = op._ctl_dbl_val; 
+          return true;
+        }
+        else if(poi._type == PendingOperationItem::DeleteAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Transform existing delete command into a modify command.
+          poi._type = PendingOperationItem::ModifyAudioCtrlVal;
+          poi._ctl_dbl_val = op._ctl_dbl_val; 
+          return true;
+        }
+        else if(poi._type == PendingOperationItem::ModifyAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Simply replace the value.
+          poi._ctl_dbl_val = op._ctl_dbl_val;
+          return true;
+        }
+      break;
+      
+      case PendingOperationItem::DeleteAudioCtrlVal:
+        if(poi._type == PendingOperationItem::DeleteAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Multiple delete commands not allowed! 
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteAudioCtrlVal. Ignoring.\n");
+          return false;
+        }
+        else if(poi._type == PendingOperationItem::AddAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+          erase(ipos->second);
+          _map.erase(ipos);
+          return true;
+        }
+        else if(poi._type == PendingOperationItem::ModifyAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Modify followed by delete is equivalent to just deleting.
+          // Transform existing modify command into a delete command.
+          poi._type = PendingOperationItem::DeleteMidiCtrlVal;
+          return true;
+        }
+      break;
+      
+      case PendingOperationItem::ModifyAudioCtrlVal:
+        if(poi._type == PendingOperationItem::ModifyAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Simply replace the value.
+          poi._ctl_dbl_val = op._ctl_dbl_val;
+          return true;
+        }
+        else if(poi._type == PendingOperationItem::DeleteAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Transform existing delete command into a modify command.
+          poi._type = PendingOperationItem::ModifyAudioCtrlVal;
+          poi._ctl_dbl_val = op._ctl_dbl_val; 
+          return true;
+        }
+        else if(poi._type == PendingOperationItem::AddAudioCtrlVal && poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          // Simply replace the add value with the modify value.
+          poi._ctl_dbl_val = op._ctl_dbl_val; 
           return true;
         }
       break;
@@ -1624,6 +1866,17 @@ bool PendingOperationList::add(PendingOperationItem op)
           // Simply replace the value.
           poi._intA = op._intA;
           return true;
+        }
+      break;  
+
+      case PendingOperationItem::EnableAllAudioControllers:
+#ifdef _PENDING_OPS_DEBUG_
+        fprintf(stderr, "PendingOperationList::add() EnableAllAudioControllers\n");
+#endif      
+        if(poi._type == PendingOperationItem::EnableAllAudioControllers)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
+          return false;  
         }
       break;  
 

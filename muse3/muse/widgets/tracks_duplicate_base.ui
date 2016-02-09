@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>238</width>
-    <height>261</height>
+    <width>308</width>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Duplicate tracks</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -56,27 +56,39 @@
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="allRoutesRadioButton">
-     <property name="text">
-      <string>Copy all routes</string>
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="checked">
-      <bool>true</bool>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="defaultRoutesRadioButton">
-     <property name="text">
-      <string>Default routing</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="noRoutesRadioButton">
-     <property name="text">
-      <string>No routes</string>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QRadioButton" name="allRoutesRadioButton">
+        <property name="text">
+         <string>Copy all routes</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="defaultRoutesRadioButton">
+        <property name="text">
+         <string>Default routing</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="noRoutesRadioButton">
+        <property name="text">
+         <string>No routes</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -87,10 +99,52 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="copyPartsCheckBox">
-     <property name="text">
-      <string>Copy parts</string>
+    <widget class="QFrame" name="frame_2">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QRadioButton" name="duplicatePartsRadioButton">
+        <property name="text">
+         <string>Duplicate all parts</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="copyPartsRadioButton">
+        <property name="text">
+         <string>Make independent copies of all parts</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="clonePartsRadioButton">
+        <property name="text">
+         <string>Make clones of all parts</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="noPartsRadioButton">
+        <property name="text">
+         <string>No parts</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>

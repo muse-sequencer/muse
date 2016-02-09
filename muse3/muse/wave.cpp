@@ -41,12 +41,12 @@
 #include "globals.h"
 #include "event.h"
 #include "audio.h"
-///#include "sig.h"
 #include "al/sig.h"
 #include "part.h"
 #include "track.h"
 #include "wavepreview.h"
 #include "gconfig.h"
+#include "type_defs.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -82,6 +82,7 @@ SndFile::~SndFile()
             close();
       for (iSndFile i = sndFiles.begin(); i != sndFiles.end(); ++i) {
             if (*i == this) {
+                  //fprintf(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLatin1().constData());
                   sndFiles.erase(i);
                   break;
                   }
@@ -92,7 +93,7 @@ SndFile::~SndFile()
             cache = 0;
             }
       if(writeBuffer)
-         delete [] writeBuffer;\
+         delete [] writeBuffer;
          writeBuffer = 0;
       }
 
@@ -108,10 +109,10 @@ bool SndFile::openRead(bool createCache, bool showProgress)
             }
       QString p = path();
       sfinfo.format = 0;
+      sfUI = 0;
       sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
       if (sf == 0)
             return true;
-      sfUI = 0;
       if(createCache){
          sfinfo.format = 0;
          sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
@@ -377,6 +378,9 @@ bool SndFile::openWrite()
       sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
       sfUI = 0;
       if (sf) {
+            if(writeBuffer)
+              delete [] writeBuffer;
+            writeBuffer = new float [writeSegSize * std::max(2, sfinfo.channels)];
             openFlag  = true;
             writeFlag = true;
             QString cacheName = finfo->absolutePath() +
@@ -396,9 +400,17 @@ void SndFile::close()
             printf("SndFile:: alread closed\n");
             return;
             }
-      sf_close(sf);
+      if(int err = sf_close(sf))
+        fprintf(stderr, "SndFile::close Error:%d on sf_close(sf:%p)\n", err, sf);
+      else
+        sf = 0;
       if (sfUI)
-            sf_close(sfUI);
+      {
+            if(int err = sf_close(sfUI))
+              fprintf(stderr, "SndFile::close Error:%d on sf_close(sfUI:%p)\n", err, sfUI);
+            else
+              sfUI = 0;
+      }
       openFlag = false;
       }
 
@@ -483,7 +495,6 @@ void SndFile::setFormat(int fmt, int ch, int rate)
       sfinfo.format     = fmt;
       sfinfo.seekable   = true;
       sfinfo.frames     = 0;
-      writeBuffer = new float [writeSegSize * std::max(2, ch)];
       }
 
 //---------------------------------------------------------
@@ -577,11 +588,15 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
        wrFrames = realWrite(srcChannels, src, n);
    else
    {
-      while(n > 0)
+      while(1)
       {
-         size_t nrWrote = realWrite(srcChannels, src, writeSegSize, wrFrames);
+         size_t sz = (n - wrFrames) < writeSegSize ? (n - wrFrames) : writeSegSize;
+         size_t nrWrote = realWrite(srcChannels, src, sz, wrFrames);
+         if(nrWrote == 0) // Nothing written?
+           break;
          wrFrames += nrWrote;
-         n -= nrWrote;
+         if(wrFrames >= n)
+           break;
       }
    }
    return wrFrames;
@@ -736,9 +751,11 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
             }
 
       // only open one instance of wave file
-      SndFile* f = SndFile::sndFiles.search(name);
-      //SndFile* f = 0; // REMOVE Tim. Sharing. For testing only so far.
-      if (f == 0) {
+      // REMOVE Tim. Sharing. Changed. For testing only so far.
+      //SndFile* f = SndFile::sndFiles.search(name);
+      SndFile* f = 0;
+      //if (f == 0) 
+      //{
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
                      name.toLocal8Bit().constData());
@@ -779,35 +796,35 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
                     f = 0;
                     }
               }
-            }
-      else {
-              if(openFlag)
-              {
-                if (!readOnlyFlag && ! f->isWritable()) {
-                      if (f->isOpen())
-                            f->close();
-                      f->openWrite();
-                      }
-                else {
-                      // if peak cache is older than wave file we reaquire the cache
-                      QFileInfo wavinfo(name);
-                      QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                      QFileInfo wcainfo(cacheName);
-                      if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                            QFile(cacheName).remove();
-                            f->readCache(cacheName,true);
-                            }
-                      
-                      }
-              }
-            }
+//             }
+//       else {
+//               if(openFlag)
+//               {
+//                 if (!readOnlyFlag && ! f->isWritable()) {
+//                       if (f->isOpen())
+//                             f->close();
+//                       f->openWrite();
+//                       }
+//                 else {
+//                       // if peak cache is older than wave file we reaquire the cache
+//                       QFileInfo wavinfo(name);
+//                       QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
+//                       QFileInfo wcainfo(cacheName);
+//                       if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
+//                             QFile(cacheName).remove();
+//                             f->readCache(cacheName,true);
+//                             }
+//                       
+//                       }
+//               }
+//             }
       return f;
       }
 
 //---------------------------------------------------------
 //   applyUndoFile
 //---------------------------------------------------------
-void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, unsigned startframe, unsigned endframe)
+void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsigned startframe, unsigned endframe)
       {
       // This one is called on both undo and redo of a wavfile
       // For redo to be called, undo must have been called first, and we don't store both the original data and the modified data in separate
@@ -819,20 +836,30 @@ void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, uns
       // put in the tmpfile, and when redo is eventually called the data is switched again (causing the muted data to be written to the "original"
       // file. The data is merely switched.
 
-      SndFile* orig = sndFiles.search(*original);
-      SndFile tmp  = SndFile(*tmpfile);
-      if (!orig) {
-            printf("Internal error: could not find original file: %s in filelist - Aborting\n", original->toLocal8Bit().constData());
+      if (original.empty()) {
+            printf("SndFile::applyUndoFile: Internal error: original event is empty - Aborting\n");
+            return;
+            }
+            
+      SndFileR orig = original.sndFile();
+      
+      if (orig.isNull()) {
+            printf("SndFile::applyUndoFile: Internal error: original sound file is NULL - Aborting\n");
+            return;
+            }
+      if (orig.canonicalPath().isEmpty()) {
+            printf("SndFile::applyUndoFile: Error: Original sound file name is empty - Aborting\n");
             return;
             }
 
-      if (!orig->isOpen()) {
-            if (orig->openRead()) {
-                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", original->toLocal8Bit().constData());
+      if (!orig.isOpen()) {
+            if (orig.openRead()) {
+                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", orig.canonicalPath().toLocal8Bit().constData());
                   return;
                   }
             }
 
+      SndFile tmp  = SndFile(*tmpfile);
       if (!tmp.isOpen()) {
             if (tmp.openRead()) {
                   printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile->toLocal8Bit().constData());
@@ -841,20 +868,20 @@ void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, uns
             }
 
       MusEGlobal::audio->msgIdle(true);
-      tmp.setFormat(orig->format(), orig->channels(), orig->samplerate());
+      tmp.setFormat(orig.format(), orig.channels(), orig.samplerate());
 
       // Read data in original file to memory before applying tmpfile to original
-      unsigned file_channels = orig->channels();
+      unsigned file_channels = orig.channels();
       unsigned tmpdatalen = endframe - startframe;
       float*   data2beoverwritten[file_channels];
 
       for (unsigned i=0; i<file_channels; i++) {
             data2beoverwritten[i] = new float[tmpdatalen];
             }
-      orig->seek(startframe, 0);
-      orig->readWithHeap(file_channels, data2beoverwritten, tmpdatalen);
+      orig.seek(startframe, 0);
+      orig.readWithHeap(file_channels, data2beoverwritten, tmpdatalen);
 
-      orig->close();
+      orig.close();
 
       // Read data from temporary file to memory
       float* tmpfiledata[file_channels];
@@ -866,13 +893,13 @@ void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, uns
       tmp.close();
 
       // Write temporary data to original file:
-      if (orig->openWrite()) {
+      if (orig.openWrite()) {
             printf("Cannot open orig for write - aborting.\n");
             return;
             }
 
-      orig->seek(startframe, 0);
-      orig->write(file_channels, tmpfiledata, tmpdatalen);
+      orig.seek(startframe, 0);
+      orig.write(file_channels, tmpfiledata, tmpdatalen);
 
       // Delete dataholder for temporary file
       for (unsigned i=0; i<file_channels; i++) {
@@ -894,9 +921,9 @@ void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, uns
             delete[] data2beoverwritten[i];
             }
 
-      orig->close();
-      orig->openRead();
-      orig->update();
+      orig.close();
+      orig.openRead();
+      orig.update();
       MusEGlobal::audio->msgIdle(false);
       }
 
@@ -916,33 +943,51 @@ bool SndFile::checkCopyOnWrite()
   if(!fwrite)
     return true;
   
-  // Count the number of non-clone part wave events (including possibly this one) using this file.
+  // Count the number of unique part wave events (including possibly this one) using this file.
   // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
   int use_count = 0;
+  EventID_t id = MUSE_INVALID_EVENT_ID;
+  Part* part = 0;
   WaveTrackList* wtl = MusEGlobal::song->waves();
   for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
   {
     PartList* pl = (*it)->parts();
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
     {
-      const EventList& el = ip->second->events();
-      // We are looking for active independent non-clone parts
-      if(ip->second->hasClones())
-        continue;
+      Part* p = ip->second;
+      const EventList& el = p->events();
+//       const EventList& el = ip->second->events();
+//       // We are looking for active independent non-clone parts
+//       if(ip->second->hasClones())
+//         continue;
       for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
       {
         if(ie->second.type() != Wave)
           continue;
         const Event& ev = ie->second;
-        if(ev.empty())
+        if(ev.empty() || ev.id() == MUSE_INVALID_EVENT_ID)
           continue;
         const SndFileR sf = ev.sndFile();
+        if(sf.isNull())
+          continue;
         QString path = sf.canonicalPath();
         if(path.isEmpty())
           continue;
         if(path == path_this)
+        {
+          // Ignore clones of an already found event.
+          if(ev.id() == id)
+          {
+            // Double check.
+            if(part && !p->isCloneOf(part))
+              fprintf(stderr, "SndFile::checkCopyOnWrite() Error: Two event ids are the same:%d but their parts:%p, %p are not clones!\n", (int)id, p, part);
+            continue;
+          }
+          part = p;
+          id = ev.id();
           ++use_count;
-        // If more than one non-clone part wave event is using the file, signify that the caller should make a copy of it.
+        }
+        // If more than one unique part wave event is using the file, signify that the caller should make a copy of it.
         if(use_count > 1)
           return true;
       }
@@ -1127,11 +1172,36 @@ int ClipList::idx(const Clip& clip) const
 //   cmdAddRecordedWave
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e) 
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations) 
       {
       if (MusEGlobal::debugMsg)
           printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
 
+      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo, 
+      //  but the fifo may not be empty yet, it's in the prefetch thread.
+      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the 
+      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages 
+      //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
+      // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
+      // This GUI thread is notified of the stop condition via the audio thread sending a message
+      //  as soon as the state change is read from the driver.
+      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly 
+      //  written to the sndfile and therefore stops immediately when the transport stops and thus is 
+      //  safe to read here regardless of waiting.
+      int tout = 100; // Ten seconds. Otherwise we gotta move on.
+      while(track->recordFifoCount() != 0)
+      {
+        usleep(100000);
+        --tout;
+        if(tout == 0)
+        {
+          fprintf(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n", track->prefetchFifo()->getCount());
+          break;
+        }
+      }
+      
+      // It should now be safe to work with the resultant sndfile here in the GUI thread.
+      // No other thread should be touching it right now.
       MusECore::SndFileR f = track->recFile();
       if (f.isNull()) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
@@ -1179,13 +1249,16 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
         return;
       }
-      // Round the start down using the Arranger part snap raster value. 
-      int a_rast = MusEGlobal::song->arrangerRaster();
-      unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();   
-      // Round the end up using the Arranger part snap raster value. 
-      unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
-      unsigned etick = Pos(eframe, false).tick();
-
+// REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
+//       // Round the start down using the Arranger part snap raster value. 
+//       int a_rast = MusEGlobal::song->arrangerRaster();
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();   
+//       // Round the end up using the Arranger part snap raster value. 
+//       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+// //       unsigned etick = Pos(eframe, false).tick();
+      unsigned sframe = s.frame();
+      unsigned eframe = e.frame();
+      
       // Done using master tempo map. Restore master flag. 
       if(MusEGlobal::extSyncFlag.value() && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
@@ -1200,8 +1273,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       // create Event
       MusECore::Event event(MusECore::Wave);
       event.setSndFile(f);
-      // We are done with the _recFile member. Set to zero. The function which 
-      //  calls this function already does this immediately after. But do it here anyway.
+      // We are done with the _recFile member. Set to zero.
       track->setRecFile(0);
       
       event.setSpos(0);
@@ -1213,26 +1285,15 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       event.setLenFrame(e.frame() - s.frame());
       part->addEvent(event);
 
-      // TODO FIXME that's ugly (flo)
-      addPart(part);
-      addUndo(UndoOp(UndoOp::AddPart, part));
-      updateFlags = SC_PART_INSERTED;
-
-      if (MusEGlobal::song->len() < etick)
-            MusEGlobal::song->setLen(etick);
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
       }
 
 //---------------------------------------------------------
 //   cmdChangeWave
 //   called from GUI context
 //---------------------------------------------------------
-void Song::cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex)
+void Song::cmdChangeWave(const Event& original, QString tmpfile, unsigned sx, unsigned ex)
       {
-//      char* original_charstr = new char[original.length() + 1];
-//      char* tmpfile_charstr = new char[tmpfile.length() + 1];
-//      strcpy(original_charstr, original.toLatin1().constData());
-//      strcpy(tmpfile_charstr, tmpfile.toLatin1().constData());
-//      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
       MusEGlobal::song->undoOp(UndoOp::ModifyClip, original, tmpfile, sx, ex);
       }
 

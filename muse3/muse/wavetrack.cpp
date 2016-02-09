@@ -55,17 +55,22 @@ void WaveTrack::internal_assign(const Track& t, int flags)
         return;
       //const WaveTrack& wt = (const WaveTrack&)t;
 
-      if(flags & ASSIGN_PARTS)
+      const bool dup = flags & ASSIGN_DUPLICATE_PARTS;
+      const bool cpy = flags & ASSIGN_COPY_PARTS;
+      const bool cln = flags & ASSIGN_CLONE_PARTS;
+      if(dup || cpy || cln)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
               Part* dpart;
-              if (spart->hasClones())
-                  dpart = spart->createNewClone();
-              else
-                  dpart = spart->duplicate();
-              
+              if(dup)
+                dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
+              else if(cpy)
+                dpart = spart->duplicate();
+              else if(cln)
+                dpart = spart->createNewClone();
+              dpart->setTrack(this);
               parts()->add(dpart);
               }
       }
@@ -216,20 +221,34 @@ out_of_WaveTrackRead_forloop:
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      WavePart* part;
-      if (clone)
-      {
-            part = (WavePart*)p->createNewClone();
-            part->setTrack(this);
-      }
-      else
-      {
-            part = (WavePart*)p->duplicate();
-            part->setTrack(this);
-      }
-
+      WavePart* part = clone ? (WavePart*)p->createNewClone() : (WavePart*)p->duplicate();
+      part->setTrack(this);
       return part;
       }
+
+bool WaveTrack::openAllParts()
+{
+  bool opened = false;
+  const PartList* pl = parts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    if(ip->second->openAllEvents())
+      opened = true;
+  }
+  return opened;
+}
+      
+bool WaveTrack::closeAllParts()
+{
+  bool closed = false;
+  const PartList* pl = parts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    if(ip->second->closeAllEvents())
+      closed = true;
+  }
+  return closed;
+}
 
 //---------------------------------------------------------
 //   getData
@@ -281,7 +300,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       else {
             unsigned pos;
             if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                  printf("WaveTrack::getData(%s) fifo underrun\n",
+                  printf("WaveTrack::getData(%s) (A) fifo underrun\n",
                       name().toLocal8Bit().constData());
                   return false;
                   }
@@ -291,7 +310,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                             framePos, pos);
                   while (pos < framePos) {
                         if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                              printf("WaveTrack::getData(%s) fifo underrun\n",
+                              printf("WaveTrack::getData(%s) (B) fifo underrun\n",
                                   name().toLocal8Bit().constData());
                               return false;
                               }

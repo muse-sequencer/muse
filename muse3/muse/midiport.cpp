@@ -946,7 +946,7 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
 int MidiPort::lastValidHWCtrlState(int ch, int ctrl) const
 {
       ch &= 0xff;
-      iMidiCtrlValList cl = _controller->find(ch, ctrl);
+      ciMidiCtrlValList cl = ((const MidiCtrlValListList*)_controller)->find(ch, ctrl);
       if (cl == _controller->end()) {
             return CTRL_VAL_UNKNOWN;
             }
@@ -960,8 +960,8 @@ int MidiPort::lastValidHWCtrlState(int ch, int ctrl) const
 
 int MidiPort::hwCtrlState(int ch, int ctrl) const
       {
-      ch &= 0xff;
-      iMidiCtrlValList cl = _controller->find(ch, ctrl);
+      ch &= 0xff;return CTRL_VAL_UNKNOWN;
+      ciMidiCtrlValList cl = ((const MidiCtrlValListList*)_controller)->find(ch, ctrl);
       if (cl == _controller->end())
             return CTRL_VAL_UNKNOWN;
       MidiCtrlValList* vl = cl->second;

@@ -49,7 +49,10 @@ class DuplicateTracksDialog : public QDialog, public Ui::DuplicateTracksBase
     bool allRoutes() const { return allRoutesRadioButton->isChecked(); }
     bool defaultRoutes() const { return defaultRoutesRadioButton->isChecked(); }
     
-    bool copyParts() const { return copyPartsCheckBox->isChecked(); }
+    bool duplicateParts() const { return duplicatePartsRadioButton->isChecked(); }
+    bool copyParts() const { return copyPartsRadioButton->isChecked(); }
+    bool cloneParts() const { return clonePartsRadioButton->isChecked(); }
+    
     bool copyDrumlist() const { return copyDrumlistCheckBox->isChecked(); }
 };
   

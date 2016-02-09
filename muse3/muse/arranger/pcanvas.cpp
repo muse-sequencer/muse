@@ -885,6 +885,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       for (MusECore::ciEvent e = p->events().begin(); e != p->events().end(); ++e)
       {
          MusECore::Event event = e->second;
+         if(event.empty())
+           continue;
          MusECore::SndFileR f  = event.sndFile();
          if (f.isNull())
             continue;

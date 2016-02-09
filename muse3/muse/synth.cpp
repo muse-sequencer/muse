@@ -749,8 +749,6 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::T
       
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTrack, idx, si));
 
-      MusEGlobal::audio->msgUpdateSoloStates();
-      
       return si;
       }
 

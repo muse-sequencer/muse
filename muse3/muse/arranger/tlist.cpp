@@ -2103,10 +2103,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                                           break;
                                     case 1003:     // delete track(s)
-                                          MusEGlobal::song->startUndo();
                                           MusEGlobal::audio->msgRemoveTracks();
-                                          MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
-                                          MusEGlobal::audio->msgUpdateSoloStates();
                                           break;
                                     case 1002:     // show track comment
                                           {

@@ -399,7 +399,6 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
             
       applyOperation(UndoOp(UndoOp::AddTrack, idx, track));
             
-      MusEGlobal::audio->msgUpdateSoloStates();
       return track;
       }
 
@@ -457,10 +456,17 @@ void Song::duplicateTracks()
     flags |= Track::ASSIGN_ROUTES;
   if(dlg->defaultRoutes())
     flags |= Track::ASSIGN_DEFAULT_ROUTES;
-  if(dlg->copyParts())
-    flags |= Track::ASSIGN_PARTS;     
+
+  // These three are exclusive.
+  if(dlg->duplicateParts())
+    flags |= Track::ASSIGN_DUPLICATE_PARTS;
+  else if(dlg->copyParts())
+    flags |= Track::ASSIGN_COPY_PARTS;
+  else if(dlg->cloneParts())
+    flags |= Track::ASSIGN_CLONE_PARTS;
+  
   if(dlg->copyDrumlist())
-    flags |= Track::ASSIGN_DRUMLIST;     
+    flags |= Track::ASSIGN_DRUMLIST;  
   
   delete dlg;
   
@@ -513,7 +519,6 @@ void Song::duplicateTracks()
   }
   
   MusEGlobal::song->applyOperationGroup(operations);
-  MusEGlobal::audio->msgUpdateSoloStates();
 }          
       
 
@@ -785,7 +790,7 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 //    add recorded Events into part
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned startTick)
+void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned startTick, Undo& operations)
       {
       if (events.empty()) {
             if (MusEGlobal::debugMsg)
@@ -871,14 +876,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   if(newpart->events().find(event) == newpart->events().end())
                     newpart->addEvent(event);
                   }
-            MusEGlobal::audio->msgAddPart(newpart);
-            updateFlags |= SC_PART_INSERTED;
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newpart));
             return;
             }
-
-      updateFlags |= SC_EVENT_INSERTED;
-
-      Undo operations;
 
       unsigned partTick = part->tick();
       if (endTick > part->endTick()) {
@@ -895,7 +895,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
             operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), endTick, Pos::TICKS));
-            updateFlags |= SC_PART_MODIFIED;
       }
             
 
@@ -915,8 +914,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             // Indicate that controller values and clone parts were handled.
             operations.push_back(UndoOp(UndoOp::AddEvent, event, part, true, true));
       }
-      
-      applyOperationGroup(operations,false); // don't do undo, startUndo must have been called from outside.
 }
 
 //---------------------------------------------------------
@@ -1428,8 +1425,7 @@ PartList* Song::getSelectedMidiParts() const
       
        // collect marked parts
       for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-            MidiTrack* track = *t;
-            PartList* pl = track->parts();
+            PartList* pl = (*t)->parts();
             for (iPart p = pl->begin(); p != pl->end(); ++p) {
                   if (p->second->selected()) {
                         parts->add(p->second);
@@ -1440,12 +1436,9 @@ PartList* Song::getSelectedMidiParts() const
       // and collect all parts of this track
 
       if (parts->empty()) {
-            for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
+            for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
                   if ((*t)->selected()) {
-                        MidiTrack* track = dynamic_cast<MidiTrack*>(*t);
-                        if (track == 0)
-                              continue;
-                        PartList* pl = track->parts();
+                        PartList* pl = (*t)->parts();
                         for (iPart p = pl->begin(); p != pl->end(); ++p)
                               parts->add(p->second);
                         break;
@@ -1469,12 +1462,9 @@ PartList* Song::getSelectedWaveParts() const
       */      
 
       // collect selected parts
-      for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-            MusECore::WaveTrack* track = dynamic_cast<MusECore::WaveTrack*>(*t);
-            if (track == 0)
-                  continue;
-            PartList* pl = track->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
+      for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
+            PartList* pl = (*t)->parts();
+            for (ciPart p = pl->begin(); p != pl->end(); ++p) {
                   if (p->second->selected()) {
                         parts->add(p->second);
                         }
@@ -1484,13 +1474,10 @@ PartList* Song::getSelectedWaveParts() const
       // and collect all parts in this track
 
       if (parts->empty()) {
-            for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
+            for (ciWaveTrack t = _waves.begin(); t != _waves.end(); ++t) {
                   if ((*t)->selected()) {
-                        MusECore::WaveTrack* track =  dynamic_cast<MusECore::WaveTrack*>(*t);
-                        if (track == 0)
-                              continue;
-                        PartList* pl = track->parts();
-                        for (iPart p = pl->begin(); p != pl->end(); ++p)
+                        PartList* pl = (*t)->parts();
+                        for (ciPart p = pl->begin(); p != pl->end(); ++p)
                               parts->add(p->second);
                         break;
                         }
@@ -1501,11 +1488,15 @@ PartList* Song::getSelectedWaveParts() const
 
 void Song::normalizePart(MusECore::Part *part)
 {
-   MusECore::EventList evs = part->events();
-   for(MusECore::EventList::iterator it = evs.begin(); it != evs.end(); ++it)
+   const MusECore::EventList& evs = part->events();
+   for(MusECore::ciEvent it = evs.begin(); it != evs.end(); ++it)
    {
-      MusECore::SndFileR sf = (*it).second.sndFile();
-      MusECore::SndFileR file = sf;
+      const Event& ev = (*it).second;
+      if(ev.empty())
+        continue;
+      MusECore::SndFileR file = ev.sndFile();
+      if(file.isNull())
+        continue;
 
       QString tmpWavFile = QString::null;
       if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile))
@@ -1569,7 +1560,7 @@ void Song::normalizePart(MusECore::Part *part)
       }
 
       // Undo handling
-      MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, 0, tmpdatalen);
+      MusEGlobal::song->cmdChangeWave(ev, tmpWavFile, 0, tmpdatalen);
       MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
       //sf.update();
    }
@@ -1848,9 +1839,6 @@ void Song::undo()
       MusEGlobal::undoAction->setEnabled(!undoList->empty());
       setUndoRedoText();
 
-      if(updateFlags)
-        MusEGlobal::audio->msgUpdateSoloStates();
-
       emit songChanged(updateFlags);
       emit sigDirty();
 }
@@ -1880,9 +1868,6 @@ void Song::redo()
       MusEGlobal::undoAction->setEnabled(true);
       MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
-
-      if(updateFlags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
-        MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);
       emit sigDirty();
@@ -2773,26 +2758,24 @@ void Song::clearRecAutomation(bool clearList)
 //   processAutomationEvents
 //---------------------------------------------------------
 
-void Song::processAutomationEvents()
+void Song::processAutomationEvents(Undo* operations)
 {
-  MusEGlobal::audio->msgIdle(true); // gain access to all data structures
-   
-  // Just clear all pressed and touched flags, not rec event lists.
-  clearRecAutomation(false);
-  if (!MusEGlobal::automation)
-  {
-    MusEGlobal::audio->msgIdle(false);
-    return;
-  }
+  Undo ops;
+  Undo* opsp = operations ? operations : &ops;
+
+  // Clear all pressed and touched flags.
+  // This is a non-undoable 'one-time' operation, removed after execution.
+  opsp->push_back(UndoOp(UndoOp::EnableAllAudioControllers));
   
   for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
   {
     if(!(*i)->isMidiTrack())
       // Process (and clear) rec events.
-      ((AudioTrack*)(*i))->processAutomationEvents();
+      ((AudioTrack*)(*i))->processAutomationEvents(opsp);
   }
 
-  MusEGlobal::audio->msgIdle(false); 
+  if(!operations)
+    MusEGlobal::song->applyOperationGroup(ops);
 }
 
 //---------------------------------------------------------
@@ -2801,52 +2784,50 @@ void Song::processAutomationEvents()
 
 void Song::processMasterRec()
 {
-  bool do_tempo = false;
+//   bool do_tempo = false;
   
   // Wait a few seconds for the tempo fifo to be empty.
-  int tout = 30;
+  int tout = 100; // Ten seconds. Otherwise we gotta move on.
   while(!_tempoFifo.isEmpty())
   {
     usleep(100000);
     --tout;
     if(tout == 0)
+    {
+      fprintf(stderr, "Song::processMasterRec: Error: Timeout waiting for _tempoFifo to empty!\n");
       break;
+    }
   }
   
-  int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
+  const int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
   if(tempo_rec_list_sz != 0) 
   {
     if(QMessageBox::question(MusEGlobal::muse, 
                           tr("MusE: Tempo list"), 
                           tr("External tempo changes were recorded.\nTransfer them to master tempo list?"),
                           QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Ok)
-       do_tempo = true;
+    {
+      // FIXME TODO: Change the tempomap and tempo_rec_list to allocated pointers so they can be quickly swapped in realtime without idling.
+      MusEGlobal::audio->msgIdle(true); // gain access to all data structures
+
+      // Erase from master tempo the (approximate) recording start/end tick range according to the recorded tempo map,
+      //MusEGlobal::tempomap.eraseRange(MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getStartRecordPos().frame()), 
+      //                                MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getEndRecordPos().frame()));
+      // This is more accurate but lacks resolution:
+      MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick(), MusEGlobal::audio->getEndExternalRecTick());
+
+      // Add the recorded tempos to the master tempo list:
+      for(int i = 0; i < tempo_rec_list_sz; ++i)
+        MusEGlobal::tempomap.addTempo(MusEGlobal::tempo_rec_list[i].tick, 
+                                      MusEGlobal::tempo_rec_list[i].tempo, 
+                                      false);  // False: Defer normalize
+      MusEGlobal::tempomap.normalize();
+      MusEGlobal::audio->msgIdle(false); 
+      update(SC_TEMPO);
+    }
+    // It should be safe to do this here in the GUI thread, the driver should not be touching it anymore.
+    MusEGlobal::tempo_rec_list.clear();
   }
-  
-  MusEGlobal::audio->msgIdle(true); // gain access to all data structures
-
-  if(do_tempo)
-  {
-    // Erase from master tempo the (approximate) recording start/end tick range according to the recorded tempo map,
-    //MusEGlobal::tempomap.eraseRange(MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getStartRecordPos().frame()), 
-    //                                MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getEndRecordPos().frame()));
-    // This is more accurate but lacks resolution:
-    MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick(), MusEGlobal::audio->getEndExternalRecTick());
-
-    // Add the recorded tempos to the master tempo list:
-    for(int i = 0; i < tempo_rec_list_sz; ++i)
-      MusEGlobal::tempomap.addTempo(MusEGlobal::tempo_rec_list[i].tick, 
-                                    MusEGlobal::tempo_rec_list[i].tempo, 
-                                    false);  // False: Defer normalize
-    MusEGlobal::tempomap.normalize();
-  }
-  
-  MusEGlobal::tempo_rec_list.clear();
-  
-  MusEGlobal::audio->msgIdle(false); 
-
-  if(do_tempo)
-    update(SC_TEMPO);
 }
 
 //---------------------------------------------------------
@@ -2864,13 +2845,19 @@ void Song::abortRolling()
 //   stopRolling
 //---------------------------------------------------------
 
-void Song::stopRolling()
+void Song::stopRolling(Undo* operations)
       {
+      Undo ops;
+      Undo* opsp = operations ? operations : &ops;
+      
       if (record())
-            MusEGlobal::audio->recordStop();
+            MusEGlobal::audio->recordStop(false, opsp);
       setStopPlay(false);
       
-      processAutomationEvents();
+      processAutomationEvents(opsp);
+      
+      if(!operations)
+        MusEGlobal::song->applyOperationGroup(ops);
       }
 
 //---------------------------------------------------------

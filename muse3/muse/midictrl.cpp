@@ -707,7 +707,7 @@ void MidiCtrlValListList::clearDelete(bool deleteLists)
   if(deleteLists)
     clear();
 }
-      
+
 //---------------------------------------------------------
 //   setHwVal
 //   Returns false if value is already equal, true if value is changed.

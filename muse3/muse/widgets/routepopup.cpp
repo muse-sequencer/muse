@@ -3247,7 +3247,6 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
   if(!operations.empty())
   {
     DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::popupActivated: executing operations\n");
-    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //     MusEGlobal::song->update(SC_ROUTE);
   }
