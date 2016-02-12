@@ -1,3 +1,5 @@
+12.02.2016:
+        - Added instrument definition for Yamaha S30/S80 made by Dennis Schulmeister (rj)
 09.02.2016: 
         (By Tim)
         - Non-shared event lists followup: Wave event sndfile handles are now truly
