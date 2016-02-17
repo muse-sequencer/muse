@@ -68,6 +68,7 @@
 #include "dialogs.h"
 #include "widgets/pastedialog.h"
 #include "undo.h"
+#include "muse_math.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;
@@ -82,6 +83,10 @@ using std::set;
 
 namespace MusEGui {
 
+const int PartCanvas::_automationPointDetectDist = 4;
+const int PartCanvas::_automationPointWidthUnsel = 2;
+const int PartCanvas::_automationPointWidthSel = 3;
+  
 //---------------------------------------------------------
 //   NPart
 //---------------------------------------------------------
@@ -122,6 +127,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       automation.currentCtrlValid = false;
       automation.controllerState = doNothing;
       automation.moveController = false;
+      automation.breakUndoCombo = false;
       partsChanged();
       }
 
@@ -1015,21 +1021,25 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                         delete automationMenu;
                       }
                       if (do_delete && automation.currentTrack) {
+                          Undo operations;
                           foreach(int frame, automation.currentCtrlFrameList)
-                              MusEGlobal::audio->msgEraseACEvent((MusECore::AudioTrack*)automation.currentTrack,
-                                       automation.currentCtrlList->id(), frame);
-                          // User probably would like to hear results so make sure controller is enabled.
-                          ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
+                              operations.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame));
+                          if(!operations.empty())
+                          {
+                            MusEGlobal::song->applyOperationGroup(operations);
+                            // User probably would like to hear results so make sure controller is enabled.
+                            ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
+                          }
                       }
                   }
                   else {
                       if (automation.controllerState != doNothing)
+                      {
                           automation.moveController = true;
-//                          MusECore::Track * t = y2Track(event->pos().y());
-//                          if (t) {
-//                             checkAutomation(t, event->pos(), false);
-//                          }
-//                          automation.startMovePoint = event->pos();
+                          // Upon any next operations list execution, break any undo combining.
+                          automation.breakUndoCombo = true;
+                          newAutomationVertex(pt);
+                      }
                   }
                   return false;
                   break;
@@ -1050,6 +1060,7 @@ void PartCanvas::mouseRelease(const QPoint&)
           automation.currentCtrlValid = false;
           automation.currentTrack=0;
           automation.currentCtrlList=0;
+          //automation.breakUndoCombo = false; // Don't touch this here.
       }
 
 //---------------------------------------------------------
@@ -1063,10 +1074,14 @@ void PartCanvas::mouseMove(QMouseEvent* event)
             x = 0;
 
       if (_tool == AutomationTool) {
+        event->accept();
         bool slowMotion = event->modifiers() & Qt::ShiftModifier;
         processAutomationMovements(event->pos(), slowMotion);
+        emit timeChanged(AL::sigmap.raster(x, *_raster));
+        return;
       }
 
+      event->ignore();
       emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
 
@@ -2997,6 +3012,8 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                 if(r.intersects(mr)) 
                 {
                   drawAutomation(p, r, (MusECore::AudioTrack*)track);
+                  drawAutomationPoints(p, r, (MusECore::AudioTrack*)track);
+                  drawAutomationText(p, r, (MusECore::AudioTrack*)track);
                 }  
           }
           yy += th;
@@ -3151,11 +3168,9 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
 
 void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTrack *t)
 {
-    int bottom = rr.bottom() - 2;
-    int height = bottom - rr.top() - 2; // limit height
+    const int bottom = rr.bottom() - 2;
+    const int height = bottom - rr.top() - 2; // limit height
 
-    //printf("PartCanvas::drawAutomation x:%d y:%d w:%d h:%d height:%d\n", rr.x(), rr.y(), rr.width(), rr.height(), height); 
-    
     p.setBrush(Qt::NoBrush);
     
     MusECore::CtrlListList* cll = t->controller();
@@ -3177,10 +3192,11 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       int ypixel = oldY;
       double min, max;
       cl->range(&min,&max);
-      bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
-      QPen pen1(cl->color(), 0);  
-      QPen pen2(cl->color(), 2);  
-      pen2.setCosmetic(true);
+      bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
+      QColor line_color(cl->color());
+      line_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
+      QPen pen1(line_color, 0);
+      QString txt;
 
       // Store first value for later
       double yfirst;
@@ -3216,48 +3232,30 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
             xpixel = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
             
             if (oldY==-1) oldY = ypixel;
-
-            p.setPen(pen1);
-            if(discrete)
+            
+            // Ideally we would like to cut the lines right at the rectangle boundaries.
+            // But they might not be drawn exactly the same as the full line would.
+            // So we'll also accept anything that started outside the boundaries.
+            // A small acceptable speed hit relatively speaking - but far far better than drawing all.
+            if(oldX <= rr.right() && xpixel >= rr.left() && oldY <= rr.bottom() && ypixel >= rr.top())
             {
-              p.drawLine(oldX, oldY, xpixel, oldY); 
-              p.drawLine(xpixel, oldY, xpixel, ypixel); 
+              p.setPen(pen1);
+              if(discrete)
+              {
+                p.drawLine(oldX, oldY, xpixel, oldY); 
+                p.drawLine(xpixel, oldY, xpixel, ypixel); 
+              }
+              else
+                p.drawLine(oldX, oldY, xpixel, ypixel); 
             }
-            else
-              p.drawLine(oldX, oldY, xpixel, ypixel); 
                       
             if (xpixel > rr.right())
               break;
-
-            // draw a square around the point, use WHITE if it's selected
-            bool pointIsSelected = automation.currentCtrlValid && automation.currentCtrlList == cl && automation.currentCtrlFrameList.contains(ic->second.frame);
-            pen2.setColor(pointIsSelected ? Qt::white : cl->color());
             
-            p.setPen(pen2);
-            p.drawRect(xpixel-2, ypixel-2, 5, 5);
-            if (pointIsSelected)
-              p.drawRect(xpixel-3, ypixel-3, 7, 7);
             oldX = xpixel;
             oldY = ypixel;
-            if (automation.currentCtrlValid && automation.currentCtrlList == cl &&
-                 automation.currentCtrlFrameList.contains(ic->second.frame) &&
-                 automation.currentCtrlFrameList.size() == 1) {
-                    double val = ic->second.val;
-                    QRect textRect = rr;
-                    textRect.setX(xpixel + 20);
-                    textRect.setY(ypixel);
-                    if (cl->valueType() == MusECore::VAL_LOG) {
-                        val = MusECore::fast_log10(ic->second.val) * 20.0;
-                    }
-                    p.drawText(textRect, QString("Param: %1, Value: %2").arg(cl->name()).arg(val));
-            }
         }
       }
-
-      p.setPen(pen1);
-      //int xTextPos = mapx(0) > rmapx(0) ? mapx(0) + 5 : rmapx(0) + 5; // follow window..(doesn't work very well)
-      int xTextPos = mapx(0) + 5;
-      p.drawText(xTextPos,yfirst,100,height-2,0,cl->name());
 
       if (xpixel <= rr.right())
       {
@@ -3268,43 +3266,249 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 }
 
 //---------------------------------------------------------
-//  checkIfOnLine
-//    check if our point is on the line defined by
-//    by first/last X/Y
+//   drawAutomationPoints
 //---------------------------------------------------------
 
-bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, double firstY, double lastY, int circumference)
+void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::AudioTrack *t)
 {
-  if (lastX==firstX)  
-    return (FABS(mouseX-lastX) < circumference);
-  else if (mouseX < firstX || mouseX > lastX+circumference) // (*)
-    return false;
-  else
+  const int bottom = rr.bottom() - 2;
+  const int height = bottom - rr.top() - 2; // limit height
+  const int mx0 = mapx(0);
+  
+  const int pw2  = _automationPointWidthUnsel / 2;
+  const int pws2 = _automationPointWidthSel / 2;
+  MusECore::CtrlListList* cll = t->controller();
+  
+  // Draw unselected vertices first.
+  for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
   {
-    double proportion = (mouseX-firstX)/(lastX-firstX); // a value between 0 and 1, where firstX->0 and lastX->1
-    double calcY = (lastY-firstY)*proportion+firstY;    // where the drawn line's y-coord is at mouseX
-    double slope = (lastY-firstY)/(lastX-firstX);
+    MusECore::CtrlList *cl = icll->second;
+    if(cl->dontShow() || !cl->isVisible())
+      continue;
+    if(rr.right() < mx0)
+    {
+      //p.restore();
+      return;
+    }
+
+    double min, max;
+    cl->range(&min,&max);
+    const QColor line_col(cl->color());
+    const QColor vtx_col1(line_col.red() ^ 255, line_col.green() ^ 255, line_col.blue() ^ 255);
+    QColor vtx_col2(cl->color());
+    vtx_col2.setAlpha(160);
+    // If we happen to be using 1 pixel, use an inverted colour. Else use the line colour but slightly transparent.
+    const QColor& vtx_col = (_automationPointWidthUnsel == 1) ? vtx_col1 : vtx_col2;
+    QPen pen(vtx_col, 0);
+    p.setPen(pen);
     
-    return (FABS(calcY-mouseY) < (circumference * sqrt(1+slope*slope)));
-    // this is equivalent to circumference / cos( atan(slope) ). to
-    // verify, draw a sloped line (the graph), a 90°-line to it with
-    // length "circumference". from the (unconnected) endpoint of that
-    // line, draw a vertical line down to the sloped line.
-    // use slope=tan(alpha) <==> alpha=atan(slope) and
-    // cos(alpha) = adjacent side / hypothenuse (hypothenuse is what we
-    // want, and adjacent = circumference).
-    // to optimize: this looks similar to abs(slope)+1
-    
-    //return (ABS(calcY-mouseY) < circumference);
+    for(MusECore::ciCtrl ic = cl->begin(); ic != cl->end(); ++ic)
+    {
+      const int frame = ic->second.frame;
+      if(automation.currentCtrlValid && automation.currentCtrlList == cl && automation.currentCtrlFrameList.contains(frame))
+        continue;
+      const int xpixel = mapx(MusEGlobal::tempomap.frame2tick(frame));
+      if(xpixel > rr.right())
+        break;
+
+      double y = ic->second.val; 
+      if (cl->valueType() == MusECore::VAL_LOG ) {
+        y = logToVal(y, min, max); // represent volume between 0 and 1
+        if(y < 0) y = 0.0;
+      }
+      else 
+        y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+      
+      const int ypixel = bottom - rmapy_f(y) * height;
+      if(((xpixel + pw2 >= rr.left()) && (xpixel - pw2 <= rr.right())) && 
+         ((ypixel + pw2 >= rr.top())  && (ypixel - pw2 <= rr.bottom())))
+        //p.fillRect(xpixel - pw2, ypixel - pw2, _automationPointWidthUnsel, _automationPointWidthUnsel, vtx_col);
+        // For some reason this is drawing one extra pixel width and height. ???
+        p.drawRect(xpixel - pw2, ypixel - pw2, _automationPointWidthUnsel, _automationPointWidthUnsel);
+    }
   }
   
-  /* without the +circumference in the above if statement (*), moving
-   * the mouse towards a control point from the right would result in
-   * the line segment from the targeted point to the next to be con-
-   * sidered, but not the segment from the previous to the targeted.
-   * however, only points for which the line segment they _end_ is
-   * under the cursor are considered, so we need to enlengthen this
-   * a bit  (flo93)*/
+  // Now draw selected vertices, so that they always appear on top.
+  for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
+  {
+    MusECore::CtrlList *cl = icll->second;
+    if(cl->dontShow() || !cl->isVisible())
+      continue;
+    if(rr.right() < mx0)
+    {
+      //p.restore();
+      return;
+    }
+
+    double min, max;
+    cl->range(&min,&max);
+    const QColor line_col(cl->color());
+    const QColor vtx_col(line_col.red() ^ 255, line_col.green() ^ 255, line_col.blue() ^ 255);
+    
+    for(MusECore::ciCtrl ic = cl->begin(); ic != cl->end(); ++ic)
+    {
+      const int frame = ic->second.frame;
+      if(!automation.currentCtrlValid || automation.currentCtrlList != cl || !automation.currentCtrlFrameList.contains(frame))
+        continue;
+      const int xpixel = mapx(MusEGlobal::tempomap.frame2tick(frame));
+      if(xpixel > rr.right())
+        break;
+      
+      double y = ic->second.val; 
+      if (cl->valueType() == MusECore::VAL_LOG ) {
+        y = logToVal(y, min, max); // represent volume between 0 and 1
+        if (y < 0) y = 0.0;
+      }
+      else 
+        y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+      
+      const int ypixel = bottom - rmapy_f(y) * height;
+      if(((xpixel + pws2 >= rr.left()) && (xpixel - pws2 <= rr.right())) && 
+         ((ypixel + pws2 >= rr.top())  && (ypixel - pws2 <= rr.bottom())))
+        p.fillRect(xpixel - pws2, ypixel - pws2, _automationPointWidthSel, _automationPointWidthSel, Qt::white);
+    }
+  }
+}
+
+//---------------------------------------------------------
+//   drawAutomationText
+//---------------------------------------------------------
+
+void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::AudioTrack *t)
+{
+    const int bottom = rr.bottom() - 2;
+    const int height = bottom - rr.top() - 2; // limit height
+
+    p.setBrush(Qt::NoBrush);
+    p.setFont(font());
+    
+    MusECore::CtrlListList* cll = t->controller();
+    for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
+    {
+      MusECore::CtrlList *cl = icll->second;
+      if (cl->dontShow() || !cl->isVisible())
+        continue;
+      MusECore::iCtrl ic=cl->begin();
+      int oldX = mapx(0);
+      if(rr.right() < oldX)
+      {
+        //p.restore();
+        return;
+      }
+
+      int xpixel = 0;
+      int ypixel = 0;
+      double min, max;
+      cl->range(&min,&max);
+      const QPen pen1(cl->color(), 0);
+      const QColor line_col = cl->color();
+      QColor txt_bk((line_col.red() + line_col.green() + line_col.blue()) / 3 >= 128 ? Qt::black : Qt::white);
+      txt_bk.setAlpha(150);
+      QString txt;
+
+      // Store first value for later
+      double yfirst;
+      {
+          if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
+            yfirst = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+            if (yfirst < 0) yfirst = 0.0;
+          }
+          else {
+            yfirst = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+          }
+          yfirst = bottom - rmapy_f(yfirst) * height;
+      }
+
+      p.setPen(pen1);
+      
+      for (; ic !=cl->end(); ++ic)
+      {
+          double y = ic->second.val; 
+          if (cl->valueType() == MusECore::VAL_LOG ) {
+            y = logToVal(y, min, max); // represent volume between 0 and 1
+            if (y < 0) y = 0.0;
+          }
+          else 
+            y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+          
+          ypixel = bottom - rmapy_f(y) * height;
+          xpixel = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
+          
+          if (xpixel > rr.right())
+            break;
+          
+          if(xpixel + 20 <= rr.right() && ypixel <= rr.bottom())
+          //if(!automation.currentTextRect.isNull() && 
+          //   automation.currentTextRect.left() <= rr.right() && 
+          //   automation.currentTextRect.top() <= rr.bottom())
+          {
+            if (automation.currentCtrlValid && automation.currentCtrlList == cl &&
+                automation.currentCtrlFrameList.contains(ic->second.frame) &&
+                automation.currentCtrlFrameList.size() == 1) {
+                    QRect textRect = p.fontMetrics().boundingRect(automation.currentText).adjusted(-4, -2, 4, 2);
+                    textRect.moveLeft(xpixel + 20);
+                    textRect.moveTop(ypixel);
+                    if(textRect.right() >= rr.left() && textRect.bottom() >= rr.top())
+                    {
+                      p.fillRect(textRect, txt_bk);
+                      p.drawText(textRect, Qt::AlignCenter, automation.currentText);
+                    }
+            }
+          }
+      }
+
+      //const int xTextPos = mapx(0) > rmapx(0) ? mapx(0) + 5 : rmapx(0) + 5; // follow window..(doesn't work very well)
+      const int xTextPos = mapx(0) + 5;
+      if(xTextPos <= rr.right() && yfirst <= rr.bottom())
+      {
+        QRect textRect = fontMetrics().boundingRect(cl->name());
+        textRect.moveLeft(xTextPos);
+        textRect.moveTop(yfirst);
+        if(textRect.right() >= rr.left() && textRect.bottom() >= rr.top())
+          p.drawText(textRect, cl->name());
+      }
+    }
+}
+
+//---------------------------------------------------------
+// distanceSqToSegment
+// Returns the distance, squared, of a point to a line segment.
+//---------------------------------------------------------
+
+int distanceSqToSegment(double pointX, double pointY, double x1, double y1, double x2, double y2)
+{
+    double diffX = x2 - x1;
+    double diffY = y2 - y1;
+    
+    if((diffX == 0) && (diffY == 0))
+    {
+      diffX = pointX - x1;
+      diffY = pointY - y1;
+      return diffX * diffX + diffY * diffY;
+    }
+
+    const double t = ((pointX - x1) * diffX + (pointY - y1) * diffY) / (diffX * diffX + diffY * diffY);
+
+    if (t < 0.0)
+    {
+        //point is nearest to the first point i.e x1 and y1
+        diffX = pointX - x1;
+        diffY = pointY - y1;
+    }
+    else if (t > 1.0)
+    {
+        //point is nearest to the end point i.e x2 and y2
+        diffX = pointX - x2;
+        diffY = pointY - y2;
+    }
+    else
+    {
+        //if perpendicular line intersect the line segment.
+        diffX = pointX - (x1 + t * diffX);
+        diffY = pointY - (y1 + t * diffY);
+    }
+
+    return diffX * diffX + diffY * diffY;
 }
 
 //---------------------------------------------------------
@@ -3329,116 +3533,220 @@ bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circum
 
 void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool /*NOTaddNewCtrl*/)
 {
-    if (t->isMidiTrack())
-      return;
+  if (t->isMidiTrack())
+    return;
 
-    int mouseY;
-    int trackY = t->y();
-    int trackH = t->height();
-    
-    { int y = pointer.y();
-      if(y < trackY || y >= (trackY + trackH))
-        return; 
-      mouseY =  mapy(y);  }
-    
-    int mouseX =  mapx(pointer.x());
-    int circumference = 10;
-    
-    MusECore::CtrlListList* cll = ((MusECore::AudioTrack*) t)->controller();
-    for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
-      {
-        MusECore::CtrlList *cl = icll->second;
-        if (cl->dontShow() || !cl->isVisible()) {
-          continue;
-        }
-        MusECore::iCtrl ic=cl->begin();
+  int mouseY;
+  const int trackY = t->y();
+  const int trackH = t->height();
+  
+  { int y = pointer.y();
+    if(y < trackY || y >= (trackY + trackH))
+      return; 
+    mouseY =  mapy(y);  }
+  
+  const int mouseX =  mapx(pointer.x());
+  
+  int closest_point_radius2 = PartCanvas::_automationPointDetectDist * PartCanvas::_automationPointDetectDist;
+  int closest_point_frame = 0;
+  double closest_point_value = 0.0;
+  //int closest_point_x = 0;
+  //int closest_point_y = 0;
+  MusECore::CtrlList* closest_point_cl = NULL;
 
-        int eventOldX = mapx(0);
-        int eventX = eventOldX;
-        int eventOldY = -1;
-        int eventY = eventOldY;
-        double min, max;
-        cl->range(&min,&max);
-        bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
+  int closest_line_dist2 = PartCanvas::_automationPointDetectDist * PartCanvas::_automationPointDetectDist;
+  MusECore::CtrlList* closest_line_cl = NULL;
+  
+  MusECore::CtrlListList* cll = ((MusECore::AudioTrack*) t)->controller();
+  for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
+  {
+    MusECore::CtrlList *cl = icll->second;
+    if(cl->dontShow() || !cl->isVisible())
+      continue;
+    MusECore::ciCtrl ic=cl->begin();
 
-        // First check that there IS automation for this controller, ic == cl->end means no automation
-        if (ic == cl->end()) 
-        {
-          double y;   
-          if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
-            if (y < 0) y = 0.0;
-          }
-          else 
-            y = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
-          eventY = eventOldY = mapy(trackY+trackH-1 - 2 - y * trackH);
-        }
-        else // we have automation, loop through it
-        {  
-          for (; ic!=cl->end(); ic++)
-          {
-             double y = ic->second.val;
-             if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-               y = logToVal(y, min, max); // represent volume between 0 and 1
-               if (y < 0) y = 0;
-             }
-             else 
-               y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-             
-             eventY = mapy(trackY + trackH - 2 - y * trackH);
-             eventX = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
+    int eventOldX = mapx(0);
+    int eventX = eventOldX;
+    int eventOldY = -1;
+    int eventY = eventOldY;
+    double min, max;
+    cl->range(&min,&max);
+    bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
 
-             if (eventOldY==-1) eventOldY = eventY;
-             
-             //if (addNewCtrl) {
-             bool onLine = checkIfOnLine(mouseX, mouseY, eventOldX,eventX, eventOldY, discrete? eventOldY:eventY, circumference);
-             bool onPoint = false;
-             if ( pointer.x() > 0 && pointer.y() > 0)
-               onPoint = checkIfNearPoint(mouseX, mouseY, eventX, eventY, circumference);
-
-             eventOldX = eventX;
-             eventOldY = eventY;
-             
-             if (onLine) {
-               if (!onPoint) {
-                 QWidget::setCursor(Qt::CrossCursor);
-                 automation.currentCtrlValid = false;
-                 automation.controllerState = addNewController;
-               }else {
-                 QWidget::setCursor(Qt::OpenHandCursor);
-                 automation.currentCtrlFrameList.clear();
-                 automation.currentCtrlFrameList.append(ic->second.frame);
-                 automation.currentCtrlValid = true;
-                 automation.controllerState = movingController;
-               }
-               automation.currentCtrlList = cl;
-               automation.currentTrack = t;
-               update();
-               return;
-             }
-          }
-        } 
-
-        // we are now after the last existing controller
-        // check if we are reasonably close to a line, we only need to check Y
-        // as the line is straight after the last controller
-        //printf("post oldX:%d oldY:%d xpixel:%d ypixel:%d currX:%d currY:%d\n", oldX, oldY, xpixel, ypixel, currX, currY);
-        if(mouseX >= eventX && ABS(mouseY-eventY) < circumference) {
-          QWidget::setCursor(Qt::CrossCursor);
-          automation.controllerState = addNewController;
-          automation.currentCtrlList = cl;
-          automation.currentTrack = t;
-          automation.currentCtrlValid = false;
-          return;
-        }
+    // First check that there IS automation for this controller, ic == cl->end means no automation
+    if(ic == cl->end()) 
+    {
+      double y;   
+      if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
+        y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+        if (y < 0) y = 0.0;
       }
-      // if there are no hits we default to clearing all the data
-      automation.controllerState = doNothing;
-      automation.currentCtrlValid = false;
-      automation.currentCtrlList = 0;
-      automation.currentTrack = 0;
-      automation.currentCtrlFrameList.clear();
-      setCursor();
+      else 
+        y = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+      eventY = eventOldY = mapy(trackY+trackH-1 - 2 - y * trackH);
+    }
+    else // we have automation, loop through it
+    {  
+      for (; ic!=cl->end(); ++ic)
+      {
+        double y = ic->second.val;
+        if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
+          y = logToVal(y, min, max); // represent volume between 0 and 1
+          if (y < 0) y = 0;
+        }
+        else 
+          y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+        
+        eventY = mapy(trackY + trackH - 2 - y * trackH);
+        eventX = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
+
+        if (eventOldY==-1) eventOldY = eventY;
+        
+        if(pointer.x() > 0 && pointer.y() > 0)
+        {
+          const int dx = mouseX - eventX;
+          const int dy = mouseY - eventY;
+          const int r2 = dx * dx + dy * dy;
+          if(r2 < closest_point_radius2)
+          {
+            closest_point_radius2 = r2;
+            closest_point_frame = ic->second.frame;
+            closest_point_value = ic->second.val;
+            //closest_point_x = eventX;
+            //closest_point_y = eventY;
+            closest_point_cl = cl;
+          }
+        }
+
+        const int ldist2 = distanceSqToSegment(mouseX, mouseY, eventOldX, eventOldY, eventX, discrete ? eventOldY : eventY);
+        if(ldist2 < closest_line_dist2)
+        {
+          closest_line_dist2 = ldist2;
+          closest_line_cl = cl;
+        }
+        
+        eventOldX = eventX;
+        eventOldY = eventY;
+      }
+    } 
+
+    if(mouseX >= eventX)
+    {
+      const int d2 = (mouseY-eventY) * (mouseY-eventY);
+      if(d2 < closest_line_dist2) 
+      {
+        closest_line_dist2 = d2;
+        closest_line_cl = cl;
+      } 
+    }
+  }
+  
+  // Is the mouse close to a vertex? Since we currently don't use the addNewCtrl accel key, vertices take priority over lines.
+  if(closest_point_cl)
+  {
+    QWidget::setCursor(Qt::PointingHandCursor);
+    automation.currentCtrlFrameList.clear();
+    automation.currentCtrlFrameList.append(closest_point_frame);
+    automation.currentCtrlValid = true;
+    automation.controllerState = movingController;
+    automation.currentCtrlList = closest_point_cl;
+    automation.currentTrack = t;
+
+    // Store the text.
+    if(closest_point_cl->valueType() == MusECore::VAL_LOG) 
+      //closest_point_value = MusECore::fast_log10(closest_point_value) * 20.0;
+      closest_point_value = muse_val2dbr(closest_point_value); // Here we can use the slower but accurate function.
+    automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value);
+    
+// FIXME These are attempts to update only the necessary rectangles. No time for it ATM, not much choice but to do full update.
+#if 0
+    // Be sure to erase (redraw) the old rectangles.
+    int erase_ypixel = bottom - rmapy_f(y) * height;
+    int erase_xpixel = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
+    if(!automation.currentTextRect.isNull())
+      update(automation.currentTextRect);
+    if(!automation.currentVertexRect.isNull())
+      update(automation.currentVertexRect);
+    // Store the text and its rectangle.
+    double value = closest_point_value;
+    double min, max;
+    closest_point_cl->range(&min,&max);
+    if(closest_point_cl->valueType() == MusECore::VAL_LOG) 
+      //closest_point_value = MusECore::fast_log10(closest_point_value) * 20.0;
+      value = muse_val2dbr(value); // Here we can use the slower but accurate function.
+    automation.currentText = QString("Param:%1 Frame:%2 Value:%3").arg(closest_point_cl->name()).arg(closest_point_frame).arg(value);
+//     automation.currentTextRect = fontMetrics().boundingRect(automation.currentText).adjusted(-4, -2, 4, 2);
+    automation.currentTextRect = fontMetrics().boundingRect(automation.currentText).adjusted(0, 0, 4, 4);
+//     automation.currentTextRect.moveLeft(closest_point_x + 20);
+//     automation.currentTextRect.moveTop(closest_point_y);
+//     if (inLog < min) inLog = min; // Should not happen
+//     if (inLog > max) inLog = max;
+//     double linMin = 20.0*MusECore::fast_log10(min);
+//     double linMax = 20.0*MusECore::fast_log10(max);
+//     double linVal = 20.0*MusECore::fast_log10(inLog);
+    const double linMin = muse_val2dbr(min);
+    const double linMax = muse_val2dbr(max);
+    //const double n_value = (value - linMin) / (linMax - linMin); // Normalize
+    automation.currentTick = MusEGlobal::tempomap.frame2tick(closest_point_frame);
+    automation.currentYNorm = (value - linMin) / (linMax - linMin); // Normalize
+    // Store the selected vertex rectangle. Use the selected size, which can be different than the unselected size.
+    automation.currentVertexRect = QRect(closest_point_x - PartCanvas::_automationPointWidthSel / 2, 
+                                         closest_point_y - PartCanvas::_automationPointWidthSel / 2, 
+                                         PartCanvas::_automationPointWidthSel, 
+                                         PartCanvas::_automationPointWidthSel); 
+    // Now fill the text's new rectangle.
+    update(automation.currentTextRect);
+    // And fill the vertex's new rectangle.
+    update(automation.currentVertexRect);
+#else
+    //update();
+    controllerChanged(automation.currentTrack, automation.currentCtrlList->id());
+#endif
+    return;
+  }
+  
+  // Is the mouse close to a line?
+  if(closest_line_cl)
+  {
+    QWidget::setCursor(Qt::CrossCursor);
+    automation.currentCtrlValid = false;
+    automation.controllerState = addNewController;
+    automation.currentCtrlList = closest_line_cl;
+    automation.currentTrack = t;
+#if 0
+    // Be sure to erase (refill) the old rectangles.
+    if(!automation.currentTextRect.isNull())
+      update(automation.currentTextRect);
+    if(!automation.currentVertexRect.isNull())
+      update(automation.currentVertexRect);
+#else
+    //update();
+    controllerChanged(automation.currentTrack, automation.currentCtrlList->id());
+#endif
+    return;
+  }
+  
+  if(automation.currentCtrlValid && automation.currentTrack && automation.currentCtrlList)
+    controllerChanged(automation.currentTrack, automation.currentCtrlList->id());
+  
+  // if there are no hits we default to clearing all the data
+  automation.controllerState = doNothing;
+  automation.currentCtrlValid = false;
+  automation.currentCtrlList = 0;
+  automation.currentTrack = 0;
+  automation.currentCtrlFrameList.clear();
+#if 0
+  // Be sure to erase (refill) the old rectangles.
+  if(!automation.currentTextRect.isNull())
+    update(automation.currentTextRect);
+  automation.currentTextRect = QRect();
+  if(!automation.currentVertexRect.isNull())
+    update(automation.currentVertexRect);
+  automation.currentVertexRect = QRect();
+#else
+  //update();
+#endif
+  setCursor();
 }
 
 void PartCanvas::controllerChanged(MusECore::Track* t, int)
@@ -3449,122 +3757,192 @@ void PartCanvas::controllerChanged(MusECore::Track* t, int)
 void PartCanvas::processAutomationMovements(QPoint inPos, bool slowMotion)
 {
 
-  if (_tool == AutomationTool) {
-
-    if (!automation.moveController) { // currently nothing going lets's check for some action.
-        MusECore::Track * t = y2Track(inPos.y());
-        if (t) {
-           checkAutomation(t, inPos, false);
-        }
-        automation.startMovePoint = inPos;
-        return;
-    }
-
-    // automation.moveController is set, lets rock.
-    int prevFrame = 0;
-    int nextFrame = -1;
-
-    QPoint pos;
-    if (slowMotion) {
-      int relX = (inPos.x()-automation.startMovePoint.x())/3;
-      pos.setX(automation.startMovePoint.x()+relX);
-      float relY = (inPos.y()-automation.startMovePoint.y())/3;
-      pos.setY(automation.startMovePoint.y()+relY);
-
-    }
-    else {
-      pos = inPos;
-    }
-
-    if (automation.controllerState == addNewController)
-    {
-       int frame = MusEGlobal::tempomap.tick2frame(pos.x());
-       // FIXME Inefficient to add with wait here, then remove and add with wait again below. Tim.
-       MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), frame, 1.0 /*dummy value */);
-       
-       MusECore::iCtrl ic=automation.currentCtrlList->begin();
-       for (; ic !=automation.currentCtrlList->end(); ++ic) {
-         MusECore::CtrlVal &cv = ic->second;
-         if (cv.frame == frame) {
-           automation.currentCtrlFrameList.clear();
-           automation.currentCtrlFrameList.append(cv.frame);
-           automation.currentCtrlValid = true;
-           automation.controllerState = movingController;
-           break;
-         }
-       }
-    }
-
-    // get previous and next frame position to give x bounds for this event.
-    MusECore::iCtrl ic=automation.currentCtrlList->begin();
-    MusECore::iCtrl iprev = ic;
-    for (; ic !=automation.currentCtrlList->end(); ++ic)
-    {
-       MusECore::CtrlVal &cv = ic->second;
-       if (automation.currentCtrlFrameList.contains(cv.frame))
-       {
-         //currFrame = cv.frame;
-         break;
-       }  
-       prevFrame = cv.frame;
-       iprev = ic;
-    }
-    
-    MusECore::iCtrl icc = ic;
-
-    if ( ++ic != automation.currentCtrlList->end()) {
-      MusECore::CtrlVal &cv = ic->second;
-      nextFrame = cv.frame;
-    }
-    
-    // A perfectly straight vertical line (two points with same frame) is impossible:
-    //  there is only one value at t, and the next value at t+1, and so on.
-    // Also these are maps, not multimaps. Tim.
-    int newFrame = MusEGlobal::tempomap.tick2frame(pos.x());
-
-    if (newFrame <= prevFrame) 
-      newFrame=prevFrame + (icc == automation.currentCtrlList->begin() ? 0: 1);  // Only first item is allowed to go to zero x.
-    if (nextFrame!=-1 && newFrame >= nextFrame) newFrame=nextFrame-1;
-    
-    int posy=mapy(pos.y());
-    int tracky = mapy(automation.currentTrack->y());
-    int trackHeight = automation.currentTrack->height();
-
-    int mouseY = trackHeight - (posy - tracky)-2;
-    double yfraction = ((double)mouseY)/automation.currentTrack->height();
-
-    double min, max;
-    automation.currentCtrlList->range(&min,&max);
-    double cvval;    
-    if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-       //printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
-       cvval = valToLog(yfraction, min, max);
-       if (cvval< min) cvval=min;
-       if (cvval>max) cvval=max;
-    }
-    else {
-      // we need to set val between 0 and 1 (unless integer)
-      cvval = yfraction * (max-min) + min;
-      // 'Snap' to integer or boolean
-      if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
-        cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
-      if (cvval< min) cvval=min;
-      if (cvval>max) cvval=max;
-    }
-    
-    automation.currentCtrlFrameList.clear();
-    automation.currentCtrlFrameList.append(newFrame);
-    automation.currentCtrlValid = true;
-    
-    if(icc != automation.currentCtrlList->end())
-      MusEGlobal::audio->msgChangeACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), icc->second.frame, newFrame, cvval);
-    else
-      MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), newFrame, cvval);
-
-    // User probably would like to hear results so make sure controller is enabled.
-    ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
+  if (_tool != AutomationTool)
+    return;
+  
+  if (!automation.moveController) { // currently nothing going lets's check for some action.
+      MusECore::Track * t = y2Track(inPos.y());
+      if (t) {
+          checkAutomation(t, inPos, false);
+      }
+      automation.startMovePoint = inPos;
+      return;
+  }
+  
+  if(automation.controllerState != movingController)
+  {
+    automation.startMovePoint = inPos;
+    return;
   }
 
+  Undo operations;
+  
+  int deltaX = inPos.x() - automation.startMovePoint.x();
+  int deltaY = inPos.y() - automation.startMovePoint.y();
+  if (slowMotion)
+  {
+    deltaX /= 3;
+    deltaY /= 3;
+  }
+  const QPoint pos(automation.startMovePoint.x() + deltaX, automation.startMovePoint.y() + deltaY);
+  
+  const int posy=mapy(pos.y());
+  const int tracky = mapy(automation.currentTrack->y());
+  const int trackHeight = automation.currentTrack->height();
+
+  const int mouseY = trackHeight - (posy - tracky)-2;
+  const double yfraction = ((double)mouseY)/automation.currentTrack->height();
+
+  double min, max;
+  automation.currentCtrlList->range(&min,&max);
+  double cvval;    
+  if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
+      cvval = valToLog(yfraction, min, max);
+      if (cvval< min) cvval=min;
+      if (cvval>max) cvval=max;
+  }
+  else {
+    // we need to set val between 0 and 1 (unless integer)
+    cvval = yfraction * (max-min) + min;
+    // 'Snap' to integer or boolean
+    if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
+      cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
+    if (cvval< min) cvval=min;
+    if (cvval>max) cvval=max;
+  }
+
+  // Store the text.
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
+    
+  const int fl_sz = automation.currentCtrlFrameList.size();
+  for(int i = 0; i < fl_sz; ++i)
+  {
+    const int old_frame = automation.currentCtrlFrameList.at(i);
+    const int old_tick = MusEGlobal::tempomap.frame2tick(old_frame);
+    const int new_tick = old_tick + deltaX;
+    const int delta_frame = MusEGlobal::tempomap.deltaTick2frame(old_tick, new_tick);
+    
+    MusECore::ciCtrl iold = automation.currentCtrlList->find(old_frame);
+    if(iold != automation.currentCtrlList->end())
+    {
+      const double old_value = iold->second.val;
+
+      // The minimum frame that this selected frame can be moved to is the previous 
+      //  UNSELECTED vertex frame, PLUS the number of items from here to that vertex...
+      int min_prev_frame = 0;
+      MusECore::ciCtrl iprev = iold;
+      int prev_frame_offset = 0;
+      while(iprev != automation.currentCtrlList->begin())
+      {
+        --iprev;
+        ++prev_frame_offset;
+        // Stop when we find the previous unselected frame.
+        if(!automation.currentCtrlFrameList.contains(iprev->second.frame))
+        {
+          min_prev_frame = iprev->second.frame + prev_frame_offset;
+          break;
+        }
+      }
+
+      // The maximum frame that this selected frame can be moved to is the next
+      //  UNSELECTED vertex frame, MINUS the number of items from here to that vertex...
+      int max_next_frame = -1;
+      MusECore::ciCtrl inext = iold;
+      ++inext;
+      int next_frame_offset = 1; // Yes, that's 1.
+      while(inext != automation.currentCtrlList->end())
+      {
+        // Stop when we find the next unselected frame.
+        if(!automation.currentCtrlFrameList.contains(inext->second.frame))
+        {
+          max_next_frame = inext->second.frame - next_frame_offset;
+          break;
+        }
+        ++inext;
+        ++next_frame_offset;
+      }
+      
+      int new_frame = old_frame + delta_frame;
+      if(new_frame < min_prev_frame) 
+        new_frame = min_prev_frame;
+      if(max_next_frame != -1 && new_frame > max_next_frame) 
+        new_frame = max_next_frame;
+        
+      //if(old_frame != new_frame)
+      //{
+        automation.currentCtrlFrameList.replace(i, new_frame);
+        operations.push_back(UndoOp(UndoOp::ModifyAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), old_frame, new_frame, old_value, cvval));
+      //}
+    }
+  }
+  
+  automation.startMovePoint = inPos;
+  if(!operations.empty())
+  {
+    operations.combobreaker = automation.breakUndoCombo;
+    automation.breakUndoCombo = false; // Reset.
+
+    MusEGlobal::song->applyOperationGroup(operations);
+    // User probably would like to hear results so make sure controller is enabled.
+    ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
+    controllerChanged(automation.currentTrack, automation.currentCtrlList->id());
+  }
+}
+
+void PartCanvas::newAutomationVertex(QPoint pos)
+{
+  if (_tool != AutomationTool || automation.controllerState != addNewController)
+    return;
+
+  Undo operations;
+
+  const int posy=mapy(pos.y());
+  const int tracky = mapy(automation.currentTrack->y());
+  const int trackHeight = automation.currentTrack->height();
+
+  const int mouseY = trackHeight - (posy - tracky)-2;
+  const double yfraction = ((double)mouseY)/automation.currentTrack->height();
+
+  double min, max;
+  automation.currentCtrlList->range(&min,&max);
+  double cvval;    
+  if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
+      cvval = valToLog(yfraction, min, max);
+      if (cvval< min) cvval=min;
+      if (cvval>max) cvval=max;
+  }
+  else {
+    // we need to set val between 0 and 1 (unless integer)
+    cvval = yfraction * (max-min) + min;
+    // 'Snap' to integer or boolean
+    if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
+      cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
+    if (cvval< min) cvval=min;
+    if (cvval>max) cvval=max;
+  }
+  
+  // Store the text.
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
+    
+  const int frame = MusEGlobal::tempomap.tick2frame(pos.x());
+  operations.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame, cvval));
+  automation.currentCtrlFrameList.clear();
+  automation.currentCtrlFrameList.append(frame);
+  automation.currentCtrlValid = true;
+  automation.controllerState = movingController;
+  
+  automation.startMovePoint = pos;
+  
+  if(!operations.empty())
+  {
+    operations.combobreaker = automation.breakUndoCombo;
+    automation.breakUndoCombo = false; // Reset.
+
+    MusEGlobal::song->applyOperationGroup(operations);
+    // User probably would like to hear results so make sure controller is enabled.
+    ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
+    controllerChanged(automation.currentTrack, automation.currentCtrlList->id());
+  }
 }
 
 //---------------------------------------------------------

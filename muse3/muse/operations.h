@@ -248,8 +248,8 @@ struct PendingOperationItem
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; }
     
   // NOTE: ctrl_l is supplied in case the operation needs to be merged, or transformed into an AddAudioCtrlVal.
-  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, double ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
-    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _ctl_dbl_val = ctrl_val; }
+  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, int new_frame, double new_ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _frame = new_frame; _ctl_dbl_val = new_ctrl_val; }
     
   
   // NOTE: 'tick' is the desired tick. te is a new TEvent with tempo and (same) desired tick. Swapping with NEXT event is done.

@@ -1302,6 +1302,11 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         break;
                      }
                   }
+                  else if(_tool == AutomationTool){
+                    // The PartCanvas mouseMove will take care of its own cursor.
+                    // Break otherwise there is bad flickering as the 'pointing hand' competes with 'cross' etc.
+                    break;
+                  }
                   setCursor();
                   break;
             }
@@ -1702,7 +1707,7 @@ void Canvas::setCursor()
                               QWidget::setCursor(QCursor(*editmuteIcon, 4, 15));
                               break;
                         case AutomationTool:
-                              QWidget::setCursor(QCursor(Qt::PointingHandCursor));
+                              QWidget::setCursor(QCursor(Qt::ArrowCursor));
                               break;
                         case PanTool:
                               QWidget::setCursor(QCursor(Qt::OpenHandCursor));

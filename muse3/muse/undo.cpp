@@ -788,147 +788,57 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
 
-// TODO Only skeletal changes done so far here...
-//         case UndoOp::AddAudioCtrlVal:
-//           if(uo.type == UndoOp::AddAudioCtrlVal && uo.nEvent == n_op.nEvent && uo.part == n_op.part)  
+        case UndoOp::AddAudioCtrlVal:
+          if(uo.type == UndoOp::AddAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Simply replace the original value and frame.
+            uo._audioCtrlVal = n_op._audioCtrlVal;
+            return;  
+          }
+// TODO If possible.
+//           else if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.track == n_op.track &&
+//              uo._audioCtrlID == n_op._audioCtrlID &&
+//              uo._audioCtrlFrame == n_op._audioCtrlFrame)
 //           {
-//             fprintf(stderr, "MusE error: Undo::insert(): Double AddAudioCtrlVal. Ignoring.\n");
+//             // Delete followed by add, at the same frame. Transform the delete into a modify.
+//             uo.type = UndoOp::ModifyAudioCtrlVal;
+//             uo._audioCtrlVal = n_op._audioCtrlVal;
+//             uo._audioNewCtrlFrame = 
 //             return;  
 //           }
-//           else if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.nEvent == n_op.nEvent && uo.part == n_op.part)  
-//           {
-//             // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
-//             erase(iuo);
-//             return;  
-//           }
-//           else if(uo.type == UndoOp::ModifyAudioCtrlVal && uo.part == n_op.part)
-//           {
-//             if(uo.nEvent == n_op.nEvent)  
-//             {
-//               // Modify followed by adding of the modify's new event, is equivalent to just modifying with the added event. 
-//               fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlVal, then AddAudioCtrlVal same new event (double AddAudioCtrlVal). Ignoring.\n");
-//               return;  
-//             }
-//             else if(uo.oEvent == n_op.nEvent)  
-//             {
-//               // Modify followed by adding of the modify's old event, is equivalent to just adding the event. 
-//               // Transform the ModifyEvent operation into an AddAudioCtrlVal.
-//               uo.type = UndoOp::AddAudioCtrlVal;
-//               uo.nEvent = uo.oEvent;
-//               return;  
-//             }
-//           }
-//         break;
-//         
-//         case UndoOp::DeleteAudioCtrlVal:
-//           if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.nEvent == n_op.nEvent && uo.part == n_op.part)  
-//           {
-//             fprintf(stderr, "MusE error: Undo::insert(): Double DeleteAudioCtrlVal. Ignoring.\n");
-//             return;  
-//           }
-//           else if(uo.type == UndoOp::AddAudioCtrlVal && uo.nEvent == n_op.nEvent && uo.part == n_op.part)  
-//           {
-//             // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-//             erase(iuo);
-//             return;  
-//           }
-//           else if(uo.type == UndoOp::ModifyAudioCtrlVal && uo.part == n_op.part)  
-//           {
-//             if(uo.oEvent == n_op.nEvent)  
-//             {
-//               // Modify followed by delete of the modify's old event, is an error - two deletes of the same event. 
-//               fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlVal, then DeleteAudioCtrlVal same old event (double DeleteAudioCtrlVal). Ignoring.\n");
-//               return;  
-//             }
-//             else if(uo.nEvent == n_op.nEvent)
-//             {
-//               // Modify followed by delete of the modify's new event, is equivalent to just deleting the old event. 
-//               // Transform the operation into a DeleteAudioCtrlVal.
-//               uo.type = UndoOp::DeleteAudioCtrlVal;
-//               uo.nEvent = uo.oEvent;
-//               return;  
-//             }
-//           }
-//         break;
-// 
-//         case UndoOp::ModifyAudioCtrlVal:
-//           if(n_op.oEvent == n_op.nEvent)
-//           {
-//             // Equivalent to deleting then adding the same event - useless, cancels out.
-//             return;
-//           }
-//           else if(uo.type == UndoOp::ModifyAudioCtrlVal && uo.part == n_op.part)  
-//           {
-//             if(uo.oEvent == n_op.oEvent && uo.nEvent == n_op.nEvent)
-//             {
-//               fprintf(stderr, "MusE error: Undo::insert(): Double ModifyAudioCtrlVal. Ignoring.\n");
-//               return;
-//             }
-//             // Are inner add/delete pair the same event?
-//             else if(uo.nEvent == n_op.oEvent) 
-//             {
-//               // Are outer delete/add pair the same event?
-//               if(uo.oEvent == n_op.nEvent)
-//               {
-//                 // First ModifyAudioCtrlVal old event and second ModifyAudioCtrlVal new event are both the same, equivalent to doing nothing.
-//                 // Cancel out the two ModifyAudioCtrlVal operations by erasing the existing ModifyAudioCtrlVal command.
-//                 erase(iuo);
-//                 return;  
-//               }
-//               else
-//               {
-//                 // Outer delete/add pair are not the same event... 
-//                 // Transform the existing ModifyAudioCtrlVal operation into a DeleteAudioCtrlVal.
-//                 uo.type = UndoOp::DeleteAudioCtrlVal;
-//                 uo.nEvent = uo.oEvent;
-//                 // Transform the requested ModifyEvent operation into an AddAudioCtrlVal.
-//                 n_op.type = UndoOp::AddAudioCtrlVal;
-//                 // Allow it to add...
-//               }
-//             }
-//             // Inner add/delete pair are not the same event. Are outer delete/add pair the same event?
-//             else if(uo.oEvent == n_op.nEvent) 
-//             {
-//               // Transform the existing ModifyAudioCtrlVal operation into an AddAudioCtrlVal.
-//               uo.type = UndoOp::AddAudioCtrlVal;
-//               // Transform the requested ModifyAudioCtrlVal operation into a DeleteAudioCtrlVal.
-//               n_op.type = UndoOp::DeleteAudioCtrlVal;
-//               n_op.nEvent = n_op.oEvent;
-//               // Allow it to add...
-//             }
-//           }
-//           else if(uo.type == UndoOp::AddAudioCtrlVal && uo.part == n_op.part)
-//           {
-//             if(uo.nEvent == n_op.oEvent)
-//             {
-//               // Add followed by modify with old event same as addded event, is equivalent to just adding modify's new event.
-//               // Replace the existing AddAudioCtrlVal command's event with the requested ModifyAudioCtrlVal command's new event.
-//               uo.nEvent = n_op.nEvent;
-//               return;  
-//             }
-//             if(uo.nEvent == n_op.nEvent)
-//             {
-//               // Add followed by modify with new event same as addded event, is a caller error.
-//               fprintf(stderr, "MusE error: Undo::insert(): AddAudioCtrlVal, then ModifyAudioCtrlVal same new event (double AddAudioCtrlVal). Ignoring.\n");
-//               return;  
-//             }
-//           }
-//           if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.part == n_op.part)
-//           {
-//             if(uo.nEvent == n_op.oEvent)
-//             {
-//               // Delete followed by modify with old event same as deleted event, is an error.
-//               fprintf(stderr, "MusE error: Undo::insert(): DeleteAudioCtrlVal, then ModifyAudioCtrlVal same old event (double DeleteAudioCtrlVal). Ignoring.\n");
-//               return;  
-//             }
-//             if(uo.nEvent == n_op.nEvent)
-//             {
-//               // Delete followed by modify with new event same as deleted event, is equivalent to just deleting modify's old event.
-//               // Replace the existing DeleteAudioCtrlVal command's event with the requested ModifyAudioCtrlVal command's old event.
-//               uo.nEvent = n_op.oEvent;
-//             }
-//           }
-//         break;
+        break;
+        
+        case UndoOp::DeleteAudioCtrlVal:
+          if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): Double DeleteAudioCtrlVal. Ignoring.\n");
+            return;  
+          }
+          else if(uo.type == UndoOp::AddAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Add followed by delete, at the same frame, is useless. Cancel out the add + delete by erasing the add command.
+            erase(iuo);
+            return;  
+          }
+        break;
+
+        case UndoOp::ModifyAudioCtrlVal:
+          if(uo.type == UndoOp::ModifyAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioNewCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Simply replace the original new value and new frame.
+            uo._audioNewCtrlVal = n_op._audioNewCtrlVal;
+            uo._audioNewCtrlFrame = n_op._audioNewCtrlFrame;
+            return;  
+          }
+        break;
 
         case UndoOp::ModifyAudioCtrlValList:
           // Check the sanity of the requested op.
@@ -1227,38 +1137,41 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
 
 bool Undo::merge_combo(const Undo& other)
 {
-	if (this->combobreaker || other.combobreaker)
-		return false;
-	
-	bool has_select_event=false;
-	bool has_select_part=false;
-	bool has_other=false;
-	
-	for (ciUndoOp op=this->begin(); op!=this->end(); op++)
-		switch(op->type)
-		{
-			case UndoOp::DoNothing: break;
-			case UndoOp::SelectEvent: has_select_event=true; break;
-			case UndoOp::SelectPart: has_select_part=true; break;
-			default: has_other=true; break;
-		}
-	
-	for (ciUndoOp op=other.begin(); op!=other.end(); op++)
-		switch(op->type)
-		{
-			case UndoOp::DoNothing: break;
-			case UndoOp::SelectEvent: has_select_event=true; break;
-			case UndoOp::SelectPart: has_select_part=true; break;
-			default: has_other=true; break;
-		}
-	
-	bool mergeable = (has_select_event && !has_select_part && !has_other) ||
-	                 (has_select_part && !has_select_event && !has_other);
-	
-	if (mergeable)
-		this->insert(this->end(), other.begin(), other.end());
-	
-	return mergeable;
+  if (other.combobreaker)
+          return false;
+  
+  int has_other=0x01;
+  int has_select_event=0x02;
+  int has_select_part=0x04;
+  int has_modify_aud_ctrl_val=0x08;
+
+  int has = 0;
+  for (ciUndoOp op=this->begin(); op!=this->end(); op++)
+          switch(op->type)
+          {
+                  case UndoOp::DoNothing: break;
+                  case UndoOp::SelectEvent: has |= has_select_event; break;
+                  case UndoOp::SelectPart: has |= has_select_part; break;
+                  case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  default: has |= has_other; break;
+          }
+  
+  for (ciUndoOp op=other.begin(); op!=other.end(); op++)
+          switch(op->type)
+          {
+                  case UndoOp::DoNothing: break;
+                  case UndoOp::SelectEvent: has |= has_select_event; break;
+                  case UndoOp::SelectPart: has |= has_select_part; break;
+                  case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  default: has |= has_other; break;
+          }
+  
+  bool mergeable = (has == has_select_event || has == has_select_part || has == has_modify_aud_ctrl_val);
+  
+  if (mergeable)
+          this->insert(this->end(), other.begin(), other.end());
+  
+  return mergeable;
 }
 
 bool Song::applyOperation(const UndoOp& op, bool doUndo)
@@ -1668,15 +1581,53 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_n
 //  strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int old_chan, int new_chan, bool noUndo)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID, int newChanOrCtrlFrame, bool noUndo)
 {
-  assert(type_==ModifyTrackChannel);
+  assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal);
   assert(track_);
   
   type = type_;
-  _propertyTrack = track_;
-  _oldPropValue = old_chan;
-  _newPropValue = new_chan;
+  track = track_;
+  
+  if(type_ == ModifyTrackChannel)
+  {
+    _propertyTrack = track_;
+    _oldPropValue = oldChanOrCtrlID;
+    _newPropValue = newChanOrCtrlFrame;
+  }
+  else
+  {
+    _audioCtrlID = oldChanOrCtrlID;
+    _audioCtrlFrame = newChanOrCtrlFrame;
+  }
+  _noUndo = noUndo;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int frame, double value, bool noUndo)
+{
+  assert(type_== AddAudioCtrlVal);
+  assert(track_);
+  
+  type = type_;
+  track = track_;
+  _audioCtrlID = ctrlID;
+  _audioCtrlFrame = frame;
+  _audioCtrlVal = value;
+  _noUndo = noUndo;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo)
+{
+  assert(type_== ModifyAudioCtrlVal);
+  assert(track_);
+  
+  type = type_;
+  track = track_;
+  _audioCtrlID = ctrlID;
+  _audioCtrlFrame = oldFrame;
+  _audioNewCtrlFrame = newFrame;
+  _audioCtrlVal = oldValue;
+  _audioNewCtrlVal = newValue;
   _noUndo = noUndo;
 }
 
@@ -1694,7 +1645,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, CtrlListList* ctrl_ll, CtrlList* eraseCtr
   _addCtrlList = addCtrlList;
   _noUndo = noUndo;
 }
-      
+
+
 UndoOp::UndoOp(UndoOp::UndoType type_)
 {
   assert(type_== EnableAllAudioControllers);
@@ -2066,30 +2018,67 @@ void Song::revertOperationGroup1(Undo& operations)
 
                         
                   case UndoOp::AddAudioCtrlVal:
+                  {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddAudioCtrlVal\n");
 #endif                        
-                        //deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
-                        updateFlags |= SC_AUDIO_CONTROLLER;
-                        break;
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            pendingOperations.add(PendingOperationItem(cl, ic, PendingOperationItem::DeleteAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
 
                   case UndoOp::DeleteAudioCtrlVal:
-                        {
+                  {
 #ifdef _UNDO_DEBUG_
-                          fprintf(stderr, "Song::revertOperationGroup1:DeleteAudioCtrlVal\n");
+                        fprintf(stderr, "Song::revertOperationGroup1:DeleteAudioCtrlVal\n");
 #endif                        
-                          //addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          //CtrlList* cl = icl->second;
+                          //iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          //if(ic != cl->end())
+                          //  // An existing value was found (really shouldn't happen!). Replace it with the old value.
+                          //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                          //else
+                            // Restore the old value.
+                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
                           updateFlags |= SC_AUDIO_CONTROLLER;
                         }
-                        break;
+                  }
+                  break;
                         
                   case UndoOp::ModifyAudioCtrlVal:
+                  {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyAudioCtrlVal\n");
 #endif                        
-                        //changeEventOperation(i->nEvent, i->oEvent, editable_part, i->doCtrls, i->doClones);
-                        updateFlags |= SC_AUDIO_CONTROLLER;
-                        break;
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioNewCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            // Restore the old value.
+                            pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
                         
                   case UndoOp::ModifyAudioCtrlValList:
                   {
@@ -2753,30 +2742,68 @@ void Song::executeOperationGroup1(Undo& operations)
 
                         
                   case UndoOp::AddAudioCtrlVal:
+                  {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddAudioCtrlVal\n");
 #endif                        
-                        //addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
-                        updateFlags |= SC_AUDIO_CONTROLLER;
-                        break;
-
-                  case UndoOp::DeleteAudioCtrlVal:
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
                         {
-#ifdef _UNDO_DEBUG_
-                          fprintf(stderr, "Song::executeOperationGroup1:DeleteAudioCtrlVal\n");
-#endif                        
-                          //deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                          //CtrlList* cl = icl->second;
+                          //iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          //if(ic != cl->end())
+                          //  // An existing value was found. Replace it with the new value.
+                          //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                          //else
+                            // Add the new value.
+                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
                           updateFlags |= SC_AUDIO_CONTROLLER;
                         }
-                        break;
+                  }
+                  break;
+
+                  case UndoOp::DeleteAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            pendingOperations.add(PendingOperationItem(cl, ic, PendingOperationItem::DeleteAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
                         
                   case UndoOp::ModifyAudioCtrlVal:
+                  {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyAudioCtrlVal\n");
 #endif                        
-                        //changeEventOperation(i->oEvent, i->nEvent, editable_part, i->doCtrls, i->doClones);
-                        updateFlags |= SC_AUDIO_CONTROLLER;
-                        break;
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioNewCtrlFrame, i->_audioNewCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
                         
                   case UndoOp::ModifyAudioCtrlValList:
                   {

@@ -111,6 +111,13 @@ struct UndoOp {
                   CtrlList* _eraseCtrlList;
                   CtrlList* _addCtrlList;
                 };
+            struct {
+                  int _audioCtrlID;
+                  int _audioCtrlFrame;
+                  int _audioNewCtrlFrame;
+                  double _audioCtrlVal;
+                  double _audioNewCtrlVal;
+                };
             };
 
       QString* _oldName;
@@ -139,7 +146,7 @@ struct UndoOp {
       //       It allows mixed undoable and non-undoable operations in one list, all executed in one RT cycle.
       UndoOp(UndoType type, int a, int b, int c=0, bool noUndo = false);
       UndoOp(UndoType type, int n, const Track* track, bool noUndo = false);
-      UndoOp(UndoType type_, const Part* part_, bool noUndo = false);
+      UndoOp(UndoType type, const Part* part, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, bool selected, bool selected_old, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS, const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);
@@ -149,10 +156,13 @@ struct UndoOp {
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);
+      //UndoOp(UndoType type, const Track* track, int ctrlID, int frame, bool noUndo = false); // Same as above.
+      UndoOp(UndoType type, const Track* track, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo = false);
+      UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, bool value, bool noUndo = false);
+      UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
       UndoOp(UndoType type, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo = false);
       UndoOp(UndoType type, const Route& route_from, const Route& route_to, bool noUndo = false);
-      UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
       UndoOp(UndoType type);
 };
 

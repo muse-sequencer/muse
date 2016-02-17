@@ -884,8 +884,18 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioCtrlVal: frame:%d old_val:%f new_val:%f\n", 
                        _iCtrl->first, _iCtrl->second.val, _ctl_dbl_val);
-#endif      
-      _iCtrl->second.val = _ctl_dbl_val;
+#endif
+      // If the frame is the same, just change the value.
+      if(_iCtrl->second.frame == _frame)
+      {
+        _iCtrl->second.val = _ctl_dbl_val;
+      }
+      // Otherwise erase + add is required.
+      else
+      {
+        _aud_ctrl_list->erase(_iCtrl);
+        _aud_ctrl_list->insert(std::pair<const int, CtrlVal> (_frame, CtrlVal(_frame, _ctl_dbl_val)));
+      }
       flags |= SC_AUDIO_CONTROLLER;
     break;
     

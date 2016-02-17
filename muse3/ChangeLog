@@ -1,3 +1,25 @@
+17.02.2016:
+        (By Tim)
+        - Audio automation graphs fixes:
+        - Greatly reduced CPU usage while playing and graph(s) showing. 
+          (Update only required rectangles and paint only requested rectangles - not the whole darn window.)
+        - Fixed flickering when moving mouse.
+        - Added drawing layers: Draw lines, then vertices, then text. With moderate transparency.
+        - Added shaded box for text, to stand out better.
+        - Vertex selection: Guaranteed to be able to select a vertex even in densely crowded multiple graphs.
+        - New vertices: Guaranteed to be able to add vertices to lines even in densely crowded multiple graphs.
+          Note that preference is now given to selecting/moving existing vertices over adding new ones.
+          The vertex 'hit' zone is such that if you really wanted to add another vertex to an already dense 
+           graph portion, then you should zoom in more.
+        - Undo system fix in Undo::merge_combo():
+              if (this->combobreaker || other.combobreaker)  // Flawed? 
+              if (other.combobreaker)                        // Changed. Test OK.
+        - Audio automation graphs: Added Undo support. Smart Undo support using the above Undo fix.
+          Dragging a vertex around makes only ONE Undo step.
+          This is the first real 'editing' usage of Smart Undo using Florian's combo/breaker system.
+          Score Editor uses it for undo-able note selection. But there was a bug where it required two undo clicks,
+           and the above Undo fix seems to cure it now, one click only.
+          Another good example of Smart Undo usage (TODO): Editing the Track List channel column.
 12.02.2016:
         - Added instrument definition for Yamaha S30/S80 made by Dennis Schulmeister (rj)
 09.02.2016: 
