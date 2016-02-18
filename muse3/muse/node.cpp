@@ -920,7 +920,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             //  if the IDs didn't match it means we can just let k catch up with icl.
             ci.sFrame   = 0;
             ci.eFrame   = -1;
-            ci.sVal     = _controls[k].val;
+            ci.sVal     = _controls[k].dval;
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -1025,11 +1025,12 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         unsigned long k;
         //const float up_fact = 1.002711275;      // 3.01.. dB / 256
         //const float down_fact = 0.997296056;
-        const float up_fact = 1.003471749;      // 3.01.. dB / 200
-        const float down_fact = 0.996540262;
+        const double up_fact = 1.003471749;      // 3.01.. dB / 200
+        const double down_fact = 0.996540262;
+
         float *sp1, *sp2, *dp1, *dp2;
         sp1 = sp2 = dp1 = dp2 = NULL;
-        float _volume, v, _pan, v1, v2;
+        double _volume, v, _pan, v1, v2;
 
         if(trackChans == 1)
         {
@@ -1075,7 +1076,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               for(int ch = start_ch; ch < trackChans; ++ch)
                 *(outBuffers[ch] + smp) = *(buffer[ch] + smp) * _curVolume;
             }
-            _controls[AC_VOLUME].val = _volume;    // Update the port.
+            _controls[AC_VOLUME].dval = _volume;    // Update the port.
           }
           else
           {
@@ -1083,7 +1084,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               _volume = vol_ctrl->interpolate(pos, vol_interp);
             else
               _volume = vol_interp.sVal;
-            _controls[AC_VOLUME].val = _volume;    // Update the port.
+            _controls[AC_VOLUME].dval = _volume;    // Update the port.
             v = _volume * _gain;
             if(v > _curVolume)
             {
@@ -1178,8 +1179,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             }
             *dp2++ = *sp2++ * _curVol2;
           }
-          _controls[AC_VOLUME].val = _volume;    // Update the ports.
-          _controls[AC_PAN].val = _pan;          
+          _controls[AC_VOLUME].dval = _volume;    // Update the ports.
+          _controls[AC_PAN].dval = _pan;          
         }
         else
         {
@@ -1191,8 +1192,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
             _pan = pan_ctrl->interpolate(pos, pan_interp);
           else
             _pan = pan_interp.sVal;
-          _controls[AC_VOLUME].val = _volume;    // Update the ports.
-          _controls[AC_PAN].val = _pan;
+          _controls[AC_VOLUME].dval = _volume;    // Update the ports.
+          _controls[AC_PAN].dval = _pan;
           v = _volume * _gain;
           v1  = v * (1.0 - _pan);
           v2  = v * (1.0 + _pan);
@@ -1681,7 +1682,7 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
 
   float* buffer[srcTotalOutChans];  
   float data[nframes * srcTotalOutChans];
-  float meter[trackChans];
+  double meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
@@ -1939,6 +1940,11 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
       _meter[c] = meter[c];
       if(_meter[c] > _peak[c])
         _peak[c] = _meter[c];
+
+      if(_meter [c] > 1.0)
+// REMOVE Tim. Trackinfo. Changed.
+//          _isClipped = true;
+         _isClipped[c] = true;
     }
     
     if(isMute())
@@ -1981,7 +1987,7 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
       unsigned naux = al->size();
       for(unsigned k = 0; k < naux; ++k)
       {
-        float m = _auxSend[k];
+        double m = _auxSend[k];
         if(m <= 0.0001)           // optimize
           continue;
         AudioAux* a = (AudioAux*)((*al)[k]);
@@ -2532,69 +2538,67 @@ void AudioTrack::record()
       {
       unsigned pos = 0;
       float* buffer[_channels];
-
       while(fifo.getCount()) {
-
             if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
                   printf("AudioTrack::record(): empty fifo\n");
                   return;
                   }
-            if (_recFile) {
-                  // Line removed by Tim. Oct 28, 2009
-                  //_recFile->seek(pos, 0);
-                  //
-                  // Fix for recorded waves being shifted ahead by an amount
-                  //  equal to start record position.
-                  //
-                  // From libsndfile ChangeLog:
-                  // 2008-05-11  Erik de Castro Lopo  <erikd AT mega-nerd DOT com>
-                  //    * src/sndfile.c
-                  //    Allow seeking past end of file during write.
-                  //    
-                  // I don't know why this line would even be called, because the FIFOs'
-                  //  'pos' members operate in absolute frames, which at this point 
-                  //  would be shifted ahead by the start of the wave part.
-                  // So if you begin recording a new wave part at bar 4, for example, then
-                  //  this line is seeking the record file to frame 288000 even before any audio is written!
-                  // Therefore, just let the write do its thing and progress naturally,
-                  //  it should work OK since everything was OK before the libsndfile change...
-                  //
-                  // Tested: With the line, audio record looping sort of works, albiet with the start offset added to
-                  //  the wave file. And it overwrites existing audio. (Check transport window 'overwrite' function. Tie in somehow...)
-                  // With the line, looping does NOT work with libsndfile from around early 2007 (my distro's version until now).
-                  // Therefore it seems sometime between libsndfile ~2007 and today, libsndfile must have allowed 
-                  //  "seek (behind) on write", as well as the "seek past end" change of 2008...
-                  //
-                  // Ok, so removing that line breaks *possible* record audio 'looping' functionality, revealed with
-                  //  later libsndfile. 
-                  // Try this... And while we're at it, honour the punchin/punchout, and loop functions !
-                  //
-                  // If punchin is on, or we have looped at least once, use left marker as offset.
-                  // Note that audio::startRecordPos is reset to (roughly) the left marker pos upon loop !
-                  // (Not any more! I changed Audio::Process)
-                  // Since it is possible to start loop recording before the left marker (with punchin off), we must 
-                  //  use startRecordPos or loopFrame or left marker, depending on punchin and whether we have looped yet.
-                  unsigned fr;
-                  if(MusEGlobal::song->punchin() && (MusEGlobal::audio->loopCount() == 0))
-                    fr = MusEGlobal::song->lPos().frame();
-                  else  
-                  if((MusEGlobal::audio->loopCount() > 0) && (MusEGlobal::audio->getStartRecordPos().frame() > MusEGlobal::audio->loopFrame()))
-                    fr = MusEGlobal::audio->loopFrame();
-                  else
-                    fr = MusEGlobal::audio->getStartRecordPos().frame();
-                  // Now seek and write. If we are looping and punchout is on, don't let punchout point interfere with looping point.
-                  if( (pos >= fr) && (!MusEGlobal::song->punchout() || (!MusEGlobal::song->loop() && pos < MusEGlobal::song->rPos().frame())) )
-                  {
-                    pos -= fr;
-                    
-                    _recFile->seek(pos, 0);
-                    _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
-                  }
+              if (_recFile) {
+                    // Line removed by Tim. Oct 28, 2009
+                    //_recFile->seek(pos, 0);
+                    //
+                    // Fix for recorded waves being shifted ahead by an amount
+                    //  equal to start record position.
+                    //
+                    // From libsndfile ChangeLog:
+                    // 2008-05-11  Erik de Castro Lopo  <erikd AT mega-nerd DOT com>
+                    //    * src/sndfile.c
+                    //    Allow seeking past end of file during write.
+                    //    
+                    // I don't know why this line would even be called, because the FIFOs'
+                    //  'pos' members operate in absolute frames, which at this point 
+                    //  would be shifted ahead by the start of the wave part.
+                    // So if you begin recording a new wave part at bar 4, for example, then
+                    //  this line is seeking the record file to frame 288000 even before any audio is written!
+                    // Therefore, just let the write do its thing and progress naturally,
+                    //  it should work OK since everything was OK before the libsndfile change...
+                    //
+                    // Tested: With the line, audio record looping sort of works, albiet with the start offset added to
+                    //  the wave file. And it overwrites existing audio. (Check transport window 'overwrite' function. Tie in somehow...)
+                    // With the line, looping does NOT work with libsndfile from around early 2007 (my distro's version until now).
+                    // Therefore it seems sometime between libsndfile ~2007 and today, libsndfile must have allowed 
+                    //  "seek (behind) on write", as well as the "seek past end" change of 2008...
+                    //
+                    // Ok, so removing that line breaks *possible* record audio 'looping' functionality, revealed with
+                    //  later libsndfile. 
+                    // Try this... And while we're at it, honour the punchin/punchout, and loop functions !
+                    //
+                    // If punchin is on, or we have looped at least once, use left marker as offset.
+                    // Note that audio::startRecordPos is reset to (roughly) the left marker pos upon loop !
+                    // (Not any more! I changed Audio::Process)
+                    // Since it is possible to start loop recording before the left marker (with punchin off), we must 
+                    //  use startRecordPos or loopFrame or left marker, depending on punchin and whether we have looped yet.
+                    unsigned fr;
+                    if(MusEGlobal::song->punchin() && (MusEGlobal::audio->loopCount() == 0))
+                      fr = MusEGlobal::song->lPos().frame();
+                    else  
+                    if((MusEGlobal::audio->loopCount() > 0) && (MusEGlobal::audio->getStartRecordPos().frame() > MusEGlobal::audio->loopFrame()))
+                      fr = MusEGlobal::audio->loopFrame();
+                    else
+                      fr = MusEGlobal::audio->getStartRecordPos().frame();
+                    // Now seek and write. If we are looping and punchout is on, don't let punchout point interfere with looping point.
+                    if( (pos >= fr) && (!MusEGlobal::song->punchout() || (!MusEGlobal::song->loop() && pos < MusEGlobal::song->rPos().frame())) )
+                    {
+                      pos -= fr;
+                      // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
+                      _recFile->seek(pos, 0);
+                      _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
+                    }
 
-                  }
-            else {
-                  printf("AudioNode::record(): no recFile\n");
-                  }
+                    }
+              else {
+                    printf("AudioNode::record(): no recFile\n");
+                    }
             }
       }
 
@@ -2739,6 +2743,17 @@ Fifo::~Fifo()
       muse_atomic_destroy(&count);
       }
 
+void Fifo::clear() 
+{
+  #ifdef FIFO_DEBUG
+  printf("FIFO::clear count:%d\n", muse_atomic_read(&count));
+  #endif
+      
+  ridx = 0;
+  widx = 0;
+  muse_atomic_set(&count, 0);
+}
+      
 //---------------------------------------------------------
 //   put
 //    return true if fifo full
@@ -2747,7 +2762,7 @@ Fifo::~Fifo()
 bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::put segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+      printf("FIFO::put segs:%d samples:%lu pos:%u count:%d\n", segs, samples, pos, muse_atomic_read(&count));
       #endif
       
       if (muse_atomic_read(&count) == nbuffer) {
@@ -2794,11 +2809,11 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
 bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::get segs:%d samples:%lu\n", segs, samples);
+      printf("FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
       #endif
       
       if (muse_atomic_read(&count) == 0) {
-            printf("FIFO %p underrun... %d\n", this, muse_atomic_read(&count)); //by willyfoobar: added count to output //see Fifo::put()
+            printf("FIFO %p underrun\n", this);
             return true;
             }
       FifoBuffer* b = buffer[ridx];
@@ -2821,12 +2836,24 @@ int Fifo::getCount()
       {
       return muse_atomic_read(&count);
       }
+      
+bool Fifo::isEmpty()
+      {
+      return muse_atomic_read(&count) == 0;
+      }
+      
+//---------------------------------------------------------
+      
 //---------------------------------------------------------
 //   remove
 //---------------------------------------------------------
 
 void Fifo::remove()
       {
+      #ifdef FIFO_DEBUG
+      printf("Fifo::remove count:%d\n", muse_atomic_read(&count));
+      #endif
+      
       ridx = (ridx + 1) % nbuffer;
       muse_atomic_dec(&count);
       }
@@ -2882,6 +2909,10 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
 
 void Fifo::add()
       {
+      #ifdef FIFO_DEBUG
+      printf("Fifo::add count:%d\n", muse_atomic_read(&count));
+      #endif
+      
       widx = (widx + 1) % nbuffer;
       muse_atomic_inc(&count);
       }
@@ -2890,7 +2921,7 @@ void Fifo::add()
 //   setParam
 //---------------------------------------------------------
 
-void AudioTrack::setParam(unsigned long i, float val)
+void AudioTrack::setParam(unsigned long i, double val)
 {
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
@@ -2899,9 +2930,9 @@ void AudioTrack::setParam(unsigned long i, float val)
 //   param
 //---------------------------------------------------------
 
-float AudioTrack::param(unsigned long i) const
+double AudioTrack::param(unsigned long i) const
 {
-  return _controls[i].val;
+  return _controls[i].dval;
 }
 
 //---------------------------------------------------------

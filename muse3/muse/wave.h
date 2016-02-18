@@ -34,6 +34,8 @@ class QFileInfo;
 
 namespace MusECore {
 
+class Event;
+
 class Xml;
 
 //---------------------------------------------------------
@@ -81,7 +83,7 @@ class SndFile {
       int getRefCount() { return refCount; }
 
       static SndFileList sndFiles;
-      static void applyUndoFile(const QString* original, const QString* tmpfile, unsigned sx, unsigned ex);
+      static void applyUndoFile(const Event& original, const QString* tmpfile, unsigned sx, unsigned ex);
 
       void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
@@ -117,7 +119,7 @@ class SndFile {
       size_t writeDirect(float *buf, size_t n) { return sf_writef_float(sf, buf, n); }
 
       off_t seek(off_t frames, int whence);
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true);
+      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
       static SndFile* search(const QString& name);
@@ -145,52 +147,52 @@ class SndFileR {
       const SndFile* operator->() const { return sf; }
       operator bool() { return sf!=NULL; }
       ~SndFileR();
-      int getRefCount() const { return sf->refCount; }
+      int getRefCount() const { return sf ? sf->refCount : 0; }
       bool isNull() const     { return sf == 0; }
 
-      bool openRead(bool createCache=true)         { return sf->openRead(createCache);  }
-      bool openWrite()        { return sf->openWrite(); }
-      void close()            { sf->close();     }
-      void remove()           { sf->remove();    }
+      bool openRead(bool createCache=true)         { return sf ? sf->openRead(createCache) : true;  }
+      bool openWrite()        { return sf ? sf->openWrite() : true; }
+      void close()            { if(sf) sf->close();     }
+      void remove()           { if(sf) sf->remove();    }
 
-      bool isOpen() const     { return sf->isOpen(); }
-      bool isWritable() const { return sf->isWritable(); }
-      void update()           { sf->update(); }
-      bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); }
+      bool isOpen() const     { return sf ? sf->isOpen() : false; }
+      bool isWritable() const { return sf ? sf->isWritable() : false; }
+      void update()           { if(sf) sf->update(); }
+      bool checkCopyOnWrite() { return sf ? sf->checkCopyOnWrite() : false; }
 
-      QString basename() const { return sf->basename(); }
-      QString dirPath() const  { return sf->dirPath(); }
-      QString canonicalDirPath() const  { return sf->canonicalDirPath(); }
-      QString path() const     { return sf->path(); }
-      QString canonicalPath() const  { return sf->canonicalPath(); }
-      QString name() const     { return sf->name(); }
+      QString basename() const { return sf ? sf->basename() : QString(); }
+      QString dirPath() const  { return sf ? sf->dirPath() : QString(); }
+      QString canonicalDirPath() const  { return sf ? sf->canonicalDirPath() : QString(); }
+      QString path() const     { return sf ? sf->path() : QString(); }
+      QString canonicalPath() const  { return sf ? sf->canonicalPath() : QString(); }
+      QString name() const     { return sf ? sf->name() : QString(); }
 
-      unsigned samples() const    { return sf->samples(); }
-      unsigned channels() const   { return sf->channels(); }
-      unsigned samplerate() const { return sf->samplerate(); }
-      unsigned format() const     { return sf->format(); }
-      int sampleBits() const      { return sf->sampleBits(); }
+      unsigned samples() const    { return sf ? sf->samples() : 0; }
+      unsigned channels() const   { return sf ? sf->channels() : 0; }
+      unsigned samplerate() const { return sf ? sf->samplerate() : 0; }
+      unsigned format() const     { return sf ? sf->format() : 0; }
+      int sampleBits() const      { return sf ? sf->sampleBits() : 0; }
       void setFormat(int fmt, int ch, int rate) {
-            sf->setFormat(fmt, ch, rate);
+            if(sf) sf->setFormat(fmt, ch, rate);
             }
       size_t readWithHeap(int channel, float** f, size_t n, bool overwrite = true) {
-            return sf->readWithHeap(channel, f, n, overwrite);
+            return sf ? sf->readWithHeap(channel, f, n, overwrite) : 0;
             }
       size_t read(int channel, float** f, size_t n, bool overwrite = true) {
-            return sf->read(channel, f, n, overwrite);
+            return sf ? sf->read(channel, f, n, overwrite) : 0;
             }
-      size_t readDirect(float* f, size_t n) { return sf->readDirect(f, n); }  
+      size_t readDirect(float* f, size_t n) { return sf ? sf->readDirect(f, n) : 0; }  
       
       size_t write(int channel, float** f, size_t n) {
-            return sf->write(channel, f, n);
+            return sf ? sf->write(channel, f, n) : 0;
             }
       off_t seek(off_t frames, int whence) {
-            return sf->seek(frames, whence);
+            return sf ? sf->seek(frames, whence) : 0;
             }
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true) {
-            sf->read(s, mag, pos, overwrite);
+      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
+            if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
             }
-      QString strerror() const { return sf->strerror(); }
+      QString strerror() const { return sf ? sf->strerror() : QString(); }
       };
 
 

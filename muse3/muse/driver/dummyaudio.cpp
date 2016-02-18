@@ -139,6 +139,10 @@ class DummyAudioDevice : public AudioDevice {
       virtual void* registerInPort(const char*, bool) {
             return (void*)2;
             }
+      float getDSP_Load()
+      {
+        return 0.0f;
+      }
       virtual AudioDevice::PortType portType(void*) const { return UnknownType; }
       virtual AudioDevice::PortDirection portDirection(void*) const { return UnknownDirection; }
       virtual void unregisterPort(void*) {}
@@ -591,5 +595,6 @@ void DummyAudioDevice::stop ()
       pthread_join(dummyThread, 0);
       dummyThread = 0;
       }
+
 
 } // namespace MusECore

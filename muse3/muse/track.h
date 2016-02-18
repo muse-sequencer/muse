@@ -52,7 +52,7 @@ struct DrumMap;
 struct ControlEvent;
 struct Port;
 class PendingOperationList;
-
+class Undo;
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -67,8 +67,16 @@ class Track {
          MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
+      // NOTE: ASSIGN_DUPLICATE_PARTS ASSIGN_COPY_PARTS and ASSIGN_CLONE_PARTS are not allowed together - choose one. 
+      // (Safe, but it will choose one action over the other.)
       enum AssignFlags {
-         ASSIGN_PROPERTIES=1, ASSIGN_PARTS=2, ASSIGN_PLUGINS=4, ASSIGN_STD_CTRLS=8, ASSIGN_PLUGIN_CTRLS=16, ASSIGN_ROUTES=32, ASSIGN_DEFAULT_ROUTES=64, ASSIGN_DRUMLIST=128 };
+         ASSIGN_PROPERTIES=1, 
+         ASSIGN_DUPLICATE_PARTS=2, ASSIGN_COPY_PARTS=4, ASSIGN_CLONE_PARTS=8, 
+         ASSIGN_PLUGINS=16, 
+         ASSIGN_STD_CTRLS=32, ASSIGN_PLUGIN_CTRLS=64, 
+         ASSIGN_ROUTES=128, ASSIGN_DEFAULT_ROUTES=256, 
+         ASSIGN_DRUMLIST=512 };
+         
    private:
       TrackType _type;
       QString _comment;
@@ -83,6 +91,11 @@ class Track {
       static Track* _tmpSoloChainTrack;
       static bool _tmpSoloChainDoIns;
       static bool _tmpSoloChainNoDec;
+      
+      // Every time a track is selected, the track's _selectionOrder is set to this value,
+      //  and then this value is incremented. The value is reset to zero occasionally, 
+      //  for example whenever Song::deselectTracks() is called.
+      static int _selectionOrderCounter;
       
       RouteList _inRoutes;
       RouteList _outRoutes;
@@ -101,12 +114,20 @@ class Track {
       int _lastActivity;
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
+      // REMOVE Tim. Trackinfo. Added.
+      bool _isClipped[MAX_CHANNELS]; //used in audio mixer strip. Persistent.
 
       int _y;
       int _height;            // visual height in arranger
 
       bool _locked;
       bool _selected;
+      // The selection order of this track, compared to other selected tracks.
+      // The selected track with the highest selected order is the most recent selected.
+      int _selectionOrder;
+      // REMOVE Tim. Trackinfo. Removed.
+//       bool _isClipped; //used in audio mixer strip. Persistent.
+
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -129,7 +150,15 @@ class Track {
       void setHeight(int n)           { _height = n;    }
 
       bool selected() const           { return _selected; }
-      void setSelected(bool f)        { _selected = f; }
+      // Try to always call this instead of setting _selected, because it also sets _selectionOrder.
+      void setSelected(bool f);
+      // The order of selection of this track, compared to other selected tracks. 
+      // The selected track with the highest selected order is the most recent selected.
+      int selectionOrder() const       { return _selectionOrder; }
+      // Resets the static selection counter. Optional. (Range is huge, unlikely would have to call). 
+      // Called for example whenever Song::deselectTracks() is called.
+      static void clearSelectionOrderCounter(){ _selectionOrderCounter = 0; }
+
       bool locked() const             { return _locked; }
       void setLocked(bool b)          { _locked = b; }
 
@@ -166,6 +195,10 @@ class Track {
 
       virtual Track* newTrack() const = 0;
       virtual Track* clone(int flags) const    = 0;
+      // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
+      virtual bool openAllParts() { return false; };
+      // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
+      virtual bool closeAllParts() { return false; };
 
       virtual bool setRecordFlag1(bool f) = 0;
       virtual void setRecordFlag2(bool f) = 0;
@@ -213,7 +246,11 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
-
+// REMOVE Tim. Trackinfo. Changed.
+//       inline bool isClipped() { return _isClipped; }
+//       void resetClipper() { _isClipped = false; }
+      inline bool isClipped(int ch) const { if(ch >= MAX_CHANNELS) return false; return _isClipped[ch]; }
+      void resetClipper() { for(int ch = 0; ch < MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
 
 //---------------------------------------------------------
@@ -368,9 +405,9 @@ class AudioTrack : public Track {
       unsigned long _controlPorts;
       Port* _controls;             // For internal controllers like volume and pan. Plugins/synths have their own.
 
-      float _curVolume;
-      float _curVol1;
-      float _curVol2;
+      double _curVolume;
+      double _curVol1;
+      double _curVol2;
       
       bool _prefader;               // prefader metering
       AuxSendValueList _auxSend;
@@ -442,8 +479,9 @@ class AudioTrack : public Track {
       CtrlListList* controller()         { return &_controller; }
       // For setting/getting the _controls 'port' values.
       unsigned long parameters() const { return _controlPorts; }
-      void setParam(unsigned long i, float val); 
-      float param(unsigned long i) const;
+      
+      void setParam(unsigned long i, double val); 
+      double param(unsigned long i) const;
 
       virtual void setChannels(int n);
       virtual void setTotalOutChannels(int num);
@@ -460,9 +498,12 @@ class AudioTrack : public Track {
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
       
+      // Puts to the recording fifo.
       void putFifo(int channels, unsigned long n, float** bp);
-
+      // Transfers the recording fifo to _recFile.
       void record();
+      // Returns the recording fifo current count.
+      int recordFifoCount() { return fifo.getCount(); }
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);
@@ -507,9 +548,10 @@ class AudioTrack : public Track {
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
       virtual void setAutomationType(AutomationType t);
-      void processAutomationEvents();
+      // Fills operations if given, otherwise creates and executes its own operations list.
+      void processAutomationEvents(Undo* operations = 0);
       CtrlRecList* recEvents()                         { return &_recEvents; }
-      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // return true if event cannot be delivered
+      bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // return true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id) const;
       // Enable all track and plugin controllers, and synth controllers if applicable.
@@ -525,7 +567,7 @@ class AudioTrack : public Track {
       void eraseRangeACEvents(int, int, int);
       void addACEvent(int, int, double);
       void changeACEvent(int id, int frame, int newframe, double newval);
-      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }
+      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }      
       };
 
 //---------------------------------------------------------
@@ -674,6 +716,10 @@ class WaveTrack : public AudioTrack {
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
       virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
+      // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
+      bool openAllParts();
+      // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
+      bool closeAllParts();
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -788,6 +834,33 @@ template<class T> class tracklist : public std::vector<Track*> {
                         return;
                         }
                   }
+            }
+      // Returns the number of selected tracks in this list.
+      int countSelected() const {
+            int c = 0;
+            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+                  if ((*i)->selected()) {
+                        ++c;
+                        }
+                  }
+            return c;
+            }
+      // Returns the current (most recent) selected track, or null if none.
+      // It returns the track with the highest _selectionOrder.
+      // This helps with multi-selection common-property editing.
+      T currentSelection() const {
+            T cur = 0;
+            int c = 0;
+            int so;
+            for (vlist::const_iterator i = begin(); i != end(); ++i) {
+                  T t = *i;
+                  so = t->selectionOrder();
+                  if (t->selected() && so >= c) {
+                        cur = t;
+                        c = so;
+                        }
+                  }
+            return cur;
             }
       };
 

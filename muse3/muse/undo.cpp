@@ -63,13 +63,16 @@ const char* UndoOp::typeName()
             "AddTrack", "DeleteTrack", 
             "AddPart",  "DeletePart", "MovePart", "ModifyPartLength", "ModifyPartName", "SelectPart",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
+            "AddAudioCtrlVal", "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
             "AddTempo", "DeleteTempo", "ModifyTempo", "SetGlobalTempo",
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
             "ModifyTrackName", "ModifyTrackChannel",
+            "SetTrackRecord", "SetTrackMute", "SetTrackSolo",
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
-            "ModifySongLen", "DoNothing"
+            "ModifySongLen", "DoNothing",
+            "EnableAllAudioControllers"
             };
       return name[type];
       }
@@ -100,7 +103,16 @@ void UndoOp::dump()
                   printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
                   break;
             case ModifyTrackChannel:
-                  printf("<%d>-<%d>\n", _oldPropValue, _newPropValue);
+                  printf("%s <%d>-<%d>\n", track->name().toLatin1().constData(), _oldPropValue, _newPropValue);
+                  break;
+            case SetTrackRecord:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  break;
+            case SetTrackMute:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  break;
+            case SetTrackSolo:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
                   break;
             default:      
                   break;
@@ -146,6 +158,13 @@ void UndoList::clearDelete()
                     delete i->_newName;
                   break;
             
+            case UndoOp::ModifyAudioCtrlValList:
+                  if (i->_eraseCtrlList)
+                    delete i->_eraseCtrlList;
+                  if (i->_addCtrlList)
+                    delete i->_addCtrlList;
+                  break;
+                  
             default:
                   break;
           }
@@ -183,6 +202,13 @@ void UndoList::clearDelete()
                     delete i->_newName;
                   break;
             
+            case UndoOp::ModifyAudioCtrlValList:
+                  if (i->_eraseCtrlList)
+                    delete i->_eraseCtrlList;
+                  if (i->_addCtrlList)
+                    delete i->_addCtrlList;
+                  break;
+                  
             default:
                   break;
           }
@@ -314,22 +340,54 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::DeleteRoute:
       fprintf(stderr, "Undo::insert: DeleteRoute\n");
     break;
+
     
+    case UndoOp::AddTrack:
+      fprintf(stderr, "Undo::insert: AddTrack\n");
+    break;
+    case UndoOp::DeleteTrack:
+      fprintf(stderr, "Undo::insert: DeleteTrack\n");
+    break;
     case UndoOp::MoveTrack:
       fprintf(stderr, "Undo::insert: MoveTrack\n");
     break;
-    case UndoOp::ModifyPartName:
-      fprintf(stderr, "Undo::insert: ModifyPartName\n");
+    case UndoOp::ModifyTrackName:
+      fprintf(stderr, "Undo::insert: ModifyTrackName\n");
     break;
-    case UndoOp::MovePart:
-      fprintf(stderr, "Undo::insert: MovePart\n");
+    case UndoOp::ModifyTrackChannel:
+      fprintf(stderr, "Undo::insert: ModifyTrackChannel\n");
     break;
+    case UndoOp::SetTrackRecord:
+      fprintf(stderr, "Undo::insert: SetTrackRecord\n");
+    break;
+    case UndoOp::SetTrackMute:
+      fprintf(stderr, "Undo::insert: SetTrackMute\n");
+    break;
+    case UndoOp::SetTrackSolo:
+      fprintf(stderr, "Undo::insert: SetTrackSolo\n");
+    break;
+    
+    
     case UndoOp::AddPart:
       fprintf(stderr, "Undo::insert: AddPart\n");
     break;
     case UndoOp::DeletePart:
       fprintf(stderr, "Undo::insert: DeletePart\n");
     break;
+    case UndoOp::MovePart:
+      fprintf(stderr, "Undo::insert: MovePart\n");
+    break;
+    case UndoOp::SelectPart:
+      fprintf(stderr, "Undo::insert: SelectPart\n");
+    break;
+    case UndoOp::ModifyPartName:
+      fprintf(stderr, "Undo::insert: ModifyPartName\n");
+    break;
+    case UndoOp::ModifyPartLength:
+      fprintf(stderr, "Undo::insert: ModifyPartLength\n");
+    break;
+    
+    
     case UndoOp::AddEvent:
       fprintf(stderr, "Undo::insert: AddEvent\n");
     break;
@@ -339,6 +397,25 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyEvent:
       fprintf(stderr, "Undo::insert: ModifyEvent\n");
     break;
+    case UndoOp::SelectEvent:
+      fprintf(stderr, "Undo::insert: SelectEvent\n");
+    break;
+    
+    
+    case UndoOp::AddAudioCtrlVal:
+      fprintf(stderr, "Undo::insert: AddAudioCtrlVal\n");
+    break;
+    case UndoOp::DeleteAudioCtrlVal:
+      fprintf(stderr, "Undo::insert: DeleteAudioCtrlVal\n");
+    break;
+    case UndoOp::ModifyAudioCtrlVal:
+      fprintf(stderr, "Undo::insert: ModifyAudioCtrlVal\n");
+    break;
+    case UndoOp::ModifyAudioCtrlValList:
+      fprintf(stderr, "Undo::insert: ModifyAudioCtrlValList\n");
+    break;
+    
+    
     case UndoOp::AddTempo:
       fprintf(stderr, "Undo::insert: AddTempo tempo:%d tick:%d\n", n_op.b, n_op.a);
     break;
@@ -348,6 +425,11 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyTempo:
       fprintf(stderr, "Undo::insert: ModifyTempo old:%d new:%d tick:%d\n", n_op.b, n_op.c, n_op.a);
     break;
+    case UndoOp::SetGlobalTempo:
+      fprintf(stderr, "Undo::insert: SetGlobalTempo\n");
+    break;
+    
+    
     case UndoOp::AddSig:
       fprintf(stderr, "Undo::insert: AddSig\n");
     break;
@@ -357,6 +439,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifySig:
       fprintf(stderr, "Undo::insert: ModifySig\n");
     break;
+    
+    
     case UndoOp::AddKey:
       fprintf(stderr, "Undo::insert: AddKey\n");
     break;
@@ -366,12 +450,31 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyKey:
       fprintf(stderr, "Undo::insert: ModifyKey\n");
     break;
-    case UndoOp::SetGlobalTempo:
-      fprintf(stderr, "Undo::insert: SetGlobalTempo\n");
+    
+    
+    case UndoOp::ModifyClip:
+      fprintf(stderr, "Undo::insert: ModifyClip\n");
     break;
+    
+    
+    case UndoOp::ModifyMarker:
+      fprintf(stderr, "Undo::insert: ModifyMarker\n");
+    break;
+
+    
     case UndoOp::ModifySongLen:
       fprintf(stderr, "Undo::insert: ModifySongLen\n");
     break;
+
+    
+    case UndoOp::DoNothing:
+      fprintf(stderr, "Undo::insert: DoNothing\n");
+    break;
+    
+    case UndoOp::EnableAllAudioControllers:
+      fprintf(stderr, "Undo::insert: EnableAllAudioControllers\n");
+    break;
+    
     
     default:
     break;
@@ -434,6 +537,57 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // Simply replace the 'to track' value.
             uo.b = n_op.b;
             return;
+          }
+        break;
+        
+        case UndoOp::SetTrackRecord:
+          if(uo.type == UndoOp::SetTrackRecord && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackRecord. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+        
+        case UndoOp::SetTrackMute:
+          if(uo.type == UndoOp::SetTrackMute && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackMute. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+        
+        case UndoOp::SetTrackSolo:
+          if(uo.type == UndoOp::SetTrackSolo && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackSolo. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
           }
         break;
         
@@ -630,6 +784,102 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               // Delete followed by modify with new event same as deleted event, is equivalent to just deleting modify's old event.
               // Replace the existing DeleteEvent command's event with the requested ModifyEvent command's old event.
               uo.nEvent = n_op.oEvent;
+            }
+          }
+        break;
+
+        case UndoOp::AddAudioCtrlVal:
+          if(uo.type == UndoOp::AddAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Simply replace the original value and frame.
+            uo._audioCtrlVal = n_op._audioCtrlVal;
+            return;  
+          }
+// TODO If possible.
+//           else if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.track == n_op.track &&
+//              uo._audioCtrlID == n_op._audioCtrlID &&
+//              uo._audioCtrlFrame == n_op._audioCtrlFrame)
+//           {
+//             // Delete followed by add, at the same frame. Transform the delete into a modify.
+//             uo.type = UndoOp::ModifyAudioCtrlVal;
+//             uo._audioCtrlVal = n_op._audioCtrlVal;
+//             uo._audioNewCtrlFrame = 
+//             return;  
+//           }
+        break;
+        
+        case UndoOp::DeleteAudioCtrlVal:
+          if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): Double DeleteAudioCtrlVal. Ignoring.\n");
+            return;  
+          }
+          else if(uo.type == UndoOp::AddAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Add followed by delete, at the same frame, is useless. Cancel out the add + delete by erasing the add command.
+            erase(iuo);
+            return;  
+          }
+        break;
+
+        case UndoOp::ModifyAudioCtrlVal:
+          if(uo.type == UndoOp::ModifyAudioCtrlVal && uo.track == n_op.track &&
+             uo._audioCtrlID == n_op._audioCtrlID &&
+             uo._audioNewCtrlFrame == n_op._audioCtrlFrame)
+          {
+            // Simply replace the original new value and new frame.
+            uo._audioNewCtrlVal = n_op._audioNewCtrlVal;
+            uo._audioNewCtrlFrame = n_op._audioNewCtrlFrame;
+            return;  
+          }
+        break;
+
+        case UndoOp::ModifyAudioCtrlValList:
+          // Check the sanity of the requested op.
+          if(n_op._eraseCtrlList == n_op._addCtrlList)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Erase and add lists are the same. Ignoring.\n");
+            return;
+          }
+          
+          if(uo.type == UndoOp::ModifyAudioCtrlValList)
+          {
+            if(uo._ctrlListList == n_op._ctrlListList)
+            {
+              if(uo._addCtrlList == n_op._addCtrlList && uo._eraseCtrlList == n_op._eraseCtrlList)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): Double ModifyAudioCtrlValList. Ignoring.\n");
+                return;
+              }
+              else if(uo._addCtrlList == n_op._eraseCtrlList)
+              {
+                // Delete the existing ModifyAudioCtrlValList command's _addCtrlList and replace it
+                //  with the requested ModifyAudioCtrlValList command's _addCtrlList.
+                if(uo._addCtrlList)
+                  delete uo._addCtrlList;
+                uo._addCtrlList = n_op._addCtrlList;
+                return;
+              }
+            }
+            // Seems possible... remove? But maybe dangerous to have two undo ops pointing to the same lists - they will be self-deleted.
+            else
+            {
+              if(uo._addCtrlList == n_op._addCtrlList)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Attempting to add same list to different containers. Ignoring.\n");
+                return;
+              }
+              else if(uo._eraseCtrlList == n_op._eraseCtrlList)
+              {
+                fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Attempting to erase same list from different containers. Ignoring.\n");
+                return;
+              }
             }
           }
         break;
@@ -866,6 +1116,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+        case UndoOp::EnableAllAudioControllers:
+          if(uo.type == UndoOp::EnableAllAudioControllers)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): Double EnableAllAudioControllers. Ignoring.\n");
+            return;  
+          }
+        break;
+        
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -879,38 +1137,41 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
 
 bool Undo::merge_combo(const Undo& other)
 {
-	if (this->combobreaker || other.combobreaker)
-		return false;
-	
-	bool has_select_event=false;
-	bool has_select_part=false;
-	bool has_other=false;
-	
-	for (ciUndoOp op=this->begin(); op!=this->end(); op++)
-		switch(op->type)
-		{
-			case UndoOp::DoNothing: break;
-			case UndoOp::SelectEvent: has_select_event=true; break;
-			case UndoOp::SelectPart: has_select_part=true; break;
-			default: has_other=true; break;
-		}
-	
-	for (ciUndoOp op=other.begin(); op!=other.end(); op++)
-		switch(op->type)
-		{
-			case UndoOp::DoNothing: break;
-			case UndoOp::SelectEvent: has_select_event=true; break;
-			case UndoOp::SelectPart: has_select_part=true; break;
-			default: has_other=true; break;
-		}
-	
-	bool mergeable = (has_select_event && !has_select_part && !has_other) ||
-	                 (has_select_part && !has_select_event && !has_other);
-	
-	if (mergeable)
-		this->insert(this->end(), other.begin(), other.end());
-	
-	return mergeable;
+  if (other.combobreaker)
+          return false;
+  
+  int has_other=0x01;
+  int has_select_event=0x02;
+  int has_select_part=0x04;
+  int has_modify_aud_ctrl_val=0x08;
+
+  int has = 0;
+  for (ciUndoOp op=this->begin(); op!=this->end(); op++)
+          switch(op->type)
+          {
+                  case UndoOp::DoNothing: break;
+                  case UndoOp::SelectEvent: has |= has_select_event; break;
+                  case UndoOp::SelectPart: has |= has_select_part; break;
+                  case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  default: has |= has_other; break;
+          }
+  
+  for (ciUndoOp op=other.begin(); op!=other.end(); op++)
+          switch(op->type)
+          {
+                  case UndoOp::DoNothing: break;
+                  case UndoOp::SelectEvent: has |= has_select_event; break;
+                  case UndoOp::SelectPart: has |= has_select_part; break;
+                  case UndoOp::ModifyAudioCtrlVal: has |= has_modify_aud_ctrl_val; break;
+                  default: has |= has_other; break;
+          }
+  
+  bool mergeable = (has == has_select_event || has == has_select_part || has == has_modify_aud_ctrl_val);
+  
+  if (mergeable)
+          this->insert(this->end(), other.begin(), other.end());
+  
+  return mergeable;
 }
 
 bool Song::applyOperation(const UndoOp& op, bool doUndo)
@@ -1030,9 +1291,10 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
 UndoOp::UndoOp()
 {
   type=UndoOp::DoNothing;
+  _noUndo = true;
 }
 
-UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
+UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       {
       assert(type_==AddKey || type_==DeleteKey || type_== ModifyKey ||
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || type_==SetGlobalTempo ||  
@@ -1043,6 +1305,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       a  = a_;
       b  = b_;
       c  = c_;
+      _noUndo = noUndo;
       
       switch(type)
       {
@@ -1115,7 +1378,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       
       }
 
-UndoOp::UndoOp(UndoType type_, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig)
+UndoOp::UndoOp(UndoType type_, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig, bool noUndo)
 {
       assert(type_==ModifySig);
       type    = type_;
@@ -1124,9 +1387,10 @@ UndoOp::UndoOp(UndoType type_, int tick, const AL::TimeSignature old_sig, const 
       c  = old_sig.n;
       d  = new_sig.z;
       e  = new_sig.n;
+      _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoType type_, int n, const Track* track_)
+UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
       {
       assert(type_==AddTrack || type_==DeleteTrack);
       assert(track_);
@@ -1134,18 +1398,31 @@ UndoOp::UndoOp(UndoType type_, int n, const Track* track_)
       type    = type_;
       trackno = n;
       track  = track_;
+      _noUndo = noUndo;
       }
 
-UndoOp::UndoOp(UndoType type_, const Part* part_)
+UndoOp::UndoOp(UndoType type_, const Track* track_, bool value, bool noUndo)
+      {
+      assert(type_== SetTrackRecord || type_== SetTrackMute || type_== SetTrackSolo);
+      assert(track_);
+      
+      type    = type_;
+      track  = track_;
+      a = value;
+      _noUndo = noUndo;
+      }
+
+UndoOp::UndoOp(UndoType type_, const Part* part_, bool noUndo)
       {
       assert(type_==AddPart || type_==DeletePart);
       assert(part_);
       
       type  = type_;
       part = part_;
+      _noUndo = noUndo;
       }
       
-UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
+UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_, bool noUndo)
 {
     assert(type_==SelectPart);
     assert(part_);
@@ -1154,15 +1431,17 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
     part = part_;
     selected=selected_;
     selected_old=sel_old_;
+    _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack)
+UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
 {
     assert(type_== ModifyPartLength || type_== MovePart);
     assert(part_);
     
     type = type_;
     part = part_;
+    _noUndo = noUndo;
     if(type_== MovePart)
     {
       track = nTrack;
@@ -1210,7 +1489,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_le
     }
 }
 
-UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_, bool noUndo)
       {
       assert(type_==ModifyEvent);
       assert(part_);
@@ -1221,9 +1500,10 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* p
       part   = part_;
       doCtrls = doCtrls_;
       doClones = doClones_;
+      _noUndo = noUndo;
       }
 
-UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, bool b_)
+UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, bool b_, bool noUndo)
       {
       assert(type_==DeleteEvent || type_==AddEvent || type_==SelectEvent);
       assert(part_);
@@ -1231,6 +1511,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       type   = type_;
       nEvent = nev;
       part   = part_;
+      _noUndo = noUndo;
       if(type_==SelectEvent)
       {
         selected = a_;
@@ -1243,7 +1524,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       }
       }
       
-UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
+UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_, bool noUndo)
       {
       assert(type_==ModifyMarker);
       assert(copyMarker_);
@@ -1252,20 +1533,23 @@ UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
       type    = type_;
       realMarker  = realMarker_;
       copyMarker  = copyMarker_;
+      _noUndo = noUndo;
       }
 
-UndoOp::UndoOp(UndoType type_, const QString& changedFile, const QString& changeData, int startframe_, int endframe_)
+UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
       {
       assert(type_==ModifyClip);
       
       type = type_;
-      filename   = new QString(changedFile);
+      _noUndo = noUndo;
+      //filename   = new QString(changedFile);
+      nEvent = changedEvent;
       tmpwavfile = new QString(changeData);
       startframe = startframe_;
       endframe   = endframe_;
       }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_name, const QString& new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_name, const QString& new_name, bool noUndo)
 {
     assert(type_==ModifyPartName);
     assert(part_);
@@ -1274,13 +1558,14 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
     
     type=type_;
     part=part_;
+    _noUndo = noUndo;
     _oldName = new QString(old_name);
     _newName = new QString(new_name);
     //strcpy(_oldName, old_name);
     //strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
 {
   assert(type_==ModifyTrackName);
   assert(track_);
@@ -1289,36 +1574,102 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_n
     
   type = type_;
   track = track_;
+  _noUndo = noUndo;
   _oldName = new QString(old_name);
   _newName = new QString(new_name);
 //  strcpy(_oldName, old_name);
 //  strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int old_chan, int new_chan)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID, int newChanOrCtrlFrame, bool noUndo)
 {
-  assert(type_==ModifyTrackChannel);
+  assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal);
   assert(track_);
   
   type = type_;
-  _propertyTrack = track_;
-  _oldPropValue = old_chan;
-  _newPropValue = new_chan;
+  track = track_;
+  
+  if(type_ == ModifyTrackChannel)
+  {
+    _propertyTrack = track_;
+    _oldPropValue = oldChanOrCtrlID;
+    _newPropValue = newChanOrCtrlFrame;
+  }
+  else
+  {
+    _audioCtrlID = oldChanOrCtrlID;
+    _audioCtrlFrame = newChanOrCtrlFrame;
+  }
+  _noUndo = noUndo;
 }
 
+UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int frame, double value, bool noUndo)
+{
+  assert(type_== AddAudioCtrlVal);
+  assert(track_);
+  
+  type = type_;
+  track = track_;
+  _audioCtrlID = ctrlID;
+  _audioCtrlFrame = frame;
+  _audioCtrlVal = value;
+  _noUndo = noUndo;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo)
+{
+  assert(type_== ModifyAudioCtrlVal);
+  assert(track_);
+  
+  type = type_;
+  track = track_;
+  _audioCtrlID = ctrlID;
+  _audioCtrlFrame = oldFrame;
+  _audioNewCtrlFrame = newFrame;
+  _audioCtrlVal = oldValue;
+  _audioNewCtrlVal = newValue;
+  _noUndo = noUndo;
+}
+
+UndoOp::UndoOp(UndoOp::UndoType type_, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo)
+{
+  assert(type_== ModifyAudioCtrlValList);
+  assert(ctrl_ll);
+  //assert(eraseCtrlList);
+  //assert(addCtrlList);
+  assert(eraseCtrlList || addCtrlList);
+  
+  type = type_;
+  _ctrlListList = ctrl_ll;
+  _eraseCtrlList = eraseCtrlList;
+  _addCtrlList = addCtrlList;
+  _noUndo = noUndo;
+}
+
+
+UndoOp::UndoOp(UndoOp::UndoType type_)
+{
+  assert(type_== EnableAllAudioControllers);
+  
+  type = type_;
+  // Cannot be undone. 'One-time' operation only, removed after execution.
+  _noUndo = true;
+}
+      
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_, bool noUndo)
       {
       assert(type_ == AddRoute || type_ == DeleteRoute);
+      _noUndo = noUndo;
       routeFrom = route_from_;
       routeTo = route_to_;
       }
 #pragma GCC diagnostic pop
 
-void Song::undoOp(UndoOp::UndoType type, const QString& changedFile, const QString& changeData, int startframe, int endframe)
+void Song::undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe)
       {
-      addUndo(UndoOp(type,changedFile,changeData,startframe,endframe));
+      addUndo(UndoOp(type,changedEvent,changeData,startframe,endframe));
       temporaryWavFiles.push_back(QString(changeData));
       }
 
@@ -1503,19 +1854,22 @@ void Song::revertOperationGroup1(Undo& operations)
                           break;
                         }
                     
+                        // Ensure that wave event sndfile file handles are opened.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_track->openAllParts();
+                        
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                   case UndoOp::ModifyClip:
-                        MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
                         if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                            break;
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_oldPropValue != mt->outChannel()) 
                           {
                                 MusEGlobal::audio->msgIdle(true);
@@ -1529,9 +1883,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         {
                             if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
-                              if (at == 0)
-                                break;
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (i->_oldPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
                                     updateFlags |= SC_CHANNELS;
@@ -1540,6 +1892,24 @@ void Song::revertOperationGroup1(Undo& operations)
                         }      
                         break;
 
+                  case UndoOp::SetTrackRecord:
+                        if(!editable_track->setRecordFlag1(!i->a))
+                          break;
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackRecord));
+                        updateFlags |= SC_RECFLAG;
+                        break;
+
+                  case UndoOp::SetTrackMute:
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackMute));
+                        updateFlags |= SC_MUTE;
+                        break;
+
+                  case UndoOp::SetTrackSolo:
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackSolo));
+                        updateFlags |= SC_SOLO;
+                        break;
+
+                        
                   case UndoOp::AddRoute:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddRoute\n");
@@ -1600,10 +1970,16 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:DeletePart ** calling parts->addOperation\n");
 #endif                        
+                        // Ensure that wave event sndfile file handles are opened.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_part->openAllEvents();
+                        
                         editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                         updateFlags |= SC_PART_INSERTED;
                         break;
-                    
+
+                        
                   case UndoOp::AddEvent:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddEvent ** calling deleteEvent\n");
@@ -1613,11 +1989,23 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
 
                   case UndoOp::DeleteEvent:
+                        {
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::revertOperationGroup1:DeleteEvent ** calling addEvent\n");
+                          fprintf(stderr, "Song::revertOperationGroup1:DeleteEvent ** calling addEvent\n");
 #endif                        
-                        addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
-                        updateFlags |= SC_EVENT_INSERTED;
+                          if(!i->nEvent.empty())
+                          {
+                            SndFileR f = i->nEvent.sndFile();
+                            // Ensure that wave event sndfile file handle is opened.
+                            // It should not be the job of the pending operations list to do this.
+                            // TODO Coordinate close/open with part mute and/or track off.
+                            if(!f.isNull() && !f.isOpen())
+                              f->openRead();
+                          }
+                          
+                          addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                          updateFlags |= SC_EVENT_INSERTED;
+                        }
                         break;
                         
                   case UndoOp::ModifyEvent:
@@ -1627,6 +2015,121 @@ void Song::revertOperationGroup1(Undo& operations)
                         changeEventOperation(i->nEvent, i->oEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
+
+                        
+                  case UndoOp::AddAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:AddAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            pendingOperations.add(PendingOperationItem(cl, ic, PendingOperationItem::DeleteAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
+
+                  case UndoOp::DeleteAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:DeleteAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          //CtrlList* cl = icl->second;
+                          //iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          //if(ic != cl->end())
+                          //  // An existing value was found (really shouldn't happen!). Replace it with the old value.
+                          //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                          //else
+                            // Restore the old value.
+                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
+                          updateFlags |= SC_AUDIO_CONTROLLER;
+                        }
+                  }
+                  break;
+                        
+                  case UndoOp::ModifyAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifyAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioNewCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            // Restore the old value.
+                            pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
+                        
+                  case UndoOp::ModifyAudioCtrlValList:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifyAudioCtrlValList\n");
+#endif                        
+                        // Take either id. At least one list must be valid.
+                        const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() : i->_addCtrlList->id();
+                        iCtrlList icl = i->_ctrlListList->find(id);
+                        if(icl != i->_ctrlListList->end())
+                        {
+                          // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
+                          // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                          CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                          
+                          // Erase any items in the add list that were added...
+                          //if(i->_addCtrlList)
+                          if(i->_addCtrlList && !i->_addCtrlList->empty())
+                          {
+                            //const std::size_t sz = i->_addCtrlList->size();
+                            //if(sz != 0)
+                            //{
+                              //const CtrlList& cl_r = *i->_addCtrlList;
+                              // Both of these should be valid.
+                              //ciCtrl n_s = new_list->find(cl_r[0].frame);      // The first item to be erased.
+                              //ciCtrl n_e = new_list->find(cl_r[sz - 1].frame); // The last item to be erased.
+                              iCtrl n_s = new_list->find(i->_addCtrlList->begin()->second.frame); // The first item to be erased.
+                              ciCtrl e_e = i->_addCtrlList->end();
+                              --e_e;
+                              //ciCtrl n_e = new_list->find((--i->_eraseCtrlList->end())->second.frame); // The last item to be erased.
+                              iCtrl n_e = new_list->find(e_e->second.frame); // The last item to be erased.
+                              if(n_s != new_list->end() && n_e != new_list->end())
+                              {
+                                // Since std range does NOT include the last iterator, increment n_e so erase will get all items.
+                                ++n_e;
+                                new_list->erase(n_s, n_e);
+                              }
+                            //}
+                          }
+                          
+                          // Re-add any items in the erase list that were erased...
+                          if(i->_eraseCtrlList && !i->_eraseCtrlList->empty())
+                            new_list->insert(i->_eraseCtrlList->begin(), i->_eraseCtrlList->end());
+                          
+                          // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
+                          pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
+                          updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                        }
+                  }
+                  break;
+                        
                         
                   case UndoOp::DeleteTempo:
 #ifdef _UNDO_DEBUG_
@@ -1740,8 +2243,14 @@ void Song::revertOperationGroup3(Undo& operations)
       for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
+            Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
+                  case UndoOp::AddTrack:
+                        // Ensure that wave event sndfile file handles are closed.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_track->closeAllParts();
+                        break;
                   case UndoOp::DeleteTrack:
                         switch(editable_track->type())
                         {
@@ -1822,6 +2331,24 @@ void Song::revertOperationGroup3(Undo& operations)
                             delete i->copyMarker;
                             i->copyMarker = 0;
                           }
+                        }
+                        break;
+                  case UndoOp::AddPart:
+                        // Ensure that wave event sndfile file handles are closed.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_part->closeAllEvents();
+                        break;
+                  case UndoOp::AddEvent: {
+                        if(!i->nEvent.empty())
+                        {
+                          SndFileR f = i->nEvent.sndFile();
+                          // Ensure that wave event sndfile file handle is closed.
+                          // It should not be the job of the pending operations list to do this.
+                          // TODO Coordinate close/open with part mute and/or track off.
+                          if(!f.isNull() && f.isOpen())
+                            f->close(); 
+                        }
                         }
                         break;
                   default:
@@ -1947,6 +2474,10 @@ void Song::executeOperationGroup1(Undo& operations)
                           break;
                         }
                         
+                        // Ensure that wave event sndfile file handles are opened.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_track->openAllParts();
 
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
@@ -2010,26 +2541,18 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                   case UndoOp::ModifyClip:
-                        MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
                         if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                            break;
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_newPropValue != mt->outChannel()) 
                           {
                                 MusEGlobal::audio->msgIdle(true);
                                 mt->setOutChanAndUpdate(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(false);
-                                // DELETETHIS 5
-                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
-                                //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
-                                //      }
-                                //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
                                 updateFlags |= SC_MIDI_TRACK_PROP;               
                           }
@@ -2038,9 +2561,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         {
                             if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
-                              if (at == 0)
-                                break;
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (i->_newPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
                                     updateFlags |= SC_CHANNELS;
@@ -2049,6 +2570,24 @@ void Song::executeOperationGroup1(Undo& operations)
                         }      
                         break;
 
+                  case UndoOp::SetTrackRecord:
+                        if(!editable_track->setRecordFlag1(i->a))
+                          break;
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackRecord));
+                        updateFlags |= SC_RECFLAG;
+                        break;
+
+                  case UndoOp::SetTrackMute:
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackMute));
+                        updateFlags |= SC_MUTE;
+                        break;
+
+                  case UndoOp::SetTrackSolo:
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackSolo));
+                        updateFlags |= SC_SOLO;
+                        break;
+
+                        
                   case UndoOp::AddRoute:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddRoute\n");
@@ -2148,6 +2687,11 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                           fprintf(stderr, "Song::executeOperationGroup1:addPart ** calling parts->addOperation\n");
 #endif                        
+                          // Ensure that wave event sndfile file handles are opened.
+                          // It should not be the job of the pending operations list to do this.
+                          // TODO Coordinate close/open with part mute and/or track off.
+                          editable_part->openAllEvents();
+                          
                           editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
                           updateFlags |= SC_PART_INSERTED;
                         }
@@ -2161,12 +2705,23 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_PART_REMOVED;
                         break;
                     
-                  case UndoOp::AddEvent:
+                  case UndoOp::AddEvent: {
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddEvent ** calling addEvent\n");
 #endif                        
+                        if(!i->nEvent.empty())
+                        {
+                          SndFileR f = i->nEvent.sndFile();
+                          // Ensure that wave event sndfile file handle is opened.
+                          // It should not be the job of the pending operations list to do this.
+                          // TODO Coordinate close/open with part mute and/or track off.
+                          if(!f.isNull() && !f.isOpen())
+                            f.openRead();
+                        }
+                        
                         addEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_INSERTED;
+                        }
                         break;
                         
                   case UndoOp::DeleteEvent:
@@ -2184,6 +2739,123 @@ void Song::executeOperationGroup1(Undo& operations)
                         changeEventOperation(i->oEvent, i->nEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
+
+                        
+                  case UndoOp::AddAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:AddAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          //CtrlList* cl = icl->second;
+                          //iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          //if(ic != cl->end())
+                          //  // An existing value was found. Replace it with the new value.
+                          //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                          //else
+                            // Add the new value.
+                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
+                          updateFlags |= SC_AUDIO_CONTROLLER;
+                        }
+                  }
+                  break;
+
+                  case UndoOp::DeleteAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            pendingOperations.add(PendingOperationItem(cl, ic, PendingOperationItem::DeleteAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
+                        
+                  case UndoOp::ModifyAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifyAudioCtrlVal\n");
+#endif                        
+                        CtrlListList* cll = static_cast<AudioTrack*>(editable_track)->controller();
+                        iCtrlList icl = cll->find(i->_audioCtrlID);
+                        if(icl != cll->end())
+                        {
+                          CtrlList* cl = icl->second;
+                          iCtrl ic = cl->find(i->_audioCtrlFrame);
+                          if(ic != cl->end())
+                          {
+                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioNewCtrlFrame, i->_audioNewCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
+                            updateFlags |= SC_AUDIO_CONTROLLER;
+                          }
+                        }
+                  }
+                  break;
+                        
+                  case UndoOp::ModifyAudioCtrlValList:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifyAudioCtrlValList\n");
+#endif                        
+                        // Take either id. At least one list must be valid.
+                        const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() : i->_addCtrlList->id();
+                        iCtrlList icl = i->_ctrlListList->find(id);
+                        if(icl != i->_ctrlListList->end())
+                        {
+                          // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
+                          // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                          CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                          
+                          // Erase any items in the erase list...
+                          //if(i->_eraseCtrlList)
+                          if(i->_eraseCtrlList && !i->_eraseCtrlList->empty())
+                          {
+                            //const std::size_t sz = i->_eraseCtrlList->size();
+                            //if(sz != 0)
+                            //{
+                              //const CtrlList& cl_r = *i->_eraseCtrlList;
+                              // Both of these should be valid.
+                              //ciCtrl n_s = new_list->find(cl_r[0].frame);      // The first item to be erased.
+                              //ciCtrl n_e = new_list->find(cl_r[sz - 1].frame); // The last item to be erased.
+                              iCtrl n_s = new_list->find(i->_eraseCtrlList->begin()->second.frame); // The first item to be erased.
+                              ciCtrl e_e = i->_eraseCtrlList->end();
+                              --e_e;
+                              //ciCtrl n_e = new_list->find((--i->_eraseCtrlList->end())->second.frame); // The last item to be erased.
+                              iCtrl n_e = new_list->find(e_e->second.frame); // The last item to be erased.
+                              if(n_s != new_list->end() && n_e != new_list->end())
+                              {
+                                // Since std range does NOT include the last iterator, increment n_e so erase will get all items.
+                                ++n_e;
+                                new_list->erase(n_s, n_e);
+                              }
+                            //}
+                          }
+                          
+                          // Add any items in the add list...
+                          if(i->_addCtrlList && !i->_addCtrlList->empty())
+                            new_list->insert(i->_addCtrlList->begin(), i->_addCtrlList->end());
+                            //new_list->insert(const_cast<CtrlList*>(i->_addCtrlList)->begin(), const_cast<CtrlList*>(i->_addCtrlList)->end());
+                          
+                          // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
+                          pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
+                          updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                        }
+                  }
+                  break;
+                        
                         
                   case UndoOp::AddTempo:
 #ifdef _UNDO_DEBUG_
@@ -2275,6 +2947,14 @@ void Song::executeOperationGroup1(Undo& operations)
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
+                  case UndoOp::EnableAllAudioControllers:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:EnableAllAudioControllers\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(PendingOperationItem::EnableAllAudioControllers));
+                        updateFlags |= SC_AUDIO_CONTROLLER;
+                        break;
+                        
                   default:
                         break;
                   }
@@ -2293,10 +2973,10 @@ void Song::executeOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif                        
       pendingOperations.clear();
-      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
+      for (iUndoOp i = operations.begin(); i != operations.end(); ) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
+            Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
                   case UndoOp::AddTrack:
                         switch(editable_track->type())
@@ -2366,6 +3046,12 @@ void Song::executeOperationGroup3(Undo& operations)
                         }
                         
                         break;
+                  case UndoOp::DeleteTrack:
+                        // Ensure that wave event sndfile file handles are closed.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_track->closeAllParts();
+                        break;
                   case UndoOp::ModifyMarker:
                         {
                           if (i->copyMarker) {
@@ -2379,13 +3065,39 @@ void Song::executeOperationGroup3(Undo& operations)
                           }
                         }
                         break;
+                  case UndoOp::DeletePart:
+                        // Ensure that wave event sndfile file handles are closed.
+                        // It should not be the job of the pending operations list to do this.
+                        // TODO Coordinate close/open with part mute and/or track off.
+                        editable_part->closeAllEvents();
+                        break;
+                  case UndoOp::DeleteEvent: {
+                          if(!i->nEvent.empty())
+                          {
+                            SndFileR f = i->nEvent.sndFile();
+                            // Ensure that wave event sndfile file handle is closed.
+                            // It should not be the job of the pending operations list to do this.
+                            // TODO Coordinate close/open with part mute and/or track off.
+                            if(!f.isNull() && f.isOpen())
+                              f.close();
+                          }
+                        }
+                        break;
                    default:
                         break;
                   }
+            
+            // Is the operation marked as non-undoable? Remove it from the list.
+            if(i->_noUndo)
+              i = operations.erase(i);
+            else
+              ++i;
             }
             
-            if(!operations.empty())
-              emit sigDirty();
+      // If some operations marked as non-undoable were removed, it is OK,
+      //  because we only want dirty if an undoable operation was executed, right?
+      if(!operations.empty())
+        emit sigDirty();
       }
 
 

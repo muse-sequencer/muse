@@ -56,6 +56,8 @@ ElidedLabel::ElidedLabel(QWidget* parent,
 void ElidedLabel::paintEvent(QPaintEvent* e)
 {
   QFrame::paintEvent(e);
+  if(rect().width() <= 0 || rect().height() <= 0)
+    return;
   QPainter painter(this);
   painter.setFont(_curFont);
   QFontMetrics fm = painter.fontMetrics();
@@ -200,16 +202,18 @@ void ElidedLabel::resizeEvent(QResizeEvent* e)
 
 void ElidedLabel::mousePressEvent(QMouseEvent* e)
 {
-  e->ignore();
-  QFrame::mousePressEvent(e);
-  emit pressed();
+  //e->ignore();
+  e->accept();
+  //QFrame::mousePressEvent(e);
+  emit pressed(e->pos(), e->buttons(), e->modifiers());
 }
 
 void ElidedLabel::mouseReleaseEvent(QMouseEvent* e)
 {
-  e->ignore();
-  QFrame::mouseReleaseEvent(e);
-  emit released();
+  //e->ignore();
+  e->accept();
+  //QFrame::mouseReleaseEvent(e);
+  emit released(e->pos(), e->buttons(), e->modifiers());
 }
 
 // void ElidedLabel::setFontPointRange(int maxPoint, int minPoint)

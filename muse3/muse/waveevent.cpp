@@ -204,7 +204,7 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   #ifdef USE_SAMPLERATE
   
   // TODO: 
-  >>>>>>>>>>>+++++++++++++++++++++++++++++
+  //>>>>>>>>>>>+++++++++++++++++++++++++++++
   // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
   if(audConv)
     //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite); DELETETHIS

@@ -176,7 +176,8 @@ void GlobalSettingsConfig::updateSettings()
       
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
 
-      startSongEntry->setText(MusEGlobal::config.startSong);
+
+      startSongEntry->setText(MusEGlobal::config.startSong == "" ? "<default>" : MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
       readMidiConfigFromSongCheckBox->setChecked(MusEGlobal::config.startSongLoadConfig);
       
@@ -291,7 +292,7 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       
-      MusEGlobal::config.startSong   = startSongEntry->text();
+      MusEGlobal::config.startSong   = startSongEntry->text() == "<default>" ? "" : startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       MusEGlobal::config.startSongLoadConfig = readMidiConfigFromSongCheckBox->isChecked();
 
@@ -382,8 +383,11 @@ void GlobalSettingsConfig::apply()
             w->resize(MusEGlobal::config.geometryBigTime.size());
             w->move(MusEGlobal::config.geometryBigTime.topLeft());
             }
-      MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
-      MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
+      if(!MusEGlobal::muse->isMaximized() && !MusEGlobal::muse->isMinimized())
+      {
+         MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
+         MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
+      }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
@@ -404,6 +408,7 @@ void GlobalSettingsConfig::apply()
       applyMdiSettings();
       
       MusEGlobal::muse->changeConfig(true);    // save settings
+      raise();
       }
 
 //---------------------------------------------------------
@@ -559,7 +564,7 @@ void GlobalSettingsConfig::browseStartSongFile()
 
 void GlobalSettingsConfig::startSongReset()
 {
-  startSongEntry->setText(MusEGlobal::museGlobalShare + QString("/templates/default.med"));
+  startSongEntry->setText("<default>");
   readMidiConfigFromSongCheckBox->setChecked(false);
 }
 

@@ -79,6 +79,7 @@ set_target_properties( instruments
 target_link_libraries ( instruments
       ${QT_LIBRARIES}
       icons
+      widgets
       )
 
 ##

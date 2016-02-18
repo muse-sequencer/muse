@@ -802,7 +802,7 @@ void MidiCtrlValListList::clearDelete(bool deleteLists)
   if(deleteLists)
     clr();
 }
-      
+
 //---------------------------------------------------------
 // searchControllers
 //---------------------------------------------------------

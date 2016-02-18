@@ -48,7 +48,7 @@ class AudioPrefetch : public Thread {
       ~AudioPrefetch();
       virtual void start(int, void* pty = NULL);
 
-      void msgTick();
+      void msgTick(bool isRecTick, bool isPlayTick);
       void msgSeek(unsigned samplePos, bool force=false);
       
       bool seekDone() const { return seekCount == 0; }

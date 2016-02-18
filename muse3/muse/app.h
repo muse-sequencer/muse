@@ -165,7 +165,7 @@ class MusE : public QMainWindow
       QAction *dontFollowAction, *followPageAction, *followCtsAction;
 
       // Help Menu Actions
-      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction;
+      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction, *helpDidYouKnow;
 
       QString appName;
 

@@ -890,7 +890,7 @@ void MidiDevice::handleStop()
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {
-      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
       putEvent(ev);
     }
   }
@@ -1124,7 +1124,7 @@ void MidiDevice::handleSeek()
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {
-      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
       putEvent(ev);
     }
   }

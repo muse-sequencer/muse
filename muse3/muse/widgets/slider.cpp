@@ -59,19 +59,21 @@ namespace MusEGui {
 //        Slider::Left, Slider::Right, Slider::Top,
 //        or Slider::Bottom. Defaults to Slider::None.  !!! CURRENTLY only Slider::None supported - oget 20110913
 //  QColor fillcolor -- the color used to fill in the full side
-//        of the Slider
+//        of the Slider. If fillColor is invalid (default) it will draw with the palette highlight colour.
 //------------------------------------------------------------
 
 Slider::Slider(QWidget *parent, const char *name,
 	       Qt::Orientation orient, 
                ScalePos scalePos, 
                int grooveWidth, 
-               QColor fillColor)
+               QColor fillColor, 
+               ScaleDraw::TextHighlightMode textHighlightMode)
       : SliderBase(parent,name), d_scalePos(scalePos), d_grooveWidth(grooveWidth), d_fillColor(fillColor)
       {
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
+      d_fillThumb = true;
 
       d_scaleDist   = 4;
       d_scaleStep   = 0.0;
@@ -81,6 +83,7 @@ Slider::Slider(QWidget *parent, const char *name,
 
       d_sliderRect.setRect(0, 0, 8, 8);
       setOrientation(orient);
+      d_scale.setTextHighlightMode(textHighlightMode);
       }
 
 //------------------------------------------------------------
@@ -119,7 +122,8 @@ Slider::~Slider()
 //-----------------------------------------------------
 void Slider::setThumbLength(int l)
 {
-    d_thumbLength = MusECore::qwtMax(l,8);
+//     d_thumbLength = MusECore::qwtMax(l,8);
+    d_thumbLength = l;
     d_thumbHalf = d_thumbLength / 2;
     resize(size());
 }
@@ -184,7 +188,8 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
   const QPalette& pal = palette();
 
   QColor thumb_edge = pal.dark().color();
-  QColor thumb_center = pal.midlight().color();
+//   QColor thumb_center = pal.midlight().color();
+  QColor thumb_center = pal.mid().color();
   //thumb_edge.setAlpha(60);
   //thumb_center.setAlpha(60);
   QLinearGradient thumbGrad;
@@ -193,13 +198,26 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
   thumbGrad.setColorAt(1, thumb_edge);
   
   const double rpos = (value(ConvertNone) - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
-  
+
   if(d_orient == Qt::Horizontal)
   {
+    int crh, thh;
+//     if(d_scalePos == InsideHorizontal)
+//     {
+//       crh = height() - r.y() - d_yMargin - 2 * d_mMargin;
+//       thh = height() - r.y() - d_yMargin - d_mMargin;
+//     }
+//     else
+    {
+      crh = r.height() - 2 * d_mMargin;
+      thh = r.height();
+    }
+    
     const QRect cr(r.x(),
                    r.y() + d_mMargin,
                    r.width(),
-                   r.height() - 2*d_mMargin);
+                   //r.height() - 2*d_mMargin);
+                   crh);
     
     const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
     const int ipos =  cr.x() + dist1;
@@ -210,23 +228,45 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     //
         
     QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(), 
-                                          d_thumbLength, r.height(), 
+                                          //d_thumbLength, r.height(), 
+                                          d_thumbLength, thh, 
                                           2, 2, 
                                           (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
 
-    thumbGrad.setStart(QPointF(0, cr.y()));
-    thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
+//     thumbGrad.setStart(QPointF(0, cr.y()));
+//     thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
+    thumbGrad.setStart(QPointF(ipos, 0));
+    thumbGrad.setFinalStop(QPointF(ipos + d_thumbLength, 0));
         
-    p->fillPath(thumb_rect, QBrush(thumbGrad));
+    if(d_fillThumb)
+      p->fillPath(thumb_rect, QBrush(thumbGrad));
+    else
+    {
+      p->setPen(pal.shadow().color());
+      p->drawPath(thumb_rect);
+    }
         
     // center line
     p->fillRect(ipos + d_thumbHalf, cr.y(), 1, cr.height(), pal.dark().color());
   }
   else
   {
+    int crw, thw;
+//     if(d_scalePos == InsideVertical)
+//     {
+//       crw = width() - r.x() - d_xMargin - 2 * d_mMargin;
+//       thw = width() - r.x() - d_xMargin - d_mMargin;
+//     }
+//     else
+    {
+      crw = r.width() - 2 * d_mMargin;
+      thw = r.width();
+    }
+    
     const QRect cr(r.x() + d_mMargin,
                    r.y(),
-                   r.width() - 2*d_mMargin,
+                   //r.width() - 2*d_mMargin,
+                   crw,
                    r.height());
     
     const int dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
@@ -238,14 +278,23 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
     //
         
     QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos, 
-                                          r.width(), d_thumbLength,
+                                          //r.width(), d_thumbLength,
+                                          thw, d_thumbLength,
                                           2, 2, 
                                           (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
         
-    thumbGrad.setStart(QPointF(cr.x(), 0));
-    thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));
+//     thumbGrad.setStart(QPointF(cr.x(), 0));
+//     thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));
+    thumbGrad.setStart(QPointF(0, ipos));
+    thumbGrad.setFinalStop(QPointF(0, ipos + d_thumbLength));
         
-    p->fillPath(thumb_rect, QBrush(thumbGrad));
+    if(d_fillThumb)
+      p->fillPath(thumb_rect, QBrush(thumbGrad));
+    else
+    {
+      p->setPen(pal.shadow().color());
+      p->drawPath(thumb_rect);
+    }
         
     // center line
     p->fillRect(cr.x(), ipos + d_thumbHalf, cr.width(), 1, pal.dark().color());
@@ -286,27 +335,36 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 //     rpos = (value()  - minValue()) / (maxValue() - minValue());
     const double rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
     
-    int f_brightness = 155 * rpos + 100;
-    int f_alpha;
-    int f_edge;
-    if (pal.currentColorGroup() == QPalette::Disabled)
-        {
-        f_alpha = 185;
-        f_edge = 100;
-        }
-    else
-        {
-        f_alpha = 127;
-        f_edge = 0;
-        }
+// //     int f_brightness = 155 * rpos + 100;
+//     int f_alpha;
+// //     int f_edge;
+//     if (pal.currentColorGroup() == QPalette::Disabled)
+//         {
+//         f_alpha = 185;
+// //         f_edge = 100;
+//         }
+//     else
+//         {
+// //         f_alpha = 127;
+//         f_alpha = 0;
+// //         f_edge = 0;
+//         }
 	   
-    QColor f_mask_center = QColor(f_brightness, f_brightness, f_brightness, f_alpha);
-    QColor f_mask_edge = QColor(f_edge, f_edge, f_edge, f_alpha);
+//     QColor f_mask_center = QColor(f_brightness, f_brightness, f_brightness, f_alpha);
+//     QColor f_mask_edge = QColor(f_edge, f_edge, f_edge, f_alpha);
+    QColor f_mask_min(d_fillColor.isValid() ? d_fillColor : pal.highlight().color());
+    QColor f_mask_max(f_mask_min);
+    f_mask_min.setAlpha(40);
+    f_mask_max.setAlpha(200);
     QLinearGradient f_mask;
 	   
-    f_mask.setColorAt(0, f_mask_edge);
-    f_mask.setColorAt(0.5, f_mask_center);
-    f_mask.setColorAt(1, f_mask_edge);
+//     f_mask.setColorAt(0, f_mask_edge);
+//     f_mask.setColorAt(0.5, f_mask_center);
+//     f_mask.setColorAt(1, f_mask_edge);
+//     f_mask.setColorAt(0, d_fillColor);
+//     f_mask.setColorAt(0.75, f_mask_min);
+    f_mask.setColorAt(0, f_mask_max);
+    f_mask.setColorAt(1, f_mask_min);
     
 //     // for the thumb
 //     QLinearGradient thumbGrad;
@@ -344,7 +402,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 	   
         p->fillPath(bg_rect, d_fillColor);
 	   
-        const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
+        const int dist1 = int(double(cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * rpos);
         const int ipos =  cr.x() + dist1;
         markerPos = ipos + d_thumbHalf;
 	   
@@ -356,8 +414,8 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         e_mask.setStart(QPointF(0, cr.y()));
         e_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
 
-        QPainterPath e_rect = MusECore::roundedPath(ipos + d_thumbLength, cr.y(), 
-                                          cr.width() - d_thumbLength - dist1, cr.height(), 
+        QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(), 
+                                          cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(), 
                                           xrad, yrad, (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
    
         p->fillPath(e_rect, QBrush(e_mask));
@@ -367,8 +425,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         // Draw groove full left side
         //
            
-        f_mask.setStart(QPointF(0, cr.y()));
-        f_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
+//         f_mask.setStart(QPointF(0, cr.y()));
+//         f_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
+        f_mask.setStart(QPointF(cr.x(), cr.y()));
+        f_mask.setFinalStop(QPointF(cr.x() + cr.width(), cr.y()));
           
         QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(), 
                                           ipos + 1, cr.height(),
@@ -444,11 +504,15 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         // Draw groove lower filling mask
         //
 
-        f_mask.setStart(QPointF(cr.x(), 0));
-        f_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
+//         f_mask.setStart(QPointF(cr.x(), 0));
+//         f_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
+//         f_mask.setStart(QPointF(cr.x(), cr.y()));
+//         f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
+        f_mask.setStart(QPointF(cr.x(), markerPos));
+        f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
             
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + d_thumbLength, 
-                                          cr.width(), cr.height() - d_thumbLength - dist1,
+        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), 
+                                          cr.width(), cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1,
                                           xrad, yrad, (MusECore::Corner) (MusECore::LowerLeft | MusECore::LowerRight) );
 	    
         p->fillPath(f_rect, QBrush(f_mask));
@@ -684,12 +748,13 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
     drawSlider(&p, d_sliderRect);
 
   // REMOVE Tim. Trackinfo. Added.
-  drawThumb(&p, d_sliderRect);
+  if(d_thumbLength != 0)
+    drawThumb(&p, d_sliderRect);
   if(d_scalePos != None) 
   {
 //         p.fillRect(rect(), palette().window());
     p.setRenderHint(QPainter::Antialiasing, false);
-    d_scale.draw(&p);
+    d_scale.draw(&p, palette(), value());
   }
 }
 
@@ -867,15 +932,40 @@ void Slider::resizeEvent(QResizeEvent *e)
             
         case InsideVertical:
         {
-            d_sliderRect.setRect(this->rect().x() + s.width()
-              - sliderWidth - 1 - d_xMargin,
-              this->rect().y() + d_yMargin,
+//             d_sliderRect.setRect(this->rect().x() + s.width()
+//               - sliderWidth - 1 - d_xMargin,
+//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
+//             d_sliderRect.setRect(this->rect().x() + d_xMargin + d_scale.maxLabelWidth(fm, false) - sliderWidth,
+            const int mxlw = d_scale.maxLabelWidth(fm, false);
+            const int sclw = d_scale.scaleWidth();
+            const int sldw = mxlw > sliderWidth ? sliderWidth : mxlw;
+            const int sldoffs = mxlw > sliderWidth ? ((mxlw - sldw) / 2) : 0;
+            const int fh = fm.ascent() + 2;
+            const int fh2 = fh / 2;
+            const int margin = d_thumbLength > fh ? d_thumbLength : fh;
+            const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
+            const int sldymargin = fh > d_thumbLength ? fh - d_thumbLength : 0;
+            const int sldymargin2 = fh2 > d_thumbHalf ? fh2 - d_thumbHalf : 0;
+            
+//             d_sliderRect.setRect(this->rect().x() + (s.width() - 1) - sliderWidth - sclw + sldoffs, // - d_xMargin,
+            d_sliderRect.setRect(this->rect().x() + s.width() - sliderWidth - sclw + sldoffs, // - d_xMargin,
+//               this->rect().y() + d_yMargin,
+              this->rect().y() + d_yMargin + sldymargin2,
               sliderWidth,
-              s.height() - 2 * d_yMargin);
+//               s.height() - 2 * d_yMargin);
+//               s.height() - margin - 2 * d_yMargin);
+              s.height() - sldymargin - 2 * d_yMargin);
+              
             //d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-            d_scale.setGeometry(this->rect().x() + d_xMargin + d_scale.maxWidth(fm, false) + d_scaleDist,
-              d_sliderRect.y() + d_thumbHalf,
-              s.height() - d_thumbLength,
+//             d_scale.setGeometry(this->rect().x() + d_xMargin + d_scale.maxWidth(fm, false) + d_scaleDist,
+            d_scale.setGeometry(this->rect().x() + d_xMargin + mxlw + sclw + d_scaleDist,
+//               d_sliderRect.y() + d_thumbHalf,
+//               d_sliderRect.y(),
+              this->rect().y() + d_yMargin + margin2,                                
+//               s.height() - d_thumbLength,
+//               s.height() - margin,
+//               d_sliderRect.height(),
+              s.height() - margin - 2 * d_yMargin,
               ScaleDraw::InsideVertical);
         }
         break;
@@ -892,6 +982,88 @@ void Slider::resizeEvent(QResizeEvent *e)
 // REMOVE Tim. Trackinfo. Removed.
 //     d_sliderRect.setRect(this->rect().x(), this->rect().y(),
 //                        s.width(), s.height());
+
+  adjustScale();
+}
+
+// REMOVE Tim. Trackinfo. Added.
+void Slider::adjustScale()
+{
+//   if(!hasUserScale())
+//     return;
+  const double range = maxValue() - minValue();
+  if(range == 0.0)
+    return;
+
+//   const int fh = fontMetrics().ascent();
+  int maxMaj = 5;
+  int maxMin = 3;
+  double mstep = scaleStep();
+  if(d_orient == Qt::Horizontal)
+  {
+//     switch(d_scalePos)
+//     {
+//       case Top:
+//       break;
+//       case Bottom:
+//       break;
+//       case InsideHorizontal:
+//       break;
+//       default:
+//       break;
+//     }
+  }
+  else
+  {
+//     const int h = d_sliderRect.height();
+//     const int f = (int)((double)(5 * h) / range);
+
+//     if(fh != 0)
+//     {
+//       maxMaj = (int)(((double)(15 * d_sliderRect.height()) / range) / (2.0 * (double)fh));
+//       maxMaj = (int)((double)(4 * d_sliderRect.height()) / range);
+//       if(maxMaj > 10)
+//         maxMaj = 10;
+//     }
+
+   if(hasUserScale())
+   {
+     if(d_sliderRect.height() != 0)
+     {
+       const int fact = (int)(3.0 * range / (double)(d_sliderRect.height())) + 1;
+       mstep *= fact;
+     }
+   }
+   else
+    maxMaj = (int)((double)(4 * d_sliderRect.height()) / range);
+    
+    maxMin = (int)((double)(10 * d_sliderRect.height()) / range);
+    if(maxMin > 5)
+      maxMin = 5;
+    
+//     switch(d_scalePos)
+//     {
+//       case Left:
+//       break;
+//       case Right:
+//       break;
+//       case InsideVertical:
+//       break;
+//       default:
+//       break;
+//     }    
+  }
+  
+  //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep); // REMOVE Tim. Trackinfo.
+  //setScaleMaxMinor(maxMin);
+  d_maxMajor = maxMaj;
+  d_maxMinor = maxMin;
+  if(hasUserScale())
+    d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
+  else
+    d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
+  //setScale(minValue(), maxValue(), majStep(), log());
+  update();
 }
 
 //------------------------------------------------------------
@@ -945,7 +1117,8 @@ void Slider::rangeChange()
 void Slider::setMargins(int hor, int vert)
 {
     d_xMargin = MusECore::qwtMax(0, hor);
-    d_yMargin = MusECore::qwtMin(0, vert);
+//     d_yMargin = MusECore::qwtMin(0, vert); // REMOVE Tim. Trackinfo. BUG Controls were not being given total space. FIXED! Surely this was wrong!
+    d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
 }
 

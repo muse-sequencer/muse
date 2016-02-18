@@ -434,6 +434,14 @@ void PluginDialog::fillPlugs()
                type_name = tr("LV2 effect");
                plugInstanceType = SEL_TYPE_LV2;
             }
+            else if((*i)->isVstNativeSynth()) {
+               type_name = tr("VST synth");
+               plugInstanceType = SEL_TYPE_VST;
+            }
+            else if((*i)->isVstNativePlugin()) {
+               type_name = tr("VST effect");
+               plugInstanceType = SEL_TYPE_VST;
+            }
             else {
                type_name = tr("ladspa");
                plugInstanceType = SEL_TYPE_LADSPA;

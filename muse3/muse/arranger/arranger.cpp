@@ -482,6 +482,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
       connect(canvas, SIGNAL(editTrackNameSig()), list, SLOT(editTrackNameSlot()));
 
+      connect(canvas, SIGNAL(muteSelectedTracks()), list, SLOT(muteSelectedTracksSlot()));
+      connect(canvas, SIGNAL(soloSelectedTracks()), list, SLOT(soloSelectedTracksSlot()));
+
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
@@ -718,14 +721,16 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
 
 void Arranger::trackSelectionChanged()
       {
-      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-      MusECore::Track* track = 0;
-      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-            if ((*t)->selected()) {
-                  track = *t;
-                  break;
-                  }
-            }
+// REMOVE Tim. Trackinfo. Removed
+//       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+//       MusECore::Track* track = 0;
+//       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//             if ((*t)->selected()) {
+//                   track = *t;
+//                   break;
+//                   }
+//             }
+      MusECore::Track* track = MusEGlobal::song->tracks()->currentSelection();
       if (track == selected)
             return;
       selected = track;

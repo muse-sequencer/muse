@@ -100,23 +100,23 @@
 SimpleSynthGui* simplesynthgui_ptr;
 
 QString labelStrings[] = {
-   "C 1",
-   "C#1",
-   "D 1",
-   "D#1",
-   "E 1",
-   "F 1",
-   "F#1",
-   "G 1",
+   "C 1 Bass drum 1",
+   "C#1 Side stick",
+   "D 1 Acoustic snare",
+   "D#1 Hand clap",
+   "E 1 Electric snare",
+   "F 1 Low floor tom",
+   "F#1 Closed hi-hat",
+   "G 1 High floor tom",
 
-   "G#1",
-   "A 1",
-   "A#1",
-   "B 1",
-   "C 2",
-   "C#2",
-   "D 2",
-   "D#2",
+   "G#1 Pedal hi-hat",
+   "A 1 Low tom",
+   "A#1 Open hi-hat",
+   "B 1 Low-mid tom",
+   "C 2 Hi-mid tom",
+   "C#2 Crash cymbal",
+   "D 2 High tom",
+   "D#2 Ride cymbal 1",
 };
 
 
@@ -299,19 +299,6 @@ SimpleSynthGui::SimpleSynthGui()
    pluginGui = new SS_PluginGui(this);
    pluginGui->hide();
 
-   QVBoxLayout* mainLayout = new QVBoxLayout(this); //, 3);
-
-   //      mainLayout->setSpacing(0);
-   //      mainLayout->setMargin(0);
-   QHBoxLayout* channelLayout = new QHBoxLayout;
-   channelLayout->setSpacing(1);
-   channelLayout->setMargin(0);
-   mainLayout->addLayout(channelLayout);
-
-
-
-   //this->setFixedWidth(SS_GUI_WINDOW_WIDTH);
-   //this->setFixedHeight(SS_GUI_WINDOW_HEIGHT);
    for (int i=0; i<SS_NR_OF_CHANNELS; i++) {
       channelButtonGroups[i] = new QGroupBox(this);
       //            channelButtonGroups[i]->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
@@ -373,12 +360,10 @@ SimpleSynthGui::SimpleSynthGui()
 
 
       nOffLabel[i] = new QLabel(channelButtonGroups[i]);
-      //            nOffLabel[i]->setMinimumSize(SS_NONOFF_LABEL_WIDTH, SS_NONOFF_LABEL_HEIGHT);
       nOffLabel[i]->setText("nOff");
       inchnlLayout->addWidget(nOffLabel[i]);
 
       nOffIgnore[i] = new QChannelCheckbox(channelButtonGroups[i], i);
-      //            nOffIgnore[i]->setMinimumSize(SS_NONOFF_WIDTH, SS_NONOFF_HEIGHT);
       nOffIgnore[i]->setToolTip("Note off ignore, channel " + QString::number(i + 1));
       inchnlLayout->addWidget(nOffIgnore[i]);
       connect(nOffIgnore[i], SIGNAL(channelState(int, bool)),SLOT(channelNoteOffIgnore(int, bool)));
@@ -386,7 +371,6 @@ SimpleSynthGui::SimpleSynthGui()
       panSliders[i] = new QChannelSlider(Qt::Horizontal, i, channelButtonGroups[i]);
       panSliders[i]->setRange(0, 127);
       panSliders[i]->setValue(SS_PANSLDR_DEFAULT_VALUE);
-      //            panSliders[i]->setMinimumSize(SS_PANSLDR_WIDTH, SS_PANSLDR_LENGTH);
       panSliders[i]->setToolTip("Pan, channel " + QString::number(i + 1));
       inchnlLayout->addWidget(panSliders[i]);
       connect(panSliders[i], SIGNAL(valueChanged(int, int)), SLOT(panChanged(int, int)));
@@ -397,14 +381,12 @@ SimpleSynthGui::SimpleSynthGui()
       sendFxDial[i][0]->setRange(0, 127);
       sendFxDial[i][0]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       sendFxDial[i][0]->setToolTip("Fx 1 send amount");
-      //inchnlLayout->addWidget(sendFxDial[i][0]);
       dialGrid->addWidget(sendFxDial[i][0], 0, 0, Qt::AlignCenter | Qt::AlignTop);
 
       connect(sendFxDial[i][0], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
       sendFxDial[i][1] = new QChannelDial(channelButtonGroups[i], i, 1);
       sendFxDial[i][1]->setRange(0, 127);
-      //inchnlLayout->add(sendFxDial[i][1]);
       dialGrid->addWidget(sendFxDial[i][1], 0, 1, Qt::AlignCenter | Qt::AlignTop);
       sendFxDial[i][1]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       sendFxDial[i][1]->setToolTip("Fx 2 send amount");
@@ -414,7 +396,6 @@ SimpleSynthGui::SimpleSynthGui()
       sendFxDial[i][2] = new QChannelDial(channelButtonGroups[i], i, 2);
       sendFxDial[i][2]->setRange(0, 127);
       sendFxDial[i][2]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
-      //inchnlLayout->add(sendFxDial[i][2]);
       dialGrid->addWidget(sendFxDial[i][2], 1, 0, Qt::AlignCenter | Qt::AlignTop);
       sendFxDial[i][2]->setToolTip("Fx 3 send amount");
       connect(sendFxDial[i][2], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
@@ -427,7 +408,6 @@ SimpleSynthGui::SimpleSynthGui()
       dialGrid->addWidget(sendFxDial[i][3], 1, 1, Qt::AlignCenter | Qt::AlignTop);
       connect(sendFxDial[i][3], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
-      //add channel routing combo box
       chnRoutingCb[i] = new QComboBox(channelButtonGroups[i]);
       chnRoutingCb[i]->addItem(tr("Mix"), QVariant(0));
       chnRoutingCb[i]->addItem(tr("Chn"), QVariant(1));
@@ -440,70 +420,43 @@ SimpleSynthGui::SimpleSynthGui()
       inchnlLayout->addWidget(chnRoutingCb[i]);
 
       inchnlLayout->activate();
-      //channelLayout->activate();
    }
 
-   //Master buttongroup:
-   masterButtonGroup = new QGroupBox(this);
-   channelLayout->addWidget(masterButtonGroup);
-   QVBoxLayout* mbgLayout = new QVBoxLayout(masterButtonGroup);
-   mbgLayout->setAlignment(Qt::AlignCenter);
-   mbgLayout->setSpacing(1);
-   mbgLayout->setMargin(0);
-
-   //      masterButtonGroup->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
-
-   ///masterSlider = new QInvertedSlider(Qt::Vertical, masterButtonGroup);
-   // By Tim. p4.0.27 Inverted was not correct type. Maybe was work in progress, rest of code was not converted yet?
-   masterSlider = new QSlider(Qt::Vertical, masterButtonGroup);
-
+   masterSlider = new QSlider(Qt::Vertical, this);
    masterSlider->setToolTip("Master volume");
-   mbgLayout->addWidget(masterSlider);
+   channelLayout->addWidget(masterSlider);
    masterSlider->setRange(0, 127);
-
-   ///masterSlider->setValue(SS_VOLUME_MAX_VALUE - (int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE));
    masterSlider->setValue((int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE)); // p4.0.27
 
-   //      masterSlider->setMinimumSize(SS_MASTERSLDR_WIDTH, SS_MASTERSLDR_HEIGHT);
-
-   ///connect(masterSlider, SIGNAL(invertedValueChanged(int)), SLOT(masterVolChanged(int)));
    connect(masterSlider, SIGNAL(valueChanged(int)), SLOT(masterVolChanged(int)));  // p4.0.27
 
-   //Main groupbox
-   mainGroupBox = new QGroupBox(this);
-   mainLayout->addWidget(mainGroupBox);
-
-   QGridLayout* mgbLayout = new QGridLayout(mainGroupBox); // , 8, 3, 1);
-   mgbLayout->setSpacing(1);
-   mgbLayout->setMargin(0);
 
    int i=0;
 
    for (int c=0; c<2; c++) {
       for (int r=0; r<SS_NR_OF_CHANNELS/2; r++) {
-         QHBoxLayout* strip = new QHBoxLayout;//(mgbLayout, 5);
+         QHBoxLayout* strip = new QHBoxLayout;
          mgbLayout->addLayout(strip, r, c);
 
-         //QLabel* channelLabel = new QLabel(QString("Ch ") + QString::number(i + 1), mainGroupBox);
          QLabel* channelLabel = new QLabel(QString::number(i + 1) + ": (" +labelStrings[i] + ")", mainGroupBox);
          strip->addWidget(channelLabel);
 
          sampleNameLineEdit[i] = new QLineEdit(mainGroupBox);
          sampleNameLineEdit[i]->setReadOnly(true);
+         sampleNameLineEdit[i]->setFixedWidth(180);
          strip->addWidget(sampleNameLineEdit[i]);
 
          loadSampleButton[i] = new QChannelButton(mainGroupBox, "L", i);
-         //                  loadSampleButton[i]->setMinimumSize(SS_SAMPLE_LOAD_WIDTH, SS_SAMPLE_LOAD_HEIGHT);
          loadSampleButton[i]->setToolTip("Load sample on channel " + QString::number(i + 1));
+         loadSampleButton[i]->setFixedSize(23,23);
          strip->addWidget(loadSampleButton[i]);
          connect(loadSampleButton[i], SIGNAL(channelState(int, bool)), SLOT(loadSampleDialogue(int)));
 
          clearSampleButton[i] = new QChannelButton(mainGroupBox, "C", i);
-         //                  clearSampleButton[i]->setMinimumSize(SS_SAMPLE_CLEAR_WIDTH, SS_SAMPLE_CLEAR_HEIGHT);
          clearSampleButton[i]->setToolTip("Clear sample on channel " + QString::number(i + 1));
+         clearSampleButton[i]->setFixedSize(23,23);
          strip->addWidget(clearSampleButton[i]);
          connect(clearSampleButton[i], SIGNAL(channelState(int, bool)), SLOT(clearSample(int)));
-
          i++;
       }
    }
@@ -511,7 +464,7 @@ SimpleSynthGui::SimpleSynthGui()
    // Right bottom panel:
    QGroupBox* rbPanel= new QGroupBox(mainGroupBox);
    mgbLayout->addWidget(rbPanel, 1, 3, 7, 1, Qt::AlignCenter);
-   QGridLayout* rbLayout = new QGridLayout(rbPanel); // 6, 1, 8, 5);
+   QGridLayout* rbLayout = new QGridLayout(rbPanel);
 
    openPluginsButton = new QPushButton("&Send Effects");
    openPluginsButton->setToolTip("Configure LADSPA send effects");
@@ -521,7 +474,6 @@ SimpleSynthGui::SimpleSynthGui()
    rbLayout->setMargin(0);
    aboutButton = new QPushButton("About SimpleDrums");
    connect(aboutButton, SIGNAL(clicked()), SLOT(aboutButtonClicked()));
-   //TD      rbLayout->addRowSpacing(3, 20);
    rbLayout->addWidget(aboutButton, 4, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
 
@@ -529,11 +481,8 @@ SimpleSynthGui::SimpleSynthGui()
    connect(loadButton, SIGNAL(clicked()), SLOT(loadSetup()));
    saveButton = new QPushButton(tr("&Save setup"), rbPanel);
    connect(saveButton, SIGNAL(clicked()), SLOT(saveSetup()));
-   //rbLayout->addWidget(openPluginsButton, 1, 1, Qt::AlignCenter | Qt::AlignVCenter);
-   //      rbLayout->addRowSpacing(2, 20);
    rbLayout->addWidget(loadButton,  3, 1, Qt::AlignCenter | Qt::AlignVCenter);
    rbLayout->addWidget(saveButton,  4, 1, Qt::AlignCenter | Qt::AlignVCenter);
-   //      rbLayout->addRowSpacing(5, 20);
    rbLayout->addWidget(aboutButton, 6, 1, Qt::AlignCenter | Qt::AlignVCenter);
 
    lastDir = "";
@@ -701,25 +650,8 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
       }
 
       case SS_SYSEX_LOAD_SAMPLE_ERROR: {
-         //int ch = *(data+1);
          const char* filename = (const char*) (data+2);
-         /*QMessageBox* yn = new QMessageBox("Sample not found", "Failed to load sample: " + QString(filename) + "\n" +
-                                                      "Do you want to open file browser and try to locate it elsewhere?",
-                                                      QMessageBox::Warning,
-                                                      QMessageBox::Yes,
-                                                      QMessageBox::No,
-                                                      QMessageBox::NoButton,
-                                                      this);*/
-         /*int res = QMessageBox::warning(this,
-                                                      "SimpleDrums","Failed to load sample: " + QString(filename) + "\n" +
-                                                      "Do you want to open file browser and try to locate it elsewhere?",
-                                                      "&Yes", "&No");
-                                                      */
-         //int res = yn->exec();
          printf("Error: Sample %s not found! TODO: Fix this\n", filename);
-         //if (res == 0) {
-         //      loadSampleDialogue(ch);
-         //      }
          break;
       }
 
@@ -945,7 +877,6 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
       d[2] = SS_SYSEX_LOAD_SAMPLE;
       d[3] = (byte) channel;
       d[4] = (byte) filename.length();
-      //memcpy(d+3, filename.toLatin1().constData(), filename.length()+1);
       memcpy(d+5, filename.toLatin1().constData(), filename.length()+1);
       sendSysex(d, l);
    }
@@ -995,8 +926,6 @@ void SimpleSynthGui::loadEffectInvoked(int fxid, QString lib, QString label)
    d[1] = SIMPLEDRUMS_UNIQUE_ID;
    d[2] = SS_SYSEX_LOAD_SENDEFFECT;
    d[3] = (byte) fxid;
-   //memcpy (d+2, lib.toLatin1().constData(), lib.length()+1);
-   //memcpy (d+3+lib.length(), label.toLatin1().constData(), label.length()+1);
    memcpy (d+4, lib.toLatin1().constData(), lib.length()+1);
    memcpy (d+5+lib.length(), label.toLatin1().constData(), label.length()+1);
    sendSysex(d, l);

@@ -84,6 +84,12 @@ struct AutomationObject {
   MusECore::Track *currentTrack;
   bool moveController;
   ControllerVals controllerState;
+  QString currentText;
+  bool breakUndoCombo;
+  //QRect currentTextRect;
+  //QRect currentVertexRect;
+  //int currentTick;
+  //int currentYNorm;
 };
 
 //---------------------------------------------------------
@@ -100,6 +106,10 @@ class PartCanvas : public Canvas {
       NPart* editPart;
       int curColorIndex;
       bool editMode;
+      
+      static const int _automationPointDetectDist;
+      static const int _automationPointWidthUnsel;
+      static const int _automationPointWidthSel;
       
       QTime editingFinishedTime;
 
@@ -150,12 +160,15 @@ class PartCanvas : public Canvas {
       MusECore::Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
+      void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
+      void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawTopItem(QPainter& p, const QRect& rect);
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool slowMotion);
       double logToVal(double inLog, double min, double max);
       double valToLog(double inV, double min, double max);
+      void newAutomationVertex(QPoint inPos);
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
@@ -173,6 +186,8 @@ class PartCanvas : public Canvas {
       void selectTrackAbove();
       void selectTrackBelow();
       void editTrackNameSig();
+      void muteSelectedTracks();
+      void soloSelectedTracks();
 
       void startEditor(MusECore::PartList*, int);
 

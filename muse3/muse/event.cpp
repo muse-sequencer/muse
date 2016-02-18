@@ -27,6 +27,8 @@
 #include "waveevent.h"
 #include "midievent.h"
 
+//#define USE_SAMPLERATE
+
 namespace MusECore {
 
 EventID_t EventBase::idGen=0;

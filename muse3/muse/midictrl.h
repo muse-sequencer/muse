@@ -232,18 +232,27 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
 //          index = (channelNumber << 24) + ctrlNumber
 //---------------------------------------------------------
 
-typedef std::map<int, MidiCtrlValList*, std::less<int> >::iterator iMidiCtrlValList;
-typedef std::map<int, MidiCtrlValList*, std::less<int> >::const_iterator ciMidiCtrlValList;
+typedef std::map<int, MidiCtrlValList*, std::less<int> > MidiCtrlValListList_t;
+//typedef std::map<int, MidiCtrlValList*, std::less<int> >::iterator iMidiCtrlValList;
+//typedef std::map<int, MidiCtrlValList*, std::less<int> >::const_iterator ciMidiCtrlValList;
+typedef MidiCtrlValListList_t::iterator iMidiCtrlValList;
+typedef MidiCtrlValListList_t::const_iterator ciMidiCtrlValList;
 
-class MidiCtrlValListList : public std::map<int, MidiCtrlValList*, std::less<int> > {
+//class MidiCtrlValListList : public std::map<int, MidiCtrlValList*, std::less<int> > {
+class MidiCtrlValListList : public MidiCtrlValListList_t {
       bool _RPN_Ctrls_Reserved; 
-  
+      
    public:
       MidiCtrlValListList();
       //MidiCtrlValListList(const MidiCtrlValListList&); // TODO
       
-      iMidiCtrlValList find(int channel, int ctrl) {
+      iterator find(int channel, int ctrl) {
             return std::map<int, MidiCtrlValList*, std::less<int> >::find((channel << 24) + ctrl);
+            }
+      const_iterator find(int channel, int ctrl) const {
+            //return ((const MidiCtrlValListList*)this)->std::map<int, MidiCtrlValList*, std::less<int> >::find((channel << 24) + ctrl);
+            //return ((const MidiCtrlValListList_t*)this)->std::map<int, MidiCtrlValList*, std::less<int> >::find((channel << 24) + ctrl);
+            return ((const MidiCtrlValListList_t*)this)->find((channel << 24) + ctrl);
             }
       void clearDelete(bool deleteLists);      
       // Like 'find', finds a controller given fully qualified type + number. 

@@ -153,6 +153,7 @@ bool MusE::seqStart()
             return true;
             }
 
+      // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
       if (!MusEGlobal::audio->start()) {
           QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
               tr("Was not able to start audio, check if jack is running.\n"));
@@ -203,7 +204,8 @@ bool MusE::seqStart()
 
       MusEGlobal::audioPrefetch->start(pfprio);
 
-      MusEGlobal::audioPrefetch->msgSeek(0, true); // force
+      // In case prefetch is not filled, do it now.
+      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
 
       MusEGlobal::midiSeq->start(midiprio);
 
@@ -290,6 +292,7 @@ void addProject(const QString& name)
 
 MusE::MusE() : QMainWindow()
       {
+
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
@@ -441,7 +444,10 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon), tr("Play"), MusEGlobal::transportAction);
+      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
+                     tr("Play") + " (" + shrtToStr(MusEGui::SHRT_PLAY_TOGGLE)
+                         + ")<br>"+ tr("Restart rec")+" (" + QKeySequence(MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key).toString() + ")",
+                     MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
       MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
@@ -577,6 +583,8 @@ MusE::MusE() : QMainWindow()
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual"), this);
       helpHomepageAction = new QAction(tr("&MusE Homepage"), this);
+      helpDidYouKnow = new QAction(tr("&Did you know?"), this);
+
       helpReportAction = new QAction(tr("&Report Bug..."), this);
       helpAboutAction = new QAction(tr("&About MusE"), this);
 
@@ -668,6 +676,7 @@ MusE::MusE() : QMainWindow()
       connect(helpManualAction, SIGNAL(triggered()), SLOT(startHelpBrowser()));
       connect(helpHomepageAction, SIGNAL(triggered()), SLOT(startHomepageBrowser()));
       connect(helpReportAction, SIGNAL(triggered()), SLOT(startBugBrowser()));
+      connect(helpDidYouKnow, SIGNAL(triggered()), SLOT(showDidYouKnowDialog()));
       connect(helpAboutAction, SIGNAL(triggered()), SLOT(about()));
 
       //--------------------------------------------------
@@ -721,6 +730,7 @@ MusE::MusE() : QMainWindow()
 
       cpuLoadToolbar = addToolBar(tr("Cpu load"));
       cpuLoadToolbar->setObjectName("CpuLoadToolbar");
+      cpuLoadToolbar->setToolTip(tr("CPU load averaged over each gui-update period, DSP load read from JACK and finally, number of xruns (reset by clicking)"));
       MusEGlobal::cpuLoadAction = new QWidgetAction(cpuLoadToolbar);
       MusEGlobal::cpuLoadAction->setWhatsThis(tr("Measured CPU load"));
       MusEGlobal::cpuLoadAction->setObjectName("CpuLoadToolbarAction");
@@ -904,6 +914,7 @@ MusE::MusE() : QMainWindow()
 
       menu_help->addAction(helpManualAction);
       menu_help->addAction(helpHomepageAction);
+      menu_help->addAction(helpDidYouKnow);
       menu_help->addSeparator();
       menu_help->addAction(helpReportAction);
       menu_help->addSeparator();
@@ -1026,6 +1037,8 @@ void MusE::loadDefaultSong(int argc, char** argv)
         else
         {
           name = MusEGlobal::config.startSong;
+          if (name == "default.med")
+              name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
         useTemplate = true;
@@ -1175,9 +1188,9 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       if (mixer1)
-            mixer1->clear();
+            mixer1->clearAndDelete();
       if (mixer2)
-            mixer2->clear();
+            mixer2->clearAndDelete();
       _arranger->clear();      // clear track info
       if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
             return;
@@ -2072,12 +2085,23 @@ void MusE::showDidYouKnowDialog()
           return;
         }
 
-        // All tip is on one line. empty lines or lines starting with # are ignored
+        // All tips are separated by an empty line. Lines starting with # are ignored
+        QString tipMessage = "";
         while (!file.atEnd())  {
-          QString str = file.readLine();
-          if (!str.simplified().isEmpty() && str.at(0) != QChar('#'))
-            dyk.tipList.append(str);
+          QString line = file.readLine();
+
+          if (!line.simplified().isEmpty() && line.at(0) != QChar('#'))
+            tipMessage.append(line);
+
+          if (!tipMessage.isEmpty() && line.simplified().isEmpty()) {
+            dyk.tipList.append(tipMessage);
+            tipMessage="";
+          }
         }
+        if (!tipMessage.isEmpty()) {
+          dyk.tipList.append(tipMessage);
+        }
+
         std::random_shuffle(dyk.tipList.begin(),dyk.tipList.end());
 
         dyk.show();
@@ -2487,7 +2511,7 @@ void MusE::configAppearance()
       {
       if (!appearance)
             // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
-            appearance = new MusEGui::Appearance(_arranger);
+            appearance = new MusEGui::Appearance(_arranger, this);
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();
@@ -2554,6 +2578,7 @@ void MusE::changeConfig(bool writeFlag)
 
       loadTheme(MusEGlobal::config.style);
       QApplication::setFont(MusEGlobal::config.fonts[0]);
+
       if(!MusEGlobal::config.styleSheetFile.isEmpty())
         loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
 

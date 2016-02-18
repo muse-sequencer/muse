@@ -686,6 +686,15 @@ iCtrl CtrlList::insert(iCtrl ic, const std::pair<int, CtrlVal>& p)
   return res;
 }
 
+void CtrlList::insert(iCtrl first, iCtrl last)
+{
+#ifdef _CTRL_DEBUG_
+  printf("CtrlList::insert3 first frame:%d last frame:%d\n", first->first, last->first); 
+#endif
+  std::map<int, CtrlVal, std::less<int> >::insert(first, last);
+  _guiUpdatePending = true;
+}
+
 void CtrlList::erase(iCtrl ictl)
 {
 #ifdef _CTRL_DEBUG_

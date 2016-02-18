@@ -38,7 +38,7 @@
 namespace MusEGui {
 
 extern int mtcType;
-enum { COL_NAME=0, COL_REFS, COL_SAMPLERATE, COL_LEN };
+enum { COL_NAME=0, COL_REFS, COL_SAMPLERATE, COL_LEN, COL_DATA, COL_STATUS };
 
 //---------------------------------------------------------
 //   ClipItem
@@ -61,6 +61,7 @@ ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
         setText(COL_REFS,       QString().setNum(_wf.getRefCount()));
         setText(COL_SAMPLERATE, QString().setNum(_wf.samplerate()));
         setText(COL_LEN,        QString().setNum(_wf.samples()));
+        setText(COL_STATUS, _wf.isOpen() ? QObject::tr("Open") : QObject::tr("Closed"));
       }
 
 //---------------------------------------------------------

@@ -171,6 +171,8 @@ void initShortCuts()
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Select track above"), ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Select track below"), ARRANG_SHRT, "sel_track_below");
       defShrt(SHRT_EDIT_TRACK_NAME,       Qt::Key_F2, QT_TRANSLATE_NOOP("shortcuts", "Edit selected track name"), ARRANG_SHRT, "edit_track_name");
+      defShrt(SHRT_MUTE_CURRENT_TRACKS,       Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
+      defShrt(SHRT_SOLO_CURRENT_TRACKS,       Qt::SHIFT + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
 
 
       //-----------------------------------------------------------
@@ -410,5 +412,10 @@ void readShortCuts(MusECore::Xml& xml)
                   }
             }
       }
+
+QString shrtToStr(long int shrt)
+{
+ return QKeySequence(shortcuts[shrt].key).toString();
+}
 
 } // namespace MusEGui

@@ -66,8 +66,8 @@ class ElidedLabel : public QFrame
     virtual void mouseReleaseEvent(QMouseEvent*);
 
   signals:
-    void pressed();
-    void released();
+    void pressed(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    void released(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     
   public:
     explicit ElidedLabel(QWidget* parent = 0, 

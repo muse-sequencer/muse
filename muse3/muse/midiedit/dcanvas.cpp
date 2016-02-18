@@ -486,7 +486,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 //   newItem
 //---------------------------------------------------------
 void DrumCanvas::newItem(CItem* item, bool noSnap) {
-     newItem(item, noSnap,false);
+     newItem(item, noSnap,true);
 }
 
 void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
@@ -514,42 +514,57 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       return;
     npitch = instrument_map[npitch].pitch;
     event.setPitch(npitch);
+    event.setSelected(true);
     // check for existing event
     //    if found change command semantic from insert to delete
-    MusECore::ciEvent lower  = part->events().lower_bound(event.tick());
-    MusECore::ciEvent upper  = part->events().upper_bound(event.tick());
-
-    for (MusECore::ciEvent i = lower; i != upper; ++i) {
-          MusECore::Event ev = i->second;
-          if(!ev.isNote())
-            continue;
-          if (ev.pitch() == npitch) {
-                // Indicate do undo, and do not do port controller values and clone parts.
-                MusEGlobal::audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
-                if (replace)
-                  break;
-                else
-                  return;
-            }
-          }
-
     MusECore::Undo operations;
+    std::pair<MusECore::ciEvent,MusECore::ciEvent> range = 
+      part->events().equal_range(event.type() == MusECore::Wave ? event.frame() : event.tick());
+    MusECore::Event oev;
+    bool found = false;
+    for(MusECore::ciEvent i = range.first; i != range.second; ++i)
+    {
+      oev = i->second;
+      if(!oev.isNote())
+        continue;
+      if(oev.pitch() == npitch) 
+      {
+        found = true;
+        break;
+      }
+    }
+    
+    // Indicate do undo, and do not do port controller values and clone parts.
     int diff = event.endTick()-part->lenTick();
-
     if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
     {
-      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
-
+      if(found)
+      {
+        if(replace)
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,event, oev, part, false, false));
+        else
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,oev, part, false, false));
+      }
+      else
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
+      
       if (diff > 0) // part must be extended?
       {
             schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
             printf("newItem: extending\n");
       }
     }
-    //else forbid action by not applying it
-    MusEGlobal::song->applyOperationGroup(operations);
-    songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
-                                    //to remove "forbidden" events from the list again
+    else // forbid action by not applying it
+    {
+      if(found)
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,oev, part, false, false));
+    }
+      
+    if(!operations.empty())
+      MusEGlobal::song->applyOperationGroup(operations);
+    else
+      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+                                      //to remove "forbidden" events from the list again
 }
 
 //---------------------------------------------------------

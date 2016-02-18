@@ -115,10 +115,10 @@ class TList : public QWidget {
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
-      int countSelected();
       void toggleMute(MusECore::Track *t, bool turnOff);
       void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
       void editTrackName(MusECore::Track *t);
+      void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);
 
 
    protected:
@@ -151,6 +151,8 @@ class TList : public QWidget {
       void selectTrackAbove();
       void selectTrackBelow();
       void editTrackNameSlot();
+      void muteSelectedTracksSlot();
+      void soloSelectedTracksSlot();
       void setHeader(Header*);
 
    public:

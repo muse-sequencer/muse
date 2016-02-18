@@ -32,6 +32,7 @@
 // #include "knob.h" // REMOVE Tim. Trackinfo. Removed.
 // #include "compact_slider.h"
 //#include "route.h"
+#include "clipper_label.h"
 
 //class QDialog;
 class QToolButton;
@@ -39,6 +40,7 @@ class QToolButton;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
+class QHBoxLayout;
 
 namespace MusECore {
 class AudioTrack;
@@ -51,7 +53,7 @@ class Knob;
 class Slider;
 class CompactSlider;
 class TransparentToolButton;
-  
+
 //---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
@@ -90,8 +92,17 @@ class AudioStrip : public Strip {
       bool _volPressed;
       bool _panPressed;
 
+// REMOVE Tim. Trackinfo. Changed.
+//       ClipperLabel *_clipperLabel;
+      ClipperLabel* _clipperLabel[MAX_CHANNELS];
+      QHBoxLayout* _clipperLayout;
+
       //QToolButton* iR;
       //QToolButton* oR;
+      
+// REMOVE Tim. Trackinfo. Added.
+      void setClipperTooltip(int ch);
+      
       
 // REMOVE Tim. Trackinfo. Changed.
 //       MusEGui::Knob* addKnob(Knob::KnobType, int, MusEGui::DoubleLabel**, QLabel *name);
@@ -121,8 +132,10 @@ class AudioStrip : public Strip {
 // REMOVE Tim. Trackinfo. Removed.
 //       void panLabelChanged(double);
 //       void auxLabelChanged(double, unsigned int);
-      void volumeRightClicked(const QPoint &);
-      void panRightClicked(const QPoint &);
+      void volumeRightClicked(QPoint);
+      void panRightClicked(QPoint);
+
+      void resetClipper();
 
    protected slots:
       virtual void heartBeat();
@@ -132,10 +145,23 @@ class AudioStrip : public Strip {
       virtual void songChanged(MusECore::SongChangedFlags_t);
 
    public:
-      AudioStrip(QWidget* parent, MusECore::AudioTrack*);
+      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false);
       ~AudioStrip();
       ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;
+      
+      static const double volSliderStep;
+      static const double volSliderMax;
+      static const int    volSliderPrec;
+      
+      static const double auxSliderStep;
+      static const double auxSliderMax;
+      static const int    auxSliderPrec;
+      
+      static const double gainSliderStep;
+      static const double gainSliderMin;
+      static const double gainSliderMax;
+      static const int    gainSliderPrec;
       };
 
 } // namespace MusEGui

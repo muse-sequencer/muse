@@ -79,10 +79,15 @@
 #include "lv2host.h"
 #endif
 
+#ifdef VST_NATIVE_SUPPORT
+#include "vst_native.h"
+#endif
+
 #include "audio.h"
 #include "al/dsp.h"
 
 #include "config.h"
+#include "muse_math.h"
 
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN
@@ -640,6 +645,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
   _isDssiSynth = isDssiSynth;
   _isLV2Plugin = false;
   _isLV2Synth = false;
+  _isVstNativePlugin = false;
+  _isVstNativeSynth = false;
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -716,7 +723,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 
 Plugin::~Plugin()
 {
-  if(plugin && !isLV2Plugin())
+  if(plugin && !isLV2Plugin() && !isVstNativePlugin())
   //  delete plugin;
     printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
@@ -900,7 +907,7 @@ void Plugin::range(unsigned long i, float* min, float* max) const
 //   defaultValue
 //---------------------------------------------------------
 
-float Plugin::defaultValue(unsigned long port) const
+double Plugin::defaultValue(unsigned long port) const
 {
     float val;
     ladspaDefaultValue(plugin, port, &val);
@@ -1270,7 +1277,7 @@ float Pipeline::latency()
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame)
+bool Pipeline::addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame)
 {
   // If a track controller, or the special dssi synth controller block, just return.
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
@@ -1496,6 +1503,16 @@ bool Pipeline::isLV2Plugin(int idx) const
    return false;
 }
 
+bool Pipeline::isVstNativePlugin(int idx) const
+{
+   PluginI* p = (*this)[idx];
+   if(p)
+     return p->isVstNativePlugin();
+
+   return false;
+
+}
+
 //---------------------------------------------------------
 //   has_dssi_ui
 //---------------------------------------------------------
@@ -1507,9 +1524,15 @@ bool Pipeline::has_dssi_ui(int idx) const
   {
 #ifdef LV2_SUPPORT
     if(p->plugin() && p->plugin()->isLV2Plugin())
-      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
-    else
+      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();    
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+    if(p->plugin() && p->plugin()->isVstNativePlugin())
+      return ((VstNativePluginWrapper *)p->plugin())->hasNativeGui();
+#endif
+
+
       return !p->dssi_ui_filename().isEmpty();
   }
 
@@ -1541,6 +1564,15 @@ void Pipeline::showNativeGui(int idx, bool flag)
          }
 
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p && p->plugin()->isVstNativePlugin())
+         {
+            ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, flag);
+            return;
+         }
+
+#endif
       #ifdef OSC_SUPPORT
 
       if (p)
@@ -1563,6 +1595,14 @@ void Pipeline::deleteGui(int idx)
          if(p && p->plugin()->isLV2Plugin())
          {
             ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, false);
+         }
+
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p && p->plugin()->isVstNativePlugin())
+         {
+            ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
 
 #endif
@@ -1602,9 +1642,15 @@ bool Pipeline::nativeGuiVisible(int idx)
 #ifdef LV2_SUPPORT
          if(p->plugin()->isLV2Plugin())
             return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
-#else
-            return p->nativeGuiVisible();
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+         if(p->plugin()->isVstNativePlugin())
+            return ((VstNativePluginWrapper *)p->plugin())->nativeGuiVisible(p);
+#endif
+
+            return p->nativeGuiVisible();
+
       }
       return false;
       }
@@ -1675,7 +1721,7 @@ PluginIBase::~PluginIBase()
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame)
+bool PluginIBase::addScheduledControlEvent(unsigned long i, double val, unsigned frame)
 {
   if(i >= parameters())
   {
@@ -1774,18 +1820,21 @@ QString PluginIBase::dssi_ui_filename() const
 
 void PluginI::init()
       {
-      _plugin            = 0;
-      instances          = 0;
-      handle             = 0;
-      controls           = 0;
-      controlsOut        = 0;
-      controlPorts       = 0;
-      controlOutPorts    = 0;
+      _plugin           = 0;
+      instances         = 0;
+      handle            = 0;
+      controls          = 0;
+      controlsOut       = 0;
+      controlsOutDummy  = 0;
+      controlPorts      = 0;
+      controlOutPorts   = 0;
+      _audioInSilenceBuf = 0;
+      _audioOutDummyBuf  = 0;
       _hasLatencyOutPort = false;
       _latencyOutPort = 0;
-      //_gui               = 0;
-      _on                = true;
-      initControlValues  = false;
+      //_gui              = 0;
+      _on               = true;
+      initControlValues = false;
       _showNativeGuiPending = false;
       }
 
@@ -1811,6 +1860,14 @@ PluginI::~PluginI()
             deactivate();
             _plugin->incReferences(-1);
             }
+
+      if(_audioInSilenceBuf)
+        free(_audioInSilenceBuf);
+      if(_audioOutDummyBuf)
+        free(_audioOutDummyBuf);
+      
+      if (controlsOutDummy)
+            delete[] controlsOutDummy;
       if (controlsOut)
             delete[] controlsOut;
       if (controls)
@@ -1864,53 +1921,113 @@ void PluginI::setChannels(int c)
       if (ni == instances)
             return;
 
-      // remove old instances:
-      deactivate();
-      delete[] handle;
-      instances = ni;
-      handle    = new LADSPA_Handle[instances];
-      for (int i = 0; i < instances; ++i) {
-            handle[i] = _plugin->instantiate(this);
-            if (handle[i] == NULL) {
-                  printf("cannot instantiate instance %d\n", i);
-                  return;
-                  }
-            }
-
-      unsigned long curPort = 0;
-      unsigned long curOutPort = 0;
-      unsigned long ports   = _plugin->ports();
-      for (unsigned long k = 0; k < ports; ++k)
+      LADSPA_Handle* handles = new LADSPA_Handle[ni];
+      
+      if(ni > instances)
       {
-            LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL)
+        for(int i = 0; i < ni; ++i)
+        {
+          if(i < instances)
+            // Transfer existing handle from old array to new array.
+            handles[i] = handle[i];
+          else
+          {
+            // Create a new plugin instance with handle.
+            handles[i] = _plugin->instantiate(this);
+            if(handles[i] == NULL) 
             {
-                  if(pd & LADSPA_PORT_INPUT)
-                  {
-                    for (int i = 0; i < instances; ++i)
-                          _plugin->connectPort(handle[i], k, &controls[curPort].val);
-                    controls[curPort].idx = k;
-                    ++curPort;
-                  }
-                  else
-                  if(pd & LADSPA_PORT_OUTPUT)
-                  {
-                    for (int i = 0; i < instances; ++i)
-                          _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
-                    controlsOut[curOutPort].idx = k;
-                    ++curOutPort;
-                  }
+              fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
+              
+              // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert(). 
+              // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
+              for(int k = i; k < ni; ++k)
+                handles[i] = NULL;
+              ni = i + 1;
+              //channel = ?;
+              break;
             }
+          }
+        }
+      }
+      else
+      {
+        for(int i = 0; i < instances; ++i)
+        {
+          if(i < ni)
+            // Transfer existing handle from old array to new array.
+            handles[i] = handle[i];
+          else
+          {
+            // Delete existing plugin instance.
+            // Previously we deleted all the instances and rebuilt from scratch.
+            // One side effect of this: Since a GUI is constructed only on the first handle, 
+            //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
+            _plugin->deactivate(handle[i]);
+            _plugin->cleanup(handle[i]);
+          }
+        }
       }
 
-      activate();
+      // Delete the old array, and set the new array.
+      delete[] handle;
+      handle = handles;
+
+      // Connect ports:
+      unsigned long curPort = 0;
+      unsigned long curOutPort = 0;
+      unsigned long ports = _plugin->ports();
+      for(unsigned long k = 0; k < ports; ++k)
+      {
+        LADSPA_PortDescriptor pd = _plugin->portd(k);
+        if(pd & LADSPA_PORT_CONTROL)
+        {
+          if(pd & LADSPA_PORT_INPUT)
+          {
+            for(int i = instances; i < ni; ++i)
+              _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            controls[curPort].idx = k;
+            ++curPort;
+          }
+          else if(pd & LADSPA_PORT_OUTPUT)
+          {
+            // Connect only the first instance's output controls. 
+            // We don't have a mechanism to display the other instances' outputs.
+            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+            // Connect the rest to dummy ports.
+            for(int i = 1; i < ni; ++i)
+              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            controlsOut[curOutPort].idx = k;
+            ++curOutPort;
+          }
+        }
+      }
+
+      // Activate new instances.
+      for(int i = instances; i < ni; ++i)
+        _plugin->activate(handle[i]);
+
+      // Initialize control values.
+      if(initControlValues) 
+      {
+        for(unsigned long i = 0; i < controlPorts; ++i) 
+          controls[i].val = controls[i].tmpVal;
+      }
+      else
+      {
+        // get initial control values from plugin
+        for(unsigned long i = 0; i < controlPorts; ++i) 
+          controls[i].tmpVal = controls[i].val;
+      }            
+
+      // Finally, set the new number of instances.
+      instances = ni;
 }
 
 //---------------------------------------------------------
 //   setParam
 //---------------------------------------------------------
 
-void PluginI::setParam(unsigned long i, float val)
+void PluginI::setParam(unsigned long i, double val)
 {
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
@@ -1919,7 +2036,7 @@ void PluginI::setParam(unsigned long i, float val)
 //   defaultValue
 //---------------------------------------------------------
 
-float PluginI::defaultValue(unsigned long param) const
+double PluginI::defaultValue(unsigned long param) const
 {
   if(param >= controlPorts)
     return 0.0;
@@ -1931,13 +2048,28 @@ void PluginI::setCustomData(const std::vector<QString> &customParams)
 {
    if(_plugin == NULL)
       return;
-   if(!_plugin->isLV2Plugin()) //now only do it for lv2 plugs
-      return;
+
 #ifdef LV2_SUPPORT
-   LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
-   for(int i = 0; i < instances; ++i)
+   if(_plugin->isLV2Plugin()) //now only do it for lv2 plugs
    {
-      lv2Plug->setCustomData(handle [i], customParams);
+
+      LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+      for(int i = 0; i < instances; ++i)
+      {
+         lv2Plug->setCustomData(handle [i], customParams);
+      }
+   }
+#endif
+
+#ifdef VST_NATIVE_SUPPORT
+   if(_plugin->isVstNativePlugin()) //now only do it for lv2 plugs
+   {
+
+      VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+      for(int i = 0; i < instances; ++i)
+      {
+         vstPlug->setCustomData(handle [i], customParams);
+      }
    }
 #endif
 }
@@ -2035,7 +2167,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
       controls    = new Port[controlPorts];
       controlsOut = new Port[controlOutPorts];
-
+      controlsOutDummy = new Port[controlOutPorts];
+      
       unsigned long curPort = 0;
       unsigned long curOutPort = 0;
       for(unsigned long k = 0; k < ports; ++k)
@@ -2046,7 +2179,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           if(pd & LADSPA_PORT_INPUT)
           {
             controls[curPort].idx = k;
-            float val = _plugin->defaultValue(k);
+            double val = _plugin->defaultValue(k);
             controls[curPort].val    = val;
             controls[curPort].tmpVal = val;
             controls[curPort].enCtrl  = true;
@@ -2067,12 +2200,45 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
             controlsOut[curOutPort].val     = 0.0;
             controlsOut[curOutPort].tmpVal  = 0.0;
             controlsOut[curOutPort].enCtrl  = false;
-            for(int i = 0; i < instances; ++i)
-              _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
+            // Connect only the first instance's output controls. 
+            // We don't have a mechanism to display the other instances' outputs.
+            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+            // Connect the rest to dummy ports.
+            for(int i = 1; i < instances; ++i)
+              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
             ++curOutPort;
           }
         }
       }
+      
+      int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+      if(rv != 0)
+      {
+          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+      }
+
+      if(MusEGlobal::config.useDenormalBias)
+      {
+          for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+          {
+            _audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+          }
+      }
+      else
+      {
+          memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+      }
+
+      rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+      if(rv != 0)
+      {
+          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+      }
+
       activate();
       return false;
       }
@@ -2087,8 +2253,12 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
-                        _plugin->connectPort(handle[i], k, src[port] + offset);
-                        port = (port + 1) % ports;
+                        if(port < ports)
+                          _plugin->connectPort(handle[i], k, src[port] + offset);
+                        else
+                          // Connect to an input silence buffer.
+                          _plugin->connectPort(handle[i], k, _audioInSilenceBuf + offset);
+                        ++port;
                         }
                   }
             }
@@ -2096,8 +2266,12 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioOut(k)) {
-                        _plugin->connectPort(handle[i], k, dst[port] + offset);
-                        port = (port + 1) % ports;  // overwrite output?
+                        if(port < ports)
+                          _plugin->connectPort(handle[i], k, dst[port] + offset);
+                        else
+                          // Connect to a dummy buffer.
+                          _plugin->connectPort(handle[i], k, _audioOutDummyBuf + offset);
+                        ++port;
                         }
                   }
             }
@@ -2153,7 +2327,7 @@ float PluginI::latency()
 //    set plugin instance controller value by name
 //---------------------------------------------------------
 
-bool PluginI::setControl(const QString& s, float val)
+bool PluginI::setControl(const QString& s, double val)
       {
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
@@ -2185,10 +2359,22 @@ void PluginI::writeConfiguration(int level, Xml& xml)
          }
       }
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+      if(_plugin != NULL && _plugin->isVstNativePlugin())//save vst plugin state custom data before controls
+      {
+         VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+         //for multi-instance plugins write only first instance's state
+         if(instances > 0)
+         {
+            vstPlug->writeConfiguration(handle [0], level, xml);
+         }
+      }
+#endif
       for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
-            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
+            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(double(controls[i].tmpVal)).toLatin1().constData());
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
@@ -2211,7 +2397,7 @@ bool PluginI::loadControl(Xml& xml)
       QString file;
       QString label;
       QString name("mops");
-      float val = 0.0;
+      double val = 0.0;
 
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2228,7 +2414,7 @@ bool PluginI::loadControl(Xml& xml)
                         if (tag == "name")
                               name = xml.s2();
                         else if (tag == "val")
-                              val = xml.s2().toFloat();
+                              val = xml.s2().toDouble();
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
@@ -2452,6 +2638,17 @@ void PluginI::showNativeGui()
     return;
   }
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+  if(plugin() && plugin()->isVstNativePlugin())
+  {
+    if(((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((VstNativePluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((VstNativePluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if (_plugin)
   {
@@ -2473,6 +2670,14 @@ void PluginI::showNativeGui(bool flag)
     return;
   }
 #endif
+
+#ifdef VST_NATIVE_SUPPORT
+  if(plugin() && plugin()->isVstNativePlugin())
+  {
+    ((VstNativePluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if(_plugin)
   {
@@ -2491,6 +2696,10 @@ bool PluginI::nativeGuiVisible()
 #ifdef LV2_SUPPORT
     if(plugin() && plugin()->isLV2Plugin())
       return ((LV2PluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
+#ifdef VST_NATIVE_SUPPORT
+    if(plugin() && plugin()->isVstNativePlugin())
+      return ((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();
@@ -3378,7 +3587,7 @@ void PluginGui::ctrlPressed(int param)
         {
           double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = pow(10.0, val/20.0);
+                val = muse_db2val(val);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
                 val = rint(val);
           params[param].label->blockSignals(true);
@@ -3422,7 +3631,7 @@ void PluginGui::ctrlReleased(int param)
         {
           double val = ((ThinSlider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = pow(10.0, val/20.0);
+                val = muse_db2val(val);
           else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
                 val = rint(val);
           track->stopAutoRecord(id, val);
@@ -3458,7 +3667,7 @@ void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
       MusECore::AudioTrack* track = plugin->track();
 
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            val = pow(10.0, val/20.0);
+            val = muse_db2val(val);
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
             val = rint(val);
 
@@ -3656,7 +3865,7 @@ void PluginGui::updateValues()
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
                   unsigned long param = gw[i].param;
-                  float val = plugin->param(param);
+                  double val = plugin->param(param);
                   widget->blockSignals(true);
                   switch(type) {
                         case GuiWidgets::SLIDER:

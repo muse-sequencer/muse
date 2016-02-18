@@ -431,7 +431,7 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
       int npitch     = y2pitch(pos.y());
-      MusECore::Event newEvent = event.clone();
+      MusECore::Event newEvent = (dtype == MOVE_COPY) ? event.duplicate() : event.clone();
       int x          = pos.x();
       if (x < 0)
             x = 0;
@@ -505,6 +505,7 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       event.setLenTick(w);
             
       event.setPitch(y2pitch(item->y()));
+      event.setSelected(true);
 
       MusECore::Undo operations;
       int diff = event.endTick()-part->lenTick();

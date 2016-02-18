@@ -55,30 +55,35 @@ enum drumTrackPreference_t
   ONLY_NEW = 3
 };
 
+// Or'd together
 enum ExportPortsDevices_t
 {
-  EXPORT_PORTS_DEVICES_ALL = 0,
-  PORT_NUM_META = 1,
-  DEVICE_NAME_META = 2,
-  EXPORT_PORTS_DEVICES_END = 3
+  PORT_NUM_META = 0x01,
+  DEVICE_NAME_META = 0x02,
 };
 
+// Or'd together
 enum ExportModeInstr_t
 {
-  EXPORT_MODE_INSTR_ALL = 0,
-  MODE_SYSEX = 1,
-  INSTRUMENT_NAME_META = 2,
-  EXPORT_MODE_INSTR_END = 3
+  MODE_SYSEX = 0x01,
+  INSTRUMENT_NAME_META = 0x02,
 };
 
 enum RouteNameAliasPreference { RoutePreferCanonicalName, RoutePreferFirstAlias, RoutePreferSecondAlias };
 
+enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
 
 struct MixerConfig {
+  enum DisplayOrder {
+        STRIPS_TRADITIONAL_VIEW = -1004,
+        STRIPS_EDITED_VIEW = -1003,
+        STRIPS_ARRANGER_VIEW = -1002,
+      };
       QString name;
+      QStringList stripOrder;
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;
@@ -89,6 +94,8 @@ struct MixerConfig {
       bool showGroupTracks;
       bool showAuxTracks;
       bool showSyntiTracks;
+      DisplayOrder displayOrder;
+      QList<bool> stripVisibility;
 
       void write(int level, MusECore::Xml& xml);
       void read(MusECore::Xml& xml);
@@ -162,6 +169,8 @@ struct GlobalConfigValues {
       QColor partMidiDarkEventColor;
       QColor partMidiLightEventColor;
 
+      WaveDrawing waveDrawing;
+
       int division;
       int rtcTicks;
       bool midiSendInit;         // Send instrument initialization sequences
@@ -181,13 +190,14 @@ struct GlobalConfigValues {
       int smfFormat;          // smf export file type
       bool exp2ByteTimeSigs;  // Export 2 byte time sigs instead of 4 bytes
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
+      bool expRunningStatus;  // Save space by using running status
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
       bool importMidiNewStyleDrum; // Use new style drum tracks
       bool importDevNameMetas;    // Import Prefer Device Name metas over port number metas if both exist.
       bool importInstrNameMetas;  // Import Prefer Instrument Name metas over Mode sysexes if both exist.
-      ExportPortsDevices_t exportPortsDevices;  // Export port number metas and/or device name metas.
+      int exportPortsDevices;     // Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
       bool exportPortDeviceSMF0;  // Export a port and/or device meta even for SMF0.
-      ExportModeInstr_t exportModeInstr;   // Export mode sysexes and/or instrument name metas.
+      int exportModeInstr;        // Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString importMidiDefaultInstr;  // Default to this instrument not Generic, if no match found
       
       int startMode;          // 0 - start with last song

@@ -26,6 +26,8 @@
 #include <QKeyEvent>
 #include <QWheelEvent>
 
+#include "muse_math.h"
+
 namespace Awl {
 
 //---------------------------------------------------------
@@ -198,7 +200,7 @@ void AbstractSlider::valueChange()
 double AbstractSlider::value() const
       {
       if (_log)
-            return pow(10.0, _value*0.05f);
+            return muse_db2val(_value);
       if (_integer)
             return rint(_value);
       return _value;

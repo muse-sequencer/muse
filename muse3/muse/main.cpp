@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
       if(!cConfExists)
       {
         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
-        MusEGlobal::config.startSong = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+        MusEGlobal::config.startSong = "";
       }
       
       // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
@@ -505,10 +505,14 @@ int main(int argc, char* argv[])
           }
           app.installTranslator(&translator);
       }
-      printf("LOCALE %s\n",QLocale::system().name().toLatin1().data());
+      
+      QLocale def_loc(locale);
+      QLocale::setDefault(def_loc);
+      
+      printf("LOCALE %s\n",QLocale().name().toLatin1().data());
 
-      if (QLocale::system().name() == "de" || locale_override == "de") {
-        printf("locale de - setting override parameter.\n");
+      if (QLocale().name() == "de" || locale_override == "de") {
+        printf("locale de - setting 'note h is B' override parameter.\n");
         MusEGlobal::hIsB = false;
       }
       

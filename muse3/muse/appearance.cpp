@@ -342,6 +342,11 @@ void Appearance::resetValues()
       global_bg->takeChildren();
       user_bg->takeChildren();
 
+      if (config->waveDrawing == MusEGlobal::WaveRmsPeak)
+        radioButtonDrawRmsPeak->setChecked(true);
+      else
+        radioButtonDrawOutline->setChecked(true);
+
       QDir bgdir = MusEGlobal::museGlobalShare + "/wallpapers/";
       QStringList filters;
       filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif";
@@ -636,14 +641,18 @@ void Appearance::apply()
       config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
       // setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
-
       config->canvasShowGrid = arrGrid->isChecked();
-
       config->globalAlphaBlend = globalAlphaVal->value();
-      // set colors...
+
+      if (radioButtonDrawOutline->isChecked())
+        config->waveDrawing = MusEGlobal::WaveOutLine;
+      else
+        config->waveDrawing = MusEGlobal::WaveRmsPeak;
+
       MusEGlobal::config = *config;
 
       MusEGlobal::muse->changeConfig(true);
+      raise();
       }
 
 //---------------------------------------------------------

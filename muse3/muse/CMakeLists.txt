@@ -73,6 +73,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       value.h
       steprec.h
       lv2host.h
+      vst_native.h
       wavepreview.h
       )
 

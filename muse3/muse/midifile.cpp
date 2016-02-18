@@ -55,8 +55,9 @@ enum ERROR {
       MF_READ,
       MF_WRITE,
       MF_MTRK,
+      //MF_MTRK_ZERO_DATA,
       MF_MTHD,
-      MF_FORMAT,
+      MF_FORMAT
       };
 
 //---------------------------------------------------------
@@ -84,10 +85,27 @@ MidiFile::MidiFile(FILE* f)
 
 MidiFile::~MidiFile()
       {
-      delete _tracks;
+      if(_tracks)
+      {
+        _tracks->clearDelete();
+        delete _tracks;
+        _tracks = 0;
+      }
       delete _usedPortMap;
       }
 
+void MidiFile::setTrackList(MidiFileTrackList* tr, int n) 
+{
+  if(_tracks)
+  {
+    _tracks->clearDelete();
+    delete _tracks;
+    _tracks = 0;
+  }
+  _tracks = tr;
+  ntracks = n;
+}
+      
 //---------------------------------------------------------
 //   read
 //    return true on error
@@ -239,6 +257,9 @@ bool MidiFile::readTrack(MidiFileTrack* t)
             return true;
             }
       int len    = readLong();       // len
+      if(len <= 0)
+        return false;
+      
       int endPos = curPos + len;
       status     = -1;
       sstatus    = -1;     // running status, not reset scanning meta or sysex
@@ -345,7 +366,7 @@ bool MidiFile::readTrack(MidiFileTrack* t)
                   channel = event.channel();
             el->add(event);
             }
-   
+      
       int end = curPos;
       if (end != endPos) {
             printf("MidiFile::readTrack(): TRACKLEN does not fit %d+%d != %d, %d too much\n",
@@ -657,7 +678,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
       //
       //  running status; except for Sysex- and Meta Events
       //
-      if (((nstat & 0xf0) != 0xf0) && (nstat != status)) {
+      if (((nstat & 0xf0) != 0xf0) && ((nstat != status) || !MusEGlobal::config.expRunningStatus)) {
             status = nstat;
             put(nstat);
             }
@@ -775,24 +796,44 @@ bool MidiFile::read()
             case 0:
                   {
                   MidiFileTrack* t = new MidiFileTrack;
-                  _tracks->push_back(t);
                   if (readTrack(t))
-                        return true;
+                  {
+                    delete t;
+                    return true;
+                  }
+                  else
+                    _tracks->push_back(t);
                   }
                   break;
             case 1:
-                  for (i = 0; i < ntracks; i++) {
-                        MidiFileTrack* t = new MidiFileTrack;
-                        _tracks->push_back(t);
-                        if (readTrack(t))
-                              return true;
-                        }
+                  for (i = 0; i < ntracks; ++i)
+                  {
+                    MidiFileTrack* t = new MidiFileTrack;
+                    if (readTrack(t))
+                    {
+                      delete t;
+                      return true;
+                    }
+                    else
+                      _tracks->push_back(t);
+                  }
                   break;
             default:
                   _error = MF_FORMAT;
                   return true;
             }
+            
       return false;
       }
 
+void MidiFileTrackList::clearDelete()
+{
+  for(iterator i = begin(); i != end(); ++i)
+  {
+    if(*i)
+      delete *i;
+  }
+  clear();
+}
+      
 } // namespace MusECore

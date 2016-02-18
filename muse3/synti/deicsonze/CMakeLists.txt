@@ -93,6 +93,7 @@ set_target_properties ( deicsonze
 target_link_libraries(deicsonze
       al
       awl
+      widgets
       synti
       ${QT_LIBRARIES}
       )

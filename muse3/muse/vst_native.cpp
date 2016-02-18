@@ -36,6 +36,7 @@
 #include <set>
 #include <string>
 #include <jack/jack.h>
+#include <sstream>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -76,11 +77,13 @@ static sem_t _vstIdLock;
 VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
 {
       // Is this callback for an actual instance? Hand-off to the instance if so.
-      VSTPlugin* plugin;
+      //VSTPlugin* plugin;
       if(effect && effect->user)
       {
-        plugin = (VSTPlugin*)(effect->user);
-        return ((VstNativeSynthIF*)plugin)->hostCallback(opcode, index, value, ptr, opt);
+        VstNativeSynthOrPlugin *userData = (VstNativeSynthOrPlugin*)(effect->user);
+        //return ((VstNativeSynthIF*)plugin)->hostCallback(opcode, index, value, ptr, opt);
+        return VstNativeSynth::pluginHostCallback(userData, opcode, index, value, ptr, opt);
+
       }
 
       // No instance found. So we are just scanning for plugins...
@@ -357,19 +360,21 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
    // Make sure it doesn't already exist.
    for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
      if((*is)->name() == effectName && (*is)->baseName() == fi.completeBaseName())
+     {
+        fprintf(stderr, "VST %s already exists!\n", (char *)effectName.toUtf8().constData());
        return false;
+     }
 
    // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
    vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+   bool isSynth = true;
    if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
    {
-     if(MusEGlobal::debugMsg)
-       fprintf(stderr, "Plugin is not a synth\n");
-     return false;
+     isSynth = false;
    }
 
    vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
-   new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString, id, handle);
+   new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString, id, handle, isSynth);
 
    if(MusEGlobal::debugMsg)
      fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
@@ -382,6 +387,12 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
              );
 
    MusEGlobal::synthis.push_back(new_synth);
+
+   if(new_synth->inPorts() > 0 && new_synth->outPorts() > 0)
+   {
+      MusEGlobal::plugins.push_back(new VstNativePluginWrapper(new_synth));
+   }
+
    return true;
 
 }
@@ -603,11 +614,13 @@ void initVST_Native()
             }
       }
 
+
+
 //---------------------------------------------------------
 //   VstNativeSynth
 //---------------------------------------------------------
 
-VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle)
+VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle, bool isSynth)
   : Synth(fi, label, desc, maker, ver)
 {
   _handle = dlHandle;
@@ -652,6 +665,7 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QStri
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"midiProgramNames", 0.0f) > 0)
       _flags |= canMidiProgramNames;
   }
+  _isSynth = isSynth;
 }
 
 //---------------------------------------------------------
@@ -684,7 +698,7 @@ void VstNativeSynth::incInstances(int val)
 //   instantiate
 //---------------------------------------------------------
 
-AEffect* VstNativeSynth::instantiate(VstNativeSynthIF* sif)
+AEffect* VstNativeSynth::instantiate(void* userData)
 {
   int inst_num = _instances;
   inst_num++;
@@ -694,7 +708,7 @@ AEffect* VstNativeSynth::instantiate(VstNativeSynthIF* sif)
   QByteArray ba = info.filePath().toLatin1();
   const char* path = ba.constData();
   void* hnd = _handle;
-  int vst_version;
+  //int vst_version;
 
   if(hnd == NULL)
   {
@@ -775,30 +789,31 @@ AEffect* VstNativeSynth::instantiate(VstNativeSynthIF* sif)
   else if(MusEGlobal::debugMsg)
     fprintf(stderr, "Plugin supports processReplacing\n");
 
-  plugin->user = sif;
+  plugin->user = userData;
   plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-  if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
+  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+  /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
       fprintf(stderr, "Plugin is not a synth\n");
     goto _error;
-  }
+  }*/
 
   ++_instances;
   _handle = hnd;
 
   //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
-
+/*
 _error:
   //plugin->dispatcher(plugin, effMainsChanged, 0, 0, NULL, 0);
   plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
   if(_id == 0)
     dlclose(hnd);
   return NULL;
+  */
 }
 
 //---------------------------------------------------------
@@ -811,7 +826,7 @@ SynthIF* VstNativeSynth::createSIF(SynthI* s)
       sif->init(this);
       return sif;
       }
-  
+
 //---------------------------------------------------------
 //   VstNativeSynthIF
 //---------------------------------------------------------
@@ -830,6 +845,8 @@ VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
       _audioInBuffers = NULL;
       _audioInSilenceBuf = NULL;
       _audioOutBuffers = NULL;
+      userData.pstate = 0;
+      userData.sif = this;
 }
 
 VstNativeSynthIF::~VstNativeSynthIF()
@@ -877,7 +894,7 @@ VstNativeSynthIF::~VstNativeSynthIF()
 bool VstNativeSynthIF::init(Synth* s)
       {
       _synth = (VstNativeSynth*)s;
-      _plugin = _synth->instantiate(this);
+      _plugin = _synth->instantiate(&userData);
       if(!_plugin)
         return false;
 
@@ -988,22 +1005,17 @@ bool VstNativeSynthIF::init(Synth* s)
           cl = icl->second;
           _controls[i].val = cl->curVal();
           
-#ifndef VST_VESTIGE_SUPPORT
-          if(dispatch(effCanBeAutomated, i, 0, NULL, 0.0f) == 1)
+          if(dispatch(26 /*effCanBeAutomated*/, i, 0, NULL, 0.0f) == 1)
           {
-#endif            
             double v = cl->curVal();
             if(v != _plugin->getParameter(_plugin, i))
               _plugin->setParameter(_plugin, i, v);
-#ifndef VST_VESTIGE_SUPPORT
           }
 
   #ifdef VST_NATIVE_DEBUG
           else  
             fprintf(stderr, "VstNativeSynthIF::init %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), i);
   #endif
-
-#endif
         }
         
         cl->setRange(min, max);
@@ -1027,11 +1039,11 @@ bool VstNativeSynthIF::init(Synth* s)
 //   resizeEditor
 //---------------------------------------------------------
 
-bool VstNativeSynthIF::resizeEditor(int w, int h)
+bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h)
 {
-  if(!_editor || w <= 0 || h <= 0)
+  if(!editor || w <= 0 || h <= 0)
     return false;
-  _editor->resize(w, h);
+  editor->setFixedSize(w, h);
   return true;
 }
 
@@ -1039,333 +1051,353 @@ bool VstNativeSynthIF::resizeEditor(int w, int h)
 //   hostCallback
 //---------------------------------------------------------
 
-VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
+VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
+{
+   static VstTimeInfo _timeInfo;
+
+#ifdef VST_NATIVE_DEBUG
+   if(opcode != audioMasterGetTime)
+      fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLatin1().constData(), opcode);
+#endif
+
+   switch (opcode) {
+   case audioMasterAutomate:
+      // index, value, returns 0
+      ///_plugin->setParameter (_plugin, index, opt);
+      VstNativeSynth::guiControlChanged(userData, index, opt);
+      return 0;
+
+   case audioMasterVersion:
+      // vst version, currently 2 (0 for older)
+      return 2300;
+
+   case audioMasterCurrentId:
+   {
+      // returns the unique id of a plug that's currently
+      // loading
+      ///return 0;
+      AEffect *vstPlug = 0;
+      if(userData->sif)
+         vstPlug = userData->sif->_plugin;
+      else if(userData->pstate)
+         vstPlug = userData->pstate->plugin;
+      return vstPlug->uniqueID;
+   }
+
+   case audioMasterIdle:
+      // call application idle routine (this will
+      // call effEditIdle for all open editors too)
+      //_plugin->updateParamValues(false);
+      //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+      ///idleEditor();  // REMOVE Tim. Or keep.
+      return 0;
+
+   case audioMasterGetTime:
+   {
+      // returns const VstTimeInfo* (or 0 if not supported)
+      // <value> should contain a mask indicating which fields are required
+      // (see valid masks above), as some items may require extensive
+      // conversions
+
+      // FIXME TODO: Optimizations: This may be called many times in one process call
+      //              due to our multi-run slices. Some of the (costly) info will be redundant.
+      //             So try to add some flag to try to only call some or all of this once per cycle.
+
+#ifdef VST_NATIVE_DEBUG
+      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",
+              (bool)(value & kVstNanosValid),
+              (bool)(value & kVstPpqPosValid),
+              (bool)(value & kVstTempoValid),
+              (bool)(value & kVstBarsValid),
+              (bool)(value & kVstCyclePosValid),
+              (bool)(value & kVstTimeSigValid),
+              (bool)(value & kVstSmpteValid),
+              (bool)(value & kVstClockValid));
+#endif
+      memset(&_timeInfo, 0, sizeof(_timeInfo));
+
+      unsigned int curr_frame = MusEGlobal::audio->pos().frame();
+      _timeInfo.samplePos = (double)curr_frame;
+      _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
+      _timeInfo.flags = 0;
+
+      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+
+      if(value & kVstBarsValid)
       {
-      static VstTimeInfo _timeInfo;
+         int p_bar, p_beat, p_tick;
+         p.mbt(&p_bar, &p_beat, &p_tick);
+         _timeInfo.barStartPos = (double)Pos(p_bar, 0, 0).tick() / (double)MusEGlobal::config.division;
+         _timeInfo.flags |= kVstBarsValid;
+      }
 
-#ifdef VST_NATIVE_DEBUG
-      if(opcode != audioMasterGetTime)
-        fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLatin1().constData(), opcode);
-#endif
-
-      switch (opcode) {
-            case audioMasterAutomate:
-                  // index, value, returns 0
-                  ///_plugin->setParameter (_plugin, index, opt);
-                  guiControlChanged(index, opt);
-                  return 0;
-
-            case audioMasterVersion:
-                  // vst version, currently 2 (0 for older)
-                  return 2300;
-
-            case audioMasterCurrentId:
-                  // returns the unique id of a plug that's currently
-                  // loading
-                  ///return 0;
-                  return _plugin->uniqueID;
-
-            case audioMasterIdle:
-                  // call application idle routine (this will
-                  // call effEditIdle for all open editors too)
-                  //_plugin->updateParamValues(false);
-                  //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
-                  ///idleEditor();  // REMOVE Tim. Or keep.
-                  return 0;
-
-            case audioMasterGetTime:
-            {
-                  // returns const VstTimeInfo* (or 0 if not supported)
-                  // <value> should contain a mask indicating which fields are required
-                  // (see valid masks above), as some items may require extensive
-                  // conversions
-
-                  // FIXME TODO: Optimizations: This may be called many times in one process call
-                  //              due to our multi-run slices. Some of the (costly) info will be redundant.
-                  //             So try to add some flag to try to only call some or all of this once per cycle.
-                  
-#ifdef VST_NATIVE_DEBUG
-                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",  
-                    (bool)(value & kVstNanosValid),
-                    (bool)(value & kVstPpqPosValid),
-                    (bool)(value & kVstTempoValid),
-                    (bool)(value & kVstBarsValid),
-                    (bool)(value & kVstCyclePosValid),
-                    (bool)(value & kVstTimeSigValid),
-                    (bool)(value & kVstSmpteValid),
-                    (bool)(value & kVstClockValid));
-#endif
-                  memset(&_timeInfo, 0, sizeof(_timeInfo));
-
-                  unsigned int curr_frame = MusEGlobal::audio->pos().frame();
-                  _timeInfo.samplePos = (double)curr_frame;
-                  _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
-                  _timeInfo.flags = 0;
-
-                  Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
-
-                  if(value & kVstBarsValid)
-                  {
-                    int p_bar, p_beat, p_tick;
-                    p.mbt(&p_bar, &p_beat, &p_tick);
-                    _timeInfo.barStartPos = (double)Pos(p_bar, 0, 0).tick() / (double)MusEGlobal::config.division;
-                    _timeInfo.flags |= kVstBarsValid;
-                  }
-
-                  if(value & kVstTimeSigValid)
-                  {
-                    int z, n;
-                    AL::sigmap.timesig(p.tick(), z, n);
+      if(value & kVstTimeSigValid)
+      {
+         int z, n;
+         AL::sigmap.timesig(p.tick(), z, n);
 
 #ifndef VST_VESTIGE_SUPPORT
-                    _timeInfo.timeSigNumerator = (long)z;
-                    _timeInfo.timeSigDenominator = (long)n;
+         _timeInfo.timeSigNumerator = (long)z;
+         _timeInfo.timeSigDenominator = (long)n;
 #else
-                    _timeInfo.timeSigNumerator = z;
-                    _timeInfo.timeSigDenominator = n;
+         _timeInfo.timeSigNumerator = z;
+         _timeInfo.timeSigDenominator = n;
 #endif
-                    _timeInfo.flags |= kVstTimeSigValid;
-                  }
-                  
-                  if(value & kVstPpqPosValid)
-                  {
-                    _timeInfo.ppqPos = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
-                    _timeInfo.flags |= kVstPpqPosValid;
-                  }
+         _timeInfo.flags |= kVstTimeSigValid;
+      }
 
-                  if(value & kVstTempoValid)
-                  {
-                    double tempo = MusEGlobal::tempomap.tempo(p.tick());
-                    _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
-                    _timeInfo.flags |= kVstTempoValid;
-                  }
-                  
+      if(value & kVstPpqPosValid)
+      {
+         _timeInfo.ppqPos = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
+         _timeInfo.flags |= kVstPpqPosValid;
+      }
+
+      if(value & kVstTempoValid)
+      {
+         double tempo = MusEGlobal::tempomap.tempo(p.tick());
+         _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+         _timeInfo.flags |= kVstTempoValid;
+      }
+
 #ifdef VST_NATIVE_DEBUG
-                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
-                    _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
+      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
+              _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
 #endif
-                 
-                  if(MusEGlobal::audio->isPlaying())
-                    _timeInfo.flags |= (kVstTransportPlaying | kVstTransportChanged);
-                  // TODO
-                  //if(MusEGlobal::audio->isRecording())
-                  //  _timeInfo.flags |= (kVstTransportRecording | kVstTransportChanged);
-                  
-                  return (long)&_timeInfo;
-            }
-            
-            case audioMasterProcessEvents:
-                  // VstEvents* in <ptr>
-                  return 0;  // TODO:
 
-            case audioMasterIOChanged:
-                   // numInputs and/or numOutputs has changed
-                  return 0;
+      if(MusEGlobal::audio->isPlaying())
+         _timeInfo.flags |= (kVstTransportPlaying | kVstTransportChanged);
+      // TODO
+      //if(MusEGlobal::audio->isRecording())
+      //  _timeInfo.flags |= (kVstTransportRecording | kVstTransportChanged);
 
-            case audioMasterSizeWindow:
-                  // index: width, value: height
-                  if(resizeEditor(int(index), int(value)))
-                    return 1; // supported.
-                  return 0;
+      return (long)&_timeInfo;
+   }
 
-            case audioMasterGetSampleRate:
-                  //return 0;
-                  return MusEGlobal::sampleRate;
+   case audioMasterProcessEvents:
+      // VstEvents* in <ptr>
+      return 0;  // TODO:
 
-            case audioMasterGetBlockSize:
-                  //return 0;
-                  return MusEGlobal::segmentSize;
+   case audioMasterIOChanged:
+      // numInputs and/or numOutputs has changed
+      return 0;
 
-            case audioMasterGetInputLatency:
-                  return 0;
+   case audioMasterSizeWindow:
+   {
+      // index: width, value: height
+      MusEGui::VstNativeEditor *editor = userData->sif ? userData->sif->_editor : userData->pstate->editor;
+      if(VstNativeSynth::resizeEditor(editor, int(index), int(value)))
+            return 1; // supported.
+      return 0;
+   }
 
-            case audioMasterGetOutputLatency:
-                  return 0;
+   case audioMasterGetSampleRate:
+      //return 0;
+      return MusEGlobal::sampleRate;
 
-            case audioMasterGetCurrentProcessLevel:
-                  // returns: 0: not supported,
-                  // 1: currently in user thread (gui)
-                  // 2: currently in audio thread (where process is called)
-                  // 3: currently in 'sequencer' thread (midi, timer etc)
-                  // 4: currently offline processing and thus in user thread
-                  // other: not defined, but probably pre-empting user thread.
-                  if(_inProcess)
-                    return 2;
-                  else
-                    return 1;
+   case audioMasterGetBlockSize:
+      //return 0;
+      return MusEGlobal::segmentSize;
 
-            case audioMasterGetAutomationState:
-                  // returns 0: not supported, 1: off, 2:read, 3:write, 4:read/write
-                  // offline
-                  return 1;   // TODO:
+   case audioMasterGetInputLatency:
+      return 0;
 
-            case audioMasterOfflineStart:
-            case audioMasterOfflineRead:
-                   // ptr points to offline structure, see below. return 0: error, 1 ok
-                  return 0;
+   case audioMasterGetOutputLatency:
+      return 0;
 
-            case audioMasterOfflineWrite:
-                  // same as read
-                  return 0;
+   case audioMasterGetCurrentProcessLevel:
+   {
+      // returns: 0: not supported,
+      // 1: currently in user thread (gui)
+      // 2: currently in audio thread (where process is called)
+      // 3: currently in 'sequencer' thread (midi, timer etc)
+      // 4: currently offline processing and thus in user thread
+      // other: not defined, but probably pre-empting user thread.
+      bool inProcessNow = userData->sif ? userData->sif->_inProcess : userData->pstate->inProcess;
+      if(inProcessNow)
+         return 2;
+      else
+         return 1;
+   }
 
-            case audioMasterOfflineGetCurrentPass:
-            case audioMasterOfflineGetCurrentMetaPass:
-                  return 0;
+   case audioMasterGetAutomationState:
+      // returns 0: not supported, 1: off, 2:read, 3:write, 4:read/write
+      // offline
+      return 1;   // TODO:
 
-            case audioMasterGetVendorString:
-                  // fills <ptr> with a string identifying the vendor (max 64 char)
-                  strcpy ((char*) ptr, "MusE");
-                  return 1;
+   case audioMasterOfflineStart:
+   case audioMasterOfflineRead:
+      // ptr points to offline structure, see below. return 0: error, 1 ok
+      return 0;
 
-            case audioMasterGetProductString:
-                  // fills <ptr> with a string with product name (max 64 char)
-                  strcpy ((char*) ptr, "MusE Sequencer");
-                  return 1;
+   case audioMasterOfflineWrite:
+      // same as read
+      return 0;
 
-            case audioMasterGetVendorVersion:
-                  // returns vendor-specific version
-                  return 2000;
+   case audioMasterOfflineGetCurrentPass:
+   case audioMasterOfflineGetCurrentMetaPass:
+      return 0;
 
-            case audioMasterVendorSpecific:
-                  // no definition, vendor specific handling
-                  return 0;
+   case audioMasterGetVendorString:
+      // fills <ptr> with a string identifying the vendor (max 64 char)
+      strcpy ((char*) ptr, "MusE");
+      return 1;
 
-            case audioMasterCanDo:
-                  // string in ptr, see below
-                  if(!strcmp((char*)ptr, "sendVstEvents") ||          
-                     !strcmp((char*)ptr, "receiveVstMidiEvent") ||   
-                     !strcmp((char*)ptr, "sendVstMidiEvent") ||
-                     !strcmp((char*)ptr, "sendVstTimeInfo") ||        
-                     !strcmp((char*)ptr, "sizeWindow") ||
-                     !strcmp((char*)ptr, "supplyIdle"))               
-                    return 1;
+   case audioMasterGetProductString:
+      // fills <ptr> with a string with product name (max 64 char)
+      strcpy ((char*) ptr, "MusE Sequencer");
+      return 1;
+
+   case audioMasterGetVendorVersion:
+      // returns vendor-specific version
+      return 2000;
+
+   case audioMasterVendorSpecific:
+      // no definition, vendor specific handling
+      return 0;
+
+   case audioMasterCanDo:
+      // string in ptr, see below
+      if(!strcmp((char*)ptr, "sendVstEvents") ||
+            !strcmp((char*)ptr, "receiveVstMidiEvent") ||
+            !strcmp((char*)ptr, "sendVstMidiEvent") ||
+            !strcmp((char*)ptr, "sendVstTimeInfo") ||
+            !strcmp((char*)ptr, "sizeWindow") ||
+            !strcmp((char*)ptr, "supplyIdle"))
+         return 1;
 
 #if 0 //ifndef VST_VESTIGE_SUPPORT
-                  else
-                  if(!strcmp((char*)ptr, "openFileSelector") ||       
-                     !strcmp((char*)ptr, "closeFileSelector"))        
-                    return 1;
+      else
+         if(!strcmp((char*)ptr, "openFileSelector") ||
+               !strcmp((char*)ptr, "closeFileSelector"))
+            return 1;
 #endif
-                  return 0;
+      return 0;
 
-            case audioMasterGetLanguage:
-                  // see enum
-                  //return 0;
-                  return kVstLangEnglish;
+   case audioMasterGetLanguage:
+      // see enum
+      //return 0;
+      return kVstLangEnglish;
 
-            case audioMasterGetDirectory:
-                  // get plug directory, FSSpec on MAC, else char*
-                  return 0;
+   case audioMasterGetDirectory:
+      // get plug directory, FSSpec on MAC, else char*
+      return 0;
 
-            case audioMasterUpdateDisplay:
-                  // something has changed, update 'multi-fx' display
+   case audioMasterUpdateDisplay:
+   {
+      // something has changed, update 'multi-fx' display
 
-                  //_plugin->updateParamValues(false);   
-                  //QApplication::processEvents();     // REMOVE Tim. Or keep. Commented in QTractor.
+      //_plugin->updateParamValues(false);
+      //QApplication::processEvents();     // REMOVE Tim. Or keep. Commented in QTractor.
+      AEffect *vstPlug = 0;
+      if(userData->sif)
+         vstPlug = userData->sif->_plugin;
+      else if(userData->pstate)
+         vstPlug = userData->pstate->plugin;
 
-                  _plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);  // ?
-                  
-                  return 0;
+      vstPlug->dispatcher(vstPlug, effEditIdle, 0, 0, NULL, 0.0f);  // ?
 
-            case audioMasterBeginEdit:
-                  // begin of automation session (when mouse down), parameter index in <index>
-                  guiAutomationBegin(index);
-                  return 1;  
+      return 0;
+   }
 
-            case audioMasterEndEdit:
-                  // end of automation session (when mouse up),     parameter index in <index>
-                  guiAutomationEnd(index);
-                  return 1;  
+   case audioMasterBeginEdit:
+      // begin of automation session (when mouse down), parameter index in <index>
+      VstNativeSynth::guiAutomationBegin(userData, index);
+      return 1;
+
+   case audioMasterEndEdit:
+      // end of automation session (when mouse up),     parameter index in <index>
+      VstNativeSynth::guiAutomationEnd(userData, index);
+      return 1;
 
 #if 0 //ifndef VST_VESTIGE_SUPPORT
-            case audioMasterOpenFileSelector:
-                  // open a fileselector window with VstFileSelect* in <ptr>
-                  return 0;
-                  
-            case audioMasterCloseFileSelector:
-                  return 0;
+   case audioMasterOpenFileSelector:
+      // open a fileselector window with VstFileSelect* in <ptr>
+      return 0;
+
+   case audioMasterCloseFileSelector:
+      return 0;
 #endif
 
 #ifdef VST_FORCE_DEPRECATED
 #ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
 
-            case audioMasterGetSpeakerArrangement:
-                  // (long)input in <value>, output in <ptr>
-                  return 0;
-
-            case audioMasterPinConnected:
-                  // inquire if an input or output is beeing connected;
-                  // index enumerates input or output counting from zero:
-                  // value is 0 for input and != 0 otherwise. note: the
-                  // return value is 0 for <true> such that older versions
-                  // will always return true.
-                  //return 1;
-                  return 0;
-
-            // VST 2.0 opcodes...
-            case audioMasterWantMidi:
-                  // <value> is a filter which is currently ignored
-                  return 0;
-
-            case audioMasterSetTime:
-                  // VstTimenfo* in <ptr>, filter in <value>, not supported
-                  return 0;
-
-            case audioMasterTempoAt:
-                  // returns tempo (in bpm * 10000) at sample frame location passed in <value>
-                  return 0;  // TODO:
-
-            case audioMasterGetNumAutomatableParameters:
-                  return 0;
-
-            case audioMasterGetParameterQuantization:
-                     // returns the integer value for +1.0 representation,
-                   // or 1 if full single float precision is maintained
-                     // in automation. parameter index in <value> (-1: all, any)
-                  //return 0;
-                  return 1;
-
-            case audioMasterNeedIdle:
-                   // plug needs idle calls (outside its editor window)
-                  return 0;
-
-            case audioMasterGetPreviousPlug:
-                   // input pin in <value> (-1: first to come), returns cEffect*
-                  return 0;
-
-            case audioMasterGetNextPlug:
-                   // output pin in <value> (-1: first to come), returns cEffect*
-                  return 0;
-
-            case audioMasterWillReplaceOrAccumulate:
-                   // returns: 0: not supported, 1: replace, 2: accumulate
-                  //return 0;
-                  return 1;
-
-            case audioMasterSetOutputSampleRate:
-                  // for variable i/o, sample rate in <opt>
-                  return 0;
-
-            case audioMasterSetIcon:
-                  // void* in <ptr>, format not defined yet
-                  return 0;
-
-            case audioMasterOpenWindow:
-                  // returns platform specific ptr
-                  return 0;
-
-            case audioMasterCloseWindow:
-                  // close window, platform specific handle in <ptr>
-                  return 0;
-#endif
-#endif
-
-                  
-            default:
-                  break;
-            }
+   case audioMasterGetSpeakerArrangement:
+      // (long)input in <value>, output in <ptr>
       return 0;
-      }
+
+   case audioMasterPinConnected:
+      // inquire if an input or output is beeing connected;
+      // index enumerates input or output counting from zero:
+      // value is 0 for input and != 0 otherwise. note: the
+      // return value is 0 for <true> such that older versions
+      // will always return true.
+      //return 1;
+      return 0;
+
+      // VST 2.0 opcodes...
+   case audioMasterWantMidi:
+      // <value> is a filter which is currently ignored
+      return 0;
+
+   case audioMasterSetTime:
+      // VstTimenfo* in <ptr>, filter in <value>, not supported
+      return 0;
+
+   case audioMasterTempoAt:
+      // returns tempo (in bpm * 10000) at sample frame location passed in <value>
+      return 0;  // TODO:
+
+   case audioMasterGetNumAutomatableParameters:
+      return 0;
+
+   case audioMasterGetParameterQuantization:
+      // returns the integer value for +1.0 representation,
+      // or 1 if full single float precision is maintained
+      // in automation. parameter index in <value> (-1: all, any)
+      //return 0;
+      return 1;
+
+   case audioMasterNeedIdle:
+      // plug needs idle calls (outside its editor window)
+      return 0;
+
+   case audioMasterGetPreviousPlug:
+      // input pin in <value> (-1: first to come), returns cEffect*
+      return 0;
+
+   case audioMasterGetNextPlug:
+      // output pin in <value> (-1: first to come), returns cEffect*
+      return 0;
+
+   case audioMasterWillReplaceOrAccumulate:
+      // returns: 0: not supported, 1: replace, 2: accumulate
+      //return 0;
+      return 1;
+
+   case audioMasterSetOutputSampleRate:
+      // for variable i/o, sample rate in <opt>
+      return 0;
+
+   case audioMasterSetIcon:
+      // void* in <ptr>, format not defined yet
+      return 0;
+
+   case audioMasterOpenWindow:
+      // returns platform specific ptr
+      return 0;
+
+   case audioMasterCloseWindow:
+      // close window, platform specific handle in <ptr>
+      return 0;
+#endif
+#endif
+
+
+   default:
+      break;
+   }
+   return 0;
+}
       
 //---------------------------------------------------------
 //   idleEditor
@@ -1469,14 +1501,14 @@ void VstNativeSynthIF::showNativeGui(bool v)
                   | Qt::WindowMinMaxButtonsHint
                   | Qt::WindowCloseButtonHint;
           _editor = new MusEGui::VstNativeEditor(NULL, wflags);
-          _editor->open(this);
+          _editor->open(this, 0);
         }
       }
       else
       {
         if(_editor)
         {
-          delete _editor;
+          _editor->close();
           //_editor = NULL;  // No - done in editorDeleted.
         }
       }
@@ -1810,7 +1842,7 @@ void VstNativeSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/
 //   getParameter
 //---------------------------------------------------------
 
-float VstNativeSynthIF::getParameter(unsigned long idx) const
+double VstNativeSynthIF::getParameter(unsigned long idx) const
       {
       if(idx >= _synth->inControls())
       {
@@ -1825,7 +1857,7 @@ float VstNativeSynthIF::getParameter(unsigned long idx) const
 //   setParameter
 //---------------------------------------------------------
 
-void VstNativeSynthIF::setParameter(unsigned long idx, float value)
+void VstNativeSynthIF::setParameter(unsigned long idx, double value)
       {
       addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
       }
@@ -1834,19 +1866,19 @@ void VstNativeSynthIF::setParameter(unsigned long idx, float value)
 //   guiAutomationBegin
 //---------------------------------------------------------
 
-void VstNativeSynthIF::guiAutomationBegin(unsigned long param_idx)
+void VstNativeSynth::guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
-  _gw[param_idx].pressed = true;
-  AudioTrack* t = track();
-  int plug_id = id();
-  if(t && plug_id != -1)
-  {
-    plug_id = genACnum(plug_id, param_idx);
+   //_gw[param_idx].pressed = true; //not used
+   AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
+   int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
+   if(t && plug_id != -1)
+   {
+      plug_id = genACnum(plug_id, param_idx);
 
-    //if(params[param].type == GuiParam::GUI_SLIDER)
-    //{
+      //if(params[param].type == GuiParam::GUI_SLIDER)
+      //{
       //double val = ((Slider*)params[param].actuator)->value();
-      float val = param(param_idx);
+      float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
       // FIXME TODO:
       //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
       //      val = pow(10.0, val/20.0);
@@ -1857,103 +1889,137 @@ void VstNativeSynthIF::guiAutomationBegin(unsigned long param_idx)
 
       //if(t)
       //{
-        t->startAutoRecord(plug_id, val);
-        t->setPluginCtrlVal(plug_id, val);
+      t->startAutoRecord(plug_id, val);
+      t->setPluginCtrlVal(plug_id, val);
       //}
-    //}
-  //   else if(params[param].type == GuiParam::GUI_SWITCH)
-  //   {
-  //     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-  //     plugin->setParam(param, val);
-  //
-  //     //if(t)
-  //     //{
-  //       t->startAutoRecord(plug_id, val);
-  //       t->setPluginCtrlVal(plug_id, val);
-  //     //}
-  //   }
-  }
-  enableController(param_idx, false);
+      //}
+      //   else if(params[param].type == GuiParam::GUI_SWITCH)
+      //   {
+      //     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
+      //     plugin->setParam(param, val);
+      //
+      //     //if(t)
+      //     //{
+      //       t->startAutoRecord(plug_id, val);
+      //       t->setPluginCtrlVal(plug_id, val);
+      //     //}
+      //   }
+   }
+   if(userData->sif)
+   {
+      userData->sif->enableController(param_idx, false);
+   }
+   else
+   {
+      userData->pstate->pluginI->enableController(param_idx, false);
+   }
 }
 
 //---------------------------------------------------------
 //   guiAutomationEnd
 //---------------------------------------------------------
 
-void VstNativeSynthIF::guiAutomationEnd(unsigned long param_idx)
+void VstNativeSynth::guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
-  AutomationType at = AUTO_OFF;
-  AudioTrack* t = track();
-  if(t)
-    at = t->automationType();
+   AutomationType at = AUTO_OFF;
+   AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
+   int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
+   if(t)
+      at = t->automationType();
 
-  int plug_id = id();
-  if(t && plug_id != -1)
-  {
-    plug_id = genACnum(plug_id, param_idx);
+   if(t && plug_id != -1)
+   {
+      plug_id = genACnum(plug_id, param_idx);
 
-    //if(params[param].type == GuiParam::GUI_SLIDER)
-    //{
+      //if(params[param].type == GuiParam::GUI_SLIDER)
+      //{
       //double val = ((Slider*)params[param].actuator)->value();
-      float val = param(param_idx);
+      float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
       // FIXME TODO:
       //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
       //      val = pow(10.0, val/20.0);
       //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
       //      val = rint(val);
       t->stopAutoRecord(plug_id, val);
-    //}
-  }
+      //}
+   }
 
-  // Special for switch - don't enable controller until transport stopped.
-  if ((at == AUTO_OFF) ||
-      (at == AUTO_TOUCH)) // && (params[param].type != GuiParam::GUI_SWITCH ||  // FIXME TODO
-                         //   !MusEGlobal::audio->isPlaying()) ) )
-    enableController(param_idx, true);
-  
-  _gw[param_idx].pressed = false;
+   // Special for switch - don't enable controller until transport stopped.
+   if ((at == AUTO_OFF) ||
+       (at == AUTO_TOUCH)) // && (params[param].type != GuiParam::GUI_SWITCH ||  // FIXME TODO
+      //   !MusEGlobal::audio->isPlaying()) ) )
+   {
+      if(userData->sif)
+      {
+         userData->sif->enableController(param_idx, true);
+      }
+      else
+      {
+         userData->pstate->pluginI->enableController(param_idx, true);
+      }
+   }
+
+   //_gw[param_idx].pressed = false; //not used
 }
 
 //---------------------------------------------------------
 //   guiControlChanged
 //---------------------------------------------------------
 
-int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
+int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned long param_idx, float value)
 {
-  #ifdef VST_NATIVE_DEBUG
-  fprintf(stderr, "VstNativeSynthIF::guiControlChanged received oscControl port:%lu val:%f\n", param_idx, value);
-  #endif
+   VstNativeSynth *synth = userData->sif ? userData->sif->_synth : userData->pstate->pluginWrapper->_synth;
+#ifdef VST_NATIVE_DEBUG
+   fprintf(stderr, "VstNativeSynth::guiControlChanged received oscControl port:%lu val:%f\n", param_idx, value);
+#endif
 
-  if(param_idx >= _synth->inControls())
-  {
-    fprintf(stderr, "VstNativeSynthIF::guiControlChanged: port number:%lu is out of range of index list size:%lu\n", param_idx, _synth->inControls());
-    return 0;
-  }
+   if(param_idx >= synth->inControls())
+   {
+      fprintf(stderr, "VstNativeSynth::guiControlChanged: port number:%lu is out of range of index list size:%lu\n", param_idx, synth->inControls());
+      return 0;
+   }
 
-  // Record automation:
-  // Take care of this immediately rather than in the fifo processing.
-  if(id() != -1)
-  {
-    unsigned long pid = genACnum(id(), param_idx);
-    synti->recordAutomation(pid, value);
-  }
+   // Record automation:
+   // Take care of this immediately rather than in the fifo processing.
+   int plugId = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
+   if(plugId != -1)
+   {
+      unsigned long pid = genACnum(plugId, param_idx);
+      if(userData->sif)
+      {
+         userData->sif->synti->recordAutomation(pid, value);
+      }
+      else
+      {
+         userData->pstate->pluginI->track()->recordAutomation(pid, value);
+      }
+   }
 
-  // Schedules a timed control change:
-  ControlEvent ce;
-  ce.unique = false; // Not used for native vst.
-  ce.fromGui = true; // It came from the plugin's own GUI.
-  ce.idx = param_idx;
-  ce.value = value;
-  // Don't use timestamp(), because it's circular, which is making it impossible to deal
-  // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
-  ce.frame = MusEGlobal::audio->curFrame();
+   // Schedules a timed control change:
+   ControlEvent ce;
+   ce.unique = false; // Not used for native vst.
+   ce.fromGui = true; // It came from the plugin's own GUI.
+   ce.idx = param_idx;
+   ce.value = value;
+   // Don't use timestamp(), because it's circular, which is making it impossible to deal
+   // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
+   ce.frame = MusEGlobal::audio->curFrame();
 
-  if(_controlFifo.put(ce))
-    fprintf(stderr, "VstNativeSynthIF::guiControlChanged: fifo overflow: in control number:%lu\n", param_idx);
+   ControlFifo &cfifo = userData->sif ? userData->sif->_controlFifo : userData->pstate->pluginI->_controlFifo;
 
-  enableController(param_idx, false);
-  
-  return 0;
+   if(cfifo.put(ce))
+      fprintf(stderr, "VstNativeSynthIF::guiControlChanged: fifo overflow: in control number:%lu\n", param_idx);
+
+   if(userData->sif)
+   {
+      userData->sif->enableController(param_idx, false);
+   }
+   else
+   {
+      userData->pstate->pluginI->enableController(param_idx, false);
+   }
+
+   return 0;
 }
 
 //---------------------------------------------------------
@@ -2006,10 +2072,7 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
 
   int params = _plugin->numParams;
   for (int i = 0; i < params; ++i)
-  {
-    float f = _plugin->getParameter(_plugin, i);
-    xml.floatTag(level, "param", f);
-  }
+    xml.doubleTag(level, "param", _plugin->getParameter(_plugin, i));
 }
 
 //---------------------------------------------------------
@@ -2626,19 +2689,15 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
         if(_controls[k].val != new_val)
         {
           _controls[k].val = new_val;
-#ifndef VST_VESTIGE_SUPPORT
-          if(dispatch(effCanBeAutomated, k, 0, NULL, 0.0f) == 1)
+          if(dispatch(26 /*effCanBeAutomated*/, k, 0, NULL, 0.0f) == 1)
           {
-#endif
             if(_plugin->getParameter(_plugin, k) != new_val)
               _plugin->setParameter(_plugin, k, new_val);
-#ifndef VST_VESTIGE_SUPPORT
           }
   #ifdef VST_NATIVE_DEBUG
           else
             fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), k);
   #endif
-#endif
         }
 
 #ifdef VST_NATIVE_DEBUG_PROCESS
@@ -2994,9 +3053,9 @@ void VstNativeSynthIF::deactivate()
 
 unsigned long VstNativeSynthIF::parameters() const                { return _synth ? _synth->inControls() : 0; }
 unsigned long VstNativeSynthIF::parametersOut() const             { return 0; }
-void VstNativeSynthIF::setParam(unsigned long i, float val)       { setParameter(i, val); }
-float VstNativeSynthIF::param(unsigned long i) const              { return getParameter(i); }
-float VstNativeSynthIF::paramOut(unsigned long) const           { return 0.0; }
+void VstNativeSynthIF::setParam(unsigned long i, double val)       { setParameter(i, val); }
+double VstNativeSynthIF::param(unsigned long i) const              { return getParameter(i); }
+double VstNativeSynthIF::paramOut(unsigned long) const            { return 0.0; }
 const char* VstNativeSynthIF::paramName(unsigned long i)          
 {
   if(!_plugin)
@@ -3029,6 +3088,466 @@ LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long)
 // FIXME TODO:
 CtrlValueType VstNativeSynthIF::ctrlValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
 CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
+
+VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s)
+{
+   _synth = s;
+
+   _fakeLd.Label = _synth->name().toUtf8().constData();
+   _fakeLd.Name = _synth->name().toUtf8().constData();
+   _fakeLd.UniqueID = _synth->_id;
+   _fakeLd.Maker = _synth->maker().toUtf8().constData();
+   _fakeLd.Copyright = _synth->version().toUtf8().constData();
+   _isVstNativePlugin = true;
+   _isVstNativeSynth = s->isSynth();
+   int numPorts = _synth->inPorts()
+                  + _synth->outPorts()
+                  + _synth->inControls();
+   _fakeLd.PortCount = numPorts;
+   _fakePds = new LADSPA_PortDescriptor [numPorts];
+   memset(_fakePds, 0, sizeof(int) * numPorts);
+
+   for(size_t i = 0; i < _synth->inPorts(); i++)
+   {
+      _fakePds [i] = LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO;
+   }
+
+   for(size_t i = 0; i < _synth->outPorts(); i++)
+   {
+      _fakePds [i + _synth->inPorts()] = LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO;
+   }
+
+   for(size_t i = 0; i < _synth->inControls(); i++)
+   {
+      _fakePds [i + _synth->inPorts() + _synth->outPorts()] = LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
+   }
+
+
+   _fakeLd.PortNames = NULL;
+   _fakeLd.PortRangeHints = NULL;
+   _fakeLd.PortDescriptors = _fakePds;
+   _fakeLd.Properties = 0;
+   plugin = &_fakeLd;
+   _isDssi = false;
+   _isDssiSynth = false;
+   _isLV2Plugin = false;
+   _isLV2Synth = false;
+
+#ifdef DSSI_SUPPORT
+   dssi_descr = NULL;
+#endif
+
+   fi = _synth->info;
+   ladspa = NULL;
+   _handle = 0;
+   _references = 0;
+   _instNo     = 0;
+   _label = _synth->name();
+   _name = _synth->description();
+   _uniqueID = plugin->UniqueID;
+   _maker = _synth->maker();
+   _copyright = _synth->version();
+
+   _portCount = plugin->PortCount;
+
+   _inports = 0;
+   _outports = 0;
+   _controlInPorts = 0;
+   _controlOutPorts = 0;
+
+   for(unsigned long k = 0; k < _portCount; ++k)
+   {
+      LADSPA_PortDescriptor pd = plugin->PortDescriptors[k];
+
+      if(pd & LADSPA_PORT_AUDIO)
+      {
+         if(pd & LADSPA_PORT_INPUT)
+         {
+            ++_inports;
+         }
+         else if(pd & LADSPA_PORT_OUTPUT)
+         {
+            ++_outports;
+         }
+      }
+      else if(pd & LADSPA_PORT_CONTROL)
+      {
+         if(pd & LADSPA_PORT_INPUT)
+         {
+            ++_controlInPorts;
+         }
+         else if(pd & LADSPA_PORT_OUTPUT)
+         {
+            ++_controlOutPorts;
+         }
+      }
+   }
+
+
+
+   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
+}
+
+VstNativePluginWrapper::~VstNativePluginWrapper()
+{
+   delete [] _fakePds;
+}
+
+LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
+{
+   VstNativePluginWrapper_State *state = new VstNativePluginWrapper_State;
+   if(!state)
+   {
+      abort();
+   }
+   state->plugin = _synth->instantiate(&state->userData);
+   if(!state->plugin)
+   {
+      delete state;
+      return 0;
+   }
+
+   state->pluginI = pluginI;
+   state->pluginWrapper = this;
+   state->inPorts.resize(_inports);
+   state->outPorts.resize(_outports);
+   state->inControlPorts.resize(_controlInPorts);
+   state->inControlLastValues.resize(_controlInPorts);
+   bool refillDefCtrls = false;
+   if(inControlDefaults.size() == 0)
+   {
+      refillDefCtrls = true;
+      inControlDefaults.resize(_controlInPorts);
+      portNames.resize(_inports + _outports + _controlInPorts);
+   }
+   memset(&state->inPorts [0], 0, _inports * sizeof(float *));
+   memset(&state->outPorts [0], 0, _outports * sizeof(float *));
+   memset(&state->inControlPorts [0], 0, _controlInPorts * sizeof(float *));
+
+   if(refillDefCtrls)
+   {
+      for(size_t i = 0; i < _controlInPorts; i++)
+      {
+         if(state->plugin->getParameter)
+         {
+            state->inControlLastValues [i] = inControlDefaults [i] = state->plugin->getParameter(state->plugin, i);
+         }         
+      }
+
+
+      for(size_t i = 0; i < portNames.size(); i++)
+      {
+         if(i < _inports)
+         {
+            std::stringstream ss;
+            ss << "input" << i;
+            portNames [i] = ss.str();
+         }
+         else if(i < _inports + _outports)
+         {
+            std::stringstream ss;
+            ss << "output" << (i - _inports);
+            portNames [i] = ss.str();
+         }
+         else if(i < _inports + _outports + _controlInPorts)
+         {
+            char buf[256];
+            memset(buf, 0, sizeof(buf));
+            dispatch(state, effGetParamName, i - _inports - _outports, 0, buf, 0);
+            if(strlen(buf) > 0)
+            {
+               portNames [i] = buf;
+            }
+            else
+            {
+               std::stringstream ss;
+               ss << "control" << (i - _inports - _outports);
+               portNames [i] = ss.str();
+            }
+         }
+      }
+   }
+
+   QObject::connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), state, SLOT(heartBeat()));
+
+   return(LADSPA_Handle)state;
+
+}
+
+int VstNativePluginWrapper::incReferences(int ref)
+{
+   _synth->incInstances(ref);
+   return _synth->instances();
+}
+
+void VstNativePluginWrapper::activate(LADSPA_Handle handle)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   // Set some default properties
+   dispatch(state, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+   dispatch(state, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+   //for (unsigned short i = 0; i < instances(); ++i) {
+   //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
+   dispatch(state, effMainsChanged, 0, 1, NULL, 0.0f);
+   dispatch(state, 71 /*effStartProcess*/, 0, 0, NULL, 0.0f);
+
+   if(state->plugin->getParameter)
+   {
+      for(size_t i = 0; i < _controlInPorts; i++)
+      {
+         state->pluginI->controls [i].val = state->pluginI->controls [i].tmpVal = inControlDefaults [i];
+      }
+   }
+   state->active = true;
+}
+
+void VstNativePluginWrapper::deactivate(LADSPA_Handle handle)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(!state)
+   {
+      return;
+   }
+   state->active = false;
+   dispatch(state, 72 /*effStopProcess*/, 0, 0, NULL, 0.0f);
+   dispatch(state, effMainsChanged, 0, 0, NULL, 0.0f);
+}
+
+void VstNativePluginWrapper::cleanup(LADSPA_Handle handle)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(!state)
+   {
+      return;
+   }
+   if(state->editor)
+   {
+     state->editor->close();
+     state->editor = NULL;
+     state->guiVisible = false;
+   }
+
+   if (state->plugin)
+   {
+      dispatch(state, effClose, 0, 0, NULL, 0);
+      state->plugin = 0;
+   }
+
+   delete state;
+}
+
+void VstNativePluginWrapper::connectPort(LADSPA_Handle handle, unsigned long port, float *value)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(port < _inports)
+   {
+      state->inPorts [port] = value;
+   }
+   else if(port < _inports + _outports)
+   {
+      state->outPorts [port - _inports] = value;
+   }
+   else if(port < _inports + _outports + _controlInPorts)
+   {
+      state->inControlPorts [port - _inports - _outports] = value;
+   }
+
+}
+
+void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   state->inProcess = true;
+   if(state->pluginI->controls)
+   {
+      for(size_t i = 0; i < _controlInPorts; i++)
+      {
+         if(state->pluginI->controls [i].val == state->inControlLastValues [i])
+         {
+            continue;
+         }
+         state->inControlLastValues [i] = state->pluginI->controls [i].val;
+         if(dispatch(state, 26 /*effCanBeAutomated*/, i, 0, NULL, 0.0f) == 1)
+         {
+            if(state->plugin->getParameter && state->plugin->setParameter)
+            {
+               if(state->plugin->getParameter(state->plugin, i) != state->inControlLastValues [i])
+                  state->plugin->setParameter(state->plugin, i, state->inControlLastValues [i]);
+            }
+         }
+
+      }
+   }
+   if((state->plugin->flags & effFlagsCanReplacing) && state->plugin->processReplacing)
+   {
+     state->plugin->processReplacing(state->plugin, &state->inPorts [0], &state->outPorts [0], n);
+   }
+   else if(state->plugin->process)
+   {
+      state->plugin->process(state->plugin, &state->inPorts [0], &state->outPorts [0], n);
+   }
+   state->inProcess = false;
+
+}
+
+LADSPA_PortDescriptor VstNativePluginWrapper::portd(unsigned long k) const
+{
+   return _fakeLd.PortDescriptors[k];
+}
+
+LADSPA_PortRangeHint VstNativePluginWrapper::range(unsigned long)
+{
+   LADSPA_PortRangeHint hint;
+   hint.HintDescriptor = 0;
+   hint.LowerBound = 0.0f;
+   hint.UpperBound = 1.0f;
+
+   hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
+   hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
+
+   return hint;
+}
+
+void VstNativePluginWrapper::range(unsigned long, float *min, float *max) const
+{
+   *min = 0.0f;
+   *max = 1.0f;
+}
+
+double VstNativePluginWrapper::defaultValue(unsigned long port) const
+{
+   return inControlDefaults [port];
+}
+
+const char *VstNativePluginWrapper::portName(unsigned long port)
+{
+   return portNames [port].c_str();
+}
+
+CtrlValueType VstNativePluginWrapper::ctrlValueType(unsigned long) const
+{
+   return VAL_LINEAR;
+}
+
+CtrlList::Mode VstNativePluginWrapper::ctrlMode(unsigned long) const
+{
+   return CtrlList::INTERPOLATE;
+}
+
+bool VstNativePluginWrapper::hasNativeGui()
+{
+   return _synth->_hasGui;
+}
+
+void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
+{
+   assert(p->instances > 0);
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
+   if(!hasNativeGui())
+      return;
+   if(bShow)
+   {
+      if(state->editor)
+      {
+         if(!state->editor->isVisible())
+            state->editor->show();
+         state->editor->raise();
+         state->editor->activateWindow();
+      }
+      else
+      {
+         Qt::WindowFlags wflags = Qt::Window
+                                  | Qt::CustomizeWindowHint
+                                  | Qt::WindowTitleHint
+                                  | Qt::WindowSystemMenuHint
+                                  | Qt::WindowMinMaxButtonsHint
+                                  | Qt::WindowCloseButtonHint;
+         state->editor = new MusEGui::VstNativeEditor(NULL, wflags);
+         state->editor->open(0, state);
+      }
+   }
+   else
+   {
+      if(state->editor)
+      {
+         state->editor->close();
+         //_editor = NULL;  // No - done in editorDeleted.
+      }
+   }
+   state->guiVisible = bShow;
+}
+
+bool VstNativePluginWrapper::nativeGuiVisible(PluginI *p)
+{
+   assert(p->instances > 0);
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
+   return state->guiVisible;
+}
+
+void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
+{
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(_synth->hasChunks())
+   {
+      //---------------------------------------------
+      // dump current state of synth
+      //---------------------------------------------
+      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n", name().toLatin1().constData(), _synth->vstVersion());
+      unsigned long len = 0;
+      void* p = 0;
+      len = dispatch(state, 23 /* effGetChunk */, 0, 0, &p, 0.0); // index 0: is bank 1: is program
+      if (len)
+      {
+         QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
+
+         QByteArray outEnc64 = arrOut.toBase64();
+         QString customData(outEnc64);
+         for (int pos=0; pos < customData.size(); pos+=150)
+         {
+            customData.insert(pos++,'\n'); // add newlines for readability
+         }
+         xml.strTag(level, "customData", customData);
+      }
+
+   }
+}
+
+void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
+{
+   if(customParams.size() == 0)
+      return;
+
+   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(!_synth->hasChunks())
+   {
+      return;
+   }
+
+   for(size_t i = 0; i < customParams.size(); i++)
+   {
+      QString param = customParams [i];
+      param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
+      QByteArray paramIn;
+      paramIn.append(param);
+      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      dispatch(state, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
+      break; //one customData tag includes all data in base64
+   }
+}
+
+void VstNativePluginWrapper_State::heartBeat()
+{
+   if(plugin && active)
+   {
+      if(guiVisible)
+      {
+        plugin->dispatcher(plugin, effEditIdle, 0, 0, NULL, 0.0f);
+        if(editor)
+          editor->update();
+      }
+   }
+
+}
 
 } // namespace MusECore
 

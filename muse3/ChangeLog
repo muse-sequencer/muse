@@ -1,3 +1,144 @@
+17.02.2016:
+        (By Tim)
+        - Audio automation graphs fixes:
+        - Greatly reduced CPU usage while playing and graph(s) showing. 
+          (Update only required rectangles and paint only requested rectangles - not the whole darn window.)
+        - Fixed flickering when moving mouse.
+        - Added drawing layers: Draw lines, then vertices, then text. With moderate transparency.
+        - Added shaded box for text, to stand out better.
+        - Vertex selection: Guaranteed to be able to select a vertex even in densely crowded multiple graphs.
+        - New vertices: Guaranteed to be able to add vertices to lines even in densely crowded multiple graphs.
+          Note that preference is now given to selecting/moving existing vertices over adding new ones.
+          The vertex 'hit' zone is such that if you really wanted to add another vertex to an already dense 
+           graph portion, then you should zoom in more.
+        - Undo system fix in Undo::merge_combo():
+              if (this->combobreaker || other.combobreaker)  // Flawed? 
+              if (other.combobreaker)                        // Changed. Test OK.
+        - Audio automation graphs: Added Undo support. Smart Undo support using the above Undo fix.
+          Dragging a vertex around makes only ONE Undo step.
+          This is the first real 'editing' usage of Smart Undo using Florian's combo/breaker system.
+          Score Editor uses it for undo-able note selection. But there was a bug where it required two undo clicks,
+           and the above Undo fix seems to cure it now, one click only.
+          Another good example of Smart Undo usage (TODO): Editing the Track List channel column.
+12.02.2016:
+        - Added instrument definition for Yamaha S30/S80 made by Dennis Schulmeister (rj)
+09.02.2016: 
+        (By Tim)
+        - Non-shared event lists followup: Wave event sndfile handles are now truly
+           unique - overlapping multiple compressed audio file instances will play 
+           now instead of halting MusE.
+          TODO: When a wave part is edited, ensure other instances' caches are updated.
+          Note: The master sndfile list is now meaningless. (It now allows MULTIPLE instances of SAME wave file.)
+                It will either soon be REMOVED, or embellished/re-purposed. As will the Clip List Editor. 
+                It is kept for now, so that the Clip List Editor can help debug what is going on.
+        - Fixed crashes when using wave editing functions. Possibly fixes recording spikes too?
+        - Close or re-open sndfiles in deleted or undeleted wave tracks/parts/events.
+        - Fixed part copying in Duplicate Tracks function. Dialog added new modes.
+        - Revert old: Do not auto-snap newly recorded wave parts to the grid. (Importing never did this.)
+        - Streamlined some complex multi-cycle operations (stopRolling, recordStop, deleteTracks etc.) 
+           into single undoable operation lists (one cycle).
+        - Eliminated the (very old) brief total audio dropout on transport stop or rec stop.
+        - Fixed the (very old) audio FIFO underrun copious errors, at song load then play.
+        - Added undo of recorded audio automation controller events.
+        - Good speed ups to midi sustain controller real-time stop/start disabling/reenabling loops.
+          (Rearranged the loops - it was iterating all 200 ports x 16 channels).
+        - Still some related finishing work to do...
+07.02.2016:
+        - Added widgets dependency on instruments, liste and deicsonze targets (Orcan)
+06.02.2016:
+        - Fixed wave writing corruption when realtime wavedrawing was enabled (rj)
+        - Arm all selected tracks in the arranger when clicking REC (rj)
+29.01.2016:
+        - add shortcuts for mute tracks (SHIFT+m) and solo tracks (SHIFT+S) (rj)
+28.01.2016:
+        - print DSP load in CPU toolbar
+        - allow gain in channelstrip to attenuate also (rj)
+25.01.2016:
+        - added midi drum name to simpledrums sample config (rj)
+22.01.2016:
+        - raise config dialogs after apply to keep them visible (rj)
+        - removed startSong from the config in the default case 
+          as we already know what should be there (rj)
+        - Pianoroll/drum editor: Ensure new events are selected. (Tim)
+        - Refix: Midi import empty tracks: Small revert. Test OK with user-supplied broken/fixed .mid (Tim)
+21.01.2016:
+        - Midi import: Ignore empty tracks with zero data. Fixed corruption if so. (Tim)
+        - Midi import/export: Delete allocated memory.
+      *New: Midi export now has 'Use running status', and the instr/mode + port/device 
+             metas can now be turned off for a 'cleaner' file.
+        - New wavedrawing mode (set to default) with drawing only a tiny outline of the wave (rj)
+        - DidYouKnow dialog now allows multiline help texts (rj)
+        - Several of the colors written to the config were not properly read back, now fixed (rj)
+        - Fix drum editor: In Canvas::findCurrentItem: Selecting notes required 2 clicks, 
+           this also fixes dragging of selected same-time notes not dragging correct notes. (Tim)
+20.01.2016:
+        - Fixed mixer crash when deleting track in updateStripList. (Tim)
+        - Fixed audio rack plugin problems: From README.effects-rack:
+            "For mono tracks with plugins having more than one audio input or output,
+              MusE uses the first input or output and ignores the rest."
+          This was not happening. It was using the second output. Fixed.
+          Optimization: When changing track channels: Previously we deleted all rack plugin 
+           instances and rebuilt them. Now it only deletes or rebuilds what is necessary.
+          Fixed: A good side effect of the above is that rack plugin GUIs no longer 
+           disappear when changing track channels :-)
+          Fixed: Multiple-instance plugin GUIs were being updated from the last instance's
+           control values. Now they are updated from the first instance (ie. 'left').
+        - Arranger fixes: Fixed problems with channel unwanted double increments. 
+          Fixed problems with popup editors, click/doubleclick passing to parent,
+           for example channel editor box causing 'track lock' column icon to light.
+      *Arranger Feature - Multiple selected tracks common property editing:
+        - You can now edit a property and it will change all the selected tracks.
+          Currently works for track channel column and midi output port.
+          
+18.01.2016:
+        - Strips are raised when dragged in mixer (they should also get a solid background)
+        - When sorting mixer as arranger moving strips in mixer affects arranger also (rj)
+16.01.2016:
+        - Added ability to rearrange mixer A and/or sync it to the arranger look
+          Features:
+            - Traditional look
+            - Sync to arranger
+            - Manually rearrange mixer with drag and drop
+            - Allow individual strips to be hidden (reenable them from the view menu)
+          Still bugs to iron out and allow mixer B to also work (rj)
+08.01.2016
+        - Fixed icon pos for transport toolbar (rj)
+15.01.2016
+        - Routing popup menu: Fix stereo grouping mode not connecting both channels
+           if second channel is clicked. (Tim)
+14.01.2016
+      By Tim:
+        - System-wide accuracy fixes, part 1:
+          Enforcement of audio controller double-precision floating point accuracy internally, 
+           all the way up to the lowest-level structure Port (in plugin.h). Port now has a double value
+           besides the existing float value. All track, plugin, and synth code changed to use double-precision 
+           wherever possible (only Track can take advantage of double - plugins/synths only use floats).
+           
+        - Due to inaccuracy in log*() functions, muse_math.h was added where special macros are defined for:
+           muse_log10r() and muse_val2dbr() (round to the nearest .000001), and muse_db2val().
+          These use log10 and pow10. Some critical code will use the poor-accuracy fast_log*() functions 
+           in fastlog.h for speed, while other code takes advatage of (requires) our more accurate macros.
+        - Audio strips: Ensured and verified accuracy and round-trip consistency of vol, aux, gain sliders
+           and labels, and their controllers.
+          Fixed strip slider problems honouring Settings 'Slider minimum value'. 
+          This value now means 'off' or 'muted' (-inf dB), not some value below it like before. Test OK.
+13.01.2016
+      By Tim:
+        - More note-off fixes related to 21.12.2015: Added Instrument Definition Files NoteOffMode attribute.
+          Enforcement of internal note-off velocity usage, and no internal midi Event zero note-on velocities.
+        - Fixed old -l locale switch problem by adding QLocale::setDefault();
+12.01.2016
+      By Tim:
+        - Mixer makeover in progress:
+        - Replaced strip knobs with horizontal sliders.
+        - General redesign of strip look and sliders.
+        - Strips are expandable now with a right-edge 'handle'.
+        - Fixed old mixer problem with unpainted areas (solved by QWidget::setUpdatesEnabled()).
+>>>>>>> 56e383b764e09056b9ef5003977e3efa55663b82
+06.01.2016
+        - Added 'clipper led' to mixer's audio strips (danvd)
+02.01.2016
+        - Added Native VST FX support (rack insert plugins) (danvd)
 27.12.2015
         - Midi Instrument Editor: Fixed errors from ancient missing Qt3 signals. 
           Fixed problems with instrument / patch / controller lists. Tests OK now. (Tim)

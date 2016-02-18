@@ -55,6 +55,8 @@ enum { PREFETCH_TICK, PREFETCH_SEEK
 
 struct PrefetchMsg : public ThreadMsg {
       int pos;
+      bool _isPlayTick;
+      bool _isRecTick;
       };
 
 //---------------------------------------------------------
@@ -107,11 +109,22 @@ void AudioPrefetch::processMsg1(const void* m)
       const PrefetchMsg* msg = (PrefetchMsg*)m;
       switch(msg->id) {
             case PREFETCH_TICK:
-                  if (MusEGlobal::audio->isRecording()) 
+                  if(msg->_isRecTick) // Was the tick generated when audio record was on?
+                  {
+                        #ifdef AUDIOPREFETCH_DEBUG
+                        fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isRecTick\n");
+                        #endif
                         MusEGlobal::audio->writeTick();
+                  }
 
                   // Indicate do not seek file before each read.
-                  prefetch(false);
+                  if(msg->_isPlayTick) // Was the tick generated when audio playback was on?
+                  {
+                    #ifdef AUDIOPREFETCH_DEBUG
+                    fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isPlayTick\n");
+                    #endif
+                    prefetch(false);
+                  }
                   
                   seekPos = ~0;     // invalidate cached last seek position
                   break;
@@ -132,11 +145,13 @@ void AudioPrefetch::processMsg1(const void* m)
 //   msgTick
 //---------------------------------------------------------
 
-void AudioPrefetch::msgTick()
+void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
       {
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
       msg.pos = 0; // seems to be unused, was uninitalized.
+      msg._isRecTick = isRecTick;
+      msg._isPlayTick = isPlayTick;
       while (sendMsg1(&msg, sizeof(msg))) {
             printf("AudioPrefetch::msgTick(): send failed!\n");
             }

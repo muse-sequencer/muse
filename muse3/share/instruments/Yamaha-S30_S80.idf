@@ -1,0 +1,1864 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+    <MidiInstrument name="Yamaha S30/S80" nullparam="32639">
+        <Init>
+            <!-- "GM On" behaves the same as "XG On" here. -->
+            <!-- According to the data sheet "part values will be -->
+            <!-- reset according to the SYSTEM Internal Part settings". -->
+            <event tick="250" type="2" datalen="7">
+                7e 7f 09 01
+            </event>
+        </Init>
+
+        <!-- Panel Voices -->
+        <PatchGroup name="Acoustic Piano">
+            <Patch name="StereoGrnd" hbank="63" lbank="0" prog="0"/>
+            <Patch name="StereoGnd2" hbank="63" lbank="0" prog="1"/>
+            <Patch name="CF Grand M" hbank="63" lbank="0" prog="2"/>
+            <Patch name="Dark Grand" hbank="63" lbank="0" prog="3"/>
+            <Patch name="Difference" hbank="63" lbank="0" prog="4"/>
+            <Patch name="Piano/Ep" hbank="63" lbank="0" prog="5"/>
+            <Patch name="Piano/Oohs" hbank="63" lbank="0" prog="7"/>
+            <Patch name="Piano/DX" hbank="63" lbank="0" prog="9"/>
+            <Patch name="Harpsicode" hbank="63" lbank="0" prog="29"/>
+
+            <Patch name="BriteGrand" hbank="63" lbank="1" prog="112"/>
+            <Patch name="Slamming" hbank="63" lbank="1" prog="113"/>
+            <Patch name="Danzze" hbank="63" lbank="1" prog="114"/>
+            <Patch name="House" hbank="63" lbank="1" prog="115"/>
+            <Patch name="M25" hbank="63" lbank="1" prog="116"/>
+            <Patch name="AcidFly" hbank="63" lbank="1" prog="117"/>
+
+            <Patch name="HonkyTonk" hbank="63" lbank="1" prog="123"/>
+            <Patch name="For Ballad" hbank="63" lbank="1" prog="124"/>
+            <Patch name="ShineHarmo" hbank="63" lbank="1" prog="125"/>
+            <Patch name="TripleDark" hbank="63" lbank="1" prog="126"/>
+            <Patch name="StageBrite" hbank="63" lbank="1" prog="127"/>
+        </PatchGroup>
+
+        <PatchGroup name="Electric Piano">
+            <Patch name="CP2000" hbank="63" lbank="0" prog="8"/>
+            <Patch name="Wurlitrm" hbank="63" lbank="0" prog="10"/>
+            <Patch name="DF EP IV" hbank="63" lbank="0" prog="11"/>
+            <Patch name="DF EP III" hbank="63" lbank="0" prog="12"/>
+            <Patch name="Herb Roadz" hbank="63" lbank="0" prog="13"/>
+            <Patch name="BasicRoadz" hbank="63" lbank="0" prog="14"/>
+            <Patch name="19 Roadz" hbank="63" lbank="0" prog="15"/>
+            <Patch name="Vic’sRoadz" hbank="63" lbank="0" prog="16"/>
+            <Patch name="ErlyFusion" hbank="63" lbank="0" prog="17"/>
+            <Patch name="Grapevine" hbank="63" lbank="0" prog="18"/>
+            <Patch name="VintgCond" hbank="63" lbank="0" prog="19"/>
+            <Patch name="DXAtacky" hbank="63" lbank="0" prog="20"/>
+            <Patch name="DigiX Wave" hbank="63" lbank="0" prog="21"/>
+            <Patch name="Dark DX" hbank="63" lbank="0" prog="22"/>
+            <Patch name="Ice Piano" hbank="63" lbank="0" prog="23"/>
+            <Patch name="ChorusBel" hbank="63" lbank="0" prog="24"/>
+            <Patch name="Bel Roadz" hbank="63" lbank="0" prog="25"/>
+            <Patch name="Glass EP" hbank="63" lbank="0" prog="26"/>
+            <Patch name="SuperDyno" hbank="63" lbank="0" prog="27"/>
+            <Patch name="Clav" hbank="63" lbank="0" prog="30"/>
+            <Patch name="Clav Wah" hbank="63" lbank="0" prog="31"/>
+
+            <Patch name="Nite Roadz" hbank="63" lbank="1" prog="118"/>
+        </PatchGroup>
+
+        <PatchGroup name="Chromatic Percussion">
+            <Patch name="Vibes" hbank="63" lbank="0" prog="112"/>
+            <Patch name="Marimba" hbank="63" lbank="0" prog="113"/>
+            <Patch name="Gamelan" hbank="63" lbank="0" prog="114"/>
+            <Patch name="Xylo" hbank="63" lbank="0" prog="115"/>
+            <Patch name="Glocken" hbank="63" lbank="0" prog="116"/>
+            <Patch name="Crotales" hbank="63" lbank="0" prog="117"/>
+            <Patch name="SteelDrum" hbank="63" lbank="0" prog="119"/>
+        </PatchGroup>
+
+        <PatchGroup name="Organ">
+            <Patch name="Perc Org" hbank="63" lbank="0" prog="32"/>
+            <Patch name="Cool" hbank="63" lbank="0" prog="33"/>
+            <Patch name="ClickOrgan" hbank="63" lbank="0" prog="34"/>
+            <Patch name="Jazz" hbank="63" lbank="0" prog="35"/>
+            <Patch name="Soft Rock" hbank="63" lbank="0" prog="36"/>
+            <Patch name="Tube" hbank="63" lbank="0" prog="37"/>
+            <Patch name="Contnental" hbank="63" lbank="0" prog="38"/>
+            <Patch name="Swish" hbank="63" lbank="0" prog="39"/>
+            <Patch name="4 Bars" hbank="63" lbank="0" prog="40"/>
+            <Patch name="Full" hbank="63" lbank="0" prog="41"/>
+            <Patch name="GiantDrbr" hbank="63" lbank="0" prog="42"/>
+            <Patch name="Sunday" hbank="63" lbank="0" prog="43"/>
+            <Patch name="Pipes" hbank="63" lbank="0" prog="44"/>
+            <Patch name="Accordion" hbank="63" lbank="0" prog="123"/>
+        </PatchGroup>
+
+        <PatchGroup name="Guitar">
+            <Patch name="New Nylon" hbank="63" lbank="0" prog="45"/>
+            <Patch name="JazzGTmelo" hbank="63" lbank="0" prog="46"/>
+            <Patch name="Melo Trmlo" hbank="63" lbank="0" prog="47"/>
+            <Patch name="StratChor2" hbank="63" lbank="0" prog="49"/>
+            <Patch name="18 String" hbank="63" lbank="0" prog="50"/>
+            <Patch name="Acoustic" hbank="63" lbank="0" prog="51"/>
+            <Patch name="MuteGtr" hbank="63" lbank="0" prog="52"/>
+            <Patch name="DirtyTwn" hbank="63" lbank="0" prog="53"/>
+            <Patch name="Feedback" hbank="63" lbank="0" prog="54"/>
+            <Patch name="VOODOO MAN" hbank="63" lbank="0" prog="55"/>
+            <Patch name="Rockabilly" hbank="63" lbank="0" prog="56"/>
+            <Patch name="Funk It!!" hbank="63" lbank="0" prog="57"/>
+            <Patch name="Sitar" hbank="63" lbank="0" prog="120"/>
+        </PatchGroup>
+
+        <PatchGroup name="Bass">
+            <Patch name="Upright" hbank="63" lbank="0" prog="58"/>
+            <Patch name="Finger" hbank="63" lbank="0" prog="59"/>
+            <Patch name="PickBass" hbank="63" lbank="0" prog="60"/>
+            <Patch name="Fretless" hbank="63" lbank="0" prog="61"/>
+            <Patch name="Slap" hbank="63" lbank="0" prog="62"/>
+            <Patch name="Fngr &amp;&amp; RW" hbank="63" lbank="0" prog="63"/>
+            <Patch name="1001 Sub" hbank="63" lbank="1" prog="0"/>
+            <Patch name="Trancy" hbank="63" lbank="1" prog="1"/>
+            <Patch name="Velo" hbank="63" lbank="1" prog="2"/>
+            <Patch name="Wonk" hbank="63" lbank="1" prog="3"/>
+            <Patch name="Mini 1" hbank="63" lbank="1" prog="4"/>
+            <Patch name="Mini 2" hbank="63" lbank="1" prog="5"/>
+            <Patch name="D-sub" hbank="63" lbank="1" prog="6"/>
+            <Patch name="Lately" hbank="63" lbank="1" prog="7"/>
+            <Patch name="Dark" hbank="63" lbank="1" prog="8"/>
+            <Patch name="Snoop Bs" hbank="63" lbank="1" prog="10"/>
+            <Patch name="LoTic Bass" hbank="63" lbank="1" prog="11"/>
+            <Patch name="Taurus" hbank="63" lbank="1" prog="12"/>
+            <Patch name="Fuzzline" hbank="63" lbank="1" prog="13"/>
+            <Patch name="Deep One" hbank="63" lbank="1" prog="14"/>
+            <Patch name="Squbase" hbank="63" lbank="1" prog="15"/>
+            <Patch name="Bassline" hbank="63" lbank="1" prog="104"/>
+            <Patch name="Boom Bass" hbank="63" lbank="1" prog="105"/>
+            <Patch name="Drone" hbank="63" lbank="1" prog="106"/>
+            <Patch name="Sweepy" hbank="63" lbank="1" prog="107"/>
+            <Patch name="Super DX" hbank="63" lbank="1" prog="108"/>
+            <Patch name="GangstaM" hbank="63" lbank="1" prog="109"/>
+            <Patch name="FM Perko" hbank="63" lbank="1" prog="110"/>
+            <Patch name="DX100" hbank="63" lbank="1" prog="111"/>
+        </PatchGroup>
+
+        <PatchGroup name="Strings/Orchestral">
+            <Patch name="Background" hbank="63" lbank="0" prog="64"/>
+            <Patch name="Big String" hbank="63" lbank="0" prog="65"/>
+            <Patch name="Cello Big" hbank="63" lbank="0" prog="66"/>
+            <Patch name="Chamberz" hbank="63" lbank="0" prog="67"/>
+            <Patch name="SmallSect" hbank="63" lbank="0" prog="68"/>
+            <Patch name="CelloSmall" hbank="63" lbank="0" prog="69"/>
+            <Patch name="Pizz" hbank="63" lbank="0" prog="70"/>
+            <Patch name="Harp" hbank="63" lbank="0" prog="71"/>
+            <Patch name="SynthStrgs" hbank="63" lbank="0" prog="76"/>
+            <Patch name="ObiStrings" hbank="63" lbank="0" prog="77"/>
+            <Patch name="Big Syn" hbank="63" lbank="1" prog="56"/>
+        </PatchGroup>
+
+        <PatchGroup name="Vocal">
+            <Patch name="Pad Ooh" hbank="63" lbank="0" prog="99"/>
+            <Patch name="Ooh Choir" hbank="63" lbank="0" prog="96"/>
+            <Patch name="Ahh Choir" hbank="63" lbank="0" prog="97"/>
+            <Patch name="Panmonks" hbank="63" lbank="0" prog="98"/>
+        </PatchGroup>
+
+        <PatchGroup name="Brass">
+            <Patch name="Fanfare" hbank="63" lbank="0" prog="78"/>
+            <Patch name="MediumBrss" hbank="63" lbank="0" prog="79"/>
+            <Patch name="Two Brass" hbank="63" lbank="0" prog="80"/>
+            <Patch name="Brass&amp;&amp;Sax" hbank="63" lbank="0" prog="81"/>
+            <Patch name="Dark Class" hbank="63" lbank="0" prog="82"/>
+            <Patch name="Stereo Brs" hbank="63" lbank="0" prog="83"/>
+            <Patch name="Trumpet" hbank="63" lbank="0" prog="84"/>
+            <Patch name="Mute Trpt" hbank="63" lbank="0" prog="85"/>
+            <Patch name="ObrBrass" hbank="63" lbank="0" prog="90"/>
+            <Patch name="PowerSynth" hbank="63" lbank="0" prog="91"/>
+            <Patch name="Synth Horn" hbank="63" lbank="0" prog="92"/>
+            <Patch name="M Brass" hbank="63" lbank="0" prog="93"/>
+            <Patch name="Moon AT" hbank="63" lbank="0" prog="94"/>
+            <Patch name="SquishBrs" hbank="63" lbank="0" prog="95"/>
+        </PatchGroup>
+
+        <PatchGroup name="Reed">
+            <Patch name="Oboe" hbank="63" lbank="0" prog="72"/>
+            <Patch name="Bssoon" hbank="63" lbank="0" prog="73"/>
+            <Patch name="Clarnet" hbank="63" lbank="0" prog="74"/>
+            <Patch name="Tenor Sax" hbank="63" lbank="0" prog="86"/>
+            <Patch name="Alto Sax" hbank="63" lbank="0" prog="87"/>
+            <Patch name="Bari Sax" hbank="63" lbank="0" prog="88"/>
+            <Patch name="Soprano" hbank="63" lbank="0" prog="89"/>
+            <Patch name="Monica" hbank="63" lbank="0" prog="124"/>
+            <Patch name="BluesHarp" hbank="63" lbank="0" prog="125"/>
+        </PatchGroup>
+
+        <PatchGroup name="Pipe">
+            <Patch name="BrthFlute" hbank="63" lbank="0" prog="121"/>
+            <Patch name="Pan Flute" hbank="63" lbank="0" prog="122"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Lead">
+            <Patch name="Syntax" hbank="63" lbank="1" prog="31"/>
+            <Patch name="Lucky" hbank="63" lbank="1" prog="35"/>
+            <Patch name="Sneaky" hbank="63" lbank="1" prog="36"/>
+            <Patch name="Rap Lead 1" hbank="63" lbank="1" prog="37"/>
+            <Patch name="Rap Lead 2" hbank="63" lbank="1" prog="38"/>
+            <Patch name="Rap Lead 3" hbank="63" lbank="1" prog="39"/>
+            <Patch name="SpaceWhirl" hbank="63" lbank="1" prog="41"/>
+            <Patch name="X-File" hbank="63" lbank="1" prog="42"/>
+            <Patch name="BreathSaw" hbank="63" lbank="1" prog="43"/>
+            <Patch name="1 is more" hbank="63" lbank="1" prog="44"/>
+            <Patch name="Mini Pulse" hbank="63" lbank="1" prog="45"/>
+            <Patch name="Syntrump" hbank="63" lbank="1" prog="46"/>
+            <Patch name="Eagle" hbank="63" lbank="1" prog="47"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Pad">
+            <Patch name="Soft Pad" hbank="63" lbank="0" prog="100"/>
+            <Patch name="FatSweep" hbank="63" lbank="0" prog="101"/>
+            <Patch name="Cumulus" hbank="63" lbank="0" prog="102"/>
+            <Patch name="Big Wing" hbank="63" lbank="0" prog="103"/>
+            <Patch name="Slide in" hbank="63" lbank="0" prog="104"/>
+            <Patch name="BPFx" hbank="63" lbank="0" prog="105"/>
+            <Patch name="DigiSweep" hbank="63" lbank="0" prog="106"/>
+            <Patch name="JM Pad" hbank="63" lbank="0" prog="107"/>
+            <Patch name="Vermillion" hbank="63" lbank="0" prog="108"/>
+            <Patch name="Magenta" hbank="63" lbank="0" prog="109"/>
+            <Patch name="Oberweich" hbank="63" lbank="1" prog="48"/>
+            <Patch name="5thBreath" hbank="63" lbank="1" prog="49"/>
+            <Patch name="Rain Pad" hbank="63" lbank="1" prog="50"/>
+            <Patch name="Vortex" hbank="63" lbank="1" prog="51"/>
+            <Patch name="Sprinkler" hbank="63" lbank="1" prog="52"/>
+            <Patch name="Astronaut" hbank="63" lbank="1" prog="53"/>
+            <Patch name="BrassyPad" hbank="63" lbank="1" prog="54"/>
+            <Patch name="Sine Pad" hbank="63" lbank="1" prog="55"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Comping">
+            <Patch name="PowerKeys" hbank="63" lbank="0" prog="28"/>
+            <Patch name="Liquito" hbank="63" lbank="0" prog="110"/>
+            <Patch name="Portachrd" hbank="63" lbank="1" prog="16"/>
+            <Patch name="Thin man" hbank="63" lbank="1" prog="17"/>
+            <Patch name="PopularSyn" hbank="63" lbank="1" prog="18"/>
+            <Patch name="Straight" hbank="63" lbank="1" prog="19"/>
+            <Patch name="Poly" hbank="63" lbank="1" prog="20"/>
+            <Patch name="Zap Comp" hbank="63" lbank="1" prog="21"/>
+            <Patch name="AnaTonk" hbank="63" lbank="1" prog="22"/>
+            <Patch name="Insomnia" hbank="63" lbank="1" prog="23"/>
+            <Patch name="Q Hit" hbank="63" lbank="1" prog="24"/>
+            <Patch name="BPF1" hbank="63" lbank="1" prog="25"/>
+            <Patch name="T-Eight" hbank="63" lbank="1" prog="26"/>
+            <Patch name="L7 octs" hbank="63" lbank="1" prog="27"/>
+            <Patch name="NoizRezz" hbank="63" lbank="1" prog="28"/>
+            <Patch name="GX" hbank="63" lbank="1" prog="29"/>
+            <Patch name="Noise Harp" hbank="63" lbank="1" prog="30"/>
+            <Patch name="Berlin" hbank="63" lbank="1" prog="57"/>
+            <Patch name="Filtopia" hbank="63" lbank="1" prog="58"/>
+            <Patch name="Poppy Vox" hbank="63" lbank="1" prog="59"/>
+            <Patch name="Arabesque" hbank="63" lbank="1" prog="60"/>
+            <Patch name="Crecendar" hbank="63" lbank="1" prog="61"/>
+            <Patch name="GS Brassy" hbank="63" lbank="1" prog="119"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Sound Effects">
+            <Patch name="Shadow" hbank="63" lbank="0" prog="111"/>
+            <Patch name="RisingHigh" hbank="63" lbank="1" prog="92"/>
+            <Patch name="90th Jimi" hbank="63" lbank="1" prog="93"/>
+            <Patch name="Dew-drop" hbank="63" lbank="1" prog="94"/>
+            <Patch name="SpaceTrain" hbank="63" lbank="1" prog="95"/>
+            <Patch name="Brown Eyes" hbank="63" lbank="1" prog="96"/>
+            <Patch name="Glacier" hbank="63" lbank="1" prog="97"/>
+            <Patch name="Sahara" hbank="63" lbank="1" prog="98"/>
+            <Patch name="Sunnydaze" hbank="63" lbank="1" prog="99"/>
+            <Patch name="Starlight" hbank="63" lbank="1" prog="100"/>
+            <Patch name="Roxy" hbank="63" lbank="1" prog="101"/>
+            <Patch name="Bel Air" hbank="63" lbank="1" prog="102"/>
+            <Patch name="Answers" hbank="63" lbank="1" prog="103"/>
+        </PatchGroup>
+
+        <PatchGroup name="Sound Effects">
+            <Patch name="Frequencyz" hbank="63" lbank="1" prog="79"/>
+            <Patch name="Psycho" hbank="63" lbank="1" prog="80"/>
+            <Patch name="S - E" hbank="63" lbank="1" prog="81"/>
+            <Patch name="Voltage" hbank="63" lbank="1" prog="82"/>
+            <Patch name="Ectoplasm" hbank="63" lbank="1" prog="83"/>
+            <Patch name="Millenium" hbank="63" lbank="1" prog="84"/>
+            <Patch name="Noire" hbank="63" lbank="1" prog="85"/>
+            <Patch name="Falling" hbank="63" lbank="1" prog="86"/>
+            <Patch name="Topnotched" hbank="63" lbank="1" prog="87"/>
+            <Patch name="Drumnotize" hbank="63" lbank="1" prog="88"/>
+            <Patch name="Creature" hbank="63" lbank="1" prog="89"/>
+            <Patch name="Develop" hbank="63" lbank="1" prog="90"/>
+            <Patch name="Twilight" hbank="63" lbank="1" prog="91"/>
+        </PatchGroup>
+
+        <PatchGroup name="Percussive">
+            <Patch name="Timpani" hbank="63" lbank="0" prog="118"/>
+            <Patch name="Atom" hbank="63" lbank="1" prog="75"/>
+        </PatchGroup>
+
+        <PatchGroup name="Combination">
+            <Patch name="Piano/Strg" hbank="63" lbank="0" prog="6"/>
+            <Patch name="Wind Orch" hbank="63" lbank="0" prog="75"/>
+            <Patch name="Amandla" hbank="63" lbank="0" prog="126"/>
+            <Patch name="AnalogSplt" hbank="63" lbank="0" prog="127"/>
+            <Patch name="Soft Dream" hbank="63" lbank="1" prog="62"/>
+            <Patch name="ChimzArt" hbank="63" lbank="1" prog="63"/>
+            <Patch name="Grand Pad" hbank="63" lbank="1" prog="120"/>
+            <Patch name="Ibiza" hbank="63" lbank="1" prog="121"/>
+            <Patch name="Meltpiano" hbank="63" lbank="1" prog="122"/>
+        </PatchGroup>
+
+        <PatchGroup name="Sequence">
+            <Patch name="Seal" hbank="63" lbank="1" prog="64"/>
+            <Patch name="Shine Seq" hbank="63" lbank="1" prog="65"/>
+            <Patch name="Kickwheel" hbank="63" lbank="1" prog="66"/>
+            <Patch name="Supersnap" hbank="63" lbank="1" prog="67"/>
+            <Patch name="Opener" hbank="63" lbank="1" prog="68"/>
+            <Patch name="Rosy" hbank="63" lbank="1" prog="69"/>
+            <Patch name="LAizer" hbank="63" lbank="1" prog="70"/>
+            <Patch name="2 Friends" hbank="63" lbank="1" prog="71"/>
+            <Patch name="Synfonic" hbank="63" lbank="1" prog="72"/>
+            <Patch name="Hard road" hbank="63" lbank="1" prog="73"/>
+            <Patch name="Quartz" hbank="63" lbank="1" prog="74"/>
+            <Patch name="Chordal" hbank="63" lbank="1" prog="76"/>
+            <Patch name="Orgmatic" hbank="63" lbank="1" prog="77"/>
+            <Patch name="Ana Plus" hbank="63" lbank="1" prog="78"/>
+        </PatchGroup>
+
+        <PatchGroup name="Internal User Voices">
+            <Patch name="[001/A01] Pf:Hybrid" hbank="63" lbank="8" prog="0"/>
+            <Patch name="[002/A02] Pf:DarkGrand2" hbank="63" lbank="8" prog="1"/>
+            <Patch name="[003/A03] Pf:BrtStereo" hbank="63" lbank="8" prog="2"/>
+            <Patch name="[004/A04] Pf:HonkyTnk2" hbank="63" lbank="8" prog="3"/>
+            <Patch name="[005/A05] Pf:Differenc2" hbank="63" lbank="8" prog="4"/>
+            <Patch name="[006/A06] Pf:Piano/Ep2" hbank="63" lbank="8" prog="5"/>
+            <Patch name="[007/A07] Co:Pno/Oo/Str" hbank="63" lbank="8" prog="6"/>
+            <Patch name="[008/A08] Co:Grand Pad2" hbank="63" lbank="8" prog="7"/>
+            <Patch name="[009/A09] Pf:Phase CP" hbank="63" lbank="8" prog="8"/>
+            <Patch name="[010/A10] Pf:CP Layer" hbank="63" lbank="8" prog="9"/>
+            <Patch name="[011/A11] Pf:Wurli Amp" hbank="63" lbank="8" prog="10"/>
+            <Patch name="[012/A12] Pf:SunShine" hbank="63" lbank="8" prog="11"/>
+            <Patch name="[013/A13] Pf:Phaser EP" hbank="63" lbank="8" prog="12"/>
+            <Patch name="[014/A14] Pf:RB Roadz" hbank="63" lbank="8" prog="13"/>
+            <Patch name="[015/A15] Pf:BasicRoad2" hbank="63" lbank="8" prog="14"/>
+            <Patch name="[016/A16] Pf:Early70Rhd" hbank="63" lbank="8" prog="15"/>
+            <Patch name="[017/B01] Pf:Doogie" hbank="63" lbank="8" prog="16"/>
+            <Patch name="[018/B02] Pf:RT Roadz" hbank="63" lbank="8" prog="17"/>
+            <Patch name="[019/B03] Co:Dyno Pad" hbank="63" lbank="8" prog="18"/>
+            <Patch name="[020/B04] Co:Roadz Pad" hbank="63" lbank="8" prog="19"/>
+            <Patch name="[021/B05] Pf:NiteBallad" hbank="63" lbank="8" prog="20"/>
+            <Patch name="[022/B06] Pf:DXTinyVel" hbank="63" lbank="8" prog="21"/>
+            <Patch name="[023/B07] Pf:DX Hard" hbank="63" lbank="8" prog="22"/>
+            <Patch name="[024/B08] Pf:Superstit" hbank="63" lbank="8" prog="23"/>
+            <Patch name="[025/B09] Sc:Puls Clav" hbank="63" lbank="8" prog="24"/>
+            <Patch name="[026/B10] Cp:Handbel" hbank="63" lbank="8" prog="25"/>
+            <Patch name="[027/B11] Cp:Estrn Bel1" hbank="63" lbank="8" prog="26"/>
+            <Patch name="[028/B12] Cp:Tiny bell" hbank="63" lbank="8" prog="27"/>
+            <Patch name="[029/B13] Or:Argent" hbank="63" lbank="8" prog="28"/>
+            <Patch name="[030/B14] Or:Como Va" hbank="63" lbank="8" prog="29"/>
+            <Patch name="[031/B15] Or:Blackpool" hbank="63" lbank="8" prog="30"/>
+            <Patch name="[032/B16] Or:Tonewheels" hbank="63" lbank="8" prog="31"/>
+            <Patch name="[033/C01] Or:BowNL" hbank="63" lbank="8" prog="32"/>
+            <Patch name="[034/C02] Or:BassWalk" hbank="63" lbank="8" prog="33"/>
+            <Patch name="[035/C03] Or:WhiteShade" hbank="63" lbank="8" prog="34"/>
+            <Patch name="[036/C04] Or:Draws" hbank="63" lbank="8" prog="35"/>
+            <Patch name="[037/C05] Or:PercMellow" hbank="63" lbank="8" prog="36"/>
+            <Patch name="[038/C06] Or:RhoBassFiz" hbank="63" lbank="8" prog="37"/>
+            <Patch name="[039/C07] Or:Knob Drive" hbank="63" lbank="8" prog="38"/>
+            <Patch name="[040/C08] Or:E Bird" hbank="63" lbank="8" prog="39"/>
+            <Patch name="[041/C09] Or:16-*-*-4" hbank="63" lbank="8" prog="40"/>
+            <Patch name="[042/C10] Or:16-5-4-1-1" hbank="63" lbank="8" prog="41"/>
+            <Patch name="[043/C11] Or:Mw Church" hbank="63" lbank="8" prog="42"/>
+            <Patch name="[044/C12] Or:Big Church" hbank="63" lbank="8" prog="43"/>
+            <Patch name="[045/C13] Gt:Hawks" hbank="63" lbank="8" prog="44"/>
+            <Patch name="[046/C14] Gt:GoldGuitar" hbank="63" lbank="8" prog="45"/>
+            <Patch name="[047/C15] Gt:El/Ac Mix" hbank="63" lbank="8" prog="46"/>
+            <Patch name="[048/C16] Gt:VintStrat" hbank="63" lbank="8" prog="47"/>
+            <Patch name="[049/D01] Gt:StratChor3" hbank="63" lbank="8" prog="48"/>
+            <Patch name="[050/D02] Gt:VeloGuitar" hbank="63" lbank="8" prog="49"/>
+            <Patch name="[051/D03] Gt:Jazz Man" hbank="63" lbank="8" prog="50"/>
+            <Patch name="[052/D04] Gt:FMJazzGtr" hbank="63" lbank="8" prog="51"/>
+            <Patch name="[053/D05] Gt:Cry" hbank="63" lbank="8" prog="52"/>
+            <Patch name="[054/D06] Gt:P.F. Echo" hbank="63" lbank="8" prog="53"/>
+            <Patch name="[055/D07] Gt:Birdy" hbank="63" lbank="8" prog="54"/>
+            <Patch name="[056/D08] Gt:Velo Chunk" hbank="63" lbank="8" prog="55"/>
+            <Patch name="[057/D09] Gt:VirtualDis" hbank="63" lbank="8" prog="56"/>
+            <Patch name="[058/D10] Gt:100 Watts" hbank="63" lbank="8" prog="57"/>
+            <Patch name="[059/D11] Co:Acst Vox" hbank="63" lbank="8" prog="58"/>
+            <Patch name="[060/D12] Ba:Prec Bass" hbank="63" lbank="8" prog="59"/>
+            <Patch name="[061/D13] Ba:Fing Sting" hbank="63" lbank="8" prog="60"/>
+            <Patch name="[062/D14] Ba:FretlesAmp" hbank="63" lbank="8" prog="61"/>
+            <Patch name="[063/D15] Ba:Slap&amp;&amp;Pull" hbank="63" lbank="8" prog="62"/>
+            <Patch name="[064/D16] Co:Bs+Cmbal" hbank="63" lbank="8" prog="63"/>
+            <Patch name="[065/E01] St:Big Sction" hbank="63" lbank="8" prog="64"/>
+            <Patch name="[066/E02] St:EnsemblMix" hbank="63" lbank="8" prog="65"/>
+            <Patch name="[067/E03] St:Agitato" hbank="63" lbank="8" prog="66"/>
+            <Patch name="[068/E04] St:Analog Mix" hbank="63" lbank="8" prog="67"/>
+            <Patch name="[069/E05] St:Violin St" hbank="63" lbank="8" prog="68"/>
+            <Patch name="[070/E06] St:Big Pizz" hbank="63" lbank="8" prog="69"/>
+            <Patch name="[071/E07] St:HarpStrum" hbank="63" lbank="8" prog="70"/>
+            <Patch name="[072/E08] Co:Wood Winds" hbank="63" lbank="8" prog="71"/>
+            <Patch name="[073/E09] Pi:Pan Attack" hbank="63" lbank="8" prog="72"/>
+            <Patch name="[074/E10] St:AnaString" hbank="63" lbank="8" prog="73"/>
+            <Patch name="[075/E11] St:AnaString2" hbank="63" lbank="8" prog="74"/>
+            <Patch name="[076/E12] St:Tron" hbank="63" lbank="8" prog="75"/>
+            <Patch name="[077/E13] Br: Brs/Strgs" hbank="63" lbank="8" prog="76"/>
+            <Patch name="[078/E14] Br:MediumBrs2" hbank="63" lbank="8" prog="77"/>
+            <Patch name="[079/E15] Br:SoftBrass" hbank="63" lbank="8" prog="78"/>
+            <Patch name="[080/E16] Br:HybrdBrs" hbank="63" lbank="8" prog="79"/>
+            <Patch name="[081/F01] Br:Class Sect" hbank="63" lbank="8" prog="80"/>
+            <Patch name="[082/F02] Br:Sfz Brass" hbank="63" lbank="8" prog="81"/>
+            <Patch name="[083/F03] Br:Pop Brass" hbank="63" lbank="8" prog="82"/>
+            <Patch name="[084/F04] Br:Classical" hbank="63" lbank="8" prog="83"/>
+            <Patch name="[085/F05] Br:Fr Horns" hbank="63" lbank="8" prog="84"/>
+            <Patch name="[086/F06] Br:Flugel" hbank="63" lbank="8" prog="85"/>
+            <Patch name="[087/F07] Rd:Brth Tenor" hbank="63" lbank="8" prog="86"/>
+            <Patch name="[088/F08] Rd:Velo Growl" hbank="63" lbank="8" prog="87"/>
+            <Patch name="[089/F09] Rd:NuSoprno" hbank="63" lbank="8" prog="88"/>
+            <Patch name="[090/F10] Br:J Stabs" hbank="63" lbank="8" prog="89"/>
+            <Patch name="[091/F11] Br:Oberhorns" hbank="63" lbank="8" prog="90"/>
+            <Patch name="[092/F12] Br:Africa" hbank="63" lbank="8" prog="91"/>
+            <Patch name="[093/F13] Br:NuTekBrss" hbank="63" lbank="8" prog="92"/>
+            <Patch name="[094/F14] Br:CS80Brass" hbank="63" lbank="8" prog="93"/>
+            <Patch name="[095/F15] Br:Fat Brazz" hbank="63" lbank="8" prog="94"/>
+            <Patch name="[096/F16] Br:EgoSix" hbank="63" lbank="8" prog="95"/>
+            <Patch name="[097/G01] Fx:Ambi Star" hbank="63" lbank="8" prog="96"/>
+            <Patch name="[098/G02] Fx:Champ" hbank="63" lbank="8" prog="97"/>
+            <Patch name="[099/G03] Fx:Rndm Gruv" hbank="63" lbank="8" prog="98"/>
+            <Patch name="[100/G04] Sq:Generation" hbank="63" lbank="8" prog="99"/>
+            <Patch name="[101/G05] Fx:Molecule" hbank="63" lbank="8" prog="100"/>
+            <Patch name="[102/G06] Fx:Teardrops" hbank="63" lbank="8" prog="101"/>
+            <Patch name="[103/G07] Fx:Hades" hbank="63" lbank="8" prog="102"/>
+            <Patch name="[104/G08] Fx:Voyager" hbank="63" lbank="8" prog="103"/>
+            <Patch name="[105/G09] Fx:Waterfowl" hbank="63" lbank="8" prog="104"/>
+            <Patch name="[106/G10] Fx:Mayflower" hbank="63" lbank="8" prog="105"/>
+            <Patch name="[107/G11] Pd:Cronen" hbank="63" lbank="8" prog="106"/>
+            <Patch name="[108/G12] Pd:Padness" hbank="63" lbank="8" prog="107"/>
+            <Patch name="[109/G13] Pd:Luminosity" hbank="63" lbank="8" prog="108"/>
+            <Patch name="[110/G14] Pd:Expanse" hbank="63" lbank="8" prog="109"/>
+            <Patch name="[111/G15] Pd:Vox 5ths" hbank="63" lbank="8" prog="110"/>
+            <Patch name="[112/G16] Pd:Cleansing" hbank="63" lbank="8" prog="111"/>
+            <Patch name="[113/H01] Se:4000 Volts" hbank="63" lbank="8" prog="112"/>
+            <Patch name="[114/H02] Se:Rainstorm" hbank="63" lbank="8" prog="113"/>
+            <Patch name="[115/H03] Se:RadioNoiz" hbank="63" lbank="8" prog="114"/>
+            <Patch name="[116/H04] Se:Turntablz" hbank="63" lbank="8" prog="115"/>
+            <Patch name="[117/H05] Se:Manufactur" hbank="63" lbank="8" prog="116"/>
+            <Patch name="[118/H06] Se:Zap" hbank="63" lbank="8" prog="117"/>
+            <Patch name="[119/H07] Se:Helicoptr" hbank="63" lbank="8" prog="118"/>
+            <Patch name="[120/H08] Se:Sirens" hbank="63" lbank="8" prog="119"/>
+            <Patch name="[121/H09] Se:Bubbles" hbank="63" lbank="8" prog="120"/>
+            <Patch name="[122/H10] Pc:Beatniks" hbank="63" lbank="8" prog="121"/>
+            <Patch name="[123/H11] Pc:Cybr Whip" hbank="63" lbank="8" prog="122"/>
+            <Patch name="[124/H12] En:Voicey" hbank="63" lbank="8" prog="123"/>
+            <Patch name="[125/H13] En:FormantStg" hbank="63" lbank="8" prog="124"/>
+            <Patch name="[126/H14] Vo:Airy" hbank="63" lbank="8" prog="125"/>
+            <Patch name="[127/H15] Vo:Chandelier" hbank="63" lbank="8" prog="126"/>
+            <Patch name="[128/H16] Vo:Choir Atk" hbank="63" lbank="8" prog="127"/>
+        </PatchGroup>
+
+        <PatchGroup name="External User Voices">
+            <Patch name="[001/A01] External User Voice 1" hbank="63" lbank="9" prog="0"/>
+            <Patch name="[002/A02] External User Voice 2" hbank="63" lbank="9" prog="1"/>
+            <Patch name="[003/A03] External User Voice 3" hbank="63" lbank="9" prog="2"/>
+            <Patch name="[004/A04] External User Voice 4" hbank="63" lbank="9" prog="3"/>
+            <Patch name="[005/A05] External User Voice 5" hbank="63" lbank="9" prog="4"/>
+            <Patch name="[006/A06] External User Voice 6" hbank="63" lbank="9" prog="5"/>
+            <Patch name="[007/A07] External User Voice 7" hbank="63" lbank="9" prog="6"/>
+            <Patch name="[008/A08] External User Voice 8" hbank="63" lbank="9" prog="7"/>
+            <Patch name="[009/A09] External User Voice 9" hbank="63" lbank="9" prog="8"/>
+            <Patch name="[010/A10] External User Voice 10" hbank="63" lbank="9" prog="9"/>
+            <Patch name="[011/A11] External User Voice 11" hbank="63" lbank="9" prog="10"/>
+            <Patch name="[012/A12] External User Voice 12" hbank="63" lbank="9" prog="11"/>
+            <Patch name="[013/A13] External User Voice 13" hbank="63" lbank="9" prog="12"/>
+            <Patch name="[014/A14] External User Voice 14" hbank="63" lbank="9" prog="13"/>
+            <Patch name="[015/A15] External User Voice 15" hbank="63" lbank="9" prog="14"/>
+            <Patch name="[016/A16] External User Voice 16" hbank="63" lbank="9" prog="15"/>
+            <Patch name="[017/B01] External User Voice 17" hbank="63" lbank="9" prog="16"/>
+            <Patch name="[018/B02] External User Voice 18" hbank="63" lbank="9" prog="17"/>
+            <Patch name="[019/B03] External User Voice 19" hbank="63" lbank="9" prog="18"/>
+            <Patch name="[020/B04] External User Voice 20" hbank="63" lbank="9" prog="19"/>
+            <Patch name="[021/B05] External User Voice 21" hbank="63" lbank="9" prog="20"/>
+            <Patch name="[022/B06] External User Voice 22" hbank="63" lbank="9" prog="21"/>
+            <Patch name="[023/B07] External User Voice 23" hbank="63" lbank="9" prog="22"/>
+            <Patch name="[024/B08] External User Voice 24" hbank="63" lbank="9" prog="23"/>
+            <Patch name="[025/B09] External User Voice 25" hbank="63" lbank="9" prog="24"/>
+            <Patch name="[026/B10] External User Voice 26" hbank="63" lbank="9" prog="25"/>
+            <Patch name="[027/B11] External User Voice 27" hbank="63" lbank="9" prog="26"/>
+            <Patch name="[028/B12] External User Voice 28" hbank="63" lbank="9" prog="27"/>
+            <Patch name="[029/B13] External User Voice 29" hbank="63" lbank="9" prog="28"/>
+            <Patch name="[030/B14] External User Voice 30" hbank="63" lbank="9" prog="29"/>
+            <Patch name="[031/B15] External User Voice 31" hbank="63" lbank="9" prog="30"/>
+            <Patch name="[032/B16] External User Voice 32" hbank="63" lbank="9" prog="31"/>
+            <Patch name="[033/C01] External User Voice 33" hbank="63" lbank="9" prog="32"/>
+            <Patch name="[034/C02] External User Voice 34" hbank="63" lbank="9" prog="33"/>
+            <Patch name="[035/C03] External User Voice 35" hbank="63" lbank="9" prog="34"/>
+            <Patch name="[036/C04] External User Voice 36" hbank="63" lbank="9" prog="35"/>
+            <Patch name="[037/C05] External User Voice 37" hbank="63" lbank="9" prog="36"/>
+            <Patch name="[038/C06] External User Voice 38" hbank="63" lbank="9" prog="37"/>
+            <Patch name="[039/C07] External User Voice 39" hbank="63" lbank="9" prog="38"/>
+            <Patch name="[040/C08] External User Voice 40" hbank="63" lbank="9" prog="39"/>
+            <Patch name="[041/C09] External User Voice 41" hbank="63" lbank="9" prog="40"/>
+            <Patch name="[042/C10] External User Voice 42" hbank="63" lbank="9" prog="41"/>
+            <Patch name="[043/C11] External User Voice 43" hbank="63" lbank="9" prog="42"/>
+            <Patch name="[044/C12] External User Voice 44" hbank="63" lbank="9" prog="43"/>
+            <Patch name="[045/C13] External User Voice 45" hbank="63" lbank="9" prog="44"/>
+            <Patch name="[046/C14] External User Voice 46" hbank="63" lbank="9" prog="45"/>
+            <Patch name="[047/C15] External User Voice 47" hbank="63" lbank="9" prog="46"/>
+            <Patch name="[048/C16] External User Voice 48" hbank="63" lbank="9" prog="47"/>
+            <Patch name="[049/D01] External User Voice 49" hbank="63" lbank="9" prog="48"/>
+            <Patch name="[050/D02] External User Voice 50" hbank="63" lbank="9" prog="49"/>
+            <Patch name="[051/D03] External User Voice 51" hbank="63" lbank="9" prog="50"/>
+            <Patch name="[052/D04] External User Voice 52" hbank="63" lbank="9" prog="51"/>
+            <Patch name="[053/D05] External User Voice 53" hbank="63" lbank="9" prog="52"/>
+            <Patch name="[054/D06] External User Voice 54" hbank="63" lbank="9" prog="53"/>
+            <Patch name="[055/D07] External User Voice 55" hbank="63" lbank="9" prog="54"/>
+            <Patch name="[056/D08] External User Voice 56" hbank="63" lbank="9" prog="55"/>
+            <Patch name="[057/D09] External User Voice 57" hbank="63" lbank="9" prog="56"/>
+            <Patch name="[058/D10] External User Voice 58" hbank="63" lbank="9" prog="57"/>
+            <Patch name="[059/D11] External User Voice 59" hbank="63" lbank="9" prog="58"/>
+            <Patch name="[060/D12] External User Voice 60" hbank="63" lbank="9" prog="59"/>
+            <Patch name="[061/D13] External User Voice 61" hbank="63" lbank="9" prog="60"/>
+            <Patch name="[062/D14] External User Voice 62" hbank="63" lbank="9" prog="61"/>
+            <Patch name="[063/D15] External User Voice 63" hbank="63" lbank="9" prog="62"/>
+            <Patch name="[064/D16] External User Voice 64" hbank="63" lbank="9" prog="63"/>
+            <Patch name="[065/E01] External User Voice 65" hbank="63" lbank="9" prog="64"/>
+            <Patch name="[066/E02] External User Voice 66" hbank="63" lbank="9" prog="65"/>
+            <Patch name="[067/E03] External User Voice 67" hbank="63" lbank="9" prog="66"/>
+            <Patch name="[068/E04] External User Voice 68" hbank="63" lbank="9" prog="67"/>
+            <Patch name="[069/E05] External User Voice 69" hbank="63" lbank="9" prog="68"/>
+            <Patch name="[070/E06] External User Voice 70" hbank="63" lbank="9" prog="69"/>
+            <Patch name="[071/E07] External User Voice 71" hbank="63" lbank="9" prog="70"/>
+            <Patch name="[072/E08] External User Voice 72" hbank="63" lbank="9" prog="71"/>
+            <Patch name="[073/E09] External User Voice 73" hbank="63" lbank="9" prog="72"/>
+            <Patch name="[074/E10] External User Voice 74" hbank="63" lbank="9" prog="73"/>
+            <Patch name="[075/E11] External User Voice 75" hbank="63" lbank="9" prog="74"/>
+            <Patch name="[076/E12] External User Voice 76" hbank="63" lbank="9" prog="75"/>
+            <Patch name="[077/E13] External User Voice 77" hbank="63" lbank="9" prog="76"/>
+            <Patch name="[078/E14] External User Voice 78" hbank="63" lbank="9" prog="77"/>
+            <Patch name="[079/E15] External User Voice 79" hbank="63" lbank="9" prog="78"/>
+            <Patch name="[080/E16] External User Voice 80" hbank="63" lbank="9" prog="79"/>
+            <Patch name="[081/F01] External User Voice 81" hbank="63" lbank="9" prog="80"/>
+            <Patch name="[082/F02] External User Voice 82" hbank="63" lbank="9" prog="81"/>
+            <Patch name="[083/F03] External User Voice 83" hbank="63" lbank="9" prog="82"/>
+            <Patch name="[084/F04] External User Voice 84" hbank="63" lbank="9" prog="83"/>
+            <Patch name="[085/F05] External User Voice 85" hbank="63" lbank="9" prog="84"/>
+            <Patch name="[086/F06] External User Voice 86" hbank="63" lbank="9" prog="85"/>
+            <Patch name="[087/F07] External User Voice 87" hbank="63" lbank="9" prog="86"/>
+            <Patch name="[088/F08] External User Voice 88" hbank="63" lbank="9" prog="87"/>
+            <Patch name="[089/F09] External User Voice 89" hbank="63" lbank="9" prog="88"/>
+            <Patch name="[090/F10] External User Voice 90" hbank="63" lbank="9" prog="89"/>
+            <Patch name="[091/F11] External User Voice 91" hbank="63" lbank="9" prog="90"/>
+            <Patch name="[092/F12] External User Voice 92" hbank="63" lbank="9" prog="91"/>
+            <Patch name="[093/F13] External User Voice 93" hbank="63" lbank="9" prog="92"/>
+            <Patch name="[094/F14] External User Voice 94" hbank="63" lbank="9" prog="93"/>
+            <Patch name="[095/F15] External User Voice 95" hbank="63" lbank="9" prog="94"/>
+            <Patch name="[096/F16] External User Voice 96" hbank="63" lbank="9" prog="95"/>
+            <Patch name="[097/G01] External User Voice 97" hbank="63" lbank="9" prog="96"/>
+            <Patch name="[098/G02] External User Voice 98" hbank="63" lbank="9" prog="97"/>
+            <Patch name="[099/G03] External User Voice 99" hbank="63" lbank="9" prog="98"/>
+            <Patch name="[100/G04] External User Voice 100" hbank="63" lbank="9" prog="99"/>
+            <Patch name="[101/G05] External User Voice 101" hbank="63" lbank="9" prog="100"/>
+            <Patch name="[102/G06] External User Voice 102" hbank="63" lbank="9" prog="101"/>
+            <Patch name="[103/G07] External User Voice 103" hbank="63" lbank="9" prog="102"/>
+            <Patch name="[104/G08] External User Voice 104" hbank="63" lbank="9" prog="103"/>
+            <Patch name="[105/G09] External User Voice 105" hbank="63" lbank="9" prog="104"/>
+            <Patch name="[106/G10] External User Voice 106" hbank="63" lbank="9" prog="105"/>
+            <Patch name="[107/G11] External User Voice 107" hbank="63" lbank="9" prog="106"/>
+            <Patch name="[108/G12] External User Voice 108" hbank="63" lbank="9" prog="107"/>
+            <Patch name="[109/G13] External User Voice 109" hbank="63" lbank="9" prog="108"/>
+            <Patch name="[110/G14] External User Voice 110" hbank="63" lbank="9" prog="109"/>
+            <Patch name="[111/G15] External User Voice 111" hbank="63" lbank="9" prog="110"/>
+            <Patch name="[112/G16] External User Voice 112" hbank="63" lbank="9" prog="111"/>
+            <Patch name="[113/H01] External User Voice 113" hbank="63" lbank="9" prog="112"/>
+            <Patch name="[114/H02] External User Voice 114" hbank="63" lbank="9" prog="113"/>
+            <Patch name="[115/H03] External User Voice 115" hbank="63" lbank="9" prog="114"/>
+            <Patch name="[116/H04] External User Voice 116" hbank="63" lbank="9" prog="115"/>
+            <Patch name="[117/H05] External User Voice 117" hbank="63" lbank="9" prog="116"/>
+            <Patch name="[118/H06] External User Voice 118" hbank="63" lbank="9" prog="117"/>
+            <Patch name="[119/H07] External User Voice 119" hbank="63" lbank="9" prog="118"/>
+            <Patch name="[120/H08] External User Voice 120" hbank="63" lbank="9" prog="119"/>
+            <Patch name="[121/H09] External User Voice 121" hbank="63" lbank="9" prog="120"/>
+            <Patch name="[122/H10] External User Voice 122" hbank="63" lbank="9" prog="121"/>
+            <Patch name="[123/H11] External User Voice 123" hbank="63" lbank="9" prog="122"/>
+            <Patch name="[124/H12] External User Voice 124" hbank="63" lbank="9" prog="123"/>
+            <Patch name="[125/H13] External User Voice 125" hbank="63" lbank="9" prog="124"/>
+            <Patch name="[126/H14] External User Voice 126" hbank="63" lbank="9" prog="125"/>
+            <Patch name="[127/H15] External User Voice 127" hbank="63" lbank="9" prog="126"/>
+            <Patch name="[128/H16] External User Voice 128" hbank="63" lbank="9" prog="127"/>
+        </PatchGroup>
+
+        <!-- Drum Voices -->
+        <PatchGroup name="Preset Drums">
+            <Patch name="Rock Kit" hbank="63" lbank="32" prog="0" drum="1"/>
+            <Patch name="House Kit" hbank="63" lbank="32" prog="1" drum="1"/>
+            <Patch name="Hip Kit" hbank="63" lbank="32" prog="2" drum="1"/>
+            <Patch name="Trance Kit" hbank="63" lbank="32" prog="3" drum="1"/>
+            <Patch name="Nasty Kit" hbank="63" lbank="32" prog="4" drum="1"/>
+            <Patch name="Brush Kit" hbank="63" lbank="32" prog="5" drum="1"/>
+            <Patch name="Pop Kit" hbank="63" lbank="32" prog="6" drum="1"/>
+            <Patch name="8o8 Kit" hbank="63" lbank="32" prog="7" drum="1"/>
+        </PatchGroup>
+
+        <PatchGroup name="GM Drums">
+            <Patch name="Internal User Drums 1" hbank="127" lbank="0" prog="0" drum="1"/>
+            <Patch name="Internal User Drums 2" hbank="127" lbank="0" prog="1" drum="1"/>
+        </PatchGroup>
+
+        <PatchGroup name="Internal User Drums">
+            <Patch name="Internal User Drums 1: HipHop Kit" hbank="63" lbank="40" prog="0" drum="1"/>
+            <Patch name="Internal User Drums 1: Urbanguard" hbank="63" lbank="40" prog="1" drum="1"/>
+        </PatchGroup>
+
+        <PatchGroup name="External User Drums">
+            <Patch name="External User Drums 1" hbank="63" lbank="41" prog="0" drum="1"/>
+            <Patch name="External User Drums 2" hbank="63" lbank="41" prog="1" drum="1"/>
+        </PatchGroup>
+
+        <!-- Plug-In Voices -->
+        <PatchGroup name="Plug-In Voices">
+            <Patch name="[001/A01] Plug-In Voice 1" hbank="63" lbank="25" prog="0"/>
+            <Patch name="[002/A02] Plug-In Voice 2" hbank="63" lbank="25" prog="1"/>
+            <Patch name="[003/A03] Plug-In Voice 3" hbank="63" lbank="25" prog="2"/>
+            <Patch name="[004/A04] Plug-In Voice 4" hbank="63" lbank="25" prog="3"/>
+            <Patch name="[005/A05] Plug-In Voice 5" hbank="63" lbank="25" prog="4"/>
+            <Patch name="[006/A06] Plug-In Voice 6" hbank="63" lbank="25" prog="5"/>
+            <Patch name="[007/A07] Plug-In Voice 7" hbank="63" lbank="25" prog="6"/>
+            <Patch name="[008/A08] Plug-In Voice 8" hbank="63" lbank="25" prog="7"/>
+            <Patch name="[009/A09] Plug-In Voice 9" hbank="63" lbank="25" prog="8"/>
+            <Patch name="[010/A10] Plug-In Voice 10" hbank="63" lbank="25" prog="9"/>
+            <Patch name="[011/A11] Plug-In Voice 11" hbank="63" lbank="25" prog="10"/>
+            <Patch name="[012/A12] Plug-In Voice 12" hbank="63" lbank="25" prog="11"/>
+            <Patch name="[013/A13] Plug-In Voice 13" hbank="63" lbank="25" prog="12"/>
+            <Patch name="[014/A14] Plug-In Voice 14" hbank="63" lbank="25" prog="13"/>
+            <Patch name="[015/A15] Plug-In Voice 15" hbank="63" lbank="25" prog="14"/>
+            <Patch name="[016/A16] Plug-In Voice 16" hbank="63" lbank="25" prog="15"/>
+            <Patch name="[017/B01] Plug-In Voice 17" hbank="63" lbank="25" prog="16"/>
+            <Patch name="[018/B02] Plug-In Voice 18" hbank="63" lbank="25" prog="17"/>
+            <Patch name="[019/B03] Plug-In Voice 19" hbank="63" lbank="25" prog="18"/>
+            <Patch name="[020/B04] Plug-In Voice 20" hbank="63" lbank="25" prog="19"/>
+            <Patch name="[021/B05] Plug-In Voice 21" hbank="63" lbank="25" prog="20"/>
+            <Patch name="[022/B06] Plug-In Voice 22" hbank="63" lbank="25" prog="21"/>
+            <Patch name="[023/B07] Plug-In Voice 23" hbank="63" lbank="25" prog="22"/>
+            <Patch name="[024/B08] Plug-In Voice 24" hbank="63" lbank="25" prog="23"/>
+            <Patch name="[025/B09] Plug-In Voice 25" hbank="63" lbank="25" prog="24"/>
+            <Patch name="[026/B10] Plug-In Voice 26" hbank="63" lbank="25" prog="25"/>
+            <Patch name="[027/B11] Plug-In Voice 27" hbank="63" lbank="25" prog="26"/>
+            <Patch name="[028/B12] Plug-In Voice 28" hbank="63" lbank="25" prog="27"/>
+            <Patch name="[029/B13] Plug-In Voice 29" hbank="63" lbank="25" prog="28"/>
+            <Patch name="[030/B14] Plug-In Voice 30" hbank="63" lbank="25" prog="29"/>
+            <Patch name="[031/B15] Plug-In Voice 31" hbank="63" lbank="25" prog="30"/>
+            <Patch name="[032/B16] Plug-In Voice 32" hbank="63" lbank="25" prog="31"/>
+            <Patch name="[033/C01] Plug-In Voice 33" hbank="63" lbank="25" prog="32"/>
+            <Patch name="[034/C02] Plug-In Voice 34" hbank="63" lbank="25" prog="33"/>
+            <Patch name="[035/C03] Plug-In Voice 35" hbank="63" lbank="25" prog="34"/>
+            <Patch name="[036/C04] Plug-In Voice 36" hbank="63" lbank="25" prog="35"/>
+            <Patch name="[037/C05] Plug-In Voice 37" hbank="63" lbank="25" prog="36"/>
+            <Patch name="[038/C06] Plug-In Voice 38" hbank="63" lbank="25" prog="37"/>
+            <Patch name="[039/C07] Plug-In Voice 39" hbank="63" lbank="25" prog="38"/>
+            <Patch name="[040/C08] Plug-In Voice 40" hbank="63" lbank="25" prog="39"/>
+            <Patch name="[041/C09] Plug-In Voice 41" hbank="63" lbank="25" prog="40"/>
+            <Patch name="[042/C10] Plug-In Voice 42" hbank="63" lbank="25" prog="41"/>
+            <Patch name="[043/C11] Plug-In Voice 43" hbank="63" lbank="25" prog="42"/>
+            <Patch name="[044/C12] Plug-In Voice 44" hbank="63" lbank="25" prog="43"/>
+            <Patch name="[045/C13] Plug-In Voice 45" hbank="63" lbank="25" prog="44"/>
+            <Patch name="[046/C14] Plug-In Voice 46" hbank="63" lbank="25" prog="45"/>
+            <Patch name="[047/C15] Plug-In Voice 47" hbank="63" lbank="25" prog="46"/>
+            <Patch name="[048/C16] Plug-In Voice 48" hbank="63" lbank="25" prog="47"/>
+            <Patch name="[049/D01] Plug-In Voice 49" hbank="63" lbank="25" prog="48"/>
+            <Patch name="[050/D02] Plug-In Voice 50" hbank="63" lbank="25" prog="49"/>
+            <Patch name="[051/D03] Plug-In Voice 51" hbank="63" lbank="25" prog="50"/>
+            <Patch name="[052/D04] Plug-In Voice 52" hbank="63" lbank="25" prog="51"/>
+            <Patch name="[053/D05] Plug-In Voice 53" hbank="63" lbank="25" prog="52"/>
+            <Patch name="[054/D06] Plug-In Voice 54" hbank="63" lbank="25" prog="53"/>
+            <Patch name="[055/D07] Plug-In Voice 55" hbank="63" lbank="25" prog="54"/>
+            <Patch name="[056/D08] Plug-In Voice 56" hbank="63" lbank="25" prog="55"/>
+            <Patch name="[057/D09] Plug-In Voice 57" hbank="63" lbank="25" prog="56"/>
+            <Patch name="[058/D10] Plug-In Voice 58" hbank="63" lbank="25" prog="57"/>
+            <Patch name="[059/D11] Plug-In Voice 59" hbank="63" lbank="25" prog="58"/>
+            <Patch name="[060/D12] Plug-In Voice 60" hbank="63" lbank="25" prog="59"/>
+            <Patch name="[061/D13] Plug-In Voice 61" hbank="63" lbank="25" prog="60"/>
+            <Patch name="[062/D14] Plug-In Voice 62" hbank="63" lbank="25" prog="61"/>
+            <Patch name="[063/D15] Plug-In Voice 63" hbank="63" lbank="25" prog="62"/>
+            <Patch name="[064/D16] Plug-In Voice 64" hbank="63" lbank="25" prog="63"/>
+        </PatchGroup>
+
+        <!-- Performances -->
+        <PatchGroup name="Internal Performances">
+            <Patch name="[001/A01] Co:AGE2000NEW" hbank="63" lbank="64" prog="0"/>
+            <Patch name="[002/A02] Vo:Hallelujah" hbank="63" lbank="64" prog="1"/>
+            <Patch name="[003/A03] Pf:MetalPiano" hbank="63" lbank="64" prog="2"/>
+            <Patch name="[004/A04] Fx:MayanMagic" hbank="63" lbank="64" prog="3"/>
+            <Patch name="[005/A05] Co:HipHop Pop" hbank="63" lbank="64" prog="4"/>
+            <Patch name="[006/A06] Sc:Oktavian" hbank="63" lbank="64" prog="5"/>
+            <Patch name="[007/A07] Co:Bass/Piano" hbank="63" lbank="64" prog="6"/>
+            <Patch name="[008/A08] Fx:Overture" hbank="63" lbank="64" prog="7"/>
+            <Patch name="[009/A09] St:Opus 12" hbank="63" lbank="64" prog="8"/>
+            <Patch name="[010/A10] Co:EP+Strings" hbank="63" lbank="64" prog="9"/>
+            <Patch name="[011/A11] Co:MuteTrp/EP" hbank="63" lbank="64" prog="10"/>
+            <Patch name="[012/A12] Co:Rock It!" hbank="63" lbank="64" prog="11"/>
+            <Patch name="[013/A13] Fx:WhirlPool" hbank="63" lbank="64" prog="12"/>
+            <Patch name="[014/A14] Et:Marrakesh" hbank="63" lbank="64" prog="13"/>
+            <Patch name="[015/A15] St:SuperStrgs" hbank="63" lbank="64" prog="14"/>
+            <Patch name="[016/A16] Pd:Mysterioso" hbank="63" lbank="64" prog="15"/>
+            <Patch name="[017/B01] Se:Clockworks" hbank="63" lbank="64" prog="16"/>
+            <Patch name="[018/B02] Co:ChurchEns" hbank="63" lbank="64" prog="17"/>
+            <Patch name="[019/B03] Pf:TX816 EP" hbank="63" lbank="64" prog="18"/>
+            <Patch name="[020/B04] Co:Neonist" hbank="63" lbank="64" prog="19"/>
+            <Patch name="[021/B05] Co:Busta’" hbank="63" lbank="64" prog="20"/>
+            <Patch name="[022/B06] Co:Trancitar" hbank="63" lbank="64" prog="21"/>
+            <Patch name="[023/B07] Co:Bss/Pno+EP" hbank="63" lbank="64" prog="22"/>
+            <Patch name="[024/B08] Co:CirqDeAna" hbank="63" lbank="64" prog="23"/>
+            <Patch name="[025/B09] Co:ScratchIt" hbank="63" lbank="64" prog="24"/>
+            <Patch name="[026/B10] Co:EP/Strings" hbank="63" lbank="64" prog="25"/>
+            <Patch name="[027/B11] Co:Sax/EP" hbank="63" lbank="64" prog="26"/>
+            <Patch name="[028/B12] Co:Rollin’" hbank="63" lbank="64" prog="27"/>
+            <Patch name="[029/B13] Co:GuitInAPad" hbank="63" lbank="64" prog="28"/>
+            <Patch name="[030/B14] Et:SafariTech" hbank="63" lbank="64" prog="29"/>
+            <Patch name="[031/B15] Co:Classical1" hbank="63" lbank="64" prog="30"/>
+            <Patch name="[032/B16] Se:Horror" hbank="63" lbank="64" prog="31"/>
+            <Patch name="[033/C01] Co:Dreamloopr" hbank="63" lbank="64" prog="32"/>
+            <Patch name="[034/C02] Co:Messiah" hbank="63" lbank="64" prog="33"/>
+            <Patch name="[035/C03] Pf:CrystalPno" hbank="63" lbank="64" prog="34"/>
+            <Patch name="[036/C04] Pd:Pad Sweep" hbank="63" lbank="64" prog="35"/>
+            <Patch name="[037/C05] Co:Ottomatic" hbank="63" lbank="64" prog="36"/>
+            <Patch name="[038/C06] Sc:Rockie" hbank="63" lbank="64" prog="37"/>
+            <Patch name="[039/C07] Co:Club Blues" hbank="63" lbank="64" prog="38"/>
+            <Patch name="[040/C08] Dr:Drumantics" hbank="63" lbank="64" prog="39"/>
+            <Patch name="[041/C09] Co:Fairy Dust" hbank="63" lbank="64" prog="40"/>
+            <Patch name="[042/C10] Co:Piano&amp;&amp;Str." hbank="63" lbank="64" prog="41"/>
+            <Patch name="[043/C11] Co:Bavarian" hbank="63" lbank="64" prog="42"/>
+            <Patch name="[044/C12] Co:SlowGroove" hbank="63" lbank="64" prog="43"/>
+            <Patch name="[045/C13] Co:Bell&amp;&amp;Str" hbank="63" lbank="64" prog="44"/>
+            <Patch name="[046/C14] Co:Rezzies" hbank="63" lbank="64" prog="45"/>
+            <Patch name="[047/C15] Co:Classical2" hbank="63" lbank="64" prog="46"/>
+            <Patch name="[048/C16] Se:911 Call" hbank="63" lbank="64" prog="47"/>
+            <Patch name="[049/D01] Co:Seekwencer" hbank="63" lbank="64" prog="48"/>
+            <Patch name="[050/D02] Co:Sanctuary" hbank="63" lbank="64" prog="49"/>
+            <Patch name="[051/D03] Pf:Wire+Piano" hbank="63" lbank="64" prog="50"/>
+            <Patch name="[052/D04] Pd:DeepBreeze" hbank="63" lbank="64" prog="51"/>
+            <Patch name="[053/D05] Co:DiscoDucks" hbank="63" lbank="64" prog="52"/>
+            <Patch name="[054/D06] Sc:BigFive" hbank="63" lbank="64" prog="53"/>
+            <Patch name="[055/D07] Co:Bs/PercOrg" hbank="63" lbank="64" prog="54"/>
+            <Patch name="[056/D08] Sq:Night Byte" hbank="63" lbank="64" prog="55"/>
+            <Patch name="[057/D09] Co:Sonority" hbank="63" lbank="64" prog="56"/>
+            <Patch name="[058/D10] Co:Folk Trio" hbank="63" lbank="64" prog="57"/>
+            <Patch name="[059/D11] Co:Funk It!" hbank="63" lbank="64" prog="58"/>
+            <Patch name="[060/D12] Co:Police Men" hbank="63" lbank="64" prog="59"/>
+            <Patch name="[061/D13] Ld:2 Mini’s" hbank="63" lbank="64" prog="60"/>
+            <Patch name="[062/D14] Co:Aquamarine" hbank="63" lbank="64" prog="61"/>
+            <Patch name="[063/D15] Co:Classical3" hbank="63" lbank="64" prog="62"/>
+            <Patch name="[064/D16] Se:Nitechills" hbank="63" lbank="64" prog="63"/>
+            <Patch name="[065/E01] Co:RayOfLight" hbank="63" lbank="64" prog="64"/>
+            <Patch name="[066/E02] Co:NotreDame" hbank="63" lbank="64" prog="65"/>
+            <Patch name="[067/E03] Pf:Montuno" hbank="63" lbank="64" prog="66"/>
+            <Patch name="[068/E04] Pd:80Sphere" hbank="63" lbank="64" prog="67"/>
+            <Patch name="[069/E05] Co:TheIslands" hbank="63" lbank="64" prog="68"/>
+            <Patch name="[070/E06] Sc:SweepPerf" hbank="63" lbank="64" prog="69"/>
+            <Patch name="[071/E07] Co:Jazz It!" hbank="63" lbank="64" prog="70"/>
+            <Patch name="[072/E08] Se:Mobutu" hbank="63" lbank="64" prog="71"/>
+            <Patch name="[073/E09] Co:Harp@Orch" hbank="63" lbank="64" prog="72"/>
+            <Patch name="[074/E10] Co:PF/Strings" hbank="63" lbank="64" prog="73"/>
+            <Patch name="[075/E11] Co:Gnu Age" hbank="63" lbank="64" prog="74"/>
+            <Patch name="[076/E12] Co:Cookin’" hbank="63" lbank="64" prog="75"/>
+            <Patch name="[077/E13] Co:A.Gt/Lucky" hbank="63" lbank="64" prog="76"/>
+            <Patch name="[078/E14] Co:PhazeEuro" hbank="63" lbank="64" prog="77"/>
+            <Patch name="[079/E15] Co:Classical4" hbank="63" lbank="64" prog="78"/>
+            <Patch name="[080/E16] Fx:Scare-isma" hbank="63" lbank="64" prog="79"/>
+            <Patch name="[081/F01] Co:Shagundala" hbank="63" lbank="64" prog="80"/>
+            <Patch name="[082/F02] Br:Sevenths" hbank="63" lbank="64" prog="81"/>
+            <Patch name="[083/F03] Pf:BreathPian" hbank="63" lbank="64" prog="82"/>
+            <Patch name="[084/F04] Pd:It Grows!" hbank="63" lbank="64" prog="83"/>
+            <Patch name="[085/F05] Co:Flute Funk" hbank="63" lbank="64" prog="84"/>
+            <Patch name="[086/F06] Co:Real World" hbank="63" lbank="64" prog="85"/>
+            <Patch name="[087/F07] Co:Cool Vibe" hbank="63" lbank="64" prog="86"/>
+            <Patch name="[088/F08] Co:Paradise" hbank="63" lbank="64" prog="87"/>
+            <Patch name="[089/F09] Co:Balladeer" hbank="63" lbank="64" prog="88"/>
+            <Patch name="[090/F10] Co:Strg/Piano" hbank="63" lbank="64" prog="89"/>
+            <Patch name="[091/F11] Co:Barcelona" hbank="63" lbank="64" prog="90"/>
+            <Patch name="[092/F12] Co:Girl" hbank="63" lbank="64" prog="91"/>
+            <Patch name="[093/F13] Co:1973!" hbank="63" lbank="64" prog="92"/>
+            <Patch name="[094/F14] Co:Flying" hbank="63" lbank="64" prog="93"/>
+            <Patch name="[095/F15] Co:Classical5" hbank="63" lbank="64" prog="94"/>
+            <Patch name="[096/F16] Fx:PatchCords" hbank="63" lbank="64" prog="95"/>
+            <Patch name="[097/G01] --:Pops" hbank="63" lbank="64" prog="96"/>
+            <Patch name="[098/G02] --:Ballad 1" hbank="63" lbank="64" prog="97"/>
+            <Patch name="[099/G03] --:Ballad 2" hbank="63" lbank="64" prog="98"/>
+            <Patch name="[100/G04] --:Unplugged" hbank="63" lbank="64" prog="99"/>
+            <Patch name="[101/G05] --:80’s Disco" hbank="63" lbank="64" prog="100"/>
+            <Patch name="[102/G06] --:Funk Rock" hbank="63" lbank="64" prog="101"/>
+            <Patch name="[103/G07] --:Hard Rock" hbank="63" lbank="64" prog="102"/>
+            <Patch name="[104/G08] --:HeavyMetal" hbank="63" lbank="64" prog="103"/>
+            <Patch name="[105/G09] --:ProgreRock" hbank="63" lbank="64" prog="104"/>
+            <Patch name="[106/G10] --:Blues Rock" hbank="63" lbank="64" prog="105"/>
+            <Patch name="[107/G11] --:West Coast" hbank="63" lbank="64" prog="106"/>
+            <Patch name="[108/G12] --:BritishRck" hbank="63" lbank="64" prog="107"/>
+            <Patch name="[109/G13] --:Big Band" hbank="63" lbank="64" prog="108"/>
+            <Patch name="[110/G14] --:Combo Jazz" hbank="63" lbank="64" prog="109"/>
+            <Patch name="[111/G15] --:JazzBallad" hbank="63" lbank="64" prog="110"/>
+            <Patch name="[112/G16] --:Fusion" hbank="63" lbank="64" prog="111"/>
+            <Patch name="[113/H01] --:Club Jazz" hbank="63" lbank="64" prog="112"/>
+            <Patch name="[114/H02] --:House" hbank="63" lbank="64" prog="113"/>
+            <Patch name="[115/H03] --:Techno" hbank="63" lbank="64" prog="114"/>
+            <Patch name="[116/H04] --:Trance" hbank="63" lbank="64" prog="115"/>
+            <Patch name="[117/H05] --:Big Beat" hbank="63" lbank="64" prog="116"/>
+            <Patch name="[118/H06] --:Drum’nBass" hbank="63" lbank="64" prog="117"/>
+            <Patch name="[119/H07] --:HipHop" hbank="63" lbank="64" prog="118"/>
+            <Patch name="[120/H08] --:Reggae" hbank="63" lbank="64" prog="119"/>
+            <Patch name="[121/H09] --:R&amp;&amp;B" hbank="63" lbank="64" prog="120"/>
+            <Patch name="[122/H10] --:India" hbank="63" lbank="64" prog="121"/>
+            <Patch name="[123/H11] --:Salsa" hbank="63" lbank="64" prog="122"/>
+            <Patch name="[124/H12] --:Gamelan" hbank="63" lbank="64" prog="123"/>
+            <Patch name="[125/H13] --:Ambient" hbank="63" lbank="64" prog="124"/>
+            <Patch name="[126/H14] --:Tango" hbank="63" lbank="64" prog="125"/>
+            <Patch name="[127/H15] --:SoundTrack" hbank="63" lbank="64" prog="126"/>
+            <Patch name="[128/H16] --:Master KB" hbank="63" lbank="64" prog="127"/>
+        </PatchGroup>
+
+        <PatchGroup name="External Performances">
+            <Patch name="[001/A01] External Performance 1" hbank="63" lbank="65" prog="0"/>
+            <Patch name="[002/A02] External Performance 2" hbank="63" lbank="65" prog="1"/>
+            <Patch name="[003/A03] External Performance 3" hbank="63" lbank="65" prog="2"/>
+            <Patch name="[004/A04] External Performance 4" hbank="63" lbank="65" prog="3"/>
+            <Patch name="[005/A05] External Performance 5" hbank="63" lbank="65" prog="4"/>
+            <Patch name="[006/A06] External Performance 6" hbank="63" lbank="65" prog="5"/>
+            <Patch name="[007/A07] External Performance 7" hbank="63" lbank="65" prog="6"/>
+            <Patch name="[008/A08] External Performance 8" hbank="63" lbank="65" prog="7"/>
+            <Patch name="[009/A09] External Performance 9" hbank="63" lbank="65" prog="8"/>
+            <Patch name="[010/A10] External Performance 10" hbank="63" lbank="65" prog="9"/>
+            <Patch name="[011/A11] External Performance 11" hbank="63" lbank="65" prog="10"/>
+            <Patch name="[012/A12] External Performance 12" hbank="63" lbank="65" prog="11"/>
+            <Patch name="[013/A13] External Performance 13" hbank="63" lbank="65" prog="12"/>
+            <Patch name="[014/A14] External Performance 14" hbank="63" lbank="65" prog="13"/>
+            <Patch name="[015/A15] External Performance 15" hbank="63" lbank="65" prog="14"/>
+            <Patch name="[016/A16] External Performance 16" hbank="63" lbank="65" prog="15"/>
+            <Patch name="[017/B01] External Performance 17" hbank="63" lbank="65" prog="16"/>
+            <Patch name="[018/B02] External Performance 18" hbank="63" lbank="65" prog="17"/>
+            <Patch name="[019/B03] External Performance 19" hbank="63" lbank="65" prog="18"/>
+            <Patch name="[020/B04] External Performance 20" hbank="63" lbank="65" prog="19"/>
+            <Patch name="[021/B05] External Performance 21" hbank="63" lbank="65" prog="20"/>
+            <Patch name="[022/B06] External Performance 22" hbank="63" lbank="65" prog="21"/>
+            <Patch name="[023/B07] External Performance 23" hbank="63" lbank="65" prog="22"/>
+            <Patch name="[024/B08] External Performance 24" hbank="63" lbank="65" prog="23"/>
+            <Patch name="[025/B09] External Performance 25" hbank="63" lbank="65" prog="24"/>
+            <Patch name="[026/B10] External Performance 26" hbank="63" lbank="65" prog="25"/>
+            <Patch name="[027/B11] External Performance 27" hbank="63" lbank="65" prog="26"/>
+            <Patch name="[028/B12] External Performance 28" hbank="63" lbank="65" prog="27"/>
+            <Patch name="[029/B13] External Performance 29" hbank="63" lbank="65" prog="28"/>
+            <Patch name="[030/B14] External Performance 30" hbank="63" lbank="65" prog="29"/>
+            <Patch name="[031/B15] External Performance 31" hbank="63" lbank="65" prog="30"/>
+            <Patch name="[032/B16] External Performance 32" hbank="63" lbank="65" prog="31"/>
+            <Patch name="[033/C01] External Performance 33" hbank="63" lbank="65" prog="32"/>
+            <Patch name="[034/C02] External Performance 34" hbank="63" lbank="65" prog="33"/>
+            <Patch name="[035/C03] External Performance 35" hbank="63" lbank="65" prog="34"/>
+            <Patch name="[036/C04] External Performance 36" hbank="63" lbank="65" prog="35"/>
+            <Patch name="[037/C05] External Performance 37" hbank="63" lbank="65" prog="36"/>
+            <Patch name="[038/C06] External Performance 38" hbank="63" lbank="65" prog="37"/>
+            <Patch name="[039/C07] External Performance 39" hbank="63" lbank="65" prog="38"/>
+            <Patch name="[040/C08] External Performance 40" hbank="63" lbank="65" prog="39"/>
+            <Patch name="[041/C09] External Performance 41" hbank="63" lbank="65" prog="40"/>
+            <Patch name="[042/C10] External Performance 42" hbank="63" lbank="65" prog="41"/>
+            <Patch name="[043/C11] External Performance 43" hbank="63" lbank="65" prog="42"/>
+            <Patch name="[044/C12] External Performance 44" hbank="63" lbank="65" prog="43"/>
+            <Patch name="[045/C13] External Performance 45" hbank="63" lbank="65" prog="44"/>
+            <Patch name="[046/C14] External Performance 46" hbank="63" lbank="65" prog="45"/>
+            <Patch name="[047/C15] External Performance 47" hbank="63" lbank="65" prog="46"/>
+            <Patch name="[048/C16] External Performance 48" hbank="63" lbank="65" prog="47"/>
+            <Patch name="[049/D01] External Performance 49" hbank="63" lbank="65" prog="48"/>
+            <Patch name="[050/D02] External Performance 50" hbank="63" lbank="65" prog="49"/>
+            <Patch name="[051/D03] External Performance 51" hbank="63" lbank="65" prog="50"/>
+            <Patch name="[052/D04] External Performance 52" hbank="63" lbank="65" prog="51"/>
+            <Patch name="[053/D05] External Performance 53" hbank="63" lbank="65" prog="52"/>
+            <Patch name="[054/D06] External Performance 54" hbank="63" lbank="65" prog="53"/>
+            <Patch name="[055/D07] External Performance 55" hbank="63" lbank="65" prog="54"/>
+            <Patch name="[056/D08] External Performance 56" hbank="63" lbank="65" prog="55"/>
+            <Patch name="[057/D09] External Performance 57" hbank="63" lbank="65" prog="56"/>
+            <Patch name="[058/D10] External Performance 58" hbank="63" lbank="65" prog="57"/>
+            <Patch name="[059/D11] External Performance 59" hbank="63" lbank="65" prog="58"/>
+            <Patch name="[060/D12] External Performance 60" hbank="63" lbank="65" prog="59"/>
+            <Patch name="[061/D13] External Performance 61" hbank="63" lbank="65" prog="60"/>
+            <Patch name="[062/D14] External Performance 62" hbank="63" lbank="65" prog="61"/>
+            <Patch name="[063/D15] External Performance 63" hbank="63" lbank="65" prog="62"/>
+            <Patch name="[064/D16] External Performance 64" hbank="63" lbank="65" prog="63"/>
+            <Patch name="[065/E01] External Performance 65" hbank="63" lbank="65" prog="64"/>
+            <Patch name="[066/E02] External Performance 66" hbank="63" lbank="65" prog="65"/>
+            <Patch name="[067/E03] External Performance 67" hbank="63" lbank="65" prog="66"/>
+            <Patch name="[068/E04] External Performance 68" hbank="63" lbank="65" prog="67"/>
+            <Patch name="[069/E05] External Performance 69" hbank="63" lbank="65" prog="68"/>
+            <Patch name="[070/E06] External Performance 70" hbank="63" lbank="65" prog="69"/>
+            <Patch name="[071/E07] External Performance 71" hbank="63" lbank="65" prog="70"/>
+            <Patch name="[072/E08] External Performance 72" hbank="63" lbank="65" prog="71"/>
+            <Patch name="[073/E09] External Performance 73" hbank="63" lbank="65" prog="72"/>
+            <Patch name="[074/E10] External Performance 74" hbank="63" lbank="65" prog="73"/>
+            <Patch name="[075/E11] External Performance 75" hbank="63" lbank="65" prog="74"/>
+            <Patch name="[076/E12] External Performance 76" hbank="63" lbank="65" prog="75"/>
+            <Patch name="[077/E13] External Performance 77" hbank="63" lbank="65" prog="76"/>
+            <Patch name="[078/E14] External Performance 78" hbank="63" lbank="65" prog="77"/>
+            <Patch name="[079/E15] External Performance 79" hbank="63" lbank="65" prog="78"/>
+            <Patch name="[080/E16] External Performance 80" hbank="63" lbank="65" prog="79"/>
+            <Patch name="[081/F01] External Performance 81" hbank="63" lbank="65" prog="80"/>
+            <Patch name="[082/F02] External Performance 82" hbank="63" lbank="65" prog="81"/>
+            <Patch name="[083/F03] External Performance 83" hbank="63" lbank="65" prog="82"/>
+            <Patch name="[084/F04] External Performance 84" hbank="63" lbank="65" prog="83"/>
+            <Patch name="[085/F05] External Performance 85" hbank="63" lbank="65" prog="84"/>
+            <Patch name="[086/F06] External Performance 86" hbank="63" lbank="65" prog="85"/>
+            <Patch name="[087/F07] External Performance 87" hbank="63" lbank="65" prog="86"/>
+            <Patch name="[088/F08] External Performance 88" hbank="63" lbank="65" prog="87"/>
+            <Patch name="[089/F09] External Performance 89" hbank="63" lbank="65" prog="88"/>
+            <Patch name="[090/F10] External Performance 90" hbank="63" lbank="65" prog="89"/>
+            <Patch name="[091/F11] External Performance 91" hbank="63" lbank="65" prog="90"/>
+            <Patch name="[092/F12] External Performance 92" hbank="63" lbank="65" prog="91"/>
+            <Patch name="[093/F13] External Performance 93" hbank="63" lbank="65" prog="92"/>
+            <Patch name="[094/F14] External Performance 94" hbank="63" lbank="65" prog="93"/>
+            <Patch name="[095/F15] External Performance 95" hbank="63" lbank="65" prog="94"/>
+            <Patch name="[096/F16] External Performance 96" hbank="63" lbank="65" prog="95"/>
+            <Patch name="[097/G01] External Performance 97" hbank="63" lbank="65" prog="96"/>
+            <Patch name="[098/G02] External Performance 98" hbank="63" lbank="65" prog="97"/>
+            <Patch name="[099/G03] External Performance 99" hbank="63" lbank="65" prog="98"/>
+            <Patch name="[100/G04] External Performance 100" hbank="63" lbank="65" prog="99"/>
+            <Patch name="[101/G05] External Performance 101" hbank="63" lbank="65" prog="100"/>
+            <Patch name="[102/G06] External Performance 102" hbank="63" lbank="65" prog="101"/>
+            <Patch name="[103/G07] External Performance 103" hbank="63" lbank="65" prog="102"/>
+            <Patch name="[104/G08] External Performance 104" hbank="63" lbank="65" prog="103"/>
+            <Patch name="[105/G09] External Performance 105" hbank="63" lbank="65" prog="104"/>
+            <Patch name="[106/G10] External Performance 106" hbank="63" lbank="65" prog="105"/>
+            <Patch name="[107/G11] External Performance 107" hbank="63" lbank="65" prog="106"/>
+            <Patch name="[108/G12] External Performance 108" hbank="63" lbank="65" prog="107"/>
+            <Patch name="[109/G13] External Performance 109" hbank="63" lbank="65" prog="108"/>
+            <Patch name="[110/G14] External Performance 110" hbank="63" lbank="65" prog="109"/>
+            <Patch name="[111/G15] External Performance 111" hbank="63" lbank="65" prog="110"/>
+            <Patch name="[112/G16] External Performance 112" hbank="63" lbank="65" prog="111"/>
+            <Patch name="[113/H01] External Performance 113" hbank="63" lbank="65" prog="112"/>
+            <Patch name="[114/H02] External Performance 114" hbank="63" lbank="65" prog="113"/>
+            <Patch name="[115/H03] External Performance 115" hbank="63" lbank="65" prog="114"/>
+            <Patch name="[116/H04] External Performance 116" hbank="63" lbank="65" prog="115"/>
+            <Patch name="[117/H05] External Performance 117" hbank="63" lbank="65" prog="116"/>
+            <Patch name="[118/H06] External Performance 118" hbank="63" lbank="65" prog="117"/>
+            <Patch name="[119/H07] External Performance 119" hbank="63" lbank="65" prog="118"/>
+            <Patch name="[120/H08] External Performance 120" hbank="63" lbank="65" prog="119"/>
+            <Patch name="[121/H09] External Performance 121" hbank="63" lbank="65" prog="120"/>
+            <Patch name="[122/H10] External Performance 122" hbank="63" lbank="65" prog="121"/>
+            <Patch name="[123/H11] External Performance 123" hbank="63" lbank="65" prog="122"/>
+            <Patch name="[124/H12] External Performance 124" hbank="63" lbank="65" prog="123"/>
+            <Patch name="[125/H13] External Performance 125" hbank="63" lbank="65" prog="124"/>
+            <Patch name="[126/H14] External Performance 126" hbank="63" lbank="65" prog="125"/>
+            <Patch name="[127/H15] External Performance 127" hbank="63" lbank="65" prog="126"/>
+            <Patch name="[128/H16] External Performance 128" hbank="63" lbank="65" prog="127"/>
+        </PatchGroup>
+
+        <!-- Drum Maps -->
+        <Drummaps>
+            <entry>
+                <!-- Preset 1: Rock Kit -->
+                <patch_collection hbank="63" lbank="32" prog="0"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr BdVar5</name></entry>
+                    <entry pitch="25"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="26"><name>Dr SdWdH</name></entry>
+                    <entry pitch="27"><name>Dr SdVar1</name></entry>
+                    <entry pitch="28"><name>Dr BdVar3</name></entry>
+                    <entry pitch="29"><name>Dr SdRoll</name></entry>
+                    <entry pitch="30"><name>Dr SdBldH</name></entry>
+                    <entry pitch="31"><name>Dr SdDry</name></entry>
+                    <entry pitch="32"><name>Dr Stick</name></entry>
+                    <entry pitch="33"><name>Dr BdVar4</name></entry>
+                    <entry pitch="34"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="35"><name>Dr BdVar1</name></entry>
+                    <entry pitch="36"><name>Dr BdPop</name></entry>
+                    <entry pitch="37"><name>Dr C.Rim2</name></entry>
+                    <entry pitch="38"><name>Dr SdHvy</name></entry>
+                    <entry pitch="39"><name>Pc Clap</name></entry>
+                    <entry pitch="40"><name>Dr SdGM</name></entry>
+                    <entry pitch="41"><name>Dr Tom2L</name></entry>
+                    <entry pitch="42"><name>Dr HHCl5</name></entry>
+                    <entry pitch="43"><name>Dr Tom2L</name></entry>
+                    <entry pitch="44"><name>Dr HHPdl2</name></entry>
+                    <entry pitch="45"><name>Dr Tom2L</name></entry>
+                    <entry pitch="46"><name>Dr HHOpn</name></entry>
+                    <entry pitch="47"><name>Dr Tom2H</name></entry>
+                    <entry pitch="48"><name>Dr Tom2H</name></entry>
+                    <entry pitch="49"><name>Dr Crash</name></entry>
+                    <entry pitch="50"><name>Dr Tom2H</name></entry>
+                    <entry pitch="51"><name>Dr Ride</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Pc Cowbel</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr Cup2</name></entry>
+                    <entry pitch="60"><name>Pc BongoH</name></entry>
+                    <entry pitch="61"><name>Pc BongoL</name></entry>
+                    <entry pitch="62"><name>Pc CngSlp</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AgogoL</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Dr China</name></entry>
+                    <entry pitch="72"><name>Dr Crash2</name></entry>
+                    <entry pitch="73"><name>Pc TrangL</name></entry>
+                    <entry pitch="74"><name>Cp FngCym</name></entry>
+                    <entry pitch="75"><name>Pc Claves</name></entry>
+                    <entry pitch="76"><name>Pc Wdblck</name></entry>
+                    <entry pitch="77"><name>Pc Wdblck</name></entry>
+                    <entry pitch="78"><name>Cp Timpni</name></entry>
+                    <entry pitch="79"><name>Cp Timpni</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Dr BdStd</name></entry>
+                    <entry pitch="85"><name>Dr SdRim1</name></entry>
+                    <entry pitch="86"><name>Dr SdBldH</name></entry>
+                    <entry pitch="87"><name>Dr SdHvy</name></entry>
+                    <entry pitch="88"><name>Dr SdVar1</name></entry>
+                    <entry pitch="89"><name>Dr SdVar2</name></entry>
+                    <entry pitch="90"><name>Dr SdAmb1</name></entry>
+                    <entry pitch="91"><name>Dr SdFsnH</name></entry>
+                    <entry pitch="92"><name>Dr SdAmb3</name></entry>
+                    <entry pitch="93"><name>Dr SdPclH</name></entry>
+                    <entry pitch="94"><name>Dr BdHby</name></entry>
+                    <entry pitch="95"><name>Dr BdHby</name></entry>
+                    <entry pitch="96"><name>Dr BdLoJz</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 2: House Kit -->
+                <patch_collection hbank="63" lbank="32" prog="1"/>
+                <drummap>
+                    <entry pitch="28"><name>Dr Crash</name></entry>
+                    <entry pitch="29"><name>Dr BdLoJz</name></entry>
+                    <entry pitch="30"><name>Pc CONG</name></entry>
+                    <entry pitch="31"><name>Dr SdBldH</name></entry>
+                    <entry pitch="32"><name>Pc CONG</name></entry>
+                    <entry pitch="33"><name>Dr EuroBD</name></entry>
+                    <entry pitch="34"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="35"><name>Dr T9BD2</name></entry>
+                    <entry pitch="36"><name>Dr T9BD3</name></entry>
+                    <entry pitch="37"><name>Dr T9Rim</name></entry>
+                    <entry pitch="38"><name>Dr T9SD2</name></entry>
+                    <entry pitch="39"><name>Dr T8Rmst</name></entry>
+                    <entry pitch="40"><name>Dr T9SD5</name></entry>
+                    <entry pitch="41"><name>Dr T9TomL</name></entry>
+                    <entry pitch="42"><name>Dr T9HHC1</name></entry>
+                    <entry pitch="43"><name>Dr T9TomM</name></entry>
+                    <entry pitch="44"><name>Dr T9HHC2</name></entry>
+                    <entry pitch="45"><name>Dr T9TomH</name></entry>
+                    <entry pitch="46"><name>Dr T9HHO1</name></entry>
+                    <entry pitch="47"><name>Dr T9TomH</name></entry>
+                    <entry pitch="48"><name>Dr T9HHO2</name></entry>
+                    <entry pitch="49"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="50"><name>Dr T9Ride</name></entry>
+                    <entry pitch="51"><name>Dr T9Clap</name></entry>
+                    <entry pitch="52"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="53"><name>Dr T9BD1</name></entry>
+                    <entry pitch="54"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="55"><name>Pc WdBlk</name></entry>
+                    <entry pitch="56"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="57"><name>Pc CONG</name></entry>
+                    <entry pitch="58"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="59"><name>Pc StlClp</name></entry>
+                    <entry pitch="60"><name>Pc Ripper</name></entry>
+                    <entry pitch="61"><name>Pc CONG</name></entry>
+                    <entry pitch="62"><name>Dr T8CngH</name></entry>
+                    <entry pitch="63"><name>Dr T8CngH</name></entry>
+                    <entry pitch="64"><name>Dr T8CngH</name></entry>
+                    <entry pitch="65"><name>Dr T8CngH</name></entry>
+                    <entry pitch="66"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="67"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="68"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="69"><name>Pc TrangL</name></entry>
+                    <entry pitch="70"><name>Dr T8Mrcs</name></entry>
+                    <entry pitch="71"><name>Pc TrangL</name></entry>
+                    <entry pitch="72"><name>Pc Shaker</name></entry>
+                    <entry pitch="73"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="74"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="75"><name>Dr T8Clve</name></entry>
+                    <entry pitch="76"><name>Pc VoxDrm</name></entry>
+                    <entry pitch="77"><name>Dr DstKik</name></entry>
+                    <entry pitch="78"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="79"><name>Pc JnglBl</name></entry>
+                    <entry pitch="80"><name>Pc Tmborn</name></entry>
+                    <entry pitch="81"><name>Pc Tmborn</name></entry>
+                    <entry pitch="82"><name>Fx BigSyn</name></entry>
+                    <entry pitch="83"><name>Fx BigSyn</name></entry>
+                    <entry pitch="84"><name>Fx Melow</name></entry>
+                    <entry pitch="85"><name>Fx VxAlk</name></entry>
+                    <entry pitch="86"><name>Fx VxAlk</name></entry>
+                    <entry pitch="87"><name>Fx VxAlk</name></entry>
+                    <entry pitch="88"><name>Dr T8SD1</name></entry>
+                    <entry pitch="89"><name>Pc Whistl</name></entry>
+                    <entry pitch="90"><name>Dr SdPclH</name></entry>
+                    <entry pitch="91"><name>Dr T8BdBm</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 3: Hip Kit -->
+                <patch_collection hbank="63" lbank="32" prog="2"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr DstKik</name></entry>
+                    <entry pitch="25"><name>Dr BdVar5</name></entry>
+                    <entry pitch="26"><name>Dr BdVar4</name></entry>
+                    <entry pitch="27"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="28"><name>Dr T9BD1</name></entry>
+                    <entry pitch="29"><name>Dr SdBldH</name></entry>
+                    <entry pitch="30"><name>Dr SdPclH</name></entry>
+                    <entry pitch="31"><name>Dr SdPrmH</name></entry>
+                    <entry pitch="32"><name>Dr T8SD1</name></entry>
+                    <entry pitch="33"><name>Dr SdBkBt</name></entry>
+                    <entry pitch="34"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="35"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="36"><name>Dr BdAna</name></entry>
+                    <entry pitch="37"><name>Dr C.Rim2</name></entry>
+                    <entry pitch="38"><name>Dr SdRim1</name></entry>
+                    <entry pitch="39"><name>Dr T8Clap</name></entry>
+                    <entry pitch="40"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="41"><name>Dr TomF</name></entry>
+                    <entry pitch="42"><name>Dr HHCL2</name></entry>
+                    <entry pitch="43"><name>Dr TomF</name></entry>
+                    <entry pitch="44"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="45"><name>Dr TomL</name></entry>
+                    <entry pitch="46"><name>Dr HHOpn</name></entry>
+                    <entry pitch="47"><name>Dr TomM</name></entry>
+                    <entry pitch="48"><name>Dr TomHL</name></entry>
+                    <entry pitch="49"><name>Dr Crash</name></entry>
+                    <entry pitch="50"><name>Dr TomHH</name></entry>
+                    <entry pitch="51"><name>Dr Ride2</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup2</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Pc CONG</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr Ride</name></entry>
+                    <entry pitch="60"><name>Fx AHoseL</name></entry>
+                    <entry pitch="61"><name>Fx AHoseR</name></entry>
+                    <entry pitch="62"><name>Pc CngSlp</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="68"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="69"><name>Pc Shaker</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Pc Scrch1</name></entry>
+                    <entry pitch="72"><name>Dr T8Bd</name></entry>
+                    <entry pitch="73"><name>Pc StlClp</name></entry>
+                    <entry pitch="74"><name>Dr SdFsnH</name></entry>
+                    <entry pitch="75"><name>Dr T9Clap</name></entry>
+                    <entry pitch="76"><name>Dr SdVar2</name></entry>
+                    <entry pitch="77"><name>Pc JnglBl</name></entry>
+                    <entry pitch="78"><name>Dr T9HHC1</name></entry>
+                    <entry pitch="79"><name>Pc TrangL</name></entry>
+                    <entry pitch="80"><name>Dr T9HHC2</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Dr T9HHO1</name></entry>
+                    <entry pitch="83"><name>Fx HiLo</name></entry>
+                    <entry pitch="84"><name>Fx Eery</name></entry>
+                    <entry pitch="85"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="86"><name>Dr China</name></entry>
+                    <entry pitch="87"><name>Fx VoxBel</name></entry>
+                    <entry pitch="88"><name>Fx Melow</name></entry>
+                    <entry pitch="89"><name>Wv MogBs1</name></entry>
+                    <entry pitch="90"><name>Pc Tmborn</name></entry>
+                    <entry pitch="91"><name>Pc Scrch2</name></entry>
+                    <entry pitch="92"><name>Dr T9Ride</name></entry>
+                    <entry pitch="93"><name>Fx Eery</name></entry>
+                    <entry pitch="94"><name>FX HH Hit</name></entry>
+                    <entry pitch="95"><name>Fx TrnCho</name></entry>
+                    <entry pitch="96"><name>Fx TrnCho</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 4: Trance Kit -->
+                <patch_collection hbank="63" lbank="32" prog="3"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="25"><name>Dr T8CngM</name></entry>
+                    <entry pitch="26"><name>Dr T8Bd</name></entry>
+                    <entry pitch="27"><name>Dr T8CngH</name></entry>
+                    <entry pitch="28"><name>Dr T9BD2</name></entry>
+                    <entry pitch="29"><name>Dr T9BD2</name></entry>
+                    <entry pitch="30"><name>Pc CONG</name></entry>
+                    <entry pitch="31"><name>Dr T9SD1</name></entry>
+                    <entry pitch="32"><name>Pc CONG</name></entry>
+                    <entry pitch="33"><name>Dr EuroBD</name></entry>
+                    <entry pitch="34"><name>Dr EuroBD</name></entry>
+                    <entry pitch="35"><name>Dr T9BD2</name></entry>
+                    <entry pitch="36"><name>Dr T9BD3</name></entry>
+                    <entry pitch="37"><name>Dr T9Rim</name></entry>
+                    <entry pitch="38"><name>Dr T9SD1</name></entry>
+                    <entry pitch="39"><name>Dr DstKik</name></entry>
+                    <entry pitch="40"><name>Dr T9SD4</name></entry>
+                    <entry pitch="41"><name>Dr T9TomL</name></entry>
+                    <entry pitch="42"><name>Dr T9HHC1</name></entry>
+                    <entry pitch="43"><name>Dr T9TomM</name></entry>
+                    <entry pitch="44"><name>Dr T9HHC2</name></entry>
+                    <entry pitch="45"><name>Dr T9TomH</name></entry>
+                    <entry pitch="46"><name>Dr T9HHO1</name></entry>
+                    <entry pitch="47"><name>Dr T9TomH</name></entry>
+                    <entry pitch="48"><name>Dr T9HHO2</name></entry>
+                    <entry pitch="49"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="50"><name>Dr T9Ride</name></entry>
+                    <entry pitch="51"><name>Dr T9Clap</name></entry>
+                    <entry pitch="52"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="53"><name>Dr T9BD1</name></entry>
+                    <entry pitch="54"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="55"><name>Pc WdBlk</name></entry>
+                    <entry pitch="56"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="57"><name>Pc Ripper</name></entry>
+                    <entry pitch="58"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="59"><name>Pc StlClp</name></entry>
+                    <entry pitch="60"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="61"><name>Pc CONG</name></entry>
+                    <entry pitch="62"><name>Dr T8CngH</name></entry>
+                    <entry pitch="63"><name>Dr T8CngH</name></entry>
+                    <entry pitch="64"><name>Dr T8CngH</name></entry>
+                    <entry pitch="65"><name>Dr T8CngH</name></entry>
+                    <entry pitch="66"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="67"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="68"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="69"><name>Pc TrangL</name></entry>
+                    <entry pitch="70"><name>Dr T8Mrcs</name></entry>
+                    <entry pitch="71"><name>Pc TrangL</name></entry>
+                    <entry pitch="72"><name>Fx WndChm</name></entry>
+                    <entry pitch="73"><name>Fx BelAir</name></entry>
+                    <entry pitch="74"><name>Fx BigSyn</name></entry>
+                    <entry pitch="75"><name>Fx Electr</name></entry>
+                    <entry pitch="76"><name>FX HH Hit</name></entry>
+                    <entry pitch="77"><name>Fx VxAlk</name></entry>
+                    <entry pitch="78"><name>Fx VxAlk</name></entry>
+                    <entry pitch="79"><name>Fx HiLo</name></entry>
+                    <entry pitch="80"><name>Fx HiLo</name></entry>
+                    <entry pitch="81"><name>Fx VoxBel</name></entry>
+                    <entry pitch="82"><name>Fx VoxBel</name></entry>
+                    <entry pitch="83"><name>Fx Eery</name></entry>
+                    <entry pitch="84"><name>Wv FMBs1</name></entry>
+                    <entry pitch="85"><name>Wv FMBs1</name></entry>
+                    <entry pitch="86"><name>Wv FMBs1</name></entry>
+                    <entry pitch="87"><name>Wv FMBs1</name></entry>
+                    <entry pitch="88"><name>Wv FMBs1</name></entry>
+                    <entry pitch="89"><name>Wv FMBs1</name></entry>
+                    <entry pitch="90"><name>Wv FMBs1</name></entry>
+                    <entry pitch="91"><name>Wv FMBs1</name></entry>
+                    <entry pitch="92"><name>Wv FMBs1</name></entry>
+                    <entry pitch="93"><name>Wv FMBs1</name></entry>
+                    <entry pitch="94"><name>Wv FMBs1</name></entry>
+                    <entry pitch="95"><name>Wv FMBs1</name></entry>
+                    <entry pitch="96"><name>Wv FMBs1</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 5: Nasty Kit -->
+                <patch_collection hbank="63" lbank="32" prog="4"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr T8Bd</name></entry>
+                    <entry pitch="25"><name>Dr BdVar4</name></entry>
+                    <entry pitch="26"><name>Pc CongaL</name></entry>
+                    <entry pitch="27"><name>Dr BdAna</name></entry>
+                    <entry pitch="28"><name>Dr T9BD3</name></entry>
+                    <entry pitch="29"><name>Dr SdAmb2</name></entry>
+                    <entry pitch="30"><name>Dr SdRim2</name></entry>
+                    <entry pitch="31"><name>Dr T8SD1</name></entry>
+                    <entry pitch="32"><name>Dr T8SD3</name></entry>
+                    <entry pitch="33"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="34"><name>Dr SdAmb3</name></entry>
+                    <entry pitch="35"><name>Dr EuroBD</name></entry>
+                    <entry pitch="36"><name>Dr T9BD3</name></entry>
+                    <entry pitch="37"><name>Fx HiLo</name></entry>
+                    <entry pitch="38"><name>Dr T9SD4</name></entry>
+                    <entry pitch="39"><name>Dr T8Clap</name></entry>
+                    <entry pitch="40"><name>Pc WdBlk</name></entry>
+                    <entry pitch="41"><name>Wv Noise</name></entry>
+                    <entry pitch="42"><name>Dr HHCl5</name></entry>
+                    <entry pitch="43"><name>Wv Noise</name></entry>
+                    <entry pitch="44"><name>Dr T9HHC1</name></entry>
+                    <entry pitch="45"><name>Wv Noise</name></entry>
+                    <entry pitch="46"><name>Dr T9HHO1</name></entry>
+                    <entry pitch="47"><name>Dr Tom2L</name></entry>
+                    <entry pitch="48"><name>Dr Tom2H</name></entry>
+                    <entry pitch="49"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="50"><name>Dr Tom2H</name></entry>
+                    <entry pitch="51"><name>Fx Eery</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup2</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash</name></entry>
+                    <entry pitch="56"><name>Wv MogBs1</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr Ride</name></entry>
+                    <entry pitch="60"><name>Fx VxAlk</name></entry>
+                    <entry pitch="61"><name>FX HH Hit</name></entry>
+                    <entry pitch="62"><name>Pc TmblsH</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Fx BelAir</name></entry>
+                    <entry pitch="66"><name>Fx Electr</name></entry>
+                    <entry pitch="67"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="68"><name>Pc AnvlPp</name></entry>
+                    <entry pitch="69"><name>Pc Shaker</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Pc Bltree</name></entry>
+                    <entry pitch="72"><name>Dr T8Bd</name></entry>
+                    <entry pitch="73"><name>Fx VoxBel</name></entry>
+                    <entry pitch="74"><name>Dr SdAmb2</name></entry>
+                    <entry pitch="75"><name>Dr T9Clap</name></entry>
+                    <entry pitch="76"><name>Dr SdRim1</name></entry>
+                    <entry pitch="77"><name>Fx MltPno</name></entry>
+                    <entry pitch="78"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="79"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="80"><name>Dr T9HHC2</name></entry>
+                    <entry pitch="81"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="82"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="83"><name>Fx Eery</name></entry>
+                    <entry pitch="84"><name>Fx Eery</name></entry>
+                    <entry pitch="85"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="86"><name>Dr China</name></entry>
+                    <entry pitch="87"><name>Fx VoxBel</name></entry>
+                    <entry pitch="88"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="89"><name>En VxNoiz</name></entry>
+                    <entry pitch="90"><name>Pc Tmborn</name></entry>
+                    <entry pitch="91"><name>Pc Ripper</name></entry>
+                    <entry pitch="92"><name>Dr T9Ride</name></entry>
+                    <entry pitch="93"><name>Dr T8CngL</name></entry>
+                    <entry pitch="94"><name>Dr T8CngM</name></entry>
+                    <entry pitch="95"><name>Dr TmJzH</name></entry>
+                    <entry pitch="96"><name>Dr T8HHOp</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 6: Brush Kit -->
+                <patch_collection hbank="63" lbank="32" prog="5"/>
+                <drummap>
+                    <entry pitch="24"><name>Pc Claves</name></entry>
+                    <entry pitch="25"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="26"><name>Dr SdSwep</name></entry>
+                    <entry pitch="27"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="28"><name>Dr SdSwep</name></entry>
+                    <entry pitch="29"><name>Dr SdRoll</name></entry>
+                    <entry pitch="30"><name>Pc Castnt</name></entry>
+                    <entry pitch="31"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="32"><name>Dr Stick</name></entry>
+                    <entry pitch="33"><name>Dr BdVar3</name></entry>
+                    <entry pitch="34"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="35"><name>Dr BdVar4</name></entry>
+                    <entry pitch="36"><name>Dr BdLoJz</name></entry>
+                    <entry pitch="37"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="38"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="39"><name>Pc Clap</name></entry>
+                    <entry pitch="40"><name>Dr SdBrsS</name></entry>
+                    <entry pitch="41"><name>Dr TmJzL</name></entry>
+                    <entry pitch="42"><name>Dr HHCl4</name></entry>
+                    <entry pitch="43"><name>Dr TmJzL</name></entry>
+                    <entry pitch="44"><name>Dr HHPdl</name></entry>
+                    <entry pitch="45"><name>Dr TmJzL</name></entry>
+                    <entry pitch="46"><name>Dr HHOpn</name></entry>
+                    <entry pitch="47"><name>Dr TmJzM</name></entry>
+                    <entry pitch="48"><name>Dr TmJzH</name></entry>
+                    <entry pitch="49"><name>Dr Crash</name></entry>
+                    <entry pitch="50"><name>Dr TmJzH</name></entry>
+                    <entry pitch="51"><name>Dr Ride</name></entry>
+                    <entry pitch="52"><name>Dr Ride2</name></entry>
+                    <entry pitch="53"><name>Dr Cup</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Pc Cowbel</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Dr Ride</name></entry>
+                    <entry pitch="59"><name>Dr Cup2</name></entry>
+                    <entry pitch="60"><name>Pc BongoH</name></entry>
+                    <entry pitch="61"><name>Pc BongoL</name></entry>
+                    <entry pitch="62"><name>Pc CngSlp</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AgogoL</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Pc Whistl</name></entry>
+                    <entry pitch="72"><name>Pc Whistl</name></entry>
+                    <entry pitch="73"><name>Pc GiroCl</name></entry>
+                    <entry pitch="74"><name>Pc GuiroL</name></entry>
+                    <entry pitch="75"><name>Pc Claves</name></entry>
+                    <entry pitch="76"><name>Pc Wdblck</name></entry>
+                    <entry pitch="77"><name>Pc Wdblck</name></entry>
+                    <entry pitch="78"><name>Pc CuicaL</name></entry>
+                    <entry pitch="79"><name>Pc CuicaH</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Pc Bltree</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 7: Pop Kit -->
+                <patch_collection hbank="63" lbank="32" prog="6"/>
+                <drummap>
+                    <entry pitch="24"><name>Pc Claves</name></entry>
+                    <entry pitch="25"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="26"><name>Dr SdSwep</name></entry>
+                    <entry pitch="27"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="28"><name>Dr SdSwep</name></entry>
+                    <entry pitch="29"><name>Dr SdRoll</name></entry>
+                    <entry pitch="30"><name>Pc Castnt</name></entry>
+                    <entry pitch="31"><name>Dr SdDry</name></entry>
+                    <entry pitch="32"><name>Dr Stick</name></entry>
+                    <entry pitch="33"><name>Dr BdVar3</name></entry>
+                    <entry pitch="34"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="35"><name>Dr BdVar4</name></entry>
+                    <entry pitch="36"><name>Dr BdHby</name></entry>
+                    <entry pitch="37"><name>Dr C.Rim1</name></entry>
+                    <entry pitch="38"><name>Dr SdGM</name></entry>
+                    <entry pitch="39"><name>Pc Clap</name></entry>
+                    <entry pitch="40"><name>Dr SdGM</name></entry>
+                    <entry pitch="41"><name>Dr TomL</name></entry>
+                    <entry pitch="42"><name>Dr HHCl5</name></entry>
+                    <entry pitch="43"><name>Dr TomL</name></entry>
+                    <entry pitch="44"><name>Dr HHPdl2</name></entry>
+                    <entry pitch="45"><name>Dr TomM</name></entry>
+                    <entry pitch="46"><name>Dr HHOpn2</name></entry>
+                    <entry pitch="47"><name>Dr TomM</name></entry>
+                    <entry pitch="48"><name>Dr TomHL</name></entry>
+                    <entry pitch="49"><name>Dr Crash</name></entry>
+                    <entry pitch="50"><name>Dr TomHH</name></entry>
+                    <entry pitch="51"><name>Dr Ride</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Pc Cowbel</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr Cup2</name></entry>
+                    <entry pitch="60"><name>Pc BongoH</name></entry>
+                    <entry pitch="61"><name>Pc BongoL</name></entry>
+                    <entry pitch="62"><name>Pc CngSlp</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AgogoL</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Pc Whistl</name></entry>
+                    <entry pitch="72"><name>Pc Whistl</name></entry>
+                    <entry pitch="73"><name>Pc GiroCl</name></entry>
+                    <entry pitch="74"><name>Pc GuiroL</name></entry>
+                    <entry pitch="75"><name>Pc Claves</name></entry>
+                    <entry pitch="76"><name>Pc Wdblck</name></entry>
+                    <entry pitch="77"><name>Pc Wdblck</name></entry>
+                    <entry pitch="78"><name>Pc CuicaL</name></entry>
+                    <entry pitch="79"><name>Pc CuicaH</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Pc Bltree</name></entry>
+                    <entry pitch="85"><name>Dr SdBkBt</name></entry>
+                    <entry pitch="86"><name>Dr SdBldS</name></entry>
+                    <entry pitch="87"><name>Dr SdVar1</name></entry>
+                    <entry pitch="88"><name>Dr SdSonD</name></entry>
+                    <entry pitch="89"><name>Dr SdRim1</name></entry>
+                    <entry pitch="90"><name>Dr SdWdH</name></entry>
+                    <entry pitch="91"><name>Dr SdBldH</name></entry>
+                    <entry pitch="92"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="93"><name>Dr SdLdwH</name></entry>
+                    <entry pitch="94"><name>Dr BdPop</name></entry>
+                    <entry pitch="95"><name>Dr BdHby</name></entry>
+                    <entry pitch="96"><name>Dr BdVar5</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Preset 8: 8o8 Kit -->
+                <patch_collection hbank="63" lbank="32" prog="7"/>
+                <drummap>
+                    <entry pitch="24"><name>Pc Claves</name></entry>
+                    <entry pitch="25"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="26"><name>Dr SdSwep</name></entry>
+                    <entry pitch="27"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="28"><name>Dr SdSwep</name></entry>
+                    <entry pitch="29"><name>Dr SdRoll</name></entry>
+                    <entry pitch="30"><name>Pc Castnt</name></entry>
+                    <entry pitch="31"><name>Dr T8SD4</name></entry>
+                    <entry pitch="32"><name>Dr T8Rmst</name></entry>
+                    <entry pitch="33"><name>Dr BdAna</name></entry>
+                    <entry pitch="34"><name>Dr T8SD3</name></entry>
+                    <entry pitch="35"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="36"><name>Dr T8Bd</name></entry>
+                    <entry pitch="37"><name>Dr T8Side</name></entry>
+                    <entry pitch="38"><name>Dr T8SD1</name></entry>
+                    <entry pitch="39"><name>Dr T8Clap</name></entry>
+                    <entry pitch="40"><name>Dr T8SD2</name></entry>
+                    <entry pitch="41"><name>Dr T8Tom</name></entry>
+                    <entry pitch="42"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="43"><name>Dr T8Tom</name></entry>
+                    <entry pitch="44"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="45"><name>Dr T8Tom</name></entry>
+                    <entry pitch="46"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="47"><name>Dr T8Tom</name></entry>
+                    <entry pitch="48"><name>Dr T8Tom</name></entry>
+                    <entry pitch="49"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="50"><name>Dr T8Tom</name></entry>
+                    <entry pitch="51"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Dr T8Cwbl</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr Ride2</name></entry>
+                    <entry pitch="60"><name>Pc BongoH</name></entry>
+                    <entry pitch="61"><name>Pc BongoL</name></entry>
+                    <entry pitch="62"><name>Dr T8CngH</name></entry>
+                    <entry pitch="63"><name>Dr T8CngM</name></entry>
+                    <entry pitch="64"><name>Dr T8CngL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AgogoL</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Dr T8Mrcs</name></entry>
+                    <entry pitch="71"><name>Pc Whistl</name></entry>
+                    <entry pitch="72"><name>Pc Whistl</name></entry>
+                    <entry pitch="73"><name>Pc GiroCl</name></entry>
+                    <entry pitch="74"><name>Pc GuiroL</name></entry>
+                    <entry pitch="75"><name>Dr T8Clve</name></entry>
+                    <entry pitch="76"><name>Pc Wdblck</name></entry>
+                    <entry pitch="77"><name>Pc Wdblck</name></entry>
+                    <entry pitch="78"><name>Pc CuicaL</name></entry>
+                    <entry pitch="79"><name>Pc CuicaH</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Pc Bltree</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Internal 1: HipHop Kit -->
+                <patch_collection hbank="63" lbank="40" prog="0"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr T8BdBm</name></entry>
+                    <entry pitch="25"><name>Dr T8SD2</name></entry>
+                    <entry pitch="26"><name>Dr T8SD1</name></entry>
+                    <entry pitch="27"><name>Dr T8SD3</name></entry>
+                    <entry pitch="28"><name>Dr T8SD4</name></entry>
+                    <entry pitch="29"><name>Dr T9SD4</name></entry>
+                    <entry pitch="30"><name>FX HH Hit</name></entry>
+                    <entry pitch="31"><name>Dr T9SD2</name></entry>
+                    <entry pitch="32"><name>Dr T8Rmst</name></entry>
+                    <entry pitch="33"><name>Dr T8Bd</name></entry>
+                    <entry pitch="34"><name>Dr T9SD5</name></entry>
+                    <entry pitch="35"><name>Dr T9BD3</name></entry>
+                    <entry pitch="36"><name>Dr T9BD1</name></entry>
+                    <entry pitch="37"><name>Dr C.Rim1</name></entry>
+                    <entry pitch="38"><name>Dr T9SD1</name></entry>
+                    <entry pitch="39"><name>Dr T9Clap</name></entry>
+                    <entry pitch="40"><name>Dr T9SD3</name></entry>
+                    <entry pitch="41"><name>Dr T9TomL</name></entry>
+                    <entry pitch="42"><name>Dr T9HHC2</name></entry>
+                    <entry pitch="43"><name>Dr T9TomL</name></entry>
+                    <entry pitch="44"><name>Dr T9HHO2</name></entry>
+                    <entry pitch="45"><name>Dr T9TomM</name></entry>
+                    <entry pitch="46"><name>Dr T9HHO1</name></entry>
+                    <entry pitch="47"><name>Dr T9TomM</name></entry>
+                    <entry pitch="48"><name>Dr T9TomH</name></entry>
+                    <entry pitch="49"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="50"><name>Dr T9TomH</name></entry>
+                    <entry pitch="51"><name>Dr T9Ride</name></entry>
+                    <entry pitch="52"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="53"><name>Dr T9Ride</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="56"><name>Dr T8Cwbl</name></entry>
+                    <entry pitch="57"><name>Dr T9Crsh</name></entry>
+                    <entry pitch="58"><name>Dr DstKik</name></entry>
+                    <entry pitch="59"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="60"><name>Dr T8CngH</name></entry>
+                    <entry pitch="61"><name>Dr T8CngL</name></entry>
+                    <entry pitch="62"><name>Dr T8CngM</name></entry>
+                    <entry pitch="63"><name>Wv MogBs1</name></entry>
+                    <entry pitch="64"><name>Wv Late-S</name></entry>
+                    <entry pitch="65"><name>Dr SdBkBt</name></entry>
+                    <entry pitch="66"><name>Dr SdBkBt</name></entry>
+                    <entry pitch="67"><name>Dr T8Cwbl</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Dr T8Mrcs</name></entry>
+                    <entry pitch="71"><name>Fx HiLo</name></entry>
+                    <entry pitch="72"><name>Fx HiLo</name></entry>
+                    <entry pitch="73"><name>Pc AnvlHt</name></entry>
+                    <entry pitch="74"><name>Pc Ripper</name></entry>
+                    <entry pitch="75"><name>Dr T8Clve</name></entry>
+                    <entry pitch="76"><name>Dr T8Clve</name></entry>
+                    <entry pitch="77"><name>Pc Castnt</name></entry>
+                    <entry pitch="78"><name>Pc Scrch1</name></entry>
+                    <entry pitch="79"><name>Pc Scrch2</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Pc Bltree</name></entry>
+                    <entry pitch="85"><name>Dr SdRim1</name></entry>
+                    <entry pitch="86"><name>Dr SdPclH</name></entry>
+                    <entry pitch="87"><name>Pc Clap</name></entry>
+                    <entry pitch="88"><name>Dr SdPrmH</name></entry>
+                    <entry pitch="89"><name>Dr BdAna</name></entry>
+                    <entry pitch="90"><name>Dr T8HHCl</name></entry>
+                    <entry pitch="91"><name>Dr T9BD2</name></entry>
+                    <entry pitch="92"><name>Dr HHCl5</name></entry>
+                    <entry pitch="93"><name>Dr BdVar1</name></entry>
+                    <entry pitch="94"><name>Dr T8HHOp</name></entry>
+                    <entry pitch="95"><name>Dr EuroBD</name></entry>
+                    <entry pitch="96"><name>Dr BdHby</name></entry>
+                </drummap>
+            </entry>
+
+            <entry>
+                <!-- Internal 2: Urbanguard -->
+                <patch_collection hbank="63" lbank="40" prog="1"/>
+                <drummap>
+                    <entry pitch="24"><name>Dr BdVar5</name></entry>
+                    <entry pitch="25"><name>Dr SdBrsL</name></entry>
+                    <entry pitch="26"><name>Dr SdSwep</name></entry>
+                    <entry pitch="27"><name>Dr SdBrsH</name></entry>
+                    <entry pitch="28"><name>Dr SdSwep</name></entry>
+                    <entry pitch="29"><name>Dr SdRoll</name></entry>
+                    <entry pitch="30"><name>Wv Noise</name></entry>
+                    <entry pitch="31"><name>Dr SdSonA</name></entry>
+                    <entry pitch="32"><name>Dr Stick</name></entry>
+                    <entry pitch="33"><name>Dr BdVar5</name></entry>
+                    <entry pitch="34"><name>Dr SdPcBH</name></entry>
+                    <entry pitch="35"><name>Dr BdVar2</name></entry>
+                    <entry pitch="36"><name>Dr BdLoJz</name></entry>
+                    <entry pitch="37"><name>Dr C.Rim2</name></entry>
+                    <entry pitch="38"><name>Dr SdGM</name></entry>
+                    <entry pitch="39"><name>Pc Clap</name></entry>
+                    <entry pitch="40"><name>Dr SdWdH</name></entry>
+                    <entry pitch="41"><name>Dr TomF</name></entry>
+                    <entry pitch="42"><name>Dr HHCl1</name></entry>
+                    <entry pitch="43"><name>Dr TomL</name></entry>
+                    <entry pitch="44"><name>Dr HHPdl</name></entry>
+                    <entry pitch="45"><name>Dr TomL</name></entry>
+                    <entry pitch="46"><name>Dr HHOpn</name></entry>
+                    <entry pitch="47"><name>Dr TomM</name></entry>
+                    <entry pitch="48"><name>Dr TomHL</name></entry>
+                    <entry pitch="49"><name>Dr Crash</name></entry>
+                    <entry pitch="50"><name>Dr TomHH</name></entry>
+                    <entry pitch="51"><name>Dr Ride</name></entry>
+                    <entry pitch="52"><name>Dr China</name></entry>
+                    <entry pitch="53"><name>Dr Cup</name></entry>
+                    <entry pitch="54"><name>Pc Tmborn</name></entry>
+                    <entry pitch="55"><name>Dr Crash2</name></entry>
+                    <entry pitch="56"><name>Dr T8Cwbl</name></entry>
+                    <entry pitch="57"><name>Dr Crash2</name></entry>
+                    <entry pitch="58"><name>Pc VbSlp</name></entry>
+                    <entry pitch="59"><name>Dr T8Crsh</name></entry>
+                    <entry pitch="60"><name>Pc BongoH</name></entry>
+                    <entry pitch="61"><name>Pc BongoL</name></entry>
+                    <entry pitch="62"><name>Pc CngSlp</name></entry>
+                    <entry pitch="63"><name>Pc CongaH</name></entry>
+                    <entry pitch="64"><name>Pc CongaL</name></entry>
+                    <entry pitch="65"><name>Pc TmblsH</name></entry>
+                    <entry pitch="66"><name>Pc TmblsL</name></entry>
+                    <entry pitch="67"><name>Pc AgogoL</name></entry>
+                    <entry pitch="68"><name>Pc AgogoL</name></entry>
+                    <entry pitch="69"><name>Pc Cabasa</name></entry>
+                    <entry pitch="70"><name>Pc Maracs</name></entry>
+                    <entry pitch="71"><name>Pc Whistl</name></entry>
+                    <entry pitch="72"><name>Pc Whistl</name></entry>
+                    <entry pitch="73"><name>Pc GiroCl</name></entry>
+                    <entry pitch="74"><name>Pc GuiroL</name></entry>
+                    <entry pitch="75"><name>Pc Claves</name></entry>
+                    <entry pitch="76"><name>Pc Wdblck</name></entry>
+                    <entry pitch="77"><name>Pc Wdblck</name></entry>
+                    <entry pitch="78"><name>Pc CuicaL</name></entry>
+                    <entry pitch="79"><name>Pc CuicaH</name></entry>
+                    <entry pitch="80"><name>Pc TrangL</name></entry>
+                    <entry pitch="81"><name>Pc TrangL</name></entry>
+                    <entry pitch="82"><name>Pc Shaker</name></entry>
+                    <entry pitch="83"><name>Pc JnglBl</name></entry>
+                    <entry pitch="84"><name>Pc Bltree</name></entry>
+                    <entry pitch="85"><name>Dr DstKik</name></entry>
+                    <entry pitch="86"><name>Dr DstKik</name></entry>
+                    <entry pitch="87"><name>Dr DstKik</name></entry>
+                    <entry pitch="88"><name>Dr DstKik</name></entry>
+                    <entry pitch="89"><name>Dr DstKik</name></entry>
+                    <entry pitch="90"><name>Dr DstKik</name></entry>
+                    <entry pitch="91"><name>Dr DstKik</name></entry>
+                    <entry pitch="92"><name>Dr DstKik</name></entry>
+                    <entry pitch="93"><name>Dr DstKik</name></entry>
+                    <entry pitch="94"><name>Dr DstKik</name></entry>
+                    <entry pitch="95"><name>Dr DstKik</name></entry>
+                    <entry pitch="96"><name>Dr DstKik</name></entry>
+                </drummap>
+            </entry>
+        </Drummaps>
+
+        <!-- Controllers -->
+        <Controller name="Pitch Bend" type="Pitch"/>
+        <Controller name="Program Change" type="Program"/>
+        <Controller name="Polyphonic After Touch" type="PolyAftertouch"/>
+        <Controller name="Channel After Touch" type="Aftertouch"/>
+
+        <Controller name="Modulation" l="1"/>
+        <Controller name="Portamento Time" l="5"/>
+        <Controller name="Main Volume" l="7" init="100"/>
+        <Controller name="Panpot" l="10" min="-64" max="63" init="0"/>
+
+        <Controller name="Expression" l="11"/>
+        <Controller name="Sustain" l="64"/>
+        <Controller name="Portamento" l="65"/>
+        <Controller name="Sostenuto" l="66"/>
+
+        <Controller name="Harmonic Content (Resonance)" l="71" min="-64" max="63"/>
+        <Controller name="Brightness (Cutoff Frequency)" l="74" min="-64" max="63"/>
+
+        <Controller name="EG Attack Time" l="73" min="-64" max="63"/>
+        <Controller name="EG Decay Time" l="75" min="-64" max="63"/>
+        <Controller name="EG Release Time" l="72" min="-64" max="63"/>
+        <Controller name="EG Sustain Level" l="31" min="-64" max="63"/>
+
+        <Controller name="Effect 1 Depth (Reverb)" l="91" init="0"/>
+        <Controller name="Effect 3 Depth (Chorus)" l="93" init="0"/>
+
+        <Controller name="Pitch Bend Sensitivity" type="RPN" h="0" l="0" max="24" init="2"/>
+        <Controller name="Fine Tune" type="RPN" h="0" l="1" min="-64" max="63" init="0"/>
+        <Controller name="Coarse Tune" type="RPN" h="0" l="2" min="-64" max="63" init="0"/>
+        <Controller name="RPN Reset (Null)" type="RPN" h="127" l="127"/>
+
+        <!-- SysEx -->
+        <SysEx name="GM On">
+            <comment>
+Switch General Midi mode on
+
+Received only when SYSTEM Receive GM/XG on is set to on in PERFORMANCE MODE.
+The Part values will be reset according to the SYSTEM Internal Part settings.
+            </comment>
+            <data>f0 7e 7f 09 01 f7</data>
+        </SysEx>
+
+        <SysEx name="XG On">
+            <comment>
+Switch XG mode on
+
+Received only when SYSTEM Receive GM/XG on is set to on in PERFORMANCE MODE.
+The Part values will be reset according to the SYSTEM Internal Part settings.
+Takes about 170ms to execute.
+            </comment>
+            <data>f0 43 10 4c 00 00 7e 00 f7</data>
+        </SysEx>
+
+        <SysEx name="Identity Request">
+            <comment>
+Request Device Number Code from the instrument. The instrument answers
+with a "Identity Reply" and returns the Device ID 0x23 0x04.
+
+0xF0 0x7E 0x0? 0x06 0x01 0xF7
+
+0x0?: Device number (any number)
+            </comment>
+            <data>f0 7e 00 06 01 f7</data>
+        </SysEx>
+
+        <SysEx name="Identity Reply">
+            <comment>
+Reply message to an "Identity Request"
+
+0xF0 0x7E 0x7F 0x06 0x02 0x43 0x00 0x41 dd dd 0x00 0x00 0x00 0x7F 0xF7
+
+dd dd: Device Number Code (always 0x23 0x04)
+            </comment>
+            <data>f0 7e 7f 06 02 43 00 41 23 04 00 00 00 7f f7</data>
+        </SysEx>
+
+        <SysEx name="MIDI Master Volume">
+            <comment>
+Overall volume of all parts
+
+0xF0 0x7F 0x7F 0x04 0x01 ll mm 0xF7
+
+ll: Volume LSB (Ignored)
+mm: Volume MSB
+            </comment>
+            <data>f0 7f 7f 04 01 00 7f f7</data>
+        </SysEx>
+
+        <SysEx name="Native Parameter Change, Remote Switch">
+            <comment>
+Remotely activate or deactivate panel buttons
+
+0xF0 0x43 0x1? 0x64 ah am al dd ... 0xF7
+
+0x1?: Device Number (Transmit: 0x10, Receive 0x10 - 0x1F)
+ah: Address High
+am: Address Mid
+al: Address Low
+dd: Parameter data (variable length)
+            </comment>
+            <data>f0 43 10 64 00 00 00 00 f7</data>
+        </SysEx>
+
+        <SysEx name="Bulk Dump">
+            <comment>
+Bulk dump of all settings (Data List p. 29ff)
+
+0xF0 0x43 0x0? 0x64 bh bl ah am al dd ... cc  0xF7
+
+0x0?: Device Number (Transmit: 0x10, Receive 0x10 - 0x1F)
+bh: Byte Count MSB
+bl: Byte Count LSB
+ah: Address High
+am: Address Mid
+al: Address Low
+dd: Parameter data (variable length)
+cc: Checksum
+            </comment>
+            <data>f0 43 00 64 00 00 00 00 00 00 00 f7</data>
+        </SysEx>
+
+        <SysEx name="Dump Request">
+            <comment>
+Request bulk dump (Data List p. 29ff)
+
+0xF0 0x43 0x2? 0x64 ah am al 0xF7
+
+0x2?: Device Number
+ah: Address High
+am: Address Mid
+al: Address Low
+            </comment>
+            <data>f0 43 20 64 00 00 00 f7</data>
+        </SysEx>
+
+        <SysEx name="Parameter Request">
+            <comment>
+Request parameter value (Data List p. 29ff)
+
+0xF0 0x43 0x3? 0x64 ah am al 0xF7
+
+0x3?: Device Number
+ah: Address High
+am: Address Mid
+al: Address Low
+            </comment>
+            <data>f0 43 30 64 00 00 00 f7</data>
+        </SysEx>
+    </MidiInstrument>
+</muse>

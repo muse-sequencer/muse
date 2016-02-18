@@ -25,24 +25,34 @@
 #ifndef __SCLDRAW_H__
 #define __SCLDRAW_H__
 
+#include <QString>
 #include "dimap.h"
 #include "scldiv.h"
 
+class QPalette;
 class QFontMetrics;
 class QPainter;
 class QRect;
+class QString;
 
 namespace MusEGui {
 
 class ScaleDraw : public DiMap {
    public:
       enum OrientationX { Bottom, Top, Left, Right, InsideHorizontal, InsideVertical, Round };
+      enum TextHighlightMode { TextHighlightNone, 
+                               TextHighlightAlways, 
+                               TextHighlightSplit, 
+                               TextHighlightShadow,
+                               TextHighlightSplitAndShadow };
 
    private:
       ScaleDiv d_scldiv;
       static const int minLen;
       OrientationX d_orient;
-	
+      TextHighlightMode d_textHighlightMode;
+      QString _specialText;   // Text to show if value = min
+      
       int d_xorg;
       int d_yorg;
       int d_len;
@@ -63,10 +73,12 @@ class ScaleDraw : public DiMap {
 
       char d_fmt;
       int d_prec;
-	
-      void drawTick(QPainter *p, double val, int len) const;
-      void drawBackbone(QPainter *p) const;
-      void drawLabel(QPainter *p, double val) const;
+      
+      bool d_drawBackBone;
+      
+      void drawTick(QPainter *p, const QPalette& palette, double curValue, double val, int len) const;
+      void drawBackbone(QPainter *p, const QPalette& palette, double curValue) const;
+      void drawLabel(QPainter *p, const QPalette& palette, double curValue, double val, bool isSpecialText = false) const;
 	
    public:
 
@@ -78,9 +90,15 @@ class ScaleDraw : public DiMap {
       void setGeometry(int xorigin, int yorigin, int length, OrientationX o);
       void setAngleRange(double angle1, double angle2);
       void setLabelFormat(char f, int prec);
-
+      void setBackBone(bool v) { d_drawBackBone = v; }
+      
       const ScaleDiv& scaleDiv() const { return d_scldiv; }
       OrientationX orientation() const { return d_orient; }
+      TextHighlightMode textHighlightMode() const { return d_textHighlightMode; }
+      void setTextHighlightMode(TextHighlightMode mode) { d_textHighlightMode = mode; }
+      QString specialText() const           { return _specialText; }
+      void setSpecialText(const QString& s) { _specialText = s; }
+      
 // REMOVE Tim. Trackinfo. Changed.
 //       QRect maxBoundingRect(QPainter *p) const;
 //       int maxWidth(QPainter *p, bool worst = true) const;
@@ -90,8 +108,9 @@ class ScaleDraw : public DiMap {
       int maxWidth(const QFontMetrics& fm, bool worst = true, int penWidth = 1) const;
       int maxHeight(const QFontMetrics& fm, int penWidth = 1) const;
       int maxLabelWidth(const QFontMetrics& fm, bool worst = true) const;
+      int scaleWidth(int penWidth = 1) const;
       
-      void draw(QPainter *p) const;
+      void draw(QPainter *p, const QPalette& palette, double curValue = 0.0); // const;
       };
 
 } // namespace MusEGui

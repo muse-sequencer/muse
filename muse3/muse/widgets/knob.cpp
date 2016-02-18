@@ -409,7 +409,7 @@ void Knob::paintEvent(QPaintEvent*)
       QPainter p(this);
       p.setRenderHint(QPainter::Antialiasing, true);
       if(hasScale)
-        d_scale.draw(&p);
+        d_scale.draw(&p, palette());
       drawKnob(&p, kRect);
       //drawMarker(&p, d_oldAngle, d_curFaceColor);
       //drawMarker(&p, d_angle, d_markerColor);

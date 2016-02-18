@@ -182,9 +182,9 @@ class DssiSynthIF : public SynthIF
       
       virtual void write(int level, Xml& xml) const;
       
-      virtual float getParameter(unsigned long /*idx*/) const;
-      virtual float getParameterOut(unsigned long n) const;
-      virtual void setParameter(unsigned long /*idx*/, float /*value*/);
+      virtual double getParameter(unsigned long /*idx*/) const;
+      virtual double getParameterOut(unsigned long n) const;
+      virtual void setParameter(unsigned long /*idx*/, double /*value*/);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*);
       
       #ifdef OSC_SUPPORT
@@ -215,9 +215,9 @@ class DssiSynthIF : public SynthIF
 
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;
-      void setParam(unsigned long i, float val); 
-      float param(unsigned long i) const;        
-      float paramOut(unsigned long i) const;        
+      void setParam(unsigned long i, double val); 
+      double param(unsigned long i) const;        
+      double paramOut(unsigned long i) const;        
       const char* paramName(unsigned long i);     
       const char* paramOutName(unsigned long i);
       LADSPA_PortRangeHint range(unsigned long i);

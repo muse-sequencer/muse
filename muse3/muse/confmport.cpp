@@ -29,6 +29,7 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QTableWidget>
@@ -183,15 +184,18 @@ void MPConfig::changeDefInputRoutes(QAction* act)
     int chbits;
     if(actid == MIDI_CHANNELS)              // Toggle all.
     {
-      //chbits = (defch == allch) ? 0 : allch;
       chbits = (defch == -1 || defch == allch) ? 0 : allch;
-      if(defpup)
-        for(int i = 0; i < MIDI_CHANNELS; ++i)
+      if(act->actionGroup())
+      {
+        QList<QAction*> acts = act->actionGroup()->actions();
+        const int sz = acts.size();
+        for(int i = 0; i < sz; ++i)
         {
-          QAction* act = defpup->findActionFromData(i);  
-          if(act)
-            act->setChecked(chbits);
-        }    
+          QAction* a = acts.at(i);  
+          if(a)
+            a->setChecked(chbits);
+        }
+      }
     }  
     else
     {
@@ -335,31 +339,36 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         int j = mdevView->rowCount();
         for(int i = 0; i < j; ++i)
           mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(i == no ? chbits : 0));
-        if(defpup)
-        {
-          QAction* a;
-          for(int i = 0; i < MIDI_CHANNELS; ++i)
-          {
-            a = defpup->findActionFromData(i);  
-            if(a)
-              a->setChecked(i == actid);
-          }  
-        }  
+        // The group is exclusive. No need to iterate manually.
+//         if(act->actionGroup())
+//         {
+//           QList<QAction*> acts = act->actionGroup()->actions();
+//           const int sz = acts.size();
+//           if(sz > actid)
+//           {
+//             QAction* a = acts.at(actid);
+//             if(a)
+//               a->setChecked(true);
+//           }
+//         }
       }
     }    
 #else
     int chbits;
     if(actid == MIDI_CHANNELS)              // Toggle all.
     {
-      //chbits = (defch == allch) ? 0 : allch;
       chbits = (defch == -1 || defch == allch) ? 0 : allch;
-      if(defpup)
-        for(int i = 0; i < MIDI_CHANNELS; ++i)
+      if(act->actionGroup())
+      {
+        QList<QAction*> acts = act->actionGroup()->actions();
+        const int sz = acts.size();
+        for(int i = 0; i < sz; ++i)
         {
-          QAction* act = defpup->findActionFromData(i);  
-          if(act)
-            act->setChecked(chbits);
-        }    
+          QAction* a = acts.at(i);  
+          if(a)
+            a->setChecked(chbits);
+        }
+      }
     }  
     else
     {
@@ -556,67 +565,71 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
 
             case DEVCOL_DEF_IN_CHANS:
                   {
-                    defpup = new MusEGui::PopupMenu(this, true);
-                    defpup->addAction(new MusEGui::MenuTitleItem("Channel", defpup)); 
+                    PopupMenu* pup = new PopupMenu(true);
+                    pup->addAction(new MenuTitleItem("Channel", pup)); 
                     QAction* act = 0;
                     int chbits = MusEGlobal::midiPorts[no].defaultInChannels();
+                    QActionGroup* ag = new QActionGroup(pup);
+                    ag->setExclusive(false);
                     for(int i = 0; i < MIDI_CHANNELS; ++i) 
                     {
-                      act = defpup->addAction(QString().setNum(i + 1));
+                      act = ag->addAction(QString().setNum(i + 1));
                       act->setData(i);
                       act->setCheckable(true);
                       act->setChecked((1 << i) & chbits);
                     }
+                    pup->addActions(ag->actions());
                     
-                    act = defpup->addAction(tr("Toggle all"));
+                    act = pup->addAction(tr("Toggle all"));
                     act->setData(MIDI_CHANNELS);
                     
-                    defpup->addSeparator();
-                    act = defpup->addAction(tr("Change all tracks now"));
+                    pup->addSeparator();
+                    act = pup->addAction(tr("Change all tracks now"));
                     act->setData(MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
                     // Allow ports with no device since that is a valid situation.
                     act->setEnabled(!MusEGlobal::song->midis()->empty());
                     
-                    connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
-                    defpup->exec(QCursor::pos());
-                    delete defpup;
-                    defpup = 0;
+                    connect(pup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
+                    pup->exec(QCursor::pos());
+                    delete pup;
                   }
                   return;                  
             break;                    
                   
             case DEVCOL_DEF_OUT_CHANS:
                   {
-                    defpup = new MusEGui::PopupMenu(this, true);
-                    defpup->addAction(new MusEGui::MenuTitleItem("Channel", defpup)); 
+                    PopupMenu* pup = new PopupMenu(true);
+                    pup->addAction(new MenuTitleItem("Channel", pup)); 
                     QAction* act = 0;
                     int chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
+                    QActionGroup* ag = new QActionGroup(pup);
+                    ag->setExclusive(true);
                     for(int i = 0; i < MIDI_CHANNELS; ++i) 
                     {
-                      act = defpup->addAction(QString().setNum(i + 1));
+                      act = ag->addAction(QString().setNum(i + 1));
                       act->setData(i);
                       act->setCheckable(true);
                       act->setChecked((1 << i) & chbits);
                     }  
+                    pup->addActions(ag->actions());
                     
                     // Turn on if and when multiple output routes are supported.
 #ifndef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-                    act = defpup->addAction(tr("Toggle all"));
+                    act = pup->addAction(tr("Toggle all"));
                     act->setData(MIDI_CHANNELS);
 #endif
                     
-                    defpup->addSeparator();
-                    act = defpup->addAction(tr("Change all tracks now"));
+                    pup->addSeparator();
+                    act = pup->addAction(tr("Change all tracks now"));
                     act->setData(MIDI_CHANNELS + 1);
                     // Enable only if there are tracks, and port has a device.
                     // Allow ports with no device since that is a valid situation.
                     act->setEnabled(!MusEGlobal::song->midis()->empty());
                     
-                    connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
-                    defpup->exec(QCursor::pos());
-                    delete defpup;
-                    defpup = 0;
+                    connect(pup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
+                    pup->exec(QCursor::pos());
+                    delete pup;
                   }
                   return;
             break;                    
@@ -624,7 +637,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
             case DEVCOL_NAME:
                   {
                     // We clicked the 'down' button.
-                    PopupMenu* pup = new PopupMenu(this);
+                    PopupMenu* pup = new PopupMenu(false);
                     QAction* act;
 
                     // REMOVE Tim. Persistent routes. Added. Testing...
@@ -754,7 +767,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     MusECore::MidiDevice* sdev = 0;
                     if(n < 0x10000000)
                     {
-                      delete pup;
                       if(n <= 2)  
                       {
                         sdev = MusECore::MidiJackDevice::createJackMidiDevice(); 
@@ -783,12 +795,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         typ = MusECore::MidiDevice::SYNTH_MIDI;
                       
                       sdev = MusEGlobal::midiDevices.find(act->text(), typ);
-                      delete pup;
                       // Is it the current device? Reset it to <none>.
                       if(sdev == dev)
                         sdev = 0;
                     }    
 
+                    delete pup;
+                    
                     MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                     for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
                     {
@@ -897,14 +910,22 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   {
                   if (dev && dev->isSynti())
                         return;
-                  if (instrPopup == 0)
-                        instrPopup = new PopupMenu(this);
-                  MusECore::MidiInstrument::populateInstrPopup(instrPopup, port->instrument(), false);   
+                  PopupMenu* pup = new PopupMenu(false);
+                  MusECore::MidiInstrument::populateInstrPopup(pup, port->instrument(), false);   
                   
-                  QAction* act = instrPopup->exec(ppt);
+                  if(pup->actions().count() == 0)
+                  {
+                    delete pup;
+                    return;
+                  }  
+                  
+                  QAction* act = pup->exec(ppt);
                   if(!act)
                     return;
+                  
                   QString s = act->text();
+                  delete pup;
+                  
                   item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
                   for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
                      != MusECore::midiInstruments.end(); ++i) {
@@ -915,7 +936,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                               break;
                               }
                         }
-                  MusEGlobal::song->update();
+                  MusEGlobal::song->update(SC_MIDI_INSTRUMENT);
                   }
                   return;
             break;                    
@@ -1092,8 +1113,6 @@ MPConfig::MPConfig(QWidget* parent)
       mdevView->verticalHeader()->hide();
       mdevView->setShowGrid(false);
 
-      instrPopup = 0;
-      defpup = 0;
       _showAliases = 1; // 0: Show second aliases, if available. 
       
       QStringList columnnames;
@@ -1229,7 +1248,7 @@ void MPConfig::deviceSelectionChanged()
 
 void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       {
-      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED)))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
       // Get currently selected index...

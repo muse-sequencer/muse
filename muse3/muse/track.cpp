@@ -54,6 +54,7 @@ unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
+int Track::_selectionOrderCounter = 0;
 
 const char* Track::_cname[] = {
       "Midi", "Drum", "NewStyleDrum", "Wave",
@@ -62,6 +63,7 @@ const char* Track::_cname[] = {
 
 
 bool MidiTrack::_isVisible=true;
+
 
 //---------------------------------------------------------
 //   addPortCtrlEvents
@@ -249,11 +251,14 @@ void Track::init()
       _off           = false;
       _channels      = 0;           // 1 - mono, 2 - stereo
       _selected      = false;
+      _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
+            // REMOVE Tim. Trackinfo. Added.
+            _isClipped[i] = false;
             }
       }
 
@@ -261,11 +266,15 @@ Track::Track(Track::TrackType t)
 {
       init();
       _type = t;
+// REMOVE Tim. Trackinfo. Removed.
+//       _isClipped = false;
 }
 
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
+  // REMOVE Tim. Trackinfo. Removed.
+//   _isClipped = false;
 
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.
@@ -274,6 +283,8 @@ Track::Track(const Track& t, int flags)
   for (int i = 0; i < MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
         _peak[i]  = 0.0;
+        // REMOVE Tim. Trackinfo. Added.
+        _isClipped[i] = false;
         }
 }
 
@@ -306,6 +317,7 @@ void Track::internal_assign(const Track& t, int flags)
         _off          = t._off;
         _channels     = t._channels;
         _selected     = t.selected();
+        _selectionOrder = t.selectionOrder();
         _y            = t._y;
         _height       = t._height;
         _comment      = t.comment();
@@ -414,13 +426,24 @@ void Track::clearRecAutomation(bool clearList)
 }
 
 //---------------------------------------------------------
+//   setSelected
+//---------------------------------------------------------
+
+void Track::setSelected(bool f)
+{ 
+  if(f && !_selected)
+    _selectionOrder = _selectionOrderCounter++;
+  _selected = f; 
+}
+
+//---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
 
 void Track::dump() const
       {
-      printf("Track <%s>: typ %d, parts %zd sel %d\n",
-         _name.toLatin1().constData(), _type, _parts.size(), _selected);
+      printf("Track <%s>: typ %d, parts %zd sel %d sel order%d\n",
+         _name.toLatin1().constData(), _type, _parts.size(), _selected, _selectionOrder);
       }
 
 //---------------------------------------------------------
@@ -664,17 +687,22 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         // TODO FINDMICH "assign" ordering as well
       }
 
-      if(flags & ASSIGN_PARTS)
+      const bool dup = flags & ASSIGN_DUPLICATE_PARTS;
+      const bool cpy = flags & ASSIGN_COPY_PARTS;
+      const bool cln = flags & ASSIGN_CLONE_PARTS;
+      if(dup || cpy || cln)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
               Part* dpart;
-              if (spart->hasClones())
-                  dpart = spart->createNewClone();
-              else
-                  dpart = spart->duplicate();
-
+              if(dup)
+                dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
+              else if(cpy)
+                dpart = spart->duplicate();
+              else if(cln)
+                dpart = spart->createNewClone();
+              dpart->setTrack(this);
               parts()->add(dpart);
               }
       }
@@ -892,7 +920,6 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   
   if(!operations.empty())
   {
-    operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //     MusEGlobal::song->update(SC_ROUTE);
   }
@@ -1277,7 +1304,10 @@ void Track::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "height", _height);
       xml.intTag(level, "locked", _locked);
       if (_selected)
+      {
             xml.intTag(level, "selected", _selected);
+            xml.intTag(level, "selectionOrder", _selectionOrder);
+      }
       }
 
 //---------------------------------------------------------
@@ -1313,6 +1343,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _locked = xml.parseInt();
       else if (tag == "selected")
             _selected = xml.parseInt();
+      else if (tag == "selectionOrder")
+            _selectionOrder = xml.parseInt();
       else
             return true;
       return false;

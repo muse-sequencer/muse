@@ -124,7 +124,7 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
                   if (event.empty())
                         continue;
                   MusECore::SndFileR f = event.sndFile();
-                  if (f.isNull())
+                  if(f.isNull())
                         continue;
                   
                   unsigned peoffset = px + event.frame() - event.spos();

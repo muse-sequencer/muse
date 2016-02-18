@@ -193,7 +193,7 @@ void AudioTrack::initBuffers()
     ciCtrlList icl = _controller.begin();
     for(unsigned long k = 0; k < _controlPorts; ++k)
     {
-      float val = 0.0;
+      double val = 0.0;
       if(icl != _controller.end())
       {
         // Since the list is sorted by id, if no match is found just let k catch up to the id.
@@ -204,8 +204,7 @@ void AudioTrack::initBuffers()
         }
       }
       _controls[k].idx    = k;
-      _controls[k].val    = val;
-      _controls[k].tmpVal = val;
+      _controls[k].dval    = val;
       _controls[k].enCtrl = true;
     }
   }
@@ -791,92 +790,102 @@ void AudioTrack::setAutomationType(AutomationType t)
 //   processAutomationEvents
 //---------------------------------------------------------
 
-void AudioTrack::processAutomationEvents() 
+void AudioTrack::processAutomationEvents(Undo* operations) 
 { 
-  if (_automationType != AUTO_TOUCH && _automationType != AUTO_WRITE)
-        return;
+  if(_automationType != AUTO_TOUCH && _automationType != AUTO_WRITE)
+    return;
   
-  for (iCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) 
+  // Use either the supplied operations list or a local one.
+  Undo ops;
+  Undo& opsr = operations ? (*operations) : ops;
+  
+  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) 
   {
     CtrlList* cl = icl->second;
+    CtrlList& clr = *icl->second;
     int id = cl->id();
+
+    // Were there any recorded events for this controller?
+    bool do_it = false;
+    for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
+    {
+      if(icr->id == id)
+      {
+        do_it = true;
+        break;
+      } 
+    }
+    if(!do_it)
+      continue;
+    
+    // The Undo system will take 'ownership' of these and delete them at the appropriate time.
+    CtrlList* erased_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
+    CtrlList* added_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
     
     // Remove old events from record region.
-    if (_automationType == AUTO_WRITE) 
+    if(_automationType == AUTO_WRITE) 
     {
       int start = MusEGlobal::audio->getStartRecordPos().frame();
       int end   = MusEGlobal::audio->getEndRecordPos().frame();
       iCtrl   s = cl->lower_bound(start);
       iCtrl   e = cl->lower_bound(end);
-      
-      // Erase old events only if there were recorded events.
-      for(iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
-      {
-        if(icr->id == id) // && icr->type == ARVT_VAL && icr->frame >= s->frame && icr->frame <= e->frame)
-        {
-          cl->erase(s, e);
-          break;
-        } 
-      }
+      erased_list_items->insert(s, e);
     }
     else 
     {  // type AUTO_TOUCH
-      for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
+      for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
       {
         // Don't bother looking for start, it's OK, just take the first one.
         // Needed for mousewheel and paging etc.
-        if (icr->id == id) 
+        if(icr->id != id)
+          continue;
+        
+        int start = icr->frame;
+        
+        if(icr == _recEvents.end())
         {
-          int start = icr->frame;
-          
+          int end = MusEGlobal::audio->getEndRecordPos().frame();
+          iCtrl s = cl->lower_bound(start);
+          iCtrl e = cl->lower_bound(end);
+          erased_list_items->insert(s, e);
+          break;
+        }
+        
+        ciCtrlRec icrlast = icr;
+        ++icr;
+        for(; ; ++icr) 
+        {
           if(icr == _recEvents.end())
           {
-            int end = MusEGlobal::audio->getEndRecordPos().frame();
+            int end = icrlast->frame;
             iCtrl s = cl->lower_bound(start);
             iCtrl e = cl->lower_bound(end);
-            cl->erase(s, e);
+            erased_list_items->insert(s, e);
             break;
           }
           
-          iCtrlRec icrlast = icr;
-          ++icr;
-          for(; ; ++icr) 
+          if(icr->id == id && icr->type == ARVT_STOP) 
           {
-            if(icr == _recEvents.end())
-            {
-              int end = icrlast->frame;
-              iCtrl s = cl->lower_bound(start);
-              iCtrl e = cl->lower_bound(end);
-              cl->erase(s, e);
-              break;
-            }
-            
-            if(icr->id == id && icr->type == ARVT_STOP) 
-            {
-              int end = icr->frame;
-              
-              iCtrl s = cl->lower_bound(start);
-              iCtrl e = cl->lower_bound(end);
-              
-              cl->erase(s, e);
-              
-              break;
-            }
-              
-            if(icr->id == id)
-              icrlast = icr;
+            int end = icr->frame;
+            iCtrl s = cl->lower_bound(start);
+            iCtrl e = cl->lower_bound(end);
+            erased_list_items->insert(s, e);
+            break;
           }
-          if (icr == _recEvents.end())
-                break;
+            
+          if(icr->id == id)
+            icrlast = icr;
         }
+        if(icr == _recEvents.end())
+              break;
       }
     }
     
     // Extract all recorded events for controller "id"
-    //  from CtrlRecList and put into cl.
-    for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
+    //  from CtrlRecList and put into new_list.
+    for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
     {
-          if (icr->id == id)
+          if(icr->id == id)
           {
                 // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.
                 CtrlValueType vtype = cl->valueType();
@@ -889,13 +898,19 @@ void AudioTrack::processAutomationEvents()
                     continue;
                 }  
                 // Now add the value.
-                cl->add(icr->frame, icr->val);
+                added_list_items->add(icr->frame, icr->val);
           }
     }
+    
+    if(!erased_list_items->empty() || !added_list_items->empty())
+      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, &_controller, erased_list_items, added_list_items));
   }
   
   // Done with the recorded automation event list. Clear it.
   _recEvents.clear();
+  
+  if(!operations)
+    MusEGlobal::song->applyOperationGroup(ops);
 }
 
 //---------------------------------------------------------
@@ -1179,7 +1194,7 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
 //   returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame) 
 {
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
   {
@@ -1398,7 +1413,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
       xml.intTag(level, "automation", int(automationType()));
-      xml.floatTag(level, "gain", _gain);
+      xml.doubleTag(level, "gain", _gain);
       if (hasAuxSend()) {
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1483,7 +1498,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
       else if (tag == "gain")
-            _gain = xml.parseFloat();
+            _gain = xml.parseDouble();
       else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
       else if (tag == "controller") {
@@ -2307,31 +2322,31 @@ bool AudioTrack::setRecordFlag1(bool f)
 bool AudioTrack::prepareRecording()
 {
       if(MusEGlobal::debugMsg)
-        printf("prepareRecording for track %s\n", _name.toLatin1().constData());
+        printf("prepareRecording for track %s\n", name().toLatin1().constData());
 
       if (_recFile.isNull()) {
             //
             // create soundfile for recording
             //
-            char buffer[128];
+            const QString fbase = QString("%1/").arg(MusEGlobal::museProject) + 
+                                  QObject::tr("TRACK") + 
+                                  QString("_%1_").arg(name().simplified().replace(" ","_")) + 
+                                  QObject::tr("TAKE");
             QFile fil;
             for (;;++recFileNumber) {
-               sprintf(buffer, "%s/TRACK_%s_TAKE_%d.wav",
-                  MusEGlobal::museProject.toLocal8Bit().constData(),
-                       name().simplified().replace(" ","_").toLocal8Bit().constData(),
-                  recFileNumber);
-               fil.setFileName(QString(buffer));
+               fil.setFileName(fbase + QString("_%1.wav").arg(recFileNumber));
                if (!fil.exists())
                   break;
                   }
-            _recFile = new MusECore::SndFile(QString(buffer));
+            _recFile = new MusECore::SndFile(fil.fileName());
+            
             _recFile->setFormat(
                SF_FORMAT_WAV | SF_FORMAT_FLOAT,
                _channels, MusEGlobal::sampleRate);
       }
 
       if (MusEGlobal::debugMsg)
-          printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
+          printf("AudioTrack::prepareRecording: init internal file %s\n", _recFile->path().toLatin1().constData());
 
       if(_recFile->openWrite())
             {

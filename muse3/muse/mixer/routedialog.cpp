@@ -4809,7 +4809,6 @@ void RouteDialog::disconnectClicked()
   
   if(!operations.empty())
   {
-    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //     MusEGlobal::song->update(SC_ROUTE);
     //MusEGlobal::song->update(SC_SOLO);

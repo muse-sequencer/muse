@@ -29,6 +29,7 @@
 #include "mmath.h"
 #include "drange.h"
 #include "fastlog.h"
+#include "muse_math.h"
 
 namespace MusEGui {
 
@@ -81,7 +82,7 @@ double DoubleRange::convertTo(double x, ConversionMode mode) const
       
     case ConvertDefault:
       if(d_log)
-        return pow(10.0, x*0.05f);
+        return muse_db2val(x);
       if(d_integer)
         return rint(x);
       return x;
@@ -92,7 +93,7 @@ double DoubleRange::convertTo(double x, ConversionMode mode) const
     break;
     
     case ConvertLog:
-      return pow(10.0, x*0.05f);
+      return muse_db2val(x);
     break;
   }
   return x;

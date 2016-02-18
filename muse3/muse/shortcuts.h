@@ -73,6 +73,8 @@ struct shortcut_cg
       const char* name;
       };
 
+QString shrtToStr(long int shrt);
+
 typedef struct shortcut ShortCut ;
 
 enum {
@@ -205,6 +207,8 @@ enum {
       SHRT_SEL_TRACK_BELOW,
       SHRT_SEL_TRACK_ABOVE,
       SHRT_EDIT_TRACK_NAME,
+      SHRT_MUTE_CURRENT_TRACKS,
+      SHRT_SOLO_CURRENT_TRACKS,
 
       //To be in arranger, pianoroll & drumeditor. p4.0.10 now globally handled, too.
       SHRT_SELECT_ALL, //Ctrl+A

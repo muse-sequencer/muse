@@ -25,6 +25,21 @@
 
 namespace MusEGlobal {
 
+/*   --- PLEASE READ BEFORE EDITING ---
+ *
+ * The values below are default init parameters for most MusE
+ * configuration parameters.
+ * They are however NOT certain to have this value!
+ *
+ * This is for two reasons:
+ * 1) MusE has a config file which overrides these values
+ * 2) When no configuration file exists a default TEMPLATE
+ *    is loaded from the share dir which overwrites most
+ *    of these values.
+ *    In a perfect world it would overwrite all values and
+ *    these would be removed.
+ */
+
 GlobalConfigValues config = {
       170,                        // globalAlphaBlend    
       {
@@ -133,8 +148,7 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
       Qt::gray,                     // midiCanvasBeatColor
-      Qt::black,                // midiCanvasBarColor
-
+      Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
       Qt::black,                    // waveRmsColor
@@ -146,6 +160,7 @@ GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
 
+      WaveOutLine,                  // waveDrawing
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences
@@ -165,13 +180,14 @@ GlobalConfigValues config = {
       1,                            // smf export file format
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
+      true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.
       true,                         // importInstrNameMetas Import Prefer Instrument Name metas over Mode sysexes if both exist.
-      EXPORT_PORTS_DEVICES_ALL,     // exportPortsDevices Export port number metas and/or device name metas.
+      PORT_NUM_META | DEVICE_NAME_META,  // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
       true,                         // exportPortDeviceSMF0 Export a port and/or device meta even for SMF0.
-      EXPORT_MODE_INSTR_ALL,        // exportModeInstr Export mode sysexes and/or instrument name metas.
+      MODE_SYSEX | INSTRUMENT_NAME_META, // exportModeInstr. Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString("GM"),                // importMidiDefaultInstr Default to this instrument not Generic, if no match found
       1,                            // startMode
       QString(""),                  // start song path
@@ -182,16 +198,22 @@ GlobalConfigValues config = {
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
          QString("Mixer A"),
+         QStringList(),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true, true
+         true, true, true, true, true,
+         MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         QList<bool>()
          },
       {
          QString("Mixer B"),
+         QStringList(),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true, true
-         },
+         true, true, true, true, true,
+         MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         QList<bool>()
+      },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
       false,                        // mixer1Visible;

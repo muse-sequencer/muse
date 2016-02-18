@@ -65,19 +65,21 @@ class CompactPatchEdit : public QFrame
     void HBankDoubleClicked(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     void LBankDoubleClicked(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     void ProgDoubleClicked(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
-    void anySliderRightClicked(const QPoint &p, int id);
+    void anySliderRightClicked(QPoint p, int id);
+    void patchNamePressed(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    //void patchNameReleased(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     
-  protected:
-    virtual void mousePressEvent (QMouseEvent*);
+//   protected:
+//     virtual void mousePressEvent (QMouseEvent*);
     
   signals:
 //     void sliderPressed(int id);
 //     void sliderReleased(int id);
 //     void sliderMoved(double value, int id);
 //     void sliderMoved(double value, int id, bool shift);
-    void sliderRightClicked(const QPoint &p, int id);
-    void patchNameClicked();
-    void patchNameRightClicked();
+    void sliderRightClicked(QPoint p, int id);
+    void patchNameClicked(QPoint p, int id);
+    void patchNameRightClicked(QPoint p, int id);
     void valueChanged(double value, int id);
     // Both value and off state changed combined into one signal. 
     // Note the SliderBase::valueChanged signal is also available.

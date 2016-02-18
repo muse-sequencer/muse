@@ -105,6 +105,7 @@ class JackAudioDevice : public AudioDevice {
       virtual const char* clientName() { return jackRegisteredName; }
       virtual void nullify_client() { _client = 0; }
 
+      float getDSP_Load();
       virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
       virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);

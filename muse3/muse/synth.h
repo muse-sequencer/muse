@@ -68,7 +68,7 @@ class Synth {
       QString _version;
 
    public:
-      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
 
@@ -157,8 +157,8 @@ class SynthIF : public PluginIBase {
       virtual QString getPatchName(int, int, bool) const = 0;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
-      virtual float getParameter(unsigned long idx) const = 0;
-      virtual void setParameter(unsigned long idx, float value) = 0;
+      virtual double getParameter(unsigned long idx) const = 0;
+      virtual void setParameter(unsigned long idx, double value) = 0;
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;      
 
       //-------------------------
@@ -188,9 +188,9 @@ class SynthIF : public PluginIBase {
 
       virtual unsigned long parameters() const;
       virtual unsigned long parametersOut() const;
-      virtual void setParam(unsigned long i, float val);
-      virtual float param(unsigned long i) const;
-      virtual float paramOut(unsigned long i) const;
+      virtual void setParam(unsigned long i, double val);
+      virtual double param(unsigned long i) const;
+      virtual double paramOut(unsigned long i) const;
       virtual const char* paramName(unsigned long i);
       virtual const char* paramOutName(unsigned long i);
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
@@ -221,7 +221,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
-      std::vector<float> initParams;
+      std::vector<double> initParams;
       //custom params in xml song file , synth tag, that will be passed to new SynthIF:setCustomData(Xml &) method
       //now only lv2host uses them, others simply ignore
       std::vector<QString> accumulatedCustomParams;
@@ -382,8 +382,8 @@ class MessSynthIF : public SynthIF {
       virtual QString getPatchName(int, int, bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       virtual void write(int level, Xml& xml) const;
-      virtual float getParameter(unsigned long) const { return 0.0; }
-      virtual void setParameter(unsigned long, float) {}
+      virtual double getParameter(unsigned long) const { return 0.0; }
+      virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval);
       };
 

@@ -572,52 +572,15 @@ void Audio::msgRemoveTrack(Track* track, bool doUndoFlag)
 
 void Audio::msgRemoveTracks()
 {
-      bool loop;
-      do 
+      Undo operations;
+      TrackList* tl = MusEGlobal::song->tracks();
+      for(iTrack t = tl->begin(); t != tl->end(); ++t) 
       {
-        loop = false;
-        TrackList* tl = MusEGlobal::song->tracks();
-        for (iTrack t = tl->begin(); t != tl->end(); ++t) 
-        {
-          Track* tr = *t;
-          if (tr->selected()) 
-          {
-            MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(tr), tr), false);
-            loop = true;
-            break;
-          }
-        }
-      } 
-      while (loop);
-            
-     /*    DELETETHIS 28    
-            // TESTED: DIDN'T WORK: It still skipped some selected tracks !
-            // Quote from SGI STL: "Erasing an element from a map also does not invalidate any iterators, 
-            //                      except, of course, for iterators that actually point to the element 
-            //                      that is being erased."
-            // Well that doesn't seem true here...
-            
-            TrackList* tl = MusEGlobal::song->tracks();
-            for(ciTrack t = tl->begin(); t != tl->end() ; ) 
-            {
-                  if((*t)->selected()) 
-                  {
-                        // Changed 20070102: - Iterator t becomes invalid after msgRemoveTrack.
-                        ciTrack tt = t;
-                        ++t;
-                        Track* tr = *tt;
-                        
-                        MusEGlobal::song->removeTrack1(tr);
-                        msgRemoveTrack(tr, false);
-                        MusEGlobal::song->removeTrack3(tr);
-                        
-                  }
-                  else
-                    ++t;
-                        
-            }
-  */          
-            
+        Track* tr = *t;
+        if(tr->selected()) 
+          operations.push_back(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(tr), tr));
+      }
+      MusEGlobal::song->applyOperationGroup(operations);
 }
 
 //---------------------------------------------------------

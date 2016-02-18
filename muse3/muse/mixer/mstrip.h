@@ -233,8 +233,8 @@ class MidiStrip : public Strip {
 //       void labelDoubleClicked(int);
       void volLabelDoubleClicked();
       void volLabelChanged(double);
-      void controlRightClicked(const QPoint&, int);
-      void propertyRightClicked(const QPoint&, int);
+      void controlRightClicked(QPoint, int);
+      void propertyRightClicked(QPoint, int);
       void instrPopup();
       void patchPopup();
       void patchPopupActivated(QAction*);
@@ -247,7 +247,12 @@ class MidiStrip : public Strip {
       virtual void configChanged();
 
    public:
-      MidiStrip(QWidget* parent, MusECore::MidiTrack*);
+      MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false);
+      
+      static const int xMarginHorSlider;
+      static const int yMarginHorSlider;
+      static const int upperRackSpacerHeight;
+      static const int rackFrameWidth;
       };
 
 } // namespace MusEGui

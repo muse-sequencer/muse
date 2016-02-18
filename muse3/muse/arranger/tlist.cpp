@@ -604,49 +604,9 @@ void TList::chanValueFinished()
 {
   if(editTrack)
   { 
-    if(editTrack->isMidiTrack()) 
-    {
-      MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
-      // Default to track port if -1 and track channel if -1.
-      if (mt)
-      {
-        int channel = chan_edit->value() - 1;
-        if(channel >= MIDI_CHANNELS)
-          channel = MIDI_CHANNELS - 1;
-        if(channel < 0)
-          channel = 0;
-        if(channel != mt->outChannel()) 
-        {
-              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
-                                                          editTrack, 
-                                                          mt->outChannel(), 
-                                                          channel));
-        }      
-      }
-    }
-    else
-    {
-        if(editTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
-        {
-          MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editTrack);
-          if(at)
-          {  
-            int n = chan_edit->value();
-            if(n > MAX_CHANNELS)
-                  n = MAX_CHANNELS;
-            else if (n < 1)
-                  n = 1;
-            if(n != at->channels()) 
-            {
-                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
-                                                              editTrack, 
-                                                              at->channels(), 
-                                                              n));
-            }
-          }       
-        }         
-    }      
-  
+    // Default to track port if -1 and track channel if -1.
+    const int channel = chan_edit->value() - (editTrack->isMidiTrack() ? 1 : 0); // Subtract 1 from midi channel display.
+    setTrackChannel(editTrack, false, channel, 0);
     editTrack = 0;
   }
 
@@ -752,10 +712,42 @@ MusECore::Track* TList::y2Track(int y) const
       return 0;
       }
 
+void TList::muteSelectedTracksSlot()
+{
+  bool stateDefined=false;
+  bool setTo;
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+  {
+    if ((*t)->selected()){
+      if (!stateDefined)
+        setTo = !(*t)->isMute();
+      (*t)->setMute(setTo);
+    }
+  }
+  update();
+}
+
+void TList::soloSelectedTracksSlot()
+{
+  bool stateDefined=false;
+  bool setTo;
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+  {
+    if ((*t)->selected()){
+      if (!stateDefined)
+        setTo = !(*t)->soloMode();
+      (*t)->setSolo(setTo);
+    }
+  }
+  update();
+}
+
 void TList::editTrackNameSlot()
 {
-  if (countSelected() == 1) {
-    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  if (tracks->countSelected() == 1) {
     for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
       if ((*t)->selected()){
         editTrackName(*t);
@@ -784,16 +776,100 @@ void TList::editTrackName(MusECore::Track *t)
   editor->setFocus();
 }
 
+void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, int delta, bool doAllTracks)
+{
+  MusECore::Undo operations;
+  if(track->isMidiTrack()) 
+  {
+    MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
+    
+    if(!doAllTracks && !track->selected())
+    {
+      if(isDelta)
+        channel = mt->outChannel() + delta;
+      if(channel >= MIDI_CHANNELS) channel = MIDI_CHANNELS - 1;
+      if(channel < 0) channel = 0;
+      if(channel != mt->outChannel()) 
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel));
+    }
+    else
+    {
+      MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
+      for(MusECore::iMidiTrack it = tracks->begin(); it != tracks->end(); ++it)
+      {
+        MusECore::MidiTrack* t = *it;
+        if(isDelta)
+          channel = t->outChannel() + delta;
+        if(channel >= MIDI_CHANNELS) channel = MIDI_CHANNELS - 1;
+        else if(channel < 0) channel = 0;
+        if(channel != t->outChannel() && (doAllTracks || t->selected()))
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel));
+      }
+    }
+    
+    if(!operations.empty())
+      MusEGlobal::song->applyOperationGroup(operations);
+  }
+  else
+  {
+    if(track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+    {
+      if(channel > MAX_CHANNELS)
+        channel = MAX_CHANNELS;
+      else if(channel < 1)
+        channel = 1;
+      
+      if(!doAllTracks && !track->selected())
+      {
+        if(isDelta)
+          channel = track->channels() + delta;
+        if(channel > MAX_CHANNELS) channel = MAX_CHANNELS;
+        else if(channel < 1) channel = 1;
+        if(channel != track->channels())
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel));
+      }
+      else
+      {
+        MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+        for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+        {
+          if((*it)->isMidiTrack())
+            continue;
+          MusECore::Track* t = *it;
+          if(isDelta)
+            channel = t->channels() + delta;
+          if(channel > MAX_CHANNELS) channel = MAX_CHANNELS;
+          else if(channel < 1) channel = 1;
+          if(channel != t->channels() && (doAllTracks || t->selected()))
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel));
+        }
+      }
+      
+      if(!operations.empty())
+        MusEGlobal::song->applyOperationGroup(operations);
+    }         
+  }      
+}
+
 //---------------------------------------------------------
 //   viewMouseDoubleClickEvent
 //---------------------------------------------------------
 
 void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       {
+      if((editor && (editor->isVisible() || editor->hasFocus())) || 
+         (chan_edit && (chan_edit->isVisible() || chan_edit->hasFocus())) || 
+         (ctrl_edit && (ctrl_edit->isVisible() || ctrl_edit->hasFocus()))) 
+      {
+        ev->accept();
+        return;
+      }
+      
       int button  = ev->button();
       //bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
       if(button != Qt::LeftButton) {   
-        mousePressEvent(ev);
+//         mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed. Causing double increments on channel.
+        ev->accept();
         return;
       }  
 
@@ -801,14 +877,16 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       int section = header->logicalIndexAt(x);
       if (section == -1)
       {  
-        mousePressEvent(ev);  
+//         mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed.
+        ev->accept();
         return;
       }
       
       MusECore::Track* t = y2Track(ev->y() + ypos);
       if(t == NULL)
       {
-         return;
+        ev->accept();
+        return;
       }
 
       int colx = header->sectionPosition(section);
@@ -836,25 +914,28 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   // Default to track port if -1 and track channel if -1.
                   if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                   {
-                    mousePressEvent(ev);
+//                     mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed.
+                    ev->accept();
                     return;
                   } 
                   
                   // A disabled spinbox up or down button will pass the event to the parent! Causes pseudo 'wrapping'. Eat it up.
-                  if(chan_edit && chan_edit->hasFocus())
-                  {
-                    ev->accept();    
-                    return;
-                  }
-                  else
-                  {
+                  // REMOVE Tim. Trackinfo. Changed.
+//                   if(chan_edit && chan_edit->hasFocus())
+//                   {
+//                     ev->accept();    
+//                     return;
+//                   }
+//                   else
+//                   {
                       editTrack=t;
-                      if (chan_edit==0) {
+                      if (!chan_edit)
+                      {
                             chan_edit=new QSpinBox(this);
                             chan_edit->setFrame(false);
                             chan_edit->setMinimum(1);
                             connect(chan_edit, SIGNAL(editingFinished()), SLOT(chanValueFinished()));
-                            }
+                      }
                       if (t->isMidiTrack())
                       {  
                         chan_edit->setMaximum(MIDI_CHANNELS);
@@ -872,8 +953,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       editMode = true;     
                       chan_edit->show();
                       chan_edit->setFocus();
-                      ev->accept();    
-                      }
+                      //}
                   }
             else if (section >= COL_CUSTOM_MIDICTRL_OFFSET)
             {
@@ -913,12 +993,13 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   ctrl_edit->setFocus();
                 }
                 // else: the CTRL_PROGRAM popup is displayed with a single click
-                ev->accept();
+//                 ev->accept();
               }
             }
-            else
-                  mousePressEvent(ev);
+//             else
+//                   mousePressEvent(ev);    // REMOVE Tim. Trackinfo. Removed.
             }
+      ev->accept();
       }
 
 //---------------------------------------------------------
@@ -931,7 +1012,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
             {
-                  MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
+                  MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(t);
                   
                   int potential_new_port_no=-1;
                   int port = -1; 
@@ -947,14 +1028,14 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                   for (no=0;no<MIDI_PORTS;no++)
                     if (MusEGlobal::midiPorts[no].device()==NULL)
                     {
-                      MusECore::ciTrack it;
-                      for (it=MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
+                      MusECore::ciMidiTrack it;
+                      for (it=MusEGlobal::song->midis()->begin(); it!=MusEGlobal::song->midis()->end(); ++it)
                       {
-                        MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(*it);
-                        if (mt && mt!=t && mt->outPort()==no)
+                        MusECore::MidiTrack* mt=*it;
+                        if (mt!=t && mt->outPort()==no)
                           break;
                       }
-                      if (it == MusEGlobal::song->tracks()->end())
+                      if (it == MusEGlobal::song->midis()->end())
                         break;
                     }
 
@@ -1088,23 +1169,43 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                   }
 
                   MusEGlobal::audio->msgIdle(true);
-                  if (!allClassPorts)
-                    track->setOutPortAndUpdate(n);
-                  else {
-                    // change all ports of this type
-                    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                      if ((*myt)->isDrumTrack() && t->isDrumTrack())
-                      {
-                          ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
-                      }
-                      else if ((*myt)->isMidiTrack() && !(*myt)->isDrumTrack()
-                               && (t->isMidiTrack() && !t->isDrumTrack())) {
-                          ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
-                      }
-
+                  
+// REMOVE Tim. Trackinfo. Changed.
+//                   if (!allClassPorts)
+//                     track->setOutPortAndUpdate(n);
+//                   else {
+//                     // change all ports of this type
+//                     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+//                       if ((*myt)->isDrumTrack() && t->isDrumTrack())
+//                       {
+//                           ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
+//                       }
+//                       else if ((*myt)->isMidiTrack() && !(*myt)->isDrumTrack()
+//                                && (t->isMidiTrack() && !t->isDrumTrack())) {
+//                           ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
+//                       }
+// 
+//                     }
+//                   }
+//                   
+                  
+                  if(!allClassPorts && !t->selected())
+                  {
+                    if(n != track->outPort())
+                      track->setOutPortAndUpdate(n);
+                  }
+                  else
+                  {
+                    MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
+                    for(MusECore::iMidiTrack myt = tracks->begin(); myt != tracks->end(); ++myt) 
+                    {
+                      MusECore::MidiTrack* mt = *myt;
+                      if(n != mt->outPort() && (allClassPorts || mt->selected()))
+                        mt->setOutPortAndUpdate(n);
                     }
                   }
+                  
                   MusEGlobal::audio->msgIdle(false);
                   MusEGlobal::audio->msgUpdateSoloStates();
                   MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
@@ -1329,17 +1430,6 @@ void TList::keyPressEvent(QKeyEvent* e)
   emit keyPressExt(e); //redirect keypress events to main app
 }
 
-int TList::countSelected()
-{
-  // check for single selection
-  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-  int nselect = 0;
-  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
-        if ((*t)->selected())
-              ++nselect;
-  return nselect;
-}
-
 //---------------------------------------------------------
 //   moveSelection
 //---------------------------------------------------------
@@ -1348,7 +1438,7 @@ void TList::moveSelection(int n)
       {
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
 
-      int nselect = countSelected();
+      int nselect = tracks->countSelected();
       if (nselect != 1)
             return;
       MusECore::Track* selTrack = 0;
@@ -1658,16 +1748,22 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
 //---------------------------------------------------------
 void TList::mousePressEvent(QMouseEvent* ev)
       {
-      int x       = ev->x();
-      int y       = ev->y();
-      int button  = ev->button();
-      bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
+      if((editor && (editor->isVisible() || editor->hasFocus())) || 
+         (chan_edit && (chan_edit->isVisible() || chan_edit->hasFocus())) || 
+         (ctrl_edit && (ctrl_edit->isVisible() || ctrl_edit->hasFocus()))) 
+      {
+        ev->accept();
+        return;
+      }
+        
+      const int x       = ev->x();
+      const int y       = ev->y();
+      const int button  = ev->button();
+      const bool ctrl   = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
+      const bool shift  = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
 
       MusECore::Track* t    = y2Track(y + ypos);
 
-      // FIXME Observed: Ancient bug: Track Info doesn't change if selecting multiple tracks in reverse order.
-      // Will need to be fixed if/when adding 'multiple track global editing'. 
-      
       TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
@@ -1898,7 +1994,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             case COL_CLASS:
                 {
                   bool allSelected=false;
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                     allSelected=true;
 
                   if (t->isMidiTrack())
@@ -1908,7 +2004,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             case COL_OPORT:
               {
                   bool allClassPorts=false;
-                  if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier || ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier)
+                  if (ctrl || shift)
                       allClassPorts=true;
                   if (button == Qt::LeftButton && t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                         portsPopupMenu(t, x, t->y() - ypos, allClassPorts);
@@ -1919,16 +2015,16 @@ void TList::mousePressEvent(QMouseEvent* ev)
             case COL_MUTE:
                 {
                   mode = START_DRAG;
-                  bool turnOff = (button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier);
+                  bool turnOff = (button == Qt::RightButton) || shift;
 
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         toggleMute(*myt,turnOff);
                     }
                   }
-                  else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
+                  else if (ctrl) // toggle ALL tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
@@ -1943,14 +2039,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                }
             case COL_SOLO:
                   mode = START_DRAG;
-                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
                     }
                   }
-                  else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
+                  else if (ctrl) // toggle ALL tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                       if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
@@ -2039,10 +2135,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                                           break;
                                     case 1003:     // delete track(s)
-                                          MusEGlobal::song->startUndo();
                                           MusEGlobal::audio->msgRemoveTracks();
-                                          MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
-                                          MusEGlobal::audio->msgUpdateSoloStates();
                                           break;
                                     case 1002:     // show track comment
                                           {
@@ -2126,45 +2219,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       delta = 1;
                     else if (button == Qt::MidButton) 
                       delta = -1;
-                    if (t->isMidiTrack()) 
-                    {
-                      MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(t);
-                      if (mt == 0)
-                        break;
-                      int channel = mt->outChannel();
-                      channel += delta;
-                      if(channel >= MIDI_CHANNELS)
-                        channel = MIDI_CHANNELS - 1;
-                      if(channel < 0)
-                        channel = 0;
-                      if (channel != mt->outChannel()) 
-                      {
-                            MusEGlobal::audio->msgIdle(true);
-                            mt->setOutChanAndUpdate(channel);
-                            MusEGlobal::audio->msgIdle(false);
-                            MusEGlobal::audio->msgUpdateSoloStates();
-                            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
-                      }
-                    }
-                    else
-                    {
-                        if(t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
-                        {
-                          MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(t);
-                          if (at == 0)
-                            break;
-                    
-                          int n = t->channels() + delta;
-                          if (n > MAX_CHANNELS)
-                                n = MAX_CHANNELS;
-                          else if (n < 1)
-                                n = 1;
-                          if (n != t->channels()) {
-                                MusEGlobal::audio->msgSetChannels(at, n);
-                                MusEGlobal::song->update(SC_CHANNELS);
-                                }
-                        }         
-                    }      
+                    setTrackChannel(t, true, 0, delta, ctrl || shift);
                   }
                   break;
             
@@ -2471,6 +2526,14 @@ void TList::selectTrackBelow()
 
 void TList::mouseMoveEvent(QMouseEvent* ev)
       {
+      if((editor && (editor->isVisible() || editor->hasFocus())) || 
+         (chan_edit && (chan_edit->isVisible() || chan_edit->hasFocus())) || 
+         (ctrl_edit && (ctrl_edit->isVisible() || ctrl_edit->hasFocus()))) 
+      {
+        ev->accept();
+        return;
+      }
+      
       if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
             int y = ev->y();
             int ty = -ypos;
@@ -2553,6 +2616,14 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
 
 void TList::mouseReleaseEvent(QMouseEvent* ev)
       {
+      if((editor && (editor->isVisible() || editor->hasFocus())) || 
+         (chan_edit && (chan_edit->isVisible() || chan_edit->hasFocus())) || 
+         (ctrl_edit && (ctrl_edit->isVisible() || ctrl_edit->hasFocus()))) 
+      {
+        ev->accept();
+        return;
+      }
+      
       if (mode == DRAG) {
             MusECore::Track* t = y2Track(ev->y() + ypos);
             if (t) {

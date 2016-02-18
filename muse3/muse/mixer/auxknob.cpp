@@ -24,6 +24,7 @@
 #include <cmath>
 #include "auxknob.h"
 #include "gconfig.h"
+#include "muse_math.h"
 
 namespace MusEGui {
 
@@ -51,7 +52,7 @@ void AuxKnob::valueChanged(double val)
             val -= 1.0; // display special value "off"
             }
       else
-            vol = pow(10.0, val/20.0);
+            vol = muse_db2val(val);
       emit auxChanged(idx, vol);
       }
 

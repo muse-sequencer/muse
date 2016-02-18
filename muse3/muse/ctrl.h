@@ -116,6 +116,7 @@ class CtrlRecList : public std::list<CtrlRecVal> {
       };
 
 typedef CtrlRecList::iterator iCtrlRec;
+typedef CtrlRecList::const_iterator ciCtrlRec;
 
 //---------------------------------------------------------
 //   MidiAudioCtrlMap
@@ -196,6 +197,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void swap(CtrlList&);
       std::pair<iCtrl, bool> insert(const std::pair<int, CtrlVal>& p);
       iCtrl insert(iCtrl ic, const std::pair<int, CtrlVal>& p);
+      void insert(iCtrl first, iCtrl last);
       void erase(iCtrl ictl);
       size_type erase(int frame);
       void erase(iCtrl first, iCtrl last);
