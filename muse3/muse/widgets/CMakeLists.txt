@@ -60,8 +60,7 @@ QT5_WRAP_CPP (widget_mocs
       hitscale.h  
       intlabel.h  
       knob.h  
-      knob_and_meter.h  
-      lcd_widgets.h
+      knob_and_meter.h
       lcombo.h  
       menutitleitem.h
       meter.h
