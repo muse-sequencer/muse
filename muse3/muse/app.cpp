@@ -3209,7 +3209,7 @@ void MusE::bigtimeClosed()
 void MusE::showMixer1(bool on)
       {
       if (on && mixer1 == 0) {
-            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
+            mixer1 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
             mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
@@ -3226,7 +3226,7 @@ void MusE::showMixer1(bool on)
 void MusE::showMixer2(bool on)
       {
       if (on && mixer2 == 0) {
-            mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2));
+            mixer2 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
             mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());

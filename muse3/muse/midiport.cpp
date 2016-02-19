@@ -1007,7 +1007,7 @@ int MidiPort::lastValidHWCtrlState(int ch, int ctrl) const
 
 int MidiPort::hwCtrlState(int ch, int ctrl) const
       {
-      ch &= 0xff;return CTRL_VAL_UNKNOWN;
+      ch &= 0xff;
       ciMidiCtrlValList cl = ((const MidiCtrlValListList*)_controller)->find(ch, ctrl);
       if (cl == _controller->end())
             return CTRL_VAL_UNKNOWN;

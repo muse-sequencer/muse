@@ -370,7 +370,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setFixedHeight(30);
 
       QFontMetrics fm1(header->font());
-      int fw = 8;
+      int fw = 11;
 
       header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
       header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
@@ -401,7 +401,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       setHeaderWhatsThis();
       header->setSectionsMovable (true);
       header->restoreState(header_state);
-
 
       list = new TList(header, tracklist, "tracklist");
       
