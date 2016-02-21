@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Yamaha CS1x" nullparam="32639">
+  <MidiInstrument name="Yamaha CS1x">
     <PatchGroup name="Piano">
       <Patch name="Pf:GrandPno"       hbank="0"   lbank="0"   prog="0"  />
       <Patch name="Pf:GrndPnoK"       hbank="0"   lbank="1"   prog="0"  />

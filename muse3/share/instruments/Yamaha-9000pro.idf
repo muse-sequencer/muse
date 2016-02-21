@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-    <MidiInstrument name="Yamaha 9000pro" nullparam="32639">
+    <MidiInstrument name="Yamaha 9000pro">
         <Init>
             <!-- "XG Mode On" only since "GM On" not needed -->
             <!-- The instrument's builtin sequencer doesn't record "GM On" either -->

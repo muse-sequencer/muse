@@ -108,11 +108,12 @@ void MidiDevice::init()
       _openFlags     = 3;
       _port          = -1;
       _inputState    = new MidiCtrlState();
-      for(int i = 0; i < MIDI_CHANNELS; ++i)
-      {
-        //_curInParamNums[i].reset();  // REMOVE Tim.
-        _curOutParamNums[i].reset();
-      }
+      // REMOVE Tim. Midi fixes. Added constructor to MidiOutputParams.
+//       for(int i = 0; i < MIDI_CHANNELS; ++i)
+//       {
+//         //_curInParamNums[i].reset();  // REMOVE Tim.
+//         _curOutParamNums[i].reset();
+//       }
       }
 
 //---------------------------------------------------------

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-    <MidiInstrument name="Yamaha S30/S80" nullparam="32639">
+    <MidiInstrument name="Yamaha S30/S80">
         <Init>
             <!-- "GM On" behaves the same as "XG On" here. -->
             <!-- According to the data sheet "part values will be -->

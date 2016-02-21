@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="GM2" nullparam="32639">
+  <MidiInstrument name="GM2">
     <SysEx name="GM2 on">
       <comment>Switch General Midi Level 2 mode on</comment>
       <data>7e 7f 09 03</data>

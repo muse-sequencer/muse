@@ -166,6 +166,8 @@ GlobalConfigValues config = {
       true,                         // midiSendInit Send instrument initialization sequences
       true,                         // warnInitPending Warn instrument initialization sequences pending
       false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song
+      false,                        // midiSendNullParameters Send null parameters after each (N)RPN event
+      false,                        // midiOptimizeControllers Don't send redundant H/L parameters or H/L values
       true,                         // warnIfBadTiming Warn if timer res not good
       false,                        // velocityPerNote Whether to show per-note or all velocities
       -60,                          // int minMeter;

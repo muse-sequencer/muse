@@ -307,7 +307,6 @@ void MidiInstrument::init()
       {
       _noteOffMode = NoteOffAll; // By default, use note offs.
       _tmpMidiStateVersion = 1; // Assume old version. readMidiState will overwrite anyway.
-      _nullvalue = -1;
       _initScript = 0;
       _waitForLSB = true;
       _midiInit  = new EventList();
@@ -393,8 +392,6 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 // REMOVE Tim. Midi fixes. Changed.
 //   _controller->clear();
   _controller->clr();
-  
-  _nullvalue = ins._nullvalue;
   
 // REMOVE Tim. Midi fixes. Added.
   _waitForLSB = ins._waitForLSB;
@@ -915,9 +912,6 @@ void MidiInstrument::writeDrummaps(int level, Xml& xml) const
 
 void MidiInstrument::read(Xml& xml)
       {
-      bool ok;
-      int base = 10;
-      _nullvalue = -1;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -996,10 +990,9 @@ void MidiInstrument::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "name")
                               setIName(xml.s2());
-                        else if(tag == "nullparam") 
-                              _nullvalue = xml.s2().toInt(&ok, base);
+                        else if(tag == "nullparam") { } // Obsolete.
                         else if(tag == "NoteOffMode") 
-                              _noteOffMode = (NoteOffMode)xml.s2().toInt(&ok, base); // Default is NoteOffAll.
+                              _noteOffMode = (NoteOffMode)xml.s2().toInt(); // Default is NoteOffAll.
                         break;
                   case Xml::TagEnd:
                         if (tag == "MidiInstrument")
@@ -1021,18 +1014,8 @@ void MidiInstrument::write(int level, Xml& xml)
       level++;
       xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
 
-      if(_nullvalue != -1)
-      {
-        QString nv;
-        nv.setNum(_nullvalue);
-        xml.nput(" nullparam=\"%s\"", nv.toLatin1().constData());
-      }
       if(noteOffMode() != NoteOffAll) // Default is NoteOffAll.
-      {
-        QString nom;
-        nom.setNum(noteOffMode());
-        xml.nput(" NoteOffMode=\"%s\"", nom.toLatin1().constData());
-      }
+        xml.nput(" NoteOffMode=\"%d\"", noteOffMode());
       xml.put(">");
 
       level++;

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Emu 4mbgsgmmt sound font" nullparam="32639">
+  <MidiInstrument name="Emu 4mbgsgmmt sound font">
     <PatchGroup name="Bass">
       <Patch name="Acoustic Bass" hbank="0" lbank="0" prog="32" />
       <Patch name="Fingered Bass" hbank="0" lbank="0" prog="33" />

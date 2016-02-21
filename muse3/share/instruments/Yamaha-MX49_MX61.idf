@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-    <MidiInstrument name="Yamaha MX49/MX61" nullparam="32639">
+    <MidiInstrument name="Yamaha MX49/MX61">
         <!-- Panel Voices -->
         <PatchGroup name="Piano/Acoustic">
             <Patch name="CncrtGrand" hbank="63" lbank="0" prog="0"/>

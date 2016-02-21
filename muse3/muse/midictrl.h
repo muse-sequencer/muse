@@ -30,10 +30,10 @@
 
 #include <QString>
 
-#define _MIDI_CTRL_DEBUG_   // REMOVE Tim. (Remember to clear this.)
+//#define _MIDI_CTRL_DEBUG_   // REMOVE Tim. Midi fixes. (Remember to clear this.)
 // For finding exactly who may be calling insert, erase clear etc. in
 //  the controller list classes. (KDevelop 'Find uses'.)
-#define _MIDI_CTRL_METHODS_DEBUG_   // REMOVE Tim. (Remember to clear this.)
+//#define _MIDI_CTRL_METHODS_DEBUG_   // REMOVE Tim. Midi fixes. (Remember to clear this.)
 
 namespace MusECore {
 

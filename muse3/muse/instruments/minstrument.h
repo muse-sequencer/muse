@@ -180,7 +180,6 @@ class MidiInstrument {
       QList<SysEx*> _sysex;
       std::list<patch_drummap_mapping_t> patch_drummap_mapping;
       bool _dirty;
-      int _nullvalue;
       bool _waitForLSB; // Whether 14-bit controllers wait for LSB, or MSB and LSB are separate.
       NoteOffMode _noteOffMode;
 
@@ -232,8 +231,6 @@ class MidiInstrument {
       EventList* midiState() const           { return _midiState; }
       const char* initScript() const         { return _initScript; }
       MidiControllerList* controller() const { return _controller; }
-      int nullSendValue() { return _nullvalue; }
-      void setNullSendValue(int v) { _nullvalue = v; }
       bool waitForLSB() { return _waitForLSB; }
       void setWaitForLSB(bool v) { _waitForLSB = v; }
       

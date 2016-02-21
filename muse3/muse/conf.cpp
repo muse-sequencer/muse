@@ -1041,6 +1041,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.warnInitPending = xml.parseInt();
                         else if (tag == "midiSendCtlDefaults")
                               MusEGlobal::config.midiSendCtlDefaults = xml.parseInt();
+                        else if (tag == "midiSendNullParameters")
+                              MusEGlobal::config.midiSendNullParameters = xml.parseInt();
+                        else if (tag == "midiOptimizeControllers")
+                              MusEGlobal::config.midiOptimizeControllers = xml.parseInt();
                         else if (tag == "warnIfBadTiming")
                               MusEGlobal::config.warnIfBadTiming = xml.parseInt();
                         else if (tag == "warnOnFileVersions")
@@ -1424,6 +1428,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
       xml.intTag(level, "warnInitPending", MusEGlobal::config.warnInitPending);
       xml.intTag(level, "midiSendCtlDefaults", MusEGlobal::config.midiSendCtlDefaults);
+      xml.intTag(level, "midiSendNullParameters", MusEGlobal::config.midiSendNullParameters);
+      xml.intTag(level, "midiOptimizeControllers", MusEGlobal::config.midiOptimizeControllers);
       xml.intTag(level, "warnIfBadTiming", MusEGlobal::config.warnIfBadTiming);
       xml.intTag(level, "warnOnFileVersions", MusEGlobal::config.warnOnFileVersions);
       xml.intTag(level, "minMeter", MusEGlobal::config.minMeter);

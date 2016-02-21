@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Roland SC-D70" nullparam="32639">
+  <MidiInstrument name="Roland SC-D70">
     <PatchGroup name="GM">
       <Patch name="Acoustic Grand Piano" hbank="0" lbank="0" prog="0" />
       <Patch name="Bright Acoustic Piano" hbank="0" lbank="0" prog="1" />

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="GS" nullparam="32639">
+  <MidiInstrument name="GS">
     <SysEx name="GM on">
       <comment>Switch General Midi mode on</comment>
       <data>7e 7f 09 01</data>

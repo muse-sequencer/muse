@@ -1089,18 +1089,6 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     // No big deal if not. Not used for now.
     //int port   = event.port();
 
-    int nvh = 0xff;
-    int nvl = 0xff;
-    if(_port != -1)
-    {
-      int nv = MusEGlobal::midiPorts[_port].nullSendValue();
-      if(nv != -1)
-      {
-        nvh = (nv >> 8) & 0xff;
-        nvl = nv & 0xff;
-      }
-    }
-      
     if((a | 0xff) == CTRL_POLYAFTER) 
     {
       //printf("MidiJackDevice::processEvent CTRL_POLYAFTER v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
@@ -1203,68 +1191,72 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     {     // RPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      if(ctrlH != _curOutParamNums[chn].RPNH)
+      int data = b & 0x7f;
+      if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
         if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
           return false;
       }
-      if(ctrlL != _curOutParamNums[chn].RPNL)
+      if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
           return false;
       }
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
-        return false;
-      
-      // Select null parameters so that subsequent data controller events do not upset the last *RPN controller.
-      //sendNullRPNParams(chn, false);
-      if(nvh != 0xff)
+      if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setRPNH(nvh & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
+        _curOutParamNums[chn].setDATAH(data);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
           return false;
       }
-      if(nvl != 0xff)
+      
+      // Select null parameters so that subsequent data controller events do not upset the last *RPN controller.
+      if(MusEGlobal::config.midiSendNullParameters)
       {
-        _curOutParamNums[chn].setRPNL(nvl & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f)))
+        _curOutParamNums[chn].setRPNH(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
           return false;
-      }    
+        
+        _curOutParamNums[chn].setRPNL(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+          return false;
+      }
     }
     else if (a < CTRL_INTERNAL_OFFSET) 
     {     // NRPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      if(ctrlH != _curOutParamNums[chn].NRPNH)
+      int data = b & 0x7f;
+      if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
         if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
           return false;
       }
-      if(ctrlL != _curOutParamNums[chn].NRPNL)
+      if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
           return false;
       }
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
-        return false;
-                  
-      //sendNullRPNParams(chn, true);
-      if(nvh != 0xff)
+      if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
+        _curOutParamNums[chn].setDATAH(data);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
           return false;
       }
-      if(nvl != 0xff)
+                  
+      if(MusEGlobal::config.midiSendNullParameters)
       {
-        _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f)))
+        _curOutParamNums[chn].setNRPNH(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
           return false;
-      }    
+        
+        _curOutParamNums[chn].setNRPNL(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
+          return false;
+      }
     }
     else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
       return false;
@@ -1274,36 +1266,41 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(ctrlH != _curOutParamNums[chn].RPNH)
+      if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
         if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
           return false;
       }
-      if(ctrlL != _curOutParamNums[chn].RPNL)
+      if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
           return false;
       }
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
-        return false;
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
-        return false;
-      
-      //sendNullRPNParams(chn, false);
-      if(nvh != 0xff)
+      if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setRPNH(nvh & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
+        _curOutParamNums[chn].setDATAH(dataH);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
           return false;
       }
-      if(nvl != 0xff)
+      if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setRPNL(nvl & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f)))
+        _curOutParamNums[chn].setDATAL(dataL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
           return false;
-      }    
+      }
+      
+      if(MusEGlobal::config.midiSendNullParameters)
+      {
+        _curOutParamNums[chn].setRPNH(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
+          return false;
+        
+        _curOutParamNums[chn].setRPNL(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+          return false;
+      }
     }
     else if (a < CTRL_NONE_OFFSET) 
     {     // NRPN14 Controller
@@ -1311,36 +1308,41 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(ctrlH != _curOutParamNums[chn].NRPNH)
+      if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
         if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
           return false;
       }
-      if(ctrlL != _curOutParamNums[chn].NRPNL)
+      if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
           return false;
       }
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
-        return false;
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
-        return false;
-    
-      //sendNullRPNParams(chn, true);
-      if(nvh != 0xff)
+      if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
+        _curOutParamNums[chn].setDATAH(dataH);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
           return false;
       }
-      if(nvl != 0xff)
+      if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
-        _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f)))
+        _curOutParamNums[chn].setDATAL(dataL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+          return false;
+      }
+    
+      if(MusEGlobal::config.midiSendNullParameters)
+      {
+        _curOutParamNums[chn].setNRPNH(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
+          return false;
+        
+        _curOutParamNums[chn].setNRPNL(0x7f);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
          return false;
-      }   
+      }
     }
     else 
     {

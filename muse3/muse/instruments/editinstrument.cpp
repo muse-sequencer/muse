@@ -349,8 +349,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(spinBoxMin, SIGNAL(valueChanged(int)), SLOT(ctrlMinChanged(int)));
       connect(spinBoxMax, SIGNAL(valueChanged(int)), SLOT(ctrlMaxChanged(int)));
       connect(spinBoxDefault, SIGNAL(valueChanged(int)), SLOT(ctrlDefaultChanged(int)));
-      connect(nullParamSpinBoxH, SIGNAL(valueChanged(int)), SLOT(ctrlNullParamHChanged(int)));
-      connect(nullParamSpinBoxL, SIGNAL(valueChanged(int)), SLOT(ctrlNullParamLChanged(int)));
       connect(ctrlShowInMidi,SIGNAL(stateChanged(int)), SLOT(ctrlShowInMidiChanged(int)));
       connect(ctrlShowInDrum,SIGNAL(stateChanged(int)), SLOT(ctrlShowInDrumChanged(int)));
       
@@ -1223,30 +1221,6 @@ void EditInstrument::changeInstrument()
   instrumentName->blockSignals(true);
   instrumentName->setText(workingInstrument->iname());
   instrumentName->blockSignals(false);
-  
-  nullParamSpinBoxH->blockSignals(true);
-  nullParamSpinBoxL->blockSignals(true);
-  int nv = workingInstrument->nullSendValue();
-  if(nv == -1)
-  {
-    nullParamSpinBoxH->setValue(-1);
-    nullParamSpinBoxL->setValue(-1);
-  }  
-  else
-  {
-    int nvh = (nv >> 8) & 0xff;
-    int nvl = nv & 0xff;
-    if(nvh == 0xff)
-      nullParamSpinBoxH->setValue(-1);
-    else  
-      nullParamSpinBoxH->setValue(nvh & 0x7f);
-    if(nvl == 0xff)
-      nullParamSpinBoxL->setValue(-1);
-    else  
-      nullParamSpinBoxL->setValue(nvl & 0x7f);
-  }
-  nullParamSpinBoxH->blockSignals(false);
-  nullParamSpinBoxL->blockSignals(false);
   
   sysexList->blockSignals(true);
   sysexList->clear();
@@ -2581,68 +2555,6 @@ void EditInstrument::ctrlDefaultChanged(int val)
         item->setText(COL_DEF, QString().setNum(val));
       }
       workingInstrument->setDirty(true);
-}
-
-//---------------------------------------------------------
-//   ctrlNullParamHChanged
-//---------------------------------------------------------
-
-void EditInstrument::ctrlNullParamHChanged(int nvh)
-{
-  int nvl = nullParamSpinBoxL->value();
-  if(nvh == -1)
-  {
-    nullParamSpinBoxL->blockSignals(true);
-    nullParamSpinBoxL->setValue(-1);
-    nullParamSpinBoxL->blockSignals(false);
-    nvl = -1;
-  }
-  else
-  {
-    if(nvl == -1)
-    {
-      nullParamSpinBoxL->blockSignals(true);
-      nullParamSpinBoxL->setValue(0);
-      nullParamSpinBoxL->blockSignals(false);
-      nvl = 0;
-    }
-  }
-  if(nvh == -1 && nvl == -1)
-    workingInstrument->setNullSendValue(-1);
-  else  
-    workingInstrument->setNullSendValue((nvh << 8) | nvl);
-  workingInstrument->setDirty(true);
-}
-
-//---------------------------------------------------------
-//   ctrlNullParamLChanged
-//---------------------------------------------------------
-
-void EditInstrument::ctrlNullParamLChanged(int nvl)
-{
-  int nvh = nullParamSpinBoxH->value();
-  if(nvl == -1)
-  {
-    nullParamSpinBoxH->blockSignals(true);
-    nullParamSpinBoxH->setValue(-1);
-    nullParamSpinBoxH->blockSignals(false);
-    nvh = -1;
-  }
-  else
-  {
-    if(nvh == -1)
-    {
-      nullParamSpinBoxH->blockSignals(true);
-      nullParamSpinBoxH->setValue(0);
-      nullParamSpinBoxH->blockSignals(false);
-      nvh = 0;
-    }
-  }
-  if(nvh == -1 && nvl == -1)
-    workingInstrument->setNullSendValue(-1);
-  else  
-    workingInstrument->setNullSendValue((nvh << 8) | nvl);
-  workingInstrument->setDirty(true);
 }
 
 //---------------------------------------------------------

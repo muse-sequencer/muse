@@ -112,8 +112,6 @@ class MidiPort {
       int limitValToInstrCtlRange(int ctl, int val);
       int limitValToInstrCtlRange(MidiController* mc, int val);
       MidiController* drumController(int ctl);
-      int nullSendValue();
-      void setNullSendValue(int v);
 
       int defaultInChannels() const { return _defaultInChannels; }
       int defaultOutChannels() const { return _defaultOutChannels; }

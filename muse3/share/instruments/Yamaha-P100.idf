@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Yamaha P100" nullparam="32639">
+  <MidiInstrument name="Yamaha P100">
     <PatchGroup name="">
       <Patch name="Piano 1" prog="0" />
       <Patch name="Piano 2" prog="1" />

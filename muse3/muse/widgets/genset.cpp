@@ -161,6 +161,8 @@ void GlobalSettingsConfig::updateSettings()
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
       midiSendCtlDefaults->setChecked(MusEGlobal::config.midiSendCtlDefaults);      
+      sendNullParamsCB->setChecked(MusEGlobal::config.midiSendNullParameters);      
+      optimizeControllersCB->setChecked(MusEGlobal::config.midiOptimizeControllers);      
       guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
       minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
       minMeterSelect->setValue(MusEGlobal::config.minMeter);
@@ -289,6 +291,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.midiSendInit = midiSendInit->isChecked();
       MusEGlobal::config.warnInitPending = midiWarnInitPending->isChecked();
       MusEGlobal::config.midiSendCtlDefaults = midiSendCtlDefaults->isChecked();
+      MusEGlobal::config.midiSendNullParameters = sendNullParamsCB->isChecked();
+      MusEGlobal::config.midiOptimizeControllers = optimizeControllersCB->isChecked();
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       

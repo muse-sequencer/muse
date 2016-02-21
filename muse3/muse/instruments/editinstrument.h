@@ -125,8 +125,6 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void sysexChanged(QListWidgetItem*, QListWidgetItem*);
       void deleteSysexClicked();
       void newSysexClicked();
-      void ctrlNullParamHChanged(int);
-      void ctrlNullParamLChanged(int);
       void editInitListItem(QTreeWidgetItem* item);
       void initListDeleteClicked();
       void initListAddClicked();

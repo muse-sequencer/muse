@@ -64,6 +64,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual ~MidiAlsaDevice() {}
       
       static MidiDevice* createAlsaMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable 
+      static void dump(const snd_seq_event_t* ev);
       
       virtual QString open();
       virtual void close();

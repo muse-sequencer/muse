@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Roland E-28" nullparam="32639">
+  <MidiInstrument name="Roland E-28">
     <PatchGroup name="Piano">
       <Patch name="Piano 1" hbank="0" lbank="0" prog="0" />
       <Patch name="Piano 1w" hbank="8" lbank="0" prog="0" />

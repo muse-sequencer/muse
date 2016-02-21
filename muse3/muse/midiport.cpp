@@ -1196,17 +1196,6 @@ MidiController* MidiPort::drumController(int ctl)
   return 0;
 }
             
-int MidiPort::nullSendValue()
-{ 
-  return _instrument ? _instrument->nullSendValue() : -1;
-}
-
-void MidiPort::setNullSendValue(int v)              
-{ 
-  if(_instrument)
-    _instrument->setNullSendValue(v);
-}
-
 //---------------------------------------------------------
 //   writeRouting    
 //---------------------------------------------------------

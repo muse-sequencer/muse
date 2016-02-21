@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <muse version="2.1">
-  <MidiInstrument name="Yamaha-P50m" nullparam="32639">
+  <MidiInstrument name="Yamaha-P50m">
     <PatchGroup name="">
       <Patch name="bright piano s+s" prog="0" />
       <Patch name="bright piano s" prog="1" />

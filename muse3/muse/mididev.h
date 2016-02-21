@@ -85,14 +85,20 @@ struct MidiOutputParams {
       int RPNH;
       int NRPNL;
       int NRPNH;
+      int DATAH;
+      int DATAL;
       
-      void reset() { BANKH = BANKL = PROG = 0xff; RPNL = RPNH = NRPNL = NRPNH = -1; }
-      void resetParamNums() { RPNL = RPNH = NRPNL = NRPNH = -1; }
+      MidiOutputParams() { reset(); }
+      
+      void reset() { BANKH = BANKL = PROG = 0xff; RPNL = RPNH = NRPNL = NRPNH = DATAH = DATAL = -1; }
+      void resetParamNums() { RPNL = RPNH = NRPNL = NRPNH = DATAH = DATAL = -1; }
       void resetPatch() { BANKH = BANKL = PROG = 0xff; }
       void setRPNL(int a)  { RPNL = a;  NRPNL = NRPNH = -1; }
       void setRPNH(int a)  { RPNH = a;  NRPNL = NRPNH = -1; }
       void setNRPNL(int a) { NRPNL = a; RPNL  = RPNH = -1; }
       void setNRPNH(int a) { NRPNH = a; RPNL  = RPNH = -1; }
+      void setDATAH(int a) { DATAH = a; }
+      void setDATAL(int a) { DATAL = a; }
       void setBANKH(int a) { BANKH = a;}
       void setBANKL(int a) { BANKL = a;}
       void setPROG(int a)  { PROG = a;}
