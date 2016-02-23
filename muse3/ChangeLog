@@ -1,3 +1,19 @@
+22.02.2016:
+        Merge from midi_engine_fixes branch: (Tim)
+        - Added MidiTrack 'stuck notes' and 'stuck live notes' lists and support.
+          For better handling of stuck notes for example when muted or rec-arm turned off.
+        - Split 'stuck notes' handling between devices and tracks.
+        - Removed midi instruments 'null parameters' setting, moved into General Settings midi tab as 
+           'Send null parameters' checkbox, default is off. Removed the setting from all .idf files.
+        - Added General Settings midi tab 'Optimize controllers' (don't send dupl params or values). Default off.
+        - Finished note-off / zero-velocity work of 13.01.2016 (it required the live stuck notes list above).
+        - Apply midi track velocity/compression settings (and drum volume) to note-offs, not just note-ons.
+        - Removed 'curProg' members from SynthI, and no longer read or saved in song.
+          Replaced with MidiOutputParams struct in class MidiDevice. It holds current banks and prog, 
+           and current (N)RPN parameters and data, to faciltate the 'Optimize controllers' setting above.
+          The current program settings for all channels are still stored in the song's MidiPort controllers.
+        - Added class MidiEncoder to handle all midi controller input encoding. (WIP)
+        - Added more latency functions to track and effects rack. (WIP)
 17.02.2016:
         (By Tim)
         - Audio automation graphs fixes:
