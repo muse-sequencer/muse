@@ -95,7 +95,6 @@ class JackAudioDevice : public AudioDevice {
       virtual void start(int);
       virtual void stop ();
       
-// REMOVE Tim. Midi fixes. Added.
       // These are meant to be called from inside process thread only.      
       virtual unsigned framesAtCycleStart() const;
       virtual unsigned framesSinceCycleStart() const;

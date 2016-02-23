@@ -1025,13 +1025,8 @@ bool VstNativeSynthIF::init(Synth* s)
         //cl->setMode(ladspaCtrlMode(ld, k));
         cl->setMode(ctrlMode(i));
       }
-
-      activate();     
-
-      //doSelectProgram(synti->_curBankH & 0x7f, synti->_curBankL & 0x7f, synti->_curProgram & 0x7f); // REMOVE Tim. Use midi state for this
-
-      //doSelectProgram(synti->_curProgram);
       
+      activate();     
       return true;
       }
 
@@ -2179,7 +2174,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       }
       
     break;
-    // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
+    // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
     case ME_PROGRAM:
     {
       #ifdef VST_NATIVE_DEBUG
@@ -2188,17 +2183,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 
       int hb, lb;
       synti->currentProg(chn, NULL, &lb, &hb);
-      
-      // REMOVE Tim.
-      //int bankH = (a >> 16) & 0xff;
-      //int bankL = (a >> 8) & 0xff;
-      //int prog = a & 0xff;
-      //synti->_curBankH = bankH;
-      //synti->_curBankL = bankL;
-      //synti->_curProgram = prog;
       synti->setCurrentProg(chn, a, lb, hb);
-      
-      //doSelectProgram(bankH, bankL, prog);  // REMOVE Tim.
       doSelectProgram(hb, lb, a);
       return false;  // Event pointer not filled. Return false.
     }
@@ -2221,11 +2206,6 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         int bankH = (b >> 16) & 0xff;
         int bankL = (b >> 8) & 0xff;
         int prog = b & 0xff;
-
-        // REMOVE Tim.
-        //synti->_curBankH = bankH;
-        //synti->_curBankL = bankL;
-        //synti->_curProgram = prog;
         synti->setCurrentProg(chn, prog, bankL, bankH);
         doSelectProgram(bankH, bankL, prog);
         return false; // Event pointer not filled. Return false.
@@ -2814,46 +2794,6 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
 
           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
           // Same code as in MidiPort::sendEvent()
-// REMOVE Tim.          
-//           if(synti->midiPort() != -1)
-//           {
-//             MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
-//             if(start_event->type() == ME_CONTROLLER)
-//             {
-//               int da = start_event->dataA();
-//               int db = start_event->dataB();
-//               db = mp->limitValToInstrCtlRange(da, db);
-//               if(!mp->setHwCtrlState(start_event->channel(), da, db))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_PITCHBEND)
-//             {
-//               int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_AFTERTOUCH)
-//             {
-//               int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_POLYAFTER)
-//             {
-//               int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-//               int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-//               if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-//                 continue;
-//             }
-//             // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-//             else if(start_event->type() == ME_PROGRAM)
-//             {
-//               int hb, lb;
-//               synti->currentProg(NULL, &lb, &hb);
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, (hb << 16) | (lb << 8) | start_event->dataA()))
-//                 continue;
-//             }
-//           }
           if(mp && !mp->sendHwCtrlState(*start_event, false))
             continue;
 

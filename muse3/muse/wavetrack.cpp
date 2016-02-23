@@ -259,7 +259,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       bool have_data = false;
       if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
         
-// REMOVE Tim. Midi fixes. Changed.
+// REMOVE Tim. Wave. Changed.
             have_data = AudioTrack::getData(framePos, channels, nframe, bp);
 //             float t_latency = 0.0;
 //             float lat;
@@ -276,7 +276,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
 //                                nframe, bp, have_data);
 //               have_data = true;
 // 
-//               // FIXME TODO: Just a quick HACK to get AUTOMATIC record latency compensation to work
+//               // TODO: Just a quick hack to get AUTOMATIC record latency compensation to work
 //               //              with a SINGLE DIRECT ROUTE from Audio Input Track to Wave Track ONLY !
 //               //             For now, this should satisfy a majority of users.
 //               if(!atrack->off())
@@ -311,7 +311,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                                       printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
                                         framePos, channels, nframe);
                                       
-// REMOVE Tim. Midi fixes. Added.
+// REMOVE Tim. Wave. Added.
 // TODO Work In Progress. Tests OK but we now need output latency correction as well...
 //                               if(framePos >= (unsigned int)t_latency)
 //                               {

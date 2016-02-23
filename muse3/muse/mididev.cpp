@@ -107,13 +107,6 @@ void MidiDevice::init()
       _rwFlags       = 3;
       _openFlags     = 3;
       _port          = -1;
-      _inputState    = new MidiCtrlState();
-      // REMOVE Tim. Midi fixes. Added constructor to MidiOutputParams.
-//       for(int i = 0; i < MIDI_CHANNELS; ++i)
-//       {
-//         //_curInParamNums[i].reset();  // REMOVE Tim.
-//         _curOutParamNums[i].reset();
-//       }
       }
 
 //---------------------------------------------------------
@@ -142,12 +135,6 @@ MidiDevice::MidiDevice(const QString& n)
       
       init();
       }
-
-// REMOVE Tim. Midi fixes. Added.
-MidiDevice::~MidiDevice()
-{
-  delete _inputState;
-}
 
 QString MidiDevice::deviceTypeString()
 {
@@ -457,72 +444,6 @@ void MidiDeviceList::remove(MidiDevice* dev)
             }
       }
 
-// REMOVE Tim.
-// //---------------------------------------------------------
-// //   sendNullRPNParams
-// //---------------------------------------------------------
-// 
-// bool MidiDevice::sendNullRPNParams(unsigned time, int port, int chn, bool nrpn)
-// {
-//   if(_port == -1)
-//     return false;  
-//     
-//   int nv = MusEGlobal::midiPorts[_port].nullSendValue();
-//   if(nv == -1)
-//     return false;  
-//   
-//   int nvh = (nv >> 8) & 0xff;
-//   int nvl = nv & 0xff;
-//   if(nvh == 0xff && nvl == 0xff)
-//     return false;
-//     
-//   if(nvh != 0xff)
-//   {
-//     if(nrpn)
-//     {
-//       _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
-//       putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f));
-//     }
-//     else
-//     {
-//       _curOutParamNums[chn].setRPNH(nvh & 0x7f);
-//       putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f));
-//     }
-//   }
-//   if(nvl != 0xff)
-//   {
-//     if(nrpn)
-//     {
-//       _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
-//       putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f));
-//     }
-//     else
-//     {
-//       _curOutParamNums[chn].setRPNL(nvl & 0x7f);
-//       putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f));
-//     }
-//   }
-//   return true;  
-// }
-
-// REMOVE Tim.
-// //---------------------------------------------------------
-// //   resetCurInParamNums
-// //   Reset input channel's current parameter numbers to -1.
-// //   All channels if chan = -1.
-// //---------------------------------------------------------
-// 
-// void MidiDevice::resetCurInParamNums(int chan)
-// {
-//   if(chan == -1)
-//   {
-//     for(int i = 0; i < MIDI_CHANNELS; ++i)
-//       _curInParamNums[i].resetParamNums();
-//     return;
-//   }
-//   _curInParamNums[chan].resetParamNums();
-// }
-
 //---------------------------------------------------------
 //   resetCurParamNums
 //   Reset output channel's current parameter numbers to -1.
@@ -563,180 +484,6 @@ bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long dela
   return true;
 }
 
-// REMOVE Tim.
-// //---------------------------------------------------------
-// //   putEvent
-// //    return true if event cannot be delivered
-// //    TODO: retry on controller putMidiEvent
-// //    (Note: Since putEvent is virtual and there are different versions, 
-// //     a retry facility is now found in putEventWithRetry. )
-// //---------------------------------------------------------
-// 
-// bool MidiDevice::putEvent(const MidiPlayEvent& ev)
-//       {
-//       if(!_writeEnable)
-//         //return true;
-//         return false;
-//         
-//       unsigned t = ev.time();
-//       int port = ev.port();
-//       
-//       //if (ev.type() == ME_CONTROLLER)  // REMOVE Tim.
-//       switch(ev.type())  
-//       {
-//         case ME_PROGRAM:
-//             _curOutParamNums[ev.channel()].reset();  // Probably best to reset.
-//           break;
-// 
-//         //case ME_SYSEX:
-//         //    resetCurOutParamNums();  // Probably best to reset all.
-//         //  break;
-//           
-//         case ME_CONTROLLER:
-//         {
-//             int a = ev.dataA();
-//             int b = ev.dataB();
-//             int chn = ev.channel();
-// // REMOVE Tim.            
-// //             if (a == CTRL_PITCH) 
-// //                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, b, 0));
-// //             if ((a | 0xff) == CTRL_POLYAFTER) 
-// //                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f));
-// //             if (a == CTRL_AFTERTOUCH) 
-// //                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b, 0));
-//             if (a == CTRL_PROGRAM) {
-//                         _curOutParamNums[chn].reset();  // Probably best to reset.
-//                         int hb = (b >> 16) & 0xff;
-//                         int lb = (b >> 8) & 0xff;
-//                         int pr = b & 0x7f;
-//                         if (hb != 0xff)
-//                               putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
-//                         if (lb != 0xff)
-//                               putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-//                         return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0));
-//                   }
-// 
-// // Set this to 1 if ALSA cannot handle RPN NRPN etc.
-// // NOTE: Although ideally it should be 0, there are problems with
-// //        letting ALSA do the 'composition' of the messages in putMidiEvent() -
-// //        chiefly that ALSA does not handle 7-bit (N)RPN controllers.
-// //       This define is kept because it is important to understand, try, and see 
-// //        the difference between the two techniques, and possibly make it work...
-// //       Also see the corresponding define in MidiAlsaDevice::putMidiEvent().
-// #if 1  
-//             
-//             if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
-//                   if(a == CTRL_HRPN)
-//                     _curOutParamNums[chn].setRPNH(b);
-//                   else if(a == CTRL_LRPN)
-//                     _curOutParamNums[chn].setRPNL(b);
-//                   else if(a == CTRL_HNRPN)
-//                     _curOutParamNums[chn].setNRPNH(b);
-//                   else if(a == CTRL_LNRPN)
-//                     _curOutParamNums[chn].setNRPNL(b);
-//                   else if((a == CTRL_RESET_ALL_CTRL) || a == CTRL_HBANK || a == CTRL_LBANK) 
-//                     _curOutParamNums[chn].reset();  // Probably best to reset.
-//                   
-//                   putMidiEvent(ev);
-//                   }
-//             else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
-//                   int ctrlH = (a >> 8) & 0x7f;
-//                   int ctrlL = a & 0x7f;
-//                   int dataH = (b >> 7) & 0x7f;
-//                   int dataL = b & 0x7f;
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlH, dataH));
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL));
-//                   }
-//             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
-//                   int ctrlH = (a >> 8) & 0x7f;
-//                   int ctrlL = a & 0x7f;
-//                   if(ctrlL != _curOutParamNums[chn].RPNL)
-//                   {
-//                     _curOutParamNums[chn].setRPNL(ctrlL);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-//                   }  
-//                   if(ctrlH != _curOutParamNums[chn].RPNH)
-//                   {
-//                     _curOutParamNums[chn].setRPNH(ctrlH);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-//                   }
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
-//                   
-//                   // Select null parameters so that subsequent data controller
-//                   //  events do not upset the last *RPN controller.  Tim.
-//                   sendNullRPNParams(t, port, chn, false);
-//                 }
-//             else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
-//                   int ctrlH = (a >> 8) & 0x7f;
-//                   int ctrlL = a & 0x7f;
-//                   if(ctrlL != _curOutParamNums[chn].NRPNL)
-//                   {
-//                     _curOutParamNums[chn].setNRPNL(ctrlL);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-//                   }
-//                   if(ctrlH != _curOutParamNums[chn].NRPNH)
-//                   {
-//                     _curOutParamNums[chn].setNRPNH(ctrlH);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-//                   }
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
-//                   
-//                   sendNullRPNParams(t, port, chn, true);
-//                   }
-//             else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
-//                   return true;
-//             else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
-//                   int ctrlH = (a >> 8) & 0x7f;
-//                   int ctrlL = a & 0x7f;
-//                   int dataH = (b >> 7) & 0x7f;
-//                   int dataL = b & 0x7f;
-//                   if(ctrlL != _curOutParamNums[chn].RPNL)
-//                   {
-//                     _curOutParamNums[chn].setRPNL(ctrlL);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-//                   }
-//                   if(ctrlH != _curOutParamNums[chn].RPNH)
-//                   {
-//                     _curOutParamNums[chn].setRPNH(ctrlH);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-//                   }
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-//                   
-//                   sendNullRPNParams(t, port, chn, false);
-//                   }
-//             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
-//                   int ctrlH = (a >> 8) & 0x7f;
-//                   int ctrlL = a & 0x7f;
-//                   int dataH = (b >> 7) & 0x7f;
-//                   int dataL = b & 0x7f;
-//                   if(ctrlL != _curOutParamNums[chn].NRPNL)
-//                   {
-//                     _curOutParamNums[chn].setNRPNL(ctrlL);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-//                   }
-//                   if(ctrlH != _curOutParamNums[chn].NRPNH)
-//                   {
-//                     _curOutParamNums[chn].setNRPNH(ctrlH);
-//                     putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-//                   }
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-//                   putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-//                   
-//                   sendNullRPNParams(t, port, chn, true);
-//                   }
-//             else {
-//                   fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
-//                   }
-//             return false;
-// #endif
-//         }
-//         break;  // ME_CONTROLLER
-//       }
-//             
-//       return putMidiEvent(ev);
-//       }
-
 //---------------------------------------------------------
 //   processStuckNotes
 //---------------------------------------------------------
@@ -772,29 +519,6 @@ void MidiDevice::processStuckNotes()
     //    To save time, playing of any track-related playback stuck notes (NOT 'live' notes)
     //     which were not put directly to the device, is done in Audio::processMidi().
     //------------------------------------------------------------
-
-// REMOVE Tim.
-//     //------------------------------------------------------------
-//     //    Play any track-related playback stuck notes (NOT 'live' notes)
-//     //     which were not put directly to the device
-//     //------------------------------------------------------------
-// 
-//     for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
-//     {
-//       MPEventList* mel = (*imt)->stuckNotes();
-//       for(k = mel->begin(); k != mel->end(); ++k)
-//       {
-//         if (k->time() >= nextTick)
-//               break;
-//         MidiPlayEvent ev(*k);
-//         if(extsync)              // p3.3.25
-//           ev.setTime(k->time());
-//         else
-//           ev.setTime(MusEGlobal::tempomap.tick2frame(k->time()) + frameOffset);
-//         _playEvents.add(ev);
-//       }
-//       mel->erase(mel->begin(), k);
-//     }
   }
 }
 
@@ -859,8 +583,6 @@ void MidiDevice::handleStop()
   for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
   {
     MPEventList& mel = (*imt)->stuckNotes;
-    //MidiDevice* mdev;  // REMOVE Tim.
-    //int mport;
     for(iMPEvent i = mel.begin(), i_next = i; i != mel.end(); i = i_next) 
     {
       ++i_next;
@@ -868,19 +590,10 @@ void MidiDevice::handleStop()
       if((*i).port() != _port)
         continue;
       MidiPlayEvent ev(*i);
-      //mport = ev.port();  // REMOVE Tim.
-      //if(mport < 0)
-      //  continue;
-      //mdev = MusEGlobal::midiPorts[mport].device();
-      //if(!mdev)
-      //if(mdev != this)
-      //if(ev.port() != _port)
-      //  continue;
       ev.setTime(0);
       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       mel.erase(i);
     }
-    //mel->clear();
   }
   
   //---------------------------------------------------
@@ -968,9 +681,6 @@ void MidiDevice::handleSeek()
     //     (NOT 'live' notes) which were not put directly to the device
     //------------------------------------------------------------
     MPEventList& mel = (*imt)->stuckNotes;
-    //MidiDevice* mdev;       // REMOVE Tim.
-    //int mport;
-    //for(iMPEvent i = mel->begin(); i != mel->end(); ++i)
     for(iMPEvent i = mel.begin(), i_next = i; i != mel.end(); i = i_next)
     {
       ++i_next;
@@ -978,19 +688,10 @@ void MidiDevice::handleSeek()
       if((*i).port() != _port)
         continue;
       MidiPlayEvent ev(*i);
-      //mport = ev.port();           // REMOVE Tim.
-      //if(mport < 0)
-      //  continue;
-      //mdev = MusEGlobal::midiPorts[mport].device();
-      //if(!mdev)
-      //if(mdev != this)
-      //if(ev.port() != _port)
-      //  continue;
       ev.setTime(0);
       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       mel.erase(i);
     }
-    //mel->clear();
     
     if((*imt)->type() == MusECore::Track::DRUM)
     {

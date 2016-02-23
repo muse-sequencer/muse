@@ -392,7 +392,7 @@ bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
             case MusECore::ME_PITCHBEND:
                 setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
                 break;
-            // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore - only CTRL_PROGRAM.
+            // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore - only CTRL_PROGRAM.
             //case MusECore::ME_PROGRAM:
             //    setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA());
             //    break;   

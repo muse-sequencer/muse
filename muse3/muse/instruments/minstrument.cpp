@@ -389,13 +389,8 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   for(iMidiController i = _controller->begin(); i != _controller->end(); ++i)
       delete i->second;
   
-// REMOVE Tim. Midi fixes. Changed.
-//   _controller->clear();
   _controller->clr();
-  
-// REMOVE Tim. Midi fixes. Added.
   _waitForLSB = ins._waitForLSB;
-  
   _noteOffMode = ins._noteOffMode;
 
   // Assignment

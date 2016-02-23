@@ -733,6 +733,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               int len   = ev.lenTick();
                               int pitch = ev.pitch();
                               int velo  = ev.velo();
+                              int veloOff = ev.veloOff();
                               if (track->type() == Track::DRUM)  {
                                     // Map drum-notes to the drum-map values
                                    int instr = ev.pitch();
@@ -745,6 +746,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                    if(channel == -1)
                                      channel = track->outChannel();
                                    velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
+                                   veloOff   = int(double(veloOff) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
                                    }
                               else if (track->type() != Track::NEW_DRUM) {
                                     // transpose non drum notes
@@ -755,6 +757,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     pitch = 127;
                               if (pitch < 0)
                                     pitch = 0;
+                              
+                              // Apply track velocity and compression to both note-on and note-off velocity...
                               velo += track->velocity;
                               velo = (velo * track->compression) / 100;
                               if (velo > 127)
@@ -763,10 +767,16 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
                                     //velo = 1;
                                     continue;
+                              veloOff += track->velocity;
+                              veloOff = (veloOff * track->compression) / 100;
+                              if (veloOff > 127)
+                                    veloOff = 127;
+                              if (veloOff < 1)
+                                    veloOff = 0;
+                              
                               len = (len *  track->len) / 100;
                               if (len <= 0)     // dont allow zero length
                                     len = 1;
-                              int veloOff = ev.veloOff();
 
                               if (port == defaultPort) {
                                     // If syncing to external midi sync, we cannot use the tempo map.
@@ -775,10 +785,6 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                       md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
                                     else
                                       md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
-                                      
-// REMOVE Tim. Midi fixes.
-//                                     md->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
-//                                        MusECore::ME_NOTEOFF, pitch, veloOff));
                                     track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
                                        MusECore::ME_NOTEOFF, pitch, veloOff));
                                     }
@@ -789,10 +795,6 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                           mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));                                          
                                         else  
                                           mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));                                          
-                                          
-// REMOVE Tim. Midi fixes.
-//                                         mdAlt->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
-//                                           MusECore::ME_NOTEOFF, pitch, veloOff));
                                         track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
                                           MusECore::ME_NOTEOFF, pitch, veloOff));
                                       }
@@ -869,6 +871,9 @@ void Audio::processMidi()
       {
       MusEGlobal::midiBusy=true;
       
+      // An experiment, to try and pass input through without having to rec-arm a track. Disabled for now.
+      const bool no_mute_midi_input = false;
+      
       const bool extsync = MusEGlobal::extSyncFlag.value();
       //
       // TODO: syntis should directly write into recordEventList
@@ -899,38 +904,6 @@ void Audio::processMidi()
             //
             // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
             // Same code as in MidiPort::sendEvent()
-// REMOVE Tim. Midi fixes.
-//             if(md->midiPort() != -1)
-//             {
-//               MidiPort* mp = &MusEGlobal::midiPorts[md->midiPort()];
-//               if(ev.type() == ME_CONTROLLER)
-//               {
-//                 int da = ev.dataA();
-//                 int db = ev.dataB();
-//                 db = mp->limitValToInstrCtlRange(da, db);
-//                 mp->setHwCtrlState(ev.channel(), da, db);
-//               }
-//               else if(ev.type() == ME_PITCHBEND)
-//               {
-//                 int da = mp->limitValToInstrCtlRange(CTRL_PITCH, ev.dataA());
-//                 mp->setHwCtrlState(ev.channel(), CTRL_PITCH, da);
-//               }
-//               else if(ev.type() == ME_AFTERTOUCH)
-//               {
-//                 int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
-//                 mp->setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da);
-//               }
-//               else if(ev.type() == ME_POLYAFTER)
-//               {
-//                 int ctl = (CTRL_POLYAFTER & ~0xff) | (ev.dataA() & 0x7f);
-//                 int db = mp->limitValToInstrCtlRange(ctl, ev.dataB());
-//                 mp->setHwCtrlState(ev.channel(), ctl , db);
-//               }
-//               else if(ev.type() == ME_PROGRAM)
-//               {
-//                 mp->setHwCtrlState(ev.channel(), CTRL_PROGRAM, ev.dataA());
-//               }
-//             }
             if(port != -1)
               MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
           }
@@ -946,7 +919,6 @@ void Audio::processMidi()
         // --------- Handle midi events for audio tracks -----------
         // 
         
-        //int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().  // REMOVE Tim. Midi fixes.
         if(port < 0)
           continue;
         
@@ -1077,7 +1049,7 @@ void Audio::processMidi()
             //----------midi recording
             //
             const bool track_rec_flag = track->recordFlag();
-            //if (track->recordFlag()) // REMOVE Tim. Midi fixes.
+            if(no_mute_midi_input || track_rec_flag)
             {
                   MusECore::MPEventList& rl = track->mpevents;
                   MusECore::MidiPort* tport = &MusEGlobal::midiPorts[port];
@@ -1126,7 +1098,7 @@ void Audio::processMidi()
                               event.setPort(port);
                               // dont't echo controller changes back to software
                               // synthesizer:
-                              if(!dev->isSynti() && md && track->recEcho())  
+                              if(!dev->isSynti() && md && track->recEcho())
                               {
                                 // All recorded events arrived in the previous period. Shift into this period for playback.
                                 unsigned int et = event.time();
@@ -1146,7 +1118,6 @@ void Audio::processMidi()
                               else
                                 event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
                                 
-                              //if(recording) // REMOVE Tim. Midi fixes.
                               if(recording && track_rec_flag)
                                 rl.add(event);
                             }      
@@ -1162,11 +1133,6 @@ void Audio::processMidi()
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
                                 MusECore::MidiController *mc = 0;
                                 int ctl = 0;
-                                
-                                //Hmmm, hehhh... 
-                                // TODO: Clean up a bit around here when it comes to separate events for rec & for playback. 
-                                // But not before 0.7 (ml)
-  
                                 int prePitch = 0, preVelo = 0;
   
                                 event.setChannel(track->outChannel());
@@ -1216,20 +1182,18 @@ void Audio::processMidi()
                                             event.setA(pitch);
                                       }
   
-                                      if (!event.isNoteOff()) 
-                                      {
-                                            preVelo = event.dataB();
-                                            int velo = preVelo + track->velocity;
-                                            velo = (velo * track->compression) / 100;
-                                            if (velo > 127)
-                                                  velo = 127;
-                                            if (velo < 1)
-                                                  // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
-                                                  //velo = 1;
-                                                  velo = 0; // Use zero as a marker to tell the playback (below) not to sound the note.
-                                            
-                                            event.setB(velo);
-                                      }
+                                      // Apply track velocity and compression to note-on AND note-off events.
+                                      preVelo = event.dataB();
+                                      int velo = preVelo + track->velocity;
+                                      velo = (velo * track->compression) / 100;
+                                      if (velo > 127)
+                                            velo = 127;
+                                      if (velo < 1)
+                                            // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
+                                            //velo = 1;
+                                            velo = 0; // Use zero as a marker to tell the playback (below) not to sound the note.
+                                      
+                                      event.setB(velo);
                                 }
                                 else if(event.type() == MusECore::ME_CONTROLLER)
                                 {
@@ -1288,14 +1252,6 @@ void Audio::processMidi()
   
                                 if (!dev->isSynti()) 
                                 {
-                                  //if(track->recEcho() && !track->isMute() && !track->off())
-                                  // Only mute note-ons, NOT note-offs (otherwise, possible stuck notes) and controllers and so on...
-                                  //if(track->recEcho() &&                        // REMOVE Tim. Midi fixes.
-                                  //   ((!track->isMute() && !track->off()) ||
-                                  //   (!event.isNote() || event.isNoteOff()) ))
-                                  //{
-                                    // All recorded events arrived in previous period. Shift into this period for playback.
-                                  
                                   // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
                                   // If the event is marked as a note with zero velocity (above), do not sound the note.
                                   if(!event.isNote() || event.dataB() != 0)
@@ -1313,36 +1269,45 @@ void Audio::processMidi()
                                     // Check if we're outputting to another port than default:
                                     if (devport == defaultPort) {
                                           event.setPort(port);
-                                          //if(md && track->recEcho())  // REMOVE Tim. Midi fixes.
-                                          if(md && track->recEcho() && !track->isMute() && !track->off())
+                                          if(md && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
                                           {
-                                            md->addScheduledEvent(event);
                                             if(event.isNoteOff())
-                                              //md->removeStuckLiveNote(MidiPlayEvent(0, port, event.channel(), ME_NOTEOFF, event.dataA(), event.dataB())); // REMOVE Tim. Midi fixes.
-                                              track->removeStuckLiveNote(port, event.channel(), event.dataA());
-                                            else if(event.isNote())
-                                              //md->addStuckLiveNote(MidiPlayEvent(0, port, event.channel(), ME_NOTEOFF, event.dataA(), event.dataB()));
-                                              track->addStuckLiveNote(port, event.channel(), event.dataA());
+                                            {
+                                              // Try to remove any corresponding stuck live note.
+                                              // Only if a stuck live note existed do we schedule the note off to play.
+                                              if(track->removeStuckLiveNote(port, event.channel(), event.dataA()))
+                                                md->addScheduledEvent(event);
+                                            }
+                                            else
+                                            {
+                                              md->addScheduledEvent(event);
+                                              if(event.isNote())
+                                                track->addStuckLiveNote(port, event.channel(), event.dataA());
+                                            }
                                           }
                                           //else
-                                          //  MusEGlobal::midiPorts[port].sendHwCtrlState(event); // Don't care about return value.  // REMOVE Tim. Midi fixes.
+                                          //  MusEGlobal::midiPorts[port].sendHwCtrlState(event); // Don't care about return value.
                                         }
                                     else {
-                                          // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??  // REMOVE Tim. Midi fixes.
                                           MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-                                          //if(mdAlt && track->recEcho())  // REMOVE Tim. Midi fixes.
-                                          if(mdAlt && track->recEcho() && !track->isMute() && !track->off())
+                                          if(mdAlt && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
                                           {
-                                            mdAlt->addScheduledEvent(event);
                                             if(event.isNoteOff())
-                                              //mdAlt->removeStuckLiveNote(MidiPlayEvent(0, event.port(), event.channel(), ME_NOTEOFF, event.dataA(), event.dataB()));  // REMOVE Tim. Midi fixes.
-                                              track->removeStuckLiveNote(event.port(), event.channel(), event.dataA());
-                                            else if(event.isNote())
-                                              //mdAlt->addStuckLiveNote(MidiPlayEvent(0, event.port(), event.channel(), ME_NOTEOFF, event.dataA(), event.dataB()));
-                                              track->addStuckLiveNote(event.port(), event.channel(), event.dataA());
+                                            {
+                                              // Try to remove any corresponding stuck live note.
+                                              // Only if a stuck live note existed do we schedule the note off to play.
+                                              if(track->removeStuckLiveNote(event.port(), event.channel(), event.dataA()))
+                                                mdAlt->addScheduledEvent(event);
+                                            }
+                                            else
+                                            {
+                                              mdAlt->addScheduledEvent(event);
+                                              if(event.isNote())
+                                                track->addStuckLiveNote(event.port(), event.channel(), event.dataA());
+                                            }
                                           }
                                           //else
-                                          //  MusEGlobal::midiPorts[devport].sendHwCtrlState(event); // Don't care about return value.  // REMOVE Tim. Midi fixes.
+                                          //  MusEGlobal::midiPorts[devport].sendHwCtrlState(event); // Don't care about return value.
                                         }
                                     event.setTime(et);  // Restore for recording.
                                   //}
@@ -1352,15 +1317,6 @@ void Audio::processMidi()
                                     track->setActivity(event.dataB());
                                 }
 
-// REMOVE Tim. Midi fixes.                               
-//                                 // Make sure the event is recorded in units of ticks.  
-//                                 if(extsync)  
-//                                   event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
-//                                 else
-//                                   event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
-  
-                                // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
-                                //if (recording) // REMOVE Tim. Midi fixes.
                                 if (recording && track_rec_flag) 
                                 {
                                       // Make sure the event is recorded in units of ticks.
@@ -1416,8 +1372,8 @@ void Audio::processMidi()
                         }
                   }
             }
-
-
+        }
+        
         // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
         // MusEGlobal::audio->isPlaying() might not be true during seek right now.
         //if(MusEGlobal::audio->isPlaying())
@@ -1445,18 +1401,14 @@ void Audio::processMidi()
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
                   continue;
-                //_playEvents.add(ev);
-                //mdev->addScheduledEvent(ev);
                 ev.setTime(0);   // Mark for immediate delivery.
                 mdev->putEvent(ev);
               }
-              //mel->erase(mel->begin(), k);
               mel.clear();
             }
           }
           else
           // If not muted and not off, we want to schedule all playback note-offs normally.
-          //if(!track->isMute() && !track->off())  // REMOVE Tim. Midi fixes.
           {
             //---------------------------------------------------
             //    Schedule all track-related playback note-offs (NOT 'live' note-offs)
@@ -1488,8 +1440,10 @@ void Audio::processMidi()
             }
           }
 
-          // If muted, off, or no echo, we want to cancel all 'live' (rec) stuck notes immediately.
-          if(track->isMute() || track->off() || !track->recEcho())
+          // If no echo or off, or not rec-armed (or muted), we want to cancel all 'live' (rec) stuck notes immediately.
+          if(!track->recEcho() || track->off() ||
+             (no_mute_midi_input && (track->isMute())) ||
+             (!no_mute_midi_input && !track_rec_flag))
           {
             //------------------------------------------------------------
             //    Send all track-related 'live' (rec) note-offs
@@ -1507,17 +1461,13 @@ void Audio::processMidi()
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
                   continue;
-                //_playEvents.add(ev);
-                //mdev->addScheduledEvent(ev);
                 ev.setTime(0);   // Mark for immediate delivery.
                 mdev->putEvent(ev);
               }
-              //mel->erase(mel->begin(), k);
               mel.clear();
             }
           }
-          
-        }
+        //}
       }
 
       //---------------------------------------------------

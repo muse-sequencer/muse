@@ -284,10 +284,6 @@ class MidiTrack : public Track {
       //void writeOurDrumMap(int level, Xml& xml, bool full) const; //below in public:
       //void readOurDrumMap(Xml& xml, bool dont_init=false); //below in public:
 
-      // REMOVE Tim.
-      // Sends all pending playback and live (rec) note-offs
-      //void flushStuckNotes();  
-
    public:
       EventList events;           // tmp Events during midi import
       MPEventList mpevents;       // tmp Events druring recording
@@ -349,13 +345,9 @@ class MidiTrack : public Track {
       virtual void updateInternalSoloStates();
 
       virtual bool addStuckNote(const MidiPlayEvent& ev);
-      //virtual bool removeStuckNote(const MidiPlayEvent& ev);  // REMOVE Tim.
       // These are only for 'live' (rec) notes for which we don't have a note-off time yet. Even times = 0.
-      //virtual bool addStuckLiveNote(const MidiPlayEvent& ev) { _stuckLiveNotes->add(ev); return true; }  // REMOVE Tim.
-      //virtual bool removeStuckLiveNote(const MidiPlayEvent& ev);
       virtual bool addStuckLiveNote(int port, int chan, int note, int vel = 64);
       virtual bool removeStuckLiveNote(int port, int chan, int note);
-      //virtual void processStuckLiveNotes();
       
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }

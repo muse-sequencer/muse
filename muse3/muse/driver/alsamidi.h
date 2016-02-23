@@ -52,13 +52,8 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectRfd()      { return -1; }
       virtual int selectWfd();
 
-// REMOVE Tim. Midi fixes. Renamed upstream as putAlsaEvent.
-//       bool putEvent(snd_seq_event_t*);
       bool putAlsaEvent(snd_seq_event_t*);
       
-// REMOVE Tim. Midi fixes. Removed. Renamed as putEvent
-      //virtual bool putMidiEvent(const MidiPlayEvent&);
-
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice() {}
@@ -82,7 +77,6 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void processMidi();
       //virtual void handleStop();
       //virtual void handleSeek();
-// REMOVE Tim. Midi fixes. Changed. Renamed from putMidiEvent
       virtual bool putEvent(const MidiPlayEvent&);
 
       virtual void setAddressClient(int client) { adr.client = client; }

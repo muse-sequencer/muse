@@ -83,65 +83,13 @@ bool AudioTrack::isMute() const
       return _mute;
       }
 
-// REMOVE Tim.      
-// //---------------------------------------------------
-// //    flushStuckNotes
-// //    Sends all pending playback and live (rec) note-offs
-// //---------------------------------------------------
-// 
-// void MidiTrack::flushStuckNotes()
-// {      
-//   //------------------------------------------------------------
-//   //    Flush out any playback stuck notes
-//   //------------------------------------------------------------
-// 
-//   for(iMPEvent i = _stuckNotes->begin(); i != _stuckNotes->end(); ++i)
-//   {
-//     MidiPlayEvent ev = *i;
-//     int port = ev.port();
-//     if(port == -1)
-//       continue;
-//     MidiDevice* dev = MusEGlobal::midiPorts[port].device();
-//     if(!dev)
-//       continue;
-// 
-//     ev.setTime(0);
-//     dev->putEvent(ev);
-//   }
-//   _stuckNotes->clear();
-// 
-//   //---------------------------------------------------
-//   //    Flush out any 'live' stuck notes
-//   //     (for which we don't know the note-off time yet)
-//   //---------------------------------------------------
-// 
-//   for(iMPEvent i = _stuckLiveNotes->begin(); i != _stuckLiveNotes->end(); ++i)
-//   {
-//     MidiPlayEvent ev = *i;
-//     int port = ev.port();
-//     if(port == -1)
-//       continue;
-//     MidiDevice* dev = MusEGlobal::midiPorts[port].device();
-//     if(!dev)
-//       continue;
-// 
-//     ev.setTime(0);
-//     dev->putEvent(ev);
-//   }
-//   _stuckLiveNotes->clear();
-// }
-
 //---------------------------------------------------------
 //   setMute
 //---------------------------------------------------------
 
 void MidiTrack::setMute(bool val)
       {
-      //if(_mute == val)   // REMOVE Tim.
-      //  return;
       _mute = val;
-      //if(val)
-      //  flushStuckNotes();
       }
 
 //---------------------------------------------------------
@@ -150,11 +98,7 @@ void MidiTrack::setMute(bool val)
 
 void MidiTrack::setOff(bool val)
       {
-      //if(_off == val)       // REMOVE Tim.
-      //  return;
       _off = val;
-      //if(val)
-      //  flushStuckNotes();
       }
 
 //---------------------------------------------------------
@@ -2377,10 +2321,6 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
       {
             void* jackPort = jackPorts[ch];
 
-            // REMOVE Tim. Just a test.
-            //if(jackPort)
-            //  MusEGlobal::audioDevice->portLatency(jackPort, true);
-            
             // Do not get buffers of unconnected client ports. Causes repeating leftover data, can be loud, or DC !
             if (jackPort && MusEGlobal::audioDevice->connections(jackPort)) 
             {
@@ -2612,9 +2552,6 @@ void AudioOutput::processInit(unsigned nframes)
       if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i]) {
-
-                  //MusEGlobal::audioDevice->portLatency(jackPorts[i], true);  // REMOVE Tim. Just a test.
-              
                   buffer[i] = MusEGlobal::audioDevice->getBuffer(jackPorts[i], nframes);
                   if (MusEGlobal::config.useDenormalBias) {
                       for (unsigned int j=0; j < nframes; j++)

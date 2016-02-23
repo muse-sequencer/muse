@@ -249,15 +249,6 @@ VAMGui::VAMGui()
 	dataHi = 0;
 	dataLo = 0;
   presetFileName = NULL; 
-
-      // work around for probable QT/WM interaction bug.
-      // for certain window managers, e.g xfce, this window is
-      // is displayed although not specifically set to show();
-      // bug: 2811156  	 Softsynth GUI unclosable with XFCE4 (and a few others)
-      // Nov 21, 2012 Hey this causes the thing not to open at all, EVER, on Lubuntu and some others!
-      // And we had a request to remove this from a knowledgable tester. REMOVE Tim.
-      ///show();
-      ///hide();
       }
 
 //---------------------------------------------------------

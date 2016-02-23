@@ -2137,10 +2137,6 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 
       const lv2ExtProgram &extPrg = itIndex->second;
 
-// REMOVE Tim. Midi fixes. Changed. Use midi state for this.
-//       state->sif->synti->_curBankH = 0;
-//       state->sif->synti->_curBankL = extPrg.bank;
-//       state->sif->synti->_curProgram = extPrg.prog;
       state->sif->synti->setCurrentProg(ch, extPrg.prog, extPrg.bank, 0);
 
       int rv = ((((int)itIndex->second.bank)<<8) + (int)extPrg.prog);
@@ -3390,15 +3386,6 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
          bank = (b >> 16) & 0xff;
       }
 
-// REMOVE Tim. Midi fixes. Changed. Use midi state for this.
-//       if(!(bank & 0x80))
-//       {
-//          synti->_curBankH = 0;
-//          synti->_curBankL = bank;
-//       }
-//       else
-//          bank = synti->_curBankL;
-//       synti->_curProgram = prog;
       int pr, hb, lb;
       synti->currentProg(chn, &pr, &lb, &hb);
       if(!(bank & 0x80))
@@ -3453,15 +3440,6 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
             bank = (b >> 16) & 0xff;
          }
 
-// REMOVE Tim. Midi fixes. Changed. Use midi state for this.
-//          if(!(bank & 0x80))
-//          {
-//             synti->_curBankH = 0;
-//             synti->_curBankL = bank;
-//          }
-//          else
-//             bank = synti->_curBankL;
-//          synti->_curProgram = prog;
          int pr, hb, lb;
          synti->currentProg(chn, &pr, &lb, &hb);
          if(!(bank & 0x80))

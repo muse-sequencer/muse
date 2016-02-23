@@ -956,25 +956,6 @@ bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
   return true;
 }
       
-// //---------------------------------------------------------
-// //   processStuckLiveNotes
-// //---------------------------------------------------------
-// 
-// void MidiTrack::processStuckLiveNotes(MidiDevice* dev)   // REMOVE Tim.
-// //void MidiTrack::processStuckLiveNotes()
-// {
-//   for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
-//   {
-//     MidiPlayEvent ev(*k);
-//     ev.setTime(0);       // Mark it for immediate playback.
-// 
-//     //dev->addScheduledEvent(*k);  // TODO: Use putEvent ?  // REMOVE Tim.
-//     dev->putEvent(*k);
-//     
-//   }
-//   _stuckLiveNotes->clear();
-// }
-
 //---------------------------------------------------------
 //   addStuckLiveNote
 //   Return true if note was removed.
@@ -990,25 +971,6 @@ bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
 //   removeStuckLiveNote
 //   Return true if note was removed.
 //---------------------------------------------------------
-
-// REMOVE Tim.
-// bool MidiTrack::removeStuckLiveNote(const MidiPlayEvent& ev)
-// {
-//   for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
-//   {
-//     MidiPlayEvent event(*k);
-// 
-//     // We're looking for port, channel, and note. Time and velocity are not relevant.
-//     if((*k).port() == ev.port() &&
-//        (*k).channel() == ev.channel() &&
-//        (*k).dataA() == ev.dataA())
-//     {
-//       _stuckLiveNotes->erase(k);
-//       return true;
-//     }
-//   }
-//   return false;
-// }
 
 bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
 {

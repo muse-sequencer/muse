@@ -514,7 +514,7 @@ bool FluidSynth::processEvent(const MusECore::MidiPlayEvent& ev)
             case MusECore::ME_AFTERTOUCH:
                 setController(ev.channel(), MusECore::CTRL_AFTERTOUCH, ev.dataA(), false);
                 break;
-            // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore - only CTRL_PROGRAM.
+            // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore - only CTRL_PROGRAM.
             //case MusECore::ME_PROGRAM:
             //    setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA(), false);
             break;   

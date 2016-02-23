@@ -750,10 +750,6 @@ bool DssiSynthIF::init(DssiSynth* s)
         }
       }
             
-      // Set current program.
-      //if(dssi->select_program)
-      //  doSelectProgram(_handle, synti->_curBankL, synti->_curProgram);  // REMOVE Tim. Use midi state for this
-      
       //
       // For stored initial control values, let SynthI::initInstance() take care of that via ::setParameter().
       //
@@ -1189,7 +1185,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       }
                   
     break;
-    // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
+    // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
     case ME_PROGRAM:
     {
       #ifdef DSSI_DEBUG
@@ -1198,18 +1194,9 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 
       int lb;
       synti->currentProg(chn, NULL, &lb, NULL);
-      // REMOVE Tim.
-      //int bank = (a >> 8) & 0xff;
-      //int prog = a & 0xff;       
-      //synti->_curBankH = 0;      
-      //synti->_curBankL = bank;
-      //synti->_curProgram = prog;
       synti->setCurrentProg(chn, a, lb, 0);
-
       if(dssi->select_program)
-        //doSelectProgram(_handle, bank, prog);  // REMOVE Tim.
         doSelectProgram(_handle, lb, a);
-
       // Event pointer not filled. Return false.
       return false;
     }
@@ -1232,16 +1219,9 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int hb = (b >> 16) & 0xff;
         int lb = (b >> 8) & 0xff;
         int pr = b & 0xff;
-
-        // REMOVE Tim.
-        //synti->_curBankH = 0;
-        //synti->_curBankL = bank;
-        //synti->_curProgram = prog;
         synti->setCurrentProg(chn, pr, lb, hb);
-        
         if(dssi->select_program)
           doSelectProgram(_handle, lb, pr);
-
         // Event pointer not filled. Return false.
         return false;
       }
@@ -1795,46 +1775,6 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
 
           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
           // Same code as in MidiPort::sendEvent()
-// REMOVE Tim.          
-//           if(synti->midiPort() != -1)
-//           {
-//             MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
-//             if(start_event->type() == ME_CONTROLLER)
-//             {
-//               int da = start_event->dataA();
-//               int db = start_event->dataB();
-//               db = mp->limitValToInstrCtlRange(da, db);
-//               if(!mp->setHwCtrlState(start_event->channel(), da, db))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_PITCHBEND)
-//             {
-//               int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_AFTERTOUCH)
-//             {
-//               int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-//                 continue;
-//             }
-//             else if(start_event->type() == ME_POLYAFTER)
-//             {
-//               int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-//               int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-//               if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-//                 continue;
-//             }
-//             // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-//             else if(start_event->type() == ME_PROGRAM)
-//             {
-//               int hb, lb;
-//               synti->currentProg(NULL, &lb, &hb);
-//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, (hb << 16) | (lb << 8) | (start_event->dataA() & 0x7f) ) )
-//                 continue;
-//             }
-//           }
           if(mp && !mp->sendHwCtrlState(*start_event, false))
             continue;
           
@@ -2019,7 +1959,6 @@ void DssiSynthIF::guiHeartBeat()
   int hb, lb, pr;
   synti->currentProg(chn, &pr, &lb, &hb);
   // Update the gui's program if needed.
-  //_oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);  // REMOVE Tim.
   _oscif.oscSendProgram(pr, lb);
   
   // Update the gui's controls if needed.
@@ -2055,7 +1994,6 @@ int DssiSynthIF::oscUpdate()
       int chn = 0;  // TODO: Channel?
       int hb, lb, pr;
       synti->currentProg(chn, &pr, &lb, &hb);
-      //_oscif.oscSendProgram(synti->_curProgram, synti->_curBankL, true /*force*/);   // REMOVE Tim.
       _oscif.oscSendProgram(pr, lb, true /*force*/);
       
       // Send current control values.
@@ -2080,11 +2018,6 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       int ch      = 0;        // TODO: ??
       int port    = synti->midiPort();        
       
-      //synti->_curBankH = 0;          // REMOVE Tim.
-      //synti->_curBankL = bank;
-      //synti->_curProgram = program;  
-      //synti->setCurrentProg(program, bank, 0);
-      
       bank    &= 0x7f;  
       program &= 0x7f;
 
@@ -2098,8 +2031,7 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       
       if(port != -1)
       {
-        // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-        //MidiPlayEvent event(0, port, ch, ME_PROGRAM, (bank << 8) + program, 0);
+        // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
         MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (bank << 8) | program);
       
         #ifdef DSSI_DEBUG 

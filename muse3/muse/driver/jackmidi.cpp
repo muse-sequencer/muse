@@ -441,20 +441,6 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       }
 }
 
-// REMOVE Tim.
-// //---------------------------------------------------------
-// //   putEvent
-// //---------------------------------------------------------
-// 
-// /* FIX: if we fail to transmit the event,
-//  *      we return false (indicating OK). Otherwise
-//  *      it seems muse will retry forever
-//  */
-// bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& /*event*/)
-// {
-//   return false;
-// }
-
 //---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
@@ -767,8 +753,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
             ft = 0;
       if (ft >= (int)MusEGlobal::segmentSize) {
             printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
-            // if (ft > (int)MusEGlobal::segmentSize) // REMOVE Tim.  Mistake propagated here by copy and paste from muse_evolution.
-                  ft = MusEGlobal::segmentSize - 1;
+            ft = MusEGlobal::segmentSize - 1;
             }
       
       #ifdef JACK_MIDI_DEBUG
@@ -784,48 +769,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 
 
             case ME_CONTROLLER:
-// REMOVE Tim.              
-//                 {
-//                   int chn = e.channel();
-//                   int a   = e.dataA();
-//                   int b   = e.dataB();
-//                   if(a == CTRL_HRPN)
-//                   {
-//                     if(b == _curOutParamNums[chn].RPNH)
-//                       return true;
-//                     _curOutParamNums[chn].RPNH = b;
-//                     _curOutParamNums[chn].NRPNH = -1; // Reset. Data MSB/LSB can only be for either RPN or NRPN.
-//                     _curOutParamNums[chn].NRPNL = -1; //
-//                   }
-//                   else if(a == CTRL_LRPN)
-//                   {
-//                     if(b == _curOutParamNums[chn].RPNL)
-//                       return true;
-//                     _curOutParamNums[chn].RPNL = b;
-//                     _curOutParamNums[chn].NRPNH = -1;
-//                     _curOutParamNums[chn].NRPNL = -1;
-//                   }
-//                   else if(a == CTRL_HNRPN)
-//                   {
-//                     if(b == _curOutParamNums[chn].NRPNH)
-//                       return true;
-//                     _curOutParamNums[chn].NRPNH = b;
-//                     _curOutParamNums[chn].RPNH = -1;
-//                     _curOutParamNums[chn].RPNL = -1;
-//                   }
-//                   else if(a == CTRL_LNRPN)
-//                   {
-//                     if(b == _curOutParamNums[chn].NRPNL)
-//                       return true;
-//                     _curOutParamNums[chn].NRPNL = b;
-//                     _curOutParamNums[chn].RPNH = -1;
-//                     _curOutParamNums[chn].RPNL = -1;
-//                   }
-//                   else if((a == CTRL_RESET_ALL_CTRL) ||
-//                           a == CTRL_HBANK || a == CTRL_LBANK || a == CTRL_PROGRAM)
-//                     _curOutParamNums[chn].reset();  // Probably best to reset.
-//                 }
-//                 // Fall through...
             case ME_NOTEON:
             case ME_NOTEOFF:
             case ME_POLYAFTER:
@@ -849,9 +792,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   break;
 
             case ME_PROGRAM:
-// REMOVE Tim.              
-//                     _curOutParamNums[e.channel()].reset();  // Probably best to reset.
-//                     // Fall through...
             case ME_AFTERTOUCH:
                   {
                   #ifdef JACK_MIDI_DEBUG
@@ -875,7 +815,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent sysex\n");
                   #endif  
                   
-//                   resetCurOutParamNums();  // Probably best to reset all.   // REMOVE Tim.
                   const unsigned char* data = e.data();
                   int len = e.len();
                   unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
@@ -950,9 +889,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 
 bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 {    
-  //int frameOffset = MusEGlobal::audio->getFrameOffset();
-  //unsigned pos = MusEGlobal::audio->pos().frame();
-
   int chn    = event.channel();
   unsigned t = event.time();
   int a      = event.dataA();
@@ -965,8 +901,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
   // Does require relatively short audio buffers, in order to catch the resolution, but buffer <= 256 should be OK... 
   // Tested OK so far with 128. 
-  //if(MusEGlobal::extSyncFlag.value()) 
-  // p4.0.15 Or, is the event marked to be played immediately?
+  // Or, is the event marked to be played immediately?
   // Nothing to do but stamp the event to be queued for frame 0+.
   if(t == 0 || MusEGlobal::extSyncFlag.value())    
     t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
@@ -1038,31 +973,6 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     //_curOutParamNums[chn].resetParamNums();  // Probably best to reset.
     // don't output program changes for GM drum channel
     //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
-
-// REMOVE Tim.      
-//           int hb = (a >> 16) & 0xff;
-//           int lb = (a >> 8) & 0xff;
-//           int pr = a & 0xff;
-//           
-//           //printf("MidiJackDevice::processEvent ME_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
-//           //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
-//           
-//           _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
-//           if (hb != 0xff)
-//           {  
-//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
-//                   return false;  // p4.0.15 Inform that processing the event in general failed. Ditto all below... 
-//           }
-//           if (lb != 0xff)
-//           {
-//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
-//                   return false;
-//           }
-//           if (pr != 0xff)
-//           {
-//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
-//                   return false;
-//           }
           _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
           _curOutParamNums[chn].setPROG(a);
           if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0)))
@@ -1533,7 +1443,6 @@ void MidiJackDevice::processMidi()
   {
     //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    //if(mp && !mp->sendHwCtrlState(*i, true)) // Force the event to be sent.   // REMOVE Tim.
     if(mp && !mp->sendHwCtrlState(*i, false)) 
       continue;
   

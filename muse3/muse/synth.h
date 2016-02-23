@@ -229,22 +229,11 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap;
 
-// REMOVE Tim. Midi fixes. Removed. 
-//       // Current bank and program for synths which use them, like dssi. 
-//       // In cases like dssi which have no 'hi' and 'lo' bank, just use _curBankL.
-//       unsigned long _curBankH;   
-//       unsigned long _curBankL;
-//       unsigned long _curProgram;
-
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
 
       virtual QString open();
       virtual void close();
-      
-// REMOVE Tim. Midi fixes. Removed. 
-//       virtual bool putMidiEvent(const MidiPlayEvent&) {return true;}
-      
       virtual Track* newTrack() const { return 0; }
 
    public:
@@ -268,7 +257,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       bool initInstance(Synth* s, const QString& instanceName);
       virtual float latency(int channel) { return _sif->latency() + AudioTrack::latency(channel); }
 
-      //void readProgram(Xml&, const QString&);  // REMOVE Tim. Use midi state for this
       void read(Xml&);
       virtual void write(int, Xml&) const;
 
@@ -289,13 +277,6 @@ class SynthI : public AudioTrack, public MidiDevice,
             _sif->populatePatchPopup(m, i, d);
             }
 
-// REMOVE Tim. Midi fixes. Changed. 
-//       void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH);
-      // REMOVE Tim.      
-      //void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH)
-      //     {  if(prog) *prog=_curProgram & 0x7f; if(bankL) *bankL=_curBankL & 0x7f; if(bankH) *bankH=_curBankH & 0x7f;  }
-      //void setCurrentProg(unsigned long prog, unsigned long bankL, unsigned long bankH)
-      //     {  _curProgram = prog & 0x7f; _curBankL = bankL & 0x7f; _curBankH = bankH & 0x7f;  }
       void currentProg(int chan, int *prog, int *bankL, int *bankH)
            {  _curOutParamNums[chan].currentProg(prog, bankL, bankH);  }
       void setCurrentProg(int chan, int prog, int bankL, int bankH)

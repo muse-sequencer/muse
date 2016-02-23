@@ -311,12 +311,6 @@ SynthI::SynthI()
       _openFlags  = 1;
       _readEnable = false;
       _writeEnable = false;
-      
-      // REMOVE Tim. Midi fixes. Removed. Use midi state for this.
-      //_curBankH = 0;  
-      //_curBankL = 0;
-      //_curProgram  = 0;
-
       setVolume(1.0);
       setPan(0.0);
       }
@@ -330,11 +324,6 @@ SynthI::SynthI(const SynthI& si, int flags)
       _openFlags  = 1;
       _readEnable = false;
       _writeEnable = false;
-
-      //_curBankH = 0;  // REMOVE Tim. Use midi state for this
-      //_curBankL = 0;
-      //_curProgram  = 0;
-
       setVolume(1.0);
       setPan(0.0);
 
@@ -521,11 +510,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                 if(i->second->num() == CTRL_PROGRAM)
                 {
                   delete i->second;
-                  
-// REMOVE Tim. Midi fixes. Changed.
-//                   cl->erase(i);
                   cl->del(i);
-                  
                   break;
                 }
               }
@@ -789,11 +774,6 @@ void SynthI::write(int level, Xml& xml) const
 
       _stringParamMap.write(level, xml, "stringParam");
       
-// REMOVE Tim. Midi fixes. Removed. Use midi state for this.
-// // REMOVE Tim. Midi fixes. Changed.
-// //       xml.tag(level, "curProgram bankH=\"%ld\" bankL=\"%ld\" prog=\"%ld\"/", _curBankH, _curBankL, _curProgram);
-//       xml.tag(level, "curProgram bankH=\"%ld\" bankL=\"%ld\" prog=\"%ld\"/", _curBankH & 0x7f, _curBankL & 0x7f, _curProgram & 0x7f);
-      
       _sif->write(level, xml);
       xml.etag(level, "SynthI");
       }
@@ -825,81 +805,6 @@ void MessSynthIF::write(int level, Xml& xml) const
             xml.etag(level--, "midistate");
             }
       }
-
-// REMOVE Tim. Midi fixes. Removed. Use midi state for this.
-// //---------------------------------------------------------
-// //   SynthI::readProgram
-// //---------------------------------------------------------
-// 
-// // REMOVE Tim. Midi fixes. Changed.
-// // void SynthI::readProgram(Xml& xml, const QString& name)
-// // {
-// //   for (;;)
-// //   {
-// //     Xml::Token token = xml.parse();
-// //     const QString tag = xml.s1();
-// //     switch (token)
-// //     {
-// //           case Xml::Error:
-// //           case Xml::End:
-// //                 return;
-// //           case Xml::TagStart:
-// //                 xml.unknown(name.toLatin1().constData());
-// //                 break;
-// //           case Xml::Attribut:
-// //                 if(tag == "bankH")
-// //                   _curBankH = xml.s2().toUInt();
-// //                 else
-// //                 if(tag == "bankL")
-// //                   _curBankL = xml.s2().toUInt();
-// //                 else
-// //                 if(tag == "prog")
-// //                   _curProgram = xml.s2().toUInt();
-// //                 else
-// //                   xml.unknown(name.toLatin1().constData());
-// //                 break;
-// //           case Xml::TagEnd:
-// //                 if(tag == name)
-// //                   return;
-// //           default:
-// //                 break;
-// //     }
-// //   }
-// // }
-// void SynthI::readProgram(Xml& xml, const QString& name)
-// {
-//   for (;;) 
-//   {
-//     Xml::Token token = xml.parse();
-//     const QString tag = xml.s1();
-//     switch (token) 
-//     {
-//           case Xml::Error:
-//           case Xml::End:
-//                 return;
-//           case Xml::TagStart:
-//                 xml.unknown(name.toAscii().constData());
-//                 break;
-//           case Xml::Attribut:
-//                 if(tag == "bankH") 
-//                   _curBankH = xml.s2().toUInt() & 0x7f;
-//                 else
-//                 if(tag == "bankL") 
-//                   _curBankL = xml.s2().toUInt() & 0x7f;
-//                 else
-//                 if(tag == "prog") 
-//                   _curProgram = xml.s2().toUInt() & 0x7f;
-//                 else
-//                   xml.unknown(name.toAscii().constData());
-//                 break;
-//           case Xml::TagEnd:
-//                 if(tag == name) 
-//                   return;
-//           default:
-//                 break;
-//     }
-//   }
-// }
 
 //---------------------------------------------------------
 //   SynthI::read
@@ -948,11 +853,6 @@ void SynthI::read(Xml& xml)
                               }
                         else if (tag == "stringParam")
                               _stringParamMap.read(xml, tag);
-                        
-// REMOVE Tim. Midi fixes. Removed. Use midi state for this.
-//                         else if (tag == "curProgram")
-//                               readProgram(xml, tag);
-                        
                         else if (tag == "geometry")
                               r = readGeometry(xml, tag);
                         else if (tag == "nativeGeometry")
