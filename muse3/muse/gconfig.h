@@ -171,6 +171,7 @@ struct GlobalConfigValues {
 
       WaveDrawing waveDrawing;
 
+      bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
       int rtcTicks;
       bool midiSendInit;         // Send instrument initialization sequences

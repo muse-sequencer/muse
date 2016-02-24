@@ -60,6 +60,7 @@
 #include "popupmenu.h"
 #include "routepopup.h"
 #include "operations.h"
+#include "gconfig.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -1251,6 +1252,14 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
+      addALSADevice->blockSignals(true);
+      addALSADevice->setChecked(MusEGlobal::config.enableAlsaMidiDriver ||      // User setting
+                                MusEGlobal::useAlsaWithJack ||                  // Command line override
+                                MusEGlobal::audioDevice->deviceType() != 
+                                         MusECore::AudioDevice::JACK_AUDIO);    // Jack not running
+      addALSADevice->blockSignals(false);
+
+
       // Get currently selected index...
       int no = -1;
       QTableWidgetItem* sitem = mdevView->currentItem();
@@ -1756,6 +1765,9 @@ void MPConfig::addJackDeviceClicked()
 void MPConfig::addAlsaDeviceClicked(bool v)
 {
   MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+
+  MusEGlobal::config.enableAlsaMidiDriver = v;
+  //MusEGlobal::muse->changeConfig(true);    // Save settings? No, wait till close.
   
   if(v)
   {

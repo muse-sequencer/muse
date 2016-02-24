@@ -161,6 +161,7 @@ GlobalConfigValues config = {
       QColor(200,200,200),          // partMidiLightEventColor
 
       WaveOutLine,                  // waveDrawing
+      false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences

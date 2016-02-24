@@ -1029,6 +1029,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGui::read_function_dialog_config(xml);
                         else if (tag == "shortcuts")
                               MusEGui::readShortCuts(xml);
+                        else if (tag == "enableAlsaMidiDriver")
+                              MusEGlobal::config.enableAlsaMidiDriver = xml.parseInt();
                         else if (tag == "division")
                               MusEGlobal::config.division = xml.parseInt();
                         else if (tag == "guiDivision")
@@ -1423,6 +1425,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "configuration");
 
+      xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
