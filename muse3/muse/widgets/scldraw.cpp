@@ -31,6 +31,7 @@
 #include <QFontMetrics>
 #include <QString>
 #include <QPalette>
+#include <QApplication>
 
 #include "mmath.h"
 #include "scldraw.h"
@@ -121,7 +122,7 @@ ScaleDraw::ScaleDraw()
 
     d_minAngle = -135 * 16;
     d_maxAngle = 135 * 16;
-    d_fmt = 'g';
+    d_fmt = 'M'; // Metric suffix G M K.
     d_prec = 4;
 
     d_drawBackBone = true;
@@ -179,7 +180,26 @@ void ScaleDraw::setScale(const ScaleDiv &s)
     setDblRange(d_scldiv.lBound(),d_scldiv.hBound(),d_scldiv.logScale());
 }
 
-
+QString ScaleDraw::composeLabelText(double val, char fmt, int prec) const
+{
+  if(fmt == 'M')
+  {
+    if(val > 1000000000.0)
+      //return QString::number(val / 1000000000.0, 'g', prec) + "G";
+      return QString("%L1").arg(val / 1000000000.0, 0, 'g', prec) + "G";
+    else if(val > 1000000.0)
+      //return QString::number(val / 1000000.0, 'g', prec) + "M";
+      return QString("%L1").arg(val / 1000000.0, 0, 'g', prec) + "M";
+    else if(val > 1000.0)
+      //return QString::number(val / 1000.0, 'g', prec) + "K";
+      return QString("%L1").arg(val / 1000.0, 0, 'g', prec) + "K";
+    else
+      //return QString::number(val, 'g', prec);
+      return QString("%L1").arg(val, 0, 'g', prec);
+  }
+  //return QString::number(val, fmt, prec);
+  return QString("%L1").arg(val, 0, fmt, prec);
+}
 
 //------------------------------------------------------------
 //.F ScaleDraw::draw
@@ -285,6 +305,8 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
       double arc;
   int x1, x2, y1, y2;
 
+  //QFontMetrics fm = p->fontMetrics();
+  
   switch(d_orient)
   {
   case Right:
@@ -293,8 +315,13 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
       break;
 
   case Bottom:
-
       p->drawLine(tval, d_yorg, tval, d_yorg + len);
+      break;
+      
+  case InsideHorizontal:
+      //p->drawLine(tval, d_yorg + d_majLen + d_vpad + fm.ascent(), tval, d_yorg + len);
+      //p->drawLine(tval, d_yorg - d_vpad - fm.ascent(), tval, d_yorg - d_vpad);
+      p->drawLine(tval, d_vpad + d_majLen - len, tval, d_vpad + d_majLen);
       break;
 
   case Left:
@@ -317,7 +344,6 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
       break;
 
   case Top:
-    case InsideHorizontal:
   default:
 
       p->drawLine(tval, d_yorg, tval, d_yorg - len);
@@ -362,7 +388,7 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     if(isSpecialText && !_specialText.isEmpty())
       label = _specialText;
     else
-      label.setNum(val, d_fmt, d_prec);
+      label = composeLabelText(val, d_fmt, d_prec);
 
     switch(d_orient)
     {
@@ -387,6 +413,13 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
         x0 = tval - (fm.width(label)-1) / 2;
         y0 = d_yorg + d_majLen + d_vpad + fm.ascent();
 	break;
+        
+    case InsideHorizontal:
+        x0 = tval - (fm.width(label)-1) / 2;
+        //y0 = d_yorg + d_majLen + d_vpad + fm.ascent();
+        y0 = d_majLen + d_vpad + fm.ascent();
+        break;
+        
     case Round:
 
 	if ((tval > d_minAngle + 359 * 16) || (tval < d_minAngle - 359 * 16))
@@ -456,7 +489,6 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	}
 	break;
     case Top:
-    case InsideHorizontal:
     default:
 // 	p->drawText(tval - (fm.width(label)-1) / 2, d_yorg - d_majLen - d_vpad, label);
         x0 = tval - (fm.width(label)-1) / 2;
@@ -564,12 +596,14 @@ void ScaleDraw::drawBackbone(QPainter *p, const QPalette& /*palette*/, double /*
 	break;
 	
     case Top:
-    case InsideHorizontal:
 	p->drawLine(d_xorg, d_yorg - bw2, d_xorg + d_len - 1, d_yorg-bw2);
 	break;
     case Bottom:
 	p->drawLine(d_xorg, d_yorg+bw2, d_xorg + d_len - 1, d_yorg+bw2);
 	break;
+    case InsideHorizontal:
+        p->drawLine(d_xorg, d_majLen + d_vpad, d_xorg + d_len - 1, d_majLen + d_vpad);
+        break;
     default:
 	p->drawLine(d_xorg, d_yorg, d_xorg + d_len - 1, d_yorg);
 	break;
@@ -891,7 +925,7 @@ int ScaleDraw::maxWidth(const QFontMetrics& fm, bool worst, int penWidth) const
 //      int penWidth -- the width of the pen that will be used to draw the scale
 //
 //------------------------------------------------------------
-int ScaleDraw::maxHeight(const QFontMetrics& fm, int penWidth) const
+int ScaleDraw::maxHeight(const QFontMetrics& fm, int /*penWidth*/) const
 {
     int rv = 0;
     switch (d_orient)
@@ -900,12 +934,14 @@ int ScaleDraw::maxHeight(const QFontMetrics& fm, int penWidth) const
     case Bottom:
     case Round:
     case InsideHorizontal:
-        rv = penWidth + d_vpad + d_majLen + fm.height();
+        //rv = penWidth + d_vpad + d_majLen + fm.height();
+        rv = 2 * d_vpad + d_majLen + fm.ascent();
         break;
     case Left:
     case Right:
     case InsideVertical:
-        rv = d_len + ((fm.height() + 1) / 2);
+        //rv = d_len + ((fm.height() + 1) / 2);
+        rv = d_len + ((fm.ascent() + 1) / 2);
         break;
     }
 
@@ -1091,7 +1127,8 @@ void ScaleDraw::setAngleRange(double angle1, double angle2)
 //
 //.u	Description
 //	 Format character and precision have the same meaning as for the
-//	 QString class.
+//	 QString class, with one exception: Special format 'M' (Metric suffix G M K)
+//
 //
 //.u	See also
 //	QString::setNum in the Qt manual
@@ -1173,7 +1210,7 @@ int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
 
     if (worst)                  // worst case
     {
-        s.setNum(WorstCase, d_fmt, d_prec);
+        s = composeLabelText(WorstCase, d_fmt, d_prec);
         rv = fm.width(s);
     }
     else                                // actual width
@@ -1184,7 +1221,7 @@ int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
             // correct rounding errors if val = 0
             if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
                val = 0.0;
-            s.setNum(val, d_fmt, d_prec);
+            s = composeLabelText(val, d_fmt, d_prec);
             rv = MusECore::qwtMax(rv,fm.width(s));
         }
     }

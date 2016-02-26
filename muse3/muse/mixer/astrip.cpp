@@ -953,7 +953,7 @@ void AudioStrip::updateChannels()
                   _clipperLayout->addWidget(_clipperLabel[cc]);
                   connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
             
-                  meter[cc] = new MusEGui::Meter(this);
+                  meter[cc] = new Meter(this);
                   //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
                   meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
@@ -1004,7 +1004,7 @@ void AudioStrip::updateChannels()
 //           knob = new Knob(this);
 //           knob->setRange(-1.0, +1.0);
 //           knob->setToolTip(tr("panorama"));
-//           knobLabel = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
+//           knobLabel = new DoubleLabel(0, -1.0, +1.0, this);
 //           knobLabel->setPrecision(2);
 //         break;
 //         case Knob::auxType:
@@ -1012,7 +1012,7 @@ void AudioStrip::updateChannels()
 //           knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
 //           knob->setToolTip(tr("aux send level"));
 //           knob->setFaceColor(Qt::blue);
-//           knobLabel = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
+//           knobLabel = new DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
 //           knobLabel->setPrecision(0);
 //         break;
 //         case Knob::gainType:
@@ -1020,7 +1020,7 @@ void AudioStrip::updateChannels()
 //           knob->setRange(1.0, 20.0);
 //           knob->setFaceColor(Qt::yellow);
 //           knob->setToolTip(tr("calibration gain"));
-//           knobLabel = new MusEGui::DoubleLabel(1.0, 1.0, 30.0, this);
+//           knobLabel = new DoubleLabel(1.0, 1.0, 30.0, this);
 //           knobLabel->setPrecision(1);
 //         break;
 //         default:
@@ -1214,7 +1214,7 @@ AudioStrip::~AudioStrip()
 //       
 //       int ch = 0;
 //       for (; ch < channel; ++ch)
-//             meter[ch] = new MusEGui::Meter(this);
+//             meter[ch] = new Meter(this);
 //       for (; ch < MAX_CHANNELS; ++ch)
 //             meter[ch] = 0;
 // 
@@ -1309,7 +1309,7 @@ AudioStrip::~AudioStrip()
 //       sliderGrid->setContentsMargins(0, 0, 0, 0);
 //       sliderGrid->setSpacing(0);
 //       
-//       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
+//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
 // 
 //       slider->setCursorHoming(true);
 //       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
@@ -1330,7 +1330,7 @@ AudioStrip::~AudioStrip()
 //       sliderGrid->addItem(new QSpacerItem(2,0),0,3);
 //       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 // 
-//       sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);
+//       sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);
 //       sl->setSlider(slider);
 //       ///sl->setFont(MusEGlobal::config.fonts[1]);
 //       sl->setBackgroundRole(QPalette::Mid);
@@ -1360,7 +1360,7 @@ AudioStrip::~AudioStrip()
 //       //---------------------------------------------------
 // 
 //       if (track->canRecord()) {
-//             record  = new MusEGui::TransparentToolButton(this);
+//             record  = new TransparentToolButton(this);
 // 	    record->setFocusPolicy(Qt::NoFocus);
 //             record->setCheckable(true);
 //             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -1405,7 +1405,7 @@ AudioStrip::~AudioStrip()
 //             solo->setToolTip(tr("solo mode"));
 //             }
 // 
-//       off  = new MusEGui::TransparentToolButton(this);
+//       off  = new TransparentToolButton(this);
 //       off->setFocusPolicy(Qt::NoFocus);
 //       off->setBackgroundRole(QPalette::Mid);
 //       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -1457,7 +1457,7 @@ AudioStrip::~AudioStrip()
 //       //    automation type
 //       //---------------------------------------------------
 // 
-//       autoType = new MusEGui::ComboBox();
+//       autoType = new ComboBox();
 //       autoType->setFocusPolicy(Qt::NoFocus);
 //       ///autoType->setFont(MusEGlobal::config.fonts[1]);
 //       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -1553,7 +1553,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       int ch = 0;
       for (; ch < channel; ++ch)
       {
-            meter[ch] = new MusEGui::Meter(this);
+            meter[ch] = new Meter(this);
 // REMOVE Tim. Trackinfo. Added.
             _clipperLabel[ch] = new ClipperLabel(this);
             setClipperTooltip(ch);
@@ -1678,9 +1678,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       
    
 // REMOVE Tim. Trackinfo. Changed.      
-//       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
-//       slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(62, 37, 255));
-      slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
+//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
+//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(62, 37, 255));
+      slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
 //       QFont fnt = font();
 //       fnt.setPointSize(8);
 //       QFont fnt;
@@ -1689,7 +1689,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //       slider->setFont(fnt);
 
       slider->setCursorHoming(true);
-      slider->setThumbLength(1);
+//       slider->setThumbLength(1);
 //       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0); // REMOVE Tim. Trackinfo. Changed.
 //       slider->setRange(MusEGlobal::config.minSlider - volSliderStep, volSliderMax, volSliderStep);
       slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
@@ -1734,7 +1734,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sliderGrid->addItem(new QSpacerItem(2,0),2,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
-      sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
+      sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
       sl->setSlider(slider);
       ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
@@ -1767,7 +1767,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       if (track->canRecord()) {
-            record  = new MusEGui::TransparentToolButton(this);
+            record  = new TransparentToolButton(this);
             record->setFocusPolicy(Qt::NoFocus);
             record->setCheckable(true);
             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -1812,7 +1812,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             solo->setToolTip(tr("solo mode"));
             }
 
-      off  = new MusEGui::TransparentToolButton(this);
+      off  = new TransparentToolButton(this);
       off->setFocusPolicy(Qt::NoFocus);
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -1864,7 +1864,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    automation type
       //---------------------------------------------------
 
-      autoType = new MusEGui::ComboBox();
+      autoType = new ComboBox();
       autoType->setFocusPolicy(Qt::NoFocus);
       ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));

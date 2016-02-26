@@ -106,13 +106,11 @@ QT5_WRAP_CPP (widget_mocs
       swidget.h  
       tb1.h  
       tempolabel.h
-      thinslider.h
       tools.h
       tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
       unusedwavefiles.h
-      verticalmeter.h
       view.h
       vscale.h
       visibletracks.h
@@ -246,7 +244,6 @@ file (GLOB widgets_source_files
       swidget.cpp 
       tb1.cpp   
       tempolabel.cpp 
-      thinslider.cpp
       tools.cpp
       tracks_duplicate.cpp
       # ttoolbar.cpp 
@@ -254,7 +251,6 @@ file (GLOB widgets_source_files
       unusedwavefiles.cpp
       utils.cpp
       velocity.cpp 
-      verticalmeter.cpp
       view.cpp
       vscale.cpp
       visibletracks.cpp

@@ -75,6 +75,9 @@ class ScaleDraw : public DiMap {
       int d_prec;
       
       bool d_drawBackBone;
+
+      // Like QString::number except it allows special 'M' format (Metric suffix G, M, K).
+      QString composeLabelText(double val, char fmt, int prec) const;
       
       void drawTick(QPainter *p, const QPalette& palette, double curValue, double val, int len) const;
       void drawBackbone(QPainter *p, const QPalette& palette, double curValue) const;
@@ -89,6 +92,7 @@ class ScaleDraw : public DiMap {
 	   double step = 0.0, int logarithmic = 0);
       void setGeometry(int xorigin, int yorigin, int length, OrientationX o);
       void setAngleRange(double angle1, double angle2);
+      // Special 'M' format (Metric suffix G, M, K) supported.
       void setLabelFormat(char f, int prec);
       void setBackBone(bool v) { d_drawBackBone = v; }
       

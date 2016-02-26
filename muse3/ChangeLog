@@ -1,3 +1,14 @@
+25.02.2016:
+        Plugin generic UI fixes, new features: (Tim)
+        - New: Class Meter now has orientation: Horizontal or Vertical.
+        - New: Class Meter now has scale markings (just like class Slider).
+        - Fix bug #470: Built-in MusE UI (such as LADSPA TAP Reverberator) not responding to controls.
+        - Replaced plugin generic UI ThinSlider with Slider.
+        - New: Plugin generic UI sliders have scale markings.
+        - Fixed backwards plugin generic UI output meters: Replaced VerticalMeter with Meter,
+           and enabled meter scale markings.
+        - Removed class ThinSlider and VerticalMeter from cmake build (but not from project).
+        - Related: Mixer strip volume sliders: Reinstate a 'thumb' knob.
 24.02.2016:
         - Remember the state of ALSA button in Midi Configuration dialog. (Tim)
           It is a global setting, not per-song.

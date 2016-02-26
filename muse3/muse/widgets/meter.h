@@ -34,17 +34,19 @@ class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 class QPainterPath;
-class QFont;
 
 #include <QBitmap>
 
+#include "sclif.h"
+#include "scldraw.h"
 
 namespace MusEGui {
 
-class Meter : public QFrame {
+class Meter : public QFrame, public ScaleIf {
     Q_OBJECT
    public:
       enum MeterType {DBMeter, LinMeter};
+      enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
 
    protected:
       QLinearGradient darkGradRed;
@@ -85,8 +87,14 @@ class Meter : public QFrame {
       virtual void paintEvent(QPaintEvent*);
       virtual void mousePressEvent(QMouseEvent*);
       
+      // Adjust scale so marks are not too close together.
+      void adjustScale();
+      
    private:
       MeterType mtype;
+      Qt::Orientation _orient;
+      ScalePos _scalePos;
+      int _scaleDist;
       bool overflow;
       double val;
       double targetVal;
@@ -95,7 +103,7 @@ class Meter : public QFrame {
       double targetMaxVal;
       double minScale, maxScale;
       int yellowScale, redScale;
-      int cur_yv, last_yv, cur_ymax, last_ymax;
+      int cur_pixv, last_pixv, cur_pixmax, last_pixmax;
       // REMOVE Tim. Trackinfo. Added.
       bool _showText;
       //QPixmap _textPM;
@@ -108,6 +116,8 @@ class Meter : public QFrame {
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
 
+      void scaleChange();
+      
       QTimer fallingTimer;
 
    public slots:
@@ -119,11 +129,21 @@ class Meter : public QFrame {
       void mousePress();      
 
    public:
-      Meter(QWidget* parent, MeterType type = DBMeter);
+      Meter(QWidget* parent, 
+            MeterType type = DBMeter, 
+            Qt::Orientation orient = Qt::Vertical, 
+            ScalePos scalePos = None, 
+            ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone);
+      
       void setRange(double min, double max);
 
       bool showText() const { return _showText; }
       void setShowText(bool v) { _showText = v; update(); }
+      
+      Qt::Orientation orientation() const { return _orient; }
+      void setOrientation(Qt::Orientation o) { _orient = o; update(); }
+      
+      virtual QSize sizeHint() const;
       };
 
 } // namespace MusEGui

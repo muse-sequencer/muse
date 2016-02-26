@@ -342,7 +342,7 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
    }
 
    // Are there minor ticks below the first major tick?
-   if (d_majMarks[0] > d_lBound )
+   if (!d_majMarks.empty() && d_majMarks[0] > d_lBound )
       i0 = -1;
    else
       i0 = 0;

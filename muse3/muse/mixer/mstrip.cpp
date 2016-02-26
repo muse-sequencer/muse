@@ -873,11 +873,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       slider = new Slider(0, "vol", Qt::Vertical, Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
       slider->setContentsMargins(0, 0, 0, 0);  // REMOVE Tim. Trackinfo. Changed. TEST
       slider->setCursorHoming(true);
-      slider->setThumbLength(1);
+      //slider->setThumbLength(1);
       slider->setRange(double(mn), double(mx), 1.0);
 //       slider->setScaleMaxMinor(5);
       slider->setScale(double(mn), double(mx), 10.0, false);
       slider->setScaleBackBone(false);
+      //slider->setFillThumb(false);
       
 // REMOVE Tim. Trackinfo. Changed.      
 //       slider->setFixedWidth(20);
