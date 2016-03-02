@@ -1,3 +1,8 @@
+01.03.2016:
+        - Fix remaining audio engine bug from 31.10.2015: Certain routing conditions produced garbage audio output, 
+           and pinned channel meters. (Tim)
+          Fairly substantial re-write of AudioTrack::copyData(), ::getData() and variants, especially input routing.
+          Removed AudioTrack::addData(). Cleanups of massive comments etc. Test OK with many multi-channel scenarios.
 26.02.2016:
         - Save state of: Routing preferredRouteNameOrAlias and routerGroupingChannels, 
            and routing dialog button routerExpandVertically. (Tim)

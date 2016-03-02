@@ -531,8 +531,25 @@ class AudioTrack : public Track {
       void readVolume(Xml& xml);
 
       virtual void preProcessAlways() { _processed = false; }
-      virtual void  addData(unsigned samplePos, int dstStartChan, int dstChannels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
-      virtual void copyData(unsigned samplePos, int dstStartChan, int dstChannels, int srcStartChan, int srcChannels, unsigned frames, float** buffer, bool add=false);
+      // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
+      // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
+      //  otherwise it is given by the bulk 'add' flag.
+      // The range of buffers in 'dstBuffer' given by 'dstStartChan' and 'availDstChannels' are filled with data.
+      // If 'availDstChannels' is greater than 'requestedDstChannels', the excess buffers are filled with silence.
+      // If 'requestedDstChannels' is greater than 'availDstChannels', copyData() acts AS IF 'requestedDstChannels'
+      //  was the real availDstChannels except it only fills up to 'availDstChannels'. This is to allow copyData()
+      //  to mix properly even when some routes are not available (ex. switching a track from stereo to mono, 
+      //  which has an existing one-channel route on the right channel).
+      // The 'srcStartChan' and 'srcChannels' give the range of channels to copy or add from this track.
+      // If 'srcStartChan' is -1 it will be set to zero. If 'srcChannels' is -1`it will be set to this track's output channels. 
+      // The 'dstStartChan' can also be -1, but 'requestedDstChannels' and availDstChannels cannot.
+      virtual void copyData(unsigned samplePos, 
+                            int dstStartChan, int requestedDstChannels, int availDstChannels,
+                            int srcStartChan, int srcChannels, 
+                            unsigned frames, float** dstBuffer, 
+                            bool add = false,
+                            const bool* addArray = 0);
+      
       virtual bool hasAuxSend() const { return false; }
 
       virtual float latency(int channel); 
