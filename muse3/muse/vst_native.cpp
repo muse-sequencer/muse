@@ -801,8 +801,16 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     goto _error;
   }*/
 
+
   ++_instances;
   _handle = hnd;
+
+  // work around to get airwave to work (author contacted so maybe another solution will
+  // reveal itself)
+  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
+  //
 
   //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
