@@ -206,7 +206,6 @@ class VstNativeSynthIF : public SynthIF
       Port* _controls;
       float** _audioOutBuffers;
       float** _audioInBuffers;
-      std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
       float*  _audioInSilenceBuf;            // Just all zeros all the time, so we don't have to clear for silence.
 
       VstNativeSynthOrPlugin userData;

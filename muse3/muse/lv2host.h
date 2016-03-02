@@ -388,7 +388,6 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-    std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.    
     void doSelectProgram(unsigned char channel, int bank, int prog);
     inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, uint8_t a, uint8_t b, uint8_t c = 0);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);

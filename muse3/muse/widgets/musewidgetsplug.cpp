@@ -150,9 +150,9 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(220, 220, 220),     // auxTrackBg;
       QColor(220, 220, 220),     // synthTrackBg;
       
-      QColor(98, 124, 168),         // part canvas bg
-      QColor(255, 170, 0),          // ctrlGraphFg; Medium orange
-      QColor(98, 124, 168),         // mixerBg;
+      QColor(98, 124, 168),      // part canvas bg
+      QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
+      QColor(0, 0, 0),           // mixerBg;
 
       QColor(0xe0, 0xe0, 0xe0),     // Ruler background
       QColor(0, 0, 0),              // Ruler text
@@ -161,8 +161,7 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
       Qt::gray,                     // midiCanvasBeatColor
-      Qt::lightGray,                // midiCanvasBarColor
-
+      Qt::black,                    // midiCanvasBarColor
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
       Qt::black,                    // waveRmsColor
@@ -215,33 +214,39 @@ MusEGlobal::GlobalConfigValues config = {
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
          QString("Mixer A"),
+         QStringList(),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true, true
+         true, true, true, true, true,
+         MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         QList<bool>()
          },
       {
          QString("Mixer B"),
+         QStringList(),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true, true
-         },
+         true, true, true, true, true,
+         MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         QList<bool>()
+      },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
       false,                        // mixer1Visible;
       false,                        // mixer2Visible;
-      false,                        // markerVisible;  // This line was missing  2007-01-08 (willyfoobar)
+      false,                        // markerVisible;
       true,                         // arrangerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
-      false,                        // canvasShowGrid;
+      true,                         // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
       QString(""),                  // default styleSheetFile - For built-in set to ":/style.qss"
       QString(""),                  // style
-      QString(""),                  // externalWavEditor //this line was missing 2007-01-08 (willyfoobar)
+      QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
-      true,                         // moveArmedCheckBox
+      false,                        // moveArmedCheckBox
       true,                         // useDenormalBias
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow
@@ -264,13 +269,15 @@ MusEGlobal::GlobalConfigValues config = {
       true,                         // borderlessMouse
       false,                        // autoSave
       false,                        // scrollableSubMenus
+      true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
+      MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample
       QString("klick4.wav"),        // accent2Sample
       MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
-      false,                        // routerExpandVertically
+      true,                         // routerExpandVertically
       2                             // routerGroupingChannels
       };
 

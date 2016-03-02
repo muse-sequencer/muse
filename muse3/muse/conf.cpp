@@ -714,6 +714,19 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         
                         // ---- Global config stuff begins here ----
 
+                        else if (tag == "preferredRouteNameOrAlias")
+                              MusEGlobal::config.preferredRouteNameOrAlias = static_cast<MusEGlobal::RouteNameAliasPreference>(xml.parseInt());
+                        else if (tag == "routerExpandVertically")
+                              MusEGlobal::config.routerExpandVertically = xml.parseInt();
+                        else if (tag == "routerGroupingChannels")
+                        {
+                              MusEGlobal::config.routerGroupingChannels = xml.parseInt();
+                              // TODO: For now we only support maximum two channels grouping. Zero is an error.
+                              if(MusEGlobal::config.routerGroupingChannels < 1)
+                                MusEGlobal::config.routerGroupingChannels = 1;
+                              if(MusEGlobal::config.routerGroupingChannels > 2)
+                                MusEGlobal::config.routerGroupingChannels = 2;
+                        }
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1477,6 +1490,10 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl2", MusEGlobal::midiFilterCtrl2);
       xml.intTag(level, "midiFilterCtrl3", MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4", MusEGlobal::midiFilterCtrl4);
+      
+      xml.intTag(level, "preferredRouteNameOrAlias", static_cast<int>(MusEGlobal::config.preferredRouteNameOrAlias));
+      xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
+      xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);

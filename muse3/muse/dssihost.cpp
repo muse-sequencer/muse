@@ -546,7 +546,6 @@ bool DssiSynthIF::init(DssiSynth* s)
           }
           else
             memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
-          _iUsedIdx.push_back(false); // Start out with all false.
           ld->connect_port(_handle, _synth->iIdx[k], _audioInBuffers[k]);
         }  
       }
@@ -1509,7 +1508,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
   #endif
 
   // All ports must be connected to something!
-  const unsigned long nop = ((unsigned long) ports) > _synth->_outports ? _synth->_outports : ((unsigned long) ports);
+  const unsigned long in_ports = _synth->inPorts();
+  const unsigned long out_ports = _synth->outPorts();
+  const unsigned long nop = ((unsigned long) ports) > out_ports ? out_ports : ((unsigned long) ports);
 
   const DSSI_Descriptor* dssi = _synth->dssi;
   const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
@@ -1554,37 +1555,45 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
   fprintf(stderr, "DssiSynthIF::getData: Handling inputs...\n");
   #endif
 
+  bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'. 
+  
+  // Don't bother if not 'running'.
   if(ports != 0)
   {
-    const unsigned long in_ports = _synth->inPorts();
+    // Initialize the array.
+    for(unsigned long i = 0; i < in_ports; ++i)
+      used_in_chan_array[i] = false;
+    
     if(!atrack->noInRoute())
     {
       RouteList *irl = atrack->inRoutes();
       for(ciRoute i = irl->begin(); i != irl->end(); ++i)
       {
-        if(!i->track->isMidiTrack())
-        {
-          //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
-          const int src_ch = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-          const int dst_ch = i->channel       == -1 ? 0 : i->channel;
-          const int src_chs = i->channels;
+        if(i->track->isMidiTrack())
+          continue;
+        // Only this synth knows how many destination channels there are, 
+        //  while only the track knows how many source channels there are.
+        // So take care of the destination channels here, and let the track handle the source channels.
+        const int dst_ch = i->channel <= -1 ? 0 : i->channel;
+        if((unsigned long)dst_ch >= in_ports)
+          continue;
+        const int dst_chs = i->channels <= -1 ? in_ports : i->channels;
+        //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
+        const int src_ch = i->remoteChannel <= -1 ? 0 : i->remoteChannel;
+        const int src_chs = i->channels;
 
-          if((unsigned)dst_ch < in_ports)
-          {
-            AudioTrack* t = static_cast<AudioTrack*>(i->track);
-            // Only this synth knows how many destination channels there are, 
-            //  while only the track knows how many source channels there are.
-            // So take care of the destination channels here, and let the track handle the source channels.
-            int dst_chs = i->channels == -1 ? in_ports : i->channels;
-            if(unsigned(dst_ch + dst_chs) > in_ports)
-              dst_chs = in_ports - dst_ch;
-
-            t->copyData(pos, dst_ch, dst_chs, src_ch, src_chs, nframes, &_audioInBuffers[0], _iUsedIdx[dst_ch]);
-            const int nxt_ch = dst_ch + dst_chs;
-            for(int ch = dst_ch; ch < nxt_ch; ++ch)
-              _iUsedIdx[ch] = true;
-          }
-        }
+        int fin_dst_chs = dst_chs;
+        if((unsigned long)(dst_ch + fin_dst_chs) > in_ports)
+          fin_dst_chs = in_ports - dst_ch;
+            
+        static_cast<AudioTrack*>(i->track)->copyData(pos, 
+                                                     dst_ch, dst_chs, fin_dst_chs, 
+                                                     src_ch, src_chs, 
+                                                     nframes, &_audioInBuffers[0], 
+                                                     false, used_in_chan_array);
+        const int nxt_ch = dst_ch + fin_dst_chs;
+        for(int ch = dst_ch; ch < nxt_ch; ++ch)
+          used_in_chan_array[ch] = true;
       }
     }
   }
@@ -1847,25 +1856,19 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
 
       if(ports != 0)  // Don't bother if not 'running'.
       {
-        unsigned long k = 0;
         // Connect the given buffers directly to the ports, up to a max of synth ports.
-        for(; k < nop; ++k)
+        for(unsigned long k = 0; k < nop; ++k)
           descr->connect_port(_handle, _synth->oIdx[k], buffer[k] + sample);
         // Connect the remaining ports to some local buffers (not used yet).
-        for(; k < _synth->_outports; ++k)
+        for(unsigned long k = nop; k < out_ports; ++k)
           descr->connect_port(_handle, _synth->oIdx[k], _audioOutBuffers[k] + sample);
         // Connect all inputs either to some local buffers, or a silence buffer.
-        for(k = 0; k < _synth->_inports; ++k)
+        for(unsigned long k = 0; k < in_ports; ++k)
         {
-          if(_iUsedIdx[k])
-          {
-            _iUsedIdx[k] = false; // Reset
+          if(used_in_chan_array[k])
             descr->connect_port(_handle, _synth->iIdx[k], _audioInBuffers[k] + sample);
-          }
           else
-          {
             descr->connect_port(_handle, _synth->iIdx[k], _audioInSilenceBuf + sample);
-          }
         }
 
         // Run the synth for a period of time. This processes events and gets/fills our local buffers...

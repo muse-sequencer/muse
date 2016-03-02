@@ -160,7 +160,7 @@ GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
 
-      WaveOutLine,                  // waveDrawing
+      MusEGlobal::WaveOutLine,      // waveDrawing
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks
@@ -188,9 +188,9 @@ GlobalConfigValues config = {
       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.
       true,                         // importInstrNameMetas Import Prefer Instrument Name metas over Mode sysexes if both exist.
-      PORT_NUM_META | DEVICE_NAME_META,  // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
+      MusEGlobal::PORT_NUM_META | MusEGlobal::DEVICE_NAME_META, // exportPortsDevices. Or'd ExportPortsDevices_t flags. Export port number metas and/or device name metas.
       true,                         // exportPortDeviceSMF0 Export a port and/or device meta even for SMF0.
-      MODE_SYSEX | INSTRUMENT_NAME_META, // exportModeInstr. Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
+      MusEGlobal::MODE_SYSEX | MusEGlobal::INSTRUMENT_NAME_META, // exportModeInstr. Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString("GM"),                // importMidiDefaultInstr Default to this instrument not Generic, if no match found
       1,                            // startMode
       QString(""),                  // start song path
@@ -205,7 +205,7 @@ GlobalConfigValues config = {
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
          true, true, true, true, true,
-         MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
          QList<bool>()
          },
       {
@@ -214,7 +214,7 @@ GlobalConfigValues config = {
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
          true, true, true, true, true,
-         MixerConfig::STRIPS_TRADITIONAL_VIEW,
+         MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW,
          QList<bool>()
       },
       true,                         // TransportVisible;
@@ -263,8 +263,8 @@ GlobalConfigValues config = {
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample
       QString("klick4.wav"),        // accent2Sample
-      RoutePreferCanonicalName,     // preferredRouteNameOrAlias
-      false,                        // routerExpandVertically
+      MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
+      true,                         // routerExpandVertically
       2                             // routerGroupingChannels
     };
 

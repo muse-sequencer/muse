@@ -2841,10 +2841,7 @@ bool LV2SynthIF::init(LV2Synth *s)
          {
             memset(_audioInBuffers [i], 0, sizeof(float) * MusEGlobal::segmentSize);
          }
-         _iUsedIdx.push_back(false);
-
-         _iUsedIdx.push_back(false);
-
+         
          _audioInPorts [i].buffer = _audioInBuffers [i];
          lilv_instance_connect_port(_handle, _audioInPorts [i].index, _audioInBuffers [i]);
       }
@@ -3642,41 +3639,45 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
       icl_first = cll->lower_bound(genACnum(plug_id, 0));
    }
 
+   bool used_in_chan_array[_inports]; // Don't bother initializing if not 'running'. 
+  
+   // Don't bother if not 'running'.
    if(ports != 0)
    {      
-      const unsigned long in_ports = _inports;
+      // Initialize the array.
+      for(size_t i = 0; i < _inports; ++i)
+        used_in_chan_array[i] = false;
+      
       if(!atrack->noInRoute())
       {
          RouteList *irl = atrack->inRoutes();
          for(ciRoute i = irl->begin(); i != irl->end(); ++i)
          {
-            if(!i->track->isMidiTrack())
-            {
-                
-                //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
-                const int src_ch = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-                const int dst_ch = i->channel       == -1 ? 0 : i->channel;
-                const int src_chs = i->channels;
+            if(i->track->isMidiTrack())
+              continue;
+            // Only this synth knows how many destination channels there are, 
+            //  while only the track knows how many source channels there are.
+            // So take care of the destination channels here, and let the track handle the source channels.
+            const int dst_ch = i->channel <= -1 ? 0 : i->channel;
+            if((unsigned long)dst_ch >= _inports)
+              continue;
+            const int dst_chs = i->channels <= -1 ? _inports : i->channels;
+            //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
+            const int src_ch = i->remoteChannel <= -1 ? 0 : i->remoteChannel;
+            const int src_chs = i->channels;
 
-                assert((unsigned)dst_ch < in_ports);
+            int fin_dst_chs = dst_chs;
+            if((unsigned long)(dst_ch + fin_dst_chs) > _inports)
+              fin_dst_chs = _inports - dst_ch;
                 
-                if((unsigned)dst_ch < in_ports)
-                {
-                  AudioTrack* t = static_cast<AudioTrack*>(i->track);
-                  // Only this synth knows how many destination channels there are, 
-                  //  while only the track knows how many source channels there are.
-                  // So take care of the destination channels here, and let the track handle the source channels.
-                  int dst_chs = i->channels == -1 ? in_ports : i->channels;
-                  if(unsigned(dst_ch + dst_chs) > in_ports)
-                    dst_chs = in_ports - dst_ch;
-
-                  t->copyData(pos, dst_ch, dst_chs, src_ch, src_chs, nframes, &_audioInBuffers[0], _iUsedIdx[dst_ch]);
-                  
-                  const int nxt_ch = dst_ch + dst_chs;
-                  for(int ch = dst_ch; ch < nxt_ch; ++ch)
-                    _iUsedIdx[ch] = true;
-                }
-             }
+            static_cast<AudioTrack*>(i->track)->copyData(pos, 
+                                                        dst_ch, dst_chs, fin_dst_chs, 
+                                                        src_ch, src_chs, 
+                                                        nframes, &_audioInBuffers[0], 
+                                                        false, used_in_chan_array);
+            const int nxt_ch = dst_ch + fin_dst_chs;
+            for(int ch = dst_ch; ch < nxt_ch; ++ch)
+              used_in_chan_array[ch] = true;
          }
       }
    }
@@ -4031,7 +4032,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             //connect ports
             for(size_t j = 0; j < _inports; ++j)
             {
-               if(_iUsedIdx [j])
+               if(used_in_chan_array [j])
                {
                   lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
                }
@@ -4039,8 +4040,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                {
                   lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
                }
-
-               _iUsedIdx[j] = false;
             }
 
             for(size_t j = 0; j < nop; ++j)

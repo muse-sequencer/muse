@@ -2221,7 +2221,7 @@ bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
           for (int i = 0; i < chans; ++i)
                 buff[i] = buff_data + i * samples;
           
-          track->copyData(pos, -1, chans, -1, -1, samples, buff);
+          track->copyData(pos, -1, chans, chans, -1, -1, samples, buff);
         }
       }      
   

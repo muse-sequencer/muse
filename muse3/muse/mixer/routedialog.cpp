@@ -2395,7 +2395,7 @@ int RouteTreeWidget::channelAt(RouteTreeWidgetItem* item, const QPoint& pt)
 void RouteTreeWidget::resizeEvent(QResizeEvent* event)
 {
   DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::resizeEvent old w:%d h:%d new w:%d h:%d\n", event->oldSize().width(), event->oldSize().height(),
-          event->size().width(), event->size().height()); // REMOVE Tim. Persistent routes. Added.
+          event->size().width(), event->size().height());
 
   event->ignore();
   QTreeWidget::resizeEvent(event);
@@ -2549,56 +2549,6 @@ void RouteTreeWidget::mousePressEvent(QMouseEvent* e)
   QTreeWidget::mousePressEvent(e);
 }*/
 
-// REMOVE Tim. Persistent routes. Added.
-// void RouteTreeWidget::clearChannels()
-// {
-//   int cnt = topLevelItemCount(); 
-//   for(int i = 0; i < cnt; ++i)
-//   {
-//     QTreeWidgetItem* item = topLevelItem(i);
-//     if(item)
-//     {
-//       if(item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
-//       {
-//         QBitArray ba = item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>();
-//         ba.fill(false);
-//         item->setData(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole, qVariantFromValue<QBitArray>(ba));
-//       }
-// 
-//       int c_cnt = item->childCount();
-//       for(int j = 0; j < c_cnt; ++j)
-//       {
-//         QTreeWidgetItem* c_item = item->child(j);
-//         if(c_item)
-//         {
-//           if(c_item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
-//           {
-//             QBitArray c_ba = c_item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>();
-//             c_ba.fill(false);
-//             c_item->setData(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole, qVariantFromValue<QBitArray>(c_ba));
-//           }
-// 
-//           int cc_cnt = c_item->childCount();
-//           for(int k = 0; k < cc_cnt; ++k)
-//           {
-//             QTreeWidgetItem* cc_item = c_item->child(k);
-//             if(cc_item)
-//             {
-//               if(cc_item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
-//               {
-//                 //cc_item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>().fill(false);
-//                 QBitArray cc_ba = cc_item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>();
-//                 cc_ba.fill(false);
-//                 cc_item->setData(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole, qVariantFromValue<QBitArray>(cc_ba));
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
-
 void RouteTreeWidget::mouseMoveEvent(QMouseEvent* e)
 {
   const QPoint pt = e->pos(); 
@@ -2639,7 +2589,7 @@ void RouteTreeWidget::mouseMoveEvent(QMouseEvent* e)
 QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QModelIndex& index, const QEvent* e) const
 {
   QItemSelectionModel::SelectionFlags flags = QTreeWidget::selectionCommand(index, e);
-  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand flags:%d row:%d col:%d ev type:%d\n", int(flags), index.row(), index.column(), e ? e->type() : -1); // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand flags:%d row:%d col:%d ev type:%d\n", int(flags), index.row(), index.column(), e ? e->type() : -1);
 
   RouteTreeWidgetItem* item = itemFromIndex(index);
 
@@ -2649,7 +2599,7 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
     {
       flags &= ~QItemSelectionModel::Toggle;
       flags |= QItemSelectionModel::Select;
-      DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
+      DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags));
     }
   }
   
@@ -2659,7 +2609,7 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
 //   //if(index.data(RouteDialog::RouteRole).canConvert<MusECore::Route>()) 
 //   if(item) 
 //   {
-//     DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand can convert data to Route\n"); // REMOVE Tim. Persistent routes. Added.
+//     DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand can convert data to Route\n");
 //     //DEBUG_PRST_ROUTES(stderr, "RoutingItemDelegate::paint data is Route\n");  // REMOVE Tim.
 //     //const MusECore::Route r = qvariant_cast<MusECore::Route>(index.data(RouteDialog::RouteRole));
 //     //const MusECore::Route r = index.data(RouteDialog::RouteRole).value<MusECore::Route>();
@@ -2674,7 +2624,7 @@ QItemSelectionModel::SelectionFlags RouteTreeWidget::selectionCommand(const QMod
 //           {
 //             flags &= ~QItemSelectionModel::Toggle;
 //             flags |= QItemSelectionModel::Select;
-//             DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags)); // REMOVE Tim. Persistent routes. Added.
+//             DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionCommand new flags:%d\n", int(flags));
 //           }
 //         }
 //       break;
@@ -2692,7 +2642,7 @@ void RouteTreeWidget::selectionChanged(const QItemSelection& selected, const QIt
 {
   QModelIndexList mil = deselected.indexes();
   const int dsz = mil.size();
-  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: selected size:%d deselected size:%d\n", selected.size(), dsz); // REMOVE Tim. Persistent routes. Added.
+  DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: selected size:%d deselected size:%d\n", selected.size(), dsz);
   for(int i = 0; i < dsz; ++i)
   {
     const QModelIndex& index = mil.at(i);
@@ -2716,7 +2666,7 @@ void RouteTreeWidget::selectionChanged(const QItemSelection& selected, const QIt
 //           {
 // //             if(item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).canConvert<QBitArray>())
 // //             {
-// //               DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: track route: deselected idx:%d clearing channels bitarray\n", i); // REMOVE Tim. Persistent routes. Added.
+// //               DEBUG_PRST_ROUTES(stderr, "RouteTreeWidget::selectionChanged: track route: deselected idx:%d clearing channels bitarray\n", i);
 // //               QBitArray ba = item->data(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole).value<QBitArray>();
 // //               ba.fill(false);
 // //               item->setData(RouteDialog::ROUTE_NAME_COL, RouteDialog::ChannelsRole, qVariantFromValue<QBitArray>(ba));
@@ -3910,10 +3860,8 @@ RouteDialog::RouteDialog(QWidget* parent)
   
   connectionsWidget->setRouteDialog(this);
 
-  // REMOVE Tim. Persistent routes. Added, changed.
   QStringList columnnames;
   columnnames << tr("Source");
-              //<< tr("Type");
   newSrcList->setColumnCount(columnnames.size());
   newSrcList->setHeaderLabels(columnnames);
   for (int i = 0; i < columnnames.size(); ++i) {
@@ -3923,7 +3871,6 @@ RouteDialog::RouteDialog(QWidget* parent)
         
   columnnames.clear();
   columnnames << tr("Destination");
-              //<< tr("Type");
   newDstList->setColumnCount(columnnames.size());
   newDstList->setHeaderLabels(columnnames);
   for (int i = 0; i < columnnames.size(); ++i) {
@@ -3931,12 +3878,6 @@ RouteDialog::RouteDialog(QWidget* parent)
         //setToolTip(newDstList->horizontalHeaderItem(i), i);
         }
 
-  // We are using right-to-left layout for the source tree widget, to force the scroll bar on the left.
-  // But this makes incorrect tree indentation (it indents towards the LEFT).
-  // And for both the source and destination tree widgets the tree indent marks interfere with the column contents placement (pushing it over).
-  // In this case, the tree works better (best) when a second column is reserved for it (LEFT of the source column, RIGHT of destination column.)
-  // But that makes an awkward left-indenting tree left of the source column and right-indenting tree right of the destination column.
-  // So get rid of the tree, move it to a second column, which does not exist. We will draw and handle our own tree.
   newSrcList->setTreePosition(1);
   newDstList->setTreePosition(1);
   

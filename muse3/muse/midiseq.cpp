@@ -264,7 +264,6 @@ static void midiWrite(void*, void* d)
       dev->flush();
       }
 
-// REMOVE Tim. Persistent routes. Added.
 void MidiSeq::addAlsaPollFd()
 {
   // special handling for alsa midi:
@@ -274,7 +273,6 @@ void MidiSeq::addAlsaPollFd()
   addPollFd(alsaSelectRfd(), POLLIN, MusECore::alsaMidiRead, this, 0);
 }
       
-// REMOVE Tim. Persistent routes. Added.
 void MidiSeq::removeAlsaPollFd()
 {
   removePollFd(alsaSelectRfd(), POLLIN);
@@ -319,8 +317,6 @@ void MidiSeq::updatePollFd()
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
-// REMOVE Tim. Persistent routes. Changed.
-//       addPollFd(alsaSelectRfd(), POLLIN, MusECore::alsaMidiRead, this, 0);
       addAlsaPollFd(); 
       }
 
