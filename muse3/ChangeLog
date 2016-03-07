@@ -1,3 +1,7 @@
+07.03.2016:
+        - Pianoroll: Make midi strip vertical scrollbar appear to the RIGHT of the strip, not intrude into strip. (Tim)
+          Similar to how arranger trackinfo scrollbar works. Much harder than it sounds: 
+           Added new custom trackinfo_layout module. Moved class ScrollBar into its own module. Added Splitter::setPosition().
 01.03.2016:
         - Fix remaining audio engine bug from 31.10.2015: Certain routing conditions produced garbage audio output, 
            and pinned channel meters. (Tim)

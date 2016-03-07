@@ -42,12 +42,14 @@
 #include <QCloseEvent>
 #include <QMimeData>
 #include <QScrollArea>
-#include <QScrollBar>
 #include <QSettings>
 #include <QCursor>
 #include <QPoint>
 #include <QRect>
 #include <QHBoxLayout>
+#include <QPainter>
+#include <QPixmap>
+#include <QPalette>
 
 #include <stdio.h>
 
@@ -57,6 +59,7 @@
 #include "prcanvas.h"
 #include "pianoroll.h"
 #include "scrollscale.h"
+#include "scrollbar.h"
 #include "piano.h"
 #include "../ctrl/ctrledit.h"
 #include "splitter.h"
@@ -78,10 +81,14 @@
 
 #include "mtrackinfo.h"
 #include "mstrip.h"
+#include "widget_stack.h"
+#include "trackinfo_layout.h"
 
 namespace MusEGui {
 
 int PianoRoll::_rasterInit = 96;
+int PianoRoll::_trackInfoWidthInit = 50;
+int PianoRoll::_canvasWidthInit = 300;
 int PianoRoll::colorModeInit = 0;
 
 static const int xscale = -10;
@@ -101,8 +108,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       tickValue     = 0;
       lenValue      = 0;
       pitchValue    = 0;
-      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//       veloOnValue   = 0;
       veloOnValue   = 1;
       veloOffValue  = 0;
       firstValueSet = false;
@@ -327,8 +332,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
-      hsplitter->setHandleWidth(2);
-      //hsplitter = 0;
+      hsplitter->setHandleWidth(4);
       
       ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
@@ -342,64 +346,30 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
-      QWidget* infoScrollWidget = new QWidget(mainw);
-      
 //       midiTrackInfo       = new MusEGui::MidiTrackInfo(mainw);
 //       int mtiw = midiTrackInfo->width(); // Save this.
 //       midiTrackInfo->setMinimumWidth(100);   
 //       //midiTrackInfo->setMaximumWidth(150);   DELETETHIS ?
 //       midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
-      int mtiw = 0;
+//       int mtiw = 0;
       midiTrackInfo = 0;
       
       midiStrip = 0;
 
-      //infoScrollBar = new QScrollBar(Qt::Vertical, infoScrollWidget);
-      //infoScrollBar = new QScrollBar(Qt::Vertical, mainw);
-      infoScrollBar = 0;
+      trackInfoWidget = new QWidget(hsplitter);
       
-      infoScrollWidgetLayout =  new QHBoxLayout(infoScrollWidget);
-      //infoScrollWidgetLayout = new QHBoxLayout(mainw);
-      //infoScrollWidgetLayout = 0;
-      infoScrollWidgetLayout->setSpacing(0);
-      infoScrollWidgetLayout->setContentsMargins(0, 0, 0, 0);
-      //infoScrollWidgetLayout->setSizeConstraint(QLayout::SetMaximumSize);
-      //infoScrollWidgetLayout->addWidget(midiStrip);
-//       infoScrollWidgetLayout->addWidget(midiTrackInfo);
-      //infoScrollWidgetLayout->addWidget(infoScrollBar);
-      //infoScrollWidgetLayout->addWidget(infoScrollBar);
+      infoScrollBar = new ScrollBar(Qt::Vertical, true, trackInfoWidget);
+      genTrackInfo(trackInfoWidget); // TODO: Which parent to use, if at all - does it need a parent when created?
       
-      infoScroll          = new QScrollArea;
-      //infoScroll = 0;
-      infoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  
-      infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); 
-      //infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
-      infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
-       // Must set a lower minimum width otherwise it refuses to shrink below a certain amount (too much for us!)
-//       infoScroll->setMinimumWidth(40);
-//       infoScroll->setWidget(midiTrackInfo);
-      infoScroll->setWidget(infoScrollWidget);
-      infoScroll->setWidgetResizable(true);
-      infoScroll->setFocusPolicy(Qt::NoFocus);
-      //infoScroll->setVisible(false); DELETETHIS 4?
-      //infoScroll->setEnabled(false);
-
+      _trackInfoGrid  = new TrackInfoLayout(trackInfoWidget, trackInfo, infoScrollBar, hsplitter); // layout manager for this
+      
       //hsplitter->addWidget(midiTrackInfo);
       if(hsplitter)
-      {
-        hsplitter->addWidget(infoScroll);  // Tim.
         hsplitter->addWidget(splitter);
-      }
           
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(1, 100);
-      if(hsplitter)
-        mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
-      else
-      {
-        mainGrid->addLayout(infoScrollWidgetLayout, 0, 0, 1, 1);
-        mainGrid->addWidget(splitter,   0, 1, 1, 1);
-      }
+      mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
       
       QWidget* split1     = new QWidget(splitter);
       split1->setObjectName("split1");
@@ -446,20 +416,17 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       piano->setFixedWidth(pianoWidth);
 
-      if(hsplitter && midiTrackInfo)
-      {
-        QList<int> mops;
-        mops.append(mtiw + 30);  // 30 for possible scrollbar
-        mops.append(width() - mtiw - 30);
-        hsplitter->setSizes(mops);
-      }
-      
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
 
+      if(infoScrollBar)
+      {
+        connect(infoScrollBar, SIGNAL(valueChanged(int)), SLOT(infoScrollBarValueChanged(int))); 
+      }
+      
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
@@ -539,10 +506,15 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       if(canvas->track())
       {
-        updateTrackInfo();
+        updateTrackInfo(-1);
         toolbar->setSolo(canvas->track()->solo());
       }
 
+      QList<int> mops;
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+    
       initTopwinState();
       finalizeInit();
       }
@@ -564,15 +536,16 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
         if (bits & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
-          updateTrackInfo();  
+//           updateTrackInfo();  
+          updateTrackInfo(-1);
 
         // REMOVE Tim. Trackinfo. Added.
         // TODO: Owners (like this) want to marshall this signal and send it themselves. Change that. Let the strips do it.
-        if (bits & SC_MIDI_TRACK_PROP)
-        {
-          if(midiStrip)
-            midiStrip->songChanged(bits);
-        }
+//         if (bits & SC_MIDI_TRACK_PROP)
+//         {
+//           if(midiStrip)
+//             midiStrip->songChanged(bits);
+//         }
       }
 
 //---------------------------------------------------------
@@ -583,6 +556,116 @@ void PianoRoll::configChanged()
       {
       initShortcuts();
       }
+
+//---------------------------------------------------------
+//   genTrackInfo
+//---------------------------------------------------------
+
+void PianoRoll::genTrackInfo(QWidget* parent)
+      {
+      trackInfo = new WidgetStack(parent, "trackInfoStack");
+      noTrackInfo          = new QWidget(trackInfo);
+      noTrackInfo->setAutoFillBackground(true);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000);
+      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
+      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
+      QPainter p(noInfoPix);
+      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
+
+      QPalette palette;
+      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
+      noTrackInfo->setPalette(palette);
+      noTrackInfo->setGeometry(0, 0, 65, 200);
+      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+//       midiTrackInfo = new MidiTrackInfo(trackInfo);
+      
+      trackInfo->addWidget(noTrackInfo,   0);
+      if(midiTrackInfo)
+      {
+        trackInfo->addWidget(midiTrackInfo, 1);
+        trackInfo->addWidget(0, 2);
+      }
+      else
+        trackInfo->addWidget(0, 1);
+      }
+
+void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
+{
+      selected = curCanvasPart()->track();
+      if (selected->isMidiTrack()) {
+          if(midiTrackInfo)
+            midiTrackInfo->setTrack(selected);
+      }
+      
+      if (selected == 0) {
+            switchInfo(0);
+            return;
+            }
+      if (selected->isMidiTrack()) 
+      {
+            switchInfo(1);
+            if(midiTrackInfo)
+            {
+              // If a different part was selected
+              if(midiTrackInfo->track() != selected)
+                // Set a new track and do a complete update.
+                midiTrackInfo->setTrack(selected);
+              else  
+                // Otherwise just regular update with specific flags.
+                midiTrackInfo->updateTrackInfo(flags);
+            }
+      }
+//       else {
+//             switchInfo(2);
+//             }
+      
+}
+
+//---------------------------------------------------------
+//   switchInfo
+//---------------------------------------------------------
+
+void PianoRoll::switchInfo(int n)
+      {
+      const int idx = midiTrackInfo ? 2 : 1;
+      if(n == idx) {
+            MidiStrip* w = (MidiStrip*)(trackInfo->getWidget(idx));
+            if (w == 0 || selected != w->getTrack()) {
+                  if (w)
+                  {
+                        //fprintf(stderr, "PianoRoll::switchInfo deleting strip\n");
+                        //delete w;
+                        w->deleteLater();
+                  }
+                  w = new MidiStrip(trackInfo, static_cast <MusECore::MidiTrack*>(selected));
+                  //w->setFocusPolicy(Qt::TabFocus);
+                  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+                  //w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+                  w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  trackInfo->addWidget(w, idx);
+                  w->show();
+                  //setTabOrder(midiTrackInfo, w);
+                  _trackInfoGrid->activate();
+                  _trackInfoGrid->update();
+                  }
+            }
+      if (trackInfo->curIdx() == n)
+            return;
+      trackInfo->raiseWidget(n);
+      _trackInfoGrid->activate();
+      _trackInfoGrid->update();
+      }
+
+void PianoRoll::infoScrollBarValueChanged(int value)
+{
+  if(midiStrip)
+    midiStrip->move(0, -value);
+  
+  if(trackInfo && trackInfo->visibleWidget())
+    trackInfo->visibleWidget()->move(0, -value);
+}
 
 //---------------------------------------------------------
 //   horizontalZoom
@@ -636,35 +719,6 @@ void PianoRoll::updateHScrollRange()
       hscroll->range(&s1, &e1);
       if(s != s1 || e != e1) 
         hscroll->setRange(s, e);
-}
-
-void PianoRoll::updateTrackInfo()  
-{
-      selected = curCanvasPart()->track();
-      if (selected->isMidiTrack()) {
-          if(midiTrackInfo)
-            midiTrackInfo->setTrack(selected);
-      }
-      if(midiStrip)
-      {
-        infoScroll->setUpdatesEnabled(false);
-        midiStrip->setVisible(false);
-        infoScrollWidgetLayout->removeWidget(midiStrip);
-        midiStrip->deleteLater();
-        midiStrip = 0;
-        if(infoScrollBar)
-          infoScrollBar->setVisible(false);
-      }
-      if(selected->isMidiTrack())
-      {
-        midiStrip = new MidiStrip(this, static_cast <MusECore::MidiTrack*>(selected));
-        infoScrollWidgetLayout->insertWidget(0, midiStrip);
-        if(infoScrollBar)
-          infoScrollBar->setVisible(true);
-        infoScroll->setMinimumWidth(midiStrip->minimumSizeHint().width());
-      }
-      if(!infoScroll->updatesEnabled())
-        infoScroll->setUpdatesEnabled(true);
 }
 
 //---------------------------------------------------------
@@ -794,7 +848,6 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*par
         lenValue     = e.lenTick();
         pitchValue   = e.pitch();
         veloOnValue  = e.velo();
-        // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
         if(veloOnValue == 0)
         {
           veloOnValue = 1;
@@ -813,15 +866,11 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*par
             }
       else {
             info->setEnabled(false);
-            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//             info->setValues(0, 0, 0, 0, 0);
             info->setValues(0, 0, 0, deltaMode ? 0 : 1, 0);
             firstValueSet = false;
             tickValue     = 0;
             lenValue      = 0;
             pitchValue    = 0;
-            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//             veloOnValue   = 0;
             veloOnValue   = 1;
             veloOffValue  = 0;
             tickOffset    = 0;
@@ -1066,6 +1115,13 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       QSettings settings("MusE", "MusE-qt");
       settings.setValue("Pianoroll/windowState", saveState());
 
+      //Store values of the horizontal splitter
+      QList<int> sizes = hsplitter->sizes();
+      QList<int>::iterator it = sizes.begin();
+      _trackInfoWidthInit = *it; //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+      it++;
+      _canvasWidthInit = *it;
+    
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
@@ -1085,6 +1141,10 @@ void PianoRoll::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
+                        else if (tag == "trackinfowidth")
+                              _trackInfoWidthInit = xml.parseInt();
+                        else if (tag == "canvaswidth")
+                              _canvasWidthInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
                         else if (tag == "topwin")
@@ -1109,6 +1169,8 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "pianoroll");
       xml.intTag(level, "raster", _rasterInit);
+      xml.intTag(level, "trackinfowidth", _trackInfoWidthInit);
+      xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "colormode", colorModeInit);
       TopWin::writeConfiguration(PIANO_ROLL, level, xml);
       xml.etag(level, "pianoroll");
@@ -1594,9 +1656,12 @@ void PianoRoll::newCanvasWidth(int /*w*/)
 
 void PianoRoll::toggleTrackInfo()
 {
-  bool vis = (midiTrackInfo && midiTrackInfo->isVisible()) || (midiStrip && midiStrip->isVisible());
-  infoScroll->setVisible(!vis);
-  infoScroll->setEnabled(!vis);
+//   bool vis = (midiTrackInfo && midiTrackInfo->isVisible()) || (midiStrip && midiStrip->isVisible());
+//   if(infoScroll)
+//   {
+//     infoScroll->setVisible(!vis);
+//     infoScroll->setEnabled(!vis);
+//   }
 }
 
 } // namespace MusEGui

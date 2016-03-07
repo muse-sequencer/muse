@@ -26,9 +26,6 @@
 #include <vector>
 #include <QString>
 
-#include <QScrollBar>
-#include <QResizeEvent>
-
 #include "type_defs.h"
 #include "midieditor.h"
 #include "pcanvas.h"
@@ -43,6 +40,7 @@ class QWheelEvent;
 class QKeyEvent;
 class QPoint;
 class QComboBox;
+class QScrollBar;
 
 namespace MusECore {
 class Track;
@@ -63,50 +61,7 @@ class Splitter;
 class TLLayout;
 class TList;
 class WidgetStack;
-
-
-//---------------------------------------------------------
-//   WidgetStack
-//---------------------------------------------------------
-
-class WidgetStack : public QWidget {
-      Q_OBJECT
-      std::vector<QWidget*> stack;
-      int top;
-
-   protected:
-      virtual void wheelEvent(QWheelEvent* e);
-      
-   signals:
-      void redirectWheelEvent(QWheelEvent*);
-      
-   public:
-      WidgetStack(QWidget* parent, const char* name = 0);
-      void raiseWidget(int idx);
-      void addWidget(QWidget* w, unsigned int idx);
-      QWidget* getWidget(unsigned int idx);
-      QWidget* visibleWidget() const;
-      int curIdx() const { return top; }
-      virtual QSize minimumSizeHint() const;
-      };
-
-//---------------------------------------------------------
-//   ScrollBar
-//---------------------------------------------------------
-
-class ScrollBar : public QScrollBar {
-      Q_OBJECT
-      
-  public slots:
-      void redirectedWheelEvent(QWheelEvent*);
-      
-  protected:
-      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
-      
-  public:    
-    ScrollBar(Qt::Orientation orientation, QWidget * parent = 0 ) : QScrollBar(orientation, parent) {};  
-};
-
+class ScrollBar;
 
 //---------------------------------------------------------
 //   Arranger

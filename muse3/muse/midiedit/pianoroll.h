@@ -24,11 +24,6 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QLabel>
-#include <QKeyEvent>
-
 #include <limits.h>
 #include "type_defs.h"
 #include "noteinfo.h"
@@ -38,17 +33,18 @@
 #include "event.h"
 #include "midictrl.h"
 
+class QSplitter;
 class QAction;
-class QLabel;
 class QMenu;
 class QPushButton;
-class QScrollArea;
-class QScrollBar;
 class QToolBar;
 class QToolButton;
 class QWidget;
 class QPoint;
 class QHBoxLayout;
+class QResizeEvent;
+class QCloseEvent;
+class QKeyEvent;
 
 namespace MusECore {
 class MidiPart;
@@ -73,6 +69,9 @@ class TimeLabel;
 class Toolbar1;
 class Piano;
 class TrackInfoToolBar;
+class ScrollBar;
+class WidgetStack;
+class TrackInfoLayout;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -84,8 +83,11 @@ class PianoRoll : public MidiEditor {
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiStrip *midiStrip;
       MusEGui::MidiTrackInfo *midiTrackInfo;
-      QScrollBar* infoScrollBar;
-      QHBoxLayout* infoScrollWidgetLayout;
+      QWidget* trackInfoWidget;
+      ScrollBar* infoScrollBar;
+      WidgetStack* trackInfo;
+      QWidget* noTrackInfo;
+      TrackInfoLayout* _trackInfoGrid;
       MusECore::Track* selected;
       
       QAction* editCutAction; 
@@ -151,18 +153,19 @@ class PianoRoll : public MidiEditor {
       int colorMode;
 
       static int _rasterInit;
-
+      static int _trackInfoWidthInit;
+      static int _canvasWidthInit;
       static int colorModeInit;
 
       bool _playEvents;
 
-      QScrollArea* infoScroll;
-
-      
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
       void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);
+      void genTrackInfo(QWidget* parent);
+      void switchInfo(int);
+
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
 
@@ -184,10 +187,11 @@ class PianoRoll : public MidiEditor {
       void configChanged();
       void newCanvasWidth(int);
       void toggleTrackInfo();
-      void updateTrackInfo();
+      void updateTrackInfo(MusECore::SongChangedFlags_t);
       void deltaModeChanged(bool);
       void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
+      void infoScrollBarValueChanged(int value);
 
    signals:
       void isDeleting(MusEGui::TopWin*);

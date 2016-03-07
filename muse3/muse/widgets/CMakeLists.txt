@@ -89,6 +89,7 @@ QT5_WRAP_CPP (widget_mocs
       projectcreateimpl.h
       routepopup.h  
       scroll_area.h
+      scrollbar.h
       scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
@@ -107,6 +108,7 @@ QT5_WRAP_CPP (widget_mocs
       tb1.h  
       tempolabel.h
       tools.h
+      trackinfo_layout.h
       tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
@@ -115,7 +117,8 @@ QT5_WRAP_CPP (widget_mocs
       vscale.h
       visibletracks.h
       vst_native_editor.h
-      warn_bad_timing.h      
+      warn_bad_timing.h
+      widget_stack.h
       )
 
 ##
@@ -228,6 +231,7 @@ file (GLOB widgets_source_files
       scldraw.cpp
       sclif.cpp
       scroll_area.cpp
+      scrollbar.cpp
       scrollscale.cpp  
       shortcutcapturedialog.cpp 
       shortcutconfig.cpp 
@@ -245,6 +249,7 @@ file (GLOB widgets_source_files
       tb1.cpp   
       tempolabel.cpp 
       tools.cpp
+      trackinfo_layout.cpp
       tracks_duplicate.cpp
       # ttoolbar.cpp 
       ttoolbutton.cpp 
@@ -256,6 +261,7 @@ file (GLOB widgets_source_files
       visibletracks.cpp
       vst_native_editor.cpp
       warn_bad_timing.cpp
+      widget_stack.cpp
       )
 
 ##

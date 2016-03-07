@@ -1,8 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: splitter.h,v 1.1.1.1 2003/10/27 18:54:51 wschweer Exp $
+//    widget_stack.h
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,34 +21,40 @@
 //
 //=========================================================
 
-#ifndef __SPLITTER_H__
-#define __SPLITTER_H__
+#ifndef __WIDGET_STACK_H__
+#define __WIDGET_STACK_H__
 
-#include <QSplitter>
+#include <QWidget>
 
-namespace MusECore {
-class Xml;
-}
+class QWheelEvent;
 
 namespace MusEGui {
 
 //---------------------------------------------------------
-//   Splitter
+//   WidgetStack
 //---------------------------------------------------------
 
-class Splitter : public QSplitter {
+class WidgetStack : public QWidget {
       Q_OBJECT
+      std::vector<QWidget*> stack;
+      int top;
 
-   public:
-      Splitter(QWidget* parent, const char* name = 0);
-      Splitter(Qt::Orientation o, QWidget* parent, const char* name = 0);
-      void writeStatus(int level, MusECore::Xml&);
-      void readStatus(MusECore::Xml&);
+   protected:
+      virtual void wheelEvent(QWheelEvent* e);
       
-      void setPosition(int idx, int pos) { moveSplitter(pos, idx); }
+   signals:
+      void redirectWheelEvent(QWheelEvent*);
+      
+   public:
+      WidgetStack(QWidget* parent, const char* name = 0);
+      void raiseWidget(int idx);
+      void addWidget(QWidget* w, unsigned int idx);
+      QWidget* getWidget(unsigned int idx);
+      QWidget* visibleWidget() const;
+      int curIdx() const { return top; }
+      virtual QSize minimumSizeHint() const;
       };
 
-}
+} // namespace MusEGui
 
 #endif
-

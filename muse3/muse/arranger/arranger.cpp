@@ -48,6 +48,7 @@
 #include "app.h"
 #include "mtscale.h"
 #include "scrollscale.h"
+#include "scrollbar.h"
 #include "pcanvas.h"
 #include "poslabel.h"
 #include "xml.h"
@@ -62,6 +63,7 @@
 #include "icons.h"
 #include "header.h"
 #include "utils.h"
+#include "widget_stack.h"
 #include "alayout.h"
 #include "audio.h"
 #include "event.h"
@@ -159,15 +161,6 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
             }
       return temp;
 }
-
-
-
-void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
-{
-  if(isVisible())
-    wheelEvent(e);
-}
-
 
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
@@ -353,7 +346,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new ScrollBar(Qt::Vertical, tracklist);
+      infoScroll = new ScrollBar(Qt::Vertical, true, tracklist);
       infoScroll->setObjectName("infoScrollBar");
       //genTrackInfo(tracklist); // Moved below
 
@@ -1001,100 +994,6 @@ void Arranger::trackInfoScroll(int y)
       {
       if (trackInfo->visibleWidget())
             trackInfo->visibleWidget()->move(0, -y);
-      }
-
-//---------------------------------------------------------
-//   WidgetStack
-//---------------------------------------------------------
-
-WidgetStack::WidgetStack(QWidget* parent, const char* name)
-   : QWidget(parent)
-      {
-      setObjectName(name);
-      top = -1;
-      }
-
-//---------------------------------------------------------
-//   raiseWidget
-//---------------------------------------------------------
-
-void WidgetStack::raiseWidget(int idx)
-      {
-      if (top != -1) {
-            if (stack[top])
-                  stack[top]->hide();
-            }
-      top = idx;
-      if (idx == -1)
-            return;
-      int n = stack.size();
-      if (idx >= n)
-            return;
-      if (stack[idx])
-            stack[idx]->show();
-      }
-
-//---------------------------------------------------------
-//   addWidget
-//---------------------------------------------------------
-
-void WidgetStack::addWidget(QWidget* w, unsigned int n)
-      {
-      if (w)
-            w->hide();
-      if (stack.size() <= n )
-            stack.push_back(w);
-      else
-            stack[n] = w;
-      }
-
-QWidget* WidgetStack::getWidget(unsigned int n)
-      {
-      if (stack.size() <= n )
-            return 0;
-      return stack[n];
-      }
-
-//---------------------------------------------------------
-//   visibleWidget
-//---------------------------------------------------------
-
-QWidget* WidgetStack::visibleWidget() const
-      {
-      if (top != -1)
-            return stack[top];
-      return 0;
-      }
-
-//---------------------------------------------------------
-//   minimumSizeHint
-//---------------------------------------------------------
-
-QSize WidgetStack::minimumSizeHint() const
-      {
-      if (top == -1)
-            return (QSize(0, 0));
-
-      QSize s(0,0);
-      for (unsigned int i = 0; i < stack.size(); ++i) {
-            if (stack[i]) {
-                  QSize ss = stack[i]->minimumSizeHint();
-                  if (!ss.isValid())
-                        ss = stack[i]->minimumSize();
-                  s = s.expandedTo(ss);
-                  }
-            }
-
-      return s;
-      }
-
-//---------------------------------------------------------
-//   wheelEvent
-//---------------------------------------------------------
-
-void WidgetStack::wheelEvent(QWheelEvent* ev)
-      {
-      emit redirectWheelEvent(ev);
       }
 
 //---------------------------------------------------------

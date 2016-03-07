@@ -21,7 +21,8 @@
 //=========================================================
 
 #include "alayout.h"
-#include "arranger.h"
+//#include "arranger.h"
+#include "widget_stack.h"
 
 #include <QScrollBar>
 

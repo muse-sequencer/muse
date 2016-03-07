@@ -1,8 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: splitter.h,v 1.1.1.1 2003/10/27 18:54:51 wschweer Exp $
-//  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//    scrollbar.cpp
+//  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,34 +21,29 @@
 //
 //=========================================================
 
-#ifndef __SPLITTER_H__
-#define __SPLITTER_H__
+#include "scrollbar.h"
 
-#include <QSplitter>
-
-namespace MusECore {
-class Xml;
-}
+#include <QWheelEvent>
+#include <QResizeEvent>
 
 namespace MusEGui {
 
-//---------------------------------------------------------
-//   Splitter
-//---------------------------------------------------------
+ScrollBar::ScrollBar(Qt::Orientation orientation, bool autoPageStep, QWidget* parent) : 
+  QScrollBar(orientation, parent), _autoPageStep(autoPageStep) 
+{
+  
+};
 
-class Splitter : public QSplitter {
-      Q_OBJECT
-
-   public:
-      Splitter(QWidget* parent, const char* name = 0);
-      Splitter(Qt::Orientation o, QWidget* parent, const char* name = 0);
-      void writeStatus(int level, MusECore::Xml&);
-      void readStatus(MusECore::Xml&);
-      
-      void setPosition(int idx, int pos) { moveSplitter(pos, idx); }
-      };
-
+void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
+{
+  if(isVisible())
+    wheelEvent(e);
 }
 
-#endif
-
+void ScrollBar::resizeEvent(QResizeEvent* e) 
+{ 
+  if(_autoPageStep)
+    setPageStep(e->size().height());
+}
+  
+} // namespace MusEGui
