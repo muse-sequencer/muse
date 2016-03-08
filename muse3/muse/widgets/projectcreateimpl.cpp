@@ -93,6 +93,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   //commentEdit->setPlaceholderText("<Add information about project here>");
 #endif
   updateDirectoryPath();
+  projectNameEdit->setFocus();
   show();
 }
 
