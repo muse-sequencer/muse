@@ -1646,7 +1646,8 @@ void AudioTrack::record()
                     //  use startRecordPos or loopFrame or left marker, depending on punchin and whether we have looped yet.
                     unsigned fr;
                     if(MusEGlobal::song->punchin() && (MusEGlobal::audio->loopCount() == 0))
-                      fr = MusEGlobal::song->lPos().frame();
+                      fr = MusEGlobal::audio->getStartRecordPos().frame() > MusEGlobal::song->lPos().frame() ?
+                            MusEGlobal::audio->getStartRecordPos().frame() : MusEGlobal::song->lPos().frame();
                     else  
                     if((MusEGlobal::audio->loopCount() > 0) && (MusEGlobal::audio->getStartRecordPos().frame() > MusEGlobal::audio->loopFrame()))
                       fr = MusEGlobal::audio->loopFrame();

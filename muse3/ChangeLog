@@ -1,3 +1,7 @@
+08.03.2016:
+        - Project dialog put focus on name (rj)
+        - Punch in recording now works better when recording is started after the punch point. Live wave recording doesn't seem
+          to work though. (rj)
 07.03.2016:
         - Pianoroll: Make midi strip vertical scrollbar appear to the RIGHT of the strip, not intrude into strip. (Tim)
           Similar to how arranger trackinfo scrollbar works. Much harder than it sounds: 
