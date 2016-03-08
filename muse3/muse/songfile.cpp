@@ -771,7 +771,7 @@ MusECore::Part* MusE::readPart(MusECore::Xml& xml)
                         //check if track index is in bounds before getting it (danvd)
                         if(trackIdx < (int)MusEGlobal::song->tracks()->size())
                         {
-                            MusEGlobal::song->tracks()->index(trackIdx);
+                            track = MusEGlobal::song->tracks()->index(trackIdx);
                         }
                         if (track)
                               part = track->parts()->find(partIdx);
