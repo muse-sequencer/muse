@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # MusE external midi processing script
 # By: Robert Jonsson 2009
@@ -66,7 +66,7 @@ class Quantize(QtGui.QWidget):
         button.setFocus()
 
     def execute(self):
-        testFile = file(sys.argv[1],"r")
+        testFile = open(sys.argv[1],"r")
         inputEvents = testFile.readlines()
         testFile.close()
         random.seed()
@@ -82,8 +82,8 @@ class Quantize(QtGui.QWidget):
               tag,tick = line.split(' ')
               beatLen=int(tick)
               quantLen=int(tick)/beatDiv*4
-              print "quantLen=%d beatDiv=%d"%(quantLen, beatDiv)
-            print line.strip()
+              print ("quantLen=%d beatDiv=%d"%(quantLen, beatDiv))
+            print (line.strip())
         #loop through events and quantize to the given beat
         eventList=[]
         for line in inputEvents:
@@ -101,22 +101,22 @@ class Quantize(QtGui.QWidget):
                 newTick=upperBound
 
               # apply swing factor to every other 8 beat
-              print "float =%f int = %d"%((float(newTick+beatLen)) / beatLen/2,((newTick+beatLen))/beatLen/2)
+              print ("float =%f int = %d"%((float(newTick+beatLen)) / beatLen/2,((newTick+beatLen))/beatLen/2))
               if  ((float(newTick+beatLen)) / beatLen/2 - ((newTick+beatLen))/beatLen/2) < 0.1:
-                  print "adding swing to:",newTick
+                  print ("adding swing to:",newTick)
                   newTick=int(random.gauss(newTick,self.spreadEdit.text().toInt()[0]))
                   if (newTick < 0):
                     newTick=0
 
               newLine="NOTE "+ str(newTick)+" " + pitch  + " "+ length + " " + velocity
-              print "newLine:",newLine.strip()
+              print ("newLine:",newLine.strip())
               outputEvents.append(newLine)
             else:
               outputEvents.append(line)
             
 
 
-        testFile = file(sys.argv[1],"w")
+        testFile = open(sys.argv[1],"w")
         testFile.writelines(outputEvents)
         testFile.close()
 

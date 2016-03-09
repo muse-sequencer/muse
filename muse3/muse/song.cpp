@@ -3421,7 +3421,7 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
 //---------------------------------------------------------
 //   executeScript
 //---------------------------------------------------------
-void Song::executeScript(const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected)
+void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected)
 {
       // a simple format for external processing
       // will be extended if there is a need
@@ -3437,14 +3437,14 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
       if (onlyIfSelected) // if this is set means we are probably inside a midi editor and we ask again to be sure
       {
-        if(QMessageBox::question(MusEGlobal::muse, QString("Process events"),
+        if(QMessageBox::question(parent, QString("Process events"),
             tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
             QString::null, 0, 1 ) == 1)
         {
             onlyIfSelected = false;
         }
       }
-      QProgressDialog progress(MusEGlobal::muse);
+      QProgressDialog progress(parent);
       progress.setLabelText("Process parts");
       progress.setRange(0,parts->size());
       progress.setValue(0);
@@ -3504,13 +3504,13 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             QStringList arguments;
             arguments << tmp;
 
-            QProcess *myProcess = new QProcess(MusEGlobal::muse);
+            QProcess *myProcess = new QProcess(parent);
             myProcess->start(scriptfile, arguments);
             myProcess->waitForFinished();
             QByteArray errStr = myProcess->readAllStandardError();
 
             if (myProcess->exitCode()) {
-              QMessageBox::warning(MusEGlobal::muse, tr("MusE - external script failed"),
+              QMessageBox::warning(parent, tr("MusE - external script failed"),
                                    tr("MusE was unable to launch the script, error message:\n%1").arg(QString(errStr)));
               endUndo(SC_EVENT_REMOVED);
               return;
@@ -3544,6 +3544,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                   int pitch = sl[2].toInt();
                   int len = sl[3].toInt();
                   int velo = sl[4].toInt();
+                  printf ("extraced %d %d %d %d\n", tick, pitch, len, velo);
                   e.setTick(tick);
                   e.setPitch(pitch);
                   e.setVelo(velo);

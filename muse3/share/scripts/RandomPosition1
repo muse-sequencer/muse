@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # MusE external midi processing script
 # By: Robert Jonsson 2013
@@ -55,7 +55,7 @@ class Quantize(QtGui.QWidget):
         button.setFocus()
 
     def execute(self):
-        testFile = file(sys.argv[1],"r")
+        testFile = open(sys.argv[1],"r")
         inputEvents = testFile.readlines()
         testFile.close()
         
@@ -75,15 +75,15 @@ class Quantize(QtGui.QWidget):
               newTick=int(random.gauss(newTick,self.spreadEdit.text().toInt()[0]))
 
               newLine="NOTE "+ str(newTick)+" " + pitch  + " "+ length + " " + velocity
-              print "oldTick:", tick
-              print "newLine:",newLine.strip()
+              print ("oldTick:", tick)
+              print ("newLine:",newLine.strip())
               outputEvents.append(newLine)
             else:
               outputEvents.append(line)
             
 
 
-        testFile = file(sys.argv[1],"w")
+        testFile = open(sys.argv[1],"w")
         testFile.writelines(outputEvents)
         testFile.close()
 

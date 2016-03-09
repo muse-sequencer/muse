@@ -57,18 +57,18 @@ class ScriptClass(QtGui.QWidget):
         button.setFocus()
 
     def execute(self):
-        testFile = file(sys.argv[1],"r")
+        testFile = open(sys.argv[1],"r")
         inputEvents = testFile.readlines()
         testFile.close()
 
         beatDiv = self.titleEdit.itemData(self.titleEdit.currentIndex()).toInt()[0]
-        print "beatDiv=",beatDiv
+        print ("beatDiv=",beatDiv)
         eventLen=0
         #get beat length to calculate minimum length of event
         for line in inputEvents:
             if line.startswith('BEATLEN'):
               tag,tick = line.split(' ')
-              eventLen=int(tick)/beatDiv*4
+              eventLen=int(tick/beatDiv*4)
               break
         
         outputEvents=[]
@@ -85,7 +85,7 @@ class ScriptClass(QtGui.QWidget):
             else:
               outputEvents.append(line)
             
-        testFile = file(sys.argv[1],"w")
+        testFile = open(sys.argv[1],"w")
         testFile.writelines(outputEvents)
         testFile.close()
         

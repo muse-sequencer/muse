@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #=============================================================================
 #  MusE
@@ -24,7 +24,7 @@
 #=============================================================================
 
 import sys
-testFile = file(sys.argv[1],"r")
+testFile = open(sys.argv[1],"r")
 inputEvents = testFile.readlines()
 testFile.close()
 
@@ -33,6 +33,6 @@ outputEvents=[]
 for line in inputEvents:
     outputEvents.append(line)
 
-testFile = file(sys.argv[1],"w")
+testFile = open(sys.argv[1],"w")
 testFile.writelines(outputEvents)
 testFile.close()

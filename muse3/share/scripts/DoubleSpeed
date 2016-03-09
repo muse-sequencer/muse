@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # MusE external midi processing script
 # By: Mathias Gyllengahm 2009
@@ -27,7 +27,7 @@
 #=============================================================================
 
 import sys,time
-testFile = file(sys.argv[1],"r")
+testFile = open(sys.argv[1],"r")
 inputEvents = testFile.readlines()
 testFile.close()
 
@@ -37,10 +37,12 @@ for line in inputEvents:
 
       if line.startswith('NOTE'):
             tag,tick,pitch,length,velocity = line.split(' ')
-            newline = tag + " " + str(int(tick)/2) + " " + pitch + " " + length + " " + velocity
+            print (line)
+            newline = tag + " " + str(int(int(tick)/2)) + " " + pitch + " " + length + " " + velocity
+            print (newline)
             outputEvents.append(newline)
 
-testFile = file(sys.argv[1],"w")
+testFile = open(sys.argv[1],"w")
 testFile.writelines(outputEvents)
 testFile.close()
 

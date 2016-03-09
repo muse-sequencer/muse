@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # MusE external midi processing script
 # By: Robert Jonsson 2009
@@ -62,11 +62,12 @@ class RemoveShortEvents(QtGui.QWidget):
         button.setFocus()
 
     def execute(self):
-        testFile = file(sys.argv[1],"r")
+        print ("Execute")
+        testFile = open(sys.argv[1],"r")
         inputEvents = testFile.readlines()
         testFile.close()
         
-        beatDiv = int(self.timeEdit.itemData(self.timeEdit.currentIndex()).toInt()[0])
+        beatDiv = self.timeEdit.itemData(self.timeEdit.currentIndex())
         minSize=0 # fill in when we get the beat size value
         outputEvents=[]
 
@@ -74,20 +75,21 @@ class RemoveShortEvents(QtGui.QWidget):
         for line in inputEvents:
             if line.startswith('BEATLEN'):
               tag,tick = line.split(' ')
-              minSize=int(tick)/beatDiv
+              minSize=int(tick)/beatDiv * 4
+              print ("minSize = ",minSize)
               break
         #loop through events
         for line in inputEvents:
             if line.startswith('NOTE'):
               tag,tick,note,length,velocity = line.split(' ')
-              if int(length) > minSize:  # only append long enough events
+              if int(length) >= minSize:  # only append long enough events
                 outputEvents.append(line)
                 
             else:
               outputEvents.append(line)
 
 
-        testFile = file(sys.argv[1],"w")
+        testFile = open(sys.argv[1],"w")
         testFile.writelines(outputEvents)
         testFile.close()
 

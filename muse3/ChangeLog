@@ -1,3 +1,7 @@
+09.03.2016:
+        - Converted python scripts to python3 and explicitly launch with python3 (rj)
+        - Fixed focus issue with running scripts, if launched from an editor, the editor
+          would be pushed back behind the arranger (rj)
 08.03.2016:
         - Project dialog put focus on name (rj)
         - Punch in recording now works better when recording is started after the punch point. Live wave recording doesn't seem
