@@ -1865,6 +1865,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       autoType = new ComboBox();
+      autoType->setContentsMargins(0, 0, 0, 0);
       autoType->setFocusPolicy(Qt::NoFocus);
       ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));

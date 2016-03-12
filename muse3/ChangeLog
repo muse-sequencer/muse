@@ -1,3 +1,6 @@
+11.03.2016:
+        - Make it slightly easier to recompile lvGtk2Helper library: Separate 32/64 bit makefiles
+           and automatic cmake choosing of user-compiled over pre-built version. (Tim)
 09.03.2016:
         - Converted python scripts to python3 and explicitly launch with python3 (rj)
         - Fixed focus issue with running scripts, if launched from an editor, the editor
