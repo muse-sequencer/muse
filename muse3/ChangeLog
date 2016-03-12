@@ -1,3 +1,6 @@
+12.03.2016:
+        - Fix routing popup menus consuming all CPU power upon mouse movement. (Tim)
+          In RoutePopupMenu::event(), removed "case QEvent::MouseMove". Seems to test OK without it.
 11.03.2016:
         - Make it slightly easier to recompile lvGtk2Helper library: Separate 32/64 bit makefiles
            and automatic cmake choosing of user-compiled over pre-built version. (Tim)

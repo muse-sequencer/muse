@@ -993,7 +993,10 @@ bool RoutePopupMenu::event(QEvent* event)
     //        menus which should be rare for routing, but we could also defer to the advanced router when the popup becomes too wide.
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
+// REMOVE Tim. Trackinfo. Removed. Causes very high CPU usage spikes.
+// I think I remember adding MouseMove simply for 'good luck' rather than any real usefulness.
+// Tested OK /without/ this on KUBUNTU 15.10, we don't seem to need it. Retest on 14.04 LTS...
+//     case QEvent::MouseMove:
     {
       QMouseEvent* mev = static_cast<QMouseEvent*>(event);
       DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::event type:%d x:%d y:%d gx:%d gy:%d sx:%f sy:%f wx:%f wy:%f lx:%f ly:%f\n", 
