@@ -41,6 +41,9 @@ class QKeyEvent;
 class QPoint;
 class QComboBox;
 class QScrollBar;
+class QVBoxLayout;
+class QHBoxLayout;
+//class QSpacerItem;
 
 namespace MusECore {
 class Track;
@@ -58,10 +61,12 @@ class PosLabel;
 class ScrollScale;
 class SpinBox;
 class Splitter;
-class TLLayout;
+//class TLLayout;
+class TrackInfoLayout;
 class TList;
 class WidgetStack;
 class ScrollBar;
+class ArrangerCanvasLayout;
 
 //---------------------------------------------------------
 //   Arranger
@@ -79,22 +84,30 @@ class Arranger : public QWidget {
       PartCanvas* canvas;
       ScrollScale* hscroll;
       QScrollBar* vscroll;
+      QVBoxLayout* tlistLayout;
+      ArrangerCanvasLayout* egrid;
+      QHBoxLayout* bottomHLayout;
       TList* list;
       Header* header;
+      //QSpacerItem* tlistSpacerItem;
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
+      bool showTrackinfoAltFlag;
+      QWidget* trackInfoWidget;
       WidgetStack* trackInfo;
       ScrollBar* infoScroll;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
       QWidget* tracklist;
-      TLLayout* tgrid;
+//       TLLayout* tgrid;
+      TrackInfoLayout* tgrid;
 
       MusECore::Track* selected;
 
-      QToolButton* ib;
+      QToolButton* trackInfoButton;
+      QToolButton* trackInfoAltButton;
       int trackInfoType;
       Splitter* split;
       int songType;
@@ -114,6 +127,7 @@ class Arranger : public QWidget {
       void rasterChanged(int);
       void songlenChanged(int);
       void showTrackInfo(bool);
+      void showTrackInfoAlt(bool);
       void trackSelectionChanged();
       void trackInfoScroll(int);
       void songChanged(MusECore::SongChangedFlags_t);

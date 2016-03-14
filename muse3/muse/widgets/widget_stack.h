@@ -36,8 +36,16 @@ namespace MusEGui {
 
 class WidgetStack : public QWidget {
       Q_OBJECT
+   public:
+     // StackHint:   Use the maximum of all the stack widgets.
+     // VisibleHint: Use only the current visible widget. 
+     //              If it is invalid, use the StackHint.
+     enum SizeHintMode { StackHint=0, VisibleHint=1 };
+     
+   private:
       std::vector<QWidget*> stack;
       int top;
+      SizeHintMode _sizeHintMode;
 
    protected:
       virtual void wheelEvent(QWheelEvent* e);
@@ -53,6 +61,8 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       virtual QSize minimumSizeHint() const;
+      SizeHintMode sizeHintMode() const { return _sizeHintMode; }
+      void setSizeHintMode(SizeHintMode mode) { _sizeHintMode = mode; update(); }
       };
 
 } // namespace MusEGui

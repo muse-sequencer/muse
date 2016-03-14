@@ -36,6 +36,7 @@ WidgetStack::WidgetStack(QWidget* parent, const char* name)
       {
       setObjectName(name);
       top = -1;
+      _sizeHintMode = StackHint;
       }
 
 //---------------------------------------------------------
@@ -100,6 +101,18 @@ QSize WidgetStack::minimumSizeHint() const
             return (QSize(0, 0));
 
       QSize s(0,0);
+      
+      // REMOVE Tim. Trackinfo. Added.
+      // Check if we want only the visible widget...
+      if(sizeHintMode() == VisibleHint && stack[top])
+      {
+        QSize ss = stack[top]->minimumSizeHint();
+        if (!ss.isValid())
+              ss = stack[top]->minimumSize();
+        s = s.expandedTo(ss);
+        return s;
+      }
+      
       for (unsigned int i = 0; i < stack.size(); ++i) {
             if (stack[i]) {
                   QSize ss = stack[i]->minimumSizeHint();

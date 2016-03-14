@@ -359,6 +359,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       trackInfoWidget = new QWidget(hsplitter);
       
       infoScrollBar = new ScrollBar(Qt::Vertical, true, trackInfoWidget);
+      infoScrollBar->setObjectName("infoScrollBar");
       genTrackInfo(trackInfoWidget); // TODO: Which parent to use, if at all - does it need a parent when created?
       
       _trackInfoGrid  = new TrackInfoLayout(trackInfoWidget, trackInfo, infoScrollBar, hsplitter); // layout manager for this

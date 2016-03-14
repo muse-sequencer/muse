@@ -26,6 +26,7 @@
 #include <QLayout>
 
 class QWidget;
+class QGridLayout;
 class QLayoutItem;
 class QSize;
 class QRect;
@@ -35,6 +36,14 @@ namespace MusEGui {
 class Splitter;
 class ScrollBar;
 class WidgetStack;
+class ScrollScale;
+
+//---------------------------------------------------------
+//   TrackInfoLayout
+//   For laying out a widget stack and scrollbar which always appears 
+//    to the right of the stack instead of intruding into its space.
+//   An optional Splitter will be resized when the scrollbar appears.
+//---------------------------------------------------------
 
 class TrackInfoLayout : public QLayout
       {
@@ -45,12 +54,14 @@ class TrackInfoLayout : public QLayout
       ScrollBar* _sb;
       QLayoutItem* _stackLi;
       QLayoutItem* _sbLi;
+
+      // This is not actually in the layout, but used and/or adjusted anyway.
       Splitter* _splitter;
 
     public:
       static const int numItems = 2;
       TrackInfoLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, Splitter* splitter = 0);
-      ~TrackInfoLayout() { clear(); }
+      virtual ~TrackInfoLayout() { clear(); }
 
       void addItem(QLayoutItem*) { }   // Do nothing, it's a custom layout.
       virtual Qt::Orientations expandingDirections() const { return 0; }
@@ -66,6 +77,24 @@ class TrackInfoLayout : public QLayout
       virtual QLayoutItem* itemAt(int) const;
       virtual QLayoutItem* takeAt(int);
       };
+
+      
+//---------------------------------------------------------
+//   ArrangerCanvasLayout
+//   For laying out a canvas as a last splitter widget and
+//    automatically adjusting the width of its corresponding
+//    horizontal scrollbar which is in another layout.
+//---------------------------------------------------------
+      
+class ArrangerCanvasLayout : public QGridLayout
+      {
+      Q_OBJECT
+      ScrollScale* _sb;
+    public:
+      ArrangerCanvasLayout(QWidget *parent, ScrollScale* sb) : QGridLayout(parent), _sb(sb) { };
+      virtual void setGeometry(const QRect &rect);
+      };
+
 }
 
 #endif

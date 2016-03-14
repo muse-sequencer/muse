@@ -1,3 +1,10 @@
+14.03.2016:
+        * Arranger Track Info panel makeover: (Tim)
+        - Add midi strip (finally!)
+        - Add splitter handle for resizing the panel (finally!) 
+        - Add 'Alt' button to switch between midi strip and old midi track info.
+        - TODO: Splitter initial default sizing issues. Saving/reloading should be OK though.
+                Also maybe some crashes. Massive cleanups. 
 12.03.2016:
         - Fix routing popup menus consuming all CPU power upon mouse movement. (Tim)
           In RoutePopupMenu::event(), removed "case QEvent::MouseMove". Seems to test OK without it.

@@ -24,6 +24,7 @@
 
 #include <QWidget>
 #include <QLayoutItem>
+#include <QGridLayout>
 #include <QSize>
 #include <QRect>
 
@@ -31,12 +32,9 @@
 #include "splitter.h"
 #include "scrollbar.h"
 #include "widget_stack.h"
+#include "scrollscale.h"
 
 namespace MusEGui {
-
-//---------------------------------------------------------
-//   setGeometry
-//---------------------------------------------------------
 
 TrackInfoLayout::TrackInfoLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, Splitter* splitter)
                 : QLayout(parent), _stack(stack), _sb(sb), _splitter(splitter)
@@ -50,6 +48,10 @@ TrackInfoLayout::TrackInfoLayout(QWidget *parent, WidgetStack* stack, ScrollBar*
   _sbLi = new QWidgetItem(_sb);
 }
       
+//---------------------------------------------------------
+//   setGeometry
+//---------------------------------------------------------
+
 void TrackInfoLayout::setGeometry(const QRect &rect)
       {
       if(_inSetGeometry)
@@ -207,5 +209,15 @@ void TrackInfoLayout::clear()
   delete _sbLi;
   _sbLi = 0;
 }
+
+//---------------------------------------------------------
+//   ArrangerCanvasLayout
+//---------------------------------------------------------
+
+void ArrangerCanvasLayout::setGeometry(const QRect &rect) 
+{ 
+  QGridLayout::setGeometry(rect); _sb->setFixedWidth(rect.width()); 
+}
+
 
 } // namespace MusEGui

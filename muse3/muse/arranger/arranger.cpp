@@ -64,7 +64,7 @@
 #include "header.h"
 #include "utils.h"
 #include "widget_stack.h"
-#include "alayout.h"
+#include "trackinfo_layout.h"
 #include "audio.h"
 #include "event.h"
 #include "midiseq.h"
@@ -72,6 +72,7 @@
 #include "mpevent.h"
 #include "gconfig.h"
 #include "mixer/astrip.h"
+#include "mixer/mstrip.h"
 #include "spinbox.h"
 #include "shortcuts.h"
 
@@ -211,6 +212,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _raster  = 0;      // measure
       selected = 0;
       showTrackinfoFlag = true;
+      showTrackinfoAltFlag = false;
       
       cursVal = INT_MAX;
       
@@ -327,40 +329,64 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
 
+      // REMOVE Tim. Trackinfo. Added.
+      trackInfoWidget = new QWidget(split);
+      //split->setStretchFactor(split->indexOf(trackInfoWidget), 0);
+      //QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+      //tipolicy.setHorizontalStretch(0);
+      //tipolicy.setVerticalStretch(100);
+      //trackInfoWidget->setSizePolicy(tipolicy);
+      
       tracklist = new QWidget(split);
-
-      split->setStretchFactor(split->indexOf(tracklist), 0);
-      QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-      tpolicy.setHorizontalStretch(0);
-      tpolicy.setVerticalStretch(100);
+//       split->setStretchFactor(split->indexOf(tracklist), 0);
+//       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+      QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//       tpolicy.setHorizontalStretch(0);
+//       tpolicy.setVerticalStretch(100);
       tracklist->setSizePolicy(tpolicy);
 
       editor = new QWidget(split);
-      split->setStretchFactor(split->indexOf(editor), 1);
+//       split->setStretchFactor(split->indexOf(editor), 1);
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-      epolicy.setHorizontalStretch(255);
-      epolicy.setVerticalStretch(100);
+//       epolicy.setHorizontalStretch(255);
+//       epolicy.setVerticalStretch(100);
       editor->setSizePolicy(epolicy);
 
       //---------------------------------------------------
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new ScrollBar(Qt::Vertical, true, tracklist);
+      // REMOVE Tim. Trackinfo. Changed.
+//       infoScroll = new ScrollBar(Qt::Vertical, true, tracklist);
+      infoScroll = new ScrollBar(Qt::Vertical, true, trackInfoWidget);
       infoScroll->setObjectName("infoScrollBar");
       //genTrackInfo(tracklist); // Moved below
 
       // Track-Info Button
-      ib  = new QToolButton(tracklist);
-      ib->setText(tr("TrackInfo"));
-      ib->setCheckable(true);
-      ib->setChecked(showTrackinfoFlag);
-      ib->setFocusPolicy(Qt::NoFocus);
-      connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
+      // REMOVE Tim. Trackinfo. Changed.
+//       ib  = new QToolButton(tracklist);
+      //ib  = new QToolButton(trackInfoWidget);
+      trackInfoButton  = new QToolButton(this);
+      trackInfoButton->setText(tr("TrackInfo"));
+      trackInfoButton->setCheckable(true);
+      trackInfoButton->setChecked(showTrackinfoFlag);
+      trackInfoButton->setFocusPolicy(Qt::NoFocus);
+      connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
+
+      // REMOVE Tim. Trackinfo. Added.
+      trackInfoAltButton  = new QToolButton(this);
+      trackInfoAltButton->setText(tr("Alt"));
+      trackInfoAltButton->setCheckable(true);
+      trackInfoAltButton->setChecked(showTrackinfoAltFlag);
+      trackInfoAltButton->setFocusPolicy(Qt::NoFocus);
+      connect(trackInfoAltButton, SIGNAL(toggled(bool)), SLOT(showTrackInfoAlt(bool)));
       
+      // REMOVE Tim. Trackinfo. Added.
+      genTrackInfo(trackInfoWidget);
+
       // set up the header
       header = new Header(tracklist, "header");
-      header->setFixedHeight(30);
+      header->setFixedHeight(31);
 
       QFontMetrics fm1(header->font());
       int fw = 11;
@@ -396,9 +422,19 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->restoreState(header_state);
 
       list = new TList(header, tracklist, "tracklist");
+
+      // REMOVE Tim. Trackinfo. Added.
+      //tlistSpacerItem = new QSpacerItem();
+      tlistLayout = new QVBoxLayout(tracklist);
+      tlistLayout->setContentsMargins(0, 0, 0, 0);
+      tlistLayout->setSpacing(0);
+      tlistLayout->addWidget(header);
+      tlistLayout->addWidget(list);
+      //tlistLayout->addSpacerItem();
       
-      // Do this now that the list is available.
-      genTrackInfo(tracklist);
+      // REMOVE Tim. Trackinfo. Removed. Moved above.
+//       // Do this now that the list is available.
+//       genTrackInfo(tracklist);
       
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SLOT(trackSelectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SIGNAL(selectionChanged()));
@@ -420,23 +456,41 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //   +-----+------------------------+
 
       connect(infoScroll, SIGNAL(valueChanged(int)), SLOT(trackInfoScroll(int)));
-      tgrid  = new TLLayout(tracklist); // layout manager for this
-      tgrid->wadd(0, trackInfo);
-      tgrid->wadd(1, infoScroll);
-      tgrid->wadd(2, header);
-      tgrid->wadd(3, list);
-      tgrid->wadd(4, MusECore::hLine(tracklist));
-      tgrid->wadd(5, ib);
+// REMOVE Tim. Trackinfo. Changed.
+//       tgrid  = new TLLayout(tracklist); // layout manager for this
+//       tgrid->wadd(0, trackInfo);
+//       tgrid->wadd(1, infoScroll);
+//       tgrid->wadd(2, header);
+//       tgrid->wadd(3, list);
+//       tgrid->wadd(4, MusECore::hLine(tracklist));
+//       tgrid->wadd(5, ib);
+      //tgrid  = new TLLayout(trackInfoWidget, trackInfo, infoScroll, ib, split, header, list); // layout manager for this
+      //tgrid  = new TLLayout(trackInfoWidget, trackInfo, infoScroll, ib, split, tlistLayout); // layout manager for this
+      //tgrid  = new TLLayout(trackInfoWidget, trackInfo, infoScroll, split); // layout manager for this
+      tgrid  = new TrackInfoLayout(trackInfoWidget, trackInfo, infoScroll, split); // layout manager for this
 
       //---------------------------------------------------
       //    Editor
       //---------------------------------------------------
 
       int offset = AL::sigmap.ticksMeasure(0);
-      hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, editor, -offset);
+      // REMOVE Tim. Trackinfo. Changed.
+//       hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, editor, -offset);
+      hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, this, -offset);
       hscroll->setFocusPolicy(Qt::NoFocus);
-      ib->setFixedHeight(hscroll->sizeHint().height());
+      // REMOVE Tim. Trackinfo. Removed. Not required now?
+//       ib->setFixedHeight(hscroll->sizeHint().height());
 
+      // REMOVE Tim. Trackinfo. Added.
+      bottomHLayout = new QHBoxLayout();
+      box->addLayout(bottomHLayout);
+      bottomHLayout->setContentsMargins(0, 0, 0, 0);
+      bottomHLayout->setSpacing(0);
+      bottomHLayout->addWidget(trackInfoButton);
+      bottomHLayout->addWidget(trackInfoAltButton);
+      bottomHLayout->addStretch();
+      bottomHLayout->addWidget(hscroll);
+      
       vscroll = new QScrollBar(editor);
       vscroll->setMinimum(0);
       vscroll->setMaximum(20*20);
@@ -447,11 +501,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       list->setScroll(vscroll);
 
-      QList<int> vallist;
-      vallist.append(tgrid->maximumSize().width());
-      split->setSizes(vallist);
-
-      QGridLayout* egrid  = new QGridLayout(editor);
+// REMOVE Tim. Trackinfo. Changed.
+//       QGridLayout* egrid  = new QGridLayout(editor);
+      egrid  = new ArrangerCanvasLayout(editor, hscroll);
       egrid->setColumnStretch(0, 50);
       egrid->setRowStretch(2, 50);
       egrid->setContentsMargins(0, 0, 0, 0);  
@@ -465,6 +517,15 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
 
+//       QList<int> vallist;
+// // REMOVE Tim. Trackinfo. Changed.
+// //       vallist.append(tgrid->maximumSize().width());
+//       vallist.append(tgrid->sizeHint().width());
+//       vallist.append(tlistLayout->sizeHint().width());
+//       //vallist.append(editor->sizeHint().width());
+//       vallist.append(box->sizeHint().width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
+//       split->setSizes(vallist);
+      
       list->setFocusProxy(canvas); // Make it easy for track list popup line editor to give focus back to canvas.
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
@@ -497,7 +558,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       egrid->addWidget(canvas,  2, 0);
       egrid->addWidget(vscroll, 2, 1);
-      egrid->addWidget(hscroll, 3, 0, Qt::AlignBottom);
+// REMOVE Tim. Trackinfo. Removed.
+//       egrid->addWidget(hscroll, 3, 0, Qt::AlignBottom);
 
       connect(vscroll, SIGNAL(valueChanged(int)), canvas, SLOT(setYPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
@@ -530,6 +592,58 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       if(canvas->part())
         midiTrackInfo->setTrack(canvas->part()->track());   
       showTrackInfo(showTrackinfoFlag);
+      
+      fprintf(stderr, "Arranger: w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
+              width(),
+              sizeHint().width(), 
+              minimumSize().width(),
+              maximumSize().width());
+      
+      fprintf(stderr, "Arranger: box sizehint w:%d min sz w:%d max sz w:%d\n", 
+              box->sizeHint().width(), 
+              box->minimumSize().width(),
+              box->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: tgrid sizehint w:%d min sz w:%d max sz w:%d\n", 
+              tgrid->sizeHint().width(), 
+              tgrid->minimumSize().width(),
+              tgrid->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: tlist sizehint w:%d min sz w:%d max sz w:%d\n", 
+              tracklist->sizeHint().width(), 
+              tracklist->minimumSize().width(),
+              tracklist->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: tlistLayout sizehint w:%d min sz w:%d max sz w:%d\n", 
+              tlistLayout->sizeHint().width(), 
+              tlistLayout->minimumSize().width(),
+              tlistLayout->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: header sizehint w:%d min sz w:%d max sz w:%d\n", 
+              header->sizeHint().width(), 
+              header->minimumSize().width(),
+              header->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: editor sizehint w:%d min sz w:%d max sz w:%d\n", 
+              editor->sizeHint().width(), 
+              editor->minimumSize().width(),
+              editor->maximumSize().width());
+      
+      fprintf(stderr, "Arranger: egrid sizehint w:%d min sz w:%d max sz w:%d\n", 
+              egrid->sizeHint().width(), 
+              egrid->minimumSize().width(),
+              egrid->maximumSize().width());
+      
+      QList<int> vallist;
+// REMOVE Tim. Trackinfo. Changed.
+//       vallist.append(tgrid->maximumSize().width());
+      vallist.append(tgrid->sizeHint().width());
+      vallist.append(tlistLayout->sizeHint().width());
+      //vallist.append(editor->sizeHint().width());
+      //vallist.append(box->sizeHint().width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
+      //vallist.append(width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
+      vallist.append(1500);
+      split->setSizes(vallist);
       
       // Take care of some tabbies!
       setTabOrder(tempo200, trackInfo);
@@ -677,23 +791,48 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
               
         if(type & SC_TRACK_REMOVED)
         {
-          AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-          if(w)
           {
-            MusECore::Track* t = w->getTrack();
-            if(t)
+            AudioStrip* w = static_cast<AudioStrip*>(trackInfo->getWidget(2));
+            if(w)
             {
-              MusECore::TrackList* tl = MusEGlobal::song->tracks();
-              MusECore::iTrack it = tl->find(t);
-              if(it == tl->end())
+              MusECore::Track* t = w->getTrack();
+              if(t)
               {
-                delete w;
-                trackInfo->addWidget(0, 2);
-                //trackInfo->insertWidget(2, 0);
-                selected = 0;
-              } 
-            }   
-          } 
+                MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                MusECore::iTrack it = tl->find(t);
+                if(it == tl->end())
+                {
+                  delete w;
+                  trackInfo->addWidget(0, 2);
+                  //trackInfo->insertWidget(2, 0);
+                  selected = 0;
+                } 
+              }   
+            } 
+          }
+          
+          // REMOVE Tim. Trackinfo. Added.
+          {
+            MidiStrip* w = static_cast<MidiStrip*>(trackInfo->getWidget(3));
+            if(w)
+            {
+              MusECore::Track* t = w->getTrack();
+              if(t)
+              {
+                //MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
+                //MusECore::iTrack it = tl->find(t);
+                MusECore::iMidiTrack it = tl->find(t);
+                if(it == tl->end())
+                {
+                  delete w;
+                  trackInfo->addWidget(0, 3);
+                  //trackInfo->insertWidget(3, 0);
+                  selected = 0;
+                } 
+              }   
+            } 
+          }
         }
         
         // Try these:
@@ -737,7 +876,7 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       xml.intTag(level, "raster", _raster);
-      xml.intTag(level, "info", ib->isChecked());
+      xml.intTag(level, "info", trackInfoButton->isChecked());
       split->writeStatus(level, xml);
 
       xml.intTag(level, "xmag", hscroll->mag());
@@ -816,7 +955,7 @@ void Arranger::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
-                              ib->setChecked(showTrackinfoFlag);
+                              trackInfoButton->setChecked(showTrackinfoFlag);
                               if(rast != -1)
                                 setRasterVal(rast);
                               return;
@@ -1002,10 +1141,22 @@ void Arranger::trackInfoScroll(int y)
 
 void Arranger::clear()
       {
-      AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-      if (w)
-            delete w;
-      trackInfo->addWidget(0, 2);
+        
+      {
+        AudioStrip* w = static_cast<AudioStrip*>(trackInfo->getWidget(2));
+        if (w)
+              delete w;
+        trackInfo->addWidget(0, 2);
+      }
+      
+      // REMOVE Tim. Trackinfo. Added.
+      {
+        MidiStrip* w = static_cast<MidiStrip*>(trackInfo->getWidget(3));
+        if (w)
+              delete w;
+        trackInfo->addWidget(0, 3);
+      }
+      
       selected = 0;
       midiTrackInfo->setTrack(0);
       }
@@ -1027,9 +1178,26 @@ void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 void Arranger::showTrackInfo(bool flag)
       {
       showTrackinfoFlag = flag;
-      trackInfo->setVisible(flag);
-      infoScroll->setVisible(flag);
+// REMOVE Tim. Trackinfo. Changed.
+//       trackInfo->setVisible(flag);
+//       infoScroll->setVisible(flag);
+      trackInfoWidget->setVisible(flag);
       updateTrackInfo(-1);
+      }
+
+// REMOVE Tim. Trackinfo. Added.
+//---------------------------------------------------------
+//   showTrackInfo
+//---------------------------------------------------------
+
+void Arranger::showTrackInfoAlt(bool flag)
+      {
+      showTrackinfoAltFlag = flag;
+      updateTrackInfo(-1);
+//       if(flag)
+//         updateTrackInfo(0);
+//       else
+//         updateTrackInfo(0);
       }
 
 //---------------------------------------------------------
@@ -1039,6 +1207,9 @@ void Arranger::showTrackInfo(bool flag)
 void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
+      // REMOVE Tim. Trackinfo. Added.
+      // Set it to adjust to the current visible widget, rather than the max of all of them.
+      trackInfo->setSizeHintMode(WidgetStack::VisibleHint);
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
@@ -1058,7 +1229,8 @@ void Arranger::genTrackInfo(QWidget* parent)
       
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
-      trackInfo->addWidget(0, 2);
+      trackInfo->addWidget(0, 2);  // AudioStrip placeholder.
+      trackInfo->addWidget(0, 3);  // MidiStrip placeholder.
       }
 
 //---------------------------------------------------------
@@ -1076,14 +1248,28 @@ void Arranger::updateTrackInfo(MusECore::SongChangedFlags_t flags)
             return;
             }
       if (selected->isMidiTrack()) {
-            switchInfo(1);
-            // If a different part was selected
-            if(midiTrackInfo->track() != selected)
-              // Set a new track and do a complete update.
-              midiTrackInfo->setTrack(selected);
-            else  
-              // Otherwise just regular update with specific flags.
-              midiTrackInfo->updateTrackInfo(flags);
+// REMOVE Tim. Trackinfo. Changed. TODO Maybe keep for later as part of switching stack.
+//             switchInfo(1);
+//             // If a different part was selected
+//             if(midiTrackInfo->track() != selected)
+//               // Set a new track and do a complete update.
+//               midiTrackInfo->setTrack(selected);
+//             else  
+//               // Otherwise just regular update with specific flags.
+//               midiTrackInfo->updateTrackInfo(flags);
+            if(showTrackinfoAltFlag)
+            {
+              switchInfo(1);
+              // If a different part was selected
+              if(midiTrackInfo->track() != selected)
+                // Set a new track and do a complete update.
+                midiTrackInfo->setTrack(selected);
+              else  
+                // Otherwise just regular update with specific flags.
+                midiTrackInfo->updateTrackInfo(flags);
+            }
+            else
+              switchInfo(3);
             }
       else {
             switchInfo(2);
@@ -1097,7 +1283,54 @@ void Arranger::updateTrackInfo(MusECore::SongChangedFlags_t flags)
 void Arranger::switchInfo(int n)
       {
       if (n == 2) {
-            AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+          {
+            MidiStrip* w = static_cast<MidiStrip*>(trackInfo->getWidget(3));
+            if (w)
+            {
+              //fprintf(stderr, "Arranger::switchInfo audio strip: deleting midi strip\n");
+              delete w;
+              //w->deleteLater();
+              trackInfo->addWidget(0, 3);
+            }
+          }
+          {
+              AudioStrip* w = static_cast<AudioStrip*>(trackInfo->getWidget(2));
+              if (w == 0 || selected != w->getTrack()) {
+                    if (w)
+                    {
+                          //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
+                          //delete w;
+                          w->deleteLater();
+                    }
+                    w = new AudioStrip(trackInfo, static_cast<MusECore::AudioTrack*>(selected));
+                    //w->setFocusPolicy(Qt::TabFocus);
+                    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                    connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+  //                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));  // REMOVE Tim. Trackinfo. Changed.
+                    w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                    trackInfo->addWidget(w, 2);
+                    w->show();
+                    //setTabOrder(midiTrackInfo, w);
+                    tgrid->activate();
+                    tgrid->update();   // muse-2 Qt4
+                    }
+          }
+        }
+
+      // REMOVE Tim. Trackinfo. Added.
+      else if (n == 3) {
+          {
+            AudioStrip* w = static_cast<AudioStrip*>(trackInfo->getWidget(2));
+            if (w)
+            {
+              //fprintf(stderr, "Arranger::switchInfo midi strip: deleting audio strip\n");
+              delete w;
+              //w->deleteLater();
+              trackInfo->addWidget(0, 2);
+            }
+          }
+          {
+            MidiStrip* w = static_cast<MidiStrip*>(trackInfo->getWidget(3));
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
                   {
@@ -1105,18 +1338,21 @@ void Arranger::switchInfo(int n)
                         //delete w;
                         w->deleteLater();
                   }
-                  w = new AudioStrip(trackInfo, (MusECore::AudioTrack*)selected);
+                  w = new MidiStrip(trackInfo, static_cast<MusECore::MidiTrack*>(selected));
                   //w->setFocusPolicy(Qt::TabFocus);
                   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
-                  w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-                  trackInfo->addWidget(w, 2);
+//                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));  // REMOVE Tim. Trackinfo. Changed.
+                  w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  trackInfo->addWidget(w, 3);
                   w->show();
                   //setTabOrder(midiTrackInfo, w);
                   tgrid->activate();
                   tgrid->update();   // muse-2 Qt4
                   }
-            }
+          }
+        }
+            
       if (trackInfo->curIdx() == n)
             return;
       trackInfo->raiseWidget(n);
