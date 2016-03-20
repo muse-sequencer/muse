@@ -389,28 +389,18 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //    Toolbars
       //---------------------------------------------------
     
-      if (old_style_drummap_mode())
-      {
-        QToolBar* maptools = addToolBar(tr("Drum map tools"));
-        maptools->setObjectName("Drum map tools");
-        
-        QToolButton *ldm = new QToolButton();
-        ldm->setToolTip(tr("Load Drummap"));
-        ldm->setIcon(*openIcon);
-        ldm->setFocusPolicy(Qt::NoFocus);
-        connect(ldm, SIGNAL(clicked()), SLOT(load()));
-        maptools->addWidget(ldm);
-        
-        QToolButton *sdm = new QToolButton();
-        sdm->setToolTip(tr("Store Drummap"));
-        sdm->setIcon(*saveIcon);
-        sdm->setFocusPolicy(Qt::NoFocus);
-        connect(sdm, SIGNAL(clicked()), SLOT(save()));
-        maptools->addWidget(sdm);
-        
-        maptools->addAction(QWhatsThis::createAction());
-      }
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
 
+      addToolBarBreak();
+      
+      // Already has an object name.
+      tools2 = new MusEGui::EditToolBar(this, drumeditTools);
+      addToolBar(tools2);
 
       tools = addToolBar(tr("Drum tools"));
       tools->setObjectName("Drum tools");
@@ -439,11 +429,39 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       tools->addAction(QWhatsThis::createAction(this));
 
-      tools2 = new MusEGui::EditToolBar(this, drumeditTools);
-      addToolBar(tools2);
+      if (old_style_drummap_mode())
+      {
+        QToolBar* maptools = addToolBar(tr("Drum map tools"));
+        maptools->setObjectName("Drum map tools");
+        
+        QToolButton *ldm = new QToolButton();
+        ldm->setToolTip(tr("Load Drummap"));
+        ldm->setIcon(*openIcon);
+        ldm->setFocusPolicy(Qt::NoFocus);
+        connect(ldm, SIGNAL(clicked()), SLOT(load()));
+        maptools->addWidget(ldm);
+        
+        QToolButton *sdm = new QToolButton();
+        sdm->setToolTip(tr("Store Drummap"));
+        sdm->setIcon(*saveIcon);
+        sdm->setFocusPolicy(Qt::NoFocus);
+        connect(sdm, SIGNAL(clicked()), SLOT(save()));
+        maptools->addWidget(sdm);
+      }
+
+      // don't show pitch value in toolbar
+      toolbar = new MusEGui::Toolbar1(this, _rasterInit, false);
+      toolbar->setObjectName("Drum Pos/Snap/Solo-tools");
+      addToolBar(toolbar);
+      
+      addToolBarBreak();
+      
+      info    = new MusEGui::NoteInfo(this);
+      info->setObjectName("Drum Note Info");
+      addToolBar(info);
 
       QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
-      cursorToolbar->setObjectName("cursor");
+      cursorToolbar->setObjectName("Cursor step tools");
       QLabel *stepStr = new QLabel(tr("Cursor step:"));
       cursorToolbar->addWidget(stepStr);
       stepLenWidget = new QComboBox();
@@ -461,15 +479,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       stepLenWidget->setFocusPolicy(Qt::TabFocus);
       connect(stepLenWidget, SIGNAL(currentIndexChanged(QString)), SLOT(setStep(QString)));
       cursorToolbar->addWidget(stepLenWidget);
-
-      addToolBarBreak();
-      // don't show pitch value in toolbar
-      toolbar = new MusEGui::Toolbar1(this, _rasterInit, false);
-      addToolBar(toolbar);
-      
-      addToolBarBreak();
-      info    = new MusEGui::NoteInfo(this);
-      addToolBar(info);
 
       //---------------------------------------------------
       //    split
@@ -499,6 +508,19 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       split2              = new MusEGui::Splitter(Qt::Horizontal, split1, "split2");
       split1w1            = new QWidget(split2);
       QWidget* split1w2   = new QWidget(split2);
+      
+      split2->setStretchFactor(split2->indexOf(split1w1), 0);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      split1w1->setSizePolicy(tipolicy);
+
+      split2->setStretchFactor(split2->indexOf(split1w2), 1);
+      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      split1w2->setSizePolicy(epolicy);
+      
       QGridLayout* gridS1 = new QGridLayout(split1w1);
       QGridLayout* gridS2 = new QGridLayout(split1w2);
       gridS1->setContentsMargins(0, 0, 0, 0);

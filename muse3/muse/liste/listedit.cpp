@@ -523,6 +523,16 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
 
       // Toolbars ---------------------------------------------------------
+
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
+      addToolBarBreak();
+      
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
       insertTools->setObjectName("list insert tools");
       insertTools->addActions(insertItems->actions());

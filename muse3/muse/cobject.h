@@ -33,6 +33,7 @@
 
 class QMdiSubWindow;
 class QFocusEvent;
+class QCloseEvent;
 class QToolBar;
 class QAction;
 
@@ -80,8 +81,15 @@ class TopWin : public QMainWindow
       bool sharesToolsAndMenu() const { return _sharesToolsAndMenu; }
       const std::list<QToolBar*>& toolbars() { return _toolbars; }
       
-      void addToolBar(QToolBar* toolbar);
-      QToolBar* addToolBar(const QString& title);
+      virtual void addToolBar(QToolBar* toolbar);
+      virtual QToolBar* addToolBar(const QString& title);
+      virtual void addToolBarBreak(Qt::ToolBarArea area = Qt::TopToolBarArea);
+      virtual void insertToolBar(QToolBar*, QToolBar*);
+      virtual void insertToolBarBreak(QToolBar*);
+      virtual void removeToolBar(QToolBar*);
+      virtual void removeToolBarBreak(QToolBar*);
+      virtual void addToolBar(Qt::ToolBarArea, QToolBar*);
+
       
       void resize(int w, int h);
       void resize(const QSize&);
@@ -95,12 +103,6 @@ class TopWin : public QMainWindow
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
       bool _initalizing;
-
-      void insertToolBar(QToolBar*, QToolBar*);
-      void insertToolBarBreak(QToolBar*);
-      void removeToolBar(QToolBar*);
-      void removeToolBarBreak(QToolBar*);
-      void addToolBar(Qt::ToolBarArea, QToolBar*);
 
       virtual QMdiSubWindow* createMdiWrapper();
       

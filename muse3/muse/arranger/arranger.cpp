@@ -225,6 +225,13 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    create toolbar in toplevel widget
       //---------------------------------------------------
 
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
       parent->addToolBarBreak();
       QToolBar* toolbar = parent->addToolBar(tr("Arranger"));
       toolbar->setObjectName("ArrangerToolbar");
@@ -331,25 +338,29 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       // REMOVE Tim. Trackinfo. Added.
       trackInfoWidget = new QWidget(split);
-      //split->setStretchFactor(split->indexOf(trackInfoWidget), 0);
-      //QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-      //tipolicy.setHorizontalStretch(0);
-      //tipolicy.setVerticalStretch(100);
-      //trackInfoWidget->setSizePolicy(tipolicy);
+      split->setStretchFactor(split->indexOf(trackInfoWidget), 0);
+//       QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      trackInfoWidget->setSizePolicy(tipolicy);
       
       tracklist = new QWidget(split);
-//       split->setStretchFactor(split->indexOf(tracklist), 0);
+      split->setStretchFactor(split->indexOf(tracklist), 0);
+      //split->setStretchFactor(split->indexOf(tracklist), 1);
 //       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//       tpolicy.setHorizontalStretch(0);
-//       tpolicy.setVerticalStretch(100);
+      tpolicy.setHorizontalStretch(0);
+//       tpolicy.setHorizontalStretch(255);
+      tpolicy.setVerticalStretch(100);
       tracklist->setSizePolicy(tpolicy);
 
       editor = new QWidget(split);
-//       split->setStretchFactor(split->indexOf(editor), 1);
+      split->setStretchFactor(split->indexOf(editor), 1);
+      //split->setStretchFactor(split->indexOf(editor), 2);
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//       epolicy.setHorizontalStretch(255);
-//       epolicy.setVerticalStretch(100);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
       editor->setSizePolicy(epolicy);
 
       //---------------------------------------------------
@@ -593,57 +604,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
         midiTrackInfo->setTrack(canvas->part()->track());   
       showTrackInfo(showTrackinfoFlag);
       
-      fprintf(stderr, "Arranger: w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
-              width(),
-              sizeHint().width(), 
-              minimumSize().width(),
-              maximumSize().width());
-      
-      fprintf(stderr, "Arranger: box sizehint w:%d min sz w:%d max sz w:%d\n", 
-              box->sizeHint().width(), 
-              box->minimumSize().width(),
-              box->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: tgrid sizehint w:%d min sz w:%d max sz w:%d\n", 
-              tgrid->sizeHint().width(), 
-              tgrid->minimumSize().width(),
-              tgrid->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: tlist sizehint w:%d min sz w:%d max sz w:%d\n", 
-              tracklist->sizeHint().width(), 
-              tracklist->minimumSize().width(),
-              tracklist->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: tlistLayout sizehint w:%d min sz w:%d max sz w:%d\n", 
-              tlistLayout->sizeHint().width(), 
-              tlistLayout->minimumSize().width(),
-              tlistLayout->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: header sizehint w:%d min sz w:%d max sz w:%d\n", 
-              header->sizeHint().width(), 
-              header->minimumSize().width(),
-              header->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: editor sizehint w:%d min sz w:%d max sz w:%d\n", 
-              editor->sizeHint().width(), 
-              editor->minimumSize().width(),
-              editor->maximumSize().width());
-      
-      fprintf(stderr, "Arranger: egrid sizehint w:%d min sz w:%d max sz w:%d\n", 
-              egrid->sizeHint().width(), 
-              egrid->minimumSize().width(),
-              egrid->maximumSize().width());
-      
-      QList<int> vallist;
-// REMOVE Tim. Trackinfo. Changed.
-//       vallist.append(tgrid->maximumSize().width());
-      vallist.append(tgrid->sizeHint().width());
-      vallist.append(tlistLayout->sizeHint().width());
-      //vallist.append(editor->sizeHint().width());
-      //vallist.append(box->sizeHint().width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
-      //vallist.append(width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
-      vallist.append(1500);
-      split->setSizes(vallist);
+      setDefaultSplitterSizes();
       
       // Take care of some tabbies!
       setTabOrder(tempo200, trackInfo);
@@ -674,6 +635,73 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 //      if(s != s1 || e != e1) 
 //        hscroll->setRange(s, e);
 //}
+
+
+//---------------------------------------------------------
+//   setDefaultSplitterSizes
+//---------------------------------------------------------
+
+void Arranger::setDefaultSplitterSizes()
+{
+      // REMOVE Tim. Trackinfo. Added.
+//       fprintf(stderr, "Arranger: w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               width(),
+//               sizeHint().width(), 
+//               minimumSize().width(),
+//               maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: tgrid sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               tgrid->sizeHint().width(), 
+//               tgrid->minimumSize().width(),
+//               tgrid->maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: tlist w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               tracklist->width(),
+//               tracklist->sizeHint().width(), 
+//               tracklist->minimumSize().width(),
+//               tracklist->maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: tlistLayout sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               tlistLayout->sizeHint().width(), 
+//               tlistLayout->minimumSize().width(),
+//               tlistLayout->maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: header w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               header->width(),
+//               header->sizeHint().width(), 
+//               header->minimumSize().width(),
+//               header->maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: editor w:%d sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               editor->width(),
+//               editor->sizeHint().width(), 
+//               editor->minimumSize().width(),
+//               editor->maximumSize().width());
+//       
+//       fprintf(stderr, "Arranger: egrid sizehint w:%d min sz w:%d max sz w:%d\n", 
+//               egrid->sizeHint().width(), 
+//               egrid->minimumSize().width(),
+//               egrid->maximumSize().width());
+      
+  QList<int> vallist;
+//       vallist.append(tgrid->maximumSize().width());
+  
+  //vallist.append(tgrid->sizeHint().width());
+  vallist.append(tgrid->minimumSize().width());
+  vallist.append(tlistLayout->sizeHint().width());
+  
+  //vallist.append(editor->sizeHint().width());
+  //vallist.append(box->sizeHint().width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
+  //vallist.append(width() - tlistLayout->sizeHint().width() - tgrid->sizeHint().width());
+  
+  //vallist.append(1);
+  //vallist.append(1);
+  vallist.append(300);
+  split->setSizes(vallist);
+  
+//   split->setPosition(2, tgrid->sizeHint().width() + tlistLayout->sizeHint().width());
+//   split->setPosition(1, tgrid->sizeHint().width());
+}
 
 //---------------------------------------------------------
 //   setTime

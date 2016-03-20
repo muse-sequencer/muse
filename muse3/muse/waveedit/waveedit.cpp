@@ -240,14 +240,22 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
 
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
+      addToolBarBreak();
+      
+      // Already has an object name.
       tools2 = new MusEGui::EditToolBar(this, waveEditTools);
       addToolBar(tools2);
       
-      addToolBarBreak();
       tb1 = addToolBar(tr("WaveEdit tools"));
-      tb1->setObjectName("WaveEdit tools");
+      tb1->setObjectName("Wave Pos/Snap/Solo-tools");
 
-      //tb1->setLabel(tr("weTools"));
       solo = new QToolButton();
       solo->setText(tr("Solo"));
       solo->setCheckable(true);

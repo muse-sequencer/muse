@@ -285,6 +285,20 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       
       //---------ToolBar----------------------------------
+
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
+      addToolBarBreak();
+      
+      // Already has an object name.
+      tools2 = new MusEGui::EditToolBar(this, pianorollTools);
+      addToolBar(tools2);
+
       tools = addToolBar(tr("Pianoroll tools"));
       tools->setObjectName("Pianoroll tools");
 
@@ -312,15 +326,16 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools->addAction(QWhatsThis::createAction(this));
       
-      tools2 = new MusEGui::EditToolBar(this, pianorollTools);
-      addToolBar(tools2);
-
-      addToolBarBreak();
+      //addToolBarBreak();
+      
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);
+      toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");
       addToolBar(toolbar);
 
       addToolBarBreak();
+      
       info    = new MusEGui::NoteInfo(this);
+      info->setObjectName("Pianoroll Note Info");
       addToolBar(info);
 
       //---------------------------------------------------
@@ -363,11 +378,23 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       genTrackInfo(trackInfoWidget); // TODO: Which parent to use, if at all - does it need a parent when created?
       
       _trackInfoGrid  = new TrackInfoLayout(trackInfoWidget, trackInfo, infoScrollBar, hsplitter); // layout manager for this
-      
+
       //hsplitter->addWidget(midiTrackInfo);
       if(hsplitter)
         hsplitter->addWidget(splitter);
           
+      hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      trackInfoWidget->setSizePolicy(tipolicy);
+
+      hsplitter->setStretchFactor(hsplitter->indexOf(splitter), 1);
+      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      splitter->setSizePolicy(epolicy);
+      
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(hsplitter, 0, 1, 1, 3);

@@ -90,6 +90,7 @@ class TopWin;
 class Transport;
 class VisibleTracks;
 class RouteDialog;
+class CpuToolbar;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -171,7 +172,7 @@ class MusE : public QMainWindow
 
       QFileInfo project;
       QToolBar *tools;
-      QToolBar *cpuLoadToolbar;
+      CpuToolbar* cpuLoadToolbar;
 
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
@@ -254,6 +255,7 @@ class MusE : public QMainWindow
       void activeTopWinChanged(MusEGui::TopWin*);
 
    private slots:
+      void heartBeat();
       void saveTimerSlot();
       void loadProject();
       bool save();

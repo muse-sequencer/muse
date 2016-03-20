@@ -89,6 +89,11 @@ Song::Song(const char* name)
    :QObject(0)
       {
       setObjectName(name);
+
+      _fCpuLoad = 0.0;
+      _fDspLoad = 0.0;
+      _xRunsCount = 0;
+      
       _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
@@ -1650,34 +1655,9 @@ void Song::beat()
       
       //First: update cpu load toolbar
 
-      QToolButton *cpuLoadToolButton = (QToolButton *)(((QWidgetAction *)MusEGlobal::cpuLoadAction)->defaultWidget());
-      float fCpuLoad = MusEGlobal::muse->getCPULoad();
-      float fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
-      long xRunsCount = MusEGlobal::audio->getXruns();
-      // CPU
-      int iCval = abs((int)(fCpuLoad * 10));
-      int c1 = (iCval / 100);
-      int c2 = (iCval - c1*100) / 10;
-      int c3 = iCval - c1 * 100 - c2 * 10;
-      char bufTxt [5];
-      bufTxt [0] = '0' + c1;
-      bufTxt [1] = '0' + c2;
-      bufTxt [2] = ',';
-      bufTxt [3] = '0' + c3;
-      bufTxt [4] = 0;
-
-      // DSP
-      int iCval2 = abs((int)(fDspLoad * 10));
-      int c2_1 = (iCval2 / 100);
-      int c2_2 = (iCval2 - c2_1*100) / 10;
-      int c2_3 = iCval2 - c2_1 * 100 - c2_2 * 10;
-      char bufTxt2 [5];
-      bufTxt2 [0] = '0' + c2_1;
-      bufTxt2 [1] = '0' + c2_2;
-      bufTxt2 [2] = ',';
-      bufTxt2 [3] = '0' + c2_3;
-      bufTxt2 [4] = 0;
-      cpuLoadToolButton->setText(QString("CPU:%1% DSP: %2% XRUNS: %3").arg(bufTxt).arg(bufTxt2).arg(xRunsCount));
+      _fCpuLoad = MusEGlobal::muse->getCPULoad();
+      _fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
+      _xRunsCount = MusEGlobal::audio->getXruns();
 
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)

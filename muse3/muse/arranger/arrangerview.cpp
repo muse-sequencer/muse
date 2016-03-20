@@ -90,14 +90,24 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper = new QSignalMapper(this);
 
   // Toolbars ---------------------------------------------------------
+
+  // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+  //          to identical or similar toolbars in class MusE or other TopWin classes. 
+  //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+  //          to retain the original toolbar layout. If it finds an existing
+  //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+  //          instead of /appending/ with addToolBar().
+
+  addToolBarBreak();
+  
   editTools = new EditToolBar(this, arrangerTools);
   addToolBar(editTools);
+  // Make sure name doesn't conflict with other TopWin edit toolbar object names.
   editTools->setObjectName("arrangerTools");
 
+  // Already has an object name.
   visTracks = new VisibleTracks(this);
   addToolBar(visTracks);
-
-
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
   connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
@@ -358,15 +368,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
 
   finalizeInit();
-
-  // work around for probable QT/WM interaction bug.
-  // for certain window managers, e.g xfce, this window is
-  // is displayed although not specifically set to show();
-  // bug: 2811156     Softsynth GUI unclosable with XFCE4 (and a few others)
-  // Nov 21, 2012 Hey this causes the thing not to open at all, EVER, on Lubuntu and some others!
-  // And we had a request to remove this from a knowledgable tester. REMOVE Tim.
-  ///show();
-  ///hide();
 }
 
 ArrangerView::~ArrangerView()

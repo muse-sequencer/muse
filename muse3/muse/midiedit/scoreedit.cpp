@@ -236,8 +236,24 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 
 	// Toolbars ---------------------------------------------------------
+        
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
+	addToolBarBreak();
+
+	edit_tools = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
+	addToolBar(edit_tools);
+	edit_tools->set(MusEGui::PointerTool);
+	score_canvas->set_tool(MusEGui::PointerTool);
+	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
+
 	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
-	steprec_tools->setObjectName("Step recording tools");
+	steprec_tools->setObjectName("Score tools");
 	srec  = new QToolButton();
 	srec->setToolTip(tr("Step Record"));
 	srec->setIcon(*steprecIcon);
@@ -246,13 +262,38 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	steprec_tools->addWidget(srec);
 	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
+	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
+	quant_toolbar->setObjectName("Score quantisation toolbar");
+	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
+	quant_combobox = new QComboBox(this);
+	quant_combobox->addItem("2");  // if you add or remove items from
+	quant_combobox->addItem("4");  // here, also change all code regarding
+	quant_combobox->addItem("8");  // _quant_power2 and _quant_power2_init
+	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
+	quant_combobox->addItem("32");
+	quant_combobox->setFocusPolicy(Qt::TabFocus);
+	quant_combobox->setCurrentIndex(score_canvas->quant_power2()-1);
+	// the above is intendedly executed BEFORE connecting. otherwise this would
+	// destroy pixels_per_whole_init!
+	//connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int))); 
+	connect(quant_combobox, SIGNAL(activated(int)), SLOT(quant_combobox_changed(int)));      // Tim
+	quant_toolbar->addWidget(quant_combobox);
+	
+	
+	quant_toolbar->addSeparator();
 
-	edit_tools = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
-	addToolBar(edit_tools);
-	edit_tools->set(MusEGui::PointerTool);
-	score_canvas->set_tool(MusEGui::PointerTool);
-	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
-
+	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
+	px_per_whole_spinbox = new SpinBox(this);
+	px_per_whole_spinbox->setFocusPolicy(Qt::StrongFocus);
+	px_per_whole_spinbox->setRange(10, 1200);
+	px_per_whole_spinbox->setSingleStep(50);
+	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
+	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
+	connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	quant_toolbar->addWidget(px_per_whole_spinbox);
+	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
+	
 	addToolBarBreak();
 
 	QToolBar* note_settings_toolbar = addToolBar(tr("Note settings"));
@@ -343,39 +384,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	note_settings_toolbar->addWidget(velo_off_spinbox);
 	velo_off_spinbox->setValue(ScoreCanvas::note_velo_off_init);
 
-
-	
-	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
-	quant_toolbar->setObjectName("Quantisation settings");
-	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
-	quant_combobox = new QComboBox(this);
-	quant_combobox->addItem("2");  // if you add or remove items from
-	quant_combobox->addItem("4");  // here, also change all code regarding
-	quant_combobox->addItem("8");  // _quant_power2 and _quant_power2_init
-	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
-	quant_combobox->addItem("32");
-	quant_combobox->setFocusPolicy(Qt::TabFocus);
-	quant_combobox->setCurrentIndex(score_canvas->quant_power2()-1);
-	// the above is intendedly executed BEFORE connecting. otherwise this would
-	// destroy pixels_per_whole_init!
-	//connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int))); 
-	connect(quant_combobox, SIGNAL(activated(int)), SLOT(quant_combobox_changed(int)));      // Tim
-	quant_toolbar->addWidget(quant_combobox);
-	
-	
-	quant_toolbar->addSeparator();
-
-	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
-	px_per_whole_spinbox = new SpinBox(this);
-	px_per_whole_spinbox->setFocusPolicy(Qt::StrongFocus);
-	px_per_whole_spinbox->setRange(10, 1200);
-	px_per_whole_spinbox->setSingleStep(50);
-	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
-	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
-	connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-	connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-	quant_toolbar->addWidget(px_per_whole_spinbox);
-	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
 
 	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));
 

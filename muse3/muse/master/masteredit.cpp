@@ -116,6 +116,17 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       settingsMenu->addAction(fullscreenAction);
 
       // Toolbars ---------------------------------------------------------
+
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
+      addToolBarBreak();
+      
+      // Already has an object name.
       MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
       addToolBar(tools2);
 
@@ -131,7 +142,8 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       connect(enableButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
 
       QToolBar* info = addToolBar(tr("Info"));
-      info->setObjectName("Info");
+      // Make it appear like a Toolbar1 object.
+      info->setObjectName("Pos/Snap/Solo-tools");
       QLabel* label  = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);

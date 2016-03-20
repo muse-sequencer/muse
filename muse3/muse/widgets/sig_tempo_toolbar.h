@@ -23,72 +23,79 @@
 #ifndef __SIG_TEMPO_TOOLBAR_H__
 #define __SIG_TEMPO_TOOLBAR_H__
 
-#include <QWidget>
-#include <QToolButton>
 #include <QTimer>
 #include <QDateTime>
+#include <QToolBar>
 
 #include "type_defs.h"
 
+class QWidget;
+class QLabel;
+class QString;
+class QToolButton;
+
 namespace Awl
 {
-	class SigEdit;
+  class SigEdit;
 }
-
-class QHBoxLayout;
-class QLabel;
 
 namespace MusEGui
 {
-	class TempoEdit;
-	
-	class SigToolbarWidget : public QWidget
-	{
-		Q_OBJECT
-		
-		private:
-			QHBoxLayout* layout;
-			QLabel* label;
-			Awl::SigEdit* sig_edit;   
-			
-		public:
-			SigToolbarWidget(QWidget* parent);
-		
-		signals:
-			void returnPressed();
-			void escapePressed();
-		
-		private slots:
-			void pos_changed(int,unsigned,bool);
-			void song_changed(MusECore::SongChangedFlags_t);
+  class TempoEdit;
+
+  class TempoToolbar : public QToolBar
+  {
+    Q_OBJECT
+    
+    private:
+      QLabel* label;
+      TempoEdit* tempo_edit;
+      QToolButton *tap_button;
+
+      QTimer tap_timer;
+      QDateTime last_tap_time;
+                  
+      void init();
+      
+    public:
+      TempoToolbar(QWidget* parent = 0);
+      TempoToolbar(const QString& title, QWidget* parent = 0);
+    
+    signals:
+      void returnPressed();
+      void escapePressed();
+            
+    private slots:
+      void pos_changed(int,unsigned,bool);
+      void song_changed(MusECore::SongChangedFlags_t);
+      void tap_tempo();
+      void tap_timer_signal();
   };
 
-	class TempoToolbarWidget : public QWidget
-	{
-		Q_OBJECT
-		
-		private:
-			QHBoxLayout* layout;
-			QLabel* label;
-			MusEGui::TempoEdit* tempo_edit;
-   QToolButton *tap_button;
 
-   QTimer tap_timer;
-   QDateTime last_tap_time;
-			
-		public:
-			TempoToolbarWidget(QWidget* parent);
-		
-		signals:
-			void returnPressed();
-			void escapePressed();
-			
-		private slots:
-			void pos_changed(int,unsigned,bool);
-			void song_changed(MusECore::SongChangedFlags_t);
-   void tap_tempo();
-   void tap_timer_signal();
+  class SigToolbar : public QToolBar
+  {
+    Q_OBJECT
+    
+    private:
+      QLabel* label;
+      Awl::SigEdit* sig_edit;   
+      
+      void init();
+            
+    public:
+      SigToolbar(QWidget* parent = 0);
+      SigToolbar(const QString& title, QWidget* parent = 0);
+            
+    signals:
+      void returnPressed();
+      void escapePressed();
+    
+    private slots:
+      void pos_changed(int,unsigned,bool);
+      void song_changed(MusECore::SongChangedFlags_t);
   };
+  
 }
 
 #endif

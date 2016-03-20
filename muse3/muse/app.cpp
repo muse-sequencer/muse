@@ -100,6 +100,7 @@
 #include "trackdrummapupdater.h"
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
+#include "cpu_toolbar.h"
 
 namespace MusECore {
 extern void exitJackAudio();
@@ -338,6 +339,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::heartBeatTimer = new QTimer(this);
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), MusEGlobal::song, SLOT(beat()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
       new MusECore::TrackDrummapUpdater(this); // no need for keeping the reference, the thing autoconnects on its own.
@@ -685,25 +687,13 @@ MusE::MusE() : QMainWindow()
 
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
-
-      QToolBar* songpos_tb;
-      songpos_tb = addToolBar(tr("Song Position"));
-      songpos_tb->setObjectName("Song Position");
-      songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
-      songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-      songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
-
-      QToolBar* tempo_tb;
-      tempo_tb = addToolBar(tr("Tempo"));
-      tempo_tb->setObjectName("Tempo");
-      MusEGui::TempoToolbarWidget* tempo_tb_widget = new MusEGui::TempoToolbarWidget(tempo_tb);
-      tempo_tb->addWidget(tempo_tb_widget);
-
-      QToolBar* sig_tb;
-      sig_tb = addToolBar(tr("Signature"));
-      sig_tb->setObjectName("Signature");
-      MusEGui::SigToolbarWidget* sig_tb_widget = new MusEGui::SigToolbarWidget(tempo_tb);
-      sig_tb->addWidget(sig_tb_widget);
+      // NOTICE: Please ensure that any tool bar object names here match the names
+      //          assigned in the 'toolbar' creation section of TopWin::TopWin(),
+      //          or any other TopWin class.
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
 
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
@@ -713,45 +703,53 @@ MusE::MusE() : QMainWindow()
       tools->addAction(QWhatsThis::createAction(this));
 
       QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
-      undoToolbar->setObjectName("Undo/Redo (global)");
+      undoToolbar->setObjectName("Undo/Redo tools");
       undoToolbar->addActions(MusEGlobal::undoRedo->actions());
 
-      QToolBar* transportToolbar = addToolBar(tr("Transport"));
-      transportToolbar->setObjectName("Transport (global)");
-      transportToolbar->addActions(MusEGlobal::transportAction->actions());
-
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
-      panicToolbar->setObjectName("Panic (global)");
+      panicToolbar->setObjectName("Panic tool");
       panicToolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* metronomeToolbar = addToolBar(tr("Metronome"));
-      metronomeToolbar->setObjectName("Metronome");
+      metronomeToolbar->setObjectName("Metronome tool");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      cpuLoadToolbar = addToolBar(tr("Cpu load"));
-      cpuLoadToolbar->setObjectName("CpuLoadToolbar");
-      cpuLoadToolbar->setToolTip(tr("CPU load averaged over each gui-update period, DSP load read from JACK and finally, number of xruns (reset by clicking)"));
-      MusEGlobal::cpuLoadAction = new QWidgetAction(cpuLoadToolbar);
-      MusEGlobal::cpuLoadAction->setWhatsThis(tr("Measured CPU load"));
-      MusEGlobal::cpuLoadAction->setObjectName("CpuLoadToolbarAction");
-      QToolButton *cpuToolBtn = new QToolButton(cpuLoadToolbar);
-      cpuToolBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-      cpuToolBtn->setText(tr("No CPU load data"));
-      cpuToolBtn->setIcon(*MusEGui::cpuIcon);
-      cpuToolBtn->setObjectName("CpuLoadToolbarButton");
-      ((QWidgetAction *)MusEGlobal::cpuLoadAction)->setDefaultWidget(cpuToolBtn);
-      cpuLoadToolbar->addAction(MusEGlobal::cpuLoadAction);
-      connect(cpuToolBtn, SIGNAL(clicked(bool)), this, SLOT(resetXrunsCounter()));
+      // Already has an object name.
+      cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
+      addToolBar(cpuLoadToolbar);
+      connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
+      QToolBar* songpos_tb;
+      songpos_tb = addToolBar(tr("Song Position"));
+      songpos_tb->setObjectName("Song Position tool");
+      songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+      songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+      songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+
+      addToolBarBreak();
+      
+      QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      transportToolbar->setObjectName("Transport tool");
+      transportToolbar->addActions(MusEGlobal::transportAction->actions());
+
+      // Already has an object name.
+      TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
+      addToolBar(tempo_tb);
+      
+      // Already has an object name.
+      SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
+      addToolBar(sig_tb);
+      
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
-      optionalToolbars.push_back(songpos_tb);
-      optionalToolbars.push_back(sig_tb);
-      optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(undoToolbar);
-      optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
       optionalToolbars.push_back(metronomeToolbar);
+      optionalToolbars.push_back(songpos_tb);
+      optionalToolbars.push_back(NULL);  // Toolbar break
+      optionalToolbars.push_back(transportToolbar);
+      optionalToolbars.push_back(tempo_tb);
+      optionalToolbars.push_back(sig_tb);
 
 
        QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this);
@@ -944,10 +942,10 @@ MusE::MusE() : QMainWindow()
       arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
-      connect(tempo_tb_widget, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(tempo_tb_widget, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
-      connect(sig_tb_widget,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(sig_tb_widget,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
+      connect(tempo_tb, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
 
       //---------------------------------------------------
       //  read list of "Recent Projects"
@@ -996,6 +994,13 @@ void MusE::setHeartBeat()
       MusEGlobal::heartBeatTimer->start(1000/MusEGlobal::config.guiRefresh);
       }
 
+void MusE::heartBeat()
+{
+  cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(), 
+                            MusEGlobal::song->dspLoad(), 
+                            MusEGlobal::song->xRunsCount());
+}
+      
 //---------------------------------------------------------
 //   setDirty
 //---------------------------------------------------------
@@ -1293,9 +1298,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
           mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
       }
 
-      //showMarker(MusEGlobal::config.markerVisible);  // Moved below. Tim.
-      resize(MusEGlobal::config.geometryMain.size());
-      move(MusEGlobal::config.geometryMain.topLeft());
+// Removed. Already taken care of by settings.
+//       resize(MusEGlobal::config.geometryMain.size());
+//       move(MusEGlobal::config.geometryMain.topLeft());
 
       if (MusEGlobal::config.transportVisible)
             transport->show();
@@ -1332,33 +1337,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       // Moved here from above due to crash with a song loaded and then File->New.
       // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
       showMarker(MusEGlobal::config.markerVisible);
-
-      if (songTemplate)
-      {
-        // maximize the arranger when in traditional SDI mode
-        if (MusEGui::TopWin::_defaultSubwin[MusEGui::TopWin::ARRANGER])
-        {
-          bool maximizeArranger=true;
-          for (int i=0; i<MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY; i++)
-            if ((i!=MusEGui::TopWin::ARRANGER) && MusEGui::TopWin::_defaultSubwin[i])
-            {
-              maximizeArranger=false;
-              break;
-            }
-
-          if (maximizeArranger)
-          {
-            arrangerView->showMaximized();
-            bringToFront(arrangerView);
-          }
-        }
-      }
-      else //force maximize arranger of loaded project
-      {
-         arrangerView->showMaximized();
-         bringToFront(arrangerView);
-         arrangerView->setFocus();
-      }
       }
 
 //---------------------------------------------------------
@@ -1639,8 +1617,6 @@ void MusE::showMarker(bool flag)
             markerView = new MusEGui::MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            // Nov 21, 2012 Hey this causes the thing not to open at all, EVER, on Lubuntu and some others!
-            //markerView->show();  // ??? REMOVE Tim. Superfluous?
             toplevels.push_back(markerView);
             }
       if(markerView->isVisible() != flag)
@@ -2181,6 +2157,8 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
       for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (*i == tl) {
 
+                  tl->storeInitialState();
+               
                   if (tl == activeTopWin)
                   {
                     activeTopWin=NULL;
@@ -3381,10 +3359,18 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
   QWidget* ptr=now;
 
   if (activeTopWin)
+  {
+    if(MusEGlobal::heavyDebugMsg)
+      printf(" activeTopWin: %s\n", typeid(*activeTopWin).name());
     activeTopWin->storeInitialState();
+  }
 
   if (currentMenuSharingTopwin && (currentMenuSharingTopwin!=activeTopWin))
+  {
+    if(MusEGlobal::heavyDebugMsg)
+      printf(" currentMenuSharingTopwin: %s\n", typeid(*currentMenuSharingTopwin).name());
     currentMenuSharingTopwin->storeInitialState();
+  }
 
   // if the activated widget is a QMdiSubWindow containing some TopWin
   if ( (dynamic_cast<QMdiSubWindow*>(ptr)!=0) &&
@@ -3469,35 +3455,103 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 
     if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
+    
+    list<QToolBar*> add_toolbars;
+    if(win)
+      add_toolbars = win->toolbars();
+    
     // empty our toolbars
     if (previousMenuSharingTopwin)
     {
-      for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
-        if (*it)
+      list<QToolBar*> add_foreign_toolbars;
+      for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); ++it)
+      {
+        QToolBar* tb = *it;
+        if(tb)
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
-          removeToolBar(*it); // this does not delete *it, which is good
-          (*it)->setParent(NULL);
-        }
+          // Check for existing toolbar with same object name, and replace it.
+          bool found = false;
+          for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
+          {
+            QToolBar* atb = *i_atb;
+            if(atb)
+            {
+              if(tb->objectName() == atb->objectName())
+              {
+                //tb->hide();
+                
+                if(MusEGlobal::heavyDebugMsg) 
+                  printf("  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
 
-      foreignToolbars.clear();
+                found = true;
+                insertToolBar(tb, atb);
+                add_foreign_toolbars.push_back(atb);
+                add_toolbars.remove(atb);
+                atb->show();
+                break;
+              }
+            }
+          }
+          
+          // Remove any toolbar break that may exist before the toolbar - unless there 
+          //  is a replacement is to be made, in which case leave the break intact.
+          if(!found && toolBarBreak(tb))
+          {
+            if(MusEGlobal::heavyDebugMsg)
+              fprintf(stderr, "  removing break before sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+            removeToolBarBreak(tb);
+          }
+          
+          
+          if(MusEGlobal::heavyDebugMsg) 
+            printf("  removing sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+          removeToolBar(tb); // this does not delete *it, which is good
+          tb->setParent(NULL);
+        }
+      }
+        
+      foreignToolbars = add_foreign_toolbars;
+      
     }
     else
     {
-      for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
-        if (*it)
+      for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); ++it)
+      {
+        QToolBar* tb = *it;
+        if(tb)
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
-          removeToolBar(*it); // this does not delete *it, which is good
-          (*it)->setParent(NULL);
+          // Check for existing toolbar with same object name, and replace it.
+          for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
+          {
+            QToolBar* atb = *i_atb;
+            if(atb)
+            {
+              if(tb->objectName() == atb->objectName())
+              {
+                //tb->hide();
+                
+                if(MusEGlobal::heavyDebugMsg) 
+                  printf("  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
+
+                insertToolBar(tb, atb);
+                foreignToolbars.push_back(atb);
+                add_toolbars.remove(atb);
+                atb->show();
+                break;
+              }
+            }
+          }
+          
+          if (MusEGlobal::heavyDebugMsg) 
+            printf("  removing optional toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+          removeToolBar(tb); // this does not delete *it, which is good
+          tb->setParent(NULL);
         }
+      }
     }
 
     //empty our menu
     menuBar()->clear();
-
-
-
 
     for (list<QMenu*>::iterator it = leadingMenus.begin(); it!=leadingMenus.end(); it++)
       menuBar()->addMenu(*it);
@@ -3512,10 +3566,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         menuBar()->addAction(*it);
       }
 
-
-
-      const list<QToolBar*>& toolbars=win->toolbars();
-      for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
+      for (list<QToolBar*>::const_iterator it=add_toolbars.begin(); it!=add_toolbars.end(); ++it)
         if (*it)
         {
           if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());

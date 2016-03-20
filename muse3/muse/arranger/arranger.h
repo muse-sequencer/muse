@@ -205,6 +205,7 @@ class Arranger : public QWidget {
       void setGlobalTempo(int);
       void clear();
       void songIsClearing() { canvas->songIsClearing(); }
+      void setDefaultSplitterSizes();
       
       unsigned cursorValue() { return cursVal; }
       

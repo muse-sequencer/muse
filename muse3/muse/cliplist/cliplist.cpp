@@ -138,6 +138,13 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       settingsMenu->addAction(shareAction);      
       settingsMenu->addAction(fullscreenAction);      
       
+      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
+      //          to identical or similar toolbars in class MusE or other TopWin classes. 
+      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+      //          to retain the original toolbar layout. If it finds an existing
+      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+      //          instead of /appending/ with addToolBar().
+
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;

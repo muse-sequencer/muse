@@ -46,6 +46,7 @@ QT5_WRAP_CPP (widget_mocs
       compact_patch_edit.h
       compact_slider.h  
       copy_on_write.h
+      cpu_toolbar.h
       ctrlcombo.h  
       custom_widget_actions.h
       dentry.h  
@@ -182,6 +183,7 @@ file (GLOB widgets_source_files
       compact_patch_edit.cpp
       compact_slider.cpp 
       copy_on_write.cpp
+      cpu_toolbar.cpp
       ctrlcombo.cpp 
       custom_widget_actions.cpp
       dentry.cpp 

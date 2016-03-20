@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-//#include <stdio.h>
+#include <stdio.h>
 
 #include <QWidget>
 #include <QLayoutItem>
@@ -75,8 +75,8 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
       int range = s0.height() - y2;
       if (range < 0)
             range = 0;
-      //fprintf(stderr, "TrackInfoLayout::setGeometry h:%d s0 height:%d range:%d y2:%d\n",
-      //                h, s0.height(), range, y2);
+      //fprintf(stderr, "TrackInfoLayout::setGeometry sb w:%d visible:%d split count:%d w:%d h:%d s0 height:%d range:%d y2:%d\n",
+      //                _sb->width(), _sb->isVisible(), _splitter->count(), w, h, s0.height(), range, y2);
       if (range)
             _sb->setMaximum(range);
 
@@ -85,21 +85,26 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
       {
         if(_sb->isVisible())
         {
-          const int sbw = _sb->width();
+          int sw = w - _sb->width();
+          if(sw < 0)
+            sw = 0;
           _sb->setVisible(false);
           if(_splitter)
           {
+            //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: split pos:%d\n",
+            //                sw);
             _inSetGeometry = true; 
-            _splitter->setPosition(1, w - sbw);
+            _splitter->setPosition(1, sw);
             _inSetGeometry = false; 
           }
-          _stackLi->setGeometry(QRect(0,  0,  w - sbw, y2));  
+          _stackLi->setGeometry(QRect(0,  0,  sw, y2));  
           if(widget) 
           {
-            QSize r(w - sbw, y2 < s0.height() ? s0.height() : y2);
+            QSize r(sw, y2 < s0.height() ? s0.height() : y2);
             //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget w:%d\n",
             //                r.width());
-            widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+            //widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+            widget->setGeometry(0, 0, r.width(), r.height()); 
           }
         }
         else
@@ -107,6 +112,8 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
           _sb->setVisible(true);
           if(_splitter)
           {
+            //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: split pos:%d\n",
+            //                w + _sb->width());
             _inSetGeometry = true; 
             _splitter->setPosition(1, w + _sb->width());
             _inSetGeometry = false; 

@@ -113,47 +113,57 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	else
 		resize(_widthInit[_type], _heightInit[_type]);
 	
-	 
+
+      //--------------------------------------------------
+      //    Toolbar
+      //--------------------------------------------------
+
+// NOTICE: Please ensure that any tool bar object names here match the names
+//          assigned in the 'toolbar' creation section of MusE::MusE(), 
+//           or any other TopWin class.
+//         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+//          to retain the original toolbar layout. If it finds an existing
+//          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+//          instead of /appending/ with addToolBar().
+        
 	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
 	undo_tools->setObjectName("Undo/Redo tools");
 	undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
-	QToolBar* panic_toolbar = addToolBar(tr("Panic"));         
-	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(MusEGlobal::panicAction);
+        QToolBar* panic_toolbar = addToolBar(tr("Panic"));         
+        panic_toolbar->setObjectName("Panic tool");
+        panic_toolbar->addAction(MusEGlobal::panicAction);
 
-  QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
-  metronome_toolbar->setObjectName("metronome");
-  metronome_toolbar->addAction(MusEGlobal::metronomeAction);
+        QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
+        metronome_toolbar->setObjectName("Metronome tool");
+        metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-  QToolBar* transport_toolbar = addToolBar(tr("Transport"));
-	transport_toolbar->setObjectName("transport");
-  transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-  transport_toolbar->setIconSize(QSize(22, 22));
+        QToolBar* songpos_tb;
+        songpos_tb = addToolBar(tr("Song Position"));
+        songpos_tb->setObjectName("Song Position tool");
+        songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+        songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
 
-	QToolBar* songpos_tb;
-	songpos_tb = addToolBar(tr("Song Position"));
-	songpos_tb->setObjectName("Song Position");
-	songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
-	songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+        addToolBarBreak();
+        
+        QToolBar* transport_toolbar = addToolBar(tr("Transport"));
+        transport_toolbar->setObjectName("Transport tool");
+        transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+        transport_toolbar->setIconSize(QSize(22, 22));
 
-	QToolBar* tempo_tb;
-	tempo_tb = addToolBar(tr("Tempo"));
-	tempo_tb->setObjectName("Tempo");
-	MusEGui::TempoToolbarWidget* tw = new MusEGui::TempoToolbarWidget(tempo_tb);
-	tempo_tb->addWidget(tw);
-
-	QToolBar* sig_tb;
-	sig_tb = addToolBar(tr("Signature"));
-	sig_tb->setObjectName("Signature");
-	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
-	sig_tb->addWidget(sw);
-	
-	connect(tw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-	connect(sw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-	connect(sw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        // Already has an object name.
+        TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
+        addToolBar(tempo_tb);
+        
+        // Already has an object name.
+        SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
+        addToolBar(sig_tb);
+        
+        connect(tempo_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(tempo_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(sig_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(sig_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 
  /* unconnect parent if window is not mdi */
  /* to make editor windows not stay on top */
@@ -164,7 +174,6 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 }
 
-
 //---------------------------------------------------------
 //	 readStatus
 //---------------------------------------------------------
@@ -172,6 +181,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 void TopWin::readStatus(MusECore::Xml& xml)
 {
 	int x=0, y=0, width=800, height=600;
+	bool wsMinimized = false;
+	bool wsMaximized = false;
+	bool wsFullScreen = false;
+	bool wsActive = false;
 	
 	for (;;)
 	{
@@ -191,6 +204,14 @@ void TopWin::readStatus(MusECore::Xml& xml)
 					width=xml.parseInt();
 				else if (tag == "height")
 					height=xml.parseInt();
+				else if (tag == "wsMinimized")
+					wsMinimized=xml.parseInt();
+				else if (tag == "wsMaximized")
+					wsMaximized=xml.parseInt();
+				else if (tag == "wsFullScreen")
+					wsFullScreen=xml.parseInt();
+				else if (tag == "wsActive")
+					wsActive=xml.parseInt();
 				else if (tag == "toolbars")
 				{
 					if (!sharesToolsAndMenu())
@@ -224,17 +245,25 @@ void TopWin::readStatus(MusECore::Xml& xml)
 			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
 				{
+					const QRect geo(x, y, width, height);
+					QFlags<Qt::WindowState> wstate;
+					if(wsMinimized)
+					  wstate |= Qt::WindowMinimized;
+					if(wsMaximized)
+					  wstate |= Qt::WindowMaximized;
+					if(wsFullScreen)
+					  wstate |= Qt::WindowFullScreen;
+					if(wsActive)
+					  wstate |= Qt::WindowActive;
 					if (mdisubwin)
 					{
-						if(mdisubwin->isMaximized())
-							mdisubwin->showNormal();
-						mdisubwin->move(x, y);
-						mdisubwin->resize(width, height);
+						mdisubwin->setGeometry(geo);
+						mdisubwin->setWindowState(wstate);
 					}
 					else
 					{
-						move(x,y);
-						resize(width,height);
+						setGeometry(geo);
+						setWindowState(wstate);
 					}
 
 					return;
@@ -259,20 +288,37 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 	// restoring of the positions
 	xml.intTag(level, "is_subwin", isMdiWin());
 
+	QRect geo;
+	QFlags<Qt::WindowState> wstate;
 	if (mdisubwin)
 	{
-		xml.intTag(level, "x", mdisubwin->x());
-		xml.intTag(level, "y", mdisubwin->y());
-		xml.intTag(level, "width", mdisubwin->width());
-		xml.intTag(level, "height", mdisubwin->height());
+		wstate = mdisubwin->windowState();
+		geo = mdisubwin->normalGeometry();
+		// TESTED on Qt5.3: For MDI geo was invalid (0, 0, -1, -1) when window maximized.
+		// This may be a reported Qt bug I read about.
+		if(!geo.isValid())
+		  geo = mdisubwin->geometry();
 	}
 	else
 	{
-		xml.intTag(level, "x", x());
-		xml.intTag(level, "y", y());
-		xml.intTag(level, "width", width());
-		xml.intTag(level, "height", height());
+		wstate = windowState();
+		geo = normalGeometry();
+		if(!geo.isValid())
+		  geo = geometry();
 	}
+	// The order of geo first then state may be important here.
+	xml.intTag(level, "x", geo.x());
+	xml.intTag(level, "y", geo.y());
+	xml.intTag(level, "width", geo.width());
+	xml.intTag(level, "height", geo.height());
+	if(wstate.testFlag(Qt::WindowMinimized))
+	  xml.intTag(level, "wsMinimized", 1);
+	if(wstate.testFlag(Qt::WindowMaximized))
+	  xml.intTag(level, "wsMaximized", 1);
+	if(wstate.testFlag(Qt::WindowFullScreen))
+	  xml.intTag(level, "wsFullScreen", 1);
+	if(wstate.testFlag(Qt::WindowActive))
+	  xml.intTag(level, "wsActive", 1);
 
 	xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
@@ -416,6 +462,13 @@ QToolBar* TopWin::addToolBar(const QString& title)
 	QToolBar* toolbar = new QToolBar(title, this);
 	addToolBar(toolbar);
 	return toolbar;
+}
+
+
+void TopWin::addToolBarBreak(Qt::ToolBarArea area)
+{
+  QMainWindow::addToolBarBreak(area);
+  _toolbars.push_back(NULL);
 }
 
 

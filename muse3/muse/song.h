@@ -163,6 +163,10 @@ class Song : public QObject {
       Pos _vcpos;               // virtual CPOS (locate in progress)
       MarkerList* _markerList;
 
+      float _fCpuLoad;
+      float _fDspLoad;
+      long _xRunsCount;
+
       bool _masterFlag;
       bool loopFlag;
       bool punchinFlag;
@@ -288,6 +292,10 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void stopRolling(Undo* operations = 0);
       void abortRolling();
+
+      float cpuLoad() const { return _fCpuLoad; }
+      float dspLoad() const { return _fDspLoad; }
+      long xRunsCount() const { return _xRunsCount; }
 
       //-----------------------------------------
       //    access tempomap/sigmap  (Mastertrack)
