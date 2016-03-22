@@ -1,3 +1,22 @@
+21.03.2016:
+        - LV2 fix: Support PowerOf2BlockLength - Was missing! Supports more plugins! (Tim)
+        - LV2 fix: Support FixedBlockLength - Our process routines weren't respecting this! (Tim)
+                   If any controller input was adjusted, a plugin would 'gurgle' or might soon CRASH.
+        - LV2: Add debugging output (-D option) while discovering plugins. (Tim)
+        - LV2: Report if a plugin is ignored due to any unsupported 'required feature'. (Tim)
+        
+          Tested OK! With MOD Pitch Shifter series of plugins (they require fixed-block AND power-of-2).
+          At both 1024 and 128 block size, these plugins' controllers responded smoothly, both with
+           rapid manual adjustment and graphs, and did not 'gurgle' and did not crash after much abuse.
+           
+19.03.2016:
+        - Fix toolbars initial positions in all windows. They were all on one line. (Tim)
+          Our shared toolbar system can now use a toolbar's objectName to /replace/ 
+           an existing toolbar, in MusE::setCurrentMenuSharingTopwin().
+          This keeps common toolbars in-place (by default) in all the windows, 
+           especially as applied to the Main Window and the Arranger.
+        - Rebuild Tempo Signature and CPU toolbars to allow shrinking. (Tim)
+        - Fix problems with arranger minimum size and saving/restoring window sizes. (Tim)
 14.03.2016:
         * Arranger Track Info panel makeover: (Tim)
         - Add midi strip (finally!)

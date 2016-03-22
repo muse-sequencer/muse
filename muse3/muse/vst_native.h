@@ -140,11 +140,12 @@ class VstNativeSynth : public Synth {
       MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to vst port numbers.
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps vst port numbers to midi controller numbers.
       bool _hasGui;
-      bool _inPlaceCapable;
       bool _hasChunks;
       
    public:
-      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle, bool isSynth);
+      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, 
+                     const QString& label, const QString& desc, const QString& maker, const QString& ver, 
+                     VstIntPtr id, void *dlHandle, bool isSynth, Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures);
 
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
@@ -345,7 +346,7 @@ private:
     std::vector<float> inControlDefaults;    
     std::vector<std::string> portNames;
 public:
-    VstNativePluginWrapper ( VstNativeSynth *s );
+    VstNativePluginWrapper ( VstNativeSynth *s, PluginFeatures reqFeatures = NoFeatures );
     VstNativeSynth *synth() {
         return _synth;
     }

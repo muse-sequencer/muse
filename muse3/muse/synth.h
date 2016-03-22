@@ -66,15 +66,19 @@ class Synth {
       QString _description;
       QString _maker;
       QString _version;
+      Plugin::PluginFeatures _requiredFeatures;
 
    public:
       enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
-      Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
+      Synth(const QFileInfo& fi, 
+            QString label, QString descr, QString maker, QString ver, 
+            Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures);
 
       virtual ~Synth() {}
 
       virtual Type synthType() const = 0;
+      virtual Plugin::PluginFeatures requiredFeatures() const { return _requiredFeatures; }
       int instances() const                            { return _instances; }
       virtual void incInstances(int val)               { _instances += val; }
       QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
@@ -165,6 +169,7 @@ class SynthIF : public PluginIBase {
       // Methods for PluginIBase:
       //-------------------------
 
+      virtual Plugin::PluginFeatures requiredFeatures() const;
       virtual bool on() const;
       virtual void setOn(bool val);
       virtual unsigned long pluginID();
@@ -266,6 +271,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
+      virtual Plugin::PluginFeatures pluginFeatures() const { return _sif->requiredFeatures(); }
+      
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
       

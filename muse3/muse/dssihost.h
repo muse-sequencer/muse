@@ -87,12 +87,12 @@ class DssiSynth : public Synth {
       MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
-      bool _inPlaceCapable;
       // Hack: Special flag required.
       bool _isDssiVst;
 
    public:
-      DssiSynth(QFileInfo&, const DSSI_Descriptor*); // removed const for QFileInfo
+      DssiSynth(QFileInfo&, const DSSI_Descriptor*, bool isDssiVst = false, 
+                Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures); // removed const for QFileInfo
       virtual ~DssiSynth();
       virtual Type synthType() const { return DSSI_SYNTH; }
 

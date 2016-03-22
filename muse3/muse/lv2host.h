@@ -304,7 +304,8 @@ public:
     virtual Type synthType() const {
         return _isSynth ? LV2_SYNTH : LV2_EFFECT;
     }
-    LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin );
+    LV2Synth ( const QFileInfo &fi, QString label, QString name, QString author, 
+               const LilvPlugin *_plugin, Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures );
     virtual ~LV2Synth();
     virtual SynthIF *createSIF ( SynthI * );
     bool isSynth() {
@@ -690,7 +691,7 @@ private:
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;       
 public:
-    LV2PluginWrapper ( LV2Synth *s );
+    LV2PluginWrapper ( LV2Synth *s, PluginFeatures reqFeatures = NoFeatures );
     LV2Synth *synth() {
         return _synth;
     }    

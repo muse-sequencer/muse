@@ -640,14 +640,16 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth)
+Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures reqFeatures)
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
+  _isDssiVst = isDssiVst;
   _isLV2Plugin = false;
   _isLV2Synth = false;
   _isVstNativePlugin = false;
   _isVstNativeSynth = false;
+  _requiredFeatures = reqFeatures;
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -693,33 +695,9 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
     }
   }
 
-  _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(d->Properties);
-
-  // By T356. Blacklist vst plugins in-place configurable for now. At one point they
-  //   were working with in-place here, but not now, and RJ also reported they weren't working.
-  // Fixes problem with vst plugins not working or feeding back loudly.
-  // I can only think of two things that made them stop working:
-  // 1): I switched back from Jack-2 to Jack-1
-  // 2): I changed winecfg audio to use Jack instead of ALSA.
-  // Will test later...
-  // Possibly the first one because under Mandriva2007.1 (Jack-1), no matter how hard I tried,
-  //  the same problem existed. It may have been when using Jack-2 with Mandriva2009 that they worked.
-  // Apparently the plugins are lying about their in-place capability.
-  // Quote:
-  /* Property LADSPA_PROPERTY_INPLACE_BROKEN indicates that the plugin
-    may cease to work correctly if the host elects to use the same data
-    location for both input and output (see connect_port()). This
-    should be avoided as enabling this flag makes it impossible for
-    hosts to use the plugin to process audio `in-place.' */
-  // Examination of all my ladspa and vst synths and effects plugins showed only one -
-  //  EnsembleLite (EnsLite VST) has the flag set, but it is a vst synth and is not involved here!
-  // Yet many (all?) ladspa vst effect plugins exhibit this problem.
-  // Changed by Tim. p3.3.14
-  // Hack: Special Flag required for example for control processing.
-  _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
   // Hack: Blacklist vst plugins in-place, configurable for now.
   if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _inPlaceCapable = false;
+        _requiredFeatures |= NoInPlaceProcessing;
 }
 
 Plugin::~Plugin()
@@ -871,13 +849,9 @@ int Plugin::incReferences(int val)
         }
       }
 
-      _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
-
-      // Hack: Special flag required for example for control processing.
-      _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
       // Hack: Blacklist vst plugins in-place, configurable for now.
       if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-            _inPlaceCapable = false;
+        _requiredFeatures |= NoInPlaceProcessing;
     }
   }
 
@@ -961,6 +935,18 @@ static void loadPluginLib(QFileInfo* fi)
       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
         continue;
 
+      Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+      if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
+        reqfeat |= Plugin::NoInPlaceProcessing;
+
+      // Hack: Special flag required for example for control processing.
+      bool vst = false;
+      if(fi->completeBaseName() == QString("dssi-vst"))
+      {
+        vst = true;
+        reqfeat |= Plugin::FixedBlockSize;
+      }
+      
       #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
       #endif
@@ -968,13 +954,13 @@ static void loadPluginLib(QFileInfo* fi)
       bool is_synth = descr->run_synth || descr->run_synth_adding
                   || descr->run_multiple_synths || descr->run_multiple_synths_adding;
       if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n",
+        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n", 
                 fi->filePath().toLatin1().constData(),
                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
-                is_synth
+                is_synth, vst, reqfeat
                 );
 
-      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth);
+      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth, vst, reqfeat);
     }
   }
   else
@@ -1008,13 +994,18 @@ static void loadPluginLib(QFileInfo* fi)
       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
         continue;
 
+      Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+      if(LADSPA_IS_INPLACE_BROKEN(descr->Properties))
+        reqfeat |= Plugin::NoInPlaceProcessing;
+
       #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
       #endif
 
       if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->Name, descr->Label);
-      MusEGlobal::plugins.add(fi, descr);
+        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n", 
+                fi->filePath().toLatin1().constData(), descr->Name, descr->Label, reqfeat);
+      MusEGlobal::plugins.add(fi, descr, false, false, false, reqfeat);
     }
   }
 
@@ -1672,7 +1663,7 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
             {
               if (p->on())
               {
-                if (p->inPlaceCapable())
+                if (!(p->requiredFeatures() & Plugin::NoInPlaceProcessing))
                 {
                       if (swap)
                             p->apply(pos, nframes, ports, buffer, buffer);
@@ -2761,8 +2752,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
 
-  // Must make this detectable for dssi vst effects.
-  const bool usefixedrate = _plugin->_isDssiVst;
+  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize); 
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.

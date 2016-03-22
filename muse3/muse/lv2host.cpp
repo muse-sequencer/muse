@@ -98,6 +98,7 @@ namespace MusECore
 #define LV2_INSTRUMENT_CLASS NS_LV2CORE "#InstrumentPlugin"
 #define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
 #define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
+#define LV2_F_POWER_OF_2_BLOCK_LENGTH LV2_BUF_SIZE__powerOf2BlockLength
 #define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
 #define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
 #define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
@@ -201,6 +202,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_URI_MAP, NULL},
    {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
    {LV2_F_FIXED_BLOCK_LENGTH, NULL},
+   {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
@@ -227,9 +229,14 @@ void initLV2()
    std::set<std::string> supportedFeatures;
    uint32_t i = 0;
 
+   if(MusEGlobal::debugMsg)
+     std::cerr << "LV2: MusE supports these features:" << std::endl;
+     
    for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
    {
       supportedFeatures.insert(lv2Features [i].URI);
+      if(MusEGlobal::debugMsg)
+        std::cerr << "\t" << lv2Features [i].URI << std::endl;
    }
 
    lilvWorld = lilv_world_new();
@@ -287,32 +294,30 @@ void initLV2()
          bool shouldLoad = true;
          const char *pluginName = lilv_node_as_string(nameNode);
          //const char *pluginUri = lilv_node_as_string(uriNode);
-#ifdef DEBUG_LV2
-         std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
-#endif
+         if(MusEGlobal::debugMsg)
+           std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
          const char *lfp = lilv_uri_to_path(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)));
-#ifdef DEBUG_LV2
-         std::cerr << "Library path: " << lfp << std::endl;
-#endif
+         if(MusEGlobal::debugMsg)
+           std::cerr << "Library path: " << lfp << std::endl;
 
 
 
-#ifdef DEBUG_LV2
-         const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
-         const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
-         const char *clsname = lilv_node_as_uri(ncuri);
-         std::cerr << "Plugin class: " << clsname << std::endl;
-         bool isSynth = false;
-         if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
+         if(MusEGlobal::debugMsg)
          {
-            isSynth = true;
+            const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
+            const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+            const char *clsname = lilv_node_as_uri(ncuri);
+            std::cerr << "Plugin class: " << clsname << std::endl;
+            bool isSynth = false;
+            if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
+            {
+                isSynth = true;
+            }
+            if(isSynth)
+            {
+                std::cerr << "Plugin is synth" << std::endl;
+            }
          }
-         if(isSynth)
-         {
-            std::cerr << "Plugin is synth" << std::endl;
-         }
-
-#endif
 
 #ifdef DEBUG_LV2
          std::cerr <<  "\tRequired features (by uri):" << std::endl;
@@ -320,6 +325,7 @@ void initLV2()
          LilvNodes *fts = lilv_plugin_get_required_features(plugin);
          LilvIter *nit = lilv_nodes_begin(fts);
 
+         Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
          while(true)
          {
             if(lilv_nodes_is_end(fts, nit))
@@ -334,9 +340,17 @@ void initLV2()
             std::cerr << "\t - " << uri << " (" << (isSupported ? "supported" : "not supported") << ")" << std::endl;
 #endif
 
-            if(!isSupported)
+            if(isSupported)
+            {
+              if(strcmp(uri, LV2_F_FIXED_BLOCK_LENGTH) == 0)
+                reqfeat |= Plugin::FixedBlockSize;
+              else if(strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
+                reqfeat |= Plugin::PowerOf2BlockSize;
+            }
+            else
             {
                shouldLoad = false;
+               std::cerr << "\t LV2: " << pluginName << ": Required feature: " << uri << ": not supported!" << std::endl;
             }
 
             nit = lilv_nodes_next(fts, nit);
@@ -377,7 +391,7 @@ void initLV2()
                   lilv_node_free(nAuthor);
                }
 
-               LV2Synth *s = new LV2Synth(fi, name, name, author, plugin);
+               LV2Synth *s = new LV2Synth(fi, name, name, author, plugin, reqfeat);
 
                if(s->isConstructed())
                {
@@ -395,7 +409,7 @@ void initLV2()
 
                   if(s->inPorts() > 0 && s->outPorts() > 0)   // insert to plugin list
                   {
-                     MusEGlobal::plugins.push_back(new LV2PluginWrapper(s));
+                     MusEGlobal::plugins.push_back(new LV2PluginWrapper(s, reqfeat));
 
                   }
                }
@@ -2160,8 +2174,8 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 }
 
 
-LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin)
-   : Synth(fi, label, name, author, QString("")),
+LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin, Plugin::PluginFeatures reqFeatures)
+   : Synth(fi, label, name, author, QString(""), reqFeatures),
      _handle(_plugin),
      _features(NULL),
      _ppfeatures(NULL),
@@ -3614,7 +3628,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
-   const bool usefixedrate = false;
+   const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);;
    const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
 
@@ -3754,7 +3768,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                }
             }
 
-            if(MusEGlobal::audio->isPlaying())
+            if(!usefixedrate && MusEGlobal::audio->isPlaying())
             {
                unsigned long samps = nsamp;
 
@@ -3832,9 +3846,10 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          }
 
          if(evframe >= nframes                                                         // Next events are for a later period.
-               || (!found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
-               || (found && !v.unique && (evframe - sample >= min_per)))                  // Eat up events within minimum slice - they're too close.
-
+              || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp)) // Next events are for a later run in this period. (Autom took prio.)
+              || (found && !v.unique && (evframe - sample >= min_per))                 // Eat up events within minimum slice - they're too close.
+              || (usefixedrate && found && v.unique && v.idx == index))                // Fixed rate and must reply to all.
+         
          {
             break;
          }
@@ -3879,7 +3894,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          }
       }
 
-      if(found)  // If a control FIFO item was found, takes priority over automation controller stream.
+      if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
       {
          nsamp = frame - sample;
       }
@@ -4661,10 +4676,12 @@ void LV2PluginWrapper_Window::startFromGuiThread()
 }
 
 
-LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
+LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures reqFeatures)
 {
    _synth = s;
 
+   _requiredFeatures = reqFeatures;
+   
    _fakeLd.Label = _synth->name().toUtf8().constData();
    _fakeLd.Name = _synth->name().toUtf8().constData();
    _fakeLd.UniqueID = _synth->_uniqueID;
@@ -4761,8 +4778,6 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
          }
       }
    }
-
-   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
 }
 
 LV2PluginWrapper::~LV2PluginWrapper()
