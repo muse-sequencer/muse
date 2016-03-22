@@ -682,6 +682,14 @@
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>NOTE: Ensure the directory containing core LV2 bundles is included
+ (typically /usr/lib/lv2). Otherwise all plugins may not load properly.</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QListWidget" name="pluginLv2PathList">
                  <property name="alternatingRowColors">
                   <bool>true</bool>
