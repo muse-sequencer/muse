@@ -41,6 +41,8 @@ namespace MusEGui {
 class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase {
       Q_OBJECT
 
+      enum PathTab { LadspaTab, DssiTab, VstTab, LinuxVstTab, Lv2Tab };
+      
    private slots:
       void updateSettings();
       void updateMdiSettings();
@@ -54,6 +56,11 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void bigtimeCurrent();
       void mainCurrent();
       void transportCurrent();
+      void editPluginPath();
+      void addPluginPath();
+      void removePluginPath();
+      void movePluginPathUp();
+      void movePluginPathDown();
       void browseProjDir();
       void browseStartSongFile();
       void startSongReset();
@@ -66,6 +73,8 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       QButtonGroup *startSongGroup;
       QButtonGroup *recDrumGroup;
       std::list<MdiSettings*> mdisettings;
+      
+      QString browsePluginPath(const QString& path);
       
    public:
       GlobalSettingsConfig(QWidget* parent=0);

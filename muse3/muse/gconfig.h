@@ -111,6 +111,12 @@ enum CONF_LV2_UI_BEHAVIOR {
 };
 
 struct GlobalConfigValues {
+      QStringList pluginLadspaPathList;
+      QStringList pluginDssiPathList;
+      QStringList pluginVstPathList;
+      QStringList pluginLinuxVstPathList;
+      QStringList pluginLv2PathList;
+
       int globalAlphaBlend;
       QColor palette[16];
       QColor partColors[NUM_PARTCOLORS];

@@ -41,6 +41,11 @@ namespace MusEGlobal {
  */
 
 GlobalConfigValues config = {
+      QStringList(),              // pluginLadspaPathList
+      QStringList(),              // pluginDssiPathList
+      QStringList(),              // pluginVstPathList
+      QStringList(),              // pluginLinuxVstPathList
+      QStringList(),              // pluginLv2PathList
       170,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette

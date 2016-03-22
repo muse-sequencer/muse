@@ -27,6 +27,7 @@
 #include <QtCore/QtPlugin>                             // p4.0.2
 #include <QtDesigner/QDesignerCustomWidgetInterface>   //
 #include <QPixmap>
+#include <QStringList>
 
 #include "poslabel.h"
 #include "pitchedit.h"
@@ -54,6 +55,11 @@ static const char* valu[] = {
       };
 
 MusEGlobal::GlobalConfigValues config = {
+      QStringList(),              // pluginLadspaPathList
+      QStringList(),              // pluginDssiPathList
+      QStringList(),              // pluginVstPathList
+      QStringList(),              // pluginLinuxVstPathList
+      QStringList(),              // pluginLv2PathList
       170,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette

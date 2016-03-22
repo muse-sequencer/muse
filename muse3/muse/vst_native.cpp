@@ -567,7 +567,7 @@ void initVST_Native()
 #endif
       sem_init(&_vstIdLock, 0, 1);
       std::string s;
-      const char* vstPath = getenv("VST_NATIVE_PATH");
+      const char* vstPath = getenv("LINUX_VST_PATH");
       if (vstPath)
       {
         if (MusEGlobal::debugMsg)

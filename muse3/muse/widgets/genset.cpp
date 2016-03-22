@@ -94,6 +94,12 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(buttonTraditionalPreset, SIGNAL(clicked()), SLOT(traditionalPreset()));
       connect(buttonMDIPreset, SIGNAL(clicked()), SLOT(mdiPreset()));
       connect(buttonBorlandPreset, SIGNAL(clicked()), SLOT(borlandPreset()));
+
+      connect(pluginPathAdd, SIGNAL(clicked()), SLOT(addPluginPath()));
+      connect(pluginPathEdit, SIGNAL(clicked()), SLOT(editPluginPath()));
+      connect(pluginPathRemove, SIGNAL(clicked()), SLOT(removePluginPath()));
+      connect(pluginPathMoveUp, SIGNAL(clicked()), SLOT(movePluginPathUp()));
+      connect(pluginPathMoveDown, SIGNAL(clicked()), SLOT(movePluginPathDown()));
       
       addMdiSettings(TopWin::ARRANGER);
       addMdiSettings(TopWin::SCORE);
@@ -246,6 +252,21 @@ void GlobalSettingsConfig::updateSettings()
 
       lv2UiBehaviorComboBox->setCurrentIndex(static_cast<int>(MusEGlobal::config.lv2UiBehavior));
 
+      pluginLadspaPathList->clear();
+      pluginLadspaPathList->addItems(MusEGlobal::config.pluginLadspaPathList);
+
+      pluginDssiPathList->clear();
+      pluginDssiPathList->addItems(MusEGlobal::config.pluginDssiPathList);
+
+      pluginVstPathList->clear();
+      pluginVstPathList->addItems(MusEGlobal::config.pluginVstPathList);
+
+      pluginLinuxVstPathList->clear();
+      pluginLinuxVstPathList->addItems(MusEGlobal::config.pluginLinuxVstPathList);
+
+      pluginLv2PathList->clear();
+      pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
+      
       updateMdiSettings();
 }
 
@@ -409,6 +430,27 @@ void GlobalSettingsConfig::apply()
 
       MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(lv2UiBehaviorComboBox->currentIndex());
 
+      
+      MusEGlobal::config.pluginLadspaPathList.clear();
+      for (int i = 0; i < pluginLadspaPathList->count(); ++i)
+            MusEGlobal::config.pluginLadspaPathList << pluginLadspaPathList->item(i)->text();
+
+      MusEGlobal::config.pluginDssiPathList.clear();
+      for (int i = 0; i < pluginDssiPathList->count(); ++i)
+            MusEGlobal::config.pluginDssiPathList << pluginDssiPathList->item(i)->text();
+
+      MusEGlobal::config.pluginVstPathList.clear();
+      for (int i = 0; i < pluginVstPathList->count(); ++i)
+            MusEGlobal::config.pluginVstPathList << pluginVstPathList->item(i)->text();
+
+      MusEGlobal::config.pluginLinuxVstPathList.clear();
+      for (int i = 0; i < pluginLinuxVstPathList->count(); ++i)
+            MusEGlobal::config.pluginLinuxVstPathList << pluginLinuxVstPathList->item(i)->text();
+
+      MusEGlobal::config.pluginLv2PathList.clear();
+      for (int i = 0; i < pluginLv2PathList->count(); ++i)
+            MusEGlobal::config.pluginLv2PathList << pluginLv2PathList->item(i)->text();
+      
       applyMdiSettings();
       
       MusEGlobal::muse->changeConfig(true);    // save settings
@@ -544,6 +586,267 @@ void GlobalSettingsConfig::borlandPreset()
   }
   
   updateMdiSettings();
+}
+
+void GlobalSettingsConfig::addPluginPath()
+{
+  QString path; 
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      if(pluginLadspaPathList->currentItem())
+        path = pluginLadspaPathList->currentItem()->text();
+    break;
+    
+    case DssiTab:
+      if(pluginDssiPathList->currentItem())
+        path = pluginDssiPathList->currentItem()->text();
+    break;
+    
+    case VstTab:
+      if(pluginVstPathList->currentItem())
+        path = pluginVstPathList->currentItem()->text();
+    break;
+    
+    case LinuxVstTab:
+      if(pluginLinuxVstPathList->currentItem())
+        path = pluginLinuxVstPathList->currentItem()->text();
+    break;
+    
+    case Lv2Tab:
+      if(pluginLv2PathList->currentItem())
+        path = pluginLv2PathList->currentItem()->text();
+    break;
+    
+    default:
+    break;
+  }
+  
+  QString new_path = browsePluginPath(path);
+  
+  if(new_path.isEmpty())
+    return;
+  
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      pluginLadspaPathList->addItem(new_path);
+    break;
+    
+    case DssiTab:
+      pluginDssiPathList->addItem(new_path);
+    break;
+    
+    case VstTab:
+      pluginVstPathList->addItem(new_path);
+    break;
+    
+    case LinuxVstTab:
+      pluginLinuxVstPathList->addItem(new_path);
+    break;
+    
+    case Lv2Tab:
+      pluginLv2PathList->addItem(new_path);
+    break;
+    
+    default:
+    break;
+  }
+}
+
+void GlobalSettingsConfig::editPluginPath()
+{
+  QString path; 
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      if(pluginLadspaPathList->currentItem())
+        path = pluginLadspaPathList->currentItem()->text();
+    break;
+    
+    case DssiTab:
+      if(pluginDssiPathList->currentItem())
+        path = pluginDssiPathList->currentItem()->text();
+    break;
+    
+    case VstTab:
+      if(pluginVstPathList->currentItem())
+        path = pluginVstPathList->currentItem()->text();
+    break;
+    
+    case LinuxVstTab:
+      if(pluginLinuxVstPathList->currentItem())
+        path = pluginLinuxVstPathList->currentItem()->text();
+    break;
+    
+    case Lv2Tab:
+      if(pluginLv2PathList->currentItem())
+        path = pluginLv2PathList->currentItem()->text();
+    break;
+    
+    default:
+    break;
+  }
+  
+  QString new_path = browsePluginPath(path);
+  
+  if(new_path.isEmpty())
+    return;
+  
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      if(pluginLadspaPathList->currentItem())
+        pluginLadspaPathList->currentItem()->setText(new_path);
+    break;
+    
+    case DssiTab:
+      if(pluginDssiPathList->currentItem())
+        pluginDssiPathList->currentItem()->setText(new_path);
+    break;
+    
+    case VstTab:
+      if(pluginVstPathList->currentItem())
+        pluginVstPathList->currentItem()->setText(new_path);
+    break;
+    
+    case LinuxVstTab:
+      if(pluginLinuxVstPathList->currentItem())
+        pluginLinuxVstPathList->currentItem()->setText(new_path);
+    break;
+    
+    case Lv2Tab:
+      if(pluginLv2PathList->currentItem())
+        pluginLv2PathList->currentItem()->setText(new_path);
+    break;
+    
+    default:
+    break;
+  }
+}
+
+QString GlobalSettingsConfig::browsePluginPath(const QString& path)
+{
+  QString dir = QFileDialog::getExistingDirectory(this, 
+                                                  qApp->translate("@default", 
+                                                    QT_TRANSLATE_NOOP("@default", 
+                                                                      "Select project directory")), 
+                                                  path);
+  return dir;
+}
+
+void GlobalSettingsConfig::removePluginPath()
+{
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      foreach(QListWidgetItem* item, pluginLadspaPathList->selectedItems())
+        delete item;
+    break;
+    
+    case DssiTab:
+      foreach(QListWidgetItem* item, pluginDssiPathList->selectedItems())
+        delete item;
+    break;
+    
+    case VstTab:
+      foreach(QListWidgetItem* item, pluginVstPathList->selectedItems())
+        delete item;
+    break;
+    
+    case LinuxVstTab:
+      foreach(QListWidgetItem* item, pluginLinuxVstPathList->selectedItems())
+        delete item;
+    break;
+    
+    case Lv2Tab:
+      foreach(QListWidgetItem* item, pluginLv2PathList->selectedItems())
+        delete item;
+    break;
+    
+    default:
+    return;
+  }
+}
+
+void GlobalSettingsConfig::movePluginPathUp()
+{
+  QListWidget* list = 0;
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      list = pluginLadspaPathList;
+    break;
+    
+    case DssiTab:
+      list = pluginDssiPathList;
+    break;
+    
+    case VstTab:
+      list = pluginVstPathList;
+    break;
+    
+    case LinuxVstTab:
+      list = pluginLinuxVstPathList;
+    break;
+    
+    case Lv2Tab:
+      list = pluginLv2PathList;
+    break;
+    
+    default:
+    break;
+  }
+
+  if(list)
+  {
+    int row = list->currentRow();
+    if(row > 0)
+    {
+      list->insertItem(row - 1, list->takeItem(row));
+      list->setCurrentRow(row - 1);
+    }
+  }
+}
+
+void GlobalSettingsConfig::movePluginPathDown()
+{
+  QListWidget* list = 0;
+  switch(pluginPathsTabs->currentIndex())
+  {
+    case LadspaTab:
+      list = pluginLadspaPathList;
+    break;
+    
+    case DssiTab:
+      list = pluginDssiPathList;
+    break;
+    
+    case VstTab:
+      list = pluginVstPathList;
+    break;
+    
+    case LinuxVstTab:
+      list = pluginLinuxVstPathList;
+    break;
+    
+    case Lv2Tab:
+      list = pluginLv2PathList;
+    break;
+    
+    default:
+    break;
+  }
+
+  if(list)
+  {
+    int row = list->currentRow();
+    if(row + 1 < list->count())
+    {
+      list->insertItem(row + 1, list->takeItem(row));
+      list->setCurrentRow(row + 1);
+    }
+  }
 }
 
 void GlobalSettingsConfig::browseProjDir()

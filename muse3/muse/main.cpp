@@ -304,7 +304,10 @@ static void usage(const char* prog, const char* txt)
 
       fprintf(stderr, "\n");
 
-      fprintf(stderr, "Some useful environment variables:\n");
+      fprintf(stderr, "Some useful environment variables:\n\n");
+      fprintf(stderr, "   LANG: Help browser language suffix (en etc.)\n\n");
+      fprintf(stderr, "These variables are read ONCE upon first-time run, to fill the Plugin Paths\n"
+                      " in Global Settings. Afterwards the paths can be altered in Global Settings:\n\n");
       fprintf(stderr, "   LADSPA_PATH: Override where to look for ladspa plugins, or else\n"
                       "     ~/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa\n\n");
 #ifdef DSSI_SUPPORT
@@ -320,8 +323,6 @@ static void usage(const char* prog, const char* txt)
                       "     ~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2\n\n");
 #endif
 
-      fprintf(stderr, "   LANG: Help browser language suffix (en etc.)\n");
-      
       fprintf(stderr, "\n");
       }
 
@@ -374,6 +375,109 @@ int main(int argc, char* argv[])
         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
         MusEGlobal::config.startSong = "";
       }
+      
+      if(MusEGlobal::config.pluginLadspaPathList.isEmpty())
+      {
+        QString pth(getenv("LADSPA_PATH"));
+        if(pth.isEmpty())
+        {
+          MusEGlobal::config.pluginLadspaPathList << 
+            (MusEGlobal::museUser + QString("/ladspa")) <<
+            QString("/usr/local/lib64/ladspa") <<
+            QString("/usr/local/lib/ladspa") <<
+            QString("/usr/lib64/ladspa") <<
+            QString("/usr/lib/ladspa");
+            setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+        }
+        else
+          MusEGlobal::config.pluginLadspaPathList = pth.split(":", QString::SkipEmptyParts);
+      }
+      else
+        setenv("LADSPA_PATH", MusEGlobal::config.pluginLadspaPathList.join(":").toLatin1().constData(), true);
+      
+      if(MusEGlobal::config.pluginDssiPathList.isEmpty())
+      {
+        QString pth(getenv("DSSI_PATH"));
+        if(pth.isEmpty())
+        {
+          MusEGlobal::config.pluginDssiPathList << 
+            (MusEGlobal::museUser + QString("/dssi")) <<
+            QString("/usr/local/lib64/dssi") <<
+            QString("/usr/local/lib/dssi") <<
+            QString("/usr/lib64/dssi") <<
+            QString("/usr/lib/dssi");
+            setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+        }
+        else
+          MusEGlobal::config.pluginDssiPathList = pth.split(":", QString::SkipEmptyParts);
+      }
+      else
+        setenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(":").toLatin1().constData(), true);
+      
+      if(MusEGlobal::config.pluginVstPathList.isEmpty())
+      {
+        QString pth(getenv("VST_PATH"));
+        if(!pth.isEmpty())
+          MusEGlobal::config.pluginVstPathList = pth.split(":", QString::SkipEmptyParts);
+        else
+        {
+          MusEGlobal::config.pluginVstPathList << 
+            (MusEGlobal::museUser + QString("/.vst")) <<
+            QString("/usr/local/lib64/vst") <<
+            QString("/usr/local/lib/vst") <<
+            QString("/usr/lib64/vst") <<
+            QString("/usr/lib/vst");
+            setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+        }
+      }
+      else
+        setenv("VST_PATH", MusEGlobal::config.pluginVstPathList.join(":").toLatin1().constData(), true);
+      
+      if(MusEGlobal::config.pluginLinuxVstPathList.isEmpty())
+      {
+        QString pth(getenv("LINUX_VST_PATH"));
+        if(!pth.isEmpty())
+          MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
+        else
+        {
+          pth = QString(getenv("VST_PATH"));
+          if(!pth.isEmpty())
+            MusEGlobal::config.pluginLinuxVstPathList = pth.split(":", QString::SkipEmptyParts);
+          else
+          {
+            MusEGlobal::config.pluginLinuxVstPathList << 
+              (MusEGlobal::museUser + QString("/.vst")) <<
+              QString("/usr/local/lib64/vst") <<
+              QString("/usr/local/lib/vst") <<
+              QString("/usr/lib64/vst") <<
+              QString("/usr/lib/vst");
+              setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+          }
+        }
+      }
+      else
+        setenv("LINUX_VST_PATH", MusEGlobal::config.pluginLinuxVstPathList.join(":").toLatin1().constData(), true);
+      
+      // Special for LV2: Since we use the recommended lilv_world_load_all() 
+      //  not lilv_world_load_bundle(), LV2_PATH seems to be the only way to set paths. 
+      if(MusEGlobal::config.pluginLv2PathList.isEmpty())
+      {
+        QString pth(getenv("LV2_PATH"));
+        if(pth.isEmpty())
+        {
+          MusEGlobal::config.pluginLv2PathList <<
+            (MusEGlobal::museUser + QString("/.lv2")) <<
+            QString("/usr/local/lib64/lv2") <<
+            QString("/usr/local/lib/lv2") <<
+            QString("/usr/lib64/lv2") <<
+            QString("/usr/lib/lv2");
+            setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
+        }
+        else
+          MusEGlobal::config.pluginLv2PathList = pth.split(":", QString::SkipEmptyParts);
+      }
+      else
+        setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
       
       // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
       //{  int dummy_argc = 1; char** dummy_argv = &argv[0];

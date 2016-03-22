@@ -1,4 +1,13 @@
 21.03.2016:
+        * New Plugin Path editor in Global Settings: (Tim)
+          The LADSPA_PATH DSSI_PATH VST_PATH LINUX_VST_PATH and LV2_PATH environment variables
+           are now read only ONCE upon first-time run, to fill the Global Settings boxes.
+          Afterwards these variables are SET (internally) by MusE at each startup, from the 
+           paths in the Global Settings boxes, so that the various plugin systems can find plugins.
+          (Actually, LV2 /required/ setting LV2_PATH since we use the recommended lilv_world_load_all,
+           and there doesn't seem to be any other way to set the paths programmatically in that case.)
+        - Updated -h help text to reflect changes.
+21.03.2016:
         - LV2 fix: Support PowerOf2BlockLength - Was missing! Supports more plugins! (Tim)
         - LV2 fix: Support FixedBlockLength - Our process routines weren't respecting this! (Tim)
                    If any controller input was adjusted, a plugin would 'gurgle' or might soon CRASH.
