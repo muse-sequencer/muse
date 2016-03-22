@@ -730,7 +730,7 @@ QString GlobalSettingsConfig::browsePluginPath(const QString& path)
   QString dir = QFileDialog::getExistingDirectory(this, 
                                                   qApp->translate("@default", 
                                                     QT_TRANSLATE_NOOP("@default", 
-                                                                      "Select project directory")), 
+                                                                      "Select plugin directory")), 
                                                   path);
   return dir;
 }
