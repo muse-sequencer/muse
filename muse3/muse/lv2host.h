@@ -352,7 +352,7 @@ public:
     static char *lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path);
     static char *lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path);
     static char *lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path);
-    static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu);
+    static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, MusEGui::PopupMenu *menu);
     static void lv2state_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer, bool fromUi);
     static void lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type);
     static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
@@ -455,7 +455,7 @@ public:
     virtual void enableAllControllers(bool v = true);
     virtual void updateControllers();
 
-    void populatePresetsMenu(QMenu *menu);
+    void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);
 
 
@@ -719,7 +719,7 @@ public:
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 
-    void populatePresetsMenu(PluginI *p, QMenu *menu);
+    void populatePresetsMenu(PluginI *p, MusEGui::PopupMenu *menu);
     void applyPreset(PluginI *p, void *preset);
 };
 

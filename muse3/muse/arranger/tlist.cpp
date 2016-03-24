@@ -1236,7 +1236,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
-        QMenu* p = new QMenu;
+        PopupMenu* p = new PopupMenu;
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
@@ -1285,7 +1285,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         else if (mSubPresets != NULL && ract != NULL) {
            QWidget *mwidget = ract->parentWidget();
            if (mwidget != NULL) {
-               if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
+               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
                   static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
                }
            }
@@ -1302,7 +1302,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
-      QMenu* p = new QMenu;
+      PopupMenu* p = new PopupMenu;
       PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
@@ -1359,7 +1359,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
            QWidget *mwidget = ract->parentWidget();
            if (mwidget != NULL && dev && dev->isSynti()) {
                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
-               if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
+               if(mSubPresets == dynamic_cast<PopupMenu*>(mwidget)) {
                   static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
                }
            }

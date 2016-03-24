@@ -1800,7 +1800,7 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
    return LV2Synth::lv2state_makePath((LV2_State_Make_Path_Handle)handle, abstract_path);
 }
 
-void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
+void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, MusEGui::PopupMenu *menu)
 {
    menu->clear();
    menu->setIcon(QIcon(*MusEGui::presetsNewIcon));
@@ -4527,7 +4527,7 @@ void LV2SynthIF::enableAllControllers(bool v)
 }
 void LV2SynthIF::updateControllers() { }
 
-void LV2SynthIF::populatePresetsMenu(QMenu *menu)
+void LV2SynthIF::populatePresetsMenu(MusEGui::PopupMenu *menu)
 {
    LV2Synth::lv2state_populatePresetsMenu(_state, menu);
 }
@@ -5056,7 +5056,7 @@ void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QSt
    LV2Synth::lv2conf_set(state, customParams);
 }
 
-void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
+void LV2PluginWrapper::populatePresetsMenu(PluginI *p, MusEGui::PopupMenu *menu)
 {
    assert(p->instances > 0);
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
