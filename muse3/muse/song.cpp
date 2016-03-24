@@ -1656,7 +1656,9 @@ void Song::beat()
       //First: update cpu load toolbar
 
       _fCpuLoad = MusEGlobal::muse->getCPULoad();
-      _fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
+      _fDspLoad = 0.0f;
+      if (MusEGlobal::audioDevice)
+        _fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
       _xRunsCount = MusEGlobal::audio->getXruns();
 
       // Keep the sync detectors running... 
