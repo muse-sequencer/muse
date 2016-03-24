@@ -102,6 +102,7 @@
 #include "sig_tempo_toolbar.h"
 #include "cpu_toolbar.h"
 
+
 namespace MusECore {
 extern void exitJackAudio();
 extern void exitDummyAudio();
@@ -112,7 +113,6 @@ extern void exitMidiAlsa();
 namespace MusEGui {
 
 extern void deleteIcons();
-//extern void cacheJackRouteNames();
 
 static pthread_t watchdogThread;
 //ErrorHandler *error;
@@ -293,7 +293,6 @@ void addProject(const QString& name)
 
 MusE::MusE() : QMainWindow()
       {
-
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack

@@ -478,7 +478,7 @@ int main(int argc, char* argv[])
       }
       else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
-      
+
       // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
       //{  int dummy_argc = 1; char** dummy_argv = &argv[0];
       //  QApplication dummy_app(dummy_argc, dummy_argv);

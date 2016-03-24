@@ -39,7 +39,9 @@ lilv_lib_open(LilvWorld*               world,
 	}
 
 	dlerror();
-	void* lib = dlopen(lib_path, RTLD_NOW);
+// REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
+// 	void* lib = dlopen(lib_path, RTLD_NOW);
+        void* lib = dlopen(lib_path, RTLD_NOW | RTLD_DEEPBIND);
 	if (!lib) {
 		LILV_ERRORF("Failed to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;

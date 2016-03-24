@@ -1305,7 +1305,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       //now open ui library file
 
       const  char *uiPath = lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)));
-      state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
+// REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
+// TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
+//          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
+//       state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
+      //state->uiDlHandle = dlmopen(LM_ID_NEWLM, uiPath, RTLD_LAZY | RTLD_DEEPBIND); // Just a test
+      state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
       if(state->uiDlHandle == NULL)
       {
          win->stopNextTime();
@@ -2473,6 +2478,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       while(!lilv_uis_is_end(_uis, it))
       {
          const LilvUI *ui = lilv_uis_get(_uis, it);
+         
          if(lilv_ui_is_supported(ui,
                                  LV2Synth::lv2ui_IsSupported,
                                  lv2CacheNodes.host_uiType,
@@ -3095,9 +3101,7 @@ bool LV2SynthIF::lv2MidiControlValues(size_t port, int ctlnum, int *min, int *ma
    *min = ctlmn;
    *max = ctlmx;
 
-   assert(frng != 0.0);
-
-   float normdef = fdef / frng;
+   float normdef = (frng == 0.0) ? 0.0 : fdef / frng;
    fdef = normdef * fctlrng;
 
    // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....

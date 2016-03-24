@@ -1,0 +1,7 @@
+24.03.2016:
+         - Changed lilv/lib.c: lilv_lib_open(): Added RTLD_DEEPBIND to dlopen() call. (Tim)
+           Fixes at least two Qt4 external-ui synths (synthv1, drumk) crashing.
+           Could not find any more such plugins to test.
+           See the corresponding ui dlopen call in LV2Synth::lv2ui_ShowNativeGui() 
+            for a similar fix and test results.
+            

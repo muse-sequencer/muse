@@ -1,3 +1,9 @@
+24.03.2016:
+         - Changed lilv/lib.c: lilv_lib_open(): Added RTLD_DEEPBIND to dlopen() call. (Tim)
+           Fixes at least two Qt4-based external-ui synths (synthv1, drumk) crashing.
+           See corresponding UI dlopen call in LV2Synth::lv2ui_ShowNativeGui() 
+            for a similar fix and test results (better but the UI still CRASHES here).
+           No other such plugins were found, in order to test this fix further...
 21.03.2016:
         * New Plugin Path editor in Global Settings: (Tim)
           The LADSPA_PATH DSSI_PATH VST_PATH LINUX_VST_PATH and LV2_PATH environment variables
