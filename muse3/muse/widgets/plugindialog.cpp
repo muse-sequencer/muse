@@ -60,6 +60,8 @@ PluginDialog::PluginDialog(QWidget* parent)
       headerLabels << tr("CI");
       headerLabels << tr("CO");
       headerLabels << tr("IP");
+      headerLabels << tr("FB");
+      headerLabels << tr("2B");
       headerLabels << tr("id");
       headerLabels << tr("Maker");
       headerLabels << tr("Copyright");
@@ -71,7 +73,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       ui.pList->headerItem()->setToolTip(6,  tr("Control inputs"));
       ui.pList->headerItem()->setToolTip(7,  tr("Control outputs"));
       ui.pList->headerItem()->setToolTip(8,  tr("In-place capable"));
-      ui.pList->headerItem()->setToolTip(9,  tr("ID number"));
+      ui.pList->headerItem()->setToolTip(9,  tr("Requires fixed block size"));
+      ui.pList->headerItem()->setToolTip(10, tr("Requires power-of-2 block size"));
+      ui.pList->headerItem()->setToolTip(11, tr("ID number"));
 
       ui.pList->setRootIsDecorated(false);
       ui.pList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -137,7 +141,7 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       if(listSave.isEmpty())
       {
-        int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
+        int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 30, 30, 50, 110, 110 };
         for (int i = 0; i < 12; ++i) {
               if (sizes[i] <= 50)     // hack alert!
                     ui.pList->header()->setSectionResizeMode(i, QHeaderView::Fixed);
@@ -461,10 +465,15 @@ void PluginDialog::fillPlugs()
             item->setText(5,  QString().setNum(ao));
             item->setText(6,  QString().setNum(ci));
             item->setText(7,  QString().setNum(co));
-            item->setText(8,  QString().setNum((*i)->inPlaceCapable()));
-            item->setText(9,  QString().setNum((*i)->id()));
-            item->setText(10,  (*i)->maker());
-            item->setText(11, (*i)->copyright());
+            if( !((*i)->requiredFeatures() & MusECore::Plugin::NoInPlaceProcessing) )
+              item->setText(8,  "*");
+            if( (*i)->requiredFeatures() & MusECore::Plugin::FixedBlockSize )
+              item->setText(9,  "*");
+            if( (*i)->requiredFeatures() & MusECore::Plugin::PowerOf2BlockSize )
+              item->setText(10,  "*");
+            item->setText(11,  QString().setNum((*i)->id()));
+            item->setText(12,  (*i)->maker());
+            item->setText(13,  (*i)->copyright());
             ui.pList->addTopLevelItem(item);
          }
       }

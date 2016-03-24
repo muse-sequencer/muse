@@ -374,7 +374,12 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
    }
 
    vendorVersionString = QString("%1.%2.%3").arg((vendorVersion >> 16) & 0xff).arg((vendorVersion >> 8) & 0xff).arg(vendorVersion & 0xff);
-   new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, vendorVersionString, id, handle, isSynth);
+   
+   Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+   
+   new_synth = new VstNativeSynth(fi, plugin, 
+                                  effectName, productString, vendorString, vendorVersionString, 
+                                  id, handle, isSynth, reqfeat);
 
    if(MusEGlobal::debugMsg)
      fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
@@ -390,7 +395,7 @@ static bool scanSubPlugin(QFileInfo& fi, AEffect *plugin, int id, void *handle)
 
    if(new_synth->inPorts() > 0 && new_synth->outPorts() > 0)
    {
-      MusEGlobal::plugins.push_back(new VstNativePluginWrapper(new_synth));
+      MusEGlobal::plugins.push_back(new VstNativePluginWrapper(new_synth, reqfeat));
    }
 
    return true;
@@ -562,7 +567,7 @@ void initVST_Native()
 #endif
       sem_init(&_vstIdLock, 0, 1);
       std::string s;
-      const char* vstPath = getenv("VST_NATIVE_PATH");
+      const char* vstPath = getenv("LINUX_VST_PATH");
       if (vstPath)
       {
         if (MusEGlobal::debugMsg)
@@ -620,8 +625,10 @@ void initVST_Native()
 //   VstNativeSynth
 //---------------------------------------------------------
 
-VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QString& label, const QString& desc, const QString& maker, const QString& ver, VstIntPtr id, void *dlHandle, bool isSynth)
-  : Synth(fi, label, desc, maker, ver)
+VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, 
+                               const QString& label, const QString& desc, const QString& maker, const QString& ver, 
+                               VstIntPtr id, void *dlHandle, bool isSynth, Plugin::PluginFeatures reqFeatures)
+  : Synth(fi, label, desc, maker, ver, reqFeatures)
 {
   _handle = dlHandle;
   _id = id;
@@ -629,7 +636,6 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QStri
   _inports = plugin->numInputs;
   _outports = plugin->numOutputs;
   _controlInPorts = plugin->numParams;
-  _inPlaceCapable = false; //(plugin->flags & effFlagsCanReplacing) && (_inports == _outports) && MusEGlobal::config.vstInPlace;
 //#ifndef VST_VESTIGE_SUPPORT
   _hasChunks = plugin->flags & 32 /*effFlagsProgramChunks*/;
 //#else
@@ -2527,9 +2533,7 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
 
   unsigned long sample = 0;
 
-  // I read that some plugins do not like changing sample run length (compressors etc). Some are OK with it.
-  // TODO: In order to support this effectively, must be user selectable, per-plugin. ENABLED for now.
-  const bool usefixedrate = false;
+  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);
 
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -2740,7 +2744,7 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
       if(evframe >= nframes                                                         // Next events are for a later period.
           || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
           || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
-          || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
+          || (usefixedrate && found && v.unique && v.idx == index))                 // Fixed rate and must reply to all.
         break;
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
@@ -3041,10 +3045,12 @@ LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long)
 CtrlValueType VstNativeSynthIF::ctrlValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
 CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
 
-VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s)
+VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures reqFeatures)
 {
    _synth = s;
 
+   _requiredFeatures = reqFeatures;
+   
    _fakeLd.Label = _synth->name().toUtf8().constData();
    _fakeLd.Name = _synth->name().toUtf8().constData();
    _fakeLd.UniqueID = _synth->_id;
@@ -3134,10 +3140,6 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s)
          }
       }
    }
-
-
-
-   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
 }
 
 VstNativePluginWrapper::~VstNativePluginWrapper()

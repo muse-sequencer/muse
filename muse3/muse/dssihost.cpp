@@ -124,7 +124,19 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             if(is != MusEGlobal::synthis.end())
               continue;
 
-            DssiSynth* s = new DssiSynth(fi, descr);
+            Plugin::PluginFeatures reqfeat = Plugin::NoFeatures;
+            if(LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties))
+              reqfeat |= Plugin::NoInPlaceProcessing;
+            
+            // Hack: Special flag required for example for control processing.
+            bool vst = false;
+            if(fi.completeBaseName() == QString("dssi-vst"))
+            {
+              vst = true;
+              reqfeat |= Plugin::FixedBlockSize;
+            }
+            
+            DssiSynth* s = new DssiSynth(fi, descr, vst, reqfeat);
             
             if(MusEGlobal::debugMsg)
             {
@@ -226,12 +238,13 @@ void initDSSI()
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo removed const from QFileInfo
-  Synth(fi, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name), QString(d->LADSPA_Plugin->Maker), QString()) 
+DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d, bool isDssiVst, Plugin::PluginFeatures reqFeatures) : // ddskrjo removed const from QFileInfo
+  Synth(fi, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name), QString(d->LADSPA_Plugin->Maker), QString(), reqFeatures) 
 {
   df = 0;
   handle = 0;
   dssi = 0;
+  _isDssiVst = isDssiVst;
   _hasGui = false;
   
   const LADSPA_Descriptor* descr = d->LADSPA_Plugin;
@@ -264,13 +277,9 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
     }    
   }
   
-  _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(descr->Properties);
-  
-  // Hack: Special flag required for example for control processing.
-  _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
   // Hack: Blacklist vst plugins in-place, configurable for now. 
   if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _inPlaceCapable = false;
+    _requiredFeatures |= Plugin::NoInPlaceProcessing;
 }
 
 DssiSynth::~DssiSynth() 
@@ -373,12 +382,9 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
             }
           }
           
-          _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(descr->Properties);
-          // Hack: Special flag required for example for control processing.
-          _isDssiVst = info.completeBaseName() == QString("dssi-vst");
           // Hack: Blacklist vst plugins in-place, configurable for now. 
           if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-            _inPlaceCapable = false;
+            _requiredFeatures |= Plugin::NoInPlaceProcessing;
         }  
       }  
       
@@ -1534,7 +1540,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
   // But this 'packet' method sure seems to work nicely so far, so we'll throw it in...
   //
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
-  const bool usefixedrate = _synth->_isDssiVst;  
+  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);
+
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
   // For now, the fixed size is clamped to the MusEGlobal::audio buffer size.
@@ -2119,7 +2126,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   
   // Schedules a timed control change:
   ControlEvent ce;
-  ce.unique = _synth->_isDssiVst;    // Special for messages from vst gui to host - requires processing every message.
+  ce.unique = _synth->isDssiVst();   // Special for messages from vst gui to host - requires processing every message.
   ce.fromGui = true;                 // It came from the plugin's own GUI.
   ce.idx = cport;
   ce.value = value;

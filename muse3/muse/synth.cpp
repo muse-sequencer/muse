@@ -81,6 +81,7 @@ Synth::Type string2SynthType(const QString& type)
 // Methods for PluginIBase:
 //--------------------------------
 
+Plugin::PluginFeatures SynthIF::requiredFeatures() const { return Plugin::NoFeatures; }
 bool SynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
 void SynthIF::setOn(bool /*val*/)                        { }
 unsigned long SynthIF::pluginID()                        { return 0; }
@@ -246,9 +247,10 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
 //   Synth
 //---------------------------------------------------------
 
-Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver)
-   : info(fi), _name(label), _description(descr), _maker(maker), _version(ver)
+Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver, Plugin::PluginFeatures reqFeatures)
+   : info(fi), _name(label), _description(descr), _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
       {
+      _requiredFeatures = Plugin::NoFeatures;
       _instances = 0;
       }
 

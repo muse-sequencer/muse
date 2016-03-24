@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>590</width>
-    <height>636</height>
+    <height>763</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,7 +74,7 @@
                <item>
                 <widget class="QRadioButton" name="startLastButton">
                  <property name="text">
-                  <string>start &amp;with last song</string>
+                  <string>start with &amp;last song</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -584,6 +584,223 @@
           <string>Auto save (every 5 minutes if not playing/recording)</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pathsTab">
+      <attribute name="title">
+       <string>Plugin Paths</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Ordered by priority. Changes take effect on restart.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTabWidget" name="pluginPathsTabs">
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="pluginLadspaPathTab">
+              <attribute name="title">
+               <string>LADSPA</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <widget class="QListWidget" name="pluginLadspaPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="pluginDssiPathTab">
+              <attribute name="title">
+               <string>DSSI</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QListWidget" name="pluginDssiPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="pluginVstPathTab">
+              <attribute name="title">
+               <string>VST</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <widget class="QListWidget" name="pluginVstPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="pluginLinuxVstPathTab">
+              <attribute name="title">
+               <string>Linux VST</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QListWidget" name="pluginLinuxVstPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="pluginLv2PathTab">
+              <attribute name="title">
+               <string>LV2</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <item>
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>NOTE: Ensure the directory containing core LV2 bundles is included
+ (typically /usr/lib/lv2). Otherwise all plugins may not load properly.</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QListWidget" name="pluginLv2PathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pluginPathMoveUp">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Move up</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pluginPathMoveDown">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Move down</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pluginPathAdd">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Add...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pluginPathEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Edit...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pluginPathRemove">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -1406,7 +1623,16 @@ Certain operations will also force them to be resent,
        <property name="spacing">
         <number>6</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>11</number>
+       </property>
+       <property name="topMargin">
+        <number>11</number>
+       </property>
+       <property name="rightMargin">
+        <number>11</number>
+       </property>
+       <property name="bottomMargin">
         <number>11</number>
        </property>
        <item>
@@ -1804,7 +2030,7 @@ left button behave like the middle button in such areas.</string>
           <item row="1" column="0">
            <widget class="QRadioButton" name="preferOldDrumBtn">
             <property name="text">
-             <string>&amp;Prefer old-style drumtracks</string>
+             <string>Prefer old-style drumtrac&amp;ks</string>
             </property>
            </widget>
           </item>
@@ -1889,8 +2115,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>546</width>
-               <height>483</height>
+               <width>538</width>
+               <height>563</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

@@ -83,6 +83,11 @@ class PluginI;
 
 class Plugin {
 
+   public:
+     // Can be Or'd together.
+     enum PluginFeature { NoFeatures=0x00, FixedBlockSize=0x01, PowerOf2BlockSize=0x02, NoInPlaceProcessing=0x04 };
+     typedef int PluginFeatures;
+     
    protected:
    friend class PluginI;
 
@@ -118,12 +123,15 @@ class Plugin {
       unsigned long _controlOutPorts;
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
 
-      bool _inPlaceCapable;
+      PluginFeatures _requiredFeatures;
 
    public:
       Plugin() {} //empty constructor for LV2PluginWrapper
-      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false);
+      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, 
+             bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
+             PluginFeatures reqFeatures = NoFeatures);
       virtual ~Plugin();
+      virtual Plugin::PluginFeatures requiredFeatures() const { return _requiredFeatures; }
       virtual QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
@@ -133,6 +141,7 @@ class Plugin {
       QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
       QString fileName() const                     { return fi.fileName(); }
+        
       int references() const                       { return _references; }
       virtual int incReferences(int);
       int instNo()                                 { return _instNo++;        }
@@ -195,7 +204,6 @@ class Plugin {
       unsigned long outports() const        { return _outports; }
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
-      bool inPlaceCapable() const           { return _inPlaceCapable; }
 
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
@@ -224,9 +232,11 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 
 class PluginList : public std::list<Plugin *> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false)
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, 
+               bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
+               Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures)
       {
-        push_back(new Plugin(fi, d, isDssi, isDssiSynth));
+        push_back(new Plugin(fi, d, isDssi, isDssiSynth, isDssiVst, reqFeatures));
       }
 
       Plugin* find(const QString&, const QString&);
@@ -276,6 +286,7 @@ class PluginIBase
    public:
       PluginIBase();
       virtual ~PluginIBase();
+      virtual Plugin::PluginFeatures requiredFeatures() const = 0;
       virtual bool on() const = 0;
       virtual void setOn(bool val) = 0;
       virtual unsigned long pluginID() = 0;
@@ -377,6 +388,9 @@ class PluginI : public PluginIBase {
       virtual ~PluginI();
 
       Plugin* plugin() const { return _plugin; }
+
+      virtual Plugin::PluginFeatures requiredFeatures() const { return _plugin->requiredFeatures(); }
+      
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
 
@@ -445,7 +459,6 @@ class PluginI : public PluginIBase {
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
       float latency();
-      bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
       virtual void setCustomData(const std::vector<QString> &customParams);
