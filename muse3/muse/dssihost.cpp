@@ -1396,8 +1396,10 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
                   if(dssi->setCustomData)
                   {
                     printf("loading chunk from sysex %s!\n", data+9);
+                    usleep(300000);
                     dssi->setCustomData(_handle, (unsigned char*)(data+9) /* len of str*/,e.len()-9);
-                  } 
+                    usleep(300000);
+                  }
 #else
                   printf("support for vst chunks not compiled in!\n");
 #endif
