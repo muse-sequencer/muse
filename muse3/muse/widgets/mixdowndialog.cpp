@@ -23,6 +23,7 @@
 #include <QFileDialog>
 
 #include "globals.h"
+#include "gconfig.h"
 #include "mixdowndialog.h"
 #include "wave.h"
 
@@ -118,10 +119,13 @@ void MixdownFileDialog::fdialog()
       QString oldpath;
       if (sf)
             oldpath = sf->path();
-      QString path = QFileDialog::getSaveFileName(
-         this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));
+      if (!MusEGlobal::config.mixdownPath.isEmpty()) {
+          printf("Setting oldpath to %s\n", MusEGlobal::config.mixdownPath.toLatin1().data());
+          oldpath = MusEGlobal::config.mixdownPath;
+      }
+      QString path = QFileDialog::getSaveFileName(this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));
       if (!path.isEmpty())
             editPath->setText(path);
+      MusEGlobal::config.mixdownPath = path;
       }
-
 } // namespace MusEGui

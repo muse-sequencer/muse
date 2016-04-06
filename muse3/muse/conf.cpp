@@ -1135,6 +1135,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.velocityPerNote = xml.parseInt();
                         else if (tag == "plugin_groups")
                               MusEGlobal::readPluginGroupConfiguration(xml);
+                        else if (tag == "mixdownPath")
+                              MusEGlobal::config.mixdownPath = xml.parse1();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
@@ -1540,6 +1542,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "scrollableSubMenus", MusEGlobal::config.scrollableSubMenus);
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
+      xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 
 
       for (int i = 0; i < NUM_FONTS; ++i) {
