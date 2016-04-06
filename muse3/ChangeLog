@@ -1,6 +1,7 @@
 
 06.04.2016:
          - Fixed show/hide menu choices in mixer for strips (rj)
+         - Remember last mixdown directory (rj)
 24.03.2016:
          - Changed lilv/lib.c: lilv_lib_open(): Added RTLD_DEEPBIND to dlopen() call. (Tim)
            Fixes at least two Qt4-based external-ui synths (synthv1, drumk) crashing.
