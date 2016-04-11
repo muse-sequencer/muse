@@ -889,23 +889,50 @@ void AudioMixerApp::routingDialogClosed()
 //---------------------------------------------------------
 
 void AudioMixerApp::showMidiTracksChanged(bool v)
-{      cfg->showMidiTracks = v;}
+{
+    cfg->showMidiTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showDrumTracksChanged(bool v)
-{      cfg->showDrumTracks = v;}
+{
+    cfg->showDrumTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showNewDrumTracksChanged(bool v)
-{      cfg->showNewDrumTracks = v;}
+{
+    cfg->showNewDrumTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showWaveTracksChanged(bool v)
-{      cfg->showWaveTracks = v;}
+{
+    cfg->showWaveTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showInputTracksChanged(bool v)
-{      cfg->showInputTracks = v;}
+{
+    cfg->showInputTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showOutputTracksChanged(bool v)
-{      cfg->showOutputTracks = v;}
+{
+    cfg->showOutputTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showGroupTracksChanged(bool v)
-{      cfg->showGroupTracks = v;}
+{
+    cfg->showGroupTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showAuxTracksChanged(bool v)
-{      cfg->showAuxTracks = v;}
+{
+    cfg->showAuxTracks = v;
+    redrawMixer();
+}
 void AudioMixerApp::showSyntiTracksChanged(bool v)
-{      cfg->showSyntiTracks = v; }
+{
+    cfg->showSyntiTracks = v;
+    redrawMixer();
+}
 
 //---------------------------------------------------------
 //   mouse events

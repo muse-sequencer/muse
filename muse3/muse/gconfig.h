@@ -292,6 +292,7 @@ struct GlobalConfigValues {
       bool routerExpandVertically; // Whether to expand the router items vertically. (Good use of space but slow!)
       // How to group the router channels together for easier multi-channel manipulation.
       int routerGroupingChannels;
+      QString mixdownPath;
       };
 
 
