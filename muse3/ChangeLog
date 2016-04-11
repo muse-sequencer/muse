@@ -14,7 +14,7 @@
            now support three adjustments 'modes':
               Normal:  Control moves with mouse.
                 Jump:  Holding ctrl/middle mouse button jumps immediately to the value.
-            No-track:  Holding shift changes the value only when mouse is released.
+            No-track:  Holding meta changes the value only when mouse is released.
         - Reworked automation rec/play functions to fully support these modes.
     * Bug fixes:
         - New: Discrete trackinfo panel parts have been replaced with a 
