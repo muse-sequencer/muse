@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2010 Werner Schweer and others (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -39,6 +39,8 @@ namespace MusEGui {
 class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase 
 {
       Q_OBJECT
+      
+    private:
       MusECore::Track* selected;
       bool _midiDetect;
       int program, pan, volume;
@@ -47,6 +49,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       
     protected:
       virtual void resizeEvent(QResizeEvent*);
+      virtual void updateRouteButtons();
   
     private slots:
       void iOutputChannelChanged(int);

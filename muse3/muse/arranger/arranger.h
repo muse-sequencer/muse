@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: arranger.h,v 1.17.2.15 2009/11/14 03:37:48 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -35,7 +36,6 @@ class QAction;
 class QCheckBox;
 class QMainWindow;
 class QMenu;
-class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
 class QPoint;
@@ -43,7 +43,6 @@ class QComboBox;
 class QScrollBar;
 class QVBoxLayout;
 class QHBoxLayout;
-//class QSpacerItem;
 
 namespace MusECore {
 class Track;
@@ -61,12 +60,11 @@ class PosLabel;
 class ScrollScale;
 class SpinBox;
 class Splitter;
-//class TLLayout;
-class TrackInfoLayout;
+class TrackInfoWidget;
 class TList;
-class WidgetStack;
-class ScrollBar;
 class ArrangerCanvasLayout;
+class ArrangerHScrollLayout;
+class CompactToolButton;
 
 //---------------------------------------------------------
 //   Arranger
@@ -86,28 +84,23 @@ class Arranger : public QWidget {
       QScrollBar* vscroll;
       QVBoxLayout* tlistLayout;
       ArrangerCanvasLayout* egrid;
-      QHBoxLayout* bottomHLayout;
+      ArrangerHScrollLayout* bottomHLayout;
       TList* list;
       Header* header;
-      //QSpacerItem* tlistSpacerItem;
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       bool showTrackinfoAltFlag;
-      QWidget* trackInfoWidget;
-      WidgetStack* trackInfo;
-      ScrollBar* infoScroll;
+      TrackInfoWidget* trackInfoWidget;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
       QWidget* tracklist;
-//       TLLayout* tgrid;
-      TrackInfoLayout* tgrid;
 
       MusECore::Track* selected;
 
-      QToolButton* trackInfoButton;
-      QToolButton* trackInfoAltButton;
+      CompactToolButton* trackInfoButton;
+      CompactToolButton* trackInfoAltButton;
       int trackInfoType;
       Splitter* split;
       int songType;
@@ -116,7 +109,7 @@ class Arranger : public QWidget {
       SpinBox* globalPitchSpinBox;
       
       unsigned cursVal;
-      void genTrackInfo(QWidget* parent);
+      void genTrackInfo(TrackInfoWidget*);
       void genMidiTrackInfo();
       void genWaveTrackInfo();
       void switchInfo(int);
@@ -129,7 +122,6 @@ class Arranger : public QWidget {
       void showTrackInfo(bool);
       void showTrackInfoAlt(bool);
       void trackSelectionChanged();
-      void trackInfoScroll(int);
       void songChanged(MusECore::SongChangedFlags_t);
       void setTime(unsigned);
       void globalPitchChanged(int);

@@ -23,10 +23,11 @@
 #ifndef __TRACKINFO_LAYOUT_H__
 #define __TRACKINFO_LAYOUT_H__
 
+#include <QWidget>
 #include <QLayout>
+#include <QGridLayout>
+#include <QHBoxLayout>
 
-class QWidget;
-class QGridLayout;
 class QLayoutItem;
 class QSize;
 class QRect;
@@ -37,6 +38,7 @@ class Splitter;
 class ScrollBar;
 class WidgetStack;
 class ScrollScale;
+class CompactToolButton;
 
 //---------------------------------------------------------
 //   TrackInfoLayout
@@ -45,7 +47,7 @@ class ScrollScale;
 //   An optional Splitter will be resized when the scrollbar appears.
 //---------------------------------------------------------
 
-class TrackInfoLayout : public QLayout
+class TrackInfoLayout : public QHBoxLayout
       {
       Q_OBJECT
 
@@ -55,30 +57,22 @@ class TrackInfoLayout : public QLayout
       QLayoutItem* _stackLi;
       QLayoutItem* _sbLi;
 
+      bool _sbShowPending;
+      
       // This is not actually in the layout, but used and/or adjusted anyway.
       Splitter* _splitter;
 
     public:
-      static const int numItems = 2;
       TrackInfoLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, Splitter* splitter = 0);
-      virtual ~TrackInfoLayout() { clear(); }
-
-      void addItem(QLayoutItem*) { }   // Do nothing, it's a custom layout.
-      virtual Qt::Orientations expandingDirections() const { return 0; }
-      virtual bool hasHeightForWidth() const { return false; }
-      virtual int count() const { return numItems; }
-      void clear();
+      virtual ~TrackInfoLayout();
 
       virtual QSize sizeHint() const;
       virtual QSize minimumSize() const;
       virtual QSize maximumSize() const;
+      
       virtual void setGeometry(const QRect &rect);
-
-      virtual QLayoutItem* itemAt(int) const;
-      virtual QLayoutItem* takeAt(int);
       };
 
-      
 //---------------------------------------------------------
 //   ArrangerCanvasLayout
 //   For laying out a canvas as a last splitter widget and
@@ -89,11 +83,78 @@ class TrackInfoLayout : public QLayout
 class ArrangerCanvasLayout : public QGridLayout
       {
       Q_OBJECT
-      ScrollScale* _sb;
+      QHBoxLayout* _hBox;
+      
     public:
-      ArrangerCanvasLayout(QWidget *parent, ScrollScale* sb) : QGridLayout(parent), _sb(sb) { };
+      ArrangerCanvasLayout(QWidget *parent, QHBoxLayout* hBox) : QGridLayout(parent), _hBox(hBox) { };
       virtual void setGeometry(const QRect &rect);
       };
+
+//---------------------------------------------------------
+//   ArrangerHScrollLayout
+//   For laying out the bottom buttons and hscroll in the arranger.
+//---------------------------------------------------------
+      
+class ArrangerHScrollLayout : public QHBoxLayout
+      {
+      Q_OBJECT
+      CompactToolButton* _trackinfoButton;
+      CompactToolButton* _trackinfoAltButton;
+      ScrollScale* _sb;
+      
+      // This is not actually in the layout, but used anyway.
+      QWidget* _editor;
+      
+      QWidgetItem* _trackinfoButtonLi;
+      QWidgetItem* _trackinfoAltButtonLi;
+      QSpacerItem* _spacerLi;
+      QWidgetItem* _sbLi;
+      
+    public:
+      ArrangerHScrollLayout(QWidget *parent, 
+                            CompactToolButton* trackinfoButton, 
+                            CompactToolButton* trackinfoAltButton,
+                            ScrollScale* sb, 
+                            QWidget* editor);
+      ~ArrangerHScrollLayout();
+      virtual void setGeometry(const QRect &rect);
+      };
+
+//---------------------------------------------------------
+//   TrackInfoWidget
+//   Widget for containing a trackinfo layout.
+//---------------------------------------------------------
+      
+class TrackInfoWidget : public QWidget
+{
+  Q_OBJECT
+  
+  private:
+    WidgetStack* _stack;
+    ScrollBar* _scrollBar;
+    TrackInfoLayout* _trackInfoLayout;
+  
+   void doResize(const QSize&);
+   void doMove();
+   
+  private slots:
+    void scrollValueChanged(int);
+    
+  protected:
+    //virtual void wheelEvent(QWheelEvent* e);
+    virtual void resizeEvent(QResizeEvent*);
+    
+    
+  public:
+    TrackInfoWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    
+    // Wrappers/catchers for stack functions:
+    void raiseWidget(int idx);
+    void addWidget(QWidget* w, unsigned int idx);
+    QWidget* getWidget(unsigned int idx);
+    QWidget* visibleWidget() const;
+    int curIdx() const;
+};
 
 }
 

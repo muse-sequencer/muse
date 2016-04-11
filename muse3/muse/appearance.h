@@ -4,6 +4,7 @@
 //  $Id: ./muse/appearance.h $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -57,6 +58,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       
       void updateFonts();
       void updateColor();
+      void setConfigurationColors();
 
    private slots:
       void apply();
@@ -89,6 +91,8 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void paletteClicked(int);
       void bgSelectionChanged(QTreeWidgetItem*);
       void colorNameEditFinished();
+      void loadColors();
+      void saveColors();
 
    public:
       Appearance(Arranger*, QWidget* parent=0);

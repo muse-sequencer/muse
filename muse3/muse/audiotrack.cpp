@@ -902,7 +902,12 @@ void AudioTrack::processAutomationEvents(Undo* operations)
           }
     }
     
-    if(!erased_list_items->empty() || !added_list_items->empty())
+    if(erased_list_items->empty() && added_list_items->empty())
+    {
+      delete erased_list_items;
+      delete added_list_items;
+    }
+    else
       opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, &_controller, erased_list_items, added_list_items));
   }
   
@@ -2085,7 +2090,7 @@ int getNextAuxIndex()
     for (MusECore::iAudioAux i = al->begin(); i != al->end(); ++i)
     {
         MusECore::AudioAux* ax = *i;
-        printf("ax index %d\n", ax->index());
+        printf("aux index %d\n", ax->index());
         if (ax->index() > curAux)
         {
             printf("found new index! %d\n", ax->index());

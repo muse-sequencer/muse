@@ -838,7 +838,7 @@ bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QStrin
           oi->assign(*workingInstrument);
           
           // Now signal the rest of the app so stuff can change...
-          MusEGlobal::song->update(SC_CONFIG | SC_MIDI_CONTROLLER);
+          MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
         }  
       }
       

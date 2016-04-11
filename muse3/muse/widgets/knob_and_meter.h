@@ -86,7 +86,7 @@ class KnobWithMeter : public Knob
       virtual void resizeEvent(QResizeEvent *e);
       virtual void mousePressEvent(QMouseEvent *e);
 //       double getValue(const QPoint &p);
-//       void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction );
+//       void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction );
 //       void scaleChange()             { repaint(); }
 //       void fontChange(const QFont &) { repaint(); }
 

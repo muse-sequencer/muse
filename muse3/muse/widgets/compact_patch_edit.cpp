@@ -4,7 +4,7 @@
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
 //  meter_slider.cpp
-//  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -37,17 +37,18 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
 
 {
   setObjectName(name);
-  
+
+  _maxAliasedPointSize = -1;
   _id           = -1;
   _currentPatch = 0;
   
-  _patchNameLabel = new ElidedLabel(this, Qt::ElideMiddle);
+  _patchNameLabel = new ElidedLabel(0, Qt::ElideMiddle);
   _patchNameLabel->setObjectName("CompactPatchEditLabel");
   _patchNameLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
   
-  _HBank = new CompactSlider(this, "CompactPatchEditHBank", orient, scalePos, tr("Hi"), QString(), QString(), QString(), fillColor);
-  _LBank = new CompactSlider(this, "CompactPatchEditLBank", orient, scalePos, tr("Lo"), QString(), QString(), QString(), fillColor);
-  _Prog = new CompactSlider(this, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor);
+  _HBank = new CompactSlider(0, "CompactPatchEditHBank", orient, scalePos, tr("Hi"), QString(), QString(), QString(), fillColor);
+  _LBank = new CompactSlider(0, "CompactPatchEditLBank", orient, scalePos, tr("Lo"), QString(), QString(), QString(), fillColor);
+  _Prog = new CompactSlider(0, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor);
 
   _patchNameLabel->setToolTip(tr("Patch name"));
   _HBank->setToolTip(tr("Patch high-bank number\n(Ctrl-double-click on/off)"));
@@ -72,9 +73,6 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   _LBank->setContentsMargins(0, 0, 0, 0);
   _Prog->setContentsMargins(0, 0, 0, 0);
   
-//   _HBank->setMargins(0, 0);
-//   _LBank->setMargins(0, 0);
-//   _Prog->setMargins(0, 0);
   _HBank->setMargins(1, 1);
   _LBank->setMargins(1, 1);
   _Prog->setMargins(1, 1);
@@ -88,14 +86,14 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   layout->addWidget(_LBank);
   layout->addWidget(_Prog);
   
-  connect(_patchNameLabel, SIGNAL(pressed(QPoint,Qt::MouseButtons,Qt::KeyboardModifiers)), SLOT(patchNamePressed(QPoint,Qt::MouseButtons,Qt::KeyboardModifiers)));
+  connect(_patchNameLabel, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), SLOT(patchNamePressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
   
-  connect(_HBank, SIGNAL(valueStateChanged(double,bool,int)), 
-                  SLOT(HBankValueStateChanged(double,bool,int)));
-  connect(_LBank, SIGNAL(valueStateChanged(double,bool,int)), 
-                  SLOT(LBankValueStateChanged(double,bool,int)));
-  connect(_Prog,  SIGNAL(valueStateChanged(double,bool,int)), 
-                  SLOT(ProgValueStateChanged(double,bool,int)));
+  connect(_HBank, SIGNAL(valueStateChanged(double,bool,int,int)), 
+                  SLOT(HBankValueStateChanged(double,bool,int,int)));
+  connect(_LBank, SIGNAL(valueStateChanged(double,bool,int,int)), 
+                  SLOT(LBankValueStateChanged(double,bool,int,int)));
+  connect(_Prog,  SIGNAL(valueStateChanged(double,bool,int,int)), 
+                  SLOT(ProgValueStateChanged(double,bool,int,int)));
   
   connect(_HBank, SIGNAL(sliderDoubleClicked(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), 
                   SLOT(HBankDoubleClicked(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
@@ -110,21 +108,6 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
                   SLOT(anySliderRightClicked(QPoint,int)));
   connect(_Prog,  SIGNAL(sliderRightClicked(QPoint,int)), 
                   SLOT(anySliderRightClicked(QPoint,int)));
-  
-//     void sliderPressed(int id);
-//     void sliderReleased(int id);
-//     void sliderMoved(double value, int id);
-//     void sliderMoved(double value, int id, bool shift);
-//     void sliderRightClicked(const QPoint &p, int id);
-// 
-//     
-//     void _HBankChanged();
-//     void _HBankDoubleCLicked();
-//     void _LBankChanged();
-//     void _LBankDoubleCLicked();
-//     void _ProgramChanged();
-//     void _ProgramDoubleClicked();
-    
 }
 
 // Static.      
@@ -160,6 +143,14 @@ bool CompactPatchEdit::isOff() const
   return _Prog->isOff();
 }
 
+void CompactPatchEdit::setMaxAliasedPointSize(int sz)
+{ 
+  _maxAliasedPointSize = sz;
+  _HBank->setMaxAliasedPointSize(sz);
+  _LBank->setMaxAliasedPointSize(sz);
+  _Prog->setMaxAliasedPointSize(sz);
+}
+
 void CompactPatchEdit::setOff(bool v)
 {
   _HBank->setOff(v);
@@ -169,9 +160,6 @@ void CompactPatchEdit::setOff(bool v)
 
 double CompactPatchEdit::value() const
 {
-//   const int hb = (_currentPatch >> 16) & 0xff;
-//   const int lb = (_currentPatch >> 8) & 0xff;
-//   const int pr = _currentPatch & 0xff;
   return _currentPatch;
 }
 
@@ -202,34 +190,6 @@ void CompactPatchEdit::setValueState(double v, bool off)
     _Prog->setValueState(pr, off);
 }
 
-// void CompactPatchEdit::updateValueState()
-// {
-//   int hb = (_currentPatch >> 16) & 0xff;
-//   int lb = (_currentPatch >> 8) & 0xff;
-//   int pr = _currentPatch & 0xff;
-//   
-//   if(hb == 0xff)
-//     _HBank->setOff(true);
-//   
-//   if(lb == 0xff)
-//     _LBank->setOff(true);
-//   
-//   if(pr == 0xff)
-//     _Prog->setOff(true);
-//   
-//   _HBank->setValueState(double(v), off);
-//   
-// }
-
-// int CompactPatchEdit::setCurrentPatch(int patch)
-// { 
-//   if(_currentPatch == patch)
-//     return;
-//   
-//   _currentPatch = patch;
-//   
-// }
-
 QString CompactPatchEdit::patchName() const 
 { 
   return _patchNameLabel->text(); 
@@ -240,29 +200,7 @@ void CompactPatchEdit::setPatchName(const QString& patchName)
   _patchNameLabel->setText(patchName); 
 }
 
-// REMOVE Tim. Trackinfo.
-// void CompactPatchEdit::mousePressEvent(QMouseEvent* e)
-// {
-//   if(_patchNameLabel->rect().contains(e->pos()))
-//   {
-//     if(e->buttons() == Qt::LeftButton)
-//     {
-//       e->accept();
-//       emit patchNameClicked();
-//       return;
-//     }
-//     else if(e->buttons() == Qt::RightButton)
-//     {
-//       e->accept();
-//       emit patchNameRightClicked();
-//       return;
-//     }
-//   }
-//   e->ignore();
-//   QFrame::mousePressEvent(e);
-// }
-
-void CompactPatchEdit::HBankValueStateChanged(double val, bool off, int /*id*/)
+void CompactPatchEdit::HBankValueStateChanged(double val, bool off, int /*id*/, int scrollMode)
 {
   const int hb = int(val) & 0xff;
   _currentPatch = (_currentPatch & 0xffff) | (off ? 0xff0000 : (hb << 16));
@@ -278,10 +216,10 @@ void CompactPatchEdit::HBankValueStateChanged(double val, bool off, int /*id*/)
     _Prog->blockSignals(false);
   }
   
-  emit valueStateChanged(_currentPatch, isOff(), _id);
+  emit valueStateChanged(_currentPatch, isOff(), _id, scrollMode);
 }
 
-void CompactPatchEdit::LBankValueStateChanged(double val, bool off, int /*id*/)
+void CompactPatchEdit::LBankValueStateChanged(double val, bool off, int /*id*/, int scrollMode)
 {
   const int lb = int(val) & 0xff;
   _currentPatch = (_currentPatch & 0xff00ff) | (off ? 0xff00 : (lb << 8));
@@ -297,10 +235,10 @@ void CompactPatchEdit::LBankValueStateChanged(double val, bool off, int /*id*/)
     _Prog->blockSignals(false);
   }
   
-  emit valueStateChanged(_currentPatch, isOff(), _id);
+  emit valueStateChanged(_currentPatch, isOff(), _id, scrollMode);
 }
 
-void CompactPatchEdit::ProgValueStateChanged(double val, bool off, int /*id*/)
+void CompactPatchEdit::ProgValueStateChanged(double val, bool off, int /*id*/, int scrollMode)
 {
   const int pr = int(val) & 0xff;
   _currentPatch = (_currentPatch & 0xffff00) | pr;
@@ -316,7 +254,7 @@ void CompactPatchEdit::ProgValueStateChanged(double val, bool off, int /*id*/)
     _LBank->blockSignals(false);
   }
   
-  emit valueStateChanged(_currentPatch, isOff(), _id);
+  emit valueStateChanged(_currentPatch, isOff(), _id, scrollMode);
 }
 
 void CompactPatchEdit::HBankDoubleClicked(QPoint /*p*/, int /*id*/, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys)
@@ -348,458 +286,13 @@ void CompactPatchEdit::anySliderRightClicked(QPoint p, int /*id*/)
   emit sliderRightClicked(p, _id);
 }
 
-void CompactPatchEdit::patchNamePressed(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers /*keys*/)
+void CompactPatchEdit::patchNamePressed(QPoint p, int /*id*/, Qt::MouseButtons buttons, Qt::KeyboardModifiers /*keys*/)
 {
   if(buttons == Qt::LeftButton)
     emit patchNameClicked(p, _id);
   else if(buttons == Qt::RightButton)
     emit patchNameRightClicked(mapToGlobal(p), _id);
 }
-
-
-/*
-
-void CompactPatchEdit::HBankChanged()
-      {
-      if(!selected)
-        return;
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-      int channel = track->outChannel();
-      int port    = track->outPort();
-      int hbank   = iHBank->value();
-      int lbank   = iLBank->value();
-      int prog    = iProgram->value();
-
-      if (hbank > 0 && hbank < 129)
-            hbank -= 1;
-      else
-            hbank = 0xff;
-      if (lbank > 0 && lbank < 129)
-            lbank -= 1;
-      else
-            lbank = 0xff;
-      if (prog > 0 && prog < 129)
-            prog -= 1;
-      else
-            prog = 0xff;
-
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-      if(prog == 0xff && hbank == 0xff && lbank == 0xff)
-      {
-        program = MusECore::CTRL_VAL_UNKNOWN;
-        ++_blockHeartbeatCount;
-        if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-        --_blockHeartbeatCount;
-        return;  
-      }
-      
-      ++_blockHeartbeatCount;
-      int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
-      if(np == MusECore::CTRL_VAL_UNKNOWN)
-      {
-        np = mp->lastValidHWCtrlState(channel, MusECore::CTRL_PROGRAM);
-        if(np != MusECore::CTRL_VAL_UNKNOWN)
-        {
-          lbank = (np & 0xff00) >> 8; 
-          prog = np & 0xff;
-          if(prog == 0xff)
-            prog = 0;
-          int ilbnk = lbank;
-          int iprog = prog;
-          if(ilbnk == 0xff)
-            ilbnk = -1;
-          ++ilbnk;
-          ++iprog;
-          iLBank->blockSignals(true);
-          iProgram->blockSignals(true);
-          iLBank->setValue(ilbnk);
-          iProgram->setValue(iprog);
-          iLBank->blockSignals(false);
-          iProgram->blockSignals(false);
-        }
-      }
-      
-      if(prog == 0xff && (hbank != 0xff || lbank != 0xff))
-      {
-        prog = 0;
-        iProgram->blockSignals(true);
-        iProgram->setValue(1);
-        iProgram->blockSignals(false);
-      }  
-      program = (hbank << 16) + (lbank << 8) + prog;
-      MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, program);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      
-      MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
-//      updateTrackInfo();
-      
-      --_blockHeartbeatCount;
-      }
-
-void CompactPatchEdit::LBankChanged()
-      {
-      if(!selected)
-        return;
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-      int channel = track->outChannel();
-      int port    = track->outPort();
-      int hbank   = iHBank->value();
-      int lbank   = iLBank->value();
-      int prog    = iProgram->value();
-
-      if (hbank > 0 && hbank < 129)
-            hbank -= 1;
-      else
-            hbank = 0xff;
-      if (lbank > 0 && lbank < 129)
-            lbank -= 1;
-      else
-            lbank = 0xff;
-      if (prog > 0 && prog < 129)
-            prog -= 1;
-      else
-            prog = 0xff;
-
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-      if(prog == 0xff && hbank == 0xff && lbank == 0xff)
-      {
-        program = MusECore::CTRL_VAL_UNKNOWN;
-        ++_blockHeartbeatCount;
-        if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-        --_blockHeartbeatCount;
-        return;  
-      }
-      
-      ++_blockHeartbeatCount;
-      int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
-      if(np == MusECore::CTRL_VAL_UNKNOWN)
-      {
-        np = mp->lastValidHWCtrlState(channel, MusECore::CTRL_PROGRAM);
-        if(np != MusECore::CTRL_VAL_UNKNOWN)
-        {
-          hbank = (np & 0xff0000) >> 16; 
-          prog = np & 0xff;
-          if(prog == 0xff)
-            prog = 0;
-          int ihbnk = hbank;
-          int iprog = prog;
-          if(ihbnk == 0xff)
-            ihbnk = -1;
-          ++ihbnk;
-          ++iprog;
-          iHBank->blockSignals(true);
-          iProgram->blockSignals(true);
-          iHBank->setValue(ihbnk);
-          iProgram->setValue(iprog);
-          iHBank->blockSignals(false);
-          iProgram->blockSignals(false);
-        }
-      }
-      
-      if(prog == 0xff && (hbank != 0xff || lbank != 0xff))
-      {
-        prog = 0;
-        iProgram->blockSignals(true);
-        iProgram->setValue(1);
-        iProgram->blockSignals(false);
-      }  
-      program = (hbank << 16) + (lbank << 8) + prog;
-      MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, program);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      
-      MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
-//      updateTrackInfo();
-      
-      --_blockHeartbeatCount;
-      }
-
-void CompactPatchEdit::ProgramChanged()
-      {
-      if(!selected)
-        return;
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-      int channel = track->outChannel();
-      int port    = track->outPort();
-      int hbank   = iHBank->value();
-      int lbank   = iLBank->value();
-      int prog    = iProgram->value();
-
-      if (hbank > 0 && hbank < 129)
-            hbank -= 1;
-      else
-            hbank = 0xff;
-      if (lbank > 0 && lbank < 129)
-            lbank -= 1;
-      else
-            lbank = 0xff;
-      if (prog > 0 && prog < 129)
-            prog -= 1;
-      else
-            prog = 0xff;
-
-      MusECore::MidiPort *mp = &MusEGlobal::midiPorts[port];
-      if(prog == 0xff)
-      {
-        ++_blockHeartbeatCount;
-        program = MusECore::CTRL_VAL_UNKNOWN;
-        iHBank->blockSignals(true);
-        iLBank->blockSignals(true);
-        iHBank->setValue(0);
-        iLBank->setValue(0);
-        iHBank->blockSignals(false);
-        iLBank->blockSignals(false);
-        
-        if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-        --_blockHeartbeatCount;
-        return;
-      }
-      else
-      {
-        ++_blockHeartbeatCount;
-        int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
-        if(np == MusECore::CTRL_VAL_UNKNOWN)
-        {
-          np = mp->lastValidHWCtrlState(channel, MusECore::CTRL_PROGRAM);
-          if(np != MusECore::CTRL_VAL_UNKNOWN)
-          {
-            hbank = (np & 0xff0000) >> 16;
-            lbank = (np & 0xff00) >> 8; 
-            int ihbnk = hbank;
-            int ilbnk = lbank;
-            if(ihbnk == 0xff)
-              ihbnk = -1;
-            if(ilbnk == 0xff)
-              ilbnk = -1;
-            ++ihbnk;
-            ++ilbnk;
-            iHBank->blockSignals(true);
-            iLBank->blockSignals(true);
-            iHBank->setValue(ihbnk);
-            iLBank->setValue(ilbnk);
-            iHBank->blockSignals(false);
-            iLBank->blockSignals(false);
-          }
-        }
-        program = (hbank << 16) + (lbank << 8) + prog;
-        MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, program);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-        
-        MusECore::MidiInstrument* instr = mp->instrument();
-        iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
-        
-        --_blockHeartbeatCount;
-      }
-        
-//      updateTrackInfo();
-      }
-
-void CompactPatchEdit::HBankDoubleCLicked()
-{
-  if(!selected)
-    return;
-  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-  int port = track->outPort();
-  int chan = track->outChannel();
-  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];  
-  MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_PROGRAM);
-  
-  if(!track || !mctl)
-      return;
-  
-  int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_PROGRAM);
-  int curv = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
-  
-  if(curv == MusECore::CTRL_VAL_UNKNOWN)
-  {
-    // If no value has ever been set yet, use the current knob value 
-    //  (or the controller's initial value?) to 'turn on' the controller.
-    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
-    {
-      int kiv = mctl->initVal();
-      if(kiv == MusECore::CTRL_VAL_UNKNOWN)
-        kiv = 0;
-
-      ++_blockHeartbeatCount;
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      --_blockHeartbeatCount;
-    }
-    else
-    {
-      // TODO
-//       int hbank = (lastv >> 16) & 0xff;
-//       if(hbank == 0xff)
-//         lastv &= 0xffff;
-//       else
-//         lastv |= 0xff0000;
-      
-      ++_blockHeartbeatCount;
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      --_blockHeartbeatCount;
-    }
-  }  
-  else
-  {      
-    // TODO
-//     int lasthb = 0xff;
-//     if(lastv != MusECore::CTRL_VAL_UNKNOWN)
-//       lasthb = (lastv >> 16) & 0xff;
-//     
-//     int hbank = (curv >> 16) & 0xff;
-//     if(hbank == 0xff)
-//     {
-//       curv &= 0xffff;
-//       if(lasthb != 0xff)
-//         curv |= lasthb;
-//     }
-//     else
-//       curv |= 0xff0000;
-    
-    if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-    {
-      ++_blockHeartbeatCount;
-      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-      --_blockHeartbeatCount;
-    }
-  }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
-}
-
-void CompactPatchEdit::LBankDoubleCLicked()
-{
-  if(!selected)
-    return;
-  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-  int port = track->outPort();
-  int chan = track->outChannel();
-  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];  
-  MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_PROGRAM);
-  
-  if(!track || !mctl)
-      return;
-  
-  int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_PROGRAM);
-  int curv = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
-  
-  if(curv == MusECore::CTRL_VAL_UNKNOWN)
-  {
-    // If no value has ever been set yet, use the current knob value 
-    //  (or the controller's initial value?) to 'turn on' the controller.
-    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
-    {
-      int kiv = mctl->initVal();
-      if(kiv == MusECore::CTRL_VAL_UNKNOWN)
-        kiv = 0xff0000;
-      
-      //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-    }
-    else
-    {
-// TODO
-//       int lbank = (lastv >> 8) & 0xff;
-//       if(lbank == 0xff)
-//         lastv &= 0xff00ff;
-//       else
-//       {
-//         lastv |= 0xffff00;
-//         //int hbank = (lastv >> 16) & 0xff;
-//         //if(hbank != 0xff)
-//         //  lastv |= 0xff0000;
-//       }
-      
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-    }
-  }  
-  else
-  {
-// TODO
-//     //int lasthb = 0xff;
-//     int lastlb = 0xff;
-//     if(lastv != MusECore::CTRL_VAL_UNKNOWN)
-//     {
-//       //lasthb = (lastv >> 16) & 0xff;
-//       lastlb = (lastv >> 8) & 0xff;
-//     }
-//     
-//     int lbank = (curv >> 8) & 0xff;
-//     if(lbank == 0xff)
-//     {
-//       curv &= 0xff00ff;
-//       if(lastlb != 0xff)
-//         curv |= lastlb;
-//     }
-//     else
-//     {
-//       curv |= 0xffff00;
-//       //int hbank = (curv >> 16) & 0xff;
-//       //if(hbank != 0xff)
-//       //  curv |= 0xff0000;
-//     }
-      
-    if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-//     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
-//     MusEGlobal::audio->msgPlayMidiEvent(&ev);
-  }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
-}
-
-void CompactPatchEdit::ProgramDoubleClicked()
-{
-  if(!selected)
-    return;
-  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-  int port = track->outPort();
-  int chan = track->outChannel();
-  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];  
-  MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_PROGRAM);
-  
-  if(!track || !mctl)
-      return;
-  
-  int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_PROGRAM);
-  int curv = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
-  
-  if(curv == MusECore::CTRL_VAL_UNKNOWN)
-  {
-    // If no value has ever been set yet, use the current knob value 
-    //  (or the controller's initial value?) to 'turn on' the controller.
-    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
-    {
-      int kiv = mctl->initVal();
-      if(kiv == MusECore::CTRL_VAL_UNKNOWN)
-        kiv = 0xffff00;
-      
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-    }
-    else
-    {
-      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-    }
-  }  
-  else
-  {
-    if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-  }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
-}
-*/
-
 
 
 } // namespace MusEGui

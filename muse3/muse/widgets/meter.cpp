@@ -6,7 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -64,13 +64,6 @@ Meter::Meter(QWidget* parent,
       setAttribute(Qt::WA_OpaquePaintEvent);    
       //setFrameStyle(QFrame::Raised | QFrame::StyledPanel);
 
-      // REMOVE Tim. Trackinfo. Added
-      //_textFont.setStyleStrategy(QFont::NoAntialias);
-      //_textFont.setStyleStrategy(QFont::PreferBitmap);
-      //_textFont.setHintingPreference(QFont::PreferVerticalHinting);
-      //_textFont.setFamily("Sans");
-      //_textFont.setPixelSize(7);
-      //_textFont = font();
 //       QFont fnt;
 //       fnt.setFamily("Sans");
 //       fnt.setPixelSize(9);
@@ -264,7 +257,7 @@ QSize Meter::sizeHint() const
             break;
     }
   }
-  //fprintf(stderr, "Meter::sizeHint w:%d, h:%d\n", w, h); // REMOVE Tim. Trackinfo.
+  //fprintf(stderr, "Meter::sizeHint w:%d, h:%d\n", w, h);
   return QSize(w, h);
 }
 
@@ -393,11 +386,6 @@ void Meter::updateTargetMeterValue()
    if(maxVal != targetMaxVal)
    {
      maxVal = targetMaxVal;
-// REMOVE Tim. Trackinfo. Changed.     
-//      if(mtype == DBMeter)
-//        cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
-//      else
-//        cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
      const double v = (mtype == DBMeter) ? (MusECore::fast_log10(maxVal) * 20.0) : maxVal;
      
      if(_orient == Qt::Vertical)
@@ -536,7 +524,6 @@ void Meter::paintEvent(QPaintEvent* ev)
   const double range = maxScale - minScale;     
   const double transl_val = val - minScale;
   
-//       const QRect& rect = ev->rect(); // REMOVE Tim. Trackinfo. Changed.
   bool textDrawn = false;
   const int rectCount = ev->region().rectCount();
   QVector<QRect> rects = ev->region().rects();
@@ -544,9 +531,7 @@ void Meter::paintEvent(QPaintEvent* ev)
   {
     const QRect& rect = rects.at(ri);
     
-    //printf("Meter::paintEvent rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
-    
-    // REMOVE Tim. Trackinfo. Tested OK! Small non-overlapping rectangles.
+    // Tested OK! Small non-overlapping rectangles.
     //fprintf(stderr, "Meter::paintEvent rcount:%d ridx:%d rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", 
     //                rectCount, ri, rect.x(), rect.y(), rect.width(), rect.height(), w, h);
 
@@ -649,18 +634,13 @@ void Meter::paintEvent(QPaintEvent* ev)
     p.fillPath(finalPath, QBrush(maskGrad));
 #endif      
 
-    // REMOVE Tim. Trackinfo. Added.
-    //const int txtXOff = fw + (w > _textSize.height() ? (w - _textSize.height()) / 2 : 0);
-    //const int txtYOff = -(fw + (h > _textSize.width() ? (h - _textSize.width()) / 2 : 0));
-    //const int txtXOff = fw ;
-    //const int txtYOff = -h;
     if(_showText)
     {
       const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
       if(!textDrawn && rr.intersects(_textRect))
       {
         textDrawn = true;
-        //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());  // REMOVE Tim. Trackinfo.
+        //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());
         //p.setFont(_textFont);
         p.setPen(Qt::white);
         
@@ -1135,31 +1115,15 @@ void Meter::resizeEvent(QResizeEvent* ev)
 
    //update(); //according to docs, update will be called automatically
    
-   
-//     d_resized = true;
     QSize s = ev->size();
   
-//
-// REMOVE Tim. Trackinfo. Added.
-//
     const QFontMetrics fm = fontMetrics();
-//     const int sliderWidth = d_thumbWidth;
     // reposition slider
     if(_orient == Qt::Horizontal)
     {
       switch(_scalePos)
       {
         case Top:
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-//               this->rect().y() + s.height() - 1
-//               - d_yMargin - sliderWidth,
-//               s.width() - 2 * d_xMargin,
-//               sliderWidth);
-          
-//             d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-//               d_sliderRect.y() - d_scaleDist,
-//               d_sliderRect.width() - d_thumbLength,
-//               ScaleDraw::Top);
             d_scale.setGeometry(this->rect().x(),
               this->rect().y() + s.height() - 1 - _scaleDist,
               s.width(),
@@ -1167,15 +1131,6 @@ void Meter::resizeEvent(QResizeEvent* ev)
             break;
       
         case Bottom:
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-//               this->rect().y() + d_yMargin,
-//               s.width() - 2*d_xMargin,
-//               sliderWidth);
-          
-//             d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-//               d_sliderRect.y() + d_sliderRect.height() +  d_scaleDist,
-//               d_sliderRect.width() - d_thumbLength,
-//               ScaleDraw::Bottom);
             d_scale.setGeometry(this->rect().x(),
               this->rect().y() + s.height() + _scaleDist,
               s.width(),
@@ -1183,27 +1138,13 @@ void Meter::resizeEvent(QResizeEvent* ev)
             break;
       
         case InsideHorizontal:
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-//               this->rect().y() + s.height() - 1
-//               - d_yMargin - sliderWidth,
-//               s.width() - 2 * d_xMargin,
-//               sliderWidth);
-          
-//             d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-//               //d_sliderRect.y() - d_scaleDist,
-//               this->rect().y() + d_yMargin + d_scale.maxHeight(fm) + d_scaleDist,
-//               d_sliderRect.width() - d_thumbLength,
-//               ScaleDraw::InsideHorizontal);
             d_scale.setGeometry(this->rect().x(),
-              //d_sliderRect.y() - d_scaleDist,
               this->rect().y() + d_scale.maxHeight(fm) + _scaleDist,
               s.width(),
               ScaleDraw::InsideHorizontal);
             break;
             
         default:
-//             d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-//               s.width(), s.height());
             break;
       }
     }
@@ -1212,16 +1153,6 @@ void Meter::resizeEvent(QResizeEvent* ev)
       switch(_scalePos)
       {
         case Left:
-//             d_sliderRect.setRect(this->rect().x() + s.width()
-//               - sliderWidth - 1 - d_xMargin,
-//               this->rect().y() + d_yMargin,
-//               sliderWidth,
-//               s.height() - 2 * d_yMargin);
-          
-//             d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-//               d_sliderRect.y() + d_thumbHalf,
-//               s.height() - d_thumbLength,
-//               ScaleDraw::Left);
             d_scale.setGeometry(this->rect().x() - _scaleDist,
               this->rect().y(),
               s.height(),
@@ -1229,16 +1160,6 @@ void Meter::resizeEvent(QResizeEvent* ev)
             break;
             
         case Right:
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-//               this->rect().y() + d_yMargin,
-//               sliderWidth,
-//               s.height() - 2* d_yMargin);
-          
-//             d_scale.setGeometry(this->rect().x() + d_sliderRect.width()
-//               + d_scaleDist,
-//               d_sliderRect.y() + d_thumbHalf,
-//               s.height() - d_thumbLength,
-//               ScaleDraw::Right);
             d_scale.setGeometry(this->rect().x() + width() + _scaleDist,
               this->rect().y(),
               s.height(),
@@ -1247,42 +1168,8 @@ void Meter::resizeEvent(QResizeEvent* ev)
             
         case InsideVertical:
         {
-// //             d_sliderRect.setRect(this->rect().x() + s.width()
-// //               - sliderWidth - 1 - d_xMargin,
-// //             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-// //             d_sliderRect.setRect(this->rect().x() + d_xMargin + d_scale.maxLabelWidth(fm, false) - sliderWidth,
             const int mxlw = d_scale.maxLabelWidth(fm, false);
             const int sclw = d_scale.scaleWidth();
-//             const int sldw = mxlw > sliderWidth ? sliderWidth : mxlw;
-//             const int sldoffs = mxlw > sliderWidth ? ((mxlw - sldw) / 2) : 0;
-//             const int fh = fm.ascent() + 2;
-//             const int fh2 = fh / 2;
-//             const int margin = d_thumbLength > fh ? d_thumbLength : fh;
-//             const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
-//             const int sldymargin = fh > d_thumbLength ? fh - d_thumbLength : 0;
-//             const int sldymargin2 = fh2 > d_thumbHalf ? fh2 - d_thumbHalf : 0;
-//             
-// //             d_sliderRect.setRect(this->rect().x() + (s.width() - 1) - sliderWidth - sclw + sldoffs, // - d_xMargin,
-//             d_sliderRect.setRect(this->rect().x() + s.width() - sliderWidth - sclw + sldoffs, // - d_xMargin,
-// //               this->rect().y() + d_yMargin,
-//               this->rect().y() + d_yMargin + sldymargin2,
-//               sliderWidth,
-// //               s.height() - 2 * d_yMargin);
-// //               s.height() - margin - 2 * d_yMargin);
-//               s.height() - sldymargin - 2 * d_yMargin);
-
-          
-//             //d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-// //             d_scale.setGeometry(this->rect().x() + d_xMargin + d_scale.maxWidth(fm, false) + d_scaleDist,
-//             d_scale.setGeometry(this->rect().x() + d_xMargin + mxlw + sclw + d_scaleDist,
-// //               d_sliderRect.y() + d_thumbHalf,
-// //               d_sliderRect.y(),
-//               this->rect().y() + d_yMargin + margin2,                                
-// //               s.height() - d_thumbLength,
-// //               s.height() - margin,
-// //               d_sliderRect.height(),
-//               s.height() - margin - 2 * d_yMargin,
-//               ScaleDraw::InsideVertical);
             
             d_scale.setGeometry(this->rect().x() + mxlw + sclw + _scaleDist,
               this->rect().y(),                                
@@ -1292,24 +1179,21 @@ void Meter::resizeEvent(QResizeEvent* ev)
         break;
             
         default:
-//             d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-//               s.width(), s.height());
             break;
       }
     }
-//
-//
   
-// REMOVE Tim. Trackinfo. Removed.
-//     d_sliderRect.setRect(this->rect().x(), this->rect().y(),
-//                        s.width(), s.height());
-
   adjustScale();
 }
 
-// REMOVE Tim. Trackinfo. Added.
 void Meter::adjustScale()
 {
+//   d_maxMinor = maxMin;
+//   if(hasUserScale())
+//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
+//   else
+//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
+//   update();
 //   const double range = maxScale() - minScale();
 //   if(range == 0.0)
 //     return;
@@ -1376,14 +1260,8 @@ void Meter::adjustScale()
 //       maxMin = 5;
 //   }
 // 
-//   //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep); // REMOVE Tim. Trackinfo.
+//   //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep);
 //   d_maxMajor = maxMaj;
-//   d_maxMinor = maxMin;
-//   if(hasUserScale())
-//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
-//   else
-//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
-//   update();
 }
 
 //---------------------------------------------------------

@@ -724,10 +724,6 @@ void Transport::setCycleMode(int id)
 
 void Transport::songChanged(MusECore::SongChangedFlags_t flags)
       {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if(flags == SC_MIDI_CONTROLLER)
-        return;
-    
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
       int t = MusEGlobal::tempomap.tempo(cpos);

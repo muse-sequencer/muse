@@ -62,7 +62,18 @@ CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon_A, const
 QSize CompactToolButton::sizeHint() const
 {
   // TODO Ask style for margins.
-  return QSize(iconSize().width() + 2, iconSize().height() + 2);
+  const QSize isz = iconSize();
+  const QSize tsz = fontMetrics().size(0, text());
+  
+  const int iw = isz.width() + 2;
+  const int ih = isz.height() + 2;
+  const int tw = tsz.width() + 4;
+  const int th = tsz.height() + 2;
+
+  const int w = iw > tw ? iw : tw;
+  const int h = ih > th ? ih : th;
+  
+  return QSize(w, h);
 }
       
 void CompactToolButton::setIconA(const QIcon& ico)

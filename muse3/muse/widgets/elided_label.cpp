@@ -4,7 +4,7 @@
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
 //  elided_label.cpp
-//  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -47,6 +47,7 @@ ElidedLabel::ElidedLabel(QWidget* parent,
     _fontIgnoreWidth(ignoreWidth),
     _text(text) 
 {
+  _id = -1;
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 //   updateSizeHint();
   _curFont = font();
@@ -66,31 +67,6 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
   painter.drawText(rect(), Qt::AlignLeft | Qt::AlignVCenter, elidedText);
 }
   
-// void ElidedLabel::changeEvent(QEvent* e)
-// {
-//   switch(e->type())
-//   {
-//     case QEvent::FontChange:
-//       fprintf(stderr, "ElidedLabel::changeEvent FontChange\n"); // REMOVE Tim. Trackinfo.
-//       updateSizeHint();
-//     break;
-//     
-//     default:
-//     break;
-//   }
-//   e->ignore();
-//   QFrame::changeEvent(e);
-// }
-
-// void ElidedLabel::updateSizeHint()
-// {
-//   const int fw = frameWidth();
-//   const QRect r = fontMetrics().boundingRect(_text);
-//   _sizeHint = QSize(r.width() + 2 * fw, r.height() + 2 * fw);
-//   updateGeometry();
-// }
-
-
 //---------------------------------------------------------
 //   autoAdjustFontSize
 //   w: Widget to auto adjust font size
@@ -177,19 +153,11 @@ bool ElidedLabel::autoAdjustFontSize()
   return true;  
 }
 
-// QSize ElidedLabel::sizeHint() const
-// {
-//   const int fw = frameWidth();
-//   const QRect r = fontMetrics().boundingRect(_text);
-//   return QSize(r.width() + 2 * fw, r.height() + 2 * fw);
-// }
-
 void ElidedLabel::setText(const QString& txt) 
 { 
   if(_text == txt)
     return;
   _text = txt; 
-//   updateSizeHint(); 
   autoAdjustFontSize();
 }
 
@@ -202,26 +170,15 @@ void ElidedLabel::resizeEvent(QResizeEvent* e)
 
 void ElidedLabel::mousePressEvent(QMouseEvent* e)
 {
-  //e->ignore();
   e->accept();
-  //QFrame::mousePressEvent(e);
-  emit pressed(e->pos(), e->buttons(), e->modifiers());
+  emit pressed(e->pos(), _id, e->buttons(), e->modifiers());
 }
 
 void ElidedLabel::mouseReleaseEvent(QMouseEvent* e)
 {
-  //e->ignore();
   e->accept();
-  //QFrame::mouseReleaseEvent(e);
-  emit released(e->pos(), e->buttons(), e->modifiers());
+  emit released(e->pos(), _id, e->buttons(), e->modifiers());
 }
-
-// void ElidedLabel::setFontPointRange(int maxPoint, int minPoint)
-// {
-//   _fontPointMin = minPoint;
-//   _fontPointMax = maxPoint;
-//   autoAdjustFontSize();
-// }
 
 void ElidedLabel::setFontIgnoreDimensions(bool ignoreHeight, bool ignoreWidth)
 {
@@ -235,23 +192,5 @@ void ElidedLabel::setFontPointMin(int point)
   _fontPointMin = point;
   autoAdjustFontSize();
 }
-
-// void ElidedLabel::setFontPointMax(int point)
-// {
-//   _fontPointMax = point;
-//   autoAdjustFontSize();
-// }
-
-// void ElidedLabel::setFontIgnoreWidth(bool v)
-// {
-//   _fontIgnoreWidth = v;
-//   autoAdjustFontSize();
-// }
-// 
-// void ElidedLabel::setFontIgnoreHeight(bool v)
-// {
-//   _fontIgnoreHeight = v;
-//   autoAdjustFontSize();
-// }
 
 } // namespace MusEGui

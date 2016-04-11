@@ -4,7 +4,7 @@
 //  $Id: plugin.cpp,v 1.21.2.23 2009/12/15 22:07:12 spamatica Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -30,28 +30,10 @@
 #include <math.h>
 #include <sys/stat.h>
 
-//#include <QButtonGroup>
-//#include <QCheckBox>
-//#include <QInputDialog>
-//#include <QCursor>
-//#include <QDir>
-//#include <QFile>
 #include <QGridLayout>
-//#include <QGroupBox>
-//#include <QHBoxLayout>
-//#include <QHeaderView>
 #include <QLabel>
-//#include <QMainWindow>
-//#include <QPushButton>
-//#include <QRadioButton>
-//#include <QSignalMapper>
-//#include <QSizePolicy>
 #include <QScrollArea>
-//#include <QSpacerItem>
 #include <QTimer>
-//#include <QToolButton>
-//#include <QTreeWidget>
-//#include <QVBoxLayout>
 #include <QComboBox>
 #include <QWhatsThis>
 #include <QSignalMapper>
@@ -74,8 +56,7 @@
 #include "checkbox.h"
 #include "meter.h"
 #include "utils.h"
-//#include "popupmenu.h"
-//#include "menutitleitem.h"
+
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
@@ -3330,6 +3311,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         double dval  = val;
                         getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
                         
+                        // TODO
                         //s->setThumbLength(1);
                         //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
                         //s->setScaleMaxMinor(5);
@@ -3353,7 +3335,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider(s);
                         }
-                        connect(s, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
+                        connect(s, SIGNAL(valueChanged(double,int,int)), mapper, SLOT(map()));
                         connect(s, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
                         connect(s, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
                         connect(s, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
@@ -3454,6 +3436,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         Slider* s = new Slider(0, "param", Qt::Horizontal,
                            Slider::InsideHorizontal, 8, color, ScaleDraw::TextHighlightSplitAndShadow);
 
+                        // TODO
                         //s->setThumbLength(1);
                         //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
                         //s->setScaleMaxMinor(5);
@@ -3494,7 +3477,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect(params[i].actuator, SIGNAL(sliderMoved(double,int,bool)), SLOT(sliderChanged(double,int,bool)));
+                        connect(params[i].actuator, SIGNAL(valueChanged(double,int,int)), SLOT(sliderChanged(double,int,int)));
                         connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
                         connect(params[i].actuator, SIGNAL(sliderPressed(int)), SLOT(ctrlPressed(int)));
                         connect(params[i].actuator, SIGNAL(sliderReleased(int)), SLOT(ctrlReleased(int)));
@@ -3512,7 +3495,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             if (n2 > 0) {
               paramsOut = new GuiParam[n2];
 
-//               int h = fm.height() - 2;
               for (int i = 0; i < n2; ++i) {
                       QLabel* label = 0;
                       LADSPA_PortRangeHint range = plugin->rangeOut(i);
@@ -3542,7 +3524,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       m->setRange(dlower, dupper);
                       m->setVal(dval, dval, false);
                       m->setScaleBackBone(false);
-//                       m->setFixedHeight(h);
                       
                       QFont fnt;
                       fnt.setFamily("Sans");
@@ -3712,7 +3693,7 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 //   sliderChanged
 //---------------------------------------------------------
 
-void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
+void PluginGui::sliderChanged(double val, int param, int scrollMode)
 {
       MusECore::AudioTrack* track = plugin->track();
 
@@ -3728,7 +3709,10 @@ void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-        if (!shift_pressed) track->recordAutomation(id, val); //with shift, we get straight lines :)
+        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+        // ScrDirect mode is one-time only on press with modifier.
+        if(scrollMode != SliderBase::ScrDirect)
+          track->recordAutomation(id, val);
       }
       plugin->setParam(param, val);  // Schedules a timed control change.
       plugin->enableController(param, false);
@@ -4072,9 +4056,14 @@ void PluginGui::guiParamChanged(int idx)
       MusECore::AudioTrack* track = plugin->track();
 
       double val = 0.0;
+      bool ignoreRecAutomation = false;
       switch(type) {
             case GuiWidgets::SLIDER:
                   val = ((Slider*)w)->value();
+                  // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+                  // ScrDirect mode is one-time only on press with modifier.
+                  if(((Slider*)w)->scrollMode() == Slider::ScrDirect)
+                    ignoreRecAutomation = true;
                   break;
             case GuiWidgets::DOUBLE_LABEL:
                   val = ((DoubleLabel*)w)->value();
@@ -4121,7 +4110,8 @@ void PluginGui::guiParamChanged(int idx)
                track->startAutoRecord(id, val);
              break;
              default:
-               track->recordAutomation(id, val);
+               if(!ignoreRecAutomation)
+                 track->recordAutomation(id, val);
              break;
           }
       }

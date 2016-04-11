@@ -200,7 +200,13 @@ extern int midiLearnCtrl;
 extern bool midiSeqRunning;
 extern bool automation;
 extern int trackHeight;
-// p3.3.55
+
+extern const QString inputRoutingToolTipBase;
+extern const QString outputRoutingToolTipBase;
+extern const QString noInputRoutingToolTipWarn;
+extern const QString noOutputRoutingToolTipWarn;
+
+
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"
 #define JACK_MIDI_IN_PORT_SUFFIX  "_in"
 

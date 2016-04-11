@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: tlist.cpp,v 1.31.2.31 2009/12/15 03:39:58 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -133,7 +134,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_TRACK_PROP
+         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             redraw();
@@ -866,9 +867,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       }
       
       int button  = ev->button();
-      //bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
       if(button != Qt::LeftButton) {   
-//         mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed. Causing double increments on channel.
         ev->accept();
         return;
       }  
@@ -877,7 +876,6 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       int section = header->logicalIndexAt(x);
       if (section == -1)
       {  
-//         mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed.
         ev->accept();
         return;
       }
@@ -914,20 +912,11 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   // Default to track port if -1 and track channel if -1.
                   if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                   {
-//                     mousePressEvent(ev);  // REMOVE Tim. Trackinfo. Removed.
                     ev->accept();
                     return;
                   } 
                   
                   // A disabled spinbox up or down button will pass the event to the parent! Causes pseudo 'wrapping'. Eat it up.
-                  // REMOVE Tim. Trackinfo. Changed.
-//                   if(chan_edit && chan_edit->hasFocus())
-//                   {
-//                     ev->accept();    
-//                     return;
-//                   }
-//                   else
-//                   {
                       editTrack=t;
                       if (!chan_edit)
                       {
@@ -953,7 +942,6 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       editMode = true;     
                       chan_edit->show();
                       chan_edit->setFocus();
-                      //}
                   }
             else if (section >= COL_CUSTOM_MIDICTRL_OFFSET)
             {
@@ -992,12 +980,8 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   ctrl_edit->show();
                   ctrl_edit->setFocus();
                 }
-                // else: the CTRL_PROGRAM popup is displayed with a single click
-//                 ev->accept();
               }
             }
-//             else
-//                   mousePressEvent(ev);    // REMOVE Tim. Trackinfo. Removed.
             }
       ev->accept();
       }
@@ -1019,7 +1003,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
 
                     port = track->outPort();
                     
-                  QMenu* p = MusECore::midiPortsPopup(this, port);
+                  QMenu* p = MusECore::midiPortsPopup(0, port); // NOTE: If parent is given, causes accelerators to be returned in QAction::text() !
                   
                   // find first free port number
                   // do not permit numbers already used in other tracks!
@@ -1170,26 +1154,6 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
 
                   MusEGlobal::audio->msgIdle(true);
                   
-// REMOVE Tim. Trackinfo. Changed.
-//                   if (!allClassPorts)
-//                     track->setOutPortAndUpdate(n);
-//                   else {
-//                     // change all ports of this type
-//                     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-//                       if ((*myt)->isDrumTrack() && t->isDrumTrack())
-//                       {
-//                           ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
-//                       }
-//                       else if ((*myt)->isMidiTrack() && !(*myt)->isDrumTrack()
-//                                && (t->isMidiTrack() && !t->isDrumTrack())) {
-//                           ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
-//                       }
-// 
-//                     }
-//                   }
-//                   
-                  
                   if(!allClassPorts && !t->selected())
                   {
                     if(n != track->outPort())
@@ -1208,7 +1172,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                   
                   MusEGlobal::audio->msgIdle(false);
                   MusEGlobal::audio->msgUpdateSoloStates();
-                  MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+                  MusEGlobal::song->update(SC_ROUTE);
                   
                   // Prompt and send init sequences.
                   MusEGlobal::audio->msgInitMidiDevices(false);

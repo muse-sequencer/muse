@@ -37,10 +37,10 @@ namespace MusEGui
 		song_changed(0);
 	}
 	
-	void SongPosToolbarWidget::song_changed(MusECore::SongChangedFlags_t flags)
+	void SongPosToolbarWidget::song_changed(MusECore::SongChangedFlags_t /*flags*/)
 	{
-          if(flags & SC_MIDI_CONTROLLER)  // TODO: Filter more stuff out
-            return;
+//           if(flags == )  // TODO: Filter more stuff out
+//             return;
 		if (width()!=0)
 			setXMag(-(MusEGlobal::song->len()/width()));
 	}

@@ -4,7 +4,7 @@
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
 //  compact_slider.h
-//  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@
 #include "scldraw.h"
 
 class QPainterPath;
+class QEvent;
 
 namespace MusEGui {
 
@@ -47,16 +48,9 @@ class PopupDoubleSpinBox : public QDoubleSpinBox {
     bool _closePending;
     
   protected:
-//       virtual void keyPressEvent(QKeyEvent*);
-//       virtual void wheelEvent(QWheelEvent*);
-//       virtual void focusOutEvent(QFocusEvent*);
-    //virtual void paintEvent(QPaintEvent*);
     virtual bool event(QEvent*);
     
   signals:
-//       void doubleClicked();
-//       void ctrlDoubleClicked();
-//       //void ctrlClicked();
     void returnPressed();
     void escapePressed();
 
@@ -74,24 +68,25 @@ class CompactSlider : public SliderBase, public ScaleIf
 
   public:
       enum ScalePos { None, Left, Right, Top, Bottom, Embedded };
-      enum TextHighlightMode { TextHighlightNone, 
-                               TextHighlightAlways, 
-                               TextHighlightSplit,
-                               TextHighlightShadow,
-                               TextHighlightSplitAndShadow,
-                               TextHighlightHover,
-                               TextHighlightFocus,
-                               TextHighlightHoverOrFocus };
+      enum TextHighlightModes { //TextHighlightNone, 
+                               //TextHighlightAlways, 
+                               TextHighlightOn = 1, 
+                               TextHighlightSplit = 2,
+                               TextHighlightShadow = 4,
+                               //TextHighlightSplitAndShadow,
+                               TextHighlightHover = 8,
+                               TextHighlightFocus = 16
+                               //TextHighlightHoverOrFocus
+                              };
+      typedef int TextHighlightMode;
 
   private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
       Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
       Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
 
-//       Q_PROPERTY( QColor marginColor READ marginColor WRITE setMarginColor )
-//       Q_PROPERTY( QColor fillColor READ fillColor WRITE setFillColor )
-//       Q_PROPERTY( QColor textColor READ textColor WRITE setTextColor )
-//       Q_PROPERTY( QColor barColor READ barColor WRITE setBarColor )
+      Q_PROPERTY( QColor barColor READ barColor WRITE setBarColor )
+      Q_PROPERTY( QColor slotColor READ slotColor WRITE setSlotColor )
       Q_PROPERTY( QColor thumbColor READ thumbColor WRITE setThumbColor )
 
       Q_PROPERTY( QString labelText READ labelText WRITE setLabelText )
@@ -105,9 +100,9 @@ class CompactSlider : public SliderBase, public ScaleIf
     // Whether the mouse is over the entire control.
     bool _hovered;
     // Cached pixmap values.
-    QPixmap _onPixmap, _offPixmap;
-    QPainterPath* _onPath; 
-    QPainterPath* _offPath; 
+    //QPixmap _onPixmap, _offPixmap;
+    //QPainterPath* _onPath; 
+    //QPainterPath* _offPath; 
 
     bool _detectThumb;
     bool _autoHideThumb;
@@ -122,10 +117,9 @@ class CompactSlider : public SliderBase, public ScaleIf
     int d_yMargin;
     int d_mMargin;
 
-//     QColor d_marginColor;
-//     QColor d_fillColor;
-//     QColor d_textColor;
-//     QColor d_barColor;
+    QColor d_borderColor;
+    QColor d_barColor;
+    QColor d_slotColor;
     QColor d_thumbColor;
     
     QString d_labelText;
@@ -156,32 +150,22 @@ class CompactSlider : public SliderBase, public ScaleIf
     int d_valuePixel;
     int d_valuePixelWidth;
 
-//     bool bPressed;
-
-//     void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
-//     void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
-
-    void updatePainterPaths();
+    //void updatePainterPaths();
     
   private slots:
-    //void editingFinished();
     void editorReturnPressed();
     void editorEscapePressed();
   
   protected:
-    /* virtual void drawSlider (QPainter *p, const QRect &r); */
+    // At what point size to switch from aliased text (brighter, crisper but may look too jagged and unreadable with some fonts) 
+    //  to non-aliased text (dimmer, fuzzier but looks better). Zero means always use anti-aliasing.
+    int _maxAliasedPointSize;
     
     //  Determine the value corresponding to a specified mouse location.
     //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
     double getValue(const QPoint &p);
     //  Determine scrolling mode and direction.
-    void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
-    
-    // Two slightly different versions of the same thing: getValuePixel gets the current value scaled to
-    //  a range up to and including the LAST pixel, while getValueWidth gets the current value scaled to 
-    //  a range up to and including the last pixel PLUS ONE ie the 'pixel width'. Return values start at zero.
-  //   int getValuePixel() const;
-  //   int getValueWidth() const;
+    void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
     
     // Update internal values.
     void getPixelValues();
@@ -200,17 +184,26 @@ class CompactSlider : public SliderBase, public ScaleIf
     void valueChange();
     void rangeChange();
     void scaleChange();
-    void fontChange(const QFont &oldFont);
+    //void fontChange(const QFont &oldFont);
 
+    //virtual void updatePixmaps();
+    virtual void processSliderPressed(int);
+    virtual void processSliderReleased(int);
+    // Show a handy tooltip value box.
+    virtual void showValueToolTip(QPoint);
+    
   public:
     CompactSlider(QWidget *parent = 0, const char *name = 0,
           Qt::Orientation orient = Qt::Horizontal,
           ScalePos scalePos = None,
-          const QString& labelText = QString(), 
-          const QString& valPrefix = QString(), 
+          const QString& labelText = QString(),
+          const QString& valPrefix = QString(),
           const QString& valSuffix = QString(),
-          const QString& specialValueText = QString(), 
-          QColor thumbColor = QColor(255, 255, 0));
+          const QString& specialValueText = QString(),
+          QColor borderColor = QColor(),
+          QColor barColor = QColor(180, 180, 0),
+          QColor slotColor = QColor(),
+          QColor thumbColor = QColor());
     
     virtual ~CompactSlider();
     
@@ -232,14 +225,12 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setLineStep(double);
     void setPageStep(double);
     
-//     QColor marginColor() const { return d_marginColor; }
-//     void setMarginColor(const QColor& c) { d_marginColor = c; update(); }
-//     QColor fillColor() const { return d_fillColor; }
-//     void setFillColor(const QColor& c) { d_fillColor = c; update(); }
-//     QColor textColor() const { return d_textColor; }
-//     void setTextColor(const QColor& c) { d_textColor = c; update(); }
-//     QColor barColor() const { return d_barColor; }
-//     void setBarColor(const QColor& c) { d_barColor = c; update(); }
+    QColor borderColor() const { return d_borderColor; }
+    void setBorderColor(const QColor& c) { d_borderColor = c; update(); }
+    QColor barColor() const { return d_barColor; }
+    void setBarColor(const QColor& c) { d_barColor = c; update(); }
+    QColor slotColor() const { return d_slotColor; }
+    void setSlotColor(const QColor& c) { d_slotColor = c; update(); }
     QColor thumbColor() const { return d_thumbColor; }
     void setThumbColor(const QColor& c) { d_thumbColor = c; update(); }
     // Whether the user must click on the thumb or else anywhere in the control to move the value. 
@@ -247,7 +238,12 @@ class CompactSlider : public SliderBase, public ScaleIf
     // Set whether the user must click on the thumb or else anywhere in the control to move the value. 
     void setDetectThumb(bool v) { _detectThumb = v; update(); }
     
-
+    // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. Default 8.
+    int maxAliasedPointSize() const { return _maxAliasedPointSize; }
+    // Sets at what point size to switch from aliased text (brighter, crisper but may look too jagged and unreadable with some fonts) 
+    //  to non-aliased text (dimmer, fuzzier but looks better). Zero means always use anti-aliasing.
+    void setMaxAliasedPointSize(int sz) { if(sz<0)sz=0;_maxAliasedPointSize = sz; update(); }
+    
     QString labelText() const { return d_labelText; };
     void setLabelText(const QString& t) { d_labelText = t; update(); }
     QString valPrefix() const { return d_valPrefix; };
@@ -263,6 +259,8 @@ class CompactSlider : public SliderBase, public ScaleIf
     int valueDecimals() const { return _valueDecimals; }
     void setValueDecimals(int d) { if(d < 0) return; _valueDecimals = d; update(); }
 
+    QString toolTipValueText(bool inclLabel, bool inclVal) const;
+    
     bool hasOffMode() const { return _hasOffMode; }
     void setHasOffMode(bool v);
     bool isOff() const { return _off; }
@@ -284,16 +282,15 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setAutoHideThumb(bool v) {_autoHideThumb = v; }
     
     virtual QSize sizeHint() const;
-//     virtual QSize minimumSizeHint() const;
-  
-  public slots:
-    void processSliderPressed(int);
-    void processSliderReleased(int);
     
   signals:
-    // Both value and off state changed combined into one signal. 
+    // Both value and off state changed combined into one signal.
+    // In typical automation use, this signal should be ignored in ScrDirect scroll mode.
+    // ScrDirect mode happens only once upon press with a modifier.
+    // In ScrDirect mode the slider sends both pressed AND changed signals 
+    //  since the position jumps to the pressed location. 
     // Note the SliderBase::valueChanged signal is also available.
-    void valueStateChanged(double value, bool off, int id);
+    void valueStateChanged(double value, bool off, int id, int scrollMode);
 };
 
 } // namespace MusEGui

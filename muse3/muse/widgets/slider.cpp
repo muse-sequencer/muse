@@ -5,6 +5,7 @@
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -29,6 +30,10 @@
 
 #include "utils.h"
 #include "slider.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_SLIDER(dev, format, args...)  // fprintf(dev, format, ##args);
+
 
 namespace MusEGui {
 
@@ -70,6 +75,8 @@ Slider::Slider(QWidget *parent, const char *name,
                ScaleDraw::TextHighlightMode textHighlightMode)
       : SliderBase(parent,name), d_scalePos(scalePos), d_grooveWidth(grooveWidth), d_fillColor(fillColor)
       {
+      setPagingButtons(Qt::RightButton);
+      
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
@@ -182,7 +189,6 @@ void Slider::fontChange(const QFont & /*oldFont*/)
     repaint();
 }
 
-// REMOVE Tim. Trackinfo. Added.
 void Slider::drawThumb(QPainter *p, const QRect &r)
 {
   p->setRenderHint(QPainter::Antialiasing);
@@ -313,46 +319,13 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
     p->setRenderHint(QPainter::Antialiasing);
 
     const QPalette& pal = palette();
-//     QBrush brBack(pal.window());
-//     QBrush brMid(pal.mid());
-//     QBrush brDark(pal.dark());
 
     int xrad = 4;
     int yrad = 4;
 
-    // for the empty side
-//     QColor e_mask_edge = pal.mid().color();
-//     QColor e_mask_center = pal.midlight().color();
-//     int e_alpha = 215;
-//     e_mask_edge.setAlpha(e_alpha);
-//     e_mask_center.setAlpha(e_alpha);
-//     
-//     QLinearGradient e_mask;
-//     e_mask.setColorAt(0, e_mask_edge);
-//     e_mask.setColorAt(0.5, e_mask_center);
-//     e_mask.setColorAt(1, e_mask_edge);
-    
     // for the full side
-//     rpos = (value()  - minValue()) / (maxValue() - minValue());
     const double rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
     
-// //     int f_brightness = 155 * rpos + 100;
-//     int f_alpha;
-// //     int f_edge;
-//     if (pal.currentColorGroup() == QPalette::Disabled)
-//         {
-//         f_alpha = 185;
-// //         f_edge = 100;
-//         }
-//     else
-//         {
-// //         f_alpha = 127;
-//         f_alpha = 0;
-// //         f_edge = 0;
-//         }
-	   
-//     QColor f_mask_center = QColor(f_brightness, f_brightness, f_brightness, f_alpha);
-//     QColor f_mask_edge = QColor(f_edge, f_edge, f_edge, f_alpha);
     QColor f_mask_min(d_fillColor.isValid() ? d_fillColor : pal.highlight().color());
     QColor f_mask_max(f_mask_min);
     f_mask_min.setAlpha(40);
@@ -360,34 +333,8 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
     f_mask_max.setAlpha(255);
     QLinearGradient f_mask;
 	   
-//     f_mask.setColorAt(0, f_mask_edge);
-//     f_mask.setColorAt(0.5, f_mask_center);
-//     f_mask.setColorAt(1, f_mask_edge);
-//     f_mask.setColorAt(0, d_fillColor);
-//     f_mask.setColorAt(0.75, f_mask_min);
-//     f_mask.setColorAt(0, f_mask_max);
-//     f_mask.setColorAt(1, f_mask_min);
-    
-//     // for the thumb
-//     QLinearGradient thumbGrad;
-//     QColor thumb_edge = pal.dark().color();
-//     QColor thumb_center = pal.midlight().color();
-//     // REMOVE Tim. Trackinfo. Added.
-//     thumb_edge.setAlpha(30);
-//     thumb_center.setAlpha(30);
-//     
-//     thumbGrad.setColorAt(0, thumb_edge);
-//     thumbGrad.setColorAt(0.5, thumb_center);
-//     thumbGrad.setColorAt(1, thumb_edge);
-    
-    
     if (d_orient == Qt::Horizontal)
         {
-
-//         const QRect cr(r.x(),
-//                        r.y() + d_mMargin,
-//                        r.width(),
-//                        r.height() - 2*d_mMargin);
 
         const QRect cr(r.x(),
                        r.y() + r.height() / 2 - d_grooveWidth / 2,
@@ -398,16 +345,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //
         // Draw background
         //
-//         QPainterPath bg_rect = MusECore::roundedPath(cr, 
-//                                            xrad, yrad, 
-//                                            (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
-// 	   
-//         p->fillPath(bg_rect, d_fillColor);
-	   
+        
         const int dist1 = int(double(cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * rpos);
         const int ipos =  cr.x() + dist1;
         markerPos = ipos + d_thumbHalf;
-	   
 
         //
         // Draw groove empty right side
@@ -415,14 +356,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 	   
         if(d_fillEmptySide)
         {
-          //e_mask.setStart(QPointF(0, cr.y()));
-          //e_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
-
           QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(), 
                                             cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(), 
                                             xrad, yrad, (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
     
-          //p->fillPath(e_rect, QBrush(e_mask));
           p->fillPath(e_rect, f_mask_min);
         }
    
@@ -433,54 +370,18 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
            
         f_mask.setColorAt(0, f_mask_min);
         f_mask.setColorAt(1, f_mask_max);
-//         f_mask.setStart(QPointF(0, cr.y()));
-//         f_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
         f_mask.setStart(QPointF(cr.x(), cr.y()));
-//         f_mask.setFinalStop(QPointF(cr.x() + cr.width(), cr.y()));
-//         f_mask.setFinalStop(QPointF(cr.x() + markerPos, cr.y()));
         f_mask.setFinalStop(QPointF(cr.x() + ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.y()));
           
-//         QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(), 
-//                                           ipos + 1, cr.height(),
-//                                           xrad, yrad, 
-//                                           (MusECore::Corner) (MusECore::LowerLeft | MusECore::UpperLeft) );
         QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(), 
-//                                           ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.height(),
                                           ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.height(),
                                           xrad, yrad, 
                                           (MusECore::Corner) (MusECore::LowerLeft | MusECore::UpperLeft) );
 
         p->fillPath(f_rect, QBrush(f_mask));
-          
-           
-//         //
-//         //  Draw thumb
-//         //
-// 	   
-//         QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(), 
-//                                               d_thumbLength, r.height(), 
-//                                               2, 2, 
-//                                               (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
-//    
-//         thumbGrad.setStart(QPointF(0, cr.y()));
-//         thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
-//            
-//            
-//         p->fillPath(thumb_rect, QBrush(thumbGrad));
-//            
-//         // center line
-//         p->fillRect(ipos + d_thumbHalf, cr.y(), 1, cr.height(), pal.dark().color());
-           
-
         }
     else // (d_orient == Qt::Vertical)
         {
-	      
-//         const QRect cr(r.x() + d_mMargin,
-//                        r.y(),
-//                        r.width() - 2*d_mMargin,
-//                        r.height());
-	    
         const QRect cr(r.x() + r.width() / 2 - d_grooveWidth / 2,
                        r.y(),
                        d_grooveWidth,
@@ -489,33 +390,22 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //
         // Draw background
         //
-//         QPainterPath bg_rect = MusECore::roundedPath(cr,
-//                                            xrad, yrad, 
-//                                            (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
-// 	    
-//         p->fillPath(bg_rect, d_fillColor);
-
-//        const int dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
+        
         const int dist1 = int(double(cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * (1.0 - rpos));
         const int ipos = cr.y() + dist1;
         markerPos = ipos + d_thumbHalf;
 
-  
         //
         // Draw groove empty upper filling
         // 
 
         if(d_fillEmptySide)
         {
-          //e_mask.setStart(QPointF(cr.x(), 0));
-          //e_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
-              
           QPainterPath e_rect = MusECore::roundedPath(cr.x(), cr.y(), 
                                             cr.width(), ipos + (d_fillThumb ? 0 : d_thumbHalf),
                                             xrad, yrad, 
                                             (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight) );
               
-          //p->fillPath(e_rect, QBrush(e_mask));
           p->fillPath(e_rect, QBrush(f_mask_min));
         }            
             
@@ -525,10 +415,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 
         f_mask.setColorAt(0, f_mask_max);
         f_mask.setColorAt(1, f_mask_min);
-//         f_mask.setStart(QPointF(cr.x(), 0));
-//         f_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
-//         f_mask.setStart(QPointF(cr.x(), cr.y()));
-//         f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
         f_mask.setStart(QPointF(cr.x(), markerPos));
         f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
             
@@ -537,26 +423,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                                           xrad, yrad, (MusECore::Corner) (MusECore::LowerLeft | MusECore::LowerRight) );
 	    
         p->fillPath(f_rect, QBrush(f_mask));
-            
-            
-//         //
-//         //  Draw thumb
-//         //
-//             
-//         QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos, 
-//                                               r.width(), d_thumbLength,
-//                                               2, 2, 
-//                                               (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
-// 	    
-//         thumbGrad.setStart(QPointF(cr.x(), 0));
-//         thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));
-//             
-//             
-//         p->fillPath(thumb_rect, QBrush(thumbGrad));
-//             
-//         // center line
-//         p->fillRect(cr.x(), ipos + d_thumbHalf, cr.width(), 1, pal.dark().color());
-            
         }
 
 }
@@ -582,14 +448,11 @@ double Slider::getValue( const QPoint &p)
     int pos;
     QRect r = d_sliderRect;
 
-  // REMOVE Tim. Trackinfo. Added.
-  if(borderlessMouse())
+  if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
     if(d_orient == Qt::Horizontal)
-//       return value() + p.x() * step();
       return value(ConvertNone) + p.x() * step();
     else
-//       return value() - p.y() * step();
       return value(ConvertNone) - p.y() * step();
   }
   
@@ -598,18 +461,16 @@ double Slider::getValue( const QPoint &p)
   
   if (r.width() <= d_thumbLength)
   {
-//       rv = 0.5 * (minValue() + maxValue());
       rv = 0.5 * (minValue(ConvertNone) + maxValue(ConvertNone));
   }
   else
   {
       pos = p.x() - r.x() - d_thumbHalf;
-//       rv  =  minValue() +
-//          rint( (maxValue() - minValue()) * double(pos)
       rv  =  minValue(ConvertNone) +
          rint( (maxValue(ConvertNone) - minValue(ConvertNone)) * double(pos)
         / double(r.width() - d_thumbLength)
         / step() ) * step();
+    DEBUG_SLIDER(stderr, "Slider::getValue pos:%d p x:%d y:%d step:%.20f y rv:%.20f\n", pos, p.x(), p.y(), step(), rv);
   }
   
     }
@@ -617,19 +478,18 @@ double Slider::getValue( const QPoint &p)
     {
   if (r.height() <= d_thumbLength)
   {
-//       rv = 0.5 * (minValue() + maxValue());
       rv = 0.5 * (minValue(ConvertNone) + maxValue(ConvertNone));
   }
   else
   {
       pos = p.y() - r.y() - d_thumbHalf;
-//       rv =  minValue() +
-//          rint( (maxValue() - minValue()) *
       rv =  minValue(ConvertNone) +
          rint( (maxValue(ConvertNone) - minValue(ConvertNone)) *
         (1.0 - double(pos)
          / double(r.height() - d_thumbLength))
         / step() ) * step();
+    DEBUG_SLIDER(stderr, "Slider::getValue pos:%d p x:%d y:%d step:%.20f y rv:%.20f\n", pos, p.x(), p.y(), step(), rv);
+        
   }
   
     }
@@ -653,9 +513,17 @@ double Slider::getValue( const QPoint &p)
 //  Called by SliderBase
 //
 //------------------------------------------------------------
-void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction )
+void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction )
 {
-  // REMOVE Tim. Trackinfo. Added.
+  // If modifier or button is held, jump directly to the position at first.
+  // After handling it, the caller can change to SrcMouse scroll mode.
+  if(modifiers & Qt::ControlModifier || button == Qt::MidButton)
+  {
+    scrollMode = ScrDirect;
+    direction = 0;
+    return;
+  }
+  
   if(borderlessMouse())
   {
     if(button != Qt::NoButton && d_sliderRect.contains(p))
@@ -666,12 +534,12 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
     }
   }
   else
-    
   {
     if(cursorHoming() && button == Qt::LeftButton)
     {
       if(d_sliderRect.contains(p))
       {
+        DEBUG_SLIDER(stderr, "Slider::getScrollMode cursor homing + left button: ScrMouse\n");
         scrollMode = ScrMouse;
         direction = 0;
 
@@ -683,7 +551,6 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
 
         cr = d_sliderRect;
   
-//         rpos = (value()  - minValue()) / (maxValue() - minValue());
         rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
   
         if(d_orient == Qt::Horizontal)
@@ -704,42 +571,44 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }  
         cursor().setPos(cp.x(), cp.y());
+        return;
       }
     }
     else
     {
       int currentPos;
-      if (d_orient == Qt::Horizontal)
+      if(d_orient == Qt::Horizontal)
        currentPos = p.x();
       else
        currentPos = p.y();
       
-      if (d_sliderRect.contains(p))
+      if(d_sliderRect.contains(p))
       {
-        if ((currentPos > markerPos - d_thumbHalf)  
+        if((currentPos > markerPos - d_thumbHalf)  
             && (currentPos < markerPos + d_thumbHalf))
         {
+          DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrMouse\n");
           scrollMode = ScrMouse;
           direction = 0;
+          return;
         }
-        else
+        else if(pagingButtons().testFlag(button))
         {
+          DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrPage\n");
           scrollMode = ScrPage;
           if (((currentPos > markerPos) && (d_orient == Qt::Horizontal))
               || ((currentPos <= markerPos) && (d_orient != Qt::Horizontal)))
             direction = 1;
           else
             direction = -1;
+          return;
         }
       }
-      else
-      {
-        scrollMode = ScrNone;
-        direction = 0;
-      }
-    
     }
   }
+  
+  scrollMode = ScrNone;
+  direction = 0;
 }
 
 //------------------------------------------------------------
@@ -753,27 +622,14 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
 void Slider::paintEvent(QPaintEvent* /*ev*/)
 {
   QPainter p(this);
-
-  /* Scale is not supported
-  if (p.begin(this)) {
-        if (d_scalePos != None) {
-              p.fillRect(rect(), palette().window());
-              d_scale.draw(&p);
-              }
-        drawSlider(&p, d_sliderRect);
-        }
-  p.end();
-  */
-  
-  if(d_grooveWidth != 0) // REMOVE Tim. Trackinfo. Added.
+  if(d_grooveWidth != 0)
     drawSlider(&p, d_sliderRect);
 
-  // REMOVE Tim. Trackinfo. Added.
   if(d_thumbLength != 0)
     drawThumb(&p, d_sliderRect);
   if(d_scalePos != None) 
   {
-//         p.fillRect(rect(), palette().window());
+//     p.fillRect(rect(), palette().window());
     p.setRenderHint(QPainter::Antialiasing, false);
     d_scale.draw(&p, palette(), value());
   }
@@ -795,85 +651,6 @@ void Slider::resizeEvent(QResizeEvent *e)
     SliderBase::resizeEvent(e);
     d_resized = true;
     QSize s = e->size();
-    /* Scale is not supported
-    int sliderWidth = d_thumbWidth;
-
-    // reposition slider
-    if(d_orient == Qt::Horizontal)
-    {
-  switch(d_scalePos)
-  {
-  case Top:
-  
-      d_sliderRect.setRect(this->rect().x() + d_xMargin,
-         this->rect().y() + s.height() - 1
-         - d_yMargin - sliderWidth,
-         s.width() - 2 * d_xMargin,
-         sliderWidth);
-      d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-        d_sliderRect.y() - d_scaleDist,
-        d_sliderRect.width() - d_thumbLength,
-        ScaleDraw::Top);
-  
-      break;
-  
-  case Bottom:
-  
-      d_sliderRect.setRect(this->rect().x() + d_xMargin,
-         this->rect().y() + d_yMargin,
-         s.width() - 2*d_xMargin,
-         sliderWidth);
-      d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-        d_sliderRect.y() + d_sliderRect.height() +  d_scaleDist,
-        d_sliderRect.width() - d_thumbLength,
-        ScaleDraw::Bottom);
-  
-      break;
-  
-  default:
-      d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-         s.width(), s.height());
-      break;
-  }
-    }
-    else // d_orient == Qt::Vertical
-    {
-  switch(d_scalePos)
-  {
-  case Left:
-      d_sliderRect.setRect(this->rect().x() + s.width()
-         - sliderWidth - 1 - d_xMargin,
-         this->rect().y() + d_yMargin,
-         sliderWidth,
-         s.height() - 2 * d_yMargin);
-      d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-        d_sliderRect.y() + d_thumbHalf,
-        s.height() - d_thumbLength,
-        ScaleDraw::Left);
-  
-      break;
-  case Right:
-      d_sliderRect.setRect(this->rect().x() + d_xMargin,
-         this->rect().y() + d_yMargin,
-         sliderWidth,
-         s.height() - 2* d_yMargin);
-      d_scale.setGeometry(this->rect().x() + d_sliderRect.width()
-        + d_scaleDist,
-        d_sliderRect.y() + d_thumbHalf,
-        s.height() - d_thumbLength,
-        ScaleDraw::Right);
-      break;
-  default:
-      d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-         s.width(), s.height());
-      break;
-  }
-    }
-    */
-  
-//
-// REMOVE Tim. Trackinfo. Added.
-//
     const QFontMetrics fm = fontMetrics();
     const int sliderWidth = d_thumbWidth;
     // reposition slider
@@ -997,17 +774,10 @@ void Slider::resizeEvent(QResizeEvent *e)
             break;
       }
     }
-//
-//
-  
-// REMOVE Tim. Trackinfo. Removed.
-//     d_sliderRect.setRect(this->rect().x(), this->rect().y(),
-//                        s.width(), s.height());
-
+    
   adjustScale();
 }
 
-// REMOVE Tim. Trackinfo. Added.
 void Slider::adjustScale()
 {
   const double range = maxValue() - minValue();
@@ -1076,7 +846,7 @@ void Slider::adjustScale()
       maxMin = 5;
   }
 
-  //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep); // REMOVE Tim. Trackinfo.
+  DEBUG_SLIDER(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep);
   d_maxMajor = maxMaj;
   d_maxMinor = maxMin;
   if(hasUserScale())
@@ -1099,6 +869,19 @@ void Slider::adjustScale()
 void Slider::valueChange()
       {
       update();
+      
+      // HACK
+      // In direct mode let the inherited classes (this) call these in their valueChange() methods, 
+      //  so that they may be called BEFORE valueChanged signal is emitted by the setPosition() call above.
+      // ScrDirect mode only happens once upon press with a modifier. After that, another mode is set.
+      // Hack: Since valueChange() is NOT called if nothing changed, in that case these are called for us by the SliderBase.
+      if(d_scrollMode == ScrDirect)
+      {
+        processSliderPressed(id());
+        emit sliderPressed(id());
+      }
+      
+      // Emits valueChanged if tracking enabled.
       SliderBase::valueChange();
       }
 
@@ -1137,7 +920,6 @@ void Slider::rangeChange()
 void Slider::setMargins(int hor, int vert)
 {
     d_xMargin = MusECore::qwtMax(0, hor);
-//     d_yMargin = MusECore::qwtMin(0, vert); // REMOVE Tim. Trackinfo. BUG Controls were not being given total space. FIXED! Surely this was wrong!
     d_yMargin = MusECore::qwtMax(0, vert);
     resize(this->size());
 }
@@ -1157,46 +939,8 @@ void Slider::setMargins(int hor, int vert)
 
 QSize Slider::sizeHint() const
       {
-      /* Scale is not supported
       int w = 40;
       int h = 40;
-      QPainter p;
-      int msWidth = 0, msHeight = 0;
-
-      if (d_scalePos != None) {
-            if (p.begin(this)) {
-                  msWidth = d_scale.maxWidth(&p, FALSE);
-                  msHeight = d_scale.maxHeight(&p);
-                  }
-            p.end();
-
-            switch(d_orient) {
-                  case Qt::Vertical:
-                        w = 2*d_xMargin + d_thumbWidth + msWidth + d_scaleDist + 2;
-                        break;
-                  case Qt::Horizontal:
-                        h = 2*d_yMargin + d_thumbWidth + msHeight + d_scaleDist;
-                        break;
-                  }
-            }
-      else {      // no scale
-            switch(d_orient) {
-                  case Qt::Vertical:
-                        w = 16;
-                        break;
-                  case Qt::Horizontal:
-                        h = 16;
-                        break;
-                  }
-            }
-      */
-  
-//
-// REMOVE Tim. Trackinfo. Added.
-//
-      int w = 40;
-      int h = 40;
-      //QPainter p;
       const QFontMetrics fm = fontMetrics();
       int msWidth = 0, msHeight = 0;
 
@@ -1273,11 +1017,6 @@ QSize Slider::sizeHint() const
         }
       }
       return QSize(w, h);
-//
-//
-            
-// REMOVE Tim. Trackinfo. Removed.
-//       return QSize(horizontal_hint, vertical_hint);
       }
 
 //---------------------------------------------------------
@@ -1287,36 +1026,6 @@ QSize Slider::sizeHint() const
 void Slider::setOrientation(Qt::Orientation o)
       {
       d_orient = o;
-      /* Scale is not supported
-      ScaleDraw::OrientationX so = ScaleDraw::Bottom;
-      switch(d_orient) {
-            case Qt::Vertical:
-                  if (d_scalePos == Right)
-                        so = ScaleDraw::Right;
-                  else
-                        so = ScaleDraw::Left;
-                  break;
-            case Qt::Horizontal:
-                  if (d_scalePos == Bottom)
-                        so = ScaleDraw::Bottom;
-                  else
-                        so = ScaleDraw::Top;
-                  break;
-            }
-
-      d_scale.setGeometry(0, 0, 40, so);
-      if (d_orient == Qt::Vertical)
-            setMinimumSize(10,20);
-      else
-            setMinimumSize(20,10);
-      QRect r = geometry();
-      setGeometry(r.x(), r.y(), r.height(), r.width());
-      update();
-      */
-
-//
-// REMOVE Tim. Trackinfo. Added.
-//
       ScaleDraw::OrientationX so = ScaleDraw::Bottom;
       switch(d_orient) {
             case Qt::Vertical:
@@ -1365,19 +1074,6 @@ void Slider::setOrientation(Qt::Orientation o)
       QRect r = geometry();
       setGeometry(r.x(), r.y(), r.height(), r.width());
       update();
-      
-      
-// REMOVE Tim. Trackinfo. Removed.
-//       switch(d_orient) {
-//             case Qt::Vertical:
-//                   horizontal_hint = 16;
-//                   vertical_hint = 64;
-//                   break;
-//             case Qt::Horizontal:
-//                   horizontal_hint = 64;
-//                   vertical_hint = 16;
-//                   break;
-//             }
       }
 
 Qt::Orientation Slider::orientation() const

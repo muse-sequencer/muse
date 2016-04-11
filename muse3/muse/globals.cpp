@@ -297,6 +297,12 @@ int midiLearnPort = -1;
 int midiLearnChan = -1;
 int midiLearnCtrl = -1;
 
+const QString inputRoutingToolTipBase = QObject::tr("Input routing");
+const QString noInputRoutingToolTipWarn = inputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No input routes! Click to connect...");
+
+const QString outputRoutingToolTipBase = QObject::tr("Output routing");
+const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No output routes! Click to connect...");
+
 uid_t euid, ruid;  // effective user id, real user id
 
 bool midiSeqRunning = false;

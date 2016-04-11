@@ -137,7 +137,8 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       _dl->setEnabled(false);
       _dl->hide();
       
-      connect(_knob, SIGNAL(sliderMoved(double,int)), SLOT(ctrlChanged(double)));
+      //connect(_knob, SIGNAL(sliderMoved(double,int)), SLOT(ctrlChanged(double)));
+      connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
       connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
       connect(_dl, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
       connect(_dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked()));
@@ -259,14 +260,10 @@ void CtrlPanel::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void CtrlPanel::songChanged(MusECore::SongChangedFlags_t type)
+void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 {
   if(editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
-  
-  // Is it simply a midi controller value adjustment? Forget it.
-  if(type == SC_MIDI_CONTROLLER)
-    return;
 }
 
 //---------------------------------------------------------
@@ -372,7 +369,6 @@ void CtrlPanel::labelDoubleClicked()
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
     }    
   }
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -444,7 +440,6 @@ void CtrlPanel::ctrlChanged(double val)
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
-      MusEGlobal::song->update(SC_MIDI_CONTROLLER);
     }
 
 //---------------------------------------------------------

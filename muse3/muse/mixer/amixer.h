@@ -109,7 +109,6 @@ class AudioMixerApp : public QMainWindow {
       QScrollArea* view;
       QWidget* central;
       //QSplitter* splitter;
-      //QHBoxLayout* lbox;  // REMOVE Tim. Trackinfo. Unused.
       //Strip* master;
       QHBoxLayout* mixerLayout;
       QMenu* menuStrips;

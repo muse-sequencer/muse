@@ -422,7 +422,7 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
         return;
       }
       
-      QMenu* p = MusECore::midiPortsPopup(this, t->port, true);  // Include a "<Default>" entry.
+      QMenu* p = MusECore::midiPortsPopup(0, t->port, true);  // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
       if(!act)

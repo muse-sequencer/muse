@@ -25,12 +25,8 @@
 
 #include <QLayout>
 #include <QGridLayout>
-//#include <QList>
 
 class QLayoutItem;
-//class QScrollBar;
-//class QVBoxLayout;
-
 class QWidget;
 
 namespace MusEGui {
@@ -38,44 +34,11 @@ namespace MusEGui {
 class WidgetStack;
 class ScrollBar;
 class Splitter;
-//class Header;
-//class TList;
 
 //---------------------------------------------------------
 //   TLLayout
 //    arranger trackList layout manager
 //---------------------------------------------------------
-
-// REMOVE Tim. Trackinfo. Changed.
-// class TLLayout : public QLayout
-//       {
-//       Q_OBJECT
-// 
-//       bool _inSetGeometry;
-//       QList<QLayoutItem*> ilist;
-//       QLayoutItem* li[6];
-//       QScrollBar* sb;
-//       WidgetStack* stack;
-// 
-//     public:
-//       TLLayout(QWidget *parent) : QLayout(parent) { _inSetGeometry = false; setContentsMargins(0, 0, 0, 0); setSpacing(-1); }
-//       ~TLLayout() { clear(); }
-// 
-//       void addItem(QLayoutItem *item) { ilist.append(item); }
-//       virtual Qt::Orientations expandingDirections() const { return 0; }
-//       virtual bool hasHeightForWidth() const { return false; }
-//       virtual int count() const { return ilist.size(); }
-//       void clear();
-// 
-//       void wadd(int idx, QWidget* w);
-//       virtual QSize sizeHint() const;
-//       virtual QSize minimumSize() const;
-//       virtual QSize maximumSize() const;
-//       virtual void setGeometry(const QRect &rect);
-// 
-//       virtual QLayoutItem* itemAt(int i) const { return ilist.value(i);} 
-//       virtual QLayoutItem* takeAt(int);
-//       };
 
 class TLLayout : public QLayout
       {
@@ -85,26 +48,13 @@ class TLLayout : public QLayout
 
       WidgetStack* _stack;
       ScrollBar* _sb;
-      //QWidget* _button;
-      //QWidget* _hline;
       Splitter* _splitter; // This is not actually in the layout, but used and/or adjusted anyway.
-      //QVBoxLayout* _trackListLayout;
-      //Header* _trackListHeader;
-      //TList* _trackList;
       
       QLayoutItem* _stackLi;
       QLayoutItem* _sbLi;
-      //QLayoutItem* _buttonLi;
-      //QLayoutItem* _hlineLi;
-      //QLayoutItem* _trackListHeaderLi;
-      //QLayoutItem* _trackListLi;
-      
       
     public:
       static const int numItems = 2;
-      //TLLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, QWidget* button, QWidget* hline, Splitter* splitter, Header* header, TList* tlist);
-      //TLLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, QWidget* button, Splitter* splitter, Header* header, TList* tlist);
-      //TLLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, QWidget* button, Splitter* splitter, QVBoxLayout* _trackListLayout);
       TLLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, Splitter* splitter);
       ~TLLayout() { clear(); }
 

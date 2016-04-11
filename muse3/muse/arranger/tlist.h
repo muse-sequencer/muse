@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: tlist.h,v 1.8.2.5 2008/01/19 13:33:46 wschweer Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License

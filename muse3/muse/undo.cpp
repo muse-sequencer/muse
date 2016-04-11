@@ -1240,10 +1240,7 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
               continue;
             MusECore::AudioTrack* at = static_cast<AudioTrack*>(*i);
             if(at->hasAuxSend()) 
-            {
               at->addAuxSend(n);
-              updateFlags |= SC_AUX;
-            }
           }
         }
       }
@@ -1280,10 +1277,7 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
               continue;
             MusECore::AudioTrack* at = static_cast<AudioTrack*>(*i);
             if(at->hasAuxSend()) 
-            {
               at->addAuxSend(n);
-              updateFlags |= SC_AUX;
-            }
           }
         }
       }
@@ -1759,13 +1753,17 @@ void Song::revertOperationGroup1(Undo& operations)
                           }     
                           break;
                           
+                          case Track::AUDIO_AUX:
+                            updateFlags |= SC_AUX;
+                          break;
+                          
                           default:
                           break;
                         }
-                        
                         removeTrackOperation(editable_track, pendingOperations);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
+                        
                   case UndoOp::DeleteTrack:
                         switch(editable_track->type())
                         {
@@ -1850,6 +1848,10 @@ void Song::revertOperationGroup1(Undo& operations)
                           }
                           break;
                           
+                          case Track::AUDIO_AUX:
+                            updateFlags |= SC_AUX;
+                          break;
+                          
                           default:
                           break;
                         }
@@ -1862,6 +1864,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
+                        
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
@@ -1876,7 +1879,7 @@ void Song::revertOperationGroup1(Undo& operations)
                                 mt->setOutChanAndUpdate(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(false);
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                                updateFlags |= SC_ROUTE;
                           }
                         }
                         else
@@ -1928,7 +1931,10 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                   case UndoOp::ModifyTrackName:
                         pendingOperations.add(PendingOperationItem(editable_track, i->_oldName, PendingOperationItem::ModifyTrackName));
-                        updateFlags |= SC_TRACK_MODIFIED;
+                        updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
+                        // If it's an aux track, notify aux UI controls to reload, or change their names etc.
+                        if(editable_track->type() == Track::AUDIO_AUX)
+                          updateFlags |= SC_AUX;
                         break;
                         
                   case UndoOp::MoveTrack:
@@ -2470,6 +2476,10 @@ void Song::executeOperationGroup1(Undo& operations)
                           }
                           break;
                           
+                          case Track::AUDIO_AUX:
+                            updateFlags |= SC_AUX;
+                          break;
+                          
                           default:
                           break;
                         }
@@ -2482,6 +2492,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
+                        
                   case UndoOp::DeleteTrack:
                         switch(editable_track->type())
                         {
@@ -2499,6 +2510,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           case Track::AUDIO_GROUP:
                           case Track::AUDIO_AUX:
                             ((AudioTrack*)editable_track)->deleteAllEfxGuis();
+                            updateFlags |= SC_RACK;
                           break;
                           
                           default:
@@ -2531,15 +2543,17 @@ void Song::executeOperationGroup1(Undo& operations)
                           }     
                           break;
                           
+                          case Track::AUDIO_AUX:
+                            updateFlags |= SC_AUX;
+                          break;
+                          
                           default:
                           break;
                         }
-                        
-                        
-                        
                         removeTrackOperation(editable_track, pendingOperations);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
+                        
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->nEvent, i->tmpwavfile, i->startframe, i->endframe);
                         updateFlags |= SC_CLIP_MODIFIED;
@@ -2554,7 +2568,7 @@ void Song::executeOperationGroup1(Undo& operations)
                                 mt->setOutChanAndUpdate(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(false);
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                                updateFlags |= SC_ROUTE;               
                           }
                         }
                         else
@@ -2606,7 +2620,11 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::ModifyTrackName:
                         pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::ModifyTrackName));
-                        updateFlags |= SC_TRACK_MODIFIED;
+                        updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
+                        // If it's an aux track, notify aux UI controls to reload, or change their names etc.
+                        if(editable_track->type() == Track::AUDIO_AUX)
+                          updateFlags |= SC_AUX;
+                        break;
                         break;
                         
                   case UndoOp::MoveTrack:

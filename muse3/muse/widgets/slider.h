@@ -6,6 +6,7 @@
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -86,7 +87,7 @@ class Slider : public SliderBase, public ScaleIf
   //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
   double getValue(const QPoint &p);
   //  Determine scrolling mode and direction.
-  void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
+  void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
   // Adjust scale so marks are not too close together.
   void adjustScale();
 
@@ -122,6 +123,9 @@ class Slider : public SliderBase, public ScaleIf
   void setMargins(int x, int y);
   int grooveWidth() const { return d_grooveWidth; }
   void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
+  
+  QColor fillColor() const { return d_fillColor; }
+  void setFillColor(const QColor& color) { d_fillColor = color; update(); }
   
   bool fillThumb() const { return d_fillThumb; }
   void setFillThumb(bool v) { d_fillThumb = v; update(); }

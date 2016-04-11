@@ -4,7 +4,7 @@
 //  $Id: plugin.h,v 1.9.2.13 2009/12/06 01:25:21 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -587,7 +587,7 @@ class PluginGui : public QMainWindow {
       void load();
       void save();
       void bypassToggled(bool);
-      void sliderChanged(double, int, bool);
+      void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
       void guiParamChanged(int);
       void ctrlPressed(int);

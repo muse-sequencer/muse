@@ -993,7 +993,7 @@ bool RoutePopupMenu::event(QEvent* event)
     //        menus which should be rare for routing, but we could also defer to the advanced router when the popup becomes too wide.
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonPress:
-// REMOVE Tim. Trackinfo. Removed. Causes very high CPU usage spikes.
+// Removed. Causes very high CPU usage spikes.
 // I think I remember adding MouseMove simply for 'good luck' rather than any real usefulness.
 // Tested OK /without/ this on KUBUNTU 15.10, we don't seem to need it. Retest on 14.04 LTS...
 //     case QEvent::MouseMove:
@@ -2850,7 +2850,7 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
                       mt->setOutChanAndUpdate(col);
                     MusEGlobal::audio->msgIdle(false);
                     MusEGlobal::audio->msgUpdateSoloStates();
-                    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+                    MusEGlobal::song->update(SC_ROUTE);
                   }
                   break;
                 }
@@ -3195,7 +3195,7 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
       use_act_list = true;
       act_group_sz = act_list.size();
       
-// Attempt to optimize by only doing the actions whose channels changed. Flawed. Just do the whole list. REMOVE Tim. Trackinfo.
+// Attempt to optimize by only doing the actions whose channels changed. Flawed. Just do the whole list.
 //       act_start = act_idx;
 //       if((act_start + MusEGlobal::config.routerGroupingChannels) > act_group_sz)
 //         act_start = act_group_sz - MusEGlobal::config.routerGroupingChannels;

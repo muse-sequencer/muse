@@ -1802,7 +1802,7 @@ void Song::readRoute(Xml& xml)
                                   mt->setOutPortAndChannelAndUpdate(port, ch);
                                   MusEGlobal::audio->msgIdle(false);
                                   MusEGlobal::audio->msgUpdateSoloStates();
-                                  MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+                                  MusEGlobal::song->update(SC_ROUTE);
                                 }
 #else
                                 droute.midiPort = droute.device->midiPort();

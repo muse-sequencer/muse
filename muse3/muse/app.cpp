@@ -4,7 +4,7 @@
 //  $Id: app.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
 //
 //  (C) Copyright 1999-2011 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -928,6 +928,7 @@ MusE::MusE() : QMainWindow()
       mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
       setCentralWidget(mdiArea);
       connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
       connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));

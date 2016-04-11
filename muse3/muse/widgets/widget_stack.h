@@ -27,6 +27,7 @@
 #include <QWidget>
 
 class QWheelEvent;
+class QResizeEvent;
 
 namespace MusEGui {
 
@@ -43,18 +44,22 @@ class WidgetStack : public QWidget {
      enum SizeHintMode { StackHint=0, VisibleHint=1 };
      
    private:
+      SizeHintMode _sizeHintMode;
+      
       std::vector<QWidget*> stack;
       int top;
-      SizeHintMode _sizeHintMode;
 
+     void resizeStack(const QSize&);
+     
    protected:
       virtual void wheelEvent(QWheelEvent* e);
+      virtual void resizeEvent(QResizeEvent* e);
       
    signals:
       void redirectWheelEvent(QWheelEvent*);
       
    public:
-      WidgetStack(QWidget* parent, const char* name = 0);
+      WidgetStack(QWidget* parent, const char* name = 0, SizeHintMode sizeHintMode = VisibleHint);
       void raiseWidget(int idx);
       void addWidget(QWidget* w, unsigned int idx);
       QWidget* getWidget(unsigned int idx);
@@ -63,6 +68,9 @@ class WidgetStack : public QWidget {
       virtual QSize minimumSizeHint() const;
       SizeHintMode sizeHintMode() const { return _sizeHintMode; }
       void setSizeHintMode(SizeHintMode mode) { _sizeHintMode = mode; update(); }
+      
+      QSize sizeHint() const;
+      
       };
 
 } // namespace MusEGui

@@ -5,6 +5,7 @@
 //
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -30,6 +31,10 @@
 #include "drange.h"
 #include "fastlog.h"
 #include "muse_math.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_DRANGE(dev, format, args...) // fprintf(dev, format, ##args);
+
 
 namespace MusEGui {
 
@@ -59,7 +64,6 @@ DoubleRange::DoubleRange()
       {
       d_minValue = 0;
       d_maxValue = 100.0;
-      d_prevValue = 0.0;
       d_exactPrevValue = 0.0;
       d_exactValue = 0.0;
       d_value = 0.0;
@@ -144,10 +148,14 @@ double DoubleRange::convertFrom(double x, ConversionMode mode) const
 
 void DoubleRange::setNewValue(double x, bool align)
       {
-      d_prevValue = d_value;
-
-      double vmin = MusECore::qwtMin(d_minValue, d_maxValue);
-      double vmax = MusECore::qwtMax(d_minValue, d_maxValue);
+      DEBUG_DRANGE(stderr, "DoubleRange::setNewValue TOP val:%.20f d_value:%.20f\n", x, d_value);
+        
+      if(x == d_value)
+        return;
+      
+      const double vmin = MusECore::qwtMin(d_minValue, d_maxValue);
+      const double vmax = MusECore::qwtMax(d_minValue, d_maxValue);
+      const double prevValue = d_value;
 
       // Range check
 
@@ -186,8 +194,12 @@ void DoubleRange::setNewValue(double x, bool align)
             if (fabs(d_value) < MinEps * MusECore::qwtAbs(d_step))
                   d_value = 0.0;
             }
-      if (d_prevValue != d_value)
+      DEBUG_DRANGE(stderr, "                         BOTTOM val:%.20f d_value:%.20f\n", x, d_value);
+      if (prevValue != d_value)
+      {
+            DEBUG_DRANGE(stderr, "  not equal, calling valueChange\n");
             valueChange();
+      }
       }
 
 //---------------------------------------------------------
@@ -201,21 +213,6 @@ void DoubleRange::setNewValue(double x, bool align)
 
 void DoubleRange::fitValue(double x, ConversionMode mode)
       {
-//       if(d_log) 
-//       {
-//         if(x == 0.0f)
-//           x = d_minValue;
-//         else 
-//         //{
-//             x = MusECore::fast_log10(x) * 20.0f;
-//             //if(x < d_minValue)
-//             //        x = d_minValue;
-//         //}
-//       }
-//       else if (d_integer)
-//         x = rint(x);
-//       
-//       setNewValue(x, true);
       setNewValue(convertFrom(x, mode), true);
       }
 
@@ -233,21 +230,6 @@ void DoubleRange::fitValue(double x, ConversionMode mode)
 
 void DoubleRange::setValue(double x, ConversionMode mode)
       {
-//       if(d_log) 
-//       {
-//         if(x == 0.0f)
-//           x = d_minValue;
-//         else 
-//         //{
-//             x = MusECore::fast_log10(x) * 20.0f;
-//             //if(x < d_minValue)
-//             //        x = d_minValue;
-//         //}
-//       }
-//       else if (d_integer)
-//         x = rint(x);
-//       
-//       setNewValue(x, false);
       setNewValue(convertFrom(x, mode), false);
       }
 
@@ -328,6 +310,7 @@ void DoubleRange::setStep(double vstep)
 
       if (newStep != d_step) {
             d_step = newStep;
+            DEBUG_DRANGE(stderr, "DoubleRange::setStep vstep:%.20f d_step:%.20f\n", vstep, d_step);
             stepChange();
             }
       }

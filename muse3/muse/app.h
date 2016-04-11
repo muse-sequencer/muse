@@ -4,6 +4,7 @@
 //  $Id: app.h,v 1.34.2.14 2009/11/16 11:29:33 lunar_shuttle Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -391,6 +392,8 @@ class MusE : public QMainWindow
    public:
       MusE();
       void loadDefaultSong(int argc, char** argv);
+      bool loadConfigurationColors(QWidget* parent = 0);
+      bool saveConfigurationColors(QWidget* parent = 0);
       Arranger* arranger() const { return _arranger; }
       ArrangerView* getArrangerView() const { return arrangerView; }
       QRect configGeometryMain;

@@ -4568,7 +4568,7 @@ void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
     tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
   }
   
-  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP | 
+  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
           SC_ROUTE | SC_CONFIG | SC_CHANNELS | SC_PORT_ALIAS_PREFERENCE)) 
   {
     removeItems();                // Remove unused items.
@@ -4853,13 +4853,13 @@ void RouteDialog::connectClicked()
   if(!operations.empty())
   {
     operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
-    MusEGlobal::audio->msgExecutePendingOperations(operations, true, upd_trk_props ? SC_MIDI_TRACK_PROP : 0);
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true, upd_trk_props ? SC_ROUTE : 0);
 //     MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));
     //MusEGlobal::song->update(SC_SOLO);
     //routingChanged();
   }
   else if(upd_trk_props)
-    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+    MusEGlobal::song->update(SC_ROUTE);
     
 }  
 //   if(srcItem->data(ROUTE_NAME_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>() && dstItem->data(ROUTE_NAME_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>())

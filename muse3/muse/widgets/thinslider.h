@@ -78,7 +78,7 @@ class ThinSlider : public SliderBase, public ScaleIf
   protected:
   virtual void drawSlider (QPainter *p, const QRect &r);
   double getValue(const QPoint &p);
-  void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
+  void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
   virtual void resizeEvent(QResizeEvent *e);
   virtual void paintEvent (QPaintEvent *e);
   void valueChange();

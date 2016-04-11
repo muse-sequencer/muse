@@ -179,7 +179,25 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
       
+      QColor(200,180,0),            // sliderDefaultColor
+      QColor(180,200,100),          // panSliderColor
+      QColor(200,200,0),            // gainSliderColor
+      QColor(128,128,255),          // audioVolumeSliderColor
+      QColor(128,128,255),          // midiVolumeSliderColor
+      QColor(0,200,255),            // audioControllerSliderDefaultColor
+      QColor(0,200,255),            // audioPropertySliderDefaultColor
+      QColor(0,200,255),            // midiControllerSliderDefaultColor
+      QColor(0,200,255),            // midiPropertySliderDefaultColor
+
+      QColor(0,255,0),              // audioMeterPrimaryColor
+      QColor(0,255,0),              // midiMeterPrimaryColor
+      
       MusEGlobal::WaveOutLine,      // waveDrawing
+      
+      // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
+      // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
+      8, 
+      
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks

@@ -249,7 +249,6 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAuxSendValue aux_send_value_list:%p val:%f\n", _aux_send_value_list, _aux_send_value);
 #endif      
       _aux_send_value_list->push_back(_aux_send_value);
-      flags |= SC_AUX;
     break;
 
     
@@ -337,6 +336,8 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                     break;
               case Track::AUDIO_AUX:
                     static_cast<AuxList*>(_void_track_list)->push_back(static_cast<AudioAux*>(_track));
+                    // Special for aux, make it easier to detect their changes.
+                    flags |= SC_AUX;
                     break;
               case Track::AUDIO_INPUT:
                     static_cast<InputList*>(_void_track_list)->push_back(static_cast<AudioInput*>(_track));
@@ -410,12 +411,10 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       if(r->track->auxRefCount())
                       {
                         _track->updateAuxRoute(r->track->auxRefCount(), NULL);
-                        flags |= SC_AUX;
                       }
                       else if(r->track->type() == Track::AUDIO_AUX)
                       {
                         _track->updateAuxRoute(1, NULL);
-                        flags |= SC_AUX;
                       }
                     }
                     break;
@@ -441,12 +440,10 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       if(_track->auxRefCount())
                       {
                         r->track->updateAuxRoute(_track->auxRefCount(), NULL);
-                        flags |= SC_AUX;
                       }
                       else if(_track->type() == Track::AUDIO_AUX)
                       {
                         r->track->updateAuxRoute(1, NULL);
-                        flags |= SC_AUX;
                       }
                     }
                     break;
@@ -498,6 +495,8 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                     break;
               case Track::AUDIO_AUX:
                     static_cast<AuxList*>(_void_track_list)->erase(_track);
+                    // Special for aux, make it easier to detect their changes.
+                    flags |= SC_AUX;
                     break;
               case Track::AUDIO_INPUT:
                     static_cast<InputList*>(_void_track_list)->erase(_track);
@@ -608,12 +607,10 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       if(r->track->auxRefCount())
                       {
                         _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
-                        flags |= SC_AUX;
                       }
                       else if(r->track->type() == Track::AUDIO_AUX)
                       {
                         _track->updateAuxRoute(-1, NULL);
-                        flags |= SC_AUX;
                       }
                     }
                     break;
@@ -639,12 +636,10 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                       if(_track->auxRefCount())
                       {
                         r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
-                        flags |= SC_AUX;
                       }
                       else if(_track->type() == Track::AUDIO_AUX)
                       {
                         r->track->updateAuxRoute(-1, NULL);
-                        flags |= SC_AUX;
                       }
                     }
                     break;
@@ -695,6 +690,9 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
 #endif      
       _track->setName(*_name);
       flags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
+      // If it's an aux track, notify aux UI controls to reload, or change their names etc.
+      if(_track->type() == Track::AUDIO_AUX)
+        flags |= SC_AUX;
     break;
     
     case SetTrackRecord:
@@ -832,7 +830,6 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%d val:%d\n", _mcvl, _part, _intA, _intB);
 #endif      
       _mcvl->insert(std::pair<const int, MidiCtrlVal> (_intA, MidiCtrlVal(_part, _intB))); // FIXME FINDMICHJETZT XTicks!!
-      flags |= SC_MIDI_CONTROLLER;
     break;
     case DeleteMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -840,7 +837,6 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
 #endif      
       _mcvl->erase(_imcv);
-      flags |= SC_MIDI_CONTROLLER;
     break;
     case ModifyMidiCtrlVal:
 #ifdef _PENDING_OPS_DEBUG_
@@ -848,7 +844,6 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                        _imcv->second.part, _imcv->second.val, _intA);
 #endif      
       _imcv->second.val = _intA;
-      flags |= SC_MIDI_CONTROLLER;
     break;
     
     

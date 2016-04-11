@@ -4,6 +4,7 @@
 //  $Id: appearance.cpp,v 1.11.2.5 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,6 +21,9 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
+
+#include <stdio.h>
+#include <errno.h>
 
 #include <QAbstractButton>
 #include <QButtonGroup>
@@ -174,7 +178,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       id = new IdListViewItem(0, aid, "PartColors");
 
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
-             new IdListViewItem(0x400 + i, id, MusEGlobal::config.partColorNames[i]);
+             new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
            new IdListViewItem(0x41f, aid, "Ruler background");
@@ -234,8 +238,22 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x507, id, "aux label");
            new IdListViewItem(0x508, id, "synth label");
            //   0x509 is already used (between 502 and 503)
-
+           new IdListViewItem(0x50a, id, "Slider default");
+           new IdListViewItem(0x50b, id, "Pan slider");
+           new IdListViewItem(0x50c, id, "Gain slider");
+           new IdListViewItem(0x50d, id, "Audio volume");
+           new IdListViewItem(0x50e, id, "Midi volume");
+           new IdListViewItem(0x50f, id, "Audio controller default");
+           new IdListViewItem(0x510, id, "Audio property default");
+           new IdListViewItem(0x511, id, "Midi controller default");
+           new IdListViewItem(0x512, id, "Midi property default");
+           new IdListViewItem(0x513, id, "Audio meter primary");
+           new IdListViewItem(0x514, id, "Midi meter primary");
+           
       colorNameLineEdit->setEnabled(false);
+
+      connect(loadColorsButton, SIGNAL(clicked(bool)), SLOT(loadColors()));
+      connect(saveColorsButton, SIGNAL(clicked(bool)), SLOT(saveColors()));
       
       connect(colorNameLineEdit, SIGNAL(editingFinished()), SLOT(colorNameEditFinished()));
       connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
@@ -310,6 +328,26 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //updateColor();
       }
 
+void Appearance::setConfigurationColors()
+{
+  palette0->setStyleSheet(QString("background-color: ") + config->palette[0].name());
+  palette1->setStyleSheet(QString("background-color: ") + config->palette[1].name());
+  palette2->setStyleSheet(QString("background-color: ") + config->palette[2].name());
+  palette3->setStyleSheet(QString("background-color: ") + config->palette[3].name());
+  palette4->setStyleSheet(QString("background-color: ") + config->palette[4].name());
+  palette5->setStyleSheet(QString("background-color: ") + config->palette[5].name());
+  palette6->setStyleSheet(QString("background-color: ") + config->palette[6].name());
+  palette7->setStyleSheet(QString("background-color: ") + config->palette[7].name());
+  palette8->setStyleSheet(QString("background-color: ") + config->palette[8].name());
+  palette9->setStyleSheet(QString("background-color: ") + config->palette[9].name());
+  palette10->setStyleSheet(QString("background-color: ") + config->palette[10].name());
+  palette11->setStyleSheet(QString("background-color: ") + config->palette[11].name());
+  palette12->setStyleSheet(QString("background-color: ") + config->palette[12].name());
+  palette13->setStyleSheet(QString("background-color: ") + config->palette[13].name());
+  palette14->setStyleSheet(QString("background-color: ") + config->palette[14].name());
+  palette15->setStyleSheet(QString("background-color: ") + config->palette[15].name());
+}
+      
 //---------------------------------------------------------
 //   resetValues
 //---------------------------------------------------------
@@ -320,24 +358,7 @@ void Appearance::resetValues()
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
 
-      QPalette pal;
-      
-      palette0->setStyleSheet(QString("background-color: ") + config->palette[0].name());
-      palette1->setStyleSheet(QString("background-color: ") + config->palette[1].name());
-      palette2->setStyleSheet(QString("background-color: ") + config->palette[2].name());
-      palette3->setStyleSheet(QString("background-color: ") + config->palette[3].name());
-      palette4->setStyleSheet(QString("background-color: ") + config->palette[4].name());
-      palette5->setStyleSheet(QString("background-color: ") + config->palette[5].name());
-      palette6->setStyleSheet(QString("background-color: ") + config->palette[6].name());
-      palette7->setStyleSheet(QString("background-color: ") + config->palette[7].name());
-      palette8->setStyleSheet(QString("background-color: ") + config->palette[8].name());
-      palette9->setStyleSheet(QString("background-color: ") + config->palette[9].name());
-      palette10->setStyleSheet(QString("background-color: ") + config->palette[10].name());
-      palette11->setStyleSheet(QString("background-color: ") + config->palette[11].name());
-      palette12->setStyleSheet(QString("background-color: ") + config->palette[12].name());
-      palette13->setStyleSheet(QString("background-color: ") + config->palette[13].name());
-      palette14->setStyleSheet(QString("background-color: ") + config->palette[14].name());
-      palette15->setStyleSheet(QString("background-color: ") + config->palette[15].name());
+      setConfigurationColors();
       
       global_bg->takeChildren();
       user_bg->takeChildren();
@@ -420,8 +441,11 @@ void Appearance::resetValues()
       globalAlphaSlider->blockSignals(false);
       globalAlphaVal->blockSignals(false);
       
-      updateColor();
+      maxAliasedPointSize->blockSignals(true);
+      maxAliasedPointSize->setValue(config->maxAliasedPointSize);
+      maxAliasedPointSize->blockSignals(false);
       
+      updateColor();
 }
 
 QString &Appearance::getSetDefaultStyle(const QString *newStyle)
@@ -643,6 +667,7 @@ void Appearance::apply()
       fontSize0->setValue(QApplication::font().pointSize());
       config->canvasShowGrid = arrGrid->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
+      config->maxAliasedPointSize = maxAliasedPointSize->value();
 
       if (radioButtonDrawOutline->isChecked())
         config->waveDrawing = MusEGlobal::WaveOutLine;
@@ -672,10 +697,25 @@ void Appearance::colorNameEditFinished()
   QString etxt = colorNameLineEdit->text();
   QString txt = item->text(0);
   // We only support part color names, for now.
-  if(id >= 0x400 && id < (0x400 + NUM_PARTCOLORS))
+  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
     config->partColorNames[id & 0xff] = etxt;
   if(etxt != txt)
     item->setText(0, etxt);
+}
+
+void Appearance::loadColors()
+{
+  if(!MusEGlobal::muse->loadConfigurationColors(this))
+  {
+    fprintf(stderr, "Appearance::loadColors failed\n");
+    return;
+  }  
+  resetValues();
+}
+
+void Appearance::saveColors()
+{
+  MusEGlobal::muse->saveConfigurationColors(this);
 }
 
 //---------------------------------------------------------
@@ -766,28 +806,14 @@ void Appearance::colorItemSelectionChanged()
             return;
             }
       bool enle = false;
+      if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
+      {
+        lastSelectedColorItem = item;
+        color = &config->partColors[id & 0xff];
+        enle = true;
+      }
+      else
       switch(id) {
-            case 0x400: // "Default"
-            case 0x401: // "Refrain"
-            case 0x402: // "Bridge"
-            case 0x403: // "Intro"
-            case 0x404: // "Coda"
-            case 0x405: // "Chorus"
-            case 0x406: // "Solo"
-            case 0x407: // "Brass"
-            case 0x408: // "Percussion"
-            case 0x409: // "Drums"
-            case 0x40a: // "Guitar"
-            case 0x40b: // "Bass"
-            case 0x40c: // "Flute"
-            case 0x40d: // "Strings
-            case 0x40e: // "Keyboard
-            case 0x40f: // "Piano
-            case 0x410: // "Saxophon
-                  lastSelectedColorItem = item;
-                  color = &config->partColors[id & 0xff];
-                  enle = true;
-                  break;
             case 0x100: color = &config->bigTimeBackgroundColor; break;
             case 0x101: color = &config->bigTimeForegroundColor; break;
             case 0x200: color = &config->transportHandleColor; break;
@@ -844,6 +870,18 @@ void Appearance::colorItemSelectionChanged()
             case 0x508: color = &config->synthTrackLabelBg;  break;
             //   0x509 is already used (between 502 and 503)
             
+            case 0x50a: color = &config->sliderDefaultColor;                  break;
+            case 0x50b: color = &config->panSliderColor;                      break;
+            case 0x50c: color = &config->gainSliderColor;                     break;
+            case 0x50d: color = &config->audioVolumeSliderColor;              break;
+            case 0x50e: color = &config->midiVolumeSliderColor;               break;
+            case 0x50f: color = &config->audioControllerSliderDefaultColor;   break;
+            case 0x510: color = &config->audioPropertySliderDefaultColor;     break;
+            case 0x511: color = &config->midiControllerSliderDefaultColor;    break;
+            case 0x512: color = &config->midiPropertySliderDefaultColor;      break;
+            case 0x513: color = &config->audioMeterPrimaryColor;              break;
+            case 0x514: color = &config->midiMeterPrimaryColor;               break;
+      
             default:
                   color = 0;
                   break;

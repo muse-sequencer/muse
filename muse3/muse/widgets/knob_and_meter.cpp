@@ -273,7 +273,7 @@ void KnobWithMeter::drawKnob(QPainter* p, const QRect& r)
 //.u  Description
 //  Called by QwtSliderBase
 //------------------------------------------------------------
-// void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &/*button*/, int &scrollMode, int &direction)// prevent compiler warning : unsused parameter 
+// void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &/*button*/, const Qt::KeyboardModifiers& /*modifiers*/, int &scrollMode, int &direction)// prevent compiler warning : unsused parameter 
 // {
 //     int dx, dy, r;
 //     double arc;

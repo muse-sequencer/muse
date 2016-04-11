@@ -1085,7 +1085,6 @@ bool Song::event(QEvent* _e)
                   int tick = MusEGlobal::song->cpos();
                   MidiPlayEvent ev(tick, track->outPort(), chan, ME_CONTROLLER, num, val);
                   MusEGlobal::audio->msgPlayMidiEvent(&ev);
-                  MusEGlobal::song->update(SC_MIDI_CONTROLLER); 
                   break;
                   }
             case QPybridgeEvent::SONG_SETAUDIOVOL: {

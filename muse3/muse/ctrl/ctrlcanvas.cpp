@@ -468,11 +468,6 @@ void CtrlCanvas::songChanged(MusECore::SongChangedFlags_t type)
   if(editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
   
-  //printf("CtrlCanvas::songChanged type:%x\n", type);  
-  // Is it simply a midi controller value adjustment? Forget it.
-  if(type == SC_MIDI_CONTROLLER)
-    return;
-            
   if(type & SC_CONFIG)
     setFont(MusEGlobal::config.fonts[3]);  
   

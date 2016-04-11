@@ -5,6 +5,7 @@
 //
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//    (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,8 +26,6 @@
 #include <cmath>
 
 #include <QPainter>
-// REMOVE Tim. Trackinfo. Added.
-//#include <QWidget>
 #include <QRect>
 #include <QFontMetrics>
 #include <QString>
@@ -35,8 +34,6 @@
 
 #include "mmath.h"
 #include "scldraw.h"
-
-//#include <stdio.h> // REMOVE Tim. Trackinfo. For fprintf.
 
 namespace MusEGui {
 
@@ -107,13 +104,6 @@ static const double WorstCase = -8.8888888888888888888888e-88;
 //------------------------------------------------------------
 ScaleDraw::ScaleDraw()
 {
-/*    d_hpad   = 6;
-    d_vpad   = 3;
-    d_majLen = 8;
-    d_medLen = 6;
-    d_minLen = 4;
-  */
-
     d_hpad   = 3;
     d_vpad   = 1;
     d_majLen = 4;
@@ -185,19 +175,14 @@ QString ScaleDraw::composeLabelText(double val, char fmt, int prec) const
   if(fmt == 'M')
   {
     if(val > 1000000000.0)
-      //return QString::number(val / 1000000000.0, 'g', prec) + "G";
       return QString("%L1").arg(val / 1000000000.0, 0, 'g', prec) + "G";
     else if(val > 1000000.0)
-      //return QString::number(val / 1000000.0, 'g', prec) + "M";
       return QString("%L1").arg(val / 1000000.0, 0, 'g', prec) + "M";
     else if(val > 1000.0)
-      //return QString::number(val / 1000.0, 'g', prec) + "K";
       return QString("%L1").arg(val / 1000.0, 0, 'g', prec) + "K";
     else
-      //return QString::number(val, 'g', prec);
       return QString("%L1").arg(val, 0, 'g', prec);
   }
-  //return QString::number(val, fmt, prec);
   return QString("%L1").arg(val, 0, fmt, prec);
 }
 
@@ -214,23 +199,16 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
 
       int i,k,kmax;
 
-    // REMOVE Tim. Trackinfo. Added.
     p->setPen(palette.text().color());
     const int majCnt = d_scldiv.majCnt();
     const int minCnt = d_scldiv.minCnt();
 
-    
-    // REMOVE Tim. Trackinfo. Changed.
-//     for (i=0; i< d_scldiv.majCnt(); i++)
     for (i=0; i< majCnt; i++)
     {
         val = d_scldiv.majMark(i);
         drawTick(p, palette, curValue, val, d_majLen);
-    // REMOVE Tim. Trackinfo. Removed.
-//         drawLabel(p, palette, curValue, val);
     }
 
-    // REMOVE Tim. Trackinfo. Added.
     for (i=0; i< majCnt; i++)
     {
         val = d_scldiv.majMark(i);
@@ -240,7 +218,6 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
     
     if (d_scldiv.logScale())
     {
-//         for (i=0; i< d_scldiv.minCnt(); i++)
         for (i=0; i< minCnt; i++)
         {
             drawTick(p,palette,curValue,d_scldiv.minMark(i),d_minLen);
@@ -249,14 +226,12 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
     else
     {
         k = 0;
-//         kmax = d_scldiv.majCnt() - 1;
         kmax = majCnt - 1;
         if (kmax > 0)
         {
            majTick = d_scldiv.majMark(0);
            hval = majTick - 0.5 * d_scldiv.majStep();
 
-//            for (i=0; i< d_scldiv.minCnt(); i++)
            for (i=0; i< minCnt; i++)
            {
                val = d_scldiv.minMark(i);
@@ -305,8 +280,6 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
       double arc;
   int x1, x2, y1, y2;
 
-  //QFontMetrics fm = p->fontMetrics();
-  
   switch(d_orient)
   {
   case Right:
@@ -319,8 +292,6 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
       break;
       
   case InsideHorizontal:
-      //p->drawLine(tval, d_yorg + d_majLen + d_vpad + fm.ascent(), tval, d_yorg + len);
-      //p->drawLine(tval, d_yorg - d_vpad - fm.ascent(), tval, d_yorg - d_vpad);
       p->drawLine(tval, d_vpad + d_majLen - len, tval, d_vpad + d_majLen);
       break;
 
@@ -353,9 +324,6 @@ void ScaleDraw::drawTick(QPainter *p, const QPalette& /*palette*/, double /*curV
   }
 
 }
-
-
-
 
 //------------------------------------------------------------
 //.-
@@ -393,23 +361,15 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
     switch(d_orient)
     {
     case Right:
-// REMOVE Tim. Trackinfo. Changed.      
-// 	p->drawText(d_xorg + d_majLen + d_hpad,
-// 		    tval + (fm.ascent()-1) / 2,
-// 		    label);
         x0 = d_xorg + d_majLen + d_hpad;
         y0 = tval + (fm.ascent()-1) / 2;
 	break;
     case Left:
     case InsideVertical:
-// 	p->drawText(d_xorg - d_majLen - d_hpad - fm.width(label),
-// 		    tval + (fm.ascent() -1) / 2,
-// 		    label);
         x0 = d_xorg - d_majLen - d_hpad - fm.width(label);
         y0 = tval + (fm.ascent() -1) / 2;
 	break;
     case Bottom:
-// 	p->drawText(tval - (fm.width(label)-1) / 2, d_yorg + d_majLen + d_vpad + fm.ascent(), label);
         x0 = tval - (fm.width(label)-1) / 2;
         y0 = d_yorg + d_majLen + d_vpad + fm.ascent();
 	break;
@@ -437,52 +397,30 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	
 	if (arc < -pi_75)
 	{
-// 	    p->drawText(xpos - MusECore::qwtInt(double(fm.width(label))
-// 				      * (1.0 + (arc + pi_75) * M_2_PI) ),
-// 			ypos + fm.ascent() - 1,
-// 			label);
          x0 = xpos - MusECore::qwtInt(double(fm.width(label))
                                    * (1.0 + (arc + pi_75) * M_2_PI));
          y0 = ypos + fm.ascent() - 1;
 	}
 	else if (arc < -M_PI_4)
 	{
-// // 	    p->drawText(xpos - fm.width(label),
-// 			
-// 			
-// 			ypos - MusECore::qwtInt(double(fm.ascent() - 1)
-// 				      * (arc + M_PI_4) * M_2_PI),
-// 			label);
             x0 = xpos - fm.width(label);
             y0 = ypos - MusECore::qwtInt(double(fm.ascent() - 1)
                                       * (arc + M_PI_4) * M_2_PI);
 	}
 	else if (arc < pi_4)
 	{
-// 	    p->drawText(xpos + MusECore::qwtInt(double(fm.width(label))
-// 				      * ( arc - M_PI_4 ) * M_2_PI ),
-// 			ypos,
-// 			label);
             x0 = xpos + MusECore::qwtInt(double(fm.width(label))
                                       * ( arc - M_PI_4 ) * M_2_PI );
             y0 = ypos;
 	}
 	else if (arc < pi_75)
 	{
-// 	    p->drawText(xpos,
-// 			ypos + MusECore::qwtInt(double(fm.ascent() - 1)
-// 				      * (arc - M_PI_4) * M_2_PI),
-// 			label);
             x0 = xpos;
             y0 = ypos + MusECore::qwtInt(double(fm.ascent() - 1)
                                       * (arc - M_PI_4) * M_2_PI);
 	}
 	else
 	{
-// 	    p->drawText(xpos - MusECore::qwtInt(double(fm.width(label))
-// 				      * ( arc - pi_75) * M_2_PI ),
-// 			ypos + fm.ascent() - 1,
-// 			label);
             x0 = xpos - MusECore::qwtInt(double(fm.width(label))
                                       * ( arc - pi_75) * M_2_PI );
             y0 = ypos + fm.ascent() - 1;
@@ -490,13 +428,11 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 	break;
     case Top:
     default:
-// 	p->drawText(tval - (fm.width(label)-1) / 2, d_yorg - d_majLen - d_vpad, label);
         x0 = tval - (fm.width(label)-1) / 2;
         y0 = d_yorg - d_majLen - d_vpad;
 	break;
     }
 
-// REMOVE Tim. Trackinfo. Added.
   switch(d_textHighlightMode)
   {
     case TextHighlightNone:
@@ -524,28 +460,24 @@ void ScaleDraw::drawLabel(QPainter *p, const QPalette& palette, double curValue,
 
     case TextHighlightShadow:
       // Text shadow:
-      //p->setPen(palette.shadow().color());
       p->setPen(Qt::black);
       p->drawText(x0 + 1, y0 + 1, label);
       // Text:
-      //p->setPen(palette.brightText().color().darker(120));  // Meh, not quite so bright,
       p->setPen(QColor(Qt::white).darker(120));  // Meh, not quite so bright,
       p->drawText(x0, y0, label);
     break;
     
     case TextHighlightSplitAndShadow:
-      //fprintf(stderr, "ScaleDraw::drawLabel val:%.20f curValue:%.20f\n", val, curValue); // REMOVE Tim. Trackinfo.
+      //fprintf(stderr, "ScaleDraw::drawLabel val:%.20f curValue:%.20f\n", val, curValue);
       if(val > curValue)
       {
-        //fprintf(stderr, "   drawing normal\n"); // REMOVE Tim. Trackinfo.
+        //fprintf(stderr, "   drawing normal\n");
         p->setPen(palette.text().color());
         p->drawText(x0, y0, label);
       }
       else
       {
         // Text shadow:
-        //p->setPen(palette.text().color());
-        //p->setPen(palette.shadow().color());
         p->setPen(Qt::black);
         p->drawText(x0 + 1, y0 + 1, label);
         // Text:
@@ -690,205 +622,6 @@ void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o
 	break;
     }
 }
-
-
-
-// REMOVE Tim. Trackinfo. Changed.
-// //------------------------------------------------------------
-// //
-// //.F	ScaleDraw::maxWidth
-// //	Return the maximum width of the scale for a specified QPainter
-// //
-// //.u	Syntax
-// //.f	int ScaleDraw::maxWidth(QPainter *p)
-// //
-// //.u	Parameters
-// //.p	QPainter *p -- painter
-// //	bool worst -- if TRUE, assume the worst possible case. If FALSE,
-// //			calculate the real maximum width, which is more
-// //			CPU intensive.
-// //
-// //------------------------------------------------------------
-// int ScaleDraw::maxWidth(QPainter *p, bool worst) const
-// {
-//     int rv = 0;
-//     int bw = p->pen().width();
-// 
-//     QString s;
-// 
-//     QFontMetrics fm = p->fontMetrics();
-// 
-//     rv = maxLabelWidth(p,worst);
-// 
-//     switch (d_orient)
-//     {
-//     case Left:
-//     case Right:
-// 	rv += (bw + d_hpad + d_majLen);
-// 	break;
-//     case Round:
-// 	rv += (bw + d_vpad + d_majLen);
-// 	break;
-//     case Top:
-//     case Bottom:
-//     default:
-// 	rv += d_len;
-//     }
-// 
-//     return rv;
-// 
-// }
-// 
-// //------------------------------------------------------------
-// //
-// //.F	ScaleDraw::maxHeight
-// //	Return the maximum height of the scale for the
-// //	specified painter
-// //
-// //.u	Syntax
-// //.f	int ScaleDraw::maxHeight(QPainter *p)
-// //
-// //.u	Parameters
-// //.p	QPainter *p
-// //
-// //------------------------------------------------------------
-// int ScaleDraw::maxHeight(QPainter *p) const
-// {
-// 
-//     int rv = 0;
-//     int bw = p->pen().width();
-// 
-//     p->save();
-//     QFontMetrics fm = p->fontMetrics();
-// 
-//     switch (d_orient)
-//     {
-//     case Top:
-//     case Bottom:
-//     case Round:
-// 	rv = bw + d_vpad + d_majLen + fm.height();
-// 	break;
-//     case Left:
-//     case Right:
-//     default:
-// 	rv = d_len + ((fm.height() + 1) / 2);
-//     }
-// 
-//     return rv;
-// 
-// }
-// 
-// //------------------------------------------------------------
-// //
-// //.F ScaleDraw:maxBoundingRect
-// //	Return the maximum bounding rectangle of the scale
-// //	for a specified painter
-// //
-// //.u Parameters
-// //.p  QPainter *p -- painter
-// //
-// //.u Description
-// //	The bounding rectangle is not very exact for round scales
-// //	with strange angle ranges.
-// //
-// //------------------------------------------------------------
-// QRect ScaleDraw::maxBoundingRect(QPainter *p) const
-// {
-//     int i, wl; //,wmax;
-//     int a, ar, amin, amax;
-//     double arc;
-// 
-//     QRect r;
-// 
-//     QFontMetrics fm = p->fontMetrics();
-// 
-//     wl = maxLabelWidth(p, true);
-// 
-//     switch(d_orient)
-//     {
-//     case Left:
-// 	
-// 	r = QRect( d_xorg - d_hpad - d_majLen - wl,
-// 		  d_yorg - fm.ascent(),
-// 		  d_majLen + d_hpad + wl,
-// 		  d_len + fm.height());
-// 	break;
-// 	
-//     case Right:
-// 	
-// 	r = QRect( d_xorg,
-// 		  d_yorg - fm.ascent(),
-// 		  d_majLen + d_hpad + wl,
-// 		  d_len + fm.height());
-// 	break;
-// 	
-//     case Top:
-// 	
-// 	r = QRect ( d_xorg - wl / 2,
-// 		   d_yorg - d_majLen - fm.ascent(),
-// 		   d_len + wl,
-// 		   d_majLen + d_vpad + fm.ascent());
-// 	break;
-// 	
-//     case Bottom:
-// 	
-// 	r = QRect ( d_xorg - wl / 2,
-// 		   d_yorg,
-// 		   d_len + wl,
-// 		   d_majLen + d_vpad + fm.height());
-// 	break;
-// 	
-//     case Round:
-// 
-// 	amin = 2880;
-// 	amax = 0;
-// 	ar = 0;
-// 
-// 	for (i=0; i< d_scldiv.majCnt(); i++)
-// 	{
-// 	    a = transform(d_scldiv.majMark(i));
-// 	
-// 	    while (a > 2880) a -= 5760;
-// 	    while (a < - 2880) a += 5760;
-// 
-// 	    ar = MusECore::qwtAbs(a);
-// 
-// 	    if (ar < amin) amin = ar;
-// 	    if (ar > amax) amax = ar;
-// 
-// 	}
-// 
-// 	for (i=0; i< d_scldiv.minCnt(); i++)
-// 	{
-// 	    a = transform(d_scldiv.majMark(i));
-// 	
-// 	    while (a > 2880) a -= 5760;
-// 	    while (a < - 2880) a += 5760;
-// 
-// 	    ar = MusECore::qwtAbs(a);
-// 
-// 	    if (ar < amin) amin = ar;
-// 	    if (ar > amax) amax = ar;
-// 	}
-// 
-// 	arc = double(amin) / 16.0 * M_PI / 180.0;
-// 	r.setTop(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
-// 		 + fm.ascent() );
-// 
-// 	arc = double(amax) / 16.0 * M_PI / 180.0;
-// 	r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
-// 		    + fm.height() );
-// 
-// 	//wmax = d_len + d_majLen + d_hpad + wl; DELETETHIS
-// 
-// 	r.setLeft(d_xorg - d_majLen - d_hpad - wl);
-// 	r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));
-// 	break;
-//     }
-// 
-//     return r;
-// 
-// }
 
 //------------------------------------------------------------
 //
@@ -1140,54 +873,6 @@ void ScaleDraw::setLabelFormat(char f, int prec)
     d_prec = prec;
 }
 
-// REMOVE Tim. Trackinfo. Changed.
-// //------------------------------------------------------------
-// //
-// //.F	ScaleDraw::maxLabelWidth
-// //	Return the maximum width of a label
-// //
-// //.u	Syntax
-// //.f	int ScaleDraw::maxLabelWidth(QPainter *p, int worst)
-// //
-// //.u	Parameters
-// //.p	QPainter *p -- painter
-// //	int worst -- If TRUE, take the worst case. If FALSE, take
-// //			the actual width of the largest label.
-// //
-// //------------------------------------------------------------
-// int ScaleDraw::maxLabelWidth(QPainter *p, bool worst) const
-// {
-// 
-//     int i,rv = 0;
-//     double val;
-//     QString s;
-// 
-// 
-//     QFontMetrics fm = p->fontMetrics();
-// 
-//     if (worst)			// worst case
-//     {
-// 	s.setNum(WorstCase, d_fmt, d_prec);
-// 	rv = fm.width(s);
-//     }
-//     else				// actual width
-//     {
-// 	for (i=0;i<d_scldiv.majCnt(); i++)
-// 	{
-//       val = d_scldiv.majMark(i);
-// 	    // correct rounding errors if val = 0
-// 	    if ((!d_scldiv.logScale()) && (MusECore::qwtAbs(val) < step_eps * MusECore::qwtAbs(d_scldiv.majStep())))
-// 	       val = 0.0;
-// 	    s.setNum(val, d_fmt, d_prec);
-// 	    rv = MusECore::qwtMax(rv,fm.width(s));
-// 	}
-//     }
-// 
-// 
-//     return rv;
-// 
-// }
-
 //------------------------------------------------------------
 //
 //.F    ScaleDraw::maxLabelWidth
@@ -1286,12 +971,5 @@ int ScaleDraw::scaleWidth(int penWidth) const
 //------------------------------------------------------------
 
 } // namespace MusEGui
-
-
-
-
-
-
-
 
 

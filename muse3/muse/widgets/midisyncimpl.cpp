@@ -277,8 +277,7 @@ MidiSyncConfig::~MidiSyncConfig()
 void MidiSyncConfig::songChanged(MusECore::SongChangedFlags_t flags)
 {
       // Is it simply a midi controller value adjustment? Forget it. Otherwise, it's mainly midi port/device changes we want.
-      if(flags == SC_MIDI_CONTROLLER || 
-         !(flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+      if(!(flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                     SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                     SC_MIDI_CONTROLLER_ADD)))
         return;

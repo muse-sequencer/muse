@@ -22,8 +22,10 @@
 //=========================================================
 
 #include "widget_stack.h"
+#include "scrollbar.h"
 
 #include <QWheelEvent>
+#include <QVBoxLayout>
 
 namespace MusEGui {
 
@@ -31,16 +33,15 @@ namespace MusEGui {
 //   WidgetStack
 //---------------------------------------------------------
 
-WidgetStack::WidgetStack(QWidget* parent, const char* name)
-   : QWidget(parent)
-      {
-      setObjectName(name);
-      top = -1;
-      _sizeHintMode = StackHint;
-      }
+WidgetStack::WidgetStack(QWidget* parent, const char* name, SizeHintMode sizeHintMode)
+   : QWidget(parent), _sizeHintMode(sizeHintMode)
+{
+    setObjectName(name);
+    top = -1;
+}
 
 //---------------------------------------------------------
-//   raiseWidget
+//  raiseWidget
 //---------------------------------------------------------
 
 void WidgetStack::raiseWidget(int idx)
@@ -56,7 +57,10 @@ void WidgetStack::raiseWidget(int idx)
       if (idx >= n)
             return;
       if (stack[idx])
+      {
+            resizeStack(size());
             stack[idx]->show();
+      }
       }
 
 //---------------------------------------------------------
@@ -70,7 +74,10 @@ void WidgetStack::addWidget(QWidget* w, unsigned int n)
       if (stack.size() <= n )
             stack.push_back(w);
       else
+      {
             stack[n] = w;
+            resizeStack(size());
+      }
       }
 
 QWidget* WidgetStack::getWidget(unsigned int n)
@@ -102,15 +109,17 @@ QSize WidgetStack::minimumSizeHint() const
 
       QSize s(0,0);
       
-      // REMOVE Tim. Trackinfo. Added.
       // Check if we want only the visible widget...
       if(sizeHintMode() == VisibleHint && stack[top])
       {
         QSize ss = stack[top]->minimumSizeHint();
         if (!ss.isValid())
+        {
+              //fprintf(stderr, "WidgetStack::minimumSizeHint: minimumSizeHint invalid, getting minimumSize\n");
               ss = stack[top]->minimumSize();
-        s = s.expandedTo(ss);
-        return s;
+        }
+        //fprintf(stderr, "WidgetStack::minimumSizeHint w:%d h:%d\n", ss.width(), ss.height());
+        return ss;
       }
       
       for (unsigned int i = 0; i < stack.size(); ++i) {
@@ -134,4 +143,58 @@ void WidgetStack::wheelEvent(QWheelEvent* ev)
       emit redirectWheelEvent(ev);
       }
 
+void WidgetStack::resizeStack(const QSize& newSize)
+{
+  if(QWidget* widget = visibleWidget())
+  {
+    QSize wsz = widget->minimumSizeHint();
+    if(!wsz.isValid())
+      wsz = widget->minimumSize();
+    
+    QSize sz(newSize);
+    if(sz.width() < wsz.width())
+      sz.setWidth(wsz.width());
+    if(sz.height() < wsz.height())
+      sz.setHeight(wsz.height());
+    
+    widget->resize(sz);
+  }
+}
+      
+void WidgetStack::resizeEvent(QResizeEvent* e)
+{
+  e->ignore();
+  QWidget::resizeEvent(e);
+  resizeStack(e->size());
+}
+
+QSize WidgetStack::sizeHint() const 
+{
+  QSize s(0,0);
+  // Check if we want only the visible widget...
+  if(sizeHintMode() == VisibleHint)
+  {
+    if(top == -1 || !stack[top])
+      return s;
+    
+    QSize ss = stack[top]->sizeHint();
+    if(ss.isValid())
+      return ss;
+    else
+      return s;
+  } 
+  
+  for(unsigned int i = 0; i < stack.size(); ++i) 
+  {
+    if(stack[i]) 
+    {
+      QSize ss = stack[i]->sizeHint();
+      if(ss.isValid())
+        s = s.expandedTo(ss);
+    }
+  }
+  return s;
+}
+
+      
 } // namespace MusEGui

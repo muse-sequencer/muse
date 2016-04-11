@@ -195,11 +195,8 @@ void ClipListEdit::closeEvent(QCloseEvent* e)
 
 void ClipListEdit::songChanged(MusECore::SongChangedFlags_t type)
       {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if(type == SC_MIDI_CONTROLLER)
-        return;
-    
-      updateList();
+      if(type & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+        updateList();
       }
 
 //---------------------------------------------------------

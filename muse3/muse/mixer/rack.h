@@ -4,6 +4,7 @@
 //  $Id: rack.h,v 1.5.2.3 2006/09/24 19:32:31 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License

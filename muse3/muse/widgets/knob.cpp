@@ -115,9 +115,6 @@ void Knob::setTotalAngle (double angle)
 
 void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
       {
-      //if(vmin == d_minValue && vmax == d_maxValue && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
-      //  return;
-      
       // divide by zero protection. probably too cautious
       if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
             {
@@ -213,6 +210,19 @@ void Knob::valueChange()
       recalcAngle();
       d_newVal++;
       repaint(kRect);
+      
+      // HACK
+      // In direct mode let the inherited classes (this) call these in their valueChange() methods, 
+      //  so that they may be called BEFORE valueChanged signal is emitted by the setPosition() call above.
+      // ScrDirect mode only happens once upon press with a modifier. After that, another mode is set.
+      // Hack: Since valueChange() is NOT called if nothing changed, in that case these are called for us by the SliderBase.
+      if(d_scrollMode == ScrDirect)
+      {
+        processSliderPressed(id());
+        emit sliderPressed(id());
+      }
+      
+      // Emits valueChanged if tracking enabled.
       SliderBase::valueChange();
       }
 
@@ -250,10 +260,10 @@ double Knob::getValue(const QPoint &p)
 
     if (fabs(newValue - eqValue) > 0.5 * oneTurn)
     {
-  if (newValue < eqValue)
-     newValue += oneTurn;
-  else
-     newValue -= oneTurn;
+      if (newValue < eqValue)
+        newValue += oneTurn;
+      else
+        newValue -= oneTurn;
     }
 
     return newValue;  
@@ -274,8 +284,17 @@ double Knob::getValue(const QPoint &p)
 //.u  Description
 //  Called by QwtSliderBase
 //------------------------------------------------------------
-void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &/*button*/, int &scrollMode, int &direction)// prevent compiler warning : unsused parameter 
+void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction)
 {
+  // If modifier or button is held, jump directly to the position at first.
+  // After handling it, the caller can change to SrcMouse scroll mode.
+  if(modifiers & Qt::ControlModifier || button == Qt::MidButton)
+    {
+      scrollMode = ScrDirect;
+      direction = 0;
+      return;
+    }
+  
     int dx, dy, r;
     double arc;
 
@@ -324,31 +343,6 @@ void Knob::rangeChange()
     recalcAngle();
     resize(size());
     repaint();
-}
-
-void Knob::mousePressEvent(QMouseEvent *e)
-{
-  if (e->button() == Qt::MidButton || e->modifiers() & Qt::ControlModifier) {
-    int xpos = e->x() - width() /2;
-    double v = float(e->y()) / height() * 1.2;
-
-    double halfRange = (maxValue() - minValue())/2;
-    double midValue = minValue() + halfRange;
-    // apply to range
-    if (xpos < 0) { // left values
-     v = -v;
-    }
-    setValue(v * halfRange + midValue);
-    SliderBase::valueChange();
-    emit sliderMoved(value(),id()); // sliderMoved is used by auxChanged
-    
-    // fake a left-click to make the knob still "stick" to
-    // the mouse.
-    QMouseEvent temp(e->type(), e->pos(), Qt::LeftButton, e->buttons(), e->modifiers());
-    SliderBase::mousePressEvent(&temp);
-    return;
-  }
-  SliderBase::mousePressEvent(e);
 }
 
 //---------------------------------------------------------

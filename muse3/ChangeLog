@@ -1,3 +1,29 @@
+11.04.2016:
+    (By Tim:)
+        - Completed (mostly) work on arranger, trackinfo, strip makeovers.
+    * New Appearance Settings:
+        - Several new 'Mixer' colour settings: Sliders, gain, pan, aux etc.
+        - New: Load and save colour settings. Share or backup your custom colours!
+    * New audio/midi mixer strip 'Component Rack' system, streamlined and unified:
+        - Configurable controllers, properties, and other selectable 'components'.
+        - Not quite ready yet, user-configurability hidden for now...
+    * New UI control functions:
+        - All descendants of SliderBase (Slider, CompactSlider, Knob, ThinSlider etc)
+           now support three adjustments 'modes':
+              Normal:  Control moves with mouse.
+                Jump:  Holding ctrl/middle mouse button jumps immediately to the value.
+            No-track:  Holding shift changes the value only when mouse is released.
+        - Reworked automation rec/play functions to fully support these modes.
+    * Bug fixes:
+        - New: Discrete trackinfo panel parts have been replaced with a 
+                unified class TrackInfoWidget, where classes WidgetStack, Scrollbar,
+                and TrackInfoLayout are combined into one widget.
+               Undesirable recursive things in the previous layout have been minimized
+                by using this container to hold everything.
+        - Full rework: Bottom area of arranger: Caused runaway width in some cases!
+          TODO: Drum editor has a similar sizing problem, difficult to shrink sometimes.
+        - Reworked Global and Appearance Settings dialogs to be smaller.
+        - Some other small fixes.
 24.03.2016:
          - Changed lilv/lib.c: lilv_lib_open(): Added RTLD_DEEPBIND to dlopen() call. (Tim)
            Fixes at least two Qt4-based external-ui synths (synthv1, drumk) crashing.

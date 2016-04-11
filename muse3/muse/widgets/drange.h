@@ -5,6 +5,7 @@
 //
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -44,7 +45,6 @@ class DoubleRange
       double d_value;
       double d_exactValue;
       double d_exactPrevValue;
-      double d_prevValue;
       bool d_periodic;
       bool d_log;
       bool d_integer;
@@ -59,8 +59,6 @@ class DoubleRange
       double convertTo(double x, ConversionMode mode = ConvertDefault) const;
       double exactValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactValue, mode); }
       double exactPrevValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactPrevValue, mode); }
-      double prevValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_prevValue, mode); }
-      bool valHasChanged() const { return d_value != d_prevValue; }
       virtual void valueChange() {}
       virtual void stepChange()  {}
       virtual void rangeChange() {}
@@ -69,7 +67,6 @@ class DoubleRange
       DoubleRange();
       virtual ~DoubleRange(){}
 
-//       double value() const    { return d_value; }
       double value(ConversionMode mode = ConvertDefault) const;
       virtual void setValue(double x, ConversionMode mode = ConvertDefault);
 

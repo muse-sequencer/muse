@@ -6,7 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -104,14 +104,9 @@ class Meter : public QFrame, public ScaleIf {
       double minScale, maxScale;
       int yellowScale, redScale;
       int cur_pixv, last_pixv, cur_pixmax, last_pixmax;
-      // REMOVE Tim. Trackinfo. Added.
       bool _showText;
-      //QPixmap _textPM;
-      //QFont _textFont;
       QString _text;
-      //QSize _textSize;
       QRect _textRect;
-      //void updateTextPM(double val);
       void updateText(double val);
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);

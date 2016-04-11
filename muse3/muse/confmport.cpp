@@ -266,7 +266,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
             }  
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::audio->msgUpdateSoloStates();
-            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);                    
+            MusEGlobal::song->update(SC_ROUTE);
 
             // Stop at the first output channel found.
             break;

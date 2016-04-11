@@ -421,12 +421,8 @@ void MarkerView::deleteMarker()
 //   songChanged
 //---------------------------------------------------------
 
-void MarkerView::songChanged(MusECore::SongChangedFlags_t flags)
+void MarkerView::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 {
-  // Is it simply a midi controller value adjustment? Forget it.
-  if(flags == SC_MIDI_CONTROLLER)
-    return;
-    
   updateList();
 }
 

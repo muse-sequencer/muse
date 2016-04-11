@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2010 Werner Schweer and others (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -122,6 +122,8 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   oRButton->setIconSize(routesMidiOutIcon->size());  
   //oRButton->setOffPixmap(routesMidiOutIcon);
 
+  updateRouteButtons();
+  
   recordButton->setFocusPolicy(Qt::NoFocus);
   progRecButton->setFocusPolicy(Qt::NoFocus);
   volRecButton->setFocusPolicy(Qt::NoFocus);
@@ -463,6 +465,41 @@ void MidiTrackInfo::heartBeat()
           iPan->blockSignals(false);
         }  
       }  
+      
+      if(iTransp->value() != track->transposition)
+      {
+        iTransp->blockSignals(true);
+        iTransp->setValue(track->transposition);
+        iTransp->blockSignals(false);
+      }
+      
+      if(iAnschl->value() != track->velocity)
+      {
+        iAnschl->blockSignals(true);
+        iAnschl->setValue(track->velocity);
+        iAnschl->blockSignals(false);
+      }
+      
+      if(iVerz->value() != track->delay)
+      {
+        iVerz->blockSignals(true);
+        iVerz->setValue(track->delay);
+        iVerz->blockSignals(false);
+      }
+      
+      if(iLen->value() != track->len)
+      {
+        iLen->blockSignals(true);
+        iLen->setValue(track->len);
+        iLen->blockSignals(false);
+      }
+      
+      if(iKompr->value() != track->compression)
+      {
+        iKompr->blockSignals(true);
+        iKompr->setValue(track->compression);
+        iKompr->blockSignals(false);
+      }
     }  
     break;
     
@@ -500,9 +537,6 @@ void MidiTrackInfo::configChanged()
 
 void MidiTrackInfo::songChanged(MusECore::SongChangedFlags_t type)
 {
-  // Is it simply a midi controller value adjustment? Forget it.
-  if(type == SC_MIDI_CONTROLLER)
-    return;
   if(type == SC_SELECTION || type == SC_PART_SELECTION || type == SC_TRACK_SELECTION)
     return;
   if(!isVisible())  
@@ -574,7 +608,7 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             MusEGlobal::audio->msgIdle(false);
             
             MusEGlobal::audio->msgUpdateSoloStates();
-            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+            MusEGlobal::song->update(SC_ROUTE);
             --_blockHeartbeatCount;
             }
       }
@@ -599,7 +633,7 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       MusEGlobal::audio->msgIdle(false);
       
       MusEGlobal::audio->msgUpdateSoloStates();
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
+      MusEGlobal::song->update(SC_ROUTE);
       --_blockHeartbeatCount;
       }
 
@@ -914,7 +948,6 @@ void MidiTrackInfo::iLautstChanged(int val)
           MusECore::ME_CONTROLLER, MusECore::CTRL_VOLUME, val);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }  
-      MusEGlobal::song->update(SC_MIDI_CONTROLLER);
     }
 
 //---------------------------------------------------------
@@ -927,7 +960,6 @@ void MidiTrackInfo::iTranspChanged(int val)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       track->transposition = val;
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -940,7 +972,6 @@ void MidiTrackInfo::iAnschlChanged(int val)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       track->velocity = val;
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -953,7 +984,6 @@ void MidiTrackInfo::iVerzChanged(int val)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       track->delay = val;
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -966,7 +996,6 @@ void MidiTrackInfo::iLenChanged(int val)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       track->len = val;
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -979,7 +1008,6 @@ void MidiTrackInfo::iKomprChanged(int val)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       track->compression = val;
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -1009,7 +1037,6 @@ void MidiTrackInfo::iPanChanged(int val)
           MusECore::ME_CONTROLLER, MusECore::CTRL_PANPOT, val);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }  
-      MusEGlobal::song->update(SC_MIDI_CONTROLLER);
     }
 
 //---------------------------------------------------------
@@ -1219,8 +1246,6 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
       --_blockHeartbeatCount;
     }
   }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -1306,8 +1331,6 @@ void MidiTrackInfo::iProgLBankDoubleCLicked()
 //     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
 //     MusEGlobal::audio->msgPlayMidiEvent(&ev);
   }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -1354,8 +1377,6 @@ void MidiTrackInfo::iProgramDoubleClicked()
     if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
   }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -1411,8 +1432,6 @@ void MidiTrackInfo::iLautstDoubleClicked()
     if(mp->hwCtrlState(chan, MusECore::CTRL_VOLUME) != MusECore::CTRL_VAL_UNKNOWN)
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_VOLUME, MusECore::CTRL_VAL_UNKNOWN);
   }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -1468,8 +1487,6 @@ void MidiTrackInfo::iPanDoubleClicked()
     if(mp->hwCtrlState(chan, MusECore::CTRL_PANPOT) != MusECore::CTRL_VAL_UNKNOWN)
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PANPOT, MusECore::CTRL_VAL_UNKNOWN);
   }
-  
-  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 
@@ -1479,9 +1496,6 @@ void MidiTrackInfo::iPanDoubleClicked()
 
 void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
 {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if(flags == SC_MIDI_CONTROLLER)
-        return;
       if(flags == SC_SELECTION || flags == SC_PART_SELECTION || flags == SC_TRACK_SELECTION)
         return;
         
@@ -1499,7 +1513,8 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
       MusECore::MidiInstrument* instr = mp->instrument();
       
-      if(flags & (SC_MIDI_INSTRUMENT))  
+      // If a port's instrument changed. Also if a track's output port changed, the instrument changed.
+      if(flags & (SC_MIDI_INSTRUMENT | SC_ROUTE))  
       {
         if(instr)
         {
@@ -1513,24 +1528,10 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
           instrPushButton->setText(tr("<unknown>"));
       }
         
-      if(flags & (SC_MIDI_TRACK_PROP))  
-      {
-        iTransp->blockSignals(true);
-        iAnschl->blockSignals(true);
-        iVerz->blockSignals(true);
-        iLen->blockSignals(true);
-        iKompr->blockSignals(true);
-        iTransp->setValue(track->transposition);
-        iAnschl->setValue(track->velocity);
-        iVerz->setValue(track->delay);
-        iLen->setValue(track->len);
-        iKompr->setValue(track->compression);
-        iTransp->blockSignals(false);
-        iAnschl->blockSignals(false);
-        iVerz->blockSignals(false);
-        iLen->blockSignals(false);
-        iKompr->blockSignals(false);
-        
+      if (flags & SC_ROUTE) {
+        updateRouteButtons();
+      }
+      if (flags & SC_CONFIG) {
         iOutput->blockSignals(true);
         iOutput->clear();
   
@@ -1553,7 +1554,10 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         iOutputChannel->blockSignals(true);
         iOutputChannel->setValue(outChannel+1);
         iOutputChannel->blockSignals(false);
-        
+      }
+      
+      if(flags & (SC_MIDI_TRACK_PROP))  
+      {
         // Set record echo.
         if(recEchoButton->isChecked() != track->recEcho())
         {
@@ -1771,5 +1775,39 @@ void MidiTrackInfo::resizeEvent(QResizeEvent* ev)
   setLabelText();  
   setLabelFont();
 }  
+
+void MidiTrackInfo::updateRouteButtons()
+{
+  if(!selected)
+    return;
+  
+  if (iRButton)
+  {
+      if (selected->noInRoute())
+      {
+        iRButton->setStyleSheet("background-color:red;");
+        iRButton->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
+      }
+      else
+      {
+        iRButton->setStyleSheet("");
+        iRButton->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+      }
+  }
+
+  if (oRButton)
+  {
+    if (selected->noOutRoute())
+    {
+      oRButton->setStyleSheet("background-color:red;");
+      oRButton->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
+    }
+    else
+    {
+      oRButton->setStyleSheet("");
+      oRButton->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+    }
+  }
+}
 
 } // namespace MusEGui

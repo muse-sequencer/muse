@@ -114,7 +114,6 @@ class Track {
       int _lastActivity;
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
-      // REMOVE Tim. Trackinfo. Added.
       bool _isClipped[MAX_CHANNELS]; //used in audio mixer strip. Persistent.
 
       int _y;
@@ -125,8 +124,6 @@ class Track {
       // The selection order of this track, compared to other selected tracks.
       // The selected track with the highest selected order is the most recent selected.
       int _selectionOrder;
-      // REMOVE Tim. Trackinfo. Removed.
-//       bool _isClipped; //used in audio mixer strip. Persistent.
 
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
@@ -177,8 +174,8 @@ class Track {
       // routing
       RouteList* inRoutes()    { return &_inRoutes; }
       RouteList* outRoutes()   { return &_outRoutes; }
-      bool noInRoute() const   { return _inRoutes.empty();  }
-      bool noOutRoute() const  { return _outRoutes.empty(); }
+      virtual bool noInRoute() const   { return _inRoutes.empty();  }
+      virtual bool noOutRoute() const  { return _outRoutes.empty(); }
       void writeRouting(int, Xml&) const;
       bool isCircularRoute(Track* dst);   
       int auxRefCount() const { return _auxRouteCount; }  // Number of Aux Tracks with routing paths to this track. 
@@ -246,9 +243,6 @@ class Track {
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
       bool isVisible();
-// REMOVE Tim. Trackinfo. Changed.
-//       inline bool isClipped() { return _isClipped; }
-//       void resetClipper() { _isClipped = false; }
       inline bool isClipped(int ch) const { if(ch >= MAX_CHANNELS) return false; return _isClipped[ch]; }
       void resetClipper() { for(int ch = 0; ch < MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
@@ -331,6 +325,9 @@ class MidiTrack : public Track {
       
       // Backward compatibility: For reading old songs.
       void setInPortAndChannelMask(unsigned int portmask, int chanmask); 
+      
+      // Overriden for special midi output behaviour.
+      virtual bool noOutRoute() const;
       
       void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }

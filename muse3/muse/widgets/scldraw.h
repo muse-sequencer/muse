@@ -5,6 +5,7 @@
 //
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//    (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -103,11 +104,6 @@ class ScaleDraw : public DiMap {
       QString specialText() const           { return _specialText; }
       void setSpecialText(const QString& s) { _specialText = s; }
       
-// REMOVE Tim. Trackinfo. Changed.
-//       QRect maxBoundingRect(QPainter *p) const;
-//       int maxWidth(QPainter *p, bool worst = true) const;
-//       int maxHeight(QPainter *p) const;
-//       int maxLabelWidth(QPainter *p, bool worst = true) const;
       QRect maxBoundingRect(const QFontMetrics& fm) const;
       int maxWidth(const QFontMetrics& fm, bool worst = true, int penWidth = 1) const;
       int maxHeight(const QFontMetrics& fm, int penWidth = 1) const;
@@ -120,10 +116,4 @@ class ScaleDraw : public DiMap {
 } // namespace MusEGui
 
 #endif
-
-
-
-
-
-
 

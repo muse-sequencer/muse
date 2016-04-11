@@ -42,6 +42,7 @@
 #include "midi_warn_init_pending_impl.h"
 #include "gconfig.h"
 #include "operations.h"
+#include "ctrl.h"
 
 namespace MusECore {
 
@@ -328,12 +329,35 @@ void Audio::msgSwapControllerIDX(AudioTrack* node, int idx1, int idx2)
 
 void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
 {
-      AudioMsg msg;
+//       AudioMsg msg;
+//       
+//       msg.id     = AUDIO_CLEAR_CONTROLLER_EVENTS;
+//       msg.snode  = node;
+//       msg.ival   = acid;
+//       sendMsg(&msg);
       
-      msg.id     = AUDIO_CLEAR_CONTROLLER_EVENTS;
-      msg.snode  = node;
-      msg.ival   = acid;
-      sendMsg(&msg);
+      
+  ciCtrlList icl = node->controller()->find(acid);
+  if(icl == node->controller()->end())
+    return;
+  
+  CtrlList* cl = icl->second;
+  if(cl->empty())
+      return;
+    
+  CtrlList& clr = *icl->second;
+      
+  // The Undo system will take 'ownership' of these and delete them at the appropriate time.
+  CtrlList* erased_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
+  erased_list_items->insert(cl->begin(), cl->end());
+    
+  if(erased_list_items->empty())
+  {
+    delete erased_list_items;
+    return;
+  }
+
+  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node->controller(), erased_list_items, 0));
 }
 
 //---------------------------------------------------------
@@ -370,13 +394,15 @@ void Audio::msgSeekNextACEvent(AudioTrack* node, int acid)
 
 void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
 {
-      AudioMsg msg;
+//       AudioMsg msg;
+//       
+//       msg.id     = AUDIO_ERASE_AC_EVENT;
+//       msg.snode  = node;
+//       msg.ival   = acid;
+//       msg.a      = frame; 
+//       sendMsg(&msg);
       
-      msg.id     = AUDIO_ERASE_AC_EVENT;
-      msg.snode  = node;
-      msg.ival   = acid;
-      msg.a      = frame; 
-      sendMsg(&msg);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, node, acid, frame));
 }
 
 //---------------------------------------------------------
@@ -385,14 +411,50 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
 
 void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int frame2)
 {
-      AudioMsg msg;
+//       AudioMsg msg;
+//       
+//       msg.id     = AUDIO_ERASE_RANGE_AC_EVENTS;
+//       msg.snode  = node;
+//       msg.ival   = acid;
+//       msg.a      = frame1; 
+//       msg.b      = frame2; 
+//       sendMsg(&msg);
       
-      msg.id     = AUDIO_ERASE_RANGE_AC_EVENTS;
-      msg.snode  = node;
-      msg.ival   = acid;
-      msg.a      = frame1; 
-      msg.b      = frame2; 
-      sendMsg(&msg);
+  ciCtrlList icl = node->controller()->find(acid);
+  if(icl == node->controller()->end())
+    return;
+  
+  CtrlList* cl = icl->second;
+  if(cl->empty())
+      return;
+    
+  if(frame2 < frame1)
+  {
+    const int tmp = frame1;
+    frame1 = frame2;
+    frame2 = tmp;
+  }
+      
+  iCtrl s = cl->lower_bound(frame1);
+  iCtrl e = cl->lower_bound(frame2);
+  
+  // No elements to erase?
+  if(s == cl->end())
+    return;
+  
+  CtrlList& clr = *icl->second;
+      
+  // The Undo system will take 'ownership' of these and delete them at the appropriate time.
+  CtrlList* erased_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
+  erased_list_items->insert(s, e);
+    
+  if(erased_list_items->empty())
+  {
+    delete erased_list_items;
+    return;
+  }
+
+  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node->controller(), erased_list_items, 0));
 }
 
 //---------------------------------------------------------
@@ -401,14 +463,16 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
 
 void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
 {
-      AudioMsg msg;
+//       AudioMsg msg;
+//       
+//       msg.id     = AUDIO_ADD_AC_EVENT;
+//       msg.snode  = node;
+//       msg.ival   = acid;
+//       msg.a      = frame; 
+//       msg.dval   = val;
+//       sendMsg(&msg);
       
-      msg.id     = AUDIO_ADD_AC_EVENT;
-      msg.snode  = node;
-      msg.ival   = acid;
-      msg.a      = frame; 
-      msg.dval   = val;
-      sendMsg(&msg);
+       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal, node, acid, frame, val));
 }
 
 //---------------------------------------------------------

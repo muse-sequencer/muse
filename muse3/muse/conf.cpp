@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <QFile>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
 
@@ -930,6 +932,29 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.auxTrackBg = readColor(xml);
                         else if (tag == "synthTrackBg")
                               MusEGlobal::config.synthTrackBg = readColor(xml);
+
+                        else if (tag == "sliderDefaultColor")
+                              MusEGlobal::config.sliderDefaultColor = readColor(xml);
+                        else if (tag == "panSliderColor")
+                              MusEGlobal::config.panSliderColor = readColor(xml);
+                        else if (tag == "gainSliderColor")
+                              MusEGlobal::config.gainSliderColor = readColor(xml);
+                        else if (tag == "audioVolumeSliderColor")
+                              MusEGlobal::config.audioVolumeSliderColor = readColor(xml);
+                        else if (tag == "midiVolumeSliderColor")
+                              MusEGlobal::config.midiVolumeSliderColor = readColor(xml);
+                        else if (tag == "audioControllerSliderDefaultColor")
+                              MusEGlobal::config.audioControllerSliderDefaultColor = readColor(xml);
+                        else if (tag == "audioPropertySliderDefaultColor")
+                              MusEGlobal::config.audioPropertySliderDefaultColor = readColor(xml);
+                        else if (tag == "midiControllerSliderDefaultColor")
+                              MusEGlobal::config.midiControllerSliderDefaultColor = readColor(xml);
+                        else if (tag == "midiPropertySliderDefaultColor")
+                              MusEGlobal::config.midiPropertySliderDefaultColor = readColor(xml);
+                        else if (tag == "audioMeterPrimaryColor")
+                              MusEGlobal::config.audioMeterPrimaryColor = readColor(xml);
+                        else if (tag == "midiMeterPrimaryColor")
+                              MusEGlobal::config.midiMeterPrimaryColor = readColor(xml);
                         
                         else if (tag == "extendedMidi")
                               MusEGlobal::config.extendedMidi = xml.parseInt();
@@ -1018,6 +1043,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "drumListBackgroundColor")
                               MusEGlobal::config.drumListBg = readColor(xml);
 
+                        else if (tag == "maxAliasedPointSize")
+                              MusEGlobal::config.maxAliasedPointSize = xml.parseInt();
+                        
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
                         /* Obsolete. done by song's toplevel list. arrangerview also handles arranger.
@@ -1420,6 +1448,95 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             }
       xml.tag(level, "/sequencer");
       }
+      
+      
+static void writeConfigurationColors(int level, MusECore::Xml& xml)
+{
+     for (int i = 0; i < 16; ++i) {
+            char buffer[32];
+            sprintf(buffer, "palette%d", i);
+            xml.colorTag(level, buffer, MusEGlobal::config.palette[i]);
+            }
+
+      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+            char buffer[32];
+            sprintf(buffer, "partColor%d", i);
+            xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
+            }
+
+      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+            char buffer[32];
+            sprintf(buffer, "partColorName%d", i);
+            xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
+            }
+
+      xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
+      xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
+      xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
+      xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
+      xml.colorTag(level, "trackSectionDividerColor", MusEGlobal::config.trackSectionDividerColor);
+
+      xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
+      xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
+      xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
+      xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
+      xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
+      xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
+      xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
+      xml.colorTag(level, "groupTrackLabelBg",  MusEGlobal::config.groupTrackLabelBg);
+      xml.colorTag(level, "auxTrackLabelBg2",   MusEGlobal::config.auxTrackLabelBg);
+      xml.colorTag(level, "synthTrackLabelBg",  MusEGlobal::config.synthTrackLabelBg);
+      
+      xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
+      xml.colorTag(level, "ctrlGraphFg",   MusEGlobal::config.ctrlGraphFg);
+      xml.colorTag(level, "drumTrackBg",   MusEGlobal::config.drumTrackBg);
+      xml.colorTag(level, "newDrumTrackBg",MusEGlobal::config.newDrumTrackBg);
+      xml.colorTag(level, "waveTrackBg",   MusEGlobal::config.waveTrackBg);
+      xml.colorTag(level, "outputTrackBg", MusEGlobal::config.outputTrackBg);
+      xml.colorTag(level, "inputTrackBg",  MusEGlobal::config.inputTrackBg);
+      xml.colorTag(level, "groupTrackBg",  MusEGlobal::config.groupTrackBg);
+      xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
+      xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
+
+      xml.colorTag(level, "sliderDefaultColor",  MusEGlobal::config.sliderDefaultColor);
+      xml.colorTag(level, "panSliderColor",  MusEGlobal::config.panSliderColor);
+      xml.colorTag(level, "gainSliderColor",  MusEGlobal::config.gainSliderColor);
+      xml.colorTag(level, "audioVolumeSliderColor",  MusEGlobal::config.audioVolumeSliderColor);
+      xml.colorTag(level, "midiVolumeSliderColor",  MusEGlobal::config.midiVolumeSliderColor);
+      xml.colorTag(level, "audioControllerSliderDefaultColor",  MusEGlobal::config.audioControllerSliderDefaultColor);
+      xml.colorTag(level, "audioPropertySliderDefaultColor",  MusEGlobal::config.audioPropertySliderDefaultColor);
+      xml.colorTag(level, "midiControllerSliderDefaultColor",  MusEGlobal::config.midiControllerSliderDefaultColor);
+      xml.colorTag(level, "midiPropertySliderDefaultColor",  MusEGlobal::config.midiPropertySliderDefaultColor);
+      xml.colorTag(level, "audioMeterPrimaryColor",  MusEGlobal::config.audioMeterPrimaryColor);
+      xml.colorTag(level, "midiMeterPrimaryColor",  MusEGlobal::config.midiMeterPrimaryColor);
+      
+      xml.colorTag(level, "transportHandleColor",  MusEGlobal::config.transportHandleColor);
+      xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
+      xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
+      xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
+      xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
+      xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
+      xml.colorTag(level, "rulerCurrentColor", MusEGlobal::config.rulerCurrent);
+
+      xml.colorTag(level, "waveNonselectedPart", MusEGlobal::config.waveNonselectedPart);
+      xml.colorTag(level, "wavePeakColor", MusEGlobal::config.wavePeakColor);
+      xml.colorTag(level, "waveRmsColor", MusEGlobal::config.waveRmsColor);
+      xml.colorTag(level, "wavePeakColorSelected", MusEGlobal::config.wavePeakColorSelected);
+      xml.colorTag(level, "waveRmsColorSelected", MusEGlobal::config.waveRmsColorSelected);
+
+      xml.colorTag(level, "partWaveColorPeak", MusEGlobal::config.partWaveColorPeak);
+      xml.colorTag(level, "partWaveColorRms", MusEGlobal::config.partWaveColorRms);
+      xml.colorTag(level, "partMidiDarkEventColor", MusEGlobal::config.partMidiDarkEventColor);
+      xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
+
+      xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
+      xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
+
+      xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
+      xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
+}
+      
 
 } // namespace MusECore
 
@@ -1445,6 +1562,63 @@ void MusE::writeGlobalConfiguration() const
       fclose(f);
       }
 
+bool MusE::loadConfigurationColors(QWidget* parent)
+{
+  if(!parent)
+    parent = this;
+  QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+  if(file.isEmpty())
+    return false;
+  
+  if(QMessageBox::question(parent, QString("MusE"),
+      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
+      QString::null, 0, 1 ) == 1)
+    return false;
+  
+  // Read, and return if error.
+  if(MusECore::readConfiguration(file.toLatin1().constData()))   // True if error.
+  {
+    fprintf(stderr, "MusE::loadConfigurationColors failed\n");
+    return false;
+  }
+  // Notify app, and write into configuration file.
+  changeConfig(true); 
+  return true;
+}
+
+bool MusE::saveConfigurationColors(QWidget* parent)
+{
+  if(!parent)
+    parent = this;
+  QString file = QFileDialog::getSaveFileName(parent, tr("Save configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+  if(file.isEmpty())
+    return false;
+
+  if(QFile::exists(file))
+  {
+    if(QMessageBox::question(parent, QString("MusE"),
+        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
+        QString::null, 0, 1 ) == 1)
+      return false;
+  }
+  FILE* f = fopen(file.toLatin1().constData(), "w");
+  if (f == 0) 
+  {
+    fprintf(stderr, "save configuration colors to <%s> failed: %s\n",
+        file.toLatin1().constData(), strerror(errno));
+    return false;
+  }
+  MusECore::Xml xml(f);
+  xml.header();
+  xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+  xml.tag(1, "configuration");
+  MusECore::writeConfigurationColors(2, xml);
+  xml.etag(1, "configuration");
+  xml.tag(0, "/muse");
+  fclose(f);
+  return true;
+}
+      
 void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "configuration");
@@ -1541,7 +1715,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
 
-
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
             sprintf(buffer, "font%d", i);
@@ -1550,52 +1723,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
             
       xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);
       
-      for (int i = 0; i < 16; ++i) {
-            char buffer[32];
-            sprintf(buffer, "palette%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.palette[i]);
-            }
-
-      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "partColor%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
-            }
-
-      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "partColorName%d", i);
-            xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
-            }
-
-      xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
-      xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
-      xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
-      xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
-      xml.colorTag(level, "trackSectionDividerColor", MusEGlobal::config.trackSectionDividerColor);
-
-      xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
-      xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
-      xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
-      xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
-      xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
-      xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
-      xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
-      xml.colorTag(level, "groupTrackLabelBg",  MusEGlobal::config.groupTrackLabelBg);
-      xml.colorTag(level, "auxTrackLabelBg2",   MusEGlobal::config.auxTrackLabelBg);
-      xml.colorTag(level, "synthTrackLabelBg",  MusEGlobal::config.synthTrackLabelBg);
+      MusECore::writeConfigurationColors(level, xml);
       
-      xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
-      xml.colorTag(level, "ctrlGraphFg",   MusEGlobal::config.ctrlGraphFg);
-      xml.colorTag(level, "drumTrackBg",   MusEGlobal::config.drumTrackBg);
-      xml.colorTag(level, "newDrumTrackBg",MusEGlobal::config.newDrumTrackBg);
-      xml.colorTag(level, "waveTrackBg",   MusEGlobal::config.waveTrackBg);
-      xml.colorTag(level, "outputTrackBg", MusEGlobal::config.outputTrackBg);
-      xml.colorTag(level, "inputTrackBg",  MusEGlobal::config.inputTrackBg);
-      xml.colorTag(level, "groupTrackBg",  MusEGlobal::config.groupTrackBg);
-      xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
-      xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
-
       xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
@@ -1621,32 +1750,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "canvasBgPixmap", MusEGlobal::config.canvasBgPixmap);
       xml.strTag(level, "canvasCustomBgList", MusEGlobal::config.canvasCustomBgList.join(";"));
 
-      xml.colorTag(level, "transportHandleColor",  MusEGlobal::config.transportHandleColor);
-      xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
-      xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
-      xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
-      xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
-      xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
-      xml.colorTag(level, "rulerCurrentColor", MusEGlobal::config.rulerCurrent);
-
-      xml.colorTag(level, "waveNonselectedPart", MusEGlobal::config.waveNonselectedPart);
-      xml.colorTag(level, "wavePeakColor", MusEGlobal::config.wavePeakColor);
-      xml.colorTag(level, "waveRmsColor", MusEGlobal::config.waveRmsColor);
-      xml.colorTag(level, "wavePeakColorSelected", MusEGlobal::config.wavePeakColorSelected);
-      xml.colorTag(level, "waveRmsColorSelected", MusEGlobal::config.waveRmsColorSelected);
-
-      xml.colorTag(level, "partWaveColorPeak", MusEGlobal::config.partWaveColorPeak);
-      xml.colorTag(level, "partWaveColorRms", MusEGlobal::config.partWaveColorRms);
-      xml.colorTag(level, "partMidiDarkEventColor", MusEGlobal::config.partMidiDarkEventColor);
-      xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
-
-      xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
-      xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
-      xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
-
-      xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
-      xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
-
+      xml.intTag(level, "maxAliasedPointSize", MusEGlobal::config.maxAliasedPointSize);
+      
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 
       writeSeqConfiguration(level, xml, false);

@@ -4,7 +4,7 @@
 //  $Id: strip.cpp,v 1.6.2.5 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011 - 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -23,14 +23,14 @@
 //=========================================================
 
 #include <QToolButton>
-#include <QLabel>
 #include <QLayout>
 #include <QPalette>
 #include <QColor>
-#include <QVBoxLayout>
 #include <QFrame>
 #include <QMouseEvent>
 #include <QMenu>
+#include <QSignalMapper>
+#include <QString>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -44,10 +44,412 @@
 #include "icons.h"
 #include "undo.h"
 #include "amixer.h"
+#include "compact_slider.h"
+#include "elided_label.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
 
 using MusECore::UndoOp;
 
 namespace MusEGui {
+
+  
+//---------------------------------------------------------
+//   ComponentRack
+//---------------------------------------------------------
+
+ComponentRack::ComponentRack(int id, QWidget* parent, Qt::WindowFlags f) 
+  : QFrame(parent, f), _id(id)
+{ 
+  _layout = new ComponentRackLayout(this); // Install a layout manager.
+  _layout->setSpacing(0);
+  _layout->setContentsMargins(0, 0, 0, 0);
+}
+  
+void ComponentRack::addComponentWidget( const ComponentWidget& cw, const ComponentWidget& before )
+{
+  if(cw._widget)
+  {
+    int idx = -1;
+    if(before.isValid())
+    {
+      iComponentWidget ibcw = _components.find(before);
+      if(ibcw == _components.end())
+      {
+        DEBUG_STRIP(stderr, "ComponentRack::addComponent: 'before' item not found. Pushing back.\n");
+        _components.push_back(cw);
+      }
+      else
+      {
+        idx = _layout->indexOf(before._widget);
+        if(idx == -1)
+        {
+          DEBUG_STRIP(stderr, "ComponentRack::addComponent: 'before' widget not found. Pushing back.\n");
+          _components.push_back(cw);
+        }
+        else
+        {
+          DEBUG_STRIP(stderr, "ComponentRack::addComponent: 'before' widget found. Inserting. Layout idx:%d.\n", idx);
+          _components.insert(ibcw, cw);
+        }
+      }
+    }
+    else
+    {
+      DEBUG_STRIP(stderr, "ComponentRack::addComponent: 'before' item not valid. Pushing back.\n");
+      _components.push_back(cw);
+    }
+    
+    if(idx == -1)
+      _layout->addWidget(cw._widget);
+    else
+      _layout->insertWidget(idx, cw._widget);
+  }
+}
+
+void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const ComponentWidget& before )
+{
+  QPalette pal(palette());
+  ComponentWidget cw;
+  switch(desc->_widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
+      if(!d->_compactSlider)
+      {
+        CompactSlider* control = new CompactSlider(0, d->_objName, Qt::Horizontal, CompactSlider::None, d->_label);
+        d->_compactSlider = control;
+        control->setId(d->_index);
+        control->setRange(d->_min, d->_max, d->_step);
+        control->setValueDecimals(d->_precision);
+        control->setSpecialValueText(d->_specialValueText);
+        control->setHasOffMode(d->_hasOffMode);
+        control->setValueState(d->_initVal, d->_isOff);
+        control->setValPrefix(d->_prefix);
+        control->setValSuffix(d->_suffix);
+        control->setToolTip(d->_toolTipText);
+        control->setEnabled(d->_enabled);
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+        control->setContentsMargins(0, 0, 0, 0);
+        if(d->_color.isValid())
+          control->setBorderColor(d->_color);
+        if(d->_barColor.isValid())
+          control->setBarColor(d->_barColor);
+        if(d->_slotColor.isValid())
+          control->setSlotColor(d->_slotColor);
+        if(d->_thumbColor.isValid())
+          control->setThumbColor(d->_thumbColor);
+
+        control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+        
+        if(d->_changedSlot)
+          connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), d->_changedSlot);
+        if(d->_movedSlot)
+          connect(control, SIGNAL(sliderMoved(double,int,bool)), d->_movedSlot);
+        if(d->_pressedSlot)
+          connect(control, SIGNAL(sliderPressed(int)), d->_pressedSlot);
+        if(d->_releasedSlot)
+          connect(control, SIGNAL(sliderReleased(int)), d->_releasedSlot);
+        if(d->_rightClickedSlot)
+          connect(control, SIGNAL(sliderRightClicked(QPoint,int)), d->_rightClickedSlot);
+
+        switch(d->_componentType)
+        {
+          case controllerComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(controllerChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(controllerMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(controllerPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(controllerReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+          break;
+          
+          case propertyComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(propertyChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(propertyMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(propertyPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(propertyReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
+          break;
+        }
+      }
+      
+      cw = ComponentWidget(
+                            d->_compactSlider,
+                            d->_widgetType, 
+                            d->_componentType, 
+                            d->_index 
+                          );
+      
+    }
+    break;
+    
+    case ElidedLabelComponentWidget:
+    {
+      ElidedLabelComponentDescriptor* d = static_cast<ElidedLabelComponentDescriptor*>(desc);
+      if(!d->_elidedLabel)
+      {
+        ElidedLabel* control = new ElidedLabel(0, d->_elideMode);
+        d->_elidedLabel = control;
+        control->setObjectName(d->_objName);
+        
+        control->setId(d->_index);
+        control->setToolTip(d->_toolTipText);
+        control->setEnabled(d->_enabled);
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+        control->setContentsMargins(0, 0, 0, 0);
+
+        if(d->_color.isValid())
+        {
+          pal.setColor(QPalette::Active, QPalette::Button, d->_color); // Border
+          pal.setColor(QPalette::Inactive, QPalette::Button, d->_color); // Border
+          control->setPalette(pal);
+        }
+
+        if(d->_labelPressedSlot)
+          connect(control, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), d->_labelPressedSlot);
+        if(d->_labelReleasedSlot)
+          connect(control, SIGNAL(released(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), d->_labelReleasedSlot);
+
+        switch(d->_componentType)
+        {
+          case propertyComponent:
+            if(!d->_labelPressedSlot)
+              connect(control, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), 
+                      SLOT(labelPropertyPressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
+            if(!d->_labelReleasedSlot)
+              connect(control, SIGNAL(released(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), 
+                      SLOT(labelPropertyReleased(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
+          break;
+        }
+      }
+      
+      cw = ComponentWidget(
+                            d->_elidedLabel,
+                            d->_widgetType, 
+                            d->_componentType, 
+                            d->_index 
+                          );
+      
+    }
+    break;
+    
+    case ExternalComponentWidget:
+    {
+      WidgetComponentDescriptor* d = static_cast<WidgetComponentDescriptor*>(desc);
+      
+      QWidget* widget = d->_widget;
+      if(widget)
+      {
+        widget->setToolTip(d->_toolTipText);
+        widget->setEnabled(d->_enabled);
+        widget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+
+        if(d->_color.isValid())
+        {
+          pal.setColor(QPalette::Active, QPalette::Button, d->_color); // Border
+          pal.setColor(QPalette::Inactive, QPalette::Button, d->_color); // Border
+          widget->setPalette(pal);
+        }
+        
+        cw = ComponentWidget(
+                              d->_widget, 
+                              d->_widgetType, 
+                              d->_componentType,
+                              d->_index
+                            );
+      }
+    }
+    break;
+  }
+  
+  if(cw._widget)
+    addComponentWidget(cw, before);
+}
+  
+void ComponentRack::setComponentMinValue(const ComponentWidget& cw, double min)
+{
+  if(!cw._widget)
+    return;
+  
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(min != w->minValue())
+      {
+        w->blockSignals(true);
+        w->setMinValue(min);
+        w->blockSignals(false);
+      }
+    }
+    break;
+  }
+}
+
+void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max)
+{
+  if(!cw._widget)
+    return;
+  
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(max != w->maxValue())
+      {
+        w->blockSignals(true);
+        w->setMaxValue(max);
+        w->blockSignals(false);
+      }
+    }
+    break;
+  }
+}
+
+void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, double max, 
+                                      double step, int pageSize, 
+                                      DoubleRange::ConversionMode mode)
+{
+  if(!cw._widget)
+    return;
+  
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(min != w->minValue() || max != w->maxValue())
+      {
+        w->blockSignals(true);
+        if(min != w->minValue() && max != w->maxValue())
+          w->setRange(min, max, step, pageSize, mode);
+        else if(min != w->minValue())
+          w->setMinValue(max);
+        else
+          w->setMaxValue(max);
+        w->blockSignals(false);
+      }
+    }
+    break;
+  }
+}
+
+double ComponentRack::componentValue(const ComponentWidget& cw) const
+{
+  if(cw._widget)
+  {
+    switch(cw._widgetType)
+    {
+      case CompactSliderComponentWidget:
+        return static_cast<CompactSlider*>(cw._widget)->value();
+      break;
+    }
+  }
+  
+  return 0.0;
+}
+
+void ComponentRack::setComponentValue(const ComponentWidget& cw, double val)
+{
+  if(!cw._widget)
+    return;
+  
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      //if(val != cw->_currentValue) // TODO ?
+      if(val != w->value())
+      {
+        w->blockSignals(true);
+        w->setValue(val);
+        w->blockSignals(false);
+        //cw->_currentValue = val;  // TODO ?
+      }
+    }
+    break;
+  }
+}
+
+void ComponentRack::setComponentText(const ComponentWidget& cw, const QString& text)
+{
+  if(!cw._widget)
+    return;
+  
+  switch(cw._widgetType)
+  {
+    case ElidedLabelComponentWidget:
+    {
+      ElidedLabel* w = static_cast<ElidedLabel*>(cw._widget);
+      if(text != w->text())
+      {
+        w->blockSignals(true);
+        w->setText(text);
+        w->blockSignals(false);
+      }
+    }
+    break;
+  }
+}
+
+void ComponentRack::setComponentEnabled(const ComponentWidget& cw, bool enable)
+{
+  if(!cw._widget)
+    return;
+
+  // Nothing special for now. Just operate on the widget itself.
+  cw._widget->setEnabled(enable);
+}
+
+//---------------------------------------------------------
+//   configChanged
+//   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
+//---------------------------------------------------------
+
+void ComponentRack::configChanged() 
+{ 
+  for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    const ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    
+    switch(cw._widgetType)
+    {
+      case CompactSliderComponentWidget:
+      {
+        CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+        w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+      }
+      break;
+      
+//       case ElidedLabelComponentWidget:
+//       {
+//         ElidedLabel* w = static_cast<ElidedLabel*>(cw._widget);
+//         //w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+//       }
+//       break;
+
+      default:
+      break;
+    }
+  }
+}
 
 const int Strip::FIXED_METER_WIDTH = 10;
 
@@ -108,7 +510,6 @@ void Strip::setLabelFont()
 {
   // Use the new font #6 I created just for these labels (so far).
   // Set the label's font.
-// REMOVE Tim. Trackinfo. Changed.
   label->setFont(MusEGlobal::config.fonts[6]);
   label->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[6]));
   // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
@@ -183,7 +584,6 @@ void Strip::setLabelText()
 
 void Strip::muteToggled(bool val)
       {
-      //track->setMute(val);  // REMOVE Tim.
       MusEGlobal::audio->msgSetTrackMute(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
@@ -276,7 +676,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
       setLabelText();
       setLabelFont();
       
-      grid->addWidget(label, _curGridRow++, 0, 1, 3); // REMOVE Tim. Trackinfo. Changed. TEST
+      grid->addWidget(label, _curGridRow++, 0, 1, 3);
       }
 
 //---------------------------------------------------------
@@ -296,7 +696,7 @@ void Strip::addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment al
 {
   grid->addLayout(l, pos._row, pos._col, pos._rowSpan, pos._colSpan, alignment);
 }
-      
+
 //---------------------------------------------------------
 //   setAutomationType
 //---------------------------------------------------------
@@ -322,11 +722,44 @@ void Strip::setAutomationType(int t)
       
 void Strip::resizeEvent(QResizeEvent* ev)
 {
-  //printf("Strip::resizeEvent\n");  
+  DEBUG_STRIP(stderr, "Strip::resizeEvent\n");  
   QFrame::resizeEvent(ev);
   setLabelText();  
   setLabelFont();
 }  
+
+void Strip::updateRouteButtons()
+{
+  if (iR)
+  {
+      if (track->noInRoute())
+      {
+        iR->setStyleSheet("background-color:red;");
+        iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
+      }
+      else
+      {
+        iR->setStyleSheet("");
+        iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+      }
+  }
+
+  if (oR)
+  {
+    if (track->noOutRoute())
+    {
+      oR->setStyleSheet("background-color:red;");
+      oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
+    }
+    else
+    {
+      oR->setStyleSheet("");
+      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+    }
+  }
+}
+
+
 
 void Strip::mousePressEvent(QMouseEvent* ev)
 {
@@ -367,16 +800,16 @@ void Strip::mousePressEvent(QMouseEvent* ev)
       return;
     }
 
-    printf("Menu finished, data returned %d\n", act->data().toInt());
+    DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
 
     if (act->data().toInt() == 0)
     {
-      printf("Strip:: delete track\n");
+      DEBUG_STRIP(stderr, "Strip:: delete track\n");
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
     }
     else if (act->data().toInt() == 1)
     {
-      printf("Strip:: setStripVisible false \n");
+      DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
       setStripVisible(false);
       setVisible(false);
       MusEGlobal::song->update();
@@ -478,7 +911,6 @@ void ExpanderHandle::mouseMoveEvent(QMouseEvent* e)
     {
 //       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
 //       {
-//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeNone resize area hit\n"); // REMOVE Tim. Trackinfo.
 //         _resizeMode = ResizeModeHovering;
 //         setCursor(Qt::SizeHorCursor);
 //       }
@@ -491,7 +923,6 @@ void ExpanderHandle::mouseMoveEvent(QMouseEvent* e)
     {
 //       if(p.x() < (width() - frameWidth()) || p.x() >= width() || p.y() < 0 || p.y() >= height())
 //       {
-//         fprintf(stderr, "Strip::mouseMoveEvent ResizeModeHovering resize area not hit\n"); // REMOVE Tim. Trackinfo.
 //         _resizeMode = ResizeModeNone;
 //         unsetCursor();
 //       }
@@ -529,13 +960,11 @@ void ExpanderHandle::mouseReleaseEvent(QMouseEvent* e)
 //       const QPoint p = ev->pos();
 //       if(p.x() >= (width() - frameWidth()) && p.x() < width() && p.y() >= 0 && p.y() < height())
 //       {
-//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area hit\n"); // REMOVE Tim. Trackinfo.
 //         _resizeMode = ResizeModeHovering;
 //         setCursor(Qt::SizeHorCursor);
 //       }
 //       else
 //       {
-//         fprintf(stderr, "Strip::mouseReleaseEvent ResizeModeDragging resize area not hit\n"); // REMOVE Tim. Trackinfo.
 //         _resizeMode = ResizeModeNone;
 //         unsetCursor();
 //       }

@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pianoroll.h,v 1.5.2.4 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012-2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -69,9 +69,7 @@ class TimeLabel;
 class Toolbar1;
 class Piano;
 class TrackInfoToolBar;
-class ScrollBar;
-class WidgetStack;
-class TrackInfoLayout;
+class TrackInfoWidget;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -83,11 +81,8 @@ class PianoRoll : public MidiEditor {
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiStrip *midiStrip;
       MusEGui::MidiTrackInfo *midiTrackInfo;
-      QWidget* trackInfoWidget;
-      ScrollBar* infoScrollBar;
-      WidgetStack* trackInfo;
+      TrackInfoWidget* trackInfoWidget;
       QWidget* noTrackInfo;
-      TrackInfoLayout* _trackInfoGrid;
       MusECore::Track* selected;
       
       QAction* editCutAction; 
@@ -163,7 +158,7 @@ class PianoRoll : public MidiEditor {
       void setupNewCtrl(CtrlEdit* ctrlEdit);
       void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);
-      void genTrackInfo(QWidget* parent);
+      void genTrackInfo(TrackInfoWidget* trackInfo);
       void switchInfo(int);
 
       virtual void closeEvent(QCloseEvent*);
@@ -191,7 +186,6 @@ class PianoRoll : public MidiEditor {
       void deltaModeChanged(bool);
       void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
-      void infoScrollBarValueChanged(int value);
 
    signals:
       void isDeleting(MusEGui::TopWin*);

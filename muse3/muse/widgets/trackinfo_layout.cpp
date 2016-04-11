@@ -27,33 +27,44 @@
 #include <QGridLayout>
 #include <QSize>
 #include <QRect>
+#include <QResizeEvent>
 
 #include "trackinfo_layout.h"
 #include "splitter.h"
 #include "scrollbar.h"
 #include "widget_stack.h"
 #include "scrollscale.h"
+#include "ttoolbutton.h"
 
 namespace MusEGui {
 
 TrackInfoLayout::TrackInfoLayout(QWidget *parent, WidgetStack* stack, ScrollBar* sb, Splitter* splitter)
-                : QLayout(parent), _stack(stack), _sb(sb), _splitter(splitter)
+                : QHBoxLayout(parent), _stack(stack), _sb(sb), _splitter(splitter)
 { 
   _inSetGeometry = false;
   setContentsMargins(0, 0, 0, 0);
-  setSpacing(-1);
-  //_stack->setParent(parent);
-  //_sb->setParent(parent);
+  setSpacing(0);
+  _sbShowPending = false;
   _stackLi = new QWidgetItem(_stack);
   _sbLi = new QWidgetItem(_sb);
+  
+  addItem(_stackLi);
+  addItem(_sbLi);
 }
-      
+
+TrackInfoLayout::~TrackInfoLayout() 
+{ 
+}
+
 //---------------------------------------------------------
 //   setGeometry
 //---------------------------------------------------------
 
 void TrackInfoLayout::setGeometry(const QRect &rect)
       {
+      QHBoxLayout::setGeometry(rect);
+      return;
+        
       if(_inSetGeometry)
         return;
 
@@ -70,17 +81,25 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
       else
           s0 = _stack->minimumSizeHint();
       
-      int y2 = h;
-
-      int range = s0.height() - y2;
+      int range = s0.height() - h;
       if (range < 0)
             range = 0;
-      //fprintf(stderr, "TrackInfoLayout::setGeometry sb w:%d visible:%d split count:%d w:%d h:%d s0 height:%d range:%d y2:%d\n",
-      //                _sb->width(), _sb->isVisible(), _splitter->count(), w, h, s0.height(), range, y2);
+//       fprintf(stderr, "TrackInfoLayout::setGeometry sb w:%d visible:%d split count:%d w:%d h:%d s0 height:%d range:%d\n",
+//                      _sb->width(), _sb->isVisible(), _splitter->count(), w, h, s0.height(), range);
+      
       if (range)
-            _sb->setMaximum(range);
+      {
+        _sb->blockSignals(true);
+        _sb->setMaximum(range);
+        _sb->blockSignals(false);
+      }
 
       const bool vis = range != 0;
+      
+      // Was a show pending and the scrollbar is now visible? Reset the pending flag.
+      if(_sbShowPending && _sb->isVisible())
+        _sbShowPending = false;
+      
       if(_sb->isVisible() != vis)
       {
         if(_sb->isVisible())
@@ -91,58 +110,84 @@ void TrackInfoLayout::setGeometry(const QRect &rect)
           _sb->setVisible(false);
           if(_splitter)
           {
-            //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: split pos:%d\n",
-            //                sw);
+            //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: split pos:%d\n", sw);
             _inSetGeometry = true; 
-            _splitter->setPosition(1, sw);
+            _splitter->setPosition(1, sw);   // FIXME: Causes too wide on first startup, also when maximizing.
             _inSetGeometry = false; 
           }
-          _stackLi->setGeometry(QRect(0,  0,  sw, y2));  
+          _stackLi->setGeometry(QRect(0,  0,  sw, h));
+          //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget:%p w:%d\n", widget, sw);
           if(widget) 
           {
-            QSize r(sw, y2 < s0.height() ? s0.height() : y2);
-            //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget w:%d\n",
-            //                r.width());
-            //widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
-            widget->setGeometry(0, 0, r.width(), r.height()); 
+//             QSize r(sw, y2 < s0.height() ? s0.height() : y2);
+//             //fprintf(stderr, "TrackInfoLayout::setGeometry hide sb: widget w:%d\n",
+//             //                r.width());
+//             //widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+//             widget->setGeometry(0, 0, r.width(), r.height()); 
+            widget->move(0, 0);
           }
         }
         else
         {
+          // If an ancestor is NOT visible this will not happen until the ancestor becomes visible.
+          // Simply reading isVisible() immediately afterwards (below) would return FALSE.
           _sb->setVisible(true);
+          _sbShowPending = true;
+          
+          const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+          
           if(_splitter)
           {
             //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: split pos:%d\n",
-            //                w + _sb->width());
+            //               w + sbw);
             _inSetGeometry = true; 
-            _splitter->setPosition(1, w + _sb->width());
+            _splitter->setPosition(1, w + sbw); // FIXME: Causes too wide on first startup, also when maximizing.
             _inSetGeometry = false; 
           }
-          _stackLi->setGeometry(QRect(0,  0,  w, y2));  
+          _stackLi->setGeometry(QRect(0,  0,  w, h));  
+            //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: widget:%p w:%d\n", widget, w);
+//           _stackLi->setGeometry(QRect(0,  0,  w, y2 < s0.height() ? s0.height() : y2));  
           if(widget) 
           {
-            QSize r(w, y2 < s0.height() ? s0.height() : y2);
-            //fprintf(stderr, "TrackInfoLayout::setGeometry show sb: widget w:%d\n",
-            //                r.width());
-            widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+//             QSize r(w, y2 < s0.height() ? s0.height() : y2);
+//             widget->setGeometry(0, -_sb->value(), r.width(), r.height());
+            widget->move(0, -_sb->value());
           }
         }
       }
       else
       {
-        const int ww = _sb->isVisible() ?  w - _sb->width() : w;
-        _stackLi->setGeometry(QRect(0,  0,  ww, y2));  
+        int ww = w; 
+        if(_sb->isVisible() || _sbShowPending)
+          ww -= _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+          
+        //fprintf(stderr, "TrackInfoLayout::setGeometry not show/hide sb: widget:%p w:%d\n", widget, ww);
+        _stackLi->setGeometry(QRect(0,  0,  ww, h));  
+//         _stackLi->setGeometry(QRect(0,  0,  ww, h < s0.height() ? s0.height() : h));
         if(widget) 
         {
-          QSize r(ww, y2 < s0.height() ? s0.height() : y2);
-          //fprintf(stderr, "TrackInfoLayout::setGeometry not show/hide sb: widget w:%d\n",
-          //                r.width());
-          widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+//           QSize r(ww, y2 < s0.height() ? s0.height() : y2);
+//           widget->setGeometry(0, -_sb->value(), r.width(), r.height()); 
+          if(_sb->isVisible() || _sbShowPending)
+            widget->move(0, -_sb->value());
         }
       }
-      if(widget)
-        _sbLi->setGeometry(QRect(widget->width(), 0,  _sbLi->sizeHint().width(), y2));
+      
+      if(_sb->isVisible() || _sbShowPending)
+      {
+        const int sbw = _sb->isVisible() ? _sb->width() : _sbLi->sizeHint().width();
+        int sbx = w + (_sb->isVisible() ? -sbw : sbw); 
+        if(sbx < 0)
+          sbx = 0;
+        //fprintf(stderr, "TrackInfoLayout::setGeometry: sb visible or pending: setting _sbLi: x:%d w:%d\n", sbx, sbw);
+        _sbLi->setGeometry(QRect(sbx, 0,  sbw, h));
       }
+      else
+      {
+        //fprintf(stderr, "TrackInfoLayout::setGeometry: sb not visible nor pending: setting _sbLi: x:%d w:%d\n", w, 0);
+        _sbLi->setGeometry(QRect(w, 0,  0, h));
+      }
+}
 
 //---------------------------------------------------------
 //   sizeHint
@@ -162,7 +207,6 @@ QSize TrackInfoLayout::minimumSize() const
       int w = _stack->minimumSizeHint().width();
       if(_sb->isVisible())
         w += _sbLi->sizeHint().width();
-      
       return QSize(w, 50);
       }
 
@@ -175,55 +219,204 @@ QSize TrackInfoLayout::maximumSize() const
       return QSize(440, 100000);
       }
 
-//---------------------------------------------------------
-//   itemAt
-//---------------------------------------------------------
-
-QLayoutItem* TrackInfoLayout::itemAt(int i) const 
-{ 
-  switch(i)
-  {
-    case 0: return _stackLi; break;
-    case 1: return _sbLi; break;
-  }
-  return 0;
-} 
-
-//---------------------------------------------------------
-//   takeAt
-//---------------------------------------------------------
-
-QLayoutItem* TrackInfoLayout::takeAt(int i)
-{
-  switch(i)
-  {
-    case 0: return _stackLi; break;
-    case 1: return _sbLi; break;
-  }
-  return 0;
-}
-
-//---------------------------------------------------------
-//   clear
-//---------------------------------------------------------
-
-void TrackInfoLayout::clear()
-{
-  //delete _stackLi->widget();
-  delete _stackLi;
-  _stackLi = 0;
-  //delete _sbLi->widget();
-  delete _sbLi;
-  _sbLi = 0;
-}
-
+      
 //---------------------------------------------------------
 //   ArrangerCanvasLayout
 //---------------------------------------------------------
 
 void ArrangerCanvasLayout::setGeometry(const QRect &rect) 
 { 
-  QGridLayout::setGeometry(rect); _sb->setFixedWidth(rect.width()); 
+  QGridLayout::setGeometry(rect);
+  // Tell the hbox to update as well, as if it was part of this layout.
+  //_hBox->activate();
+  _hBox->update();
+}
+
+//---------------------------------------------------------
+//   ArrangerHScrollLayout
+//---------------------------------------------------------
+
+ArrangerHScrollLayout::ArrangerHScrollLayout(QWidget *parent, 
+                      CompactToolButton* trackinfoButton, 
+                      CompactToolButton* trackinfoAltButton,
+                      ScrollScale* sb, 
+                      QWidget* editor) 
+  : QHBoxLayout(parent),
+    _trackinfoButton(trackinfoButton),
+    _trackinfoAltButton(trackinfoAltButton),
+    _sb(sb), 
+    _editor(editor)
+{ 
+  _trackinfoButtonLi = new QWidgetItem(_trackinfoButton);
+  _trackinfoAltButtonLi = new QWidgetItem(_trackinfoAltButton);
+  _spacerLi = new QSpacerItem(0, 0);
+  _sbLi = new QWidgetItem(_sb);
+  
+  addItem(_trackinfoButtonLi);
+  addItem(_trackinfoAltButtonLi);
+  addItem(_spacerLi);
+  addItem(_sbLi);
+};
+
+ArrangerHScrollLayout::~ArrangerHScrollLayout()
+{
+}
+
+void ArrangerHScrollLayout::setGeometry(const QRect &rect) 
+{ 
+  _trackinfoButtonLi->setGeometry(QRect(rect.x() , 
+                                        rect.y(), 
+                                        _trackinfoButton->sizeHint().width(), 
+                                        rect.height()));
+  
+  _trackinfoAltButtonLi->setGeometry(QRect(_trackinfoButton->sizeHint().width() + spacing(), 
+                                           rect.y(), 
+                                           _trackinfoAltButton->sizeHint().width(), 
+                                           rect.height()));
+  
+  const int ti_w = _trackinfoButtonLi->sizeHint().width() + spacing() + 
+                   _trackinfoAltButtonLi->sizeHint().width() + spacing();
+                   
+  if(_editor->width() > 0)
+  {
+    _sb->setVisible(true);
+    int x = _editor->x();
+    
+    if(x < ti_w)
+      x = ti_w;
+    
+    int w = rect.width() - x;
+    
+    if(w < _sb->minimumSizeHint().width())
+    {
+      w = _sb->minimumSizeHint().width();
+      x = rect.width() - w;
+    } 
+    
+    QRect r(x, rect.y(), w, rect.height());
+    _sbLi->setGeometry(r);
+    _spacerLi->setGeometry(QRect(ti_w, rect.y(), rect.width() - ti_w - w, rect.height()));
+  }
+  else
+  {
+    _sb->setVisible(false);
+    _spacerLi->setGeometry(QRect(ti_w, rect.y(), rect.width() - ti_w, rect.height()));
+  }
+}
+
+//---------------------------------------------------------
+//   TrackInfoWidget
+//---------------------------------------------------------
+
+TrackInfoWidget::TrackInfoWidget(QWidget* parent, Qt::WindowFlags f)
+  : QWidget(parent, f)
+{
+  _stack = new WidgetStack(this, "trackInfoStack", WidgetStack::VisibleHint);
+  _scrollBar = new ScrollBar(Qt::Vertical, true, this);
+  _scrollBar->setObjectName("infoScrollBar");
+  _trackInfoLayout = new TrackInfoLayout(this, _stack, _scrollBar);
+  connect(_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollValueChanged(int)));
+  connect(_stack, SIGNAL(redirectWheelEvent(QWheelEvent*)), _scrollBar, SLOT(redirectedWheelEvent(QWheelEvent*)));
+}
+
+void TrackInfoWidget::scrollValueChanged(int val)
+{
+  if(_stack->visibleWidget())
+    _stack->visibleWidget()->move(0, -val);
+}
+
+void TrackInfoWidget::doResize(const QSize& newSize)
+{
+  if(QWidget* widget = _stack->visibleWidget())
+  {
+    QSize wsz = widget->minimumSizeHint();
+    if(!wsz.isValid())
+      wsz = widget->minimumSize();
+    
+    QSize sz(newSize);
+    
+    if(sz.width() < wsz.width())
+      sz.setWidth(wsz.width());
+    if(sz.height() < wsz.height())
+      sz.setHeight(wsz.height());
+    
+    if(_scrollBar)
+    {
+      int range = sz.height() - height();
+      if(range < 0)
+        range = 0;
+      if(range)
+      {
+        //fprintf(stderr, "TrackInfoWidget::doResize sb range:%d\n", range);
+        _scrollBar->blockSignals(true);
+        _scrollBar->setMaximum(range);
+        _scrollBar->blockSignals(false);
+      }
+      const bool vis = range != 0;
+   
+      // We can't do this check. An ancestor might not be visible yet.
+      //if(_scrollBar->isVisible() != vis)
+      {
+        
+        //fprintf(stderr, "TrackInfoWidget::doResize before setting sb visible:%d\n", vis);
+        _scrollBar->setVisible(vis);
+        //fprintf(stderr, "TrackInfoWidget::doResize after setting sb visible:%d\n", vis);
+        
+      }
+        
+    }
+  }
+}
+
+void TrackInfoWidget::doMove()
+{
+  if(QWidget* widget = _stack->visibleWidget())
+  {
+    if(_scrollBar->isVisible())
+      widget->move(0, -_scrollBar->value());
+    else
+      widget->move(0, 0);
+  }
+}
+
+void TrackInfoWidget::resizeEvent(QResizeEvent* e)
+{
+  e->ignore();
+  QWidget::resizeEvent(e);
+  //doResize(e->size());
+  doResize(_stack->size());
+  doMove();
+}
+
+
+void TrackInfoWidget::raiseWidget(int idx)
+{
+  _stack->raiseWidget(idx);
+  doResize(_stack->size());
+  doMove();
+  _trackInfoLayout->activate();
+  _trackInfoLayout->update();
+}
+
+void TrackInfoWidget::addWidget(QWidget* w, unsigned int idx)
+{
+  _stack->addWidget(w, idx);
+  doResize(_stack->size());
+}
+
+QWidget* TrackInfoWidget::getWidget(unsigned int idx)
+{
+  return _stack->getWidget(idx);
+}
+
+QWidget* TrackInfoWidget::visibleWidget() const
+{
+  return _stack->visibleWidget();
+}
+
+int TrackInfoWidget::curIdx() const 
+{
+  return _stack->curIdx(); 
 }
 
 

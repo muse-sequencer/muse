@@ -4,7 +4,7 @@
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //
 //  elided_label.h
-//  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -46,28 +46,25 @@ class ElidedLabel : public QFrame
   Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
 
   private:
+    int _id;
     Qt::TextElideMode _elideMode;
-    //int _fontPointMax;
     int _fontPointMin;
     bool _fontIgnoreHeight;
     bool _fontIgnoreWidth;
     QString _text;
     QFont _curFont;
-//     QSize _sizeHint;
     
-//     void updateSizeHint();
     bool autoAdjustFontSize();
     
   protected:
     virtual void paintEvent(QPaintEvent*);
-//     virtual void changeEvent(QEvent*);
     virtual void resizeEvent(QResizeEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
 
   signals:
-    void pressed(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
-    void released(QPoint p, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    void pressed(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    void released(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     
   public:
     explicit ElidedLabel(QWidget* parent = 0, 
@@ -78,6 +75,9 @@ class ElidedLabel : public QFrame
                          const QString& text = QString(), 
                          Qt::WindowFlags flags = 0);
   
+    int id() const             { return _id; }
+    void setId(int i)          { _id = i; }
+    
     Qt::TextElideMode elideMode() const { return _elideMode; }
     void setElideMode(Qt::TextElideMode mode) { _elideMode = mode; update(); }
 
@@ -86,17 +86,10 @@ class ElidedLabel : public QFrame
     
     int fontPointMin() const { return _fontPointMin; }
     void setFontPointMin(int point);
-    //int fontPointMax() const { return _fontPointMax; }
-    //void setFontPointMax(int point);
-    //void setFontPointRange(int maxPoint, int minPoint = 5);
 
     bool fontIgnoreWidth() const { return _fontIgnoreWidth; }
-    //void setFontIgnoreWidth(bool v);
     bool fontIgnoreHeight() const { return _fontIgnoreHeight; }
-    //void setFontIgnoreHeight(bool v);
     void setFontIgnoreDimensions(bool ignoreHeight, bool ignoreWidth = false);
-    
-//     virtual QSize sizeHint() const;
 };
 
 } // namespace MusEGui

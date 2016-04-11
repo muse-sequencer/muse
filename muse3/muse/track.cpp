@@ -257,7 +257,6 @@ void Track::init()
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
-            // REMOVE Tim. Trackinfo. Added.
             _isClipped[i] = false;
             }
       }
@@ -266,16 +265,11 @@ Track::Track(Track::TrackType t)
 {
       init();
       _type = t;
-// REMOVE Tim. Trackinfo. Removed.
-//       _isClipped = false;
 }
 
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
-  // REMOVE Tim. Trackinfo. Removed.
-//   _isClipped = false;
-
   // moved setting the unique name to Song::duplicateTracks()
   // we'll see if there is any draw back to that.
   _name = t.name();
@@ -283,7 +277,6 @@ Track::Track(const Track& t, int flags)
   for (int i = 0; i < MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
         _peak[i]  = 0.0;
-        // REMOVE Tim. Trackinfo. Added.
         _isClipped[i] = false;
         }
 }
@@ -810,6 +803,10 @@ int MidiTrack::height() const
   return 0;
 }
 
+//---------------------------------------------------------
+//   routeCapabilities
+//---------------------------------------------------------
+
 RouteCapabilitiesStruct MidiTrack::routeCapabilities() const 
 { 
   RouteCapabilitiesStruct s;
@@ -822,6 +819,21 @@ RouteCapabilitiesStruct MidiTrack::routeCapabilities() const
 #endif
   
   return s;
+}
+
+//---------------------------------------------------------
+//   noOutRoute
+//---------------------------------------------------------
+
+bool MidiTrack::noOutRoute() const  
+{ 
+  
+  return _outRoutes.empty()
+  
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+    && (outChannel() < 0 || outPort() < 0 || !MusEGlobal::midiPorts[outPort()].device())
+#endif
+  ;
 }
 
 

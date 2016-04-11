@@ -4,7 +4,7 @@
 //  $Id: astrip.cpp,v 1.23.2.17 2009/11/16 01:55:55 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -26,14 +26,13 @@
 #include <stdlib.h>
 
 #include <QLayout>
+#include <QVBoxLayout>
 #include <QApplication>
-//#include <QDialog>
 #include <QToolButton>
 #include <QLabel>
 #include <QComboBox>
 #include <QToolTip>
 #include <QTimer>
-//#include <QPopupMenu>
 #include <QCursor>
 #include <QPainter>
 #include <QString>
@@ -43,22 +42,18 @@
 #include <QVariant>
 #include <QAction>
 #include <QGridLayout>
-//#include <QLinearGradient>
 
 #include "app.h"
 #include "globals.h"
 #include "audio.h"
-//#include "driver/audiodev.h"
 #include "song.h"
 #include "slider.h"
-// #include "knob.h" // REMOVE Tim. Trackinfo. Changed.
 #include "compact_slider.h"
 #include "combobox.h"
 #include "meter.h"
 #include "astrip.h"
 #include "track.h"
 #include "synth.h"
-//#include "route.h"
 #include "doublelabel.h"
 #include "rack.h"
 #include "node.h"
@@ -67,14 +62,624 @@
 #include "gconfig.h"
 #include "ttoolbutton.h"
 #include "menutitleitem.h"
-//#include "popupmenu.h"
 #include "routepopup.h"
 #include "ctrl.h"
 #include "utils.h"
 #include "muse_math.h"
 
-namespace MusEGui {
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_AUDIO_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
 
+
+namespace MusEGui {
+  
+//---------------------------------------------------------
+//   AudioComponentRack
+//---------------------------------------------------------
+
+AudioComponentRack::AudioComponentRack(MusECore::AudioTrack* track, int id, bool manageAuxs, QWidget* parent, Qt::WindowFlags f) 
+  : ComponentRack(id, parent, f), _track(track), _manageAuxs(manageAuxs)
+{ 
+  
+}
+
+void AudioComponentRack::newComponent( ComponentDescriptor* desc, const ComponentWidget& before )
+{
+  double min = 0.0;
+  double max = 0.0;
+  double val = 0.0;
+  int prec = 0.0;
+  double step = 0.0;
+  
+  switch(desc->_componentType)
+  {
+    case aStripAuxComponent:
+    {
+      val = _track->auxSend(desc->_index);
+      //if(val == 0.0)
+      if(val < MusEGlobal::config.minSlider)
+        val = MusEGlobal::config.minSlider;
+      else
+      {
+        val = muse_val2dbr(val);
+        if(val < MusEGlobal::config.minSlider)
+          val = MusEGlobal::config.minSlider;
+      }
+      min = MusEGlobal::config.minSlider;
+      max = AudioStrip::auxSliderMax;
+      prec = AudioStrip::auxSliderPrec;
+      step = AudioStrip::auxSliderStep;
+      
+      // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+      // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+      desc->_enabled = _track->auxRefCount() == 0;
+      
+      if(!desc->_color.isValid())
+        desc->_color = MusEGlobal::config.auxTrackLabelBg;
+      
+      if(desc->_label.isEmpty())
+      {
+        // the thought was to aquire the correct Aux name for each Aux
+        // now they are only called Aux1, Aux2, which isn't too usable.
+        desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
+        if (desc->_label.length() > 8) { // shorten name
+            desc->_label = desc->_label.mid(0,8) + ".";
+        }
+      }
+      if(desc->_toolTipText.isEmpty())
+        desc->_toolTipText = tr("Aux send level (dB)");
+    }
+    break;
+    
+    case controllerComponent:
+    {
+      MusECore::iCtrlList ic = _track->controller()->find(desc->_index);
+      if(ic == _track->controller()->end())
+        return;
+      MusECore::CtrlList* cl = ic->second;
+      val = _track->pluginCtrlVal(desc->_index);
+      cl->range(&min, &max);
+      prec = 2;
+      step = 0.01;
+      
+      if(desc->_label.isEmpty())
+      {
+        switch(desc->_index)
+        {
+          case MusECore::AC_VOLUME:
+            desc->_label = tr("Vol");
+          break;
+          
+          case MusECore::AC_PAN:
+            desc->_label = tr("Pan");
+          break;
+
+          case MusECore::AC_MUTE:
+            desc->_label = tr("Mute");
+          break;
+          
+          default:
+            desc->_label = cl->name();
+          break;
+        }
+      }
+      
+      if(desc->_toolTipText.isEmpty())
+      {
+        switch(desc->_index)
+        {
+          case MusECore::AC_VOLUME:
+            desc->_toolTipText = tr("Volume/gain");
+          break;
+          
+          case MusECore::AC_PAN:
+            desc->_toolTipText = tr("Panorama/Balance");
+          break;
+
+          case MusECore::AC_MUTE:
+            desc->_toolTipText = tr("Mute");
+          break;
+
+          default:
+            desc->_toolTipText = cl->name();
+          break;
+        }
+      }
+      
+      if(!desc->_color.isValid())
+      {
+        switch(desc->_index)
+        {
+          case MusECore::AC_PAN:
+            desc->_color = MusEGlobal::config.panSliderColor;
+          break;
+          
+          default:
+            desc->_color = MusEGlobal::config.audioControllerSliderDefaultColor;
+          break;
+        }
+      }
+    }
+    break;
+    
+    case propertyComponent:
+    {
+      switch(desc->_index)
+      {
+        case aStripGainProperty:
+        {
+          val = _track->gain();
+          min = AudioStrip::gainSliderMin;
+          max = AudioStrip::gainSliderMax;
+          prec = AudioStrip::gainSliderPrec;
+          step = AudioStrip::gainSliderStep;
+          if(desc->_label.isEmpty())
+            desc->_label = tr("Gain");
+          if(desc->_toolTipText.isEmpty())
+            desc->_toolTipText = tr("Calibration gain");
+          if(!desc->_color.isValid())
+            desc->_color = MusEGlobal::config.gainSliderColor;
+        }
+        break;
+        
+        default:
+          if(!desc->_color.isValid())
+            desc->_color = MusEGlobal::config.audioPropertySliderDefaultColor;
+        break;
+      }
+    }
+    break;
+  }  
+
+  switch(desc->_widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
+      d->_min = min;
+      d->_max = max;
+      d->_precision = prec;
+      d->_step = step;
+      d->_initVal = val;
+      if(!d->_color.isValid())
+        d->_color = MusEGlobal::config.sliderDefaultColor;
+      // Set the bar color the same.
+      if(!d->_barColor.isValid())
+        d->_barColor = d->_color;
+      
+      // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
+      // Connects known widget types' signals to slots.
+      newComponentWidget(d, before);
+      
+      // Handle special slots for audio strip.
+      switch(desc->_componentType)
+      {
+        case aStripAuxComponent:
+        {
+          if(d->_compactSlider->specialValueText().isEmpty())
+            d->_compactSlider->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character
+      
+          if(!d->_changedSlot)
+            connect(d->_compactSlider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
+          if(!d->_movedSlot)
+            connect(d->_compactSlider, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
+          if(!d->_pressedSlot)
+            connect(d->_compactSlider, SIGNAL(sliderPressed(int)), SLOT(auxPressed(int)));
+          if(!d->_releasedSlot)
+            connect(d->_compactSlider, SIGNAL(sliderReleased(int)), SLOT(auxReleased(int)));
+          if(!d->_rightClickedSlot)
+            connect(d->_compactSlider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
+        }
+        break;
+      }  
+    }
+    break;
+  }  
+}
+
+void AudioComponentRack::scanControllerComponents()
+{
+  std::vector<iComponentWidget> to_be_erased;
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    
+    switch(cw._componentType)
+    {
+      case controllerComponent:
+      {
+        MusECore::iCtrlList ictrl = _track->controller()->find(cw._index);
+        if(ictrl == _track->controller()->end())
+          to_be_erased.push_back(ic);
+      }
+      break;
+    }
+  }
+  for(std::vector<iComponentWidget>::iterator i = to_be_erased.begin(); i != to_be_erased.end(); ++i)
+  {
+    iComponentWidget icw = *i;
+    ComponentWidget& cw = *icw;
+    DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanControllerComponents: deleting controller component index:%d\n", cw._index);
+    if(cw._widget)
+      delete cw._widget;
+    _components.erase(icw);
+  }
+}
+
+void AudioComponentRack::scanAuxComponents()
+{
+  std::vector<iComponentWidget> to_be_erased;
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    
+    switch(cw._componentType)
+    {
+      case aStripAuxComponent:
+      {
+        // TODO: This is just brute-force deletion and recreation of all the auxs. 
+        //       Make this more efficient by only removing what's neccessary and updating/re-using the rest.
+        to_be_erased.push_back(ic);
+      }
+      break;
+    }
+  }
+  for(std::vector<iComponentWidget>::iterator i = to_be_erased.begin(); i != to_be_erased.end(); ++i)
+  {
+    iComponentWidget icw = *i;
+    ComponentWidget& cw = *icw;
+    DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: deleting aux component index:%d\n", cw._index);
+    if(cw._widget)
+      delete cw._widget;
+    _components.erase(icw);
+  }
+  
+  // Add auxs, only if we want this rack to manage auxs.
+  if(_manageAuxs)
+  {
+    int auxsSize = MusEGlobal::song->auxs()->size();
+    if(_track->hasAuxSend()) 
+    {
+      for (int idx = 0; idx < auxsSize; ++idx) 
+      {
+        // the thought was to aquire the correct Aux name for each Aux
+        // now they are only called Aux1, Aux2, which isn't too usable.
+//         QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
+//         if (title.length() > 8) { // shorten name
+//             title = title.mid(0,8) + ".";
+//         }
+        
+        // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+        // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+//         const bool enable = _track->auxRefCount() == 0;
+        
+        CompactSliderComponentDescriptor aux_desc
+        (
+          aStripAuxComponent, 
+          "MixerStripAudioAux", 
+          idx
+        );
+        
+        DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: adding aux component index:%d\n", idx);
+        newComponent(&aux_desc);
+      }
+    }
+  }
+}
+
+void AudioComponentRack::updateComponents()
+{
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    
+    switch(cw._componentType)
+    {
+      case controllerComponent:
+      {
+        // Inhibit the controller stream if control is currently pressed.
+        // Note _pressed operates differently than simply checking if the control is pressed!
+        if(cw._pressed) 
+          continue;
+        const double val = _track->pluginCtrlVal(cw._index);
+        setComponentValue(cw, val); // Signals blocked. Redundant ignored.
+      }
+      break;
+      
+      case propertyComponent:
+      {
+        switch(cw._index)
+        {
+          case aStripGainProperty:
+          {
+            const double val = _track->gain();
+            setComponentValue(cw, val);  // Signals blocked. Redundant ignored.
+          }
+          break;
+        }
+      }
+      break;
+      
+      case aStripAuxComponent:
+      {
+        double val = _track->auxSend(cw._index);
+        if(val == 0.0)
+          val = MusEGlobal::config.minSlider;
+        else
+        {
+          val = muse_val2dbr(val);
+          if(val < MusEGlobal::config.minSlider)
+            val = MusEGlobal::config.minSlider;
+        }
+        setComponentValue(cw, val);  // Signals blocked. Redundant ignored.
+      }
+      break;
+    }
+  }
+}
+
+void AudioComponentRack::setAuxEnabled(bool enable)
+{
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    switch(cw._componentType)
+    {
+      case aStripAuxComponent:
+        setComponentEnabled(cw, enable);
+      break;
+    }
+  }
+}
+
+
+void AudioComponentRack::controllerChanged(double val, bool /*off*/, int id, int scrollMode)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerChanged id:%d val:%.20f scrollMode:%d\n", id, val, scrollMode);
+  // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+  // ScrDirect mode is one-time only on press with modifier.
+  if(scrollMode != SliderBase::ScrDirect) 
+    _track->recordAutomation(id, val);
+  _track->setParam(id, val);            // Schedules a timed control change.
+  //_track->setPluginCtrlVal(id, val);  // TODO Try this instead. setParam gives a slight jump at release, in tracking off temp mode.
+  _track->enableController(id, false);
+}
+
+void AudioComponentRack::controllerMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerMoved id:%d val:%.20f\n", id, val);
+}
+
+void AudioComponentRack::controllerPressed(int id)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerPressed id:%d\n", id);
+  double val = 0.0;
+  iComponentWidget ic = _components.find(controllerComponent, -1, id);
+  if(ic != _components.end())
+  {
+    ComponentWidget& cw = *ic;
+    cw._pressed = true;
+    val = componentValue(cw);
+    DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", val);
+  }
+  _track->startAutoRecord(id, val);
+  _track->setPluginCtrlVal(id, val);
+  //_track->setParam(id, val);   // Schedules a timed control change. // TODO Try this instead
+  DEBUG_AUDIO_STRIP(stderr, "    calling enableController(false)\n");
+  _track->enableController(id, false);
+}
+
+void AudioComponentRack::controllerReleased(int id)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerReleased id:%d\n", id);
+  AutomationType at = _track->automationType();
+  double val = 0.0;
+  iComponentWidget ic = _components.find(controllerComponent, -1, id);
+  if(ic != _components.end())
+  {
+    ComponentWidget& cw = *ic;
+    val = componentValue(cw);
+    DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", val);
+    cw._pressed = false;
+  }
+  _track->stopAutoRecord(id, val);
+  if(at == AUTO_OFF || at == AUTO_TOUCH)
+  {
+    DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
+    _track->enableController(id, true);
+  }
+}
+
+void AudioComponentRack::controllerRightClicked(QPoint p, int id)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerRightClicked id:%d\n", id);
+  MusEGlobal::song->execAutomationCtlPopup(_track, p, id);
+}
+
+
+void AudioComponentRack::propertyChanged(double val, bool, int id, int /*scrollMode*/)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::propertyChanged id:%d val:%.20f\n", id, val);
+    switch(id)
+    {
+      case aStripGainProperty:
+        if(_track->gain() != val)
+          _track->setGain(val); // FIXME: Realtime safe?
+      break;
+    }
+//   }  
+}
+
+void AudioComponentRack::propertyMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::propertyMoved id:%d val:%.20f\n", id, val);
+}
+
+void AudioComponentRack::propertyPressed(int)
+{
+  
+}
+
+void AudioComponentRack::propertyReleased(int)
+{
+  
+}
+
+void AudioComponentRack::propertyRightClicked(QPoint, int)
+{
+  
+}
+
+void AudioComponentRack::auxChanged(double val, bool /*off*/, int id, int /*scrollMode*/)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::auxChanged id:%d val:%.20f\n", id, val);
+  double vol;
+  if (val <= MusEGlobal::config.minSlider)
+    vol = 0.0;
+  else
+    vol = muse_db2val(val);
+  MusEGlobal::audio->msgSetAux(_track, id, vol);
+}
+
+void AudioComponentRack::auxMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/)
+{
+  DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::auxMoved id:%d val:%.20f\n", id, val);
+}
+
+void AudioComponentRack::auxPressed(int)
+{
+  
+}
+
+void AudioComponentRack::auxReleased(int)
+{
+  
+}
+
+void AudioComponentRack::auxRightClicked(QPoint, int)
+{
+  
+}
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void AudioComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
+{
+  // Scan controllers.
+  if(flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
+  {
+    scanControllerComponents();
+  }
+  
+  // Take care of scanning aux before setting aux enabled below.
+  if(flags & SC_AUX) 
+  {
+    scanAuxComponents();
+  }
+  
+  if(flags & SC_ROUTE) {
+        // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+        // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+        setAuxEnabled(_track->auxRefCount() == 0);
+      }
+}
+
+//---------------------------------------------------------
+//   configChanged
+//   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
+//---------------------------------------------------------
+
+void AudioComponentRack::configChanged()    
+{ 
+  // Handle font changes etc.
+  ComponentRack::configChanged();
+  
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    switch(cw._componentType)
+    {
+      case aStripAuxComponent:
+        // Adjust aux minimum value.
+        setComponentRange(cw, MusEGlobal::config.minSlider, AudioStrip::auxSliderMax, AudioStrip::auxSliderStep);
+      break;
+    }
+  }
+  setComponentColors();
+}
+
+//---------------------------------------------------------
+//   setComponentColors
+//---------------------------------------------------------
+
+void AudioComponentRack::setComponentColors()
+{ 
+  for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    const ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    
+    QColor color = MusEGlobal::config.sliderDefaultColor;
+    switch(cw._componentType)
+    {
+      case aStripAuxComponent:
+        color = MusEGlobal::config.auxTrackLabelBg;
+      break;
+      
+      case controllerComponent:
+      {
+        switch(cw._index)
+        {
+          case MusECore::AC_PAN:
+            color = MusEGlobal::config.panSliderColor;
+          break;
+          
+          default:
+            color = MusEGlobal::config.audioControllerSliderDefaultColor;
+          break;
+        }
+      }
+      break;
+      
+      case propertyComponent:
+      {
+        switch(cw._index)
+        {
+          case aStripGainProperty:
+            color = MusEGlobal::config.gainSliderColor;
+          break;
+          
+          default:
+            color = MusEGlobal::config.audioPropertySliderDefaultColor;
+          break;
+        }
+      }
+      break;
+    }  
+
+    switch(cw._widgetType)
+    {
+      case CompactSliderComponentWidget:
+      {
+        CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+        w->setBorderColor(color);
+        w->setBarColor(color);
+      }
+      break;
+    }  
+  }
+}
+
+  
 const double AudioStrip::volSliderStep =  0.5;
 const double AudioStrip::volSliderMax  = 10.0;
 const int    AudioStrip::volSliderPrec =    1;
@@ -87,31 +692,11 @@ const double AudioStrip::gainSliderStep = 0.1;
 const double AudioStrip::gainSliderMin  = 0.5;
 const double AudioStrip::gainSliderMax = 20.0;
 const int    AudioStrip::gainSliderPrec =   1;
-  
-/*
-//---------------------------------------------------------
-//   minimumSizeHint
-//---------------------------------------------------------
 
-QSize AudioStrip::minimumSizeHint () const
-{
-    // We force the width of the size hint to be what we want
-    //return QWidget::minimumSizeHint();
-    ///return QSize(66,QWidget::minimumSizeHint().height());
-}
-
-//---------------------------------------------------------
-//   sizeHint
-//---------------------------------------------------------
-
-QSize AudioStrip::sizeHint () const
-{
-    // We force the width of the size hint to be what we want
-    //return QWidget::minimumSizeHint();
-    //return QSize(66,QWidget::minimumSizeHint().height());
-    return minimumSizeHint();
-}
-*/
+const int AudioStrip::xMarginHorSlider = 1;
+const int AudioStrip::yMarginHorSlider = 1;
+const int AudioStrip::upperRackSpacerHeight = 2;
+const int AudioStrip::rackFrameWidth = 1;
 
 //---------------------------------------------------------
 //   heartBeat
@@ -119,72 +704,76 @@ QSize AudioStrip::sizeHint () const
 
 void AudioStrip::heartBeat()
 {
-// REMOVE Tim. Trackinfo. Removed.
-//    double clipperVal = 0.0f;
    const int tch = track->channels();
    for (int ch = 0; ch < tch; ++ch) {
       if (meter[ch]) {
-         //int meterVal = track->meter(ch);
-         //int peak  = track->peak(ch);
-         //meter[ch]->setVal(meterVal, peak, false);
          meter[ch]->setVal(track->meter(ch), track->peak(ch), false);
       }
-// REMOVE Tim. Trackinfo. Changed.      
-//       clipperVal += track->peak(ch);
       if(_clipperLabel[ch])
       {
         _clipperLabel[ch]->setVal(track->peak(ch));
         _clipperLabel[ch]->setClipped(track->isClipped(ch));
       }
    }
-// REMOVE Tim. Trackinfo. Removed.
-//    clipperVal /= track->channels();
-//    _clipperLabel->setVal(clipperVal);
    updateVolume();
-   updatePan();
+   _upperRack->updateComponents();
+   _infoRack->updateComponents();
+   _lowerRack->updateComponents();
 
-// REMOVE Tim. Trackinfo. Removed.
-//    _clipperLabel->setClipper(track->isClipped());
-
+   Strip::heartBeat();
 }
 
-// REMOVE Tim. Trackinfo. Changed.      
-// //---------------------------------------------------------
-// //   configChanged
-// //   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
-// //---------------------------------------------------------
-// 
-// void AudioStrip::configChanged()    
-// { 
-//   // Set the whole strip's font, except for the label.
-//   if(font() != MusEGlobal::config.fonts[1])
-//     setFont(MusEGlobal::config.fonts[1]);
-//   
-//   // Set the strip label's font.
-//   setLabelFont();
-//   setLabelText();        
-//   
-//   // Adjust minimum volume slider and label values.
-//   slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-//   sl->setRange(MusEGlobal::config.minSlider, 10.0);
-//   
-//   // Adjust minimum aux knob and label values.
-//   int n = auxKnob.size();
-//   for (int idx = 0; idx < n; ++idx) 
-//   {
-//     auxKnob[idx]->blockSignals(true);
-//     auxLabel[idx]->blockSignals(true);
-//     auxKnob[idx]->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-//     auxLabel[idx]->setRange(MusEGlobal::config.minSlider, 10.1);
-//     auxKnob[idx]->blockSignals(false);
-//     auxLabel[idx]->blockSignals(false);
-//   }
-//   
-//   // Adjust minimum meter values.
-//   for(int c = 0; c < channel; ++c) 
-//     meter[c]->setRange(MusEGlobal::config.minMeter, 10.0);
-// }
+void AudioStrip::updateRackSizes(bool upper, bool lower)
+{
+  const QFontMetrics fm = fontMetrics();
+  if(upper)
+  {
+    // Make room for 3 CompactSliders and one CompactPatchEdit.
+    // TODO: Add the instrument select label height!
 
+// //     const int csh = CompactSlider::getMinimumSizeHint(fm,
+// //                                             Qt::Horizontal, 
+// //                                             CompactSlider::None, 
+// //                                             xMarginHorSlider, yMarginHorSlider).height();
+// //     const int cpeh = CompactPatchEdit::getMinimumSizeHint(fm, 
+// //                                             Qt::Horizontal, 
+// //                                             CompactSlider::None, 
+// //                                             xMarginHorSlider, yMarginHorSlider).height();
+// //     const int ilh = _instrLabel->sizeHint().height();
+//     
+// //     DEBUG_AUDIO_STRIP(stderr, "MidiStrip::updateRackSizes: CompactSlider h:%d CompactPatchEdit h:%d instrLabel h:%d upper frame w:%d \n", 
+// //                      csh, cpeh, ilh, _upperRack->frameWidth());
+    
+//     _upperRack->setMinimumHeight(
+//       3 * CompactSlider::getMinimumSizeHint(fm,
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height() + 
+//       1 * CompactPatchEdit::getMinimumSizeHint(fm, 
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height() +
+//       upperRackSpacerHeight +
+//       
+//       _instrLabel->sizeHint().height() +
+//       
+//       2 * rackFrameWidth);
+  }
+  if(lower)
+  {
+    // Make room for 1 CompactSlider (Pan, so far).
+    
+    //DEBUG_AUDIO_STRIP(stderr, "MidiStrip::updateRackSizes: lower frame w:%d \n", _lowerRack->frameWidth());
+    
+//     _lowerRack->setMinimumHeight(
+//       1 * CompactSlider::getMinimumSizeHint(fm, 
+//                                             Qt::Horizontal, 
+//                                             CompactSlider::None, 
+//                                             xMarginHorSlider, yMarginHorSlider).height() + 
+//       2 * rackFrameWidth);
+  }
+}
+      
 //---------------------------------------------------------
 //   configChanged
 //   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
@@ -195,9 +784,8 @@ void AudioStrip::configChanged()
   // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
   {
-// REMOVE Tim. Trackinfo. Changed.  
-//     setFont(MusEGlobal::config.fonts[1]);
-    //fprintf(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize()); // REMOVE Tim. Trackinfo.
+    setFont(MusEGlobal::config.fonts[1]);
+    DEBUG_AUDIO_STRIP(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize());
     setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
   }
   
@@ -206,174 +794,21 @@ void AudioStrip::configChanged()
   setLabelText();        
   
   // Adjust minimum volume slider and label values.
-//   slider->setRange(MusEGlobal::config.minSlider - volSliderStep, volSliderMax, volSliderStep);
   slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
   slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
   sl->setRange(MusEGlobal::config.minSlider, volSliderMax);
   sl->setOff(MusEGlobal::config.minSlider);
   
-  // Adjust minimum aux slider values.
-  int n = auxControl.size();
-  for (int idx = 0; idx < n; ++idx) 
-  {
-    auxControl[idx]->blockSignals(true);
-//     auxControl[idx]->setRange(MusEGlobal::config.minSlider - auxSliderStep, auxSliderMax, auxSliderStep);
-    auxControl[idx]->setRange(MusEGlobal::config.minSlider, auxSliderMax, auxSliderStep);
-    auxControl[idx]->blockSignals(false);
-  }
+  slider->setFillColor(MusEGlobal::config.audioVolumeSliderColor); 
+  
+  _upperRack->configChanged();
+  _infoRack->configChanged();
+  _lowerRack->configChanged();
   
   // Adjust minimum meter values.
   for(int c = 0; c < channel; ++c) 
     meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
 }
-
-void AudioStrip::updateRouteButtons()
-{
-    if (iR)
-    {
-        if (track->noInRoute())
-          iR->setStyleSheet("background-color:darkgray;");
-        else
-          iR->setStyleSheet("");
-    }
-
-    if (track->noOutRoute())
-      oR->setStyleSheet("background-color:red;");
-    else
-      oR->setStyleSheet("");
-}
-
-// REMOVE Tim. Trackinfo. Changed.      
-// //---------------------------------------------------------
-// //   songChanged
-// //---------------------------------------------------------
-// 
-// void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
-//       {
-//       // Is it simply a midi controller value adjustment? Forget it.
-//       if (val == SC_MIDI_CONTROLLER)
-//         return;
-// 
-//       updateRouteButtons();
-//     
-//       MusECore::AudioTrack* src = (MusECore::AudioTrack*)track;
-//       gain->setValue(src->gain());
-// 
-//       // Do channels before MusEGlobal::config...
-//       if (val & SC_CHANNELS)
-//         updateChannels();
-//       
-//       // Catch when label font, or configuration min slider and meter values change.
-//       if (val & SC_CONFIG)
-//       {
-//         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved.
-//       }
-//       
-//       if (mute && (val & SC_MUTE)) {      // mute && off
-//             mute->blockSignals(true);
-//             mute->setChecked(src->mute());
-//             mute->blockSignals(false);
-//             mute->setIcon(src->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-//             //mute->setIconSize(muteIconOn->size());  
-//             updateOffState();
-//             }
-//       if (solo && (val & (SC_SOLO | SC_ROUTE))) {
-//             solo->blockSignals(true);
-//             solo->setChecked(track->solo());
-//             solo->blockSignals(false);
-//             if(track->internalSolo())
-//               solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
-//             else
-//               solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-//             //solo->setIconSize(soloIconOn->size());  
-//             }
-//       if (val & SC_RECFLAG)
-//             setRecordFlag(track->recordFlag());
-//       if (val & SC_TRACK_MODIFIED)
-//       {
-//             setLabelText();
-//             setLabelFont();
-//             
-//       }      
-//       //if (val & SC_CHANNELS)
-//       //      updateChannels();
-//       if (val & SC_ROUTE) {
-//             if (pre) {
-//                   pre->blockSignals(true);
-//                   pre->setChecked(src->prefader());
-//                   pre->blockSignals(false);
-//                   }
-//             
-//             // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
-//             // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-//             int rc = track->auxRefCount();
-//             int n = auxKnob.size();
-//             for (int idx = 0; idx < n; ++idx) 
-//             {  
-//               auxKnob[idx]->setEnabled( rc == 0 );
-//               auxLabel[idx]->setEnabled( rc == 0 );
-//             }  
-//           }
-//       if (val & SC_AUX) {
-//             int n = auxKnob.size();
-//             for (int idx = 0; idx < n; ++idx) {
-//                   double val = MusECore::fast_log10(src->auxSend(idx)) * 20.0;
-//                   auxKnob[idx]->blockSignals(true);
-//                   auxLabel[idx]->blockSignals(true);
-//                   auxKnob[idx]->setValue(val);
-//                   auxLabel[idx]->setValue(val);
-//                   auxKnob[idx]->blockSignals(false);
-//                   auxLabel[idx]->blockSignals(false);
-//                   }
-//             }
-//       if (autoType && (val & SC_AUTOMATION)) {
-//             autoType->blockSignals(true);
-//             autoType->setCurrentItem(track->automationType());
-//             QPalette palette;
-//             //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
-//                   {
-//                   palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
-//                   //palette.setColor(QPalette::Window, QColor(215, 76, 39)); // red
-//                   /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//                   QColor c(Qt::red);
-//                   //QColor c(215, 76, 39);       // red
-//                   gradient.setColorAt(0, c.darker());
-//                   gradient.setColorAt(0.5, c);
-//                   gradient.setColorAt(1, c.darker());
-//                   palette.setBrush(QPalette::Button, gradient);
-//                   //palette.setBrush(autoType->backgroundRole(), gradient);
-//                   //palette.setBrush(QPalette::Window, gradient);   */
-//                   autoType->setPalette(palette);
-//                   }
-//             else if(track->automationType() == AUTO_READ)
-//                   {
-//                   palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
-//                   //palette.setColor(QPalette::Window, QColor(100, 172, 49)); // green
-//                   /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//                   QColor c(Qt::green);
-//                   //QColor c(100, 172, 49);     // green
-//                   gradient.setColorAt(0, c.darker());
-//                   gradient.setColorAt(0.5, c);
-//                   gradient.setColorAt(1, c.darker());
-//                   palette.setBrush(QPalette::Button, gradient);
-//                   //palette.setBrush(autoType->backgroundRole(), gradient);
-//                   //palette.setBrush(QPalette::Window, gradient);  */
-//                   autoType->setPalette(palette);
-//                   }
-//             else  
-//                   {
-//                   palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
-//                   //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
-//                   //gradient.setColorAt(0, c);
-//                   //gradient.setColorAt(1, c.darker());
-//                   //palette.setBrush(QPalette::Button, gradient);
-//                   autoType->setPalette(palette);
-//                   }
-//       
-//             autoType->blockSignals(false);
-//             }
-//       }
 
 //---------------------------------------------------------
 //   songChanged
@@ -381,14 +816,7 @@ void AudioStrip::updateRouteButtons()
 
 void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if (val == SC_MIDI_CONTROLLER)
-        return;
-
-      updateRouteButtons();
-    
       MusECore::AudioTrack* src = static_cast<MusECore::AudioTrack*>(track);
-      gain->setValue(src->gain());
 
       // Do channels before MusEGlobal::config...
       if (val & SC_CHANNELS)
@@ -405,7 +833,6 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
             mute->setChecked(src->mute());
             mute->blockSignals(false);
             mute->setIcon(src->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-            //mute->setIconSize(muteIconOn->size());  
             updateOffState();
             }
       if (solo && (val & (SC_SOLO | SC_ROUTE))) {
@@ -416,7 +843,6 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
               solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
             else
               solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-            //solo->setIconSize(soloIconOn->size());  
             }
       if (val & SC_RECFLAG)
             setRecordFlag(track->recordFlag());
@@ -429,37 +855,20 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       //if (val & SC_CHANNELS)
       //      updateChannels();
       if (val & SC_ROUTE) {
+            updateRouteButtons();
             if (pre) {
                   pre->blockSignals(true);
                   pre->setChecked(src->prefader());
                   pre->blockSignals(false);
                   }
-            
-            // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
-            // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-            int rc = track->auxRefCount();
-            int n = auxControl.size();
-            for (int idx = 0; idx < n; ++idx) 
-              auxControl[idx]->setEnabled( rc == 0 );
           }
-      if (val & SC_AUX) {
-            int n = auxControl.size();
-            for (int idx = 0; idx < n; ++idx) {
-                  double val = src->auxSend(idx);
-                  if(val == 0.0)
-                    val = MusEGlobal::config.minSlider;
-                  else
-                  {
-                    val = muse_val2dbr(val);
-                    if(val < MusEGlobal::config.minSlider)
-                      val = MusEGlobal::config.minSlider;
-                  }
-                  auxControl[idx]->blockSignals(true);
-                  auxControl[idx]->setValue(val);
-//                   auxControl[idx]->setValueState(val, val <= MusEGlobal::config.minSlider);
-                  auxControl[idx]->blockSignals(false);
-                  }
-            }
+
+      // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+      // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+      _upperRack->songChanged(val);
+      _infoRack->songChanged(val);
+      _lowerRack->songChanged(val);
+
       if (autoType && (val & SC_AUTOMATION)) {
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
@@ -468,40 +877,16 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
                   {
                   palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
-                  //palette.setColor(QPalette::Window, QColor(215, 76, 39)); // red
-                  /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-                  QColor c(Qt::red);
-                  //QColor c(215, 76, 39);       // red
-                  gradient.setColorAt(0, c.darker());
-                  gradient.setColorAt(0.5, c);
-                  gradient.setColorAt(1, c.darker());
-                  palette.setBrush(QPalette::Button, gradient);
-                  //palette.setBrush(autoType->backgroundRole(), gradient);
-                  //palette.setBrush(QPalette::Window, gradient);   */
                   autoType->setPalette(palette);
                   }
             else if(track->automationType() == AUTO_READ)
                   {
                   palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
-                  //palette.setColor(QPalette::Window, QColor(100, 172, 49)); // green
-                  /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-                  QColor c(Qt::green);
-                  //QColor c(100, 172, 49);     // green
-                  gradient.setColorAt(0, c.darker());
-                  gradient.setColorAt(0.5, c);
-                  gradient.setColorAt(1, c.darker());
-                  palette.setBrush(QPalette::Button, gradient);
-                  //palette.setBrush(autoType->backgroundRole(), gradient);
-                  //palette.setBrush(QPalette::Window, gradient);  */
                   autoType->setPalette(palette);
                   }
             else  
                   {
                   palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
-                  //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
-                  //gradient.setColorAt(0, c);
-                  //gradient.setColorAt(1, c.darker());
-                  //palette.setBrush(QPalette::Button, gradient);
                   autoType->setPalette(palette);
                   }
       
@@ -541,106 +926,15 @@ void AudioStrip::updateVolume()
           }
 }
 
-// REMOVE Tim. Trackinfo. Changed.      
-// //---------------------------------------------------------
-// //   updatePan
-// //---------------------------------------------------------
-// 
-// void AudioStrip::updatePan()
-// {
-//       if(_panPressed) // Inhibit the controller stream if control is currently pressed.
-//         return;
-//       double v = ((MusECore::AudioTrack*)track)->pan();
-//       if (v != panVal)
-//       {
-//           //printf("AudioStrip::updatePan setting slider and label\n");
-//           pan->blockSignals(true);
-//           panl->blockSignals(true);
-//           pan->setValue(v);
-//           panl->setValue(v);
-//           panl->blockSignals(false);
-//           pan->blockSignals(false);
-//           panVal = v;
-//           }
-// }
-
-//---------------------------------------------------------
-//   updatePan
-//---------------------------------------------------------
-
-void AudioStrip::updatePan()
-{
-      if(_panPressed) // Inhibit the controller stream if control is currently pressed.
-        return;
-      double v = static_cast<MusECore::AudioTrack*>(track)->pan();
-      if (v != panVal)
-      {
-          pan->blockSignals(true);
-          pan->setValue(v);
-          pan->blockSignals(false);
-          panVal = v;
-          }
-}
-
 //---------------------------------------------------------
 //   offToggled
 //---------------------------------------------------------
 
 void AudioStrip::offToggled(bool val)
       {
-      //track->setOff(val);  // REMOVE Tim.
       MusEGlobal::audio->msgSetTrackOff(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
-
-// REMOVE Tim. Trackinfo. Changed.      
-// //---------------------------------------------------------
-// //   updateOffState
-// //---------------------------------------------------------
-// 
-// void AudioStrip::updateOffState()
-//       {
-//       bool val = !track->off();
-//       slider->setEnabled(val);
-//       sl->setEnabled(val);
-//       pan->setEnabled(val);
-//       panl->setEnabled(val);
-//       if (track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
-//             stereo->setEnabled(val);
-//       label->setEnabled(val);
-//       
-//       // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
-//       // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-//       bool ae = track->auxRefCount() == 0 && val;
-//       int n = auxKnob.size();
-//       for (int i = 0; i < n; ++i) 
-//       {
-//         auxKnob[i]->setEnabled(ae);
-//         auxLabel[i]->setEnabled(ae);
-//       }
-//             
-//       if (pre)
-//             pre->setEnabled(val);
-//       if (record)
-//             record->setEnabled(val);
-//       if (solo)
-//             solo->setEnabled(val);
-//       if (mute)
-//             mute->setEnabled(val);
-//       //if (autoType)
-//       //      autoType->setEnabled(val);
-//       //if (iR)
-//       //      iR->setEnabled(val);
-//       //if (oR)
-//       //      oR->setEnabled(val);
-//       if (off) {
-//             off->blockSignals(true);
-//             off->setChecked(track->off());
-//             off->blockSignals(false);
-//             off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-//             //off->setIconSize(exit1Icon->size());  
-//             }
-//       }
 
 //---------------------------------------------------------
 //   updateOffState
@@ -651,17 +945,21 @@ void AudioStrip::updateOffState()
       bool val = !track->off();
       slider->setEnabled(val);
       sl->setEnabled(val);
-      pan->setEnabled(val);
+      
+      _upperRack->setEnabled(val);
+      _infoRack->setEnabled(val);
+      _lowerRack->setEnabled(val);
+      
       if (track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(val);
       label->setEnabled(val);
       
       // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
       // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-      bool ae = track->auxRefCount() == 0 && val;
-      int n = auxControl.size();
-      for (int i = 0; i < n; ++i) 
-        auxControl[i]->setEnabled(ae);
+      const bool ae = track->auxRefCount() == 0 && val;
+      _upperRack->setAuxEnabled(ae);
+      _infoRack->setAuxEnabled(ae);
+      _lowerRack->setAuxEnabled(ae);
             
       if (pre)
             pre->setEnabled(val);
@@ -671,18 +969,11 @@ void AudioStrip::updateOffState()
             solo->setEnabled(val);
       if (mute)
             mute->setEnabled(val);
-      //if (autoType)
-      //      autoType->setEnabled(val);
-      //if (iR)
-      //      iR->setEnabled(val);
-      //if (oR)
-      //      oR->setEnabled(val);
       if (off) {
             off->blockSignals(true);
             off->setChecked(track->off());
             off->blockSignals(false);
             off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-            //off->setIconSize(exit1Icon->size());  
             }
       }
 
@@ -713,58 +1004,21 @@ void AudioStrip::stereoToggled(bool val)
       }
 
 //---------------------------------------------------------
-//   auxChanged
+//   volumeMoved
 //---------------------------------------------------------
 
-void AudioStrip::auxChanged(double val, int idx)
+void AudioStrip::volumeMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/)
       {
-      double vol;
-      if (val <= MusEGlobal::config.minSlider)
-        vol = 0.0;
-      else
-        vol = muse_db2val(val);
-      MusEGlobal::audio->msgSetAux(static_cast<MusECore::AudioTrack*>(track), idx, vol);
-      MusEGlobal::song->update(SC_AUX);
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::volumeMoved id:%d val:%.20f\n", id, val);
       }
-
-//---------------------------------------------------------
-//   gainChanged
-//---------------------------------------------------------
-
-void AudioStrip::gainChanged(double val)
-      {
-      static_cast<MusECore::AudioTrack*>(track)->setGain(val);
-      }
-
-// REMOVE Tim. Trackinfo. Removed.
-// REMOVE Tim. Trackinfo. Changed.
-// //---------------------------------------------------------
-// //   auxLabelChanged
-// //---------------------------------------------------------
-// 
-// void AudioStrip::auxLabelChanged(double val, unsigned int idx) 
-//       {
-//         if(idx >= auxKnob.size())
-//           return;    
-//         auxKnob[idx]->setValue(val);
-//       }
-// //---------------------------------------------------------
-// //   auxLabelChanged
-// //---------------------------------------------------------
-// 
-// void AudioStrip::auxLabelChanged(double val, unsigned int idx) 
-//       {
-//         if(idx >= auxControl.size())
-//           return;    
-//         auxControl[idx]->setValue(val);
-//       }
 
 //---------------------------------------------------------
 //   volumeChanged
 //---------------------------------------------------------
 
-void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
+void AudioStrip::volumeChanged(double val, int /*id*/, int scrollMode)
       {
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::volumeChanged id:%d val:%.20f scrollMode:%d\n", id, val, scrollMode);
       if(track->isMidiTrack())
         return;
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
@@ -774,7 +1028,10 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       else
         vol = muse_db2val(val);
       volume = vol;
-      if (!shift_pressed) t->recordAutomation(MusECore::AC_VOLUME, vol);  // with shift, we get straight lines :)
+      // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+      // ScrDirect mode is one-time only on press with modifier.
+      if(scrollMode != SliderBase::ScrDirect)
+        t->recordAutomation(MusECore::AC_VOLUME, vol);
       t->setParam(MusECore::AC_VOLUME, vol);                              // Schedules a timed control change.
       t->enableController(MusECore::AC_VOLUME, false);
       }
@@ -785,6 +1042,7 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
 
 void AudioStrip::volumePressed()
       {
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::volumePressed\n");
       if(track->isMidiTrack())
         return;
       _volPressed = true;
@@ -796,8 +1054,11 @@ void AudioStrip::volumePressed()
       else
         vol = muse_db2val(val);
       volume = vol;
+      DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
       t->startAutoRecord(MusECore::AC_VOLUME, vol);
       t->setVolume(vol);
+      //t->setParam(MusECore::AC_VOLUME, val);   // Schedules a timed control change. // TODO Try this instead
+      DEBUG_AUDIO_STRIP(stderr, "    calling enableController(false)\n");
       t->enableController(MusECore::AC_VOLUME, false);
       }
 
@@ -807,14 +1068,18 @@ void AudioStrip::volumePressed()
 
 void AudioStrip::volumeReleased()
       {
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::volumeReleased\n");
       if(track->isMidiTrack())
         return;
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       AutomationType at = t->automationType();
+      DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
       t->stopAutoRecord(MusECore::AC_VOLUME, volume);
-      if(at == AUTO_OFF ||
-        at == AUTO_TOUCH)
+      if(at == AUTO_OFF || at == AUTO_TOUCH)
+      {
+        DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
         t->enableController(MusECore::AC_VOLUME, true);
+      }
       _volPressed = false;
       }
 
@@ -851,62 +1116,6 @@ void AudioStrip::volLabelChanged(double val)
       t->enableController(MusECore::AC_VOLUME, false);
       }
 
-//---------------------------------------------------------
-//   panChanged
-//---------------------------------------------------------
-
-void AudioStrip::panChanged(double val, int, bool shift_pressed)
-      {
-      if(track->isMidiTrack())
-        return;
-      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-      panVal = val;
-      if (!shift_pressed) t->recordAutomation(MusECore::AC_PAN, val);  // with shift, we get straight lines :)
-      t->setParam(MusECore::AC_PAN, val);                              // Schedules a timed control change.
-      t->enableController(MusECore::AC_PAN, false);
-      }
-
-//---------------------------------------------------------
-//   panPressed
-//---------------------------------------------------------
-
-void AudioStrip::panPressed()
-      {
-      if(track->isMidiTrack())
-        return;
-      _panPressed = true;
-      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-      panVal = pan->value();
-      t->startAutoRecord(MusECore::AC_PAN, panVal);
-      t->setPan(panVal);
-      t->enableController(MusECore::AC_PAN, false);
-      }
-
-//---------------------------------------------------------
-//   panReleased
-//---------------------------------------------------------
-
-void AudioStrip::panReleased()
-      {
-      if(track->isMidiTrack())
-        return;
-      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-      AutomationType at = t->automationType();
-      t->stopAutoRecord(MusECore::AC_PAN, panVal);
-      if(at == AUTO_OFF ||
-         at == AUTO_TOUCH)
-        t->enableController(MusECore::AC_PAN, true);
-      _panPressed = false;
-      }
-
-//---------------------------------------------------------
-//   panRightClicked
-//---------------------------------------------------------
-void AudioStrip::panRightClicked(QPoint p)
-{
-   MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_PAN);
-}
-
 void AudioStrip::resetClipper()
 {
    if(track)
@@ -916,25 +1125,6 @@ void AudioStrip::resetClipper()
    }
 }
 
-// REMOVE Tim. Trackinfo. Removed.
-// //---------------------------------------------------------
-// //   panLabelChanged
-// //---------------------------------------------------------
-// 
-// void AudioStrip::panLabelChanged(double val)
-//       {
-//       if(track->isMidiTrack())
-//         return;
-//       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-//       panVal = val;
-//       pan->blockSignals(true);
-//       pan->setValue(val);
-//       pan->blockSignals(false);
-//       t->startAutoRecord(MusECore::AC_PAN, val);
-//       t->setParam(MusECore::AC_PAN, val);     // Schedules a timed control change.
-//       t->enableController(MusECore::AC_PAN, false);
-//       }
-
 //---------------------------------------------------------
 //   updateChannels
 //---------------------------------------------------------
@@ -943,30 +1133,28 @@ void AudioStrip::updateChannels()
       {
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       int c = t->channels();
-      //printf("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
+      DEBUG_AUDIO_STRIP("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
       
       if (c > channel) {
             for (int cc = channel; cc < c; ++cc) {
-                  // REMOVE Tim. Trackinfo. Added.
                   _clipperLabel[cc] = new ClipperLabel();
+                  _clipperLabel[cc]->setContentsMargins(0, 0, 0, 0);
+                  _clipperLabel[cc]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
                   setClipperTooltip(cc);
                   _clipperLayout->addWidget(_clipperLabel[cc]);
                   connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
             
                   meter[cc] = new Meter(this);
-                  //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
                   meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
-//                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
+                  meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
-                  sliderGrid->setColumnStretch(cc, 50);
                   meter[cc]->show();
                   }
             }
       else if (c < channel) {
             for (int cc = channel-1; cc >= c; --cc) {
-                  // REMOVE Tim. Trackinfo. Added.
                   if(_clipperLabel[cc])
                     delete _clipperLabel[cc];
                   _clipperLabel[cc] = 0;
@@ -977,205 +1165,10 @@ void AudioStrip::updateChannels()
                   }
             }
       channel = c;
-// REMOVE Tim. Trackinfo. Removed.
-//       sliderGrid->removeWidget(_clipperLabel);
-//       sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
       stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
-      //stereo->setIconSize(stereoIcon->size());  
-      }
-
-// REMOVE Tim. Trackinfo. Changed.
-// //---------------------------------------------------------
-// //   addKnob
-// //    type = 0 - panorama
-// //           1 - aux send
-// //---------------------------------------------------------
-// 
-// MusEGui::Knob* AudioStrip::addKnob(Knob::KnobType type, int id, MusEGui::DoubleLabel** dlabel, QLabel *name)
-//       {
-//       MusEGui::Knob* knob = NULL;
-//       MusEGui::DoubleLabel* knobLabel = NULL;
-//       switch(type)
-//       {
-//         case Knob::panType:
-//           knob = new Knob(this);
-//           knob->setRange(-1.0, +1.0);
-//           knob->setToolTip(tr("panorama"));
-//           knobLabel = new DoubleLabel(0, -1.0, +1.0, this);
-//           knobLabel->setPrecision(2);
-//         break;
-//         case Knob::auxType:
-//           knob = new Knob(this);
-//           knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-//           knob->setToolTip(tr("aux send level"));
-//           knob->setFaceColor(Qt::blue);
-//           knobLabel = new DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
-//           knobLabel->setPrecision(0);
-//         break;
-//         case Knob::gainType:
-//           knob = new Knob(this);
-//           knob->setRange(1.0, 20.0);
-//           knob->setFaceColor(Qt::yellow);
-//           knob->setToolTip(tr("calibration gain"));
-//           knobLabel = new DoubleLabel(1.0, 1.0, 30.0, this);
-//           knobLabel->setPrecision(1);
-//         break;
-//         default:
-//           fprintf(stderr, "FIXME: AudioStrip::addKnob(): Unknown type. Aborting!\n");
-//           abort();
-//       }
-//         
-//       knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       knob->setBackgroundRole(QPalette::Mid);
-//             
-//       if (dlabel)
-//             *dlabel = knobLabel;
-//       knobLabel->setSlider(knob);
-//       knobLabel->setBackgroundRole(QPalette::Mid);
-//       knobLabel->setFrame(true);
-//       knobLabel->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       
-//       name->setParent(this);
-//       name->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       name->setAlignment(Qt::AlignCenter);
-// 
-//       grid->addWidget(name, _curGridRow, 0);
-//       grid->addWidget(knobLabel, _curGridRow+1, 0);
-//       grid->addWidget(knob, _curGridRow, 1, 2, 1);
-//       _curGridRow += 2;
-// 
-//       connect(knob, SIGNAL(valueChanged(double,int)), knobLabel, SLOT(setValue(double)));
-// 
-//       if (type == Knob::panType) {
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
-//             connect(knob, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
-//             connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
-//             connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
-//             connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(panRightClicked(const QPoint &)));
-//             }
-//       else if (type == Knob::auxType){
-//             knobLabel->setReadOnly(true);
-//             knob->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-//             connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(auxChanged(double, int)));
-//             }
-//       else if (type == Knob::gainType){
-//             knobLabel->setReadOnly(true);
-//             knob->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-//             connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(gainChanged(double)));
-//             }
-//       return knob;
-//       }
-
-//---------------------------------------------------------
-//   addKnob
-//    type = 0 - panorama
-//           1 - aux send
-//---------------------------------------------------------
-
-CompactSlider* AudioStrip::addController(ControllerType type, int id, const QString& label)
-      {
-      CompactSlider* control = NULL;
-      QPalette pal(palette());
-      switch(type)
-      {
-
-
-// REMOVE Tim. Trackinfo.
-//         CompactSlider(QWidget *parent = 0, const char *name = 0,
-//           Qt::Orientation orient = Qt::Horizontal,
-//           ScalePos scalePos = None,
-//           const QString& labelText = QString(), 
-//           const QString& valPrefix = QString(), 
-//           const QString& valSuffix = QString(),
-//           const QString& specialValueText = QString(), 
-//           QColor thumbColor = QColor(255, 255, 0));
-
-        case panType:
-          control = new CompactSlider(this, "MixerStripAudioPan", Qt::Horizontal, CompactSlider::None, label);
-          control->setToolTip(tr("panorama"));
-          control->setRange(-1.0, +1.0);
-          control->setValueDecimals(2);
-          //control->setValue(0);
-          pal.setColor(QPalette::Active, QPalette::Button, Qt::darkYellow); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::darkYellow); // Border
-          control->setPalette(pal);
-        break;
-        case auxType:
-          control = new CompactSlider(this, "MixerStripAudioAux", Qt::Horizontal, CompactSlider::None, label);
-          control->setToolTip(tr("aux send level (dB)"));
-          control->setRange(MusEGlobal::config.minSlider, auxSliderMax, auxSliderStep);
-          control->setValueDecimals(auxSliderPrec);
-          control->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character.
-          //control->setValue(0);
-          pal.setColor(QPalette::Active, QPalette::Button, Qt::blue); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::blue); // Border
-          control->setPalette(pal);
-        break;
-        case gainType:
-          control = new CompactSlider(this, "MixerStripAudioGain", Qt::Horizontal, CompactSlider::None, label);
-          control->setToolTip(tr("calibration gain"));
-          control->setRange(gainSliderMin, gainSliderMax, gainSliderStep);
-          control->setValueDecimals(gainSliderPrec);
-          pal.setColor(QPalette::Active, QPalette::Button, Qt::yellow); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Button, Qt::yellow); // Border
-          control->setPalette(pal);
-        break;
-        default:
-          fprintf(stderr, "FIXME: AudioStrip::addKnob(): Unknown type. Aborting!\n");
-          abort();
-      }
-        
-      control->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       control->setBackgroundRole(QPalette::Mid);
-            
-      grid->addWidget(control, _curGridRow++, 0, 1, 2);
-
-//       connect(knob, SIGNAL(valueChanged(double,int)), knobLabel, SLOT(setValue(double)));
-
-//       if (type == Knob::panType) {
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
-//             connect(knob, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
-//             connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
-//             connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
-//             connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(panRightClicked(const QPoint &)));
-//             }
-//       else if (type == Knob::auxType){
-//             knobLabel->setReadOnly(true);
-//             knob->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-//             connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(auxChanged(double, int)));
-//             }
-//       else if (type == Knob::gainType){
-//             knobLabel->setReadOnly(true);
-//             knob->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-//             connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(gainChanged(double)));
-//             }
-      if (type == panType) {
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
-            connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
-            connect(control, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
-            connect(control, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
-            connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(panRightClicked(QPoint)));
-            }
-      else if (type == auxType){
-//             knobLabel->setReadOnly(true);
-            control->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-            connect(control, SIGNAL(sliderMoved(double, int)), SLOT(auxChanged(double, int)));
-            }
-      else if (type == gainType){
-//             knobLabel->setReadOnly(true);
-            control->setId(id);
-//             connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-            connect(control, SIGNAL(sliderMoved(double, int)), SLOT(gainChanged(double)));
-            }
-      return control;
       }
 
 //---------------------------------------------------------
@@ -1186,344 +1179,6 @@ AudioStrip::~AudioStrip()
       {
       }
 
-
-// REMOVE Tim. Trackinfo. Changed.
-// //---------------------------------------------------------
-// //   AudioStrip
-// //    create mixer strip
-// //---------------------------------------------------------
-// 
-// AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
-//    : Strip(parent, at)
-//       {
-//       volume        = -1.0;
-//       panVal        = 0;
-//       _volPressed   = false;
-//       _panPressed   = false;
-//       
-//       record        = 0;
-//       off           = 0;
-//       
-//       // Set the whole strip's font, except for the label.    p4.0.45
-//       setFont(MusEGlobal::config.fonts[1]);
-// 
-//       
-//       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
-//       channel       = at->channels();
-//       ///setMinimumWidth(STRIP_WIDTH);
-//       
-//       int ch = 0;
-//       for (; ch < channel; ++ch)
-//             meter[ch] = new Meter(this);
-//       for (; ch < MAX_CHANNELS; ++ch)
-//             meter[ch] = 0;
-// 
-//       //---------------------------------------------------
-//       //    plugin rack
-//       //---------------------------------------------------
-// 
-//       rack = new EffectRack(this, t);
-//       rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-//       grid->addWidget(rack, _curGridRow++, 0, 1, 2);
-// 
-//       //---------------------------------------------------
-//       //    mono/stereo  pre/post
-//       //---------------------------------------------------
-// 
-//       stereo  = new QToolButton();
-//       ///stereo->setFont(MusEGlobal::config.fonts[1]);
-//       stereo->setFocusPolicy(Qt::NoFocus);
-//       stereo->setCheckable(true);
-//       stereo->setToolTip(tr("1/2 channel"));
-//       stereo->setChecked(channel == 2);
-//       stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
-//       stereo->setIconSize(monoIcon->size());  
-//       stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
-// 
-//       // disable mono/stereo for Synthesizer-Plugins
-//       if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
-//             stereo->setEnabled(false);
-// 
-//       pre = new QToolButton();
-//       ///pre->setFont(MusEGlobal::config.fonts[1]);
-//       pre->setFocusPolicy(Qt::NoFocus);
-//       pre->setCheckable(true);
-//       pre->setText(tr("Pre"));
-//       pre->setToolTip(tr("pre fader - post fader"));
-//       pre->setChecked(t->prefader());
-//       pre->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
-// 
-//       grid->addWidget(stereo, _curGridRow, 0);
-//       grid->addWidget(pre, _curGridRow++, 1);
-// 
-//       //---------------------------------------------------
-//       //    Gain
-//       //---------------------------------------------------
-// 
-//       gain = addKnob(MusEGui::Knob::gainType, 0, &gainLabel, new QLabel("Gain", this));
-//       gain->setValue(t->gain());
-// 
-//       //---------------------------------------------------
-//       //    aux send
-//       //---------------------------------------------------
-// 
-//       int auxsSize = MusEGlobal::song->auxs()->size();
-//       if (t->hasAuxSend()) {
-//             for (int idx = 0; idx < auxsSize; ++idx) {
-//                   MusEGui::DoubleLabel* al; // the thought was to aquire the correct Aux name for each Aux
-//                                             // now they are only called Aux1, Aux2, which isn't too usable.
-//                   QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
-//                   if (title.length() > 8) { // shorten name
-//                       title = title.mid(0,8) + ".";
-//                   }
-//                   QLabel *name = new QLabel(title,this);
-//                   MusEGui::Knob* ak = addKnob(MusEGui::Knob::auxType, idx, &al, name);
-// 
-//                   auxKnob.push_back(ak);
-//                   auxLabel.push_back(al);
-//                   double val = MusECore::fast_log10(t->auxSend(idx))*20.0;
-//                   ak->setValue(val);
-//                   al->setValue(val);
-//                   
-//                   // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
-//                   // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-//                   int rc = track->auxRefCount();
-//                   ak->setEnabled( rc == 0 );
-//                   al->setEnabled( rc == 0 );
-//                   }
-//             }
-//       else {
-//             ///if (auxsSize)
-//                   //layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
-//                   ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
-//             }
-// 
-//       //---------------------------------------------------
-//       //    slider, label, meter
-//       //---------------------------------------------------
-// 
-//       sliderGrid = new QGridLayout(); 
-//       sliderGrid->setRowStretch(0, 100);
-//       sliderGrid->setContentsMargins(0, 0, 0, 0);
-//       sliderGrid->setSpacing(0);
-//       
-//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
-// 
-//       slider->setCursorHoming(true);
-//       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-//       slider->setFixedWidth(20);
-//       ///slider->setFont(MusEGlobal::config.fonts[1]);
-//       slider->setValue(MusECore::fast_log10(t->volume())*20.0);
-// 
-//       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
-// 
-//       for (int i = 0; i < channel; ++i) {
-//             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
-//             meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
-//             meter[i]->setFixedWidth(15);
-//             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-//             sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
-//             sliderGrid->setColumnStretch(i, 50);
-//             }
-//       sliderGrid->addItem(new QSpacerItem(2,0),0,3);
-//       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
-// 
-//       sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);
-//       sl->setSlider(slider);
-//       ///sl->setFont(MusEGlobal::config.fonts[1]);
-//       sl->setBackgroundRole(QPalette::Mid);
-//       sl->setSuffix(tr("dB"));
-//       sl->setFrame(true);
-//       sl->setPrecision(0);
-//       sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
-//       sl->setValue(MusECore::fast_log10(t->volume()) * 20.0);
-// 
-//       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
-//       connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));
-//       connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeChanged(double,int,bool)));
-//       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
-//       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
-//       connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(volumeRightClicked(const QPoint &)));
-//       grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter);
-// 
-//       //---------------------------------------------------
-//       //    pan, balance
-//       //---------------------------------------------------
-// 
-//       pan = addKnob(MusEGui::Knob::panType, 0, &panl, new QLabel("Pan", this));
-//       pan->setValue(t->pan());
-//       
-//       //---------------------------------------------------
-//       //    mute, solo, record
-//       //---------------------------------------------------
-// 
-//       if (track->canRecord()) {
-//             record  = new TransparentToolButton(this);
-// 	    record->setFocusPolicy(Qt::NoFocus);
-//             record->setCheckable(true);
-//             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//             record->setBackgroundRole(QPalette::Mid);
-//             record->setToolTip(tr("record"));
-//             record->setChecked(t->recordFlag());
-//             record->setIcon(t->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-//             ///record->setIconSize(record_on_Icon->size());  
-//             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
-//             }
-// 
-//       MusECore::Track::TrackType type = t->type();
-// 
-//       mute  = new QToolButton();
-//       mute->setFocusPolicy(Qt::NoFocus);
-//       mute->setCheckable(true);
-//       mute->setToolTip(tr("mute"));
-//       mute->setChecked(t->mute());
-//       mute->setIcon(t->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-//       ///mute->setIconSize(muteIconOn->size());  
-//       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
-// 
-//       solo  = new QToolButton();
-//       solo->setFocusPolicy(Qt::NoFocus);
-//       solo->setCheckable(true);
-//       solo->setChecked(t->solo());
-//       if(t->internalSolo())
-//         solo->setIcon(t->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
-//       else
-//         solo->setIcon(t->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-//       ///solo->setIconSize(soloIconOn->size());  
-//       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
-//       if (type == MusECore::Track::AUDIO_OUTPUT) {
-//             record->setToolTip(tr("record downmix"));
-//             //solo->setToolTip(tr("solo mode (monitor)"));
-//             solo->setToolTip(tr("solo mode"));
-//             }
-//       else {
-//             //solo->setToolTip(tr("pre fader listening"));
-//             solo->setToolTip(tr("solo mode"));
-//             }
-// 
-//       off  = new TransparentToolButton(this);
-//       off->setFocusPolicy(Qt::NoFocus);
-//       off->setBackgroundRole(QPalette::Mid);
-//       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       off->setCheckable(true);
-//       off->setToolTip(tr("off"));
-//       off->setChecked(t->off());
-//       off->setIcon(t->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-//       ///off->setIconSize(exit1Icon->size());  
-//       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
-// 
-//       grid->addWidget(off, _curGridRow, 0);
-//       if (record)
-//             grid->addWidget(record, _curGridRow, 1);
-//       ++_curGridRow;      
-//       grid->addWidget(mute, _curGridRow, 0);
-//       grid->addWidget(solo, _curGridRow++, 1);
-// 
-//       //---------------------------------------------------
-//       //    routing
-//       //---------------------------------------------------
-// 
-//       if (type != MusECore::Track::AUDIO_AUX) {
-//             iR = new QToolButton();
-// 	    iR->setFocusPolicy(Qt::NoFocus);
-//             ///iR->setFont(MusEGlobal::config.fonts[1]);
-//             iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-//             ///iR->setText(tr("iR"));
-//             iR->setIcon(QIcon(*routesInIcon));
-//             iR->setIconSize(routesInIcon->size());  
-//             iR->setCheckable(false);
-//             iR->setToolTip(tr("input routing"));
-//             grid->addWidget(iR, _curGridRow, 0);
-//             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-//             }
-//       
-//       oR = new QToolButton();
-//       oR->setFocusPolicy(Qt::NoFocus);
-//       ///oR->setFont(MusEGlobal::config.fonts[1]);
-//       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-//       ///oR->setText(tr("oR"));
-//       oR->setIcon(QIcon(*routesOutIcon));
-//       oR->setIconSize(routesOutIcon->size());  
-//       oR->setCheckable(false);
-//       oR->setToolTip(tr("output routing"));
-//       grid->addWidget(oR, _curGridRow++, 1);
-//       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-// 
-//       //---------------------------------------------------
-//       //    automation type
-//       //---------------------------------------------------
-// 
-//       autoType = new ComboBox();
-//       autoType->setFocusPolicy(Qt::NoFocus);
-//       ///autoType->setFont(MusEGlobal::config.fonts[1]);
-//       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-//       //autoType->setAutoFillBackground(true);
-//       
-//       autoType->addAction(tr("Off"), AUTO_OFF);
-//       autoType->addAction(tr("Read"), AUTO_READ);
-//       autoType->addAction(tr("Touch"), AUTO_TOUCH);
-//       autoType->addAction(tr("Write"), AUTO_WRITE);
-//       autoType->setCurrentItem(t->automationType());
-// 
-//       QPalette palette;
-//       //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
-//             {
-//             palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
-//             /* QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//             QColor c(Qt::red);
-//             //QColor c(215, 76, 39);       // red
-//             gradient.setColorAt(0, c.darker());
-//             gradient.setColorAt(0.5, c);
-//             gradient.setColorAt(1, c.darker());
-//             palette.setBrush(QPalette::Button, gradient);
-//             //palette.setBrush(autoType->backgroundRole(), gradient);
-//             //palette.setBrush(QPalette::Window, gradient);  */
-//             autoType->setPalette(palette);
-//             }
-//       else if(t->automationType() == AUTO_READ)
-//             {
-//             palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
-//             /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-//             QColor c(Qt::green);
-//             //QColor c(100, 172, 49);     // green
-//             gradient.setColorAt(0, c.darker());
-//             gradient.setColorAt(0.5, c);
-//             gradient.setColorAt(1, c.darker());
-//             palette.setBrush(QPalette::Button, gradient);
-//             //palette.setBrush(autoType->backgroundRole(), gradient);
-//             //palette.setBrush(QPalette::Window, gradient);  */
-//             autoType->setPalette(palette);
-//             }
-//       else  
-//             {
-//             palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
-//             //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
-//             //gradient.setColorAt(0, c);
-//             //gradient.setColorAt(1, c.darker());
-//             //palette.setBrush(QPalette::Button, gradient);
-//             autoType->setPalette(palette);
-//             }
-// 
-//       autoType->setToolTip(tr("automation type"));
-//       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-//       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
-// 
-//       if (off) {
-//             off->blockSignals(true);
-//             updateOffState();   // init state
-//             off->blockSignals(false);
-//             }
-//       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
-// 
-//       updateRouteButtons();
-// 
-//       }
-
 //---------------------------------------------------------
 //   AudioStrip
 //    create mixer strip
@@ -1533,29 +1188,111 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
    : Strip(parent, at, hasHandle)
       {
       volume        = -1.0;
-      panVal        = 0;
       _volPressed   = false;
-      _panPressed   = false;
       
       record        = 0;
       off           = 0;
       
-      // Set the whole strip's font, except for the label.    p4.0.45
-// REMOVE Tim. Trackinfo. Changed.
+      // Start the layout in mode A (normal, racks on left).
+      _isExpanded = false;
+      
+      // Set the whole strip's font, except for the label.
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
       setFont(MusEGlobal::config.fonts[1]);  
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
-      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       channel       = at->channels();
-      ///setMinimumWidth(STRIP_WIDTH);
       
+
+      _effectRackPos       = GridPosStruct(_curGridRow,     0, 1, 3);
+      
+
+      _stereoToolPos       = GridPosStruct(_curGridRow + 1, 0, 1, 1);
+      _preToolPos          = GridPosStruct(_curGridRow + 1, 1, 1, 1);
+      
+      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 2, 0, 1, 3);
+      
+      
+      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 3, 2, 1, 1);
+      _sliderPos           = GridPosStruct(_curGridRow + 3, 0, 4, 2);
+      
+      
+      _infoSpacerTop       = GridPosStruct(_curGridRow + 4, 2, 1, 1);
+      
+      _propertyRackPos     = GridPosStruct(_curGridRow + 5, 2, 1, 1);
+      
+      _infoSpacerBottom    = GridPosStruct(_curGridRow + 6, 2, 1, 1);
+      
+      _sliderLabelPos      = GridPosStruct(_curGridRow + 7, 0, 1, 2);
+      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 7, 2, 1, 1);
+      
+      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 8, 0, 1, 3);
+      
+      _offPos              = GridPosStruct(_curGridRow + 9, 0, 1, 1);
+      _recPos              = GridPosStruct(_curGridRow + 9, 1, 1, 1);
+      
+      _mutePos             = GridPosStruct(_curGridRow + 10, 0, 1, 1);
+      _soloPos             = GridPosStruct(_curGridRow + 10, 1, 1, 1);
+      
+      _inRoutesPos         = GridPosStruct(_curGridRow + 11, 0, 1, 1);
+      _outRoutesPos        = GridPosStruct(_curGridRow + 11, 1, 1, 1);
+      
+      _automationPos       = GridPosStruct(_curGridRow + 12, 0, 1, 2);
+      
+      _rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
+
+
+      _infoRack = new AudioComponentRack(at, aStripInfoRack, false);
+
+//       _infoRack->setVisible(false); // Not visible unless expanded.
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+//       _infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _infoRack->setLineWidth(rackFrameWidth);
+      _infoRack->setMidLineWidth(0);
+      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
+      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+
+// REMOVE. Just a test.
+//       CompactSliderComponentDescriptor test_desc
+//       (
+//         ComponentRack::controllerComponent, 
+//         "MixerStripAudioTest", 
+//         MusECore::AC_VOLUME,
+//         tr("Test"), 
+//         tr("Test"), 
+//         Qt::green
+//       );
+//       _infoRack->newComponent(&test_desc);
+
+      
+      _infoRack->addStretch();
+      addGridWidget(_infoRack, _propertyRackPos);
+                  
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+                    _infoSpacerTop._row, _infoSpacerTop._col, _infoSpacerTop._rowSpan, _infoSpacerTop._colSpan);
+
+      _upperRack = new AudioComponentRack(at, aStripUpperRack, true); // True = manage auxs.
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+      //_upperRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _upperRack->setLineWidth(rackFrameWidth);
+      _upperRack->setMidLineWidth(0);
+      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
+      _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+
       int ch = 0;
       for (; ch < channel; ++ch)
       {
             meter[ch] = new Meter(this);
-// REMOVE Tim. Trackinfo. Added.
             _clipperLabel[ch] = new ClipperLabel(this);
+            _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
+            _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             setClipperTooltip(ch);
             connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
             
@@ -1563,7 +1300,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       for (; ch < MAX_CHANNELS; ++ch)
       {
             meter[ch] = 0;
-// REMOVE Tim. Trackinfo. Removed.
             _clipperLabel[ch] = 0;
       }
 
@@ -1571,80 +1307,79 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    plugin rack
       //---------------------------------------------------
 
-      rack = new EffectRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-      grid->addWidget(rack, _curGridRow++, 0, 1, 2);
+      rack = new EffectRack(this, at);
+      rack->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
+      // Keep this if dynamic layout (flip to right side) is desired.
+      _upperRack->addStretch();
+      
+      updateRackSizes(true, false);
+
+      addGridWidget(rack, _effectRackPos);
+      addGridWidget(_upperRack, _preScrollAreaPos_A);
+      
       //---------------------------------------------------
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      stereo  = new QToolButton();
-      ///stereo->setFont(MusEGlobal::config.fonts[1]);
+      stereo  = new CompactToolButton();
+      stereo->setContentsMargins(0, 0, 0, 0);
       stereo->setFocusPolicy(Qt::NoFocus);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
+      
+      QIcon stereo_icon(*monoIcon);
+      stereo_icon.addPixmap(*stereoIcon, QIcon::Normal, QIcon::On);
+      stereo->setIcon(stereo_icon);
+      stereo->setIconSize(stereoIcon->size());  
       stereo->setChecked(channel == 2);
-      stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
-      stereo->setIconSize(monoIcon->size());  
-      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      
+      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       // disable mono/stereo for Synthesizer-Plugins
-      if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+      if (at->type() == MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(false);
 
-      pre = new QToolButton();
-      ///pre->setFont(MusEGlobal::config.fonts[1]);
+      pre = new CompactToolButton();
+      pre->setContentsMargins(0, 0, 0, 0);
       pre->setFocusPolicy(Qt::NoFocus);
       pre->setCheckable(true);
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
-      pre->setChecked(t->prefader());
-      pre->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      pre->setChecked(at->prefader());
+      pre->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
 
-      grid->addWidget(stereo, _curGridRow, 0);
-      grid->addWidget(pre, _curGridRow++, 1);
+      addGridWidget(stereo, _stereoToolPos);
+      addGridWidget(pre, _preToolPos);
 
       //---------------------------------------------------
       //    Gain
       //---------------------------------------------------
 
-      gain = addController(gainType, 0, tr("Gain"));
-      gain->setValue(t->gain());
-
+      CompactSliderComponentDescriptor gain_desc
+      (
+        ComponentRack::propertyComponent, 
+        "MixerStripAudioGain", 
+        AudioComponentRack::aStripGainProperty 
+      );
+      _upperRack->newComponent(&gain_desc);
+      
       //---------------------------------------------------
       //    aux send
       //---------------------------------------------------
 
       int auxsSize = MusEGlobal::song->auxs()->size();
-      if (t->hasAuxSend()) {
+      if (at->hasAuxSend()) {
             for (int idx = 0; idx < auxsSize; ++idx) {
-                  // the thought was to aquire the correct Aux name for each Aux
-                  // now they are only called Aux1, Aux2, which isn't too usable.
-                  QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
-                  if (title.length() > 8) { // shorten name
-                      title = title.mid(0,8) + ".";
-                  }
-                  CompactSlider* control = addController(auxType, idx, title);
-
-                  auxControl.push_back(control);
-                  double val = t->auxSend(idx);
-                  if(val == 0.0)
-                    val = MusEGlobal::config.minSlider;
-                  else
-                  {
-                    val = muse_val2dbr(val);
-                    if(val < MusEGlobal::config.minSlider)
-                      val = MusEGlobal::config.minSlider;
-                  }
-                  control->setValue(val);
-                  
-                  // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
-                  // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
-                  int rc = track->auxRefCount();
-                  control->setEnabled( rc == 0 );
+                  CompactSliderComponentDescriptor aux_desc
+                  (
+                    AudioComponentRack::aStripAuxComponent, 
+                    "MixerStripAudioAux", 
+                    idx
+                  );
+                  _upperRack->newComponent(&aux_desc);
                   }
             }
       else {
@@ -1658,17 +1393,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       sliderGrid = new QGridLayout(); 
-//       sliderGrid->setRowStretch(2, 100);  // REMOVE Tim. Trackinfo. Removed. TEST
-//       sliderGrid->setContentsMargins(0, 1, 0, 0);   // REMOVE Tim. Trackinfo. Changed. TEST
       sliderGrid->setContentsMargins(0, 0, 0, 0);
       sliderGrid->setSpacing(0);
 
       /*-------------- clipper label -------------------*/      
-// REMOVE Tim. Trackinfo. Changed.      
-//       _clipperLabel = new ClipperLabel(this);
-//       connect(_clipperLabel, SIGNAL(clicked()), SLOT(resetClipper()));
-//       sliderGrid->addWidget(_clipperLabel, 0, 0, 1, -1);
-//       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
       _clipperLayout = new QHBoxLayout();
       _clipperLayout->setSpacing(0);
       for(int ch = 0; ch < channel; ++ch)
@@ -1676,38 +1404,23 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sliderGrid->addLayout(_clipperLayout, 0, 0, 1, -1, Qt::AlignCenter);
       sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
       
-   
-// REMOVE Tim. Trackinfo. Changed.      
-//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None);
-//       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(62, 37, 255));
-      slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, QColor(128, 128, 255), ScaleDraw::TextHighlightSplitAndShadow);
-//       QFont fnt = font();
-//       fnt.setPointSize(8);
-//       QFont fnt;
-//       fnt.setFamily("Sans");
-//       fnt.setPointSize(font().pointSize());
-//       slider->setFont(fnt);
+      slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14, 
+                          MusEGlobal::config.audioVolumeSliderColor, 
+                          ScaleDraw::TextHighlightSplitAndShadow);
 
       slider->setCursorHoming(true);
-//       slider->setThumbLength(1);
-//       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0); // REMOVE Tim. Trackinfo. Changed.
-//       slider->setRange(MusEGlobal::config.minSlider - volSliderStep, volSliderMax, volSliderStep);
+      //slider->setThumbLength(1);
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::AudioStrip new slider: step:%.20f\n", volSliderStep);
       slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-//       slider->setScaleMaxMinor(5);
-//       slider->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
+      //slider->setScaleMaxMinor(5);
       slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
       slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
       slider->setScaleBackBone(false);
       //slider->setFillThumb(false);
       
-// REMOVE Tim. Trackinfo. Changed.      
-//       slider->setFixedWidth(20);
-//       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       
-      ///slider->setFont(MusEGlobal::config.fonts[1]);
-      
-      double track_vol = t->volume();
+      double track_vol = at->volume();
       if(track_vol == 0.0)
         track_vol = MusEGlobal::config.minSlider;
       else
@@ -1725,18 +1438,17 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
             meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
-            meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding); // REMOVE Tim. Trackinfo. Added.
-//             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks())); // REMOVE Tim. Trackinfo. Changed.
+            meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
             sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
-//             sliderGrid->setColumnStretch(i, 50); // REMOVE Tim. Trackinfo. Removed.
+            meter[i]->show();
             }
-      sliderGrid->addItem(new QSpacerItem(2,0),2,3);
-      grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
+            
+      addGridLayout(sliderGrid, _sliderPos);
 
       sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
+      sl->setContentsMargins(0, 0, 0, 0);
       sl->setSlider(slider);
-      ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setToolTip(tr("Volume/gain"));
       sl->setSuffix(tr("dB"));
@@ -1744,63 +1456,109 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sl->setOff(MusEGlobal::config.minSlider);
       sl->setFrame(true);
       sl->setPrecision(volSliderPrec);
-      sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
+      sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       sl->setValue(track_vol);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
       connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));
-      connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeChanged(double,int,bool)));
+      connect(slider, SIGNAL(valueChanged(double,int,int)), SLOT(volumeChanged(double,int,int)));
+      connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeMoved(double,int,bool)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
-      grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter);
+   
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+                    _infoSpacerBottom._row, _infoSpacerBottom._col, _infoSpacerBottom._rowSpan, _infoSpacerBottom._colSpan);
+      
+      addGridWidget(sl, _sliderLabelPos, Qt::AlignCenter);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
-      pan = addController(panType, 0, tr("Pan"));
-      pan->setValue(t->pan());
+      _lowerRack = new AudioComponentRack(at, aStripLowerRack, false);
+      
+      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
+      //_lowerRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      _lowerRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+      
+      _lowerRack->setLineWidth(rackFrameWidth);
+      _lowerRack->setMidLineWidth(0);
+      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
+      _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+      _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+
+      CompactSliderComponentDescriptor pan_desc
+      (
+        ComponentRack::controllerComponent, 
+        "MixerStripAudioPan", 
+        MusECore::AC_PAN
+      );
+      _lowerRack->newComponent(&pan_desc);
+      
+      // Keep this if dynamic layout (flip to right side) is desired.
+       _lowerRack->addStretch();
+      
+      updateRackSizes(false, true);
+      addGridWidget(_lowerRack, _postScrollAreaPos_A);
+      
+      _upperRack->setEnabled(!at->off());
+      _infoRack->setEnabled(!at->off());
+      _lowerRack->setEnabled(!at->off());
       
       //---------------------------------------------------
       //    mute, solo, record
       //---------------------------------------------------
 
       if (track->canRecord()) {
-            record  = new TransparentToolButton(this);
+            record  = new CompactToolButton();
             record->setFocusPolicy(Qt::NoFocus);
             record->setCheckable(true);
-            record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-            record->setBackgroundRole(QPalette::Mid);
+            record->setContentsMargins(0, 0, 0, 0);
+            record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             record->setToolTip(tr("record"));
-            record->setChecked(t->recordFlag());
-            record->setIcon(t->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-            ///record->setIconSize(record_on_Icon->size());  
+            QIcon rec_icon(*record_off_Icon);
+            rec_icon.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
+            record->setIcon(rec_icon);
+            record->setIconSize(record_off_Icon->size());  
+            record->setChecked(at->recordFlag());
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
-      MusECore::Track::TrackType type = t->type();
+      MusECore::Track::TrackType type = at->type();
 
-      mute  = new QToolButton();
+      mute  = new CompactToolButton();
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
+      mute->setContentsMargins(0, 0, 0, 0);
       mute->setToolTip(tr("mute"));
-      mute->setChecked(t->mute());
-      mute->setIcon(t->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-      ///mute->setIconSize(muteIconOn->size());  
-      mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      QIcon mute_icon(*muteIconOn);
+      mute_icon.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
+      mute->setIcon(mute_icon);
+      mute->setIconSize(muteIconOn->size());  
+      mute->setChecked(at->mute());
+      mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = new QToolButton();
+      solo  = new CompactToolButton();
       solo->setFocusPolicy(Qt::NoFocus);
+      solo->setContentsMargins(0, 0, 0, 0);
       solo->setCheckable(true);
-      solo->setChecked(t->solo());
-      if(t->internalSolo())
-        solo->setIcon(t->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+      QIcon solo_icon_A(*soloIconOff);
+      solo_icon_A.addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
+      solo->setIcon(solo_icon_A);
+      QIcon solo_icon_B(*soloblksqIconOff);
+      solo_icon_B.addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
+      solo->setIconSize(soloIconOff->size());  
+      solo->setChecked(at->solo());
+      
+      // TODO:
+      if(at->internalSolo())
+        solo->setIcon(at->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
       else
-        solo->setIcon(t->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-      ///solo->setIconSize(soloIconOn->size());  
-      solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+        solo->setIcon(at->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+      
+      solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       if (type == MusECore::Track::AUDIO_OUTPUT) {
             record->setToolTip(tr("record downmix"));
@@ -1812,114 +1570,92 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             solo->setToolTip(tr("solo mode"));
             }
 
-      off  = new TransparentToolButton(this);
+      off  = new CompactToolButton();
+      off->setContentsMargins(0, 0, 0, 0);
       off->setFocusPolicy(Qt::NoFocus);
       off->setBackgroundRole(QPalette::Mid);
-      off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      off->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       off->setCheckable(true);
       off->setToolTip(tr("off"));
-      off->setChecked(t->off());
-      off->setIcon(t->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-      ///off->setIconSize(exit1Icon->size());  
+      QIcon off_icon(*exitIcon);
+      off_icon.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
+      off->setIcon(off_icon);
+      off->setIconSize(exitIcon->size());  
+      off->setChecked(at->off());
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
-      grid->addWidget(off, _curGridRow, 0);
-      if (record)
-            grid->addWidget(record, _curGridRow, 1);
-      ++_curGridRow;      
-      grid->addWidget(mute, _curGridRow, 0);
-      grid->addWidget(solo, _curGridRow++, 1);
-
+      addGridWidget(off, _offPos);
+      if(record)
+        addGridWidget(record, _recPos);
+      addGridWidget(mute, _mutePos);
+      addGridWidget(solo, _soloPos);
+      
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
       if (type != MusECore::Track::AUDIO_AUX) {
-            iR = new QToolButton();
+            iR = new CompactToolButton(0, *routesInIcon);
             iR->setFocusPolicy(Qt::NoFocus);
-            ///iR->setFont(MusEGlobal::config.fonts[1]);
-            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-            ///iR->setText(tr("iR"));
-            iR->setIcon(QIcon(*routesInIcon));
-            iR->setIconSize(routesInIcon->size());  
+            iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+            // Give it a wee bit more height.
+            iR->setIconSize(QSize(routesInIcon->width(), routesInIcon->height() + 5));
             iR->setCheckable(false);
-            iR->setToolTip(tr("input routing"));
-            grid->addWidget(iR, _curGridRow, 0);
+            iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+            addGridWidget(iR, _inRoutesPos); 
             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
             }
-      
-      oR = new QToolButton();
+            
+      oR = new CompactToolButton(0, *routesOutIcon);
+      oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
-      ///oR->setFont(MusEGlobal::config.fonts[1]);
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
-      ///oR->setText(tr("oR"));
-      oR->setIcon(QIcon(*routesOutIcon));
-      oR->setIconSize(routesOutIcon->size());  
+      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      // Give it a wee bit more height.
+      oR->setIconSize(QSize(routesOutIcon->width(), routesOutIcon->height() + 5));
       oR->setCheckable(false);
-      oR->setToolTip(tr("output routing"));
-      grid->addWidget(oR, _curGridRow++, 1);
+      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+      addGridWidget(oR, _outRoutesPos); 
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
 
       //---------------------------------------------------
       //    automation type
       //---------------------------------------------------
 
-      autoType = new ComboBox();
+      autoType = new CompactComboBox();
       autoType->setContentsMargins(0, 0, 0, 0);
       autoType->setFocusPolicy(Qt::NoFocus);
-      ///autoType->setFont(MusEGlobal::config.fonts[1]);
-      autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       //autoType->setAutoFillBackground(true);
       
       autoType->addAction(tr("Off"), AUTO_OFF);
       autoType->addAction(tr("Read"), AUTO_READ);
       autoType->addAction(tr("Touch"), AUTO_TOUCH);
       autoType->addAction(tr("Write"), AUTO_WRITE);
-      autoType->setCurrentItem(t->automationType());
+      autoType->setCurrentItem(at->automationType());
 
       QPalette palette;
-      //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-      if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
+      if(at->automationType() == AUTO_TOUCH || at->automationType() == AUTO_WRITE)
             {
             palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
-            /* QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-            QColor c(Qt::red);
-            //QColor c(215, 76, 39);       // red
-            gradient.setColorAt(0, c.darker());
-            gradient.setColorAt(0.5, c);
-            gradient.setColorAt(1, c.darker());
-            palette.setBrush(QPalette::Button, gradient);
-            //palette.setBrush(autoType->backgroundRole(), gradient);
-            //palette.setBrush(QPalette::Window, gradient);  */
             autoType->setPalette(palette);
             }
-      else if(t->automationType() == AUTO_READ)
+      else if(at->automationType() == AUTO_READ)
             {
             palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
-            /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
-            QColor c(Qt::green);
-            //QColor c(100, 172, 49);     // green
-            gradient.setColorAt(0, c.darker());
-            gradient.setColorAt(0.5, c);
-            gradient.setColorAt(1, c.darker());
-            palette.setBrush(QPalette::Button, gradient);
-            //palette.setBrush(autoType->backgroundRole(), gradient);
-            //palette.setBrush(QPalette::Window, gradient);  */
             autoType->setPalette(palette);
             }
       else  
             {
             palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
-            //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
-            //gradient.setColorAt(0, c);
-            //gradient.setColorAt(1, c.darker());
-            //palette.setBrush(QPalette::Button, gradient);
             autoType->setPalette(palette);
             }
 
       autoType->setToolTip(tr("automation type"));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-      grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
+      addGridWidget(autoType, _automationPos);
+
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored), 
+                    _rightSpacerPos._row, _rightSpacerPos._col, _rightSpacerPos._rowSpan, _rightSpacerPos._colSpan);
 
       if (off) {
             off->blockSignals(true);
@@ -1932,7 +1668,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       }
 
-// REMOVE Tim. Trackinfo. Added.
 void AudioStrip::setClipperTooltip(int ch)
 {
   QString clip_tt;
@@ -1957,7 +1692,6 @@ void AudioStrip::setClipperTooltip(int ch)
 
 void AudioStrip::iRoutePressed()
       {
-      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
       RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, false);
       delete pup;
@@ -1970,7 +1704,6 @@ void AudioStrip::iRoutePressed()
 
 void AudioStrip::oRoutePressed()
 {
-      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
       RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, true);
       delete pup;

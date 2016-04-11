@@ -2476,6 +2476,8 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   int sel = act->data().toInt();
   delete menu;
   
+  Undo operations;
+  
   switch(sel)
   {
     case ADD_EVENT:
@@ -2547,6 +2549,9 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
           return -1;
     break;      
   }
+  
+  if(!operations.empty())
+    MusEGlobal::song->applyOperationGroup(operations);
   
   return sel;
 }

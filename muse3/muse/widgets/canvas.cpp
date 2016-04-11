@@ -626,7 +626,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       }
 
       // ignore event if (another) button is already active:
-//       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(button)) {  // REMOVE Tim. Trackinfo. Changed.
       if (event->buttons() ^ button) {
             //printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
           setMouseGrab(false);
@@ -1670,7 +1669,6 @@ void Canvas::setCursor()
 
             case DRAG_PAN:
                   if(MusEGlobal::config.borderlessMouse)
-                    //QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.  // REMOVE Tim. Trackinfo.
                     showCursor(false); // CAUTION
                   else
                     QWidget::setCursor(QCursor(Qt::ClosedHandCursor));
@@ -1678,7 +1676,6 @@ void Canvas::setCursor()
                   
             case DRAG_ZOOM:
                   if(MusEGlobal::config.borderlessMouse)
-                    //QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.  // REMOVE Tim. Trackinfo.
                     showCursor(false); // CAUTION
                   break;
                   

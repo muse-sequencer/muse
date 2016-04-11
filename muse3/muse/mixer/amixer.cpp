@@ -150,13 +150,14 @@ bool ScrollArea::viewportEvent(QEvent* event)
 {
   event->ignore();
   // Let it do the layout now, before we emit.
-  QScrollArea::viewportEvent(event);
+  const bool res = QScrollArea::viewportEvent(event);
   
   if(event->type() == QEvent::LayoutRequest)       
     emit layoutRequest();
          
-//   return false;       
-  return true;       
+//   return false;
+//   return true;
+  return res;
 }
 
 //---------------------------------------------------------
@@ -820,39 +821,23 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
 {
   if (DEBUG_MIXER)
     printf("AudioMixerApp::songChanged %llX\n", (long long)flags);
-  // Is it simply a midi controller value adjustment? Forget it.
-  if(flags == SC_MIDI_CONTROLLER)
-    return;
-
-  UpdateAction action = NO_UPDATE;
-
-  if (flags == -1) {
-        action = UPDATE_ALL;
-  }
-  else if (flags & SC_TRACK_REMOVED) {
-        action = STRIP_REMOVED;
+  if (flags & SC_TRACK_REMOVED) {
         updateStripList();
   }
   else if (flags & SC_TRACK_INSERTED) {
-        action = STRIP_INSERTED;
         updateStripList();
   }
-  else if (flags & (SC_MIDI_TRACK_PROP | SC_MIDI_INSTRUMENT)) {
-        action = UPDATE_MIDI;
-  }
-
   if (DEBUG_MIXER)
-    printf("songChanged action = %d\n", action);
+    printf("songChanged action = %ld\n", (long int)flags);
+    
+  
+  // FIXME TODO: The is costly to do every time. Try to filter it according to required flags.
   redrawMixer();
 
-  if (action != UPDATE_ALL)
-  {
-
-    StripList::iterator si = stripList.begin();
-    for (; si != stripList.end(); ++si) {
-          (*si)->songChanged(flags);
-          }
-  }
+  StripList::iterator si = stripList.begin();
+  for (; si != stripList.end(); ++si) {
+        (*si)->songChanged(flags);
+        }
 }
 
 //---------------------------------------------------------

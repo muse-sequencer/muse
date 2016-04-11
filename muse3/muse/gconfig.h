@@ -175,7 +175,24 @@ struct GlobalConfigValues {
       QColor partMidiDarkEventColor;
       QColor partMidiLightEventColor;
 
+      QColor sliderDefaultColor;
+      QColor panSliderColor;
+      QColor gainSliderColor;
+      QColor audioVolumeSliderColor;
+      QColor midiVolumeSliderColor;
+      QColor audioControllerSliderDefaultColor;
+      QColor audioPropertySliderDefaultColor;
+      QColor midiControllerSliderDefaultColor;
+      QColor midiPropertySliderDefaultColor;
+
+      QColor audioMeterPrimaryColor;
+      QColor midiMeterPrimaryColor;
+      
       WaveDrawing waveDrawing;
+      
+      // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
+      // For certain widgets that use it. May be more later.
+      int maxAliasedPointSize; 
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;

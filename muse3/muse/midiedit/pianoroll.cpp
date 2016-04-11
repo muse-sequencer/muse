@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pianoroll.cpp,v 1.25.2.15 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012-2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -326,8 +326,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools->addAction(QWhatsThis::createAction(this));
       
-      //addToolBarBreak();
-      
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);
       toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");
       addToolBar(toolbar);
@@ -357,7 +355,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
-      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // DELETETHIS?
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
@@ -371,15 +368,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       midiStrip = 0;
 
-      trackInfoWidget = new QWidget(hsplitter);
+      trackInfoWidget = new TrackInfoWidget(hsplitter);
       
-      infoScrollBar = new ScrollBar(Qt::Vertical, true, trackInfoWidget);
-      infoScrollBar->setObjectName("infoScrollBar");
-      genTrackInfo(trackInfoWidget); // TODO: Which parent to use, if at all - does it need a parent when created?
+      genTrackInfo(trackInfoWidget);
       
-      _trackInfoGrid  = new TrackInfoLayout(trackInfoWidget, trackInfo, infoScrollBar, hsplitter); // layout manager for this
-
-      //hsplitter->addWidget(midiTrackInfo);
       if(hsplitter)
         hsplitter->addWidget(splitter);
           
@@ -450,11 +442,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
 
-      if(infoScrollBar)
-      {
-        connect(infoScrollBar, SIGNAL(valueChanged(int)), SLOT(infoScrollBarValueChanged(int))); 
-      }
-      
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
@@ -567,7 +554,6 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
 //           updateTrackInfo();  
           updateTrackInfo(-1);
 
-        // REMOVE Tim. Trackinfo. Added.
         // TODO: Owners (like this) want to marshall this signal and send it themselves. Change that. Let the strips do it.
 //         if (bits & SC_MIDI_TRACK_PROP)
 //         {
@@ -589,9 +575,8 @@ void PianoRoll::configChanged()
 //   genTrackInfo
 //---------------------------------------------------------
 
-void PianoRoll::genTrackInfo(QWidget* parent)
+void PianoRoll::genTrackInfo(TrackInfoWidget* trackInfo)
       {
-      trackInfo = new WidgetStack(parent, "trackInfoStack");
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
       QPixmap *noInfoPix   = new QPixmap(160, 1000);
@@ -658,7 +643,7 @@ void PianoRoll::switchInfo(int n)
       {
       const int idx = midiTrackInfo ? 2 : 1;
       if(n == idx) {
-            MidiStrip* w = (MidiStrip*)(trackInfo->getWidget(idx));
+            MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
                   {
@@ -666,34 +651,29 @@ void PianoRoll::switchInfo(int n)
                         //delete w;
                         w->deleteLater();
                   }
-                  w = new MidiStrip(trackInfo, static_cast <MusECore::MidiTrack*>(selected));
+                  w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
                   //w->setFocusPolicy(Qt::TabFocus);
                   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
-                  //w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                  trackInfo->addWidget(w, idx);
+                  trackInfoWidget->addWidget(w, idx);
                   w->show();
                   //setTabOrder(midiTrackInfo, w);
-                  _trackInfoGrid->activate();
-                  _trackInfoGrid->update();
                   }
             }
-      if (trackInfo->curIdx() == n)
+      if (trackInfoWidget->curIdx() == n)
             return;
-      trackInfo->raiseWidget(n);
-      _trackInfoGrid->activate();
-      _trackInfoGrid->update();
+      trackInfoWidget->raiseWidget(n);
       }
 
-void PianoRoll::infoScrollBarValueChanged(int value)
-{
-  if(midiStrip)
-    midiStrip->move(0, -value);
-  
-  if(trackInfo && trackInfo->visibleWidget())
-    trackInfo->visibleWidget()->move(0, -value);
-}
+// void PianoRoll::infoScrollBarValueChanged(int value)
+// {
+//   if(midiStrip)
+//     midiStrip->move(0, -value);
+//   
+//   if(trackInfo && trackInfo->visibleWidget())
+//     trackInfo->visibleWidget()->move(0, -value);
+// }
 
 //---------------------------------------------------------
 //   horizontalZoom

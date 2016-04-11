@@ -5,6 +5,7 @@
 
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//    (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -30,6 +31,8 @@
 #include <QTime>
 #include <QWidget>
 
+class QFocusEvent;
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -44,7 +47,10 @@ class SliderBase : public QWidget, public DoubleRange
       Q_PROPERTY( double maxValue READ maxValue WRITE setMaxValue )
       Q_PROPERTY( double value READ value WRITE setValue )
 
-      int _id;
+ public:
+  enum SliderBaseScrollMode { ScrNone, ScrMouse, ScrTimer, ScrDirect, ScrPage };
+  
+  int _id;
   int d_tmrID;
   int d_updTime;
   int d_timerTick;
@@ -75,11 +81,16 @@ class SliderBase : public QWidget, public DoubleRange
   void buttonReleased();
 
  protected:
+  bool d_enableValueToolTips;
   int d_scrollMode;
   double d_mouseOffset;
   int d_direction;
   int d_tracking;
   bool _pressed;
+  bool d_trackingTempDisable;
+  double d_valueAtPress;
+  
+  bool valueHasChangedAtRelease() const { return value(ConvertNone) != d_valueAtPress; }
   
   virtual void setMass(double val);
   void setPosition(const QPoint &p);
@@ -92,14 +103,23 @@ class SliderBase : public QWidget, public DoubleRange
   void mouseReleaseEvent(QMouseEvent *e);
   virtual void mouseMoveEvent(QMouseEvent *e);
   virtual void mouseDoubleClickEvent(QMouseEvent *e);
+  // Required because if focus is lost while a mouse button is pressed, we do not get the mouseReleaseEvent.
+  virtual void focusOutEvent(QFocusEvent*);
   
   //  Determine the value corresponding to a specified mouse location.
   //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
   virtual double getValue(const QPoint & p) = 0;
   //  Determine scrolling mode and direction.
-  virtual void getScrollMode( QPoint &p, const Qt::MouseButton &button, 
+  virtual void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers,
            int &scrollMode, int &direction) = 0;
 
+  // Show a handy tooltip value box.
+  virtual void showValueToolTip(QPoint) { }
+  // Same as sliderPressed signal, except it's not a signal and is called before sliderPressed is emitted.
+  virtual void processSliderPressed(int) { }
+  // Same as sliderReleased signal, except it's not a signal and is called before sliderReleased is emitted.
+  virtual void processSliderReleased(int) { }
+    
  public slots:
   void setValue(double val, ConversionMode mode = ConvertDefault);
   void fitValue(double val, ConversionMode mode = ConvertDefault);
@@ -107,6 +127,7 @@ class SliderBase : public QWidget, public DoubleRange
   
  signals:
   void valueChanged(double value, int id);
+  void valueChanged(double value, int id, int scrollMode);
   void sliderPressed(int id);
   void sliderReleased(int id);
   void sliderMoved(double value, int id);
@@ -115,12 +136,14 @@ class SliderBase : public QWidget, public DoubleRange
   void sliderDoubleClicked(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
 
  public:
-  enum { ScrNone, ScrMouse, ScrTimer, ScrDirect, ScrPage };
   
   SliderBase( QWidget *parent = 0, const char *name = 0 );
   virtual ~SliderBase();
 
+  // Useful for signal mappers where we can't pass scroll mode.
+  int scrollMode() const { return d_scrollMode; }
   bool mouseGrabbed() const { return _mouseGrabbed; }
+  bool isPressed() const { return _pressed; }
 
   bool cursorHoming() const { return _cursorHoming; }
   void setCursorHoming(bool b) { _cursorHoming = b; }
@@ -131,23 +154,22 @@ class SliderBase : public QWidget, public DoubleRange
   // Set the allowed mouse buttons which will cause a page step.
   void setPagingButtons(Qt::MouseButtons buttons) { _pagingButtons = buttons; }
   
+  bool enableValueToolTips() const { return d_enableValueToolTips; }
+  void setEnableValueToolTips(bool enable) { d_enableValueToolTips = enable; }
   void setUpdateTime(int t);
-  //  void incValue(double nSteps);
   void stopMoving();
   bool tracking() const { return d_tracking; }
   void setTracking(bool enable);
+  bool trackingIsActive() const { return d_tracking && !d_trackingTempDisable; }
 
-//       double value() const       { return DoubleRange::value(); } // REMOVE Tim. Trackinfo. Unnecessary?
-      void stepPages(int pages);
-//       double minValue() const    { return  DoubleRange::minValue(); }
-//       double maxValue() const    { return  DoubleRange::maxValue(); }
-      void setMinValue(double v, ConversionMode mode = ConvertDefault) 
-        { DoubleRange::setRange(v, maxValue(mode), 0.0, 1, mode); }
-      void setMaxValue(double v, ConversionMode mode = ConvertDefault) 
-        { DoubleRange::setRange(minValue(mode), v, 0.0, 1, mode); }
-      int id() const             { return _id; }
-      void setId(int i)          { _id = i; }
-      };
+  void stepPages(int pages);
+  void setMinValue(double v, ConversionMode mode = ConvertDefault) 
+    { DoubleRange::setRange(v, maxValue(mode), 0.0, 1, mode); }
+  void setMaxValue(double v, ConversionMode mode = ConvertDefault) 
+    { DoubleRange::setRange(minValue(mode), v, 0.0, 1, mode); }
+  int id() const             { return _id; }
+  void setId(int i)          { _id = i; }
+  };
 
 } // namespace MusEGui
 

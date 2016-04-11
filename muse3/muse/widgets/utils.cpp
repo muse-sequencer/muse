@@ -369,7 +369,6 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
   if(min < 4)
     min = 4;
 
-// REMOVE Tim. Trackinfo. Changed. TESTING
 //   QRect cr = w->contentsRect();
 //   QRect r;
 //   QFont fnt = w->font();
@@ -392,7 +391,6 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 //   //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
 
 
-  // REMOVE Tim. Trackinfo. Added. TESTING
 //   QFont fnt = w->font();
 //   //const int req_w = w->fontMetrics().width(s) + 4;
 //   const int req_w = w->fontMetrics().boundingRect(s).width() + 4;
@@ -456,7 +454,6 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
     if(fnt.pointSize() != max)
     {
       fnt.setPointSize(max);
-// REMOVE Tim. Trackinfo. Changed.
       w->setFont(fnt);
 //       w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     }
@@ -485,7 +482,6 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
       fnt.setPointSize(min);
     else if(pointsize >= max)
       fnt.setPointSize(max);
-// REMOVE Tim. Trackinfo. Changed.
     w->setFont(fnt);
 //     w->setStyleSheet(MusECore::font2StyleSheet(fnt));
     //painter->drawText(r,flags,stitle);
@@ -752,7 +748,6 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
       return false;
        }
 
-// REMOVE Tim. Trackinfo. Added.  
 QString font2StyleSheet(const QFont& fnt)
 {
   QString st;
