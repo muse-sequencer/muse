@@ -688,8 +688,9 @@ void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
         
         if (bits & SC_SOLO)
         {
-            toolbar->setSolo(canvas->track()->solo());
-            return;
+            if(canvas->track())
+              toolbar->setSolo(canvas->track()->solo());
+            //return; ???  // REMOVE Tim. Trackinfo. Why return?
         }      
         if ( !old_style_drummap_mode() && 
              ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
@@ -952,7 +953,8 @@ void DrumEdit::deltaModeChanged(bool delta_on)
 
 void DrumEdit::soloChanged(bool flag)
       {
-      MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+      if(canvas->track())
+        MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
       MusEGlobal::song->update(SC_SOLO);
       }
 

@@ -542,24 +542,53 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
       {
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;
+
+        // We must catch this first and be sure to update the strips.
+        if(bits & SC_TRACK_REMOVED)
+        {
+          const int idx = midiTrackInfo ? 2 : 1;
+          {
+            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(idx));
+            if(w)
+            {
+              MusECore::Track* t = w->getTrack();
+              if(t)
+              {
+                MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
+                MusECore::iMidiTrack it = tl->find(t);
+                if(it == tl->end())
+                {
+                  delete w;
+                  trackInfoWidget->addWidget(0, idx);
+                  selected = 0;
+                  switchInfo(0);
+                } 
+              }   
+            } 
+          }
+        }
         
         if (bits & SC_SOLO)
+        {
+          if(canvas->track())
             toolbar->setSolo(canvas->track()->solo());
+        }
         
         songChanged(bits);
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
         if (bits & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
-//           updateTrackInfo();  
           updateTrackInfo(-1);
 
-        // TODO: Owners (like this) want to marshall this signal and send it themselves. Change that. Let the strips do it.
-//         if (bits & SC_MIDI_TRACK_PROP)
-//         {
-//           if(midiStrip)
-//             midiStrip->songChanged(bits);
-//         }
+        // We must marshall song changed instead of connecting to the strip's song changed
+        //  otherwise it crashes when loading another song because track is no longer valid
+        //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+        //  gets called and has a chance to stop the crash.
+        // Also, calling updateTrackInfo() from here is too heavy, it destroys and recreates
+        //  the strips each time no matter what the flags are !
+        else  
+          trackInfoSongChange(bits);
       }
 
 //---------------------------------------------------------
@@ -605,11 +634,11 @@ void PianoRoll::genTrackInfo(TrackInfoWidget* trackInfo)
 
 void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
 {
-      selected = curCanvasPart()->track();
-      if (selected->isMidiTrack()) {
-          if(midiTrackInfo)
-            midiTrackInfo->setTrack(selected);
-      }
+      MusECore::Part* part = curCanvasPart();
+      if(part)
+        selected = part->track();
+      else
+        selected = 0;
       
       if (selected == 0) {
             switchInfo(0);
@@ -629,10 +658,6 @@ void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
                 midiTrackInfo->updateTrackInfo(flags);
             }
       }
-//       else {
-//             switchInfo(2);
-//             }
-      
 }
 
 //---------------------------------------------------------
@@ -648,12 +673,18 @@ void PianoRoll::switchInfo(int n)
                   if (w)
                   {
                         //fprintf(stderr, "PianoRoll::switchInfo deleting strip\n");
-                        //delete w;
-                        w->deleteLater();
+                        delete w;
+                        //w->deleteLater();
                   }
                   w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
                   //w->setFocusPolicy(Qt::TabFocus);
-                  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  
+                  // We must marshall song changed instead of connecting to the strip's song changed
+                  //  otherwise it crashes when loading another song because track is no longer valid
+                  //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+                  //  gets called and has a chance to stop the crash.
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                   trackInfoWidget->addWidget(w, idx);
@@ -666,14 +697,31 @@ void PianoRoll::switchInfo(int n)
       trackInfoWidget->raiseWidget(n);
       }
 
-// void PianoRoll::infoScrollBarValueChanged(int value)
-// {
-//   if(midiStrip)
-//     midiStrip->move(0, -value);
-//   
-//   if(trackInfo && trackInfo->visibleWidget())
-//     trackInfo->visibleWidget()->move(0, -value);
-// }
+//---------------------------------------------------------
+//   trackInfoSongChange
+//---------------------------------------------------------
+
+void PianoRoll::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
+{
+  if(!selected) // || !showTrackinfoFlag)
+    return;
+  
+  if(selected->isMidiTrack()) 
+  {
+    if(midiTrackInfo) // && showTrackinfoAltFlag)
+    {
+      MidiTrackInfo* w = static_cast<MidiTrackInfo*>(trackInfoWidget->getWidget(1));
+      if(w)
+        w->songChanged(flags);
+    }
+    else
+    {
+      MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(1));
+      if(w)
+        w->songChanged(flags);
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   horizontalZoom
@@ -1191,7 +1239,8 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
 
 void PianoRoll::soloChanged(bool flag)
       {
-      MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+      if(canvas->track())
+        MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
       MusEGlobal::song->update(SC_SOLO);
       }
 

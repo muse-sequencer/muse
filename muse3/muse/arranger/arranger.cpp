@@ -653,6 +653,50 @@ void Arranger::songlenChanged(int n)
 
 void Arranger::songChanged(MusECore::SongChangedFlags_t type)
       {
+        // We must catch this first and be sure to update the strips.
+        if(type & SC_TRACK_REMOVED)
+        {
+          {
+            AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
+            if(w)
+            {
+              MusECore::Track* t = w->getTrack();
+              if(t)
+              {
+                MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                MusECore::iTrack it = tl->find(t);
+                if(it == tl->end())
+                {
+                  delete w;
+                  trackInfoWidget->addWidget(0, 2);
+                  selected = 0;
+                  switchInfo(0);
+                } 
+              }   
+            } 
+          }
+          
+          {
+            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
+            if(w)
+            {
+              MusECore::Track* t = w->getTrack();
+              if(t)
+              {
+                MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
+                MusECore::iMidiTrack it = tl->find(t);
+                if(it == tl->end())
+                {
+                  delete w;
+                  trackInfoWidget->addWidget(0, 3);
+                  selected = 0;
+                  switchInfo(0);
+                } 
+              }   
+            } 
+          }
+        }
+        
         // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
@@ -687,56 +731,20 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         if (type & SC_TEMPO)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
-        if(type & SC_TRACK_REMOVED)
-        {
-          // TODO Decide whether to move (hide) these pointer operations into into the trackInfoWidget class.
-          {
-            AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
-            if(w)
-            {
-              MusECore::Track* t = w->getTrack();
-              if(t)
-              {
-                MusECore::TrackList* tl = MusEGlobal::song->tracks();
-                MusECore::iTrack it = tl->find(t);
-                if(it == tl->end())
-                {
-                  delete w;
-                  trackInfoWidget->addWidget(0, 2);
-                  //trackInfo->insertWidget(2, 0);
-                  selected = 0;
-                } 
-              }   
-            } 
-          }
-          
-          {
-            MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
-            if(w)
-            {
-              MusECore::Track* t = w->getTrack();
-              if(t)
-              {
-                MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
-                MusECore::iMidiTrack it = tl->find(t);
-                if(it == tl->end())
-                {
-                  delete w;
-                  trackInfoWidget->addWidget(0, 3);
-                  selected = 0;
-                } 
-              }   
-            } 
-          }
-        }
-        
         // Try these:
         if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                    SC_CLIP_MODIFIED))
         canvas->redraw();
         
-      updateTrackInfo(type);
+        // We must marshall song changed instead of connecting to the strip's song changed
+        //  otherwise it crashes when loading another song because track is no longer valid
+        //  and the strip's songChanged() seems to be called before Arranger songChanged()
+        //  gets called and has a chance to stop the crash.
+        // Also, calling updateTrackInfo() from here is too heavy, it destroys and recreates
+        //  the strips each time no matter what the flags are !
+        //updateTrackInfo(type);
+        trackInfoSongChange(type);
     }
 
 //---------------------------------------------------------
@@ -1150,19 +1158,23 @@ void Arranger::switchInfo(int n)
                     if (w)
                     {
                           //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
-                          //delete w;
-                          w->deleteLater();
+                          delete w;
+                          //w->deleteLater();
                     }
                     w = new AudioStrip(trackInfoWidget, static_cast<MusECore::AudioTrack*>(selected));
                     //w->setFocusPolicy(Qt::TabFocus);
-                    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                    
+                    // We must marshall song changed instead of connecting to the strip's song changed
+                    //  otherwise it crashes when loading another song because track is no longer valid
+                    //  and the strip's songChanged() seems to be called before Arranger songChanged()
+                    //  gets called and has a chance to stop the crash.
+                    //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                    
                     connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                     w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                     trackInfoWidget->addWidget(w, 2);
                     w->show();
                     //setTabOrder(midiTrackInfo, w);
-//                     trackInfoWidget->trackInfoLayout()->activate();
-//                     trackInfoWidget->trackInfoLayout()->update();
                     }
           }
         }
@@ -1184,12 +1196,15 @@ void Arranger::switchInfo(int n)
                   if (w)
                   {
                         //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
-                        //delete w;
-                        w->deleteLater();
+                        delete w;
+                        //w->deleteLater();
                   }
                   w = new MidiStrip(trackInfoWidget, static_cast<MusECore::MidiTrack*>(selected));
                   //w->setFocusPolicy(Qt::TabFocus);
-                  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  
+                  // No. See above.
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                   trackInfoWidget->addWidget(w, 3);
@@ -1204,6 +1219,38 @@ void Arranger::switchInfo(int n)
       trackInfoWidget->raiseWidget(n);
       }
 
+//---------------------------------------------------------
+//   trackInfoSongChange
+//---------------------------------------------------------
+
+void Arranger::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
+{
+  if(!selected || !showTrackinfoFlag)
+    return;
+
+  // Only update what is showing.
+  if(selected->isMidiTrack()) 
+  {
+    if(showTrackinfoAltFlag)
+    {
+      MidiTrackInfo* w = static_cast<MidiTrackInfo*>(trackInfoWidget->getWidget(1));
+      if(w)
+        w->songChanged(flags);
+    }
+    else
+    {
+      MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(3));
+      if(w)
+        w->songChanged(flags);
+    }
+  }
+  else 
+  {
+    AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(2));
+    if(w)
+      w->songChanged(flags);
+  }
+}
 
 void Arranger::keyPressEvent(QKeyEvent* event)
 {

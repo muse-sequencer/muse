@@ -292,6 +292,8 @@ void EventCanvas::selectAtTick(unsigned int tick)
 
 MusECore::MidiTrack* EventCanvas::track() const
       {
+      if(!curPart)
+        return 0;
       return ((MusECore::MidiPart*)curPart)->track();
       }
 
@@ -522,6 +524,9 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       // Release any current note.
       stopPlayEvent();
       
+      if(!track())
+        return;
+      
       playedPitch        = note + track()->transposition;
       playedVelocity     = velocity;
       playedPitchPort    = port;
@@ -534,6 +539,8 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
 
 void EventCanvas::startPlayEvent(int note, int velocity)
       {
+      if(!track())
+        return;
       int port         = track()->outPort();
       int channel      = track()->outChannel();
       startPlayEvent(note, velocity, port, channel);

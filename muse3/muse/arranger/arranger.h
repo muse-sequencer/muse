@@ -113,6 +113,7 @@ class Arranger : public QWidget {
       void genMidiTrackInfo();
       void genWaveTrackInfo();
       void switchInfo(int);
+      void trackInfoSongChange(MusECore::SongChangedFlags_t flags);
       void setHeaderToolTips();
       void setHeaderWhatsThis();
 

@@ -160,6 +160,7 @@ class PianoRoll : public MidiEditor {
       QWidget* genToolbar(QWidget* parent);
       void genTrackInfo(TrackInfoWidget* trackInfo);
       void switchInfo(int);
+      void trackInfoSongChange(MusECore::SongChangedFlags_t flags);
 
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
