@@ -141,6 +141,9 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
     
     double _initVal;
     bool _isOff;
+    QColor _barColor;
+    QColor _slotColor;
+    QColor _thumbColor;
 
     // Slots:
     const char* _patchEditChangedSlot;
@@ -165,6 +168,9 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
       const QString& toolTipText = QString(),
       const QString& label = QString(),
       const QColor& borderColour = QColor(),
+      const QColor& barColour = QColor(),
+      const QColor& slotColour = QColor(),
+      const QColor& thumbColour = QColor(),
       bool enabled = true,
       double initVal = 0.0,
       bool isOff = false,
@@ -185,6 +191,9 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
       _compactPatchEdit(0),
       _initVal(initVal),
       _isOff(isOff),
+      _barColor(barColour),
+      _slotColor(slotColour),
+      _thumbColor(thumbColour),
       _patchEditChangedSlot(patchEditChangedSlot),
       _patchEditSliderRightClickedSlot(patchEditSliderRightClickedSlot),
       _patchEditNameClickedSlot(patchEditNameClickedSlot),

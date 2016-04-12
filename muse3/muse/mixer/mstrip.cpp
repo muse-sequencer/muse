@@ -226,6 +226,10 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
             desc->_color = MusEGlobal::config.panSliderColor;
           break;
           
+          case MusECore::CTRL_PROGRAM:
+            desc->_color = MusEGlobal::config.sliderDefaultColor;
+          break;
+          
           default:
             desc->_color = MusEGlobal::config.midiControllerSliderDefaultColor;
           break;
@@ -379,6 +383,11 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       CompactPatchEditComponentDescriptor* d = static_cast<CompactPatchEditComponentDescriptor*>(desc);
       d->_initVal = val;
       d->_isOff = off;
+      if(!d->_color.isValid())
+        d->_color = MusEGlobal::config.sliderDefaultColor;
+      // Set the bar color the same.
+      if(!d->_barColor.isValid())
+        d->_barColor = d->_color;
       
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
@@ -408,13 +417,14 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
         control->setContentsMargins(0, 0, 0, 0);
 
         if(d->_color.isValid())
-        {
-          QPalette pal(palette());
-          pal.setColor(QPalette::Active, QPalette::Button, d->_color); // Border
-          pal.setColor(QPalette::Inactive, QPalette::Button, d->_color); // Border
-          control->setPalette(pal);
-        }
-
+          control->setBorderColor(d->_color);
+        if(d->_barColor.isValid())
+          control->setBarColor(d->_barColor);
+        if(d->_slotColor.isValid())
+          control->setSlotColor(d->_slotColor);
+        if(d->_thumbColor.isValid())
+          control->setThumbColor(d->_thumbColor);
+        
         control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
         
         if(d->_patchEditChangedSlot)
@@ -1069,6 +1079,10 @@ void MidiComponentRack::setComponentColors()
             color = MusEGlobal::config.panSliderColor;
           break;
           
+          case MusECore::CTRL_PROGRAM:
+            color = MusEGlobal::config.sliderDefaultColor;
+          break;
+          
           default:
             color = MusEGlobal::config.midiControllerSliderDefaultColor;
           break;
@@ -1100,6 +1114,14 @@ void MidiComponentRack::setComponentColors()
       case CompactSliderComponentWidget:
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+        w->setBorderColor(color);
+        w->setBarColor(color);
+      }
+      break;
+      
+      case mStripCompactPatchEditComponentWidget:
+      {
+        CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
         w->setBorderColor(color);
         w->setBarColor(color);
       }
@@ -1256,6 +1278,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       meter[0]->setRange(0, 127.0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       meter[0]->setFixedWidth(FIXED_METER_WIDTH);
+      meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
       sliderGrid = new QGridLayout(); 
@@ -1614,6 +1637,9 @@ void MidiStrip::configChanged()
   _upperRack->configChanged();
   _infoRack->configChanged();
   _lowerRack->configChanged();
+  
+  // Adjust meter and colour.
+  meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
 }
 
 //---------------------------------------------------------

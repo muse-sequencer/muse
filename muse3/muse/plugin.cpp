@@ -3524,6 +3524,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       m->setRange(dlower, dupper);
                       m->setVal(dval, dval, false);
                       m->setScaleBackBone(false);
+                      m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
                       
                       QFont fnt;
                       fnt.setFamily("Sans");

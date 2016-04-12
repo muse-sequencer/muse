@@ -91,6 +91,11 @@ class CompactPatchEdit : public QFrame
     double value() const;
     // Emits valueChanged and valueStateChanged signals if required.
     void setValue(double v) { setValueState(v, isOff()); }
+
+    void setBorderColor(const QColor&);
+    void setBarColor(const QColor&);
+    void setSlotColor(const QColor&);
+    void setThumbColor(const QColor&);
     
     // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
     // Here in CompactPatchEdit, this only affects the CompactSliders so far, not the patch label. 

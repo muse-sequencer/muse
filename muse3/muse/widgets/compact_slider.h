@@ -201,7 +201,7 @@ class CompactSlider : public SliderBase, public ScaleIf
           const QString& valSuffix = QString(),
           const QString& specialValueText = QString(),
           QColor borderColor = QColor(),
-          QColor barColor = QColor(180, 180, 0),
+          QColor barColor = QColor(228,203,36),
           QColor slotColor = QColor(),
           QColor thumbColor = QColor());
     

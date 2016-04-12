@@ -165,18 +165,18 @@ GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
 
-      QColor(200,180,0),            // sliderDefaultColor
-      QColor(180,200,100),          // panSliderColor
-      QColor(200,200,0),            // gainSliderColor
-      QColor(128,128,255),          // audioVolumeSliderColor
-      QColor(128,128,255),          // midiVolumeSliderColor
-      QColor(0,200,255),            // audioControllerSliderDefaultColor
-      QColor(0,200,255),            // audioPropertySliderDefaultColor
-      QColor(0,200,255),            // midiControllerSliderDefaultColor
-      QColor(0,200,255),            // midiPropertySliderDefaultColor
+      QColor(228,203,36),           // sliderDefaultColor
+      QColor(158,212,86),           // panSliderColor
+      QColor(255,158,131),          // gainSliderColor
+      QColor(221,177,101),          // audioVolumeSliderColor
+      QColor(112,192,103),          // midiVolumeSliderColor
+      QColor(115,176,255),          // audioControllerSliderDefaultColor
+      QColor(166,161,242),          // audioPropertySliderDefaultColor
+      QColor(115,176,255),          // midiControllerSliderDefaultColor
+      QColor(166,161,242),          // midiPropertySliderDefaultColor
 
-      QColor(0,255,0),              // audioMeterPrimaryColor
-      QColor(0,255,0),              // midiMeterPrimaryColor
+      QColor(0,221,255),            // audioMeterPrimaryColor
+      QColor(0,221,255),            // midiMeterPrimaryColor
       
       MusEGlobal::WaveOutLine,      // waveDrawing
       

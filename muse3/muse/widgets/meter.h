@@ -48,6 +48,9 @@ class Meter : public QFrame, public ScaleIf {
       enum MeterType {DBMeter, LinMeter};
       enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
 
+   private:
+     QColor _primaryColor;
+     
    protected:
       QLinearGradient darkGradRed;
       QColor dark_red_end;
@@ -128,7 +131,11 @@ class Meter : public QFrame, public ScaleIf {
             MeterType type = DBMeter, 
             Qt::Orientation orient = Qt::Vertical, 
             ScalePos scalePos = None, 
+            const QColor& primaryColor = QColor(0, 255, 0),
             ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone);
+      
+      QColor primaryColor() const { return _primaryColor; }
+      void setPrimaryColor(const QColor& color);
       
       void setRange(double min, double max);
 

@@ -46,9 +46,9 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent, const char *name,
   _patchNameLabel->setObjectName("CompactPatchEditLabel");
   _patchNameLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
   
-  _HBank = new CompactSlider(0, "CompactPatchEditHBank", orient, scalePos, tr("Hi"), QString(), QString(), QString(), fillColor);
-  _LBank = new CompactSlider(0, "CompactPatchEditLBank", orient, scalePos, tr("Lo"), QString(), QString(), QString(), fillColor);
-  _Prog = new CompactSlider(0, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor);
+  _HBank = new CompactSlider(0, "CompactPatchEditHBank", orient, scalePos, tr("Hi"), QString(), QString(), QString(), fillColor, fillColor);
+  _LBank = new CompactSlider(0, "CompactPatchEditLBank", orient, scalePos, tr("Lo"), QString(), QString(), QString(), fillColor, fillColor);
+  _Prog = new CompactSlider(0, "CompactPatchEditProg", orient, scalePos, tr("Prg"), QString(), QString(), QString(), fillColor, fillColor);
 
   _patchNameLabel->setToolTip(tr("Patch name"));
   _HBank->setToolTip(tr("Patch high-bank number\n(Ctrl-double-click on/off)"));
@@ -141,6 +141,38 @@ QSize CompactPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
 bool CompactPatchEdit::isOff() const
 {
   return _Prog->isOff();
+}
+
+void CompactPatchEdit::setBorderColor(const QColor& c)
+{ 
+  _HBank->setBorderColor(c);
+  _LBank->setBorderColor(c);
+  _Prog->setBorderColor(c);
+   update();  
+}
+
+void CompactPatchEdit::setBarColor(const QColor& c)
+{ 
+  _HBank->setBarColor(c);
+  _LBank->setBarColor(c);
+  _Prog->setBarColor(c);
+   update();  
+}
+
+void CompactPatchEdit::setSlotColor(const QColor& c)
+{ 
+  _HBank->setSlotColor(c);
+  _LBank->setSlotColor(c);
+  _Prog->setSlotColor(c);
+   update();  
+}
+
+void CompactPatchEdit::setThumbColor(const QColor& c) 
+{ 
+  _HBank->setThumbColor(c);
+  _LBank->setThumbColor(c);
+  _Prog->setThumbColor(c);
+   update();  
 }
 
 void CompactPatchEdit::setMaxAliasedPointSize(int sz)

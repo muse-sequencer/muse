@@ -53,8 +53,9 @@ Meter::Meter(QWidget* parent,
              MeterType type, 
              Qt::Orientation orient, 
              ScalePos scalePos, 
+             const QColor& primaryColor,
              ScaleDraw::TextHighlightMode textHighlightMode)
-   : QFrame(parent), _scalePos(scalePos) //Qt::WNoAutoErase
+   : QFrame(parent), _primaryColor(primaryColor), _scalePos(scalePos) //Qt::WNoAutoErase
       {
       setBackgroundRole(QPalette::NoRole);
       setAttribute(Qt::WA_NoSystemBackground);
@@ -107,8 +108,8 @@ Meter::Meter(QWidget* parent,
       dark_yellow_center = QColor(0x8e8e00);
       dark_yellow_begin = QColor(0x6a8400);
 
-      dark_green_end = QColor(0x467800);
-      dark_green_begin = QColor(0x007000);
+//       dark_green_end = QColor(0x467800);
+//       dark_green_begin = QColor(0x007000);
 
       light_red_end = QColor(0xff0000);
       light_red_begin = QColor(0xdd8800);
@@ -117,8 +118,8 @@ Meter::Meter(QWidget* parent,
       light_yellow_center = QColor(0xffff00);
       light_yellow_begin = QColor(0xddff00);
 
-      light_green_end = QColor(0x88ff00);
-      light_green_begin = QColor(0x00ff00);
+//       light_green_end = QColor(0x88ff00);
+//       light_green_begin = QColor(0x00ff00);
 
       mask_center = QColor(225, 225, 225, 64);
       mask_edge = QColor(30, 30, 30, 64);
@@ -126,8 +127,8 @@ Meter::Meter(QWidget* parent,
       separator_color = QColor(0x666666);
       peak_color = QColor(0xeeeeee);
 
-      darkGradGreen.setColorAt(1, dark_green_begin);
-      darkGradGreen.setColorAt(0, dark_green_end);
+//       darkGradGreen.setColorAt(1, dark_green_begin);
+//       darkGradGreen.setColorAt(0, dark_green_end);
 
       darkGradYellow.setColorAt(1, dark_yellow_begin);
       darkGradYellow.setColorAt(0.5, dark_yellow_center);
@@ -136,8 +137,8 @@ Meter::Meter(QWidget* parent,
       darkGradRed.setColorAt(1, dark_red_begin);
       darkGradRed.setColorAt(0, dark_red_end);
 
-      lightGradGreen.setColorAt(1, light_green_begin);
-      lightGradGreen.setColorAt(0, light_green_end);
+//       lightGradGreen.setColorAt(1, light_green_begin);
+//       lightGradGreen.setColorAt(0, light_green_end);
 
       lightGradYellow.setColorAt(1, light_yellow_begin);
       lightGradYellow.setColorAt(0.5, light_yellow_center);
@@ -152,6 +153,8 @@ Meter::Meter(QWidget* parent,
 
       connect(&fallingTimer, SIGNAL(timeout()), this, SLOT(updateTargetMeterValue()));
 
+      setPrimaryColor(_primaryColor);
+      
 //       updateText(targetVal);
       }
 
@@ -505,6 +508,27 @@ void Meter::setRange(double min, double max)
       update();
       }
 
+void Meter::setPrimaryColor(const QColor& color)
+{
+  _primaryColor = color; 
+  
+  dark_green_begin = _primaryColor.darker(200);
+  dark_green_end = dark_green_begin;
+  dark_green_end.setRed(dark_green_end.red() + 0x46);
+  
+  light_green_begin = _primaryColor;
+  light_green_end = light_green_begin;
+  light_green_end.setRed(light_green_end.red() + 0x88);
+  
+  darkGradGreen.setColorAt(1, dark_green_begin);
+  darkGradGreen.setColorAt(0, dark_green_end);
+
+  lightGradGreen.setColorAt(1, light_green_begin);
+  lightGradGreen.setColorAt(0, light_green_end);
+  
+  update(); 
+}
+      
 //---------------------------------------------------------
 //   paintEvent
 //---------------------------------------------------------

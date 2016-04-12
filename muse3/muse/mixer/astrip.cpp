@@ -805,9 +805,12 @@ void AudioStrip::configChanged()
   _infoRack->configChanged();
   _lowerRack->configChanged();
   
-  // Adjust minimum meter values.
+  // Adjust minimum meter values, and colours.
   for(int c = 0; c < channel; ++c) 
+  {
     meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+    meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+  }
 }
 
 //---------------------------------------------------------
@@ -1148,6 +1151,7 @@ void AudioStrip::updateChannels()
                   meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+                  meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
                   meter[cc]->show();
@@ -1290,6 +1294,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       for (; ch < channel; ++ch)
       {
             meter[ch] = new Meter(this);
+            meter[ch]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+            meter[ch]->setFixedWidth(FIXED_METER_WIDTH);
+            meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             _clipperLabel[ch] = new ClipperLabel(this);
             _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
             _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1439,6 +1446,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
             meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
             meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+            meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
             sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
             meter[i]->show();
