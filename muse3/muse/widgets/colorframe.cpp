@@ -15,3 +15,8 @@ void ColorFrame::paintEvent(QPaintEvent *e)
     p.fillRect(r, color);
 }
 
+void ColorFrame::mousePressEvent(QMouseEvent* e)
+{
+  e->accept();
+  emit clicked();
+}

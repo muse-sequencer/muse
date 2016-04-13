@@ -511,14 +511,21 @@ void Meter::setRange(double min, double max)
 void Meter::setPrimaryColor(const QColor& color)
 {
   _primaryColor = color; 
+  int r = 0;
   
   dark_green_begin = _primaryColor.darker(200);
   dark_green_end = dark_green_begin;
-  dark_green_end.setRed(dark_green_end.red() + 0x46);
+  r = dark_green_end.red() + 0x46;
+  if(r > 255)
+    r = 255;
+  dark_green_end.setRed(r);
   
   light_green_begin = _primaryColor;
   light_green_end = light_green_begin;
-  light_green_end.setRed(light_green_end.red() + 0x88);
+  r = light_green_end.red() + 0x88;
+  if(r > 255)
+    r = 255;
+  light_green_end.setRed(r);
   
   darkGradGreen.setColorAt(1, dark_green_begin);
   darkGradGreen.setColorAt(0, dark_green_end);

@@ -2547,21 +2547,28 @@ void MusE::loadStyleSheetFile(const QString& s)
 //    - called whenever configuration has changed
 //    - when configuration has changed by user, call with
 //      writeFlag=true to save configuration in ~/.MusE
+//      simple=true Don't bother with theme, style, 
+//       and font etc. updates, just emit the configChanged signal.
 //---------------------------------------------------------
 
-void MusE::changeConfig(bool writeFlag)
+void MusE::changeConfig(bool writeFlag, bool simple)
       {
       if (writeFlag)
             writeGlobalConfiguration();
 
-      loadTheme(MusEGlobal::config.style);
-      QApplication::setFont(MusEGlobal::config.fonts[0]);
+      if(!simple)
+      {
+        loadTheme(MusEGlobal::config.style);
+        QApplication::setFont(MusEGlobal::config.fonts[0]);
 
-      if(!MusEGlobal::config.styleSheetFile.isEmpty())
-        loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+        if(!MusEGlobal::config.styleSheetFile.isEmpty())
+          loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+      }
 
       emit configChanged();
-      updateConfiguration();
+      
+      if(!simple)
+        updateConfiguration();
       }
 
 //---------------------------------------------------------

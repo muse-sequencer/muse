@@ -1,3 +1,6 @@
+13.04.2016:
+    * New - Live colour editing and Colour Chooser Dialog in Appearance Settings:  (Tim)
+        - All target colours are updated live in realtime. With functional Apply, Cancel, and OK.
 12.04.2016:
         - Implement meter colours from appearance settings. (Tim)
         - Finish default colour scheme. (Tim)

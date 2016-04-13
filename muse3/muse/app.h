@@ -400,7 +400,11 @@ class MusE : public QMainWindow
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
-      void changeConfig(bool writeFlag);
+      
+      // writeFlag: Write to configuration file. 
+      // simple: Don't bother with theme, style, and font etc. updates, just emit the configChanged signal.
+      void changeConfig(bool writeFlag, bool simple = false);
+      
       void seqStop();
       bool seqStart();  
       void setHeartBeat();

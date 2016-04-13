@@ -28,6 +28,7 @@
 
 class QColor;
 class QDialog;
+class QTimer;
 
 namespace MusEGlobal {
   struct GlobalConfigValues;
@@ -46,8 +47,10 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
     Q_OBJECT
     
  private:
+      QTimer* _configChangedTimer;
       Arranger* arr;
       QColor* color;
+      MusEGlobal::GlobalConfigValues* backupConfig;
       MusEGlobal::GlobalConfigValues* config;
       QButtonGroup* aPalette;
       QTreeWidgetItem* user_bg;
@@ -58,6 +61,8 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       
       void updateFonts();
       void updateColor();
+      void changeColor(const QColor& c);
+      void changeGlobalColor();
       void setConfigurationColors();
 
    private slots:
@@ -93,6 +98,9 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void colorNameEditFinished();
       void loadColors();
       void saveColors();
+      void chooseColorClicked();
+      void colorDialogCurrentChanged(const QColor&);
+      void configChangeTimeOut();
 
    public:
       Appearance(Arranger*, QWidget* parent=0);

@@ -37,6 +37,8 @@
 #include <QPainter>
 #include <QtGlobal>
 #include <QMessageBox>
+#include <QColorDialog>
+#include <QTimer>
 
 #include "icons.h"
 #include "appearance.h"
@@ -128,7 +130,15 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       arr    = a;
       color  = 0;
       config = new MusEGlobal::GlobalConfigValues;
+      backupConfig = new MusEGlobal::GlobalConfigValues;
 
+      _configChangedTimer = new QTimer(this);
+      _configChangedTimer->setObjectName("configChangedTimer");
+      _configChangedTimer->setTimerType(Qt::CoarseTimer);
+      _configChangedTimer->setSingleShot(true);
+      _configChangedTimer->setInterval(500);
+      connect(_configChangedTimer, SIGNAL(timeout()), SLOT(configChangeTimeOut()));
+      
       lastSelectedColorItem = 0;
       lastSelectedBgItem = 0;
       
@@ -254,6 +264,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
       connect(loadColorsButton, SIGNAL(clicked(bool)), SLOT(loadColors()));
       connect(saveColorsButton, SIGNAL(clicked(bool)), SLOT(saveColors()));
+      connect(pickColorButton, SIGNAL(clicked(bool)), SLOT(chooseColorClicked()));
+      connect(colorwidget,     SIGNAL(clicked()),     SLOT(chooseColorClicked()));
       
       connect(colorNameLineEdit, SIGNAL(editingFinished()), SLOT(colorNameEditFinished()));
       connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
@@ -355,6 +367,7 @@ void Appearance::setConfigurationColors()
 void Appearance::resetValues()
       {
       *config = MusEGlobal::config;  // init with global config values
+      *backupConfig = MusEGlobal::config;  // init with global config values
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
 
@@ -489,6 +502,7 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
 Appearance::~Appearance()
       {
       delete config;
+      delete backupConfig;
       }
 
 //---------------------------------------------------------
@@ -675,6 +689,7 @@ void Appearance::apply()
         config->waveDrawing = MusEGlobal::WaveRmsPeak;
 
       MusEGlobal::config = *config;
+      *backupConfig = *config;
 
       MusEGlobal::muse->changeConfig(true);
       raise();
@@ -718,6 +733,74 @@ void Appearance::saveColors()
   MusEGlobal::muse->saveConfigurationColors(this);
 }
 
+void Appearance::chooseColorClicked()
+{
+  if(!color)
+    return;
+  QColor prevColor = *color;
+  QColorDialog* d = new QColorDialog(prevColor, this);
+  connect(d, SIGNAL(currentColorChanged(QColor)), SLOT(colorDialogCurrentChanged(QColor)));
+
+  d->exec();
+  if(_configChangedTimer->isActive())
+    _configChangedTimer->stop();
+  QColor c = d->selectedColor();
+  delete d;
+
+  
+  if(c.isValid())
+    changeColor(c);
+  else
+    changeColor(prevColor);
+  
+  updateColor();
+}
+
+void Appearance::changeGlobalColor()
+{
+  if(!color)
+    return;
+
+  // Memory pointer HACK to get to the global config color.
+  unsigned long int itemOffset = ((const char*)color) - ((const char*)config);
+  const char* configOffset = ((const char*)&MusEGlobal::config) + itemOffset;
+  
+  // Change the actual global config item, 'live'.
+  QColor& ccol = *((QColor*)configOffset);
+  if(ccol != *color)
+  {
+    ccol = *color;
+    // Notify the rest of the app, without the heavy stuff.
+    MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+  }
+}
+
+void Appearance::changeColor(const QColor& c)
+{
+  if(!color)
+    return;
+
+  if(*color != c)
+  {
+    *color = c;
+    //updateColor();
+  }
+  
+  //changeGlobalColor();
+  _configChangedTimer->start(); // Restart
+}
+
+void Appearance::colorDialogCurrentChanged(const QColor& c)
+{
+  changeColor(c);
+}
+
+void Appearance::configChangeTimeOut()
+{
+  changeGlobalColor();
+}
+
+
 //---------------------------------------------------------
 //   ok
 //---------------------------------------------------------
@@ -735,6 +818,8 @@ void Appearance::ok()
 void Appearance::cancel()
       {
       MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
+      MusEGlobal::config = *backupConfig;
+      MusEGlobal::muse->changeConfig(true); // Restore everything possible.
       close();
       }
 
@@ -983,6 +1068,7 @@ void Appearance::rsliderChanged(int val)
             color->setRgb(val, g, b);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 void Appearance::gsliderChanged(int val)
@@ -993,6 +1079,7 @@ void Appearance::gsliderChanged(int val)
             color->setRgb(r, val, b);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 void Appearance::bsliderChanged(int val)
@@ -1003,6 +1090,7 @@ void Appearance::bsliderChanged(int val)
             color->setRgb(r, g, val);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 void Appearance::hsliderChanged(int val)
@@ -1013,6 +1101,7 @@ void Appearance::hsliderChanged(int val)
             color->setHsv(val, s, v);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 void Appearance::ssliderChanged(int val)
@@ -1023,6 +1112,7 @@ void Appearance::ssliderChanged(int val)
             color->setHsv(h, val, v);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 void Appearance::vsliderChanged(int val)
@@ -1033,6 +1123,7 @@ void Appearance::vsliderChanged(int val)
             color->setHsv(h, s, val);
             }
       updateColor();
+      _configChangedTimer->start(); // Restart
       }
 
 //---------------------------------------------------------
@@ -1089,6 +1180,7 @@ void Appearance::paletteClicked(int id)
                   return;     // interpret palette slot as empty
             *color = c;
             updateColor();
+            _configChangedTimer->start(); // Restart
             }
       }
 

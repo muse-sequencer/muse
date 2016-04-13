@@ -705,7 +705,7 @@ void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
 //---------------------------------------------------------
 void DrumEdit::midiNote(int pitch, int velo)
 {
-  //if (debugMsg)
+  if (MusEGlobal::debugMsg)
       printf("DrumEdit::midiNote: pitch=%i, velo=%i\n", pitch, velo);
   int index=0;
 

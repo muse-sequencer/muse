@@ -875,6 +875,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="pickColorButton">
+           <property name="text">
+            <string>Choose color...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="addToPalette">
            <property name="text">
             <string>add to palette</string>
