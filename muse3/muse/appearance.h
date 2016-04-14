@@ -73,9 +73,6 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
     Q_OBJECT
 
  protected:
-      static QColor* globalConfigColorFromId(int id);
-      static long int configOffsetFromColorId(int id);
-    
       virtual void closeEvent(QCloseEvent*);
       
  private:
@@ -92,9 +89,13 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
 
       QColorDialog* _colorDialog;
       
-      QColor* backupConfigColorFromId(int id);
-      QColor* workingConfigColorFromId(int id);
+      QColor* globalConfigColorFromId(int id) const;
+      long int configOffsetFromColorId(int id) const;
+      QColor* backupConfigColorFromId(int id) const;
+      QColor* workingConfigColorFromId(int id) const;
       
+      bool isColorDirty(IdListViewItem* item) const;
+      bool isColorsDirty() const;
       // Sets current (last) item dirty.
       void setColorItemDirty();
       // Sets an item dirty.

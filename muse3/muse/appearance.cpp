@@ -339,8 +339,7 @@ Appearance::~Appearance()
       delete backupConfig;
       }
 
-// Static      
-QColor* Appearance::globalConfigColorFromId(int id)
+QColor* Appearance::globalConfigColorFromId(int id) const
 {
   if(id == 0) 
     return 0;
@@ -429,8 +428,7 @@ QColor* Appearance::globalConfigColorFromId(int id)
   return 0;
 }
 
-// Static.
-long int Appearance::configOffsetFromColorId(int id)
+long int Appearance::configOffsetFromColorId(int id) const
 {
   QColor* c = globalConfigColorFromId(id);
   if(!c)
@@ -440,7 +438,7 @@ long int Appearance::configOffsetFromColorId(int id)
   return ((const char*)c) - ((const char*)&MusEGlobal::config);
 }
 
-QColor* Appearance::workingConfigColorFromId(int id)
+QColor* Appearance::workingConfigColorFromId(int id) const
 {
   long int itemOffset = configOffsetFromColorId(id);
   if(itemOffset == -1)
@@ -448,7 +446,7 @@ QColor* Appearance::workingConfigColorFromId(int id)
   return (QColor*)(((const char*)config) + itemOffset);
 }
 
-QColor* Appearance::backupConfigColorFromId(int id)
+QColor* Appearance::backupConfigColorFromId(int id) const
 {
   long int itemOffset = configOffsetFromColorId(id);
   if(itemOffset == -1)
@@ -847,6 +845,40 @@ void Appearance::saveColors()
   MusEGlobal::muse->saveConfigurationColors(this);
 }
 
+bool Appearance::isColorDirty(IdListViewItem* item) const
+{
+  if(!item)
+    return false;
+  int id = item->id();
+  if(id == 0) 
+    return false;
+
+  QColor* p_gc = globalConfigColorFromId(id);
+  if(!p_gc)
+    return false;
+  
+  QColor* p_bkc = backupConfigColorFromId(id);
+  if(!p_bkc)
+    return false;
+
+  const QColor& gc = *p_gc;
+  const QColor& bkc = *p_bkc;
+  
+  return gc != bkc;
+}
+
+bool Appearance::isColorsDirty() const
+{
+  QTreeWidgetItemIterator it(itemList);
+  while(*it)
+  {
+    if(isColorDirty((IdListViewItem*)*it))
+      return true;
+    ++it;
+  }
+  return false;
+}
+
 void Appearance::setColorItemDirty()
 {
   IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
@@ -898,29 +930,15 @@ void Appearance::colorListCustomContextMenuReq(const QPoint& p)
   DEBUG_APPEARANCE(stderr, "Appearance::colorListCustomContextMenuReq\n");
   
   IdListViewItem* item = static_cast<IdListViewItem*>(itemList->itemAt(p));
-  if(!item)
-    return;
-  int id = item->id();
-  if(id == 0) 
-    return;
+  bool itemDirty = item && isColorDirty(item);
   
-  QColor* p_gc = globalConfigColorFromId(id);
-  if(!p_gc)
-    return;
-  
-  QColor* p_bkc = backupConfigColorFromId(id);
-  if(!p_bkc)
-    return;
-
-  const QColor& gc = *p_gc;
-  const QColor& bkc = *p_bkc;
-      
   QMenu* pup = new QMenu(this);
   QAction* act = pup->addAction(tr("Revert changes"));
   act->setData(0x100);
-  act->setEnabled(gc != bkc);
+  act->setEnabled(itemDirty);
   act = pup->addAction(tr("Revert all..."));
   act->setData(0x101);
+  act->setEnabled(isColorsDirty());
   act = pup->exec(itemList->mapToGlobal(p));
   if(!act)
   {
@@ -935,7 +953,7 @@ void Appearance::colorListCustomContextMenuReq(const QPoint& p)
   {
     case 0x100:
     {
-      if(gc != bkc)
+      if(item && isColorDirty(item))
       {
         resetColorItem(item);
         updateColor();
