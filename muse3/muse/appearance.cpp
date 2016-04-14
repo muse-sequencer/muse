@@ -39,6 +39,8 @@
 #include <QMessageBox>
 #include <QColorDialog>
 #include <QTimer>
+#include <QTreeWidgetItemIterator>
+#include <QMenu>
 
 #include "icons.h"
 #include "appearance.h"
@@ -52,6 +54,9 @@
 #include "globals.h"
 #include "conf.h"
 #include "gconfig.h"
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_APPEARANCE(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
@@ -99,27 +104,6 @@ class BgPreviewWidget : public QWidget {
       };
 
 //---------------------------------------------------------
-//   IdListViewItem
-//---------------------------------------------------------
-
-class IdListViewItem : public QTreeWidgetItem {
-      int _id;
-
-   public:
-      IdListViewItem(int id, QTreeWidgetItem* parent, QString s)
-         : QTreeWidgetItem(parent, QStringList(s))
-            {
-            _id = id;
-            }
-      IdListViewItem(int id, QTreeWidget* parent, QString s)
-         : QTreeWidgetItem(parent, QStringList(s))
-            {
-            _id = id;
-            }
-      int id() const { return _id; }
-      };
-
-//---------------------------------------------------------
 //   Appearance
 //---------------------------------------------------------
 
@@ -127,8 +111,14 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
    : QDialog(parent, Qt::Window)
       {
       setupUi(this);
+      
+      itemList->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(itemList, SIGNAL(customContextMenuRequested(QPoint)), SLOT(colorListCustomContextMenuReq(QPoint)));
+      
       arr    = a;
       color  = 0;
+      _colorDialog = 0;
+//       defaultConfig = new MusEGlobal::GlobalConfigValues;
       config = new MusEGlobal::GlobalConfigValues;
       backupConfig = new MusEGlobal::GlobalConfigValues;
 
@@ -251,14 +241,16 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x50a, id, "Slider default");
            new IdListViewItem(0x50b, id, "Pan slider");
            new IdListViewItem(0x50c, id, "Gain slider");
-           new IdListViewItem(0x50d, id, "Audio volume");
-           new IdListViewItem(0x50e, id, "Midi volume");
-           new IdListViewItem(0x50f, id, "Audio controller default");
-           new IdListViewItem(0x510, id, "Audio property default");
-           new IdListViewItem(0x511, id, "Midi controller default");
-           new IdListViewItem(0x512, id, "Midi property default");
-           new IdListViewItem(0x513, id, "Audio meter primary");
-           new IdListViewItem(0x514, id, "Midi meter primary");
+           new IdListViewItem(0x50d, id, "Aux slider");
+           new IdListViewItem(0x50e, id, "Audio volume");
+           new IdListViewItem(0x50f, id, "Midi volume");
+           new IdListViewItem(0x510, id, "Audio controller default");
+           new IdListViewItem(0x511, id, "Audio property default");
+           new IdListViewItem(0x512, id, "Midi controller default");
+           new IdListViewItem(0x513, id, "Midi property default");
+           new IdListViewItem(0x514, id, "Midi patch slider");
+           new IdListViewItem(0x515, id, "Audio meter primary");
+           new IdListViewItem(0x516, id, "Midi meter primary");
            
       colorNameLineEdit->setEnabled(false);
 
@@ -338,7 +330,135 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(partShowevents, SIGNAL(toggled(bool)), eventButtonGroup, SLOT(setEnabled(bool)));
 
       //updateColor();
+      
       }
+
+Appearance::~Appearance()
+      {
+      delete config;
+      delete backupConfig;
+      }
+
+// Static      
+QColor* Appearance::globalConfigColorFromId(int id)
+{
+  if(id == 0) 
+    return 0;
+    
+  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
+    return &MusEGlobal::config.partColors[id & 0xff];
+  else
+  {
+    switch(id) 
+    {
+      case 0x100: return &MusEGlobal::config.bigTimeBackgroundColor; break;
+      case 0x101: return &MusEGlobal::config.bigTimeForegroundColor; break;
+      case 0x200: return &MusEGlobal::config.transportHandleColor; break;
+      case 0x300: return &MusEGlobal::config.waveEditBackgroundColor; break;
+      case 0x301: return &MusEGlobal::config.wavePeakColor; break;
+      case 0x302: return &MusEGlobal::config.waveRmsColor; break;
+      case 0x303: return &MusEGlobal::config.wavePeakColorSelected; break;
+      case 0x304: return &MusEGlobal::config.waveRmsColorSelected; break;
+      case 0x305: return &MusEGlobal::config.waveNonselectedPart; break;
+
+      case 0x411: return &MusEGlobal::config.trackBg;       break;
+      case 0x412: return &MusEGlobal::config.midiTrackBg;   break;
+      case 0x413: return &MusEGlobal::config.drumTrackBg;   break;
+      case 0x41e: return &MusEGlobal::config.newDrumTrackBg;break;
+      case 0x414: return &MusEGlobal::config.waveTrackBg;   break;
+      case 0x415: return &MusEGlobal::config.outputTrackBg; break;
+      case 0x416: return &MusEGlobal::config.inputTrackBg;  break;
+      case 0x417: return &MusEGlobal::config.groupTrackBg;  break;
+      case 0x418: return &MusEGlobal::config.auxTrackBg;    break;
+      case 0x419: return &MusEGlobal::config.synthTrackBg;  break;
+      case 0x41a: return &MusEGlobal::config.selectTrackBg;  break;
+      case 0x41b: return &MusEGlobal::config.selectTrackFg;  break;
+
+      case 0x41c: return &MusEGlobal::config.partCanvasBg; break;
+      case 0x41d: return &MusEGlobal::config.ctrlGraphFg; break;
+
+      //   0x41e is already used (between 413 and 414)
+
+      case 0x41f: return &MusEGlobal::config.rulerBg; break;
+      case 0x420: return &MusEGlobal::config.rulerFg; break;
+      case 0x421: return &MusEGlobal::config.midiCanvasBg; break;
+      case 0x422: return &MusEGlobal::config.drumListBg; break;
+      case 0x423: return &MusEGlobal::config.midiControllerViewBg; break;
+      case 0x424: return &MusEGlobal::config.rulerCurrent; break;
+      case 0x425: return &MusEGlobal::config.partWaveColorPeak; break;
+      case 0x426: return &MusEGlobal::config.partWaveColorRms; break;
+      case 0x427: return &MusEGlobal::config.partMidiDarkEventColor; break;
+      case 0x428: return &MusEGlobal::config.partMidiLightEventColor; break;
+      case 0x429: return &MusEGlobal::config.midiCanvasBeatColor; break;
+      case 0x42a: return &MusEGlobal::config.midiCanvasBarColor; break;
+      case 0x42b: return &MusEGlobal::config.trackSectionDividerColor; break;
+
+
+
+      case 0x500: return &MusEGlobal::config.mixerBg;   break;
+      case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;
+      case 0x502: return &MusEGlobal::config.drumTrackLabelBg;   break;
+      case 0x509: return &MusEGlobal::config.newDrumTrackLabelBg;break;
+      case 0x503: return &MusEGlobal::config.waveTrackLabelBg;   break;
+      case 0x504: return &MusEGlobal::config.outputTrackLabelBg; break;
+      case 0x505: return &MusEGlobal::config.inputTrackLabelBg;  break;
+      case 0x506: return &MusEGlobal::config.groupTrackLabelBg;  break;
+      case 0x507: return &MusEGlobal::config.auxTrackLabelBg;    break;
+      case 0x508: return &MusEGlobal::config.synthTrackLabelBg;  break;
+      //   0x509 is already used (between 502 and 503)
+      
+      case 0x50a: return &MusEGlobal::config.sliderDefaultColor;                  break;
+      case 0x50b: return &MusEGlobal::config.panSliderColor;                      break;
+      case 0x50c: return &MusEGlobal::config.gainSliderColor;                     break;
+      case 0x50d: return &MusEGlobal::config.auxSliderColor;                      break;
+      case 0x50e: return &MusEGlobal::config.audioVolumeSliderColor;              break;
+      case 0x50f: return &MusEGlobal::config.midiVolumeSliderColor;               break;
+      case 0x510: return &MusEGlobal::config.audioControllerSliderDefaultColor;   break;
+      case 0x511: return &MusEGlobal::config.audioPropertySliderDefaultColor;     break;
+      case 0x512: return &MusEGlobal::config.midiControllerSliderDefaultColor;    break;
+      case 0x513: return &MusEGlobal::config.midiPropertySliderDefaultColor;      break;
+      case 0x514: return &MusEGlobal::config.midiPatchSliderColor;                break;
+      case 0x515: return &MusEGlobal::config.audioMeterPrimaryColor;              break;
+      case 0x516: return &MusEGlobal::config.midiMeterPrimaryColor;               break;
+
+      default:
+            return 0;
+            break;
+    }
+  }
+  return 0;
+}
+
+// Static.
+long int Appearance::configOffsetFromColorId(int id)
+{
+  QColor* c = globalConfigColorFromId(id);
+  if(!c)
+    return -1;
+  
+  // Memory pointer HACK.
+  return ((const char*)c) - ((const char*)&MusEGlobal::config);
+}
+
+QColor* Appearance::workingConfigColorFromId(int id)
+{
+  long int itemOffset = configOffsetFromColorId(id);
+  if(itemOffset == -1)
+    return 0;
+  return (QColor*)(((const char*)config) + itemOffset);
+}
+
+QColor* Appearance::backupConfigColorFromId(int id)
+{
+  long int itemOffset = configOffsetFromColorId(id);
+  if(itemOffset == -1)
+    return 0;
+  return (QColor*)(((const char*)backupConfig) + itemOffset);
+}
+
+//---------------------------------------------------------
+//   setConfigurationColors
+//---------------------------------------------------------
 
 void Appearance::setConfigurationColors()
 {
@@ -458,6 +578,9 @@ void Appearance::resetValues()
       maxAliasedPointSize->setValue(config->maxAliasedPointSize);
       maxAliasedPointSize->blockSignals(false);
       
+      // Grab all the colours.
+      updateColorItems();
+
       updateColor();
 }
 
@@ -493,16 +616,6 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
   
       lastSelectedBgItem = item;
       MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
-      }
-
-//---------------------------------------------------------
-//   Appearance
-//---------------------------------------------------------
-
-Appearance::~Appearance()
-      {
-      delete config;
-      delete backupConfig;
       }
 
 //---------------------------------------------------------
@@ -690,7 +803,8 @@ void Appearance::apply()
 
       MusEGlobal::config = *config;
       *backupConfig = *config;
-
+      updateColorItems();
+      
       MusEGlobal::muse->changeConfig(true);
       raise();
       }
@@ -722,7 +836,7 @@ void Appearance::loadColors()
 {
   if(!MusEGlobal::muse->loadConfigurationColors(this))
   {
-    fprintf(stderr, "Appearance::loadColors failed\n");
+    DEBUG_APPEARANCE(stderr, "Appearance::loadColors failed\n");
     return;
   }  
   resetValues();
@@ -733,27 +847,200 @@ void Appearance::saveColors()
   MusEGlobal::muse->saveConfigurationColors(this);
 }
 
+void Appearance::setColorItemDirty()
+{
+  IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
+  if(!item)
+    return;
+  setColorItemDirty(item);
+}
+
+void Appearance::setColorItemDirty(IdListViewItem* item)
+{
+  if(!item)
+    return;
+  int id = item->id();
+  //if(id == 0 || !color) 
+  if(id == 0) 
+    return;
+
+  QColor* p_gc = globalConfigColorFromId(id);
+  if(!p_gc)
+    return;
+  
+  QColor* p_bkc = backupConfigColorFromId(id);
+  if(!p_bkc)
+    return;
+
+  const QColor& gc = *p_gc;
+  const QColor& bkc = *p_bkc;
+  
+  QFont fnt = item->font(0);
+  //fnt.setBold(bkc != gc);
+  fnt.setWeight(bkc != gc ? QFont::Black : QFont::Normal);
+  fnt.setItalic(bkc != gc);
+  item->setFont(0, fnt);
+  item->setData(0, Qt::DecorationRole, gc);
+}
+
+void Appearance::updateColorItems()
+{
+  QTreeWidgetItemIterator it(itemList); 
+  while(*it)
+  {
+    setColorItemDirty((IdListViewItem*)*it);
+    ++it;
+  }  
+}
+
+void Appearance::colorListCustomContextMenuReq(const QPoint& p)
+{
+  DEBUG_APPEARANCE(stderr, "Appearance::colorListCustomContextMenuReq\n");
+  
+  IdListViewItem* item = static_cast<IdListViewItem*>(itemList->itemAt(p));
+  if(!item)
+    return;
+  int id = item->id();
+  if(id == 0) 
+    return;
+  
+  QColor* p_gc = globalConfigColorFromId(id);
+  if(!p_gc)
+    return;
+  
+  QColor* p_bkc = backupConfigColorFromId(id);
+  if(!p_bkc)
+    return;
+
+  const QColor& gc = *p_gc;
+  const QColor& bkc = *p_bkc;
+      
+  QMenu* pup = new QMenu(this);
+  QAction* act = pup->addAction(tr("Revert changes"));
+  act->setData(0x100);
+  act->setEnabled(gc != bkc);
+  act = pup->addAction(tr("Revert all..."));
+  act->setData(0x101);
+  act = pup->exec(itemList->mapToGlobal(p));
+  if(!act)
+  {
+    delete pup;
+    return;
+  }
+  
+  const int res = act->data().toInt();
+  delete pup;
+  
+  switch(res)
+  {
+    case 0x100:
+    {
+      if(gc != bkc)
+      {
+        resetColorItem(item);
+        updateColor();
+        if(color && _colorDialog)
+        {
+          _colorDialog->blockSignals(true);
+          _colorDialog->setCurrentColor(*color);
+          _colorDialog->blockSignals(false);
+        }
+        // Notify the rest of the app, without the heavy stuff.
+        MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+      }
+    } 
+    break;
+    
+    case 0x101:
+    {
+      if(QMessageBox::question(this, QString("Muse"),
+          tr("Do you really want to reset all colors?"), 
+          QMessageBox::Ok | QMessageBox::Cancel,
+          QMessageBox::Ok) != QMessageBox::Ok)
+        return;
+      resetAllColorItems();
+      
+      updateColor();
+      if(color && _colorDialog)
+      {
+        _colorDialog->blockSignals(true);
+        _colorDialog->setCurrentColor(*color);
+        _colorDialog->blockSignals(false);
+      }
+      //changeGlobalColor();
+      // Notify the rest of the app, without the heavy stuff.
+      MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+    } 
+    break;
+  }
+}
+
+void Appearance::resetColorItem(IdListViewItem* item)
+{
+  if(!item)
+    return;
+  int id = item->id();
+  if(id == 0)
+    return;
+  
+  QColor* p_bkc = backupConfigColorFromId(id);
+  if(!p_bkc)
+    return;
+
+  QColor* p_gc = globalConfigColorFromId(id);
+  if(!p_gc)
+    return;
+
+  QColor* p_wkc = workingConfigColorFromId(id);
+  if(!p_wkc)
+    return;
+
+  const QColor& bkc = *p_bkc;
+  QColor& gc = *p_gc;
+  QColor& wkc = *p_wkc;
+
+  gc = bkc;
+  wkc = bkc;
+  
+  QFont fnt = item->font(0);
+  fnt.setWeight(QFont::Normal);
+  fnt.setItalic(false);
+  item->setFont(0, fnt);
+  item->setData(0, Qt::DecorationRole, gc);
+}
+
+void Appearance::resetAllColorItems()
+{
+  QTreeWidgetItemIterator it(itemList); 
+  while(*it)
+  {
+    resetColorItem((IdListViewItem*)*it);
+    ++it;
+  }  
+}
+
 void Appearance::chooseColorClicked()
 {
   if(!color)
     return;
-  QColor prevColor = *color;
-  QColorDialog* d = new QColorDialog(prevColor, this);
-  connect(d, SIGNAL(currentColorChanged(QColor)), SLOT(colorDialogCurrentChanged(QColor)));
-
-  d->exec();
-  if(_configChangedTimer->isActive())
-    _configChangedTimer->stop();
-  QColor c = d->selectedColor();
-  delete d;
-
+  if(!_colorDialog)
+  {
+    DEBUG_APPEARANCE(stderr, "Appearance::chooseColorClicked creating new dialog\n");
+    _colorDialog = new QColorDialog(this);
+    _colorDialog->setOption(QColorDialog::NoButtons, true);
+    connect(_colorDialog, SIGNAL(currentColorChanged(QColor)), SLOT(colorDialogCurrentChanged(QColor)));
+    connect(_colorDialog, SIGNAL(finished(int)), SLOT(colorDialogFinished(int)));
+  }
+  _colorDialog->setCurrentColor(*color);
   
-  if(c.isValid())
-    changeColor(c);
+  IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
+  if(item)
+    setColorDialogWindowText(item->text(0));
   else
-    changeColor(prevColor);
-  
-  updateColor();
+    setColorDialogWindowText();
+    
+  _colorDialog->show();
+  _colorDialog->raise();
 }
 
 void Appearance::changeGlobalColor()
@@ -773,33 +1060,83 @@ void Appearance::changeGlobalColor()
     // Notify the rest of the app, without the heavy stuff.
     MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
   }
+
+  setColorItemDirty();
 }
 
 void Appearance::changeColor(const QColor& c)
 {
-  if(!color)
-    return;
+//   if(!color)
+//     return;
 
-  if(*color != c)
+  if(color && *color != c)
   {
     *color = c;
     //updateColor();
   }
   
-  //changeGlobalColor();
   _configChangedTimer->start(); // Restart
 }
 
 void Appearance::colorDialogCurrentChanged(const QColor& c)
 {
   changeColor(c);
+  //updateColor();
+}
+
+void Appearance::colorDialogFinished(int /*result*/)
+{
+  DEBUG_APPEARANCE(stderr, "Appearance::colorDialogFinished result:%d\n", result);
+  if(_configChangedTimer->isActive())
+   _configChangedTimer->stop();
+  
+  if(_colorDialog)
+  {
+    _colorDialog->deleteLater();
+    _colorDialog = 0;
+  }
 }
 
 void Appearance::configChangeTimeOut()
 {
+  updateColor();
+  if(color && _colorDialog)
+  {
+    _colorDialog->blockSignals(true);
+    _colorDialog->setCurrentColor(*color);
+    _colorDialog->blockSignals(false);
+  }
   changeGlobalColor();
 }
 
+//---------------------------------------------------------
+//   doCancel
+//---------------------------------------------------------
+
+void Appearance::doCancel()
+{
+  MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
+  MusEGlobal::config = *backupConfig;
+  MusEGlobal::muse->changeConfig(true); // Restore everything possible.
+}
+
+//---------------------------------------------------------
+//   closeEvent
+//---------------------------------------------------------
+
+void Appearance::closeEvent(QCloseEvent* e)
+{
+  DEBUG_APPEARANCE(stderr, "Appearance::closeEvent\n");
+  doCancel();
+
+  if(_colorDialog)
+  {
+    _colorDialog->deleteLater();
+    _colorDialog = 0;
+  }
+  e->accept();
+  QDialog::closeEvent(e);
+}
 
 //---------------------------------------------------------
 //   ok
@@ -807,8 +1144,15 @@ void Appearance::configChangeTimeOut()
 
 void Appearance::ok()
       {
+      DEBUG_APPEARANCE(stderr, "Appearance::ok\n");
       apply();
-      close();
+      if(_colorDialog)
+      {
+        _colorDialog->deleteLater();
+        _colorDialog = 0;
+      }
+      //close();
+      hide();
       }
 
 //---------------------------------------------------------
@@ -817,10 +1161,15 @@ void Appearance::ok()
 
 void Appearance::cancel()
       {
-      MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
-      MusEGlobal::config = *backupConfig;
-      MusEGlobal::muse->changeConfig(true); // Restore everything possible.
-      close();
+      DEBUG_APPEARANCE(stderr, "Appearance::cancel\n");
+      doCancel();
+      if(_colorDialog)
+      {
+        _colorDialog->deleteLater();
+        _colorDialog = 0;
+      }
+      //close();
+      hide();
       }
 
 //---------------------------------------------------------
@@ -875,6 +1224,26 @@ void Appearance::clearBackground()
       }
 
 //---------------------------------------------------------
+//    setColorDialogWindowText
+//---------------------------------------------------------
+
+void Appearance::setColorDialogWindowText(const QString& colorName)
+{
+  if(!_colorDialog)
+    return;
+  
+  if(colorName.isEmpty())
+    _colorDialog->setWindowTitle(tr("No current color item"));
+  else
+  {
+    const QString title = tr("Select Color: %1").arg(colorName);
+    _colorDialog->blockSignals(true);
+    _colorDialog->setWindowTitle(title);
+    _colorDialog->blockSignals(false);
+  }
+}
+
+//---------------------------------------------------------
 //    selectionChanged
 //---------------------------------------------------------
 
@@ -882,101 +1251,47 @@ void Appearance::colorItemSelectionChanged()
       {
       IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
       lastSelectedColorItem = 0;
-      QString txt = item->text(0);
+      if(!item)
+      {
+        colorNameLineEdit->setEnabled(false);
+        setColorDialogWindowText();
+        updateColor();
+        return;
+      }
+      
       int id = item->id();
-      if (id == 0) {
-            color = 0;
-            lastSelectedColorItem = 0;
-            colorNameLineEdit->setEnabled(false);
-            return;
-            }
+      
+      color = workingConfigColorFromId(id);
+      if(!color)
+      {
+        lastSelectedColorItem = 0;
+        colorNameLineEdit->setEnabled(false);
+        setColorDialogWindowText();
+        updateColor();
+        return;
+      }
+            
       bool enle = false;
       if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
       {
         lastSelectedColorItem = item;
-        color = &config->partColors[id & 0xff];
         enle = true;
       }
-      else
-      switch(id) {
-            case 0x100: color = &config->bigTimeBackgroundColor; break;
-            case 0x101: color = &config->bigTimeForegroundColor; break;
-            case 0x200: color = &config->transportHandleColor; break;
-            case 0x300: color = &config->waveEditBackgroundColor; break;
-            case 0x301: color = &config->wavePeakColor; break;
-            case 0x302: color = &config->waveRmsColor; break;
-            case 0x303: color = &config->wavePeakColorSelected; break;
-            case 0x304: color = &config->waveRmsColorSelected; break;
-            case 0x305: color = &config->waveNonselectedPart; break;
-
-            case 0x411: color = &config->trackBg;       break;
-            case 0x412: color = &config->midiTrackBg;   break;
-            case 0x413: color = &config->drumTrackBg;   break;
-            case 0x41e: color = &config->newDrumTrackBg;break;
-            case 0x414: color = &config->waveTrackBg;   break;
-            case 0x415: color = &config->outputTrackBg; break;
-            case 0x416: color = &config->inputTrackBg;  break;
-            case 0x417: color = &config->groupTrackBg;  break;
-            case 0x418: color = &config->auxTrackBg;    break;
-            case 0x419: color = &config->synthTrackBg;  break;
-            case 0x41a: color = &config->selectTrackBg;  break;
-            case 0x41b: color = &config->selectTrackFg;  break;
-
-            case 0x41c: color = &config->partCanvasBg; break;
-            case 0x41d: color = &config->ctrlGraphFg; break;
-
-            //   0x41e is already used (between 413 and 414)
-
-            case 0x41f: color = &config->rulerBg; break;
-            case 0x420: color = &config->rulerFg; break;
-            case 0x421: color = &config->midiCanvasBg; break;
-            case 0x422: color = &config->drumListBg; break;
-            case 0x423: color = &config->midiControllerViewBg; break;
-            case 0x424: color = &config->rulerCurrent; break;
-            case 0x425: color = &config->partWaveColorPeak; break;
-            case 0x426: color = &config->partWaveColorRms; break;
-            case 0x427: color = &config->partMidiDarkEventColor; break;
-            case 0x428: color = &config->partMidiLightEventColor; break;
-            case 0x429: color = &config->midiCanvasBeatColor; break;
-            case 0x42a: color = &config->midiCanvasBarColor; break;
-            case 0x42b: color = &config->trackSectionDividerColor; break;
-
-
-
-            case 0x500: color = &config->mixerBg;   break;
-            case 0x501: color = &config->midiTrackLabelBg;   break;
-            case 0x502: color = &config->drumTrackLabelBg;   break;
-            case 0x509: color = &config->newDrumTrackLabelBg;break;
-            case 0x503: color = &config->waveTrackLabelBg;   break;
-            case 0x504: color = &config->outputTrackLabelBg; break;
-            case 0x505: color = &config->inputTrackLabelBg;  break;
-            case 0x506: color = &config->groupTrackLabelBg;  break;
-            case 0x507: color = &config->auxTrackLabelBg;    break;
-            case 0x508: color = &config->synthTrackLabelBg;  break;
-            //   0x509 is already used (between 502 and 503)
-            
-            case 0x50a: color = &config->sliderDefaultColor;                  break;
-            case 0x50b: color = &config->panSliderColor;                      break;
-            case 0x50c: color = &config->gainSliderColor;                     break;
-            case 0x50d: color = &config->audioVolumeSliderColor;              break;
-            case 0x50e: color = &config->midiVolumeSliderColor;               break;
-            case 0x50f: color = &config->audioControllerSliderDefaultColor;   break;
-            case 0x510: color = &config->audioPropertySliderDefaultColor;     break;
-            case 0x511: color = &config->midiControllerSliderDefaultColor;    break;
-            case 0x512: color = &config->midiPropertySliderDefaultColor;      break;
-            case 0x513: color = &config->audioMeterPrimaryColor;              break;
-            case 0x514: color = &config->midiMeterPrimaryColor;               break;
       
-            default:
-                  color = 0;
-                  break;
-            }
       colorNameLineEdit->setEnabled(enle);
       QString s;
       if(enle)
         s = config->partColorNames[id & 0xff];
       colorNameLineEdit->setText(s);
       updateColor();
+      
+      if(_colorDialog)
+      {
+        _colorDialog->blockSignals(true);
+        _colorDialog->setCurrentColor(*color);
+        setColorDialogWindowText(item->text(0));
+        _colorDialog->blockSignals(false);
+      }
       }
 
 void Appearance::updateColor()
@@ -994,6 +1309,9 @@ void Appearance::updateColor()
       hval->setEnabled(color);
       sval->setEnabled(color);
       vval->setEnabled(color);
+      colorwidget->setEnabled(color);
+      colorwidget->setEnabled(color);
+      pickColorButton->setEnabled(color);
       if (color == 0)
             return;
       QPalette pal;
@@ -1132,8 +1450,8 @@ void Appearance::vsliderChanged(int val)
 
 void Appearance::addToPaletteClicked()
       {
-      if (!color)
-            return;
+      QColor new_c = color ? *color : colorwidget->color();
+
       QAbstractButton* button = (QAbstractButton*)aPalette->checkedButton(); // ddskrjo
 
       int r, g, b;
@@ -1157,8 +1475,8 @@ void Appearance::addToPaletteClicked()
             }
       if (button) {
             int id = aPalette->id(button);
-            config->palette[id] = *color;
-            button->setStyleSheet(QString("background-color: ") + color->name());
+            config->palette[id] = new_c;
+            button->setStyleSheet(QString("background-color: ") + new_c.name());
             button->update();   //??
             }
       }

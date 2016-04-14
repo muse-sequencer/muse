@@ -178,12 +178,14 @@ struct GlobalConfigValues {
       QColor sliderDefaultColor;
       QColor panSliderColor;
       QColor gainSliderColor;
+      QColor auxSliderColor;
       QColor audioVolumeSliderColor;
       QColor midiVolumeSliderColor;
       QColor audioControllerSliderDefaultColor;
       QColor audioPropertySliderDefaultColor;
       QColor midiControllerSliderDefaultColor;
       QColor midiPropertySliderDefaultColor;
+      QColor midiPatchSliderColor;
 
       QColor audioMeterPrimaryColor;
       QColor midiMeterPrimaryColor;

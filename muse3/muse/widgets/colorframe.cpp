@@ -12,7 +12,7 @@ void ColorFrame::paintEvent(QPaintEvent *e)
 {
     QRect r(e->rect());
     QPainter p(this);
-    p.fillRect(r, color);
+    p.fillRect(r, _color);
 }
 
 void ColorFrame::mousePressEvent(QMouseEvent* e)

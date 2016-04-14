@@ -12,7 +12,8 @@ protected:
 
 public:
     explicit ColorFrame(QWidget *parent = 0);
-    void setColor(QColor c) {color = c; update();}
+    QColor color() const { return _color; }
+    void setColor(QColor c) {_color = c; update();}
     
 signals:
     void clicked();
@@ -20,7 +21,7 @@ signals:
 public slots:
 
 private:
-    QColor color;
+    QColor _color;
 };
 
 #endif // COLORFRAME_H

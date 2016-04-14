@@ -939,6 +939,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.panSliderColor = readColor(xml);
                         else if (tag == "gainSliderColor")
                               MusEGlobal::config.gainSliderColor = readColor(xml);
+                        else if (tag == "auxSliderColor")
+                              MusEGlobal::config.auxSliderColor = readColor(xml);
                         else if (tag == "audioVolumeSliderColor")
                               MusEGlobal::config.audioVolumeSliderColor = readColor(xml);
                         else if (tag == "midiVolumeSliderColor")
@@ -951,6 +953,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiControllerSliderDefaultColor = readColor(xml);
                         else if (tag == "midiPropertySliderDefaultColor")
                               MusEGlobal::config.midiPropertySliderDefaultColor = readColor(xml);
+                        else if (tag == "midiPatchSliderColor")
+                              MusEGlobal::config.midiPatchSliderColor = readColor(xml);
                         else if (tag == "audioMeterPrimaryColor")
                               MusEGlobal::config.audioMeterPrimaryColor = readColor(xml);
                         else if (tag == "midiMeterPrimaryColor")
@@ -1503,12 +1507,14 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml)
       xml.colorTag(level, "sliderDefaultColor",  MusEGlobal::config.sliderDefaultColor);
       xml.colorTag(level, "panSliderColor",  MusEGlobal::config.panSliderColor);
       xml.colorTag(level, "gainSliderColor",  MusEGlobal::config.gainSliderColor);
+      xml.colorTag(level, "auxSliderColor",  MusEGlobal::config.auxSliderColor);
       xml.colorTag(level, "audioVolumeSliderColor",  MusEGlobal::config.audioVolumeSliderColor);
       xml.colorTag(level, "midiVolumeSliderColor",  MusEGlobal::config.midiVolumeSliderColor);
       xml.colorTag(level, "audioControllerSliderDefaultColor",  MusEGlobal::config.audioControllerSliderDefaultColor);
       xml.colorTag(level, "audioPropertySliderDefaultColor",  MusEGlobal::config.audioPropertySliderDefaultColor);
       xml.colorTag(level, "midiControllerSliderDefaultColor",  MusEGlobal::config.midiControllerSliderDefaultColor);
       xml.colorTag(level, "midiPropertySliderDefaultColor",  MusEGlobal::config.midiPropertySliderDefaultColor);
+      xml.colorTag(level, "midiPatchSliderColor",  MusEGlobal::config.midiPatchSliderColor);
       xml.colorTag(level, "audioMeterPrimaryColor",  MusEGlobal::config.audioMeterPrimaryColor);
       xml.colorTag(level, "midiMeterPrimaryColor",  MusEGlobal::config.midiMeterPrimaryColor);
       

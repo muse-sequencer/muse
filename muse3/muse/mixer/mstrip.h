@@ -62,7 +62,7 @@ class MidiComponentRack : public ComponentRack
     
   public:      
       // Type of component.
-      enum MStripComponentType { aStripAuxComponent = userComponent };
+      //enum MStripComponentType { type = userComponent };
       // Possible widget types.
       enum MStripComponentWidgetType { mStripCompactPatchEditComponentWidget = userComponentWidget };
       // Some controller types.

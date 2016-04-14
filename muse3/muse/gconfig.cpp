@@ -168,12 +168,14 @@ GlobalConfigValues config = {
       QColor(228,203,36),           // sliderDefaultColor
       QColor(158,212,86),           // panSliderColor
       QColor(255,158,131),          // gainSliderColor
+      QColor(142, 157, 6),          // auxSliderColor
       QColor(221,177,101),          // audioVolumeSliderColor
       QColor(112,192,103),          // midiVolumeSliderColor
       QColor(115,176,255),          // audioControllerSliderDefaultColor
       QColor(166,161,242),          // audioPropertySliderDefaultColor
       QColor(115,176,255),          // midiControllerSliderDefaultColor
       QColor(166,161,242),          // midiPropertySliderDefaultColor
+      QColor(228,203,36),           // midiPatchSliderColor
 
       QColor(0,221,255),            // audioMeterPrimaryColor
       QColor(0,221,255),            // midiMeterPrimaryColor

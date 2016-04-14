@@ -29,6 +29,8 @@
 class QColor;
 class QDialog;
 class QTimer;
+class QColorDialog;
+class QCloseEvent;
 
 namespace MusEGlobal {
   struct GlobalConfigValues;
@@ -39,13 +41,43 @@ class Arranger;
 class MusE;
 
 //---------------------------------------------------------
+//   IdListViewItem
+//---------------------------------------------------------
+
+class IdListViewItem : public QTreeWidgetItem {
+   private:
+      int _id;
+
+   public:
+      
+   public:
+      IdListViewItem(int id, QTreeWidgetItem* parent, QString s)
+         : QTreeWidgetItem(parent, QStringList(s))
+            {
+            _id = id;
+            }
+      IdListViewItem(int id, QTreeWidget* parent, QString s)
+         : QTreeWidgetItem(parent, QStringList(s))
+            {
+            _id = id;
+            }
+      int id() const { return _id; }
+      };
+
+//---------------------------------------------------------
 //   Appearance Dialog
 //---------------------------------------------------------
 
 class Appearance : public QDialog, public Ui::AppearanceDialogBase {
   
     Q_OBJECT
+
+ protected:
+      static QColor* globalConfigColorFromId(int id);
+      static long int configOffsetFromColorId(int id);
     
+      virtual void closeEvent(QCloseEvent*);
+      
  private:
       QTimer* _configChangedTimer;
       Arranger* arr;
@@ -58,12 +90,26 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       QTreeWidgetItem* lastSelectedBgItem;
       QTreeWidgetItem* lastSelectedColorItem;      
 
+      QColorDialog* _colorDialog;
       
+      QColor* backupConfigColorFromId(int id);
+      QColor* workingConfigColorFromId(int id);
+      
+      // Sets current (last) item dirty.
+      void setColorItemDirty();
+      // Sets an item dirty.
+      void setColorItemDirty(IdListViewItem* item);
+      // Update the dirty states of all items.
+      void updateColorItems();
+      void resetColorItem(IdListViewItem* item);
+      void resetAllColorItems();
       void updateFonts();
       void updateColor();
       void changeColor(const QColor& c);
       void changeGlobalColor();
       void setConfigurationColors();
+      void setColorDialogWindowText(const QString& colorName = QString());
+      void doCancel();
 
    private slots:
       void apply();
@@ -100,7 +146,9 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void saveColors();
       void chooseColorClicked();
       void colorDialogCurrentChanged(const QColor&);
+      void colorDialogFinished(int result);
       void configChangeTimeOut();
+      void colorListCustomContextMenuReq(const QPoint&);
 
    public:
       Appearance(Arranger*, QWidget* parent=0);

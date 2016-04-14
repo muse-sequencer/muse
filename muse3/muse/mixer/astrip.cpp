@@ -115,7 +115,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       desc->_enabled = _track->auxRefCount() == 0;
       
       if(!desc->_color.isValid())
-        desc->_color = MusEGlobal::config.auxTrackLabelBg;
+        desc->_color = MusEGlobal::config.auxSliderColor;
       
       if(desc->_label.isEmpty())
       {
@@ -632,7 +632,7 @@ void AudioComponentRack::setComponentColors()
     switch(cw._componentType)
     {
       case aStripAuxComponent:
-        color = MusEGlobal::config.auxTrackLabelBg;
+        color = MusEGlobal::config.auxSliderColor;
       break;
       
       case controllerComponent:

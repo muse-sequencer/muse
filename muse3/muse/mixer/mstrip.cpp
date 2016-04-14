@@ -227,7 +227,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           break;
           
           case MusECore::CTRL_PROGRAM:
-            desc->_color = MusEGlobal::config.sliderDefaultColor;
+            desc->_color = MusEGlobal::config.midiPatchSliderColor;
           break;
           
           default:
@@ -384,7 +384,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       d->_initVal = val;
       d->_isOff = off;
       if(!d->_color.isValid())
-        d->_color = MusEGlobal::config.sliderDefaultColor;
+        d->_color = MusEGlobal::config.midiPatchSliderColor;
       // Set the bar color the same.
       if(!d->_barColor.isValid())
         d->_barColor = d->_color;
@@ -1080,7 +1080,7 @@ void MidiComponentRack::setComponentColors()
           break;
           
           case MusECore::CTRL_PROGRAM:
-            color = MusEGlobal::config.sliderDefaultColor;
+            color = MusEGlobal::config.midiPatchSliderColor;
           break;
           
           default:
