@@ -1456,7 +1456,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       }
       
       
-static void writeConfigurationColors(int level, MusECore::Xml& xml)
+static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
             char buffer[32];
@@ -1470,12 +1470,15 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml)
             xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
             }
 
-      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "partColorName%d", i);
-            xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
-            }
-
+      if(partColorNames)
+      {
+        for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+              char buffer[32];
+              sprintf(buffer, "partColorName%d", i);
+              xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
+              }
+      }
+      
       xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
       xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
@@ -1620,7 +1623,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   xml.header();
   xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
   xml.tag(1, "configuration");
-  MusECore::writeConfigurationColors(2, xml);
+  MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
   xml.etag(1, "configuration");
   xml.tag(0, "/muse");
   fclose(f);
