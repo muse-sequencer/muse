@@ -78,6 +78,8 @@ class ThinSlider : public SliderBase, public ScaleIf
   protected:
   virtual void drawSlider (QPainter *p, const QRect &r);
   double getValue(const QPoint &p);
+  //  Determine the value corresponding to a specified mouse movement.
+  double moveValue(const QPoint& /*deltaP*/, bool /*fineMode*/ = false);
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
   virtual void resizeEvent(QResizeEvent *e);
   virtual void paintEvent (QPaintEvent *e);

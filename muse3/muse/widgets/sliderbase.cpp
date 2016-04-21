@@ -35,7 +35,7 @@
 #include <QCursor>
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_SLIDER_BASE(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_SLIDER_BASE(dev, format, args...)  //fprintf(dev, format, ##args);
 
 
 namespace MusEGui {
@@ -130,6 +130,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
       d_tracking    = true;
       d_trackingTempDisable = false;
       d_mouseOffset = 0.0;
+      d_valAccum = 0.0;
       d_enableValueToolTips = false;
       d_valueAtPress = 0.0;
       d_scrollMode  = ScrNone;
@@ -286,15 +287,19 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
       d_timerTick = 0;
       _pressed = true;
 
+      _mouseDeltaAccum = QPoint(); // Reset.
+      _lastGlobalMousePos = e->globalPos();
       d_valueAtPress = value(ConvertNone);
+      d_valAccum = d_valueAtPress; // Reset.
       
       d_trackingTempDisable = meta; // Generate automation graph recording straight lines if modifier held.
       
       getScrollMode(p, button, e->modifiers(), d_scrollMode, d_direction);
+      _lastMousePos = p;
       stopMoving();
       showCursor();
       
-      DEBUG_SLIDER_BASE(stderr, "SliderBase::mousePressEvent x:%d, y:%d d_mouseOffset:%.20f d_valueAtPress:%20f d_scrollMode:%d\n", p.x(), p.y(), d_mouseOffset, d_valueAtPress, d_scrollMode);
+      DEBUG_SLIDER_BASE(stderr, "SliderBase::mousePressEvent x:%d, y:%d d_mouseOffset:%.20f d_valueAtPress:%.20f d_scrollMode:%d\n", p.x(), p.y(), d_mouseOffset, d_valueAtPress, d_scrollMode);
       
       // Only one mouse button at a time! Otherwise bad things happen.
       if(buttons ^ button)
@@ -349,7 +354,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   else if(_borderlessMouse && clicked)
                   {
                     d_mouseOffset = 0.0;
-                    _lastGlobalMousePos = e->globalPos();
+//                     _lastGlobalMousePos = e->globalPos();
 
                     //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
                     //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
@@ -386,6 +391,8 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                     d_mouseOffset = 0.0;
                     //setPosition(p); // No, it subtracts d_mouseOffset which leaves net zero in case of last line above.
                     DoubleRange::fitValue(getValue(p));
+                    // Must set this so that mouseReleaseEvent reads the right value.
+                    d_valAccum = value(ConvertNone);
                   }
                   
                   // HACK
@@ -451,10 +458,11 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
   _ignoreMouseMove = false;
   const Qt::MouseButton button = e->button();
   const bool clicked = (button == Qt::LeftButton || button == Qt::MidButton);
+  const bool shift = e->modifiers() & Qt::ShiftModifier;
   
   _pressed = e->buttons() != Qt::NoButton;
-  DEBUG_SLIDER_BASE(stderr, "SliderBase::mouseReleaseEvent e->buttons():%d button:%d _pressed:%d val:%.20f d_valueAtPress:%.20f\n", 
-                    int(e->buttons()), button, _pressed, value(), d_valueAtPress);
+  DEBUG_SLIDER_BASE(stderr, "SliderBase::mouseReleaseEvent pos x:%d y:%d last x:%d y:%d e->buttons():%d button:%d _pressed:%d val:%.20f d_valueAtPress:%.20f\n", 
+                    e->pos().x(), e->pos().y(), _lastMousePos.x(), _lastMousePos.y(), int(e->buttons()), button, _pressed, value(), d_valueAtPress);
 
   e->accept();
   switch(d_scrollMode)
@@ -480,7 +488,8 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
       }
       else
       {
-        setPosition(e->pos());
+//         setPosition(e->pos());
+        movePosition(e->pos() - _lastMousePos, shift);
         d_direction = 0;
         d_mouseOffset = 0;
         if (d_mass > 0.0)
@@ -503,7 +512,8 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
     break;
 
     case ScrDirect:
-      setPosition(e->pos());
+//       setPosition(e->pos());
+      movePosition(e->pos() - _lastMousePos, shift);
       d_direction = 0;
       d_mouseOffset = 0;
       d_scrollMode = ScrNone;
@@ -552,10 +562,32 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
 //------------------------------------------------------------
 void SliderBase::setPosition(const QPoint &p)
 {
-    DEBUG_SLIDER_BASE(stderr, "SliderBase::setPosition calling fitValue(delta x:%d, y:%d) d_mouseOffset:%.20f\n", p.x(), p.y(), d_mouseOffset);
+    DEBUG_SLIDER_BASE(stderr, "SliderBase::setPosition calling fitValue(x:%d, y:%d) d_mouseOffset:%.20f\n", p.x(), p.y(), d_mouseOffset);
     DoubleRange::fitValue(getValue(p) - d_mouseOffset);
 }
 
+//------------------------------------------------------------
+//
+//.F  SliderBase::movePosition
+//  Move the slider to a specified point, adjust the value
+//  and emit signals if necessary
+//
+//.u  Syntax
+//.f  void SliderBase::movePosition(const QPoint &deltaP, bool fineMode)
+//
+//.u  Parameters
+//.p  const QPoint &deltaP -- Change in position
+//.p  bool fineMode -- Fine mode if true, coarse mode if false.
+//
+//.u  Description
+//    Coarse mode (the normal mode) maps pixels to values depending on range and width,
+//     such that the slider follows the mouse cursor. Fine mode maps one step() value per pixel.
+//------------------------------------------------------------
+void SliderBase::movePosition(const QPoint &deltaP, bool fineMode)
+{
+    DEBUG_SLIDER_BASE(stderr, "SliderBase::movePosition calling fitValue(delta x:%d, y:%d) fineMode:%d\n", deltaP.x(), deltaP.y(), fineMode);
+    DoubleRange::fitValue(moveValue(deltaP, fineMode));
+}
 
 //------------------------------------------------------------
 //
@@ -649,7 +681,17 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
       //_ignoreMouseMove = false;
     }
     else
-      setPosition(e->pos());
+    {
+      //if(shift)
+      //  movePosition(e->pos() - _lastMousePos, true);
+      //else
+      //  setPosition(e->pos());
+      movePosition(e->pos() - _lastMousePos, shift);
+    }
+
+    _mouseDeltaAccum += (e->pos() - _lastMousePos);
+    _lastMousePos = e->pos();
+    _lastGlobalMousePos = e->globalPos();
     
     if (d_mass > 0.0)
     {

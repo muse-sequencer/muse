@@ -59,6 +59,9 @@ class SliderBase : public QWidget, public DoubleRange
   double d_mass;
   bool _cursorHoming;
   bool _borderlessMouse;
+  double d_valAccum;
+  QPoint _mouseDeltaAccum;
+  QPoint _lastMousePos;
   QPoint _lastGlobalMousePos;
   Qt::MouseButtons _pagingButtons;
   
@@ -94,6 +97,7 @@ class SliderBase : public QWidget, public DoubleRange
   
   virtual void setMass(double val);
   void setPosition(const QPoint &p);
+  void movePosition(const QPoint &deltaP, bool fineMode);
   virtual void valueChange();
   virtual double mass() const { return d_mass; }
 
@@ -109,6 +113,8 @@ class SliderBase : public QWidget, public DoubleRange
   //  Determine the value corresponding to a specified mouse location.
   //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
   virtual double getValue(const QPoint & p) = 0;
+  //  Determine the value corresponding to a specified mouse movement.
+  virtual double moveValue(const QPoint &deltaP, bool fineMode = false) = 0;
   //  Determine scrolling mode and direction.
   virtual void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers,
            int &scrollMode, int &direction) = 0;

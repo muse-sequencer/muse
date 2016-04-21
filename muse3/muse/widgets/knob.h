@@ -87,6 +87,8 @@ class Knob : public SliderBase, public ScaleIf
       virtual void paintEvent(QPaintEvent *);
       virtual void resizeEvent(QResizeEvent *e);
       double getValue(const QPoint &p);
+      //  Determine the value corresponding to a specified mouse movement.
+      double moveValue(const QPoint& /*deltaP*/, bool /*fineMode*/ = false);
       void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction );
       void scaleChange()             { repaint(); }
       void fontChange(const QFont &) { repaint(); }

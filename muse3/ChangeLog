@@ -1,3 +1,8 @@
+21.04.2016:
+         - New: Accu-Slider: All sliders support 'shift' control for single-stepping 
+            even with thin sliders. (Tim)
+           The shift control changes from 'coarse' to 'fine' adjustment mode so
+            you can zero-in on an exact value even with very short sliders.
 14.04.2016:
          - Added missing Aux slider and Midi Program slider Appearance colours. (Tim)
          - Complete rewrite of 13.04.2016. Non-modal colour chooser, fully interactive. (Tim)

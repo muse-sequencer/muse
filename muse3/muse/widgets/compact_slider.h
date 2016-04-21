@@ -164,6 +164,8 @@ class CompactSlider : public SliderBase, public ScaleIf
     //  Determine the value corresponding to a specified mouse location.
     //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
     double getValue(const QPoint &p);
+    //  Determine the value corresponding to a specified mouse movement.
+    double moveValue(const QPoint &deltaP, bool fineMode = false);
     //  Determine scrolling mode and direction.
     void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
     

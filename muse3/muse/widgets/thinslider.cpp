@@ -454,6 +454,74 @@ double ThinSlider::getValue( const QPoint &p)
 
 
 //------------------------------------------------------------
+//
+//.F  ThinSlider::moveValue
+//  Determine the value corresponding to a specified mouse movement.
+//
+//.u  Syntax
+//.f  void Slider::moveValue(const QPoint &deltaP, bool fineMode)
+//
+//.u  Parameters
+//.p  const QPoint &deltaP -- Change in position
+//.p  bool fineMode -- Fine mode if true, coarse mode if false.
+//
+//.u  Description
+//    Called by SliderBase
+//    Coarse mode (the normal mode) maps pixels to values depending on range and width,
+//     such that the slider follows the mouse cursor. Fine mode maps one step() value per pixel.
+//------------------------------------------------------------
+double ThinSlider::moveValue(const QPoint &deltaP, bool fineMode)
+{
+  double rv;
+  const QRect r = d_sliderRect;
+
+  const double val = value(ConvertNone);
+
+  if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
+  {
+    double newval;
+    if(d_orient == Qt::Horizontal)
+      newval = val + deltaP.x() * step();
+    else
+      newval = val - deltaP.y() * step();
+    d_valAccum = newval; // Reset.
+    return newval;
+  }
+  
+  const double min = minValue(ConvertNone);
+  const double max = maxValue(ConvertNone);
+  const double drange = max - min;
+
+  if(d_orient == Qt::Horizontal)
+  {
+    if(r.width() <= d_thumbLength)
+      rv = 0.5 * (min + max);
+    else
+    {
+      const double dpos = double(deltaP.x());
+      const double dwidth = double(r.width() - d_thumbLength);
+      const double dval_diff = (drange * dpos) / dwidth;
+      d_valAccum += dval_diff;
+      rv = rint(d_valAccum / step()) * step();
+    }
+  }
+  else
+  {
+    if(r.height() <= d_thumbLength)
+      rv = 0.5 * (min + max);
+    else
+    {
+      const double dpos = double(-deltaP.y());
+      const double dheight = double(r.height() - d_thumbLength);
+      const double dval_diff = (drange * dpos) / dheight;
+      d_valAccum += dval_diff;
+      rv = rint(d_valAccum / step()) * step();
+    }
+  }
+  return(rv);
+}
+
+//------------------------------------------------------------
 //.-
 //.F  ThinSlider::getScrollMode
 //  Determine scrolling mode and direction

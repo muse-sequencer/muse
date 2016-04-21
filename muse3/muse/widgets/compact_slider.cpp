@@ -477,50 +477,122 @@ void CompactSlider::scaleChange()
 double CompactSlider::getValue( const QPoint &p)
 {
   double rv;
-  int pos;
   const QRect r = d_sliderRect;
+  const double val = value(ConvertNone);
 
   if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
     DEBUG_COMPACT_SLIDER(stderr, "CompactSlider::getValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n", 
-                         value(ConvertNone), p.x(), p.y(), step(), p.x() * step());
+                         val, p.x(), p.y(), step(), p.x() * step());
     if(d_orient == Qt::Horizontal)
-      return value(ConvertNone) + p.x() * step();
+      return val + p.x() * step();
     else
-      return value(ConvertNone) - p.y() * step();
+      return val - p.y() * step();
   }
+  
+  const double min = minValue(ConvertNone);
+  const double max = maxValue(ConvertNone);
+  const double drange = max - min;
   
   if(d_orient == Qt::Horizontal)
   {
     if(r.width() <= d_thumbLength)
-      rv = 0.5 * (minValue(ConvertNone) + maxValue(ConvertNone));
+      rv = 0.5 * (min + max);
     else
     {
-      pos = p.x() - r.x() - d_thumbHalf;
-      rv  =  minValue(ConvertNone) +
-         rint( (maxValue(ConvertNone) - minValue(ConvertNone)) * 
-                double(pos) / double(r.width() - d_thumbLength)
-               / step() )
-           * step();
+      const double dpos = double(p.x() - r.x() - d_thumbHalf);
+      const double dwidth = double(r.width() - d_thumbLength);
+      rv  =  min + rint(drange * dpos / dwidth / step()) * step();
     }
   }
   else
   {
     if(r.height() <= d_thumbLength)
-      rv = 0.5 * (minValue(ConvertNone) + maxValue(ConvertNone));
+      rv = 0.5 * (min + max);
     else
     {
-      pos = p.y() - r.y() - d_thumbHalf;
-      rv =  minValue(ConvertNone) +
-            rint( (maxValue(ConvertNone) - minValue(ConvertNone)) *
-                  (1.0 - double(pos) / double(r.height() - d_thumbLength))
-                  / step() )
-              * step();
+      const double dpos = double(p.y() - r.y() - d_thumbHalf);
+      double dheight = double(r.height() - d_thumbLength);
+      rv =  min + rint( (max - min) * (1.0 - dpos / dheight) / step() ) * step();
     }
   }
   return(rv);
 }
 
+
+//------------------------------------------------------------
+//
+//.F  CompactSlider::moveValue
+//  Determine the value corresponding to a specified mouse movement.
+//
+//.u  Syntax
+//.f  void SliderBase::moveValue(const QPoint &deltaP, bool fineMode)
+//
+//.u  Parameters
+//.p  const QPoint &deltaP -- Change in position
+//.p  bool fineMode -- Fine mode if true, coarse mode if false.
+//
+//.u  Description
+//    Called by SliderBase
+//    Coarse mode (the normal mode) maps pixels to values depending on range and width,
+//     such that the slider follows the mouse cursor. Fine mode maps one step() value per pixel.
+//------------------------------------------------------------
+double CompactSlider::moveValue(const QPoint &deltaP, bool fineMode)
+{
+  double rv;
+  const QRect r = d_sliderRect;
+
+  const double val = value(ConvertNone);
+
+  if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
+  {
+    DEBUG_COMPACT_SLIDER(stderr, "CompactSlider::moveValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n", 
+                         val, deltaP.x(), deltaP.y(), step(), deltaP.x() * step());
+    
+    double newval;
+    if(d_orient == Qt::Horizontal)
+      newval = val + deltaP.x() * step();
+    else
+      newval = val - deltaP.y() * step();
+    d_valAccum = newval; // Reset.
+    return newval;
+  }
+  
+  const double min = minValue(ConvertNone);
+  const double max = maxValue(ConvertNone);
+  const double drange = max - min;
+
+  if(d_orient == Qt::Horizontal)
+  {
+    if(r.width() <= d_thumbLength)
+      rv = 0.5 * (min + max);
+    else
+    {
+      const double dpos = double(deltaP.x());
+      const double dwidth = double(r.width() - d_thumbLength);
+      const double dval_diff = (drange * dpos) / dwidth;
+      d_valAccum += dval_diff;
+      rv = rint(d_valAccum / step()) * step();
+      
+      DEBUG_COMPACT_SLIDER(stderr, "CompactSlider::moveValue value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f rv:%.20f\n", 
+                       val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, rv);
+    }
+  }
+  else
+  {
+    if(r.height() <= d_thumbLength)
+      rv = 0.5 * (min + max);
+    else
+    {
+      const double dpos = double(deltaP.y());
+      const double dheight = double(r.height() - d_thumbLength);
+      const double dval_diff = (drange * dpos) / dheight;
+      d_valAccum += dval_diff;
+      rv = rint(d_valAccum / step()) * step();
+    }
+  }
+  return(rv);
+}
 
 //------------------------------------------------------------
 //.-
@@ -1115,7 +1187,7 @@ bool CompactSlider::event(QEvent* e)
 //     case QEvent::ActivationChange:
 //     case QEvent::WindowActivate:
 //     case QEvent::WindowDeactivate:
-//       fprintf(stderr, "CompactSlider::event ActivationChange, WindowActivate, or WindowDeactivate\n");
+//       DEBUG_COMPACT_SLIDER(stderr, "CompactSlider::event ActivationChange, WindowActivate, or WindowDeactivate\n");
 //       updatePixmaps();
 //     break;
     

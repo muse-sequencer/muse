@@ -34,6 +34,10 @@
 #include <QPaintEvent>
 #include <QResizeEvent>
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_KNOB(dev, format, args...)  //fprintf(dev, format, ##args);
+
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -270,6 +274,92 @@ double Knob::getValue(const QPoint &p)
 
 }
 
+//------------------------------------------------------------
+//
+//.F  Knob::moveValue
+//  Determine the value corresponding to a specified mouse movement.
+//
+//.u  Syntax
+//.f  void SliderBase::moveValue(const QPoint &deltaP, bool fineMode)
+//
+//.u  Parameters
+//.p  const QPoint &deltaP -- Change in position
+//.p  bool fineMode -- Fine mode if true, coarse mode if false.
+//
+//.u  Description
+//    Called by SliderBase
+//    Coarse mode (the normal mode) maps pixels to values depending on range and width,
+//     such that the slider follows the mouse cursor. Fine mode maps one step() value per pixel.
+//------------------------------------------------------------
+double Knob::moveValue(const QPoint &deltaP, bool /*fineMode*/)
+{
+    // FIXME: To make fine mode workable, we need a way to make the adjustments 'multi-turn'.
+  
+    double oneTurn;
+    double eqValue;
+
+    const QRect& r = rect();
+    const QPoint new_p = _lastMousePos + deltaP;
+    
+    const int cx = r.x() + r.width() / 2;
+    const int cy = r.y() + r.height() / 2;
+
+    const double last_dx = double(cx - _lastMousePos.x());
+    const double last_dy = double(cy - _lastMousePos.y());
+    const double last_arc = atan2(-last_dx, last_dy) * 180.0 / M_PI;
+
+    const double dx = double(cx - new_p.x());
+    const double dy = double(cy - new_p.y());
+    const double arc = atan2(-dx, dy) * 180.0 / M_PI;
+
+    const double val = value(ConvertNone);
+    
+//     if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
+//     {
+//       const double arc_diff = arc - last_arc;
+//       const double dval_diff =  arc_diff * step();
+//       const double new_val = val + dval_diff;
+//       d_valAccum = new_val; // Reset.
+//       return d_valAccum;
+//     }
+
+    const double min = minValue(ConvertNone);
+    const double max = maxValue(ConvertNone);
+    const double drange = max - min;
+    
+    const double last_val =  0.5 * (min + max) + (last_arc + d_nTurns * 360.0) * drange / d_totalAngle;
+    const double new_val  =  0.5 * (min + max) + (arc + d_nTurns * 360.0) * drange / d_totalAngle;
+    double dval_diff =  new_val - last_val;
+
+    //if(fineMode)
+    //  dval_diff /= 10.0;
+      
+    d_valAccum += dval_diff;
+
+    DEBUG_KNOB(stderr, "Knob::moveValue value:%.20f last_val:%.20f new_val:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f\n", 
+                     val, last_val, new_val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum);
+    
+    
+    oneTurn = fabs(drange) * 360.0 / d_totalAngle;
+    eqValue = val + d_mouseOffset;
+
+    DEBUG_KNOB(stderr, "   oneTurn:%.20f eqValue:%.20f\n", oneTurn, eqValue);
+    if(fabs(d_valAccum - eqValue) > 0.5 * oneTurn)
+    {
+      if (d_valAccum < eqValue)
+      {
+        d_valAccum += oneTurn;
+        DEBUG_KNOB(stderr, "   added one turn, new d_valAccum:%.20f\n", d_valAccum);
+      }
+      else
+      {
+        d_valAccum -= oneTurn;
+        DEBUG_KNOB(stderr, "   subtracted one turn, new d_valAccum:%.20f\n", d_valAccum);
+      }
+    }
+
+    return d_valAccum;  
+}
 
 
 //------------------------------------------------------------

@@ -68,7 +68,7 @@
 #include "muse_math.h"
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIO_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_AUDIO_STRIP(dev, format, args...)  //fprintf(dev, format, ##args);
 
 
 namespace MusEGui {
@@ -1136,7 +1136,7 @@ void AudioStrip::updateChannels()
       {
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       int c = t->channels();
-      DEBUG_AUDIO_STRIP("AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
       
       if (c > channel) {
             for (int cc = channel; cc < c; ++cc) {
