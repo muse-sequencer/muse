@@ -1,8 +1,11 @@
+22,04.2016:
+         *** MusE 3.0.0pre1 ***
+           First prerelease of MusE 3.0.0
 21.04.2016:
          - New: Accu-Slider: All sliders support 'shift' control for single-stepping 
-            even with thin sliders. (Tim)
+           even with thin sliders. (Tim)
            The shift control changes from 'coarse' to 'fine' adjustment mode so
-            you can zero-in on an exact value even with very short sliders.
+           you can zero-in on an exact value even with very short sliders.
 14.04.2016:
          - Added missing Aux slider and Midi Program slider Appearance colours. (Tim)
          - Complete rewrite of 13.04.2016. Non-modal colour chooser, fully interactive. (Tim)
@@ -282,7 +285,6 @@
         - General redesign of strip look and sliders.
         - Strips are expandable now with a right-edge 'handle'.
         - Fixed old mixer problem with unpainted areas (solved by QWidget::setUpdatesEnabled()).
->>>>>>> 56e383b764e09056b9ef5003977e3efa55663b82
 06.01.2016
         - Added 'clipper led' to mixer's audio strips (danvd)
 02.01.2016
