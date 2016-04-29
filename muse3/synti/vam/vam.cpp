@@ -198,7 +198,7 @@ class VAM : public MessMono {
       VAMGui* gui;
 
     public:
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
       //virtual void getInitData(int* n, const unsigned char**p) const;
       virtual void getInitData(int* n, const unsigned char**p);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
@@ -618,7 +618,7 @@ void VAM::noteoff(int chan, int offpitch)
             }
       }
 
-int VAM::getControllerInfo(int id, const char** name, int* controller,
+int VAM::getControllerInfo(int id, QString* name, int* controller,
    int* min, int* max, int* initval) const
       {
       return gui->getControllerInfo(id, name, controller, min, max, initval);

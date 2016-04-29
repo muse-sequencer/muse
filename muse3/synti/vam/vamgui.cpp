@@ -302,7 +302,7 @@ int VAMGui::getController(int idx)
       return val;
       }
 
-int VAMGui::getControllerInfo(int id, const char** name, int* controller,
+int VAMGui::getControllerInfo(int id, QString* name, int* controller,
    int* min, int* max, int* /*initval*/) const
       {
       if (id >= NUM_CONTROLLER)
@@ -311,7 +311,7 @@ int VAMGui::getControllerInfo(int id, const char** name, int* controller,
       //*controller = id;
       *controller = id + VAM_FIRST_CTRL;    // p4.0.27
 
-      *name = vam_ctrl_names[id];
+      *name = QString(vam_ctrl_names[id]);
       const SynthGuiCtrl* ctrl = (const SynthGuiCtrl*)&dctrl[id];
       //int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {

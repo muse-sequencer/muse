@@ -595,7 +595,7 @@ class DeicsOnze : public Mess {
   virtual QString getPatchName(int ch, int number, bool) const; 
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
 
-  virtual int getControllerInfo(int arg1, const char** arg2, 
+  virtual int getControllerInfo(int arg1, QString* arg2, 
 				int* arg3, int* arg4, int* arg5, int* arg6) const;
   ///virtual void getInitData(int* length, const unsigned char** data) const;
   virtual void getInitData(int* length, const unsigned char** data);

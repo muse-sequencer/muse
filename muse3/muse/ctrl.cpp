@@ -955,7 +955,7 @@ void CtrlListList::write(int level, Xml& xml) const
   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
         const CtrlList* cl = icl->second;
 
-        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toLatin1().constData();
+        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal());
         s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
         xml.tag(level++, s.toLatin1().constData());
         int i = 0;

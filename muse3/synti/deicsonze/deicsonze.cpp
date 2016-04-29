@@ -3823,14 +3823,14 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
   \return 0 when done, otherwise return next desired controller index
 */
 //---------------------------------------------------------
-int DeicsOnze::getControllerInfo(int index, const char** name,
+int DeicsOnze::getControllerInfo(int index, QString* name,
 				 int* controller, int* min, int* max, int* initval) const
 {
     if (index >= nbrCtrl) {
 	return 0;
     }
 
-    *name = _ctrl[index].name.c_str();
+    *name = QString::fromStdString(_ctrl[index].name);
     *controller = _ctrl[index].num;
     *min = _ctrl[index].min;
     *max = _ctrl[index].max;

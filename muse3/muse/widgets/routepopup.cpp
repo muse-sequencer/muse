@@ -21,6 +21,7 @@
 //=============================================================================
 
 #include <QBitArray>
+#include <QByteArray>
 #include <qtextcodec.h>
 #include <QActionGroup>
 #include <QLayout>
@@ -738,7 +739,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     int row = 0;
     for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip)
     {
-      const char* port_name = (*ip).toLatin1().constData();
+      QByteArray ba = (*ip).toLatin1();
+      const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
       {
@@ -810,7 +812,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         act = lb->addAction(*ip);
         act->setCheckable(true);
         
-        const char* port_name = (*ip).toLatin1().constData();
+        QByteArray ba = (*ip).toLatin1();
+        const char* port_name = ba.constData();
         char good_name[ROUTE_PERSISTENT_NAME_SIZE];
         void* const port = MusEGlobal::audioDevice->findPort(port_name);
         if(port)
@@ -843,7 +846,8 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
           act = lb->addAction(*ip);
           act->setCheckable(true);
           
-          const char* port_name = (*ip).toLatin1().constData();
+          QByteArray ba = (*ip).toLatin1();
+          const char* port_name = ba.constData();
           char good_name[ROUTE_PERSISTENT_NAME_SIZE];
           void* const port = MusEGlobal::audioDevice->findPort(port_name);
           if(port)

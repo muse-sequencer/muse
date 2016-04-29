@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
+#include <QByteArray>
 
 #include <sndfile.h>
 #include <errno.h>
@@ -1238,8 +1239,12 @@ bool readConfiguration()
 
 bool readConfiguration(const char *configFile)
       {
+      QByteArray ba;
       if (configFile == NULL)
-        configFile = MusEGlobal::configName.toLatin1().constData();
+      {
+        ba = MusEGlobal::configName.toLatin1();
+        configFile = ba.constData();
+      }
 
       printf("Config File <%s>\n", configFile);
       FILE* f = fopen(configFile, "r");

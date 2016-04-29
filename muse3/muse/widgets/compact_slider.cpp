@@ -967,14 +967,6 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
                                          pal.color(QPalette::Disabled, QPalette::Mid));
   }
 
-
-  const QRect text_area(d_sliderRect.adjusted(1, 1, -1, -1));
-  //const QRect text_area = d_sliderRect;
-  const QString elided_label_text = fontMetrics().elidedText(d_labelText, Qt::ElideMiddle, text_area.width());
-  const QString comp_val_text = isOff() ? d_offText :
-                                ((val <= minV && !d_specialValueText.isEmpty()) ? 
-                                d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
-
   // Turn off anti-aliasing for sharper text. if we want it:
   if(font().pointSize() <= _maxAliasedPointSize)
   {
@@ -986,6 +978,35 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     p.setFont(fnt);
   }
 
+  const QFontMetrics fm = p.fontMetrics();
+  
+  const QRect text_area(d_sliderRect.adjusted(1, 1, -1, -1));
+  
+  const QString comp_val_text = isOff() ? d_offText :
+                                ((val <= minV && !d_specialValueText.isEmpty()) ? 
+                                d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
+  const int val_width = fm.width(comp_val_text);
+  int vx = text_area.width() - val_width;
+  if(vx < 0)
+    vx = 0;
+  const QRect val_area(vx, text_area.y(), val_width, text_area.height());
+  
+  int lw = text_area.width() - val_width - 4;
+  if(lw < 0)
+    lw = 0;
+  const QRect label_area(text_area.x(), text_area.y(), lw, text_area.height());
+  
+  //const QString elided_label_text = fm.elidedText(d_labelText, Qt::ElideMiddle, text_area.width());
+//   const QString elided_label_text = fm.elidedText(d_labelText, Qt::ElideMiddle, label_area.width());
+  const QString elided_label_text = d_labelText;
+  
+  //const int label_width = fm.width(elided_label_text);
+  
+  //const bool show_both = (text_area.width() - val_width) > (label_area.width() + 2);
+  //const bool show_both = label_area.width() > 4;
+  const bool show_label = label_area.width() > 4;
+  const bool show_val = true;
+  
   const bool on  = _textHighlightMode & TextHighlightOn;
   const bool shd = _textHighlightMode & TextHighlightShadow;
   const bool spl = _textHighlightMode & TextHighlightSplit;
@@ -997,12 +1018,20 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
 
   // Normal text:
   p.setPen(Qt::black);
-  QRect text_bkg = text_area;
+  //QRect text_bkg = text_area;
+  QRect label_bkg = label_area;
+  QRect val_bkg = val_area;
   if(shd)
   {
-    text_bkg.adjust(1, 1, 1, 1);
-    p.drawText(text_bkg, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
-    p.drawText(text_bkg, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+    //text_bkg.adjust(1, 1, 1, 1);
+    val_bkg.adjust(1, 1, 1, 1);
+    label_bkg.adjust(1, 1, 1, 1);
+    if(show_val)
+      //p.drawText(text_bkg, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(val_bkg, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+    if(show_label)
+      //p.drawText(text_bkg, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      p.drawText(label_bkg, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
   }
   
   if((!shd && ((!on || spl) && !is_hov && !is_foc)))
@@ -1013,8 +1042,12 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       // Restore the clipper to full size.
       p.setClipRect(geo);
     
-    p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
-    p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+    if(show_val)
+      //p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(val_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+    if(show_label)
+      //p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      p.drawText(label_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
   }
   
   // Highlighted text:
@@ -1027,8 +1060,12 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       // Restore the clipper to full size.
       p.setClipRect(geo);
 
-    p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
-    p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+    if(show_val)
+      //p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      p.drawText(val_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+    if(show_label)
+      //p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
+      p.drawText(label_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
   }
 }
 

@@ -3238,7 +3238,7 @@ float LV2SynthIF::midi2Lv2Value(unsigned long port, int ctlnum, int val)
    return ret;
 }
 
-int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min, int *max, int *initval)
+int LV2SynthIF::getControllerInfo(int id, QString* name, int *ctrl, int *min, int *max, int *initval)
 {
    size_t _id = (size_t)id;
 
@@ -3260,7 +3260,7 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
       *min  = 0;
       *max  = 127;
       *initval = CTRL_VAL_UNKNOWN;
-      *name = midiCtrlName(*ctrl).toLatin1().constData();
+      *name = midiCtrlName(*ctrl);
       return ++_id;
    }
    else if(_id >= _inportsControl + 2)
@@ -3294,7 +3294,7 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
 #endif
 
    *ctrl = ctlnum;
-   *name =  _controlInPorts [_id].cName;
+   *name = QString(_controlInPorts[_id].cName);
    return ++_id;
 
 }
@@ -4686,11 +4686,11 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures reqFeatures)
 
    _requiredFeatures = reqFeatures;
    
-   _fakeLd.Label = _synth->name().toUtf8().constData();
-   _fakeLd.Name = _synth->name().toUtf8().constData();
-   _fakeLd.UniqueID = _synth->_uniqueID;
-   _fakeLd.Maker = _synth->maker().toUtf8().constData();
-   _fakeLd.Copyright = _synth->version().toUtf8().constData();
+   _fakeLd.Label      = strdup(_synth->name().toUtf8().constData());
+   _fakeLd.Name       = strdup(_synth->name().toUtf8().constData());
+   _fakeLd.UniqueID   = _synth->_uniqueID;
+   _fakeLd.Maker      = strdup(_synth->maker().toUtf8().constData());
+   _fakeLd.Copyright  = strdup(_synth->version().toUtf8().constData());
    _isLV2Plugin = true;
    _isLV2Synth = s->_isSynth;
    int numPorts = _synth->_audioInPorts.size()
@@ -4786,6 +4786,10 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures reqFeatures)
 
 LV2PluginWrapper::~LV2PluginWrapper()
 {
+   free((void*)_fakeLd.Label);
+   free((void*)_fakeLd.Name);
+   free((void*)_fakeLd.Maker);
+   free((void*)_fakeLd.Copyright);
    delete [] _fakePds;
 }
 

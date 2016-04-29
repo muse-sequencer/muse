@@ -184,7 +184,7 @@ class DssiSynthIF : public SynthIF
       virtual double getParameter(unsigned long /*idx*/) const;
       virtual double getParameterOut(unsigned long n) const;
       virtual void setParameter(unsigned long /*idx*/, double /*value*/);
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*);
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*);
       
       #ifdef OSC_SUPPORT
       OscDssiIF& oscIF() { return _oscif; }

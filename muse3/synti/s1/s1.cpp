@@ -67,7 +67,7 @@ class S1 : public MessMono {
       virtual bool nativeGuiVisible() const { return _showGui; }
       virtual void showNativeGui(bool);
       virtual bool setController(int channel, int ctrl, int val);
-      virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) const;
+      virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) const;
 
    public:
       S1();
@@ -207,10 +207,10 @@ bool S1::setController(int, int ctrl, int val)
       return true;
       }
 
-int S1::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) const
+int S1::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) const
       {
         if (id == 0) {
-            *name = "Modulation";
+            *name = QString("Modulation");
             *ctrl = 1;
             *min = 0;
             *max = 127;

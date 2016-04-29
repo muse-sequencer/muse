@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QString>
+#include <QByteArray>
 
 #include <stdio.h>
 #include <string.h>
@@ -164,7 +165,8 @@ QString MidiJackDevice::open()
       if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
       {
         s = name() + QString(JACK_MIDI_OUT_PORT_SUFFIX);
-        const char* cs = s.toLatin1().constData();
+        QByteArray ba = s.toLatin1();
+        const char* cs = ba.constData();
         DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open creating output port name %s\n", cs);
         _out_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerOutPort(cs, true);   
         if(!_out_client_jackport)   
@@ -246,7 +248,8 @@ QString MidiJackDevice::open()
       if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
       {
         s = name() + QString(JACK_MIDI_IN_PORT_SUFFIX);
-        const char* cs = s.toLatin1().constData();
+        QByteArray ba = s.toLatin1();
+        const char* cs = ba.constData();
         DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open creating input port name %s\n", cs);
         _in_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerInPort(cs, true);   
         if(!_in_client_jackport)    

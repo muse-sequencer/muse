@@ -140,7 +140,7 @@ public:
       virtual void getInitData(int*, const unsigned char**);
       virtual QString getPatchName(int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
 
       //virtual bool hasGui() const { return true; }

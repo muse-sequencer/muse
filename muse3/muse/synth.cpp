@@ -495,7 +495,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       int id = 0;
       MidiControllerList* cl = MidiInstrument::controller();
       for (;;) {
-            const char* name;
+            QString name;
             int ctrl;
             int min;
             int max;
@@ -518,7 +518,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
               }
             }
 
-            MidiController* c = new MidiController(QString::fromUtf8(name), ctrl, min, max, initval);
+            MidiController* c = new MidiController(name, ctrl, min, max, initval);
             cl->add(c);
           }
 
@@ -577,7 +577,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
 //   getControllerInfo
 //---------------------------------------------------------
 
-int MessSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval)
+int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
       {
       return _mess->getControllerInfo(id, name, ctrl, min, max, initval);
       }

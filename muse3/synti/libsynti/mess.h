@@ -86,8 +86,8 @@ class Mess {
       virtual bool playNote(int, int, int) { return false; }
       virtual bool sysex(int, const unsigned char*) { return false; }
 
-      virtual void getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; } // No const: Synths may need to allocate member pointers. p4.0.27 Tim
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
+      virtual void getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; } // No const: Synths may need to allocate member pointers.
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const {return 0;}
       virtual QString getPatchName(int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
 

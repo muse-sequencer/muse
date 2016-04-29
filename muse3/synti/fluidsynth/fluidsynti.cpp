@@ -1054,12 +1054,12 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
 //---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
-int FluidSynth::getControllerInfo(int id, const char** name, int* controller, int* min, int* max, int* initval) const
+int FluidSynth::getControllerInfo(int id, QString* name, int* controller, int* min, int* max, int* initval) const
       {
       if (id >= NUM_CONTROLLER)
             return 0;
       *controller = fluidCtrl[id].num;
-      *name       = fluidCtrl[id].name;
+      *name       = QString(fluidCtrl[id].name);
       *min        = fluidCtrl[id].min;
       *max        = fluidCtrl[id].max;
       switch(id)
@@ -1106,8 +1106,8 @@ int FluidSynth::getControllerInfo(int id, const char** name, int* controller, in
       }  
 
       if (FS_DEBUG)
-            //printf("FluidSynth::getControllerInfo() id: %d name: %s controller: %d min: %d max: %d\n",id,*name,*controller,*min,*max);
-            printf("FluidSynth::getControllerInfo() id: %d name: %s controller: %d min: %d max: %d initval: %d\n",id,*name,*controller,*min,*max,*initval);
+            printf("FluidSynth::getControllerInfo() id: %d name: %s controller: %d min: %d max: %d initval: %d\n",
+                   id,(*name).toLatin1().constData(),*controller,*min,*max,*initval);
       return ++id;
       }
 

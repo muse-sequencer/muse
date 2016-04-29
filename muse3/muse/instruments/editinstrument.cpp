@@ -898,7 +898,7 @@ void EditInstrument::saveAs()
             path += QString("/%1.idf").arg(fi.baseName());
            }
 
-      QString s = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition").toLatin1().constData(), 
+      QString s = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition"), 
          path, tr("Instrument Definition (*.idf)"));
       if (s.isEmpty())
             return;
@@ -1110,7 +1110,7 @@ void EditInstrument::fileSaveAs()
         sfn = path;
       else  
       {
-        sfn = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition").toLatin1().constData(),
+        sfn = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition"),
            path, tr("Instrument Definition (*.idf)"));
         if (sfn.isEmpty())
               return;

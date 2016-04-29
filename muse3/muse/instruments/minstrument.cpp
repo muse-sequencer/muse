@@ -28,6 +28,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
+#include <QByteArray>
 
 #include "minstrument.h"
 #include "midiport.h"
@@ -56,7 +57,8 @@ MidiInstrument* genericMidiInstrument;
 
 int string2sysex(const QString& s, unsigned char** data)
       {
-      const char* src = s.toLatin1().constData();
+      QByteArray ba = s.toLatin1();
+      const char* src = ba.constData();
       char buffer[2048];
       char* dst = buffer;
 

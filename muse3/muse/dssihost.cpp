@@ -2322,7 +2322,7 @@ void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool 
             }
       }
 
-int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval)
+int DssiSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
 {
   int controlPorts = _synth->_controlInPorts;
   if(id == controlPorts || id == controlPorts + 1)
@@ -2338,7 +2338,7 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
     *min  = 0;
     *max  = 127;
     *initval = CTRL_VAL_UNKNOWN;
-    *name = midiCtrlName(*ctrl).toLatin1().constData();
+    *name = midiCtrlName(*ctrl);
     return ++id;
   }
   else if(id >= controlPorts + 2)
@@ -2407,7 +2407,7 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   #endif
   
   *ctrl = ctlnum;
-  *name =  ld->PortNames[i];
+  *name = QString(ld->PortNames[i]);
   return ++id;
 }
 

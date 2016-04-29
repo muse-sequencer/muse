@@ -258,7 +258,7 @@ class VstNativeSynthIF : public SynthIF
       virtual void write(int level, Xml& xml) const;
       virtual double getParameter(unsigned long idx) const;
       virtual void setParameter(unsigned long idx, double value);
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
       //-------------------------
       // Methods for PluginIBase:

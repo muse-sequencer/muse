@@ -197,7 +197,7 @@ class Organ : public Mess {
       virtual bool playNote(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);
 
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
       //virtual void getInitData(int*, const unsigned char**) const;
       virtual void getInitData(int*, const unsigned char**);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.

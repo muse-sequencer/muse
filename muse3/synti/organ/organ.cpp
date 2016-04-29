@@ -672,13 +672,13 @@ void Organ::getInitData(int* n, const unsigned char**p)
 //   getControllerInfo
 //---------------------------------------------------------
 
-int Organ::getControllerInfo(int id, const char** name, int* controller,
+int Organ::getControllerInfo(int id, QString* name, int* controller,
    int* min, int* max, int* initval) const
       {
       if (id >= NUM_CONTROLLER)
             return 0;
       *controller = synthCtrl[id].num;
-      *name       = synthCtrl[id].name;
+      *name       = QString(synthCtrl[id].name);
       *initval    = synthCtrl[id].val;
       
       if(synthCtrl[id].num == MusECore::CTRL_VOLUME)

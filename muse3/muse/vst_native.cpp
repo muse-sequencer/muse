@@ -3051,11 +3051,11 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
 
    _requiredFeatures = reqFeatures;
    
-   _fakeLd.Label = _synth->name().toUtf8().constData();
-   _fakeLd.Name = _synth->name().toUtf8().constData();
+   _fakeLd.Label = strdup(_synth->name().toUtf8().constData());
+   _fakeLd.Name = strdup(_synth->name().toUtf8().constData());
    _fakeLd.UniqueID = _synth->_id;
-   _fakeLd.Maker = _synth->maker().toUtf8().constData();
-   _fakeLd.Copyright = _synth->version().toUtf8().constData();
+   _fakeLd.Maker = strdup(_synth->maker().toUtf8().constData());
+   _fakeLd.Copyright = strdup(_synth->version().toUtf8().constData());
    _isVstNativePlugin = true;
    _isVstNativeSynth = s->isSynth();
    int numPorts = _synth->inPorts()
@@ -3144,6 +3144,10 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
 
 VstNativePluginWrapper::~VstNativePluginWrapper()
 {
+   free((void*)_fakeLd.Label);
+   free((void*)_fakeLd.Name);
+   free((void*)_fakeLd.Maker);
+   free((void*)_fakeLd.Copyright);
    delete [] _fakePds;
 }
 

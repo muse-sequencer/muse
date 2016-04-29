@@ -99,8 +99,12 @@ JackAudioDevice* jackAudio;
 int jack_ver_maj = 0, jack_ver_min = 0, jack_ver_micro = 0, jack_ver_proto = 0;
 muse_atomic_t atomicGraphChangedPending;
 bool jack1_port_by_name_workaround = false;
+
 // Function pointers obtained with dlsym:
 jack_get_version_type             jack_get_version_fp = NULL;  
+jack_port_set_name_type           jack_port_set_name_fp = NULL;
+jack_port_rename_type             jack_port_rename_fp = NULL;
+
 
 //---------------------------------------------------------
 //  JackCallbackFifo
@@ -518,9 +522,24 @@ bool initJackAudio()
                 jack_ver_maj, jack_ver_min, jack_ver_micro, jack_ver_proto);
         // FIXME: ATM Jack-2 jack_get_version() returns all zeros. When it is fixed, do something with the values.
         if(jack_ver_maj == 0 && jack_ver_min == 0 && jack_ver_micro == 0 && jack_ver_proto == 0)
+        {
+          fprintf(stderr, "MusE:initJackAudio: jack_get_version() returned zeros. Setting version major to 1.\n");
           jack_ver_maj = 1;
+        }
       }
 
+      jack_port_set_name_fp = reinterpret_cast<jack_port_set_name_type>(dlsym(RTLD_DEFAULT, "jack_port_set_name"));
+      DEBUG_PRST_ROUTES(stderr, "initJackAudio jack_port_set_name() address:%p \n", jack_port_set_name_fp);
+      if(jack_port_set_name_fp)
+      {
+      }
+      
+      jack_port_rename_fp = reinterpret_cast<jack_port_rename_type>(dlsym(RTLD_DEFAULT, "jack_port_rename"));
+      DEBUG_PRST_ROUTES(stderr, "initJackAudio jack_port_rename() address:%p \n", jack_port_rename_fp);
+      if(jack_port_rename_fp)
+      {
+      }
+      
       if (MusEGlobal::debugMsg) {
             fprintf(stderr,"initJackAudio()\n");
             jack_set_error_function(jackError);
@@ -1783,6 +1802,23 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
       return clientList;
       }
 
+//---------------------------------------------------------
+//   setPortName
+//---------------------------------------------------------
+
+void JackAudioDevice::setPortName(void* p, const char* n)
+{ 
+  // NOTE: jack_port_set_name() is deprecated as of Jack2 = 1.9.11, and Jack1 > 0.124.1
+  if(jack_port_rename_fp)
+  {
+    if(!checkJackClient(_client))
+      return;
+    jack_port_rename_fp(_client, (jack_port_t*)p, n);
+  }
+  else if(jack_port_set_name_fp)
+    jack_port_set_name_fp((jack_port_t*)p, n);
+}
+      
 //---------------------------------------------------------
 //   portName
 //   Returns name of port and sets success.

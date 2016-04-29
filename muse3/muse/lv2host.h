@@ -430,7 +430,7 @@ public:
     virtual double getParameter ( unsigned long idx ) const;
     virtual double getParameterOut ( unsigned long n ) const;
     virtual void setParameter ( unsigned long idx, double value );
-    virtual int getControllerInfo ( int id, const char **name, int *ctrl, int *min, int *max, int *initval );
+    virtual int getControllerInfo ( int id, QString* name, int *ctrl, int *min, int *max, int *initval );
 
     virtual void writeConfiguration ( int level, Xml &xml );
     virtual bool readConfiguration ( Xml &xml, bool readPreset=false );

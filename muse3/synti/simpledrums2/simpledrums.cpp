@@ -770,7 +770,7 @@ const MidiPatch* SimpleSynth::getPatchInfo(int /*index*/, const MidiPatch* /*pat
     \return 0 when done, otherwise return next desired controller index
  */
 //---------------------------------------------------------
-int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max, int* initval) const
+int SimpleSynth::getControllerInfo(int index, QString* name, int* controller, int* min, int* max, int* initval) const
 {
    SS_TRACE_IN
          if (index >= SS_NR_OF_CONTROLLERS) {
@@ -778,7 +778,7 @@ int SimpleSynth::getControllerInfo(int index, const char** name, int* controller
             return 0;
    }
 
-   *name = controllers[index].name.c_str();
+   *name = QString::fromStdString(controllers[index].name);
    *controller = controllers[index].num;
    *min = controllers[index].min;
    *max = controllers[index].max;
@@ -786,7 +786,7 @@ int SimpleSynth::getControllerInfo(int index, const char** name, int* controller
    *initval = 0;                // p4.0.27 FIXME NOTE TODO
 
    if (SS_DEBUG_MIDI) {
-      printf("setting controller info: index %d name %s controller %d min %d max %d\n", index, *name, *controller, *min, *max);
+      printf("setting controller info: index %d name %s controller %d min %d max %d\n", index, (*name).toLatin1().constData(), *controller, *min, *max);
    }
    SS_TRACE_OUT
          return (index +1);

@@ -386,7 +386,7 @@ void TList::paint(const QRect& r)
                               QString s;
                               if (track->isMidiTrack()) {
                                     int outport = ((MusECore::MidiTrack*)track)->outPort();
-                                    s.sprintf("%d:%s", outport+1, MusEGlobal::midiPorts[outport].portname().toLatin1().constData());
+                                    s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
                                     }
                               else
                               if(track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
@@ -396,7 +396,7 @@ void TList::paint(const QRect& r)
                                 {
                                   int outport = md->midiPort();
                                   if((outport >= 0) && (outport < MIDI_PORTS))
-                                    s.sprintf("%d:%s", outport+1, MusEGlobal::midiPorts[outport].portname().toLatin1().constData());
+                                    s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
                                   else
                                     s = tr("<none>");
                                 }  
@@ -1050,7 +1050,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                         if (MusEGlobal::midiPorts[j].device() == *i)
                           break;
 
-                      if (j==MIDI_PORTS) mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
+                      if (j==MIDI_PORTS) mapALSA.insert( std::pair<std::string, int> ((*i)->name().toStdString(), aix) );
 
                       ++aix;
                     }
@@ -1062,7 +1062,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                         if (MusEGlobal::midiPorts[j].device() == *i)
                           break;
 
-                      if (j==MIDI_PORTS) mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
+                      if (j==MIDI_PORTS) mapJACK.insert( std::pair<std::string, int> ((*i)->name().toStdString(), jix) );
                       ++jix;
                     }
                   }

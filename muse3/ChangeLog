@@ -1,3 +1,12 @@
+29.04.2016:
+         *Important bug fix: About two dozen CORRUPT usages of QByteArray::constData(). (Tim)
+           In: routepopup.cpp lv2host.cpp helper.cpp dssihost.cpp jackmidi.cpp conf.cpp
+            vst_native.cpp minstrument.cpp
+           Symptoms could vary wildly. On my system MusE refused to load the config file.
+         - Fixed compile stoppage due to latest Jack obsoleting jack_port_set_name(). (Tim)
+           Created 'dlopen' function pointers for jack_port_set_name() and the brand new 
+            jack_port_rename(), and arbitrated between them.
+         - Disable ElidedLabel auto-font size for now (midi strip instrument/patch labels). (Tim)
 22,04.2016:
          *** MusE 3.0.0pre1 ***
            First prerelease of MusE 3.0.0

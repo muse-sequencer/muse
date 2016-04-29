@@ -56,6 +56,7 @@
 #include <QString>
 #include <QLine>
 #include <QRect>
+#include <QByteArray>
 
 using std::set;
 
@@ -120,7 +121,8 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->inputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      const char* port_name = (*i).toLatin1().constData();
+      QByteArray ba = (*i).toLatin1();
+      const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
       {
@@ -150,7 +152,8 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->outputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      const char* port_name = (*i).toLatin1().constData();
+      QByteArray ba = (*i).toLatin1();
+      const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
       {
@@ -650,7 +653,7 @@ QMenu* populateAddSynth(QWidget* parent)
 
     if(type >= ntypes)
       continue; 
-    smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toUtf8().constData()), ii) );
+    smaps[type].insert( std::pair<std::string, int> (synth->description().toLower().toStdString(), ii) );
   
     ++ii;
   }

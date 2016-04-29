@@ -153,7 +153,7 @@ public:
    virtual bool sysex(int arg1, const unsigned char* arg2);
    virtual QString getPatchName(int arg1, int arg2, bool arg3) const;
    virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
-   virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
+   virtual int getControllerInfo(int arg1, QString* arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
    virtual void processMessages();
    virtual void process(unsigned pos, float** data, int offset, int len);
    //virtual void showGui(bool arg1);

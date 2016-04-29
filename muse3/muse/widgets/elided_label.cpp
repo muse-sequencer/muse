@@ -77,75 +77,81 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
 
 bool ElidedLabel::autoAdjustFontSize()
 {
-  QFont fnt = font(); // This is the maximum font.
-  int max = fnt.pointSize();
-  int min = _fontPointMin;
+// FIXME: Disabled for now, the font modulates back and forth, not very good ATM.
+//        May have to revert to the font-checking iteration loop scheme.
   
-  // In case the max or min was obtained from QFont::pointSize() which returns -1 
-  //  if the font is a pixel font, or if min is greater than max...
-  // Limit the minimum and maximum sizes to something at least readable.
-  if(max < 4)
-    max = 4;
-  if(min < 4)
-    min = 4;
-  if(max < min)
-    max = min;
-    
-  //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
-  //QRectF r = boundingRect();
-  QRectF r = rect();
-  //QFont f = painter->font();
-  
-  
-  //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
-  if(_fontIgnoreWidth || _text.isEmpty()) // Also avoid divide by zero below.
-  {
-    if(fnt.pointSize() != max)
-    {
-      fnt.setPointSize(max);
-//       setFont(fnt);
-      _curFont = fnt;
-      update();
-    }
-  }
-  else
-  {
-    //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
-    qreal aspectRatio = fontMetrics().lineSpacing() / fontMetrics().averageCharWidth();
-//     int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (_text.length() * 3)) * aspectRatio;
-    int pixelsize = sqrt(r.width() * r.height() / aspectRatio / _text.length()) * aspectRatio;
-    fnt.setPixelSize(pixelsize);
-    //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
-    int flags = Qt::AlignCenter;
-    //if ((pixelsize * lod) < 13)
-    //    flags |= Qt::TextWrapAnywhere;
-    QFontMetricsF fmf(fnt);
-    QRectF tbr = fmf.boundingRect(r, flags, _text);
-    pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
-//     if(pixelsize < min)
-//       pixelsize = min;
-//     else if(pixelsize > max)
-//       pixelsize = max;
-    fnt.setPixelSize(pixelsize);
-    const QFontInfo fi(fnt);
-    const int pointsize = fi.pointSize();
-    if(pointsize <= min)
-      fnt.setPointSize(min);
-    else if(pointsize >= max)
-      fnt.setPointSize(max);
-//     setFont(fnt);
-    _curFont = fnt;
-    //painter->drawText(r,flags,stitle);
+//   QFont fnt = font(); // This is the maximum font.
+//   int max = fnt.pointSize();
+//   int min = _fontPointMin;
+//   
+//   // In case the max or min was obtained from QFont::pointSize() which returns -1 
+//   //  if the font is a pixel font, or if min is greater than max...
+//   // Limit the minimum and maximum sizes to something at least readable.
+//   if(max < 4)
+//     max = 4;
+//   if(min < 4)
+//     min = 4;
+//   if(max < min)
+//     max = min;
+//     
+//   //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+//   //QRectF r = boundingRect();
+//   QRectF r = rect();
+//   //QFont f = painter->font();
+//   
+//   
+//   //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+//   if(_fontIgnoreWidth || _text.isEmpty()) // Also avoid divide by zero below.
+//   {
+//     if(fnt.pointSize() != max)
+//     {
+//       fnt.setPointSize(max);
+// //       setFont(fnt);
+//       _curFont = fnt;
+//       update();
+//     }
+//   }
+//   else
+//   {
+//     //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
+//     qreal aspectRatio = fontMetrics().lineSpacing() / fontMetrics().averageCharWidth();
+// //     int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (_text.length() * 3)) * aspectRatio;
+//     int pixelsize = sqrt(r.width() * r.height() / aspectRatio / _text.length()) * aspectRatio;
+//     fnt.setPixelSize(pixelsize);
+//     //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
+//     int flags = Qt::AlignCenter;
+//     //if ((pixelsize * lod) < 13)
+//     //    flags |= Qt::TextWrapAnywhere;
+//     QFontMetricsF fmf(fnt);
+//     QRectF tbr = fmf.boundingRect(r, flags, _text);
+//     pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
+// //     if(pixelsize < min)
+// //       pixelsize = min;
+// //     else if(pixelsize > max)
+// //       pixelsize = max;
+//     fnt.setPixelSize(pixelsize);
+//     const QFontInfo fi(fnt);
+//     const int pointsize = fi.pointSize();
+//     if(pointsize <= min)
+//       fnt.setPointSize(min);
+//     else if(pointsize >= max)
+//       fnt.setPointSize(max);
+// //     setFont(fnt);
+//     _curFont = fnt;
+//     //painter->drawText(r,flags,stitle);
     update();
-  }
+//   }
   
   // Force minimum height. Use the expected height for the highest given point size.
   // This way the mixer strips aren't all different label heights, but can be larger if necessary.
   // Only if ignoreHeight is set (therefore the height is adjustable).
   if(_fontIgnoreHeight)
   {
-    fnt.setPointSize(max);
-    const QFontMetrics fm(fnt);
+// FIXME Disabled for now, as per above.
+//     fnt.setPointSize(max);
+//     const QFontMetrics fm(fnt);
+    const QFontMetrics fm(font());
+    
     // Set the label's minimum height equal to the height of the font.
     setMinimumHeight(fm.height() + 2 * frameWidth());
   }

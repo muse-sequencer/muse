@@ -130,7 +130,7 @@ class JackAudioDevice : public AudioDevice {
       virtual bool portsCompatible(void* src, void* dst) const;
       // Returns true if the ports are found and they CAN be connected.
       virtual bool portsCompatible(const char* src, const char* dst) const;
-      virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
+      virtual void setPortName(void* p, const char* n);
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
       virtual const char* canonicalPortName(void* port) { if(!port) return NULL; return jack_port_name((jack_port_t*)port); }
@@ -163,6 +163,13 @@ class JackAudioDevice : public AudioDevice {
 // Our own wrappers for functions we need to look up with dlsym:
 typedef void(*jack_get_version_type)(int*, int*, int*, int*);
 extern jack_get_version_type             jack_get_version_fp;
+
+typedef int(*jack_port_set_name_type)(jack_port_t*, const char*);
+extern jack_port_set_name_type           jack_port_set_name_fp;
+
+typedef int(*jack_port_rename_type)(jack_client_t*, jack_port_t*, const char*);
+extern jack_port_rename_type             jack_port_rename_fp;
+
 
 } // namespace MusECore
 

@@ -123,7 +123,7 @@ class MetronomeSynthIF : public SynthIF
       virtual void write(int, Xml&) const {}
       virtual double getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, double) {}
-      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
       //-------------------------
       // Methods for PluginIBase:
