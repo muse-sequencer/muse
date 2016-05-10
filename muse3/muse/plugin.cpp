@@ -927,7 +927,7 @@ static void loadPluginLib(QFileInfo* fi)
         vst = true;
         reqfeat |= Plugin::FixedBlockSize;
       }
-      
+
       #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
       #endif
@@ -935,7 +935,7 @@ static void loadPluginLib(QFileInfo* fi)
       bool is_synth = descr->run_synth || descr->run_synth_adding
                   || descr->run_multiple_synths || descr->run_multiple_synths_adding;
       if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n", 
+        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d isDssiVst:%d required features:%d\n",
                 fi->filePath().toLatin1().constData(),
                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
                 is_synth, vst, reqfeat
@@ -984,7 +984,7 @@ static void loadPluginLib(QFileInfo* fi)
       #endif
 
       if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n", 
+        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s required features:%d\n",
                 fi->filePath().toLatin1().constData(), descr->Name, descr->Label, reqfeat);
       MusEGlobal::plugins.add(fi, descr, false, false, false, reqfeat);
     }
@@ -1004,7 +1004,7 @@ static void loadPluginDir(const QString& s)
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
-	    QFileInfoList::iterator it=list.begin();
+        QFileInfoList::iterator it=list.begin();
             while(it != list.end()) {
                   loadPluginLib(&*it);
                   ++it;
@@ -1424,8 +1424,9 @@ void Pipeline::move(int idx, bool up)
       {
             (*this)[idx]   = (*this)[idx-1];
 
-          if((*this)[idx])
+          if((*this)[idx]) {
             (*this)[idx]->setID(idx);
+          }
 
             (*this)[idx-1] = p1;
 
@@ -1440,8 +1441,9 @@ void Pipeline::move(int idx, bool up)
       {
             (*this)[idx]   = (*this)[idx+1];
 
-          if((*this)[idx])
+          if((*this)[idx]) {
             (*this)[idx]->setID(idx);
+          }
 
             (*this)[idx+1] = p1;
 
@@ -1497,7 +1499,7 @@ bool Pipeline::has_dssi_ui(int idx) const
   {
 #ifdef LV2_SUPPORT
     if(p->plugin() && p->plugin()->isLV2Plugin())
-      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();    
+      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
@@ -1838,7 +1840,7 @@ PluginI::~PluginI()
         free(_audioInSilenceBuf);
       if(_audioOutDummyBuf)
         free(_audioOutDummyBuf);
-      
+
       if (controlsOutDummy)
             delete[] controlsOutDummy;
       if (controlsOut)
@@ -1895,7 +1897,7 @@ void PluginI::setChannels(int c)
             return;
 
       LADSPA_Handle* handles = new LADSPA_Handle[ni];
-      
+
       if(ni > instances)
       {
         for(int i = 0; i < ni; ++i)
@@ -1907,11 +1909,11 @@ void PluginI::setChannels(int c)
           {
             // Create a new plugin instance with handle.
             handles[i] = _plugin->instantiate(this);
-            if(handles[i] == NULL) 
+            if(handles[i] == NULL)
             {
               fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
-              
-              // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert(). 
+
+              // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert().
               // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
               for(int k = i; k < ni; ++k)
                 handles[i] = NULL;
@@ -1933,7 +1935,7 @@ void PluginI::setChannels(int c)
           {
             // Delete existing plugin instance.
             // Previously we deleted all the instances and rebuilt from scratch.
-            // One side effect of this: Since a GUI is constructed only on the first handle, 
+            // One side effect of this: Since a GUI is constructed only on the first handle,
             //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
             _plugin->deactivate(handle[i]);
             _plugin->cleanup(handle[i]);
@@ -1963,7 +1965,7 @@ void PluginI::setChannels(int c)
           }
           else if(pd & LADSPA_PORT_OUTPUT)
           {
-            // Connect only the first instance's output controls. 
+            // Connect only the first instance's output controls.
             // We don't have a mechanism to display the other instances' outputs.
             _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
             // Connect the rest to dummy ports.
@@ -1980,17 +1982,17 @@ void PluginI::setChannels(int c)
         _plugin->activate(handle[i]);
 
       // Initialize control values.
-      if(initControlValues) 
+      if(initControlValues)
       {
-        for(unsigned long i = 0; i < controlPorts; ++i) 
+        for(unsigned long i = 0; i < controlPorts; ++i)
           controls[i].val = controls[i].tmpVal;
       }
       else
       {
         // get initial control values from plugin
-        for(unsigned long i = 0; i < controlPorts; ++i) 
+        for(unsigned long i = 0; i < controlPorts; ++i)
           controls[i].tmpVal = controls[i].val;
-      }            
+      }
 
       // Finally, set the new number of instances.
       instances = ni;
@@ -2141,7 +2143,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       controls    = new Port[controlPorts];
       controlsOut = new Port[controlOutPorts];
       controlsOutDummy = new Port[controlOutPorts];
-      
+
       unsigned long curPort = 0;
       unsigned long curOutPort = 0;
       for(unsigned long k = 0; k < ports; ++k)
@@ -2173,7 +2175,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
             controlsOut[curOutPort].val     = 0.0;
             controlsOut[curOutPort].tmpVal  = 0.0;
             controlsOut[curOutPort].enCtrl  = false;
-            // Connect only the first instance's output controls. 
+            // Connect only the first instance's output controls.
             // We don't have a mechanism to display the other instances' outputs.
             _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
             // Connect the rest to dummy ports.
@@ -2183,7 +2185,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           }
         }
       }
-      
+
       int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
 
       if(rv != 0)
@@ -2294,7 +2296,7 @@ float PluginI::latency()
   return controlsOut[_latencyOutPort].val;
 }
 
-      
+
 //---------------------------------------------------------
 //   setControl
 //    set plugin instance controller value by name
@@ -2543,7 +2545,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               }
                               if (_gui)
                                     _gui->updateValues();
-                              return false;                              
+                              return false;
                               }
                         return true;
                   default:
@@ -2733,7 +2735,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
 
-  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize); 
+  const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -3301,7 +3303,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         Slider* s = static_cast<Slider*>(obj);
                         s->setId(nobj);
                         s->setCursorHoming(true);
-                        
+
                         LADSPA_PortRangeHint range = plugin->range(parameter);
                         double lower = 0.0;     // default values
                         double upper = 1.0;
@@ -3310,7 +3312,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         double val   = plugin->param(parameter);
                         double dval  = val;
                         getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
-                        
+
                         // TODO
                         //s->setThumbLength(1);
                         //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
@@ -3320,7 +3322,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
                         //s->setScaleBackBone(false);
                         //s->setFillThumb(false);
-      
+
                         QFont fnt;
                         fnt.setFamily("Sans");
                         fnt.setPixelSize(9);
@@ -3329,7 +3331,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
                         s->setStyleSheet(MusECore::font2StyleSheet(fnt));
-                        
+
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
@@ -3445,7 +3447,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
                         //s->setScaleBackBone(false);
                         //s->setFillThumb(false);
-                        
+
                         QFont fnt;
                         fnt.setFamily("Sans");
                         fnt.setPixelSize(9);
@@ -3454,7 +3456,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
                         s->setStyleSheet(MusECore::font2StyleSheet(fnt));
-      
+
                         s->setCursorHoming(true);
                         s->setId(i);
                         s->setSizeHint(200, 8);
@@ -3525,7 +3527,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       m->setVal(dval, dval, false);
                       m->setScaleBackBone(false);
                       m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
-                      
+
                       QFont fnt;
                       fnt.setFamily("Sans");
                       fnt.setPixelSize(9);
@@ -3534,7 +3536,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       fnt.setHintingPreference(QFont::PreferVerticalHinting);
                       m->setFont(fnt);
                       m->setStyleSheet(MusECore::font2StyleSheet(fnt));
-                      
+
                       paramsOut[i].actuator = m;
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -3710,7 +3712,7 @@ void PluginGui::sliderChanged(double val, int param, int scrollMode)
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
         // ScrDirect mode is one-time only on press with modifier.
         if(scrollMode != SliderBase::ScrDirect)
           track->recordAutomation(id, val);
@@ -4061,7 +4063,7 @@ void PluginGui::guiParamChanged(int idx)
       switch(type) {
             case GuiWidgets::SLIDER:
                   val = ((Slider*)w)->value();
-                  // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals. 
+                  // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
                   // ScrDirect mode is one-time only on press with modifier.
                   if(((Slider*)w)->scrollMode() == Slider::ScrDirect)
                     ignoreRecAutomation = true;
@@ -4329,18 +4331,18 @@ static void writePluginGroupMap(int level, MusECore::Xml& xml)
   xml.tag(level++, "group_map");
 
   for (PluginGroups::iterator it=plugin_groups.begin(); it!=plugin_groups.end(); it++)
-		if (!it.value().empty())
-		{
-			xml.tag(level++, "entry");
+        if (!it.value().empty())
+        {
+            xml.tag(level++, "entry");
 
-			xml.strTag(level, "lib", it.key().first);
-			xml.strTag(level, "label", it.key().second);
+            xml.strTag(level, "lib", it.key().first);
+            xml.strTag(level, "label", it.key().second);
 
-			for (QSet<int>::iterator it2=it.value().begin(); it2!=it.value().end(); it2++)
-				xml.intTag(level, "group", *it2);
+            for (QSet<int>::iterator it2=it.value().begin(); it2!=it.value().end(); it2++)
+                xml.intTag(level, "group", *it2);
 
-			xml.etag(--level, "entry");
-		}
+            xml.etag(--level, "entry");
+        }
 
   xml.etag(--level, "group_map");
 }
@@ -4357,139 +4359,139 @@ void writePluginGroupConfiguration(int level, MusECore::Xml& xml)
 
 static void readPluginGroupNames(MusECore::Xml& xml)
 {
-	plugin_group_names.clear();
+    plugin_group_names.clear();
 
-	for (;;)
-	{
-		MusECore::Xml::Token token = xml.parse();
-		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-			break;
+    for (;;)
+    {
+        MusECore::Xml::Token token = xml.parse();
+        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+            break;
 
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case MusECore::Xml::TagStart:
-				if (tag=="name")
-					plugin_group_names.append(xml.parse1());
-				else
-					xml.unknown("readPluginGroupNames");
-				break;
+        const QString& tag = xml.s1();
+        switch (token)
+        {
+            case MusECore::Xml::TagStart:
+                if (tag=="name")
+                    plugin_group_names.append(xml.parse1());
+                else
+                    xml.unknown("readPluginGroupNames");
+                break;
 
-			case MusECore::Xml::TagEnd:
-				if (tag == "group_names")
-					return;
+            case MusECore::Xml::TagEnd:
+                if (tag == "group_names")
+                    return;
 
-			default:
-				break;
-		}
-	}
+            default:
+                break;
+        }
+    }
 }
 
 static void readPluginGroupMap(MusECore::Xml& xml)
 {
-	plugin_groups.clear();
+    plugin_groups.clear();
 
-	for (;;)
-	{
-		MusECore::Xml::Token token = xml.parse();
-		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-			break;
+    for (;;)
+    {
+        MusECore::Xml::Token token = xml.parse();
+        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+            break;
 
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case MusECore::Xml::TagStart:
-				if (tag=="entry")
-				{
-					QString lib;
-					QString label;
-					QSet<int> groups;
-					bool read_lib=false, read_label=false;
+        const QString& tag = xml.s1();
+        switch (token)
+        {
+            case MusECore::Xml::TagStart:
+                if (tag=="entry")
+                {
+                    QString lib;
+                    QString label;
+                    QSet<int> groups;
+                    bool read_lib=false, read_label=false;
 
-					for (;;)
-					{
-						MusECore::Xml::Token token = xml.parse();
-						if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-							break;
+                    for (;;)
+                    {
+                        MusECore::Xml::Token token = xml.parse();
+                        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+                            break;
 
-						const QString& tag = xml.s1();
-						switch (token)
-						{
-							case MusECore::Xml::TagStart:
-								if (tag=="lib")
-								{
-									lib=xml.parse1();
-									read_lib=true;
-								}
-								else if (tag=="label")
-								{
-									label=xml.parse1();
-									read_label=true;
-								}
-								else if (tag=="group")
-									groups.insert(xml.parseInt());
-								else
-									xml.unknown("readPluginGroupMap");
-								break;
+                        const QString& tag = xml.s1();
+                        switch (token)
+                        {
+                            case MusECore::Xml::TagStart:
+                                if (tag=="lib")
+                                {
+                                    lib=xml.parse1();
+                                    read_lib=true;
+                                }
+                                else if (tag=="label")
+                                {
+                                    label=xml.parse1();
+                                    read_label=true;
+                                }
+                                else if (tag=="group")
+                                    groups.insert(xml.parseInt());
+                                else
+                                    xml.unknown("readPluginGroupMap");
+                                break;
 
-							case MusECore::Xml::TagEnd:
-								if (tag == "entry")
-									goto done_reading_entry;
+                            case MusECore::Xml::TagEnd:
+                                if (tag == "entry")
+                                    goto done_reading_entry;
 
-							default:
-								break;
-						}
-					}
+                            default:
+                                break;
+                        }
+                    }
 
 done_reading_entry:
 
-					if (read_lib && read_label)
-						plugin_groups.get(lib,label)=groups;
-					else
-						fprintf(stderr,"ERROR: plugin group map entry without lib or label!\n");
-				}
-				else
-					xml.unknown("readPluginGroupMap");
-				break;
+                    if (read_lib && read_label)
+                        plugin_groups.get(lib,label)=groups;
+                    else
+                        fprintf(stderr,"ERROR: plugin group map entry without lib or label!\n");
+                }
+                else
+                    xml.unknown("readPluginGroupMap");
+                break;
 
-			case MusECore::Xml::TagEnd:
-				if (tag == "group_map")
-					return;
+            case MusECore::Xml::TagEnd:
+                if (tag == "group_map")
+                    return;
 
-			default:
-				break;
-		}
-	}
+            default:
+                break;
+        }
+    }
 }
 
 void readPluginGroupConfiguration(MusECore::Xml& xml)
 {
-	for (;;)
-	{
-		MusECore::Xml::Token token = xml.parse();
-		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-			break;
+    for (;;)
+    {
+        MusECore::Xml::Token token = xml.parse();
+        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+            break;
 
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case MusECore::Xml::TagStart:
-				if (tag=="group_names")
-					readPluginGroupNames(xml);
-				else if (tag=="group_map")
-					readPluginGroupMap(xml);
-				else
-					xml.unknown("readPluginGroupConfiguration");
-				break;
+        const QString& tag = xml.s1();
+        switch (token)
+        {
+            case MusECore::Xml::TagStart:
+                if (tag=="group_names")
+                    readPluginGroupNames(xml);
+                else if (tag=="group_map")
+                    readPluginGroupMap(xml);
+                else
+                    xml.unknown("readPluginGroupConfiguration");
+                break;
 
-			case MusECore::Xml::TagEnd:
-				if (tag == "plugin_groups")
-					return;
+            case MusECore::Xml::TagEnd:
+                if (tag == "plugin_groups")
+                    return;
 
-			default:
-				break;
-		}
-	}
+            default:
+                break;
+        }
+    }
 }
 
 } // namespace MusEGlobal

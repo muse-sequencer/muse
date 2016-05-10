@@ -75,15 +75,16 @@ static bool createDir(const QString& s)
 static bool testDirCreate(QWidget* parent, const QString& path)
 {
       QDir dir(path);
-      if (!dir.exists()) 
+      if (!dir.exists())
       {
         if(QMessageBox::information(parent,
             QWidget::tr("MusE: get file name"),
             QWidget::tr("The directory\n%1\ndoes not exist.\nCreate it?").arg(path),
-            QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) != QMessageBox::Ok)
+            QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) != QMessageBox::Ok) {
           return true;
-        
-          if (createDir(path)) 
+        }
+
+          if (createDir(path))
           {
             QMessageBox::critical(parent,
                 QWidget::tr("MusE: create directory"),
@@ -180,7 +181,7 @@ void MFileDialog::fileChanged(const QString& path)
   bool is_mid = path.endsWith(".mid", Qt::CaseInsensitive) ||
                 path.endsWith(".midi", Qt::CaseInsensitive) ||
                 path.endsWith(".kar", Qt::CaseInsensitive);
-  
+
   if (is_mid)
   {
     readMidiPortsSaved=buttons.readMidiPortsButton->isChecked();
@@ -195,7 +196,7 @@ void MFileDialog::fileChanged(const QString& path)
       buttons.readMidiPortsButton->setChecked(readMidiPortsSaved);
     }
   }
-  
+
 }
 
 
@@ -228,7 +229,7 @@ MFileDialog::MFileDialog(const QString& dir,
 
             spl->insertWidget(0,&buttons);
 
-	    // Qt >= 4.6 allows us to select icons from the theme
+        // Qt >= 4.6 allows us to select icons from the theme
 #if QT_VERSION >= 0x040600
             buttons.globalButton->setIcon(*globalIcon);
             buttons.userButton->setIcon(*userIcon);
@@ -239,7 +240,7 @@ MFileDialog::MFileDialog(const QString& dir,
             buttons.userButton->setIcon(style()->standardIcon(QStyle::SP_DesktopIcon));
             buttons.homeButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
             buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
-#endif	    
+#endif
 
             buttons.globalButton->setAutoExclusive(true);
             buttons.userButton->setAutoExclusive(true);
@@ -274,22 +275,22 @@ MFileDialog::MFileDialog(const QString& dir,
             else {
                   switch (lastViewUsed) {
                         case GLOBAL_VIEW:
-                              buttons.globalButton->setChecked(true); 
+                              buttons.globalButton->setChecked(true);
                               break;
 
                         case PROJECT_VIEW:
-                              buttons.projectButton->setChecked(true); 
+                              buttons.projectButton->setChecked(true);
                               break;
 
                         case USER_VIEW:
-                              buttons.userButton->setChecked(true); 
+                              buttons.userButton->setChecked(true);
                               break;
                         case HOME_VIEW:
                               buttons.homeButton->setChecked(true);
                               break;
                         }
 
-	          }
+              }
             buttons.readMidiPortsGroup->setVisible(false);
             buttons.writeWinStateGroup->setVisible(false);
             }
@@ -331,7 +332,7 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
             QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
-      
+
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
@@ -367,7 +368,7 @@ QString getSaveFileName(const QString &startWith,
    const char** filters_chararray, QWidget* parent, const QString& name, bool* writeWinState)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
-      
+
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
@@ -387,7 +388,7 @@ QString getSaveFileName(const QString &startWith,
           if (writeWinState)
               *writeWinState = dlg->buttons.writeWinStateButton->isChecked();
       }
-                  
+
       // Added by T356.
       if(!result.isEmpty())
       {
@@ -408,15 +409,15 @@ QString getSaveFileName(const QString &startWith,
           //  or any desired extension by commenting this section out, it's probably not a good idea to do so.
           //
           // NOTE: Most calls to this routine getSaveFileName() are followed by fileOpen(),
-          //  which can tack on its own extension, but only if the *complete* extension is blank. 
-          // So there is some overlap going on. Enabling this actually stops that action, 
+          //  which can tack on its own extension, but only if the *complete* extension is blank.
+          // So there is some overlap going on. Enabling this actually stops that action,
           //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
           //
           // Force the filter list to the first one (the preferred one), and then get the filter.
           dlg->selectNameFilter(dlg->nameFilters().at(0));
           filt = dlg->selectedNameFilter();
           filt = getFilterExtension(filt);
-              
+
           // Do we have a valid extension?
           if(!filt.isEmpty())
           {
@@ -428,7 +429,7 @@ QString getSaveFileName(const QString &startWith,
           }
         }
       }
-      
+
       delete dlg;
       return result;
       }
@@ -442,7 +443,7 @@ QString getImageFileName(const QString& startWith,
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       QString initialSelection;
-	QString* workingDirectory = new QString(QDir::currentPath());
+    QString* workingDirectory = new QString(QDir::currentPath());
       if (!startWith.isEmpty() ) {
             QFileInfo fi(startWith);
             if (fi.exists() && fi.isDir()) {
@@ -471,8 +472,8 @@ QString getImageFileName(const QString& startWith,
       if (!initialSelection.isEmpty())
            dlg->selectFile( initialSelection);
       if (dlg->exec() == QDialog::Accepted) {
-	   files = dlg->selectedFiles();
-	   if (!files.isEmpty())
+       files = dlg->selectedFiles();
+       if (!files.isEmpty())
                 result = files[0];
       }
       delete dlg;
@@ -528,13 +529,13 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
                   case 1:  // quit
                         return 0;
                   }
-            */      
+            */
             if(QMessageBox::warning(parent,
                QWidget::tr("MusE: write"), s,
                QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save)
                != QMessageBox::Save)
               return 0;
-                  
+
             }
       FILE* fp = 0;
       if (popenFlag) {

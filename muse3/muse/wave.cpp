@@ -92,9 +92,11 @@ SndFile::~SndFile()
             delete[] cache;
             cache = 0;
             }
-      if(writeBuffer)
+      if(writeBuffer) {
          delete [] writeBuffer;
-         writeBuffer = 0;
+          writeBuffer = 0;
+      }
+
       }
 
 //---------------------------------------------------------
@@ -122,7 +124,7 @@ bool SndFile::openRead(bool createCache, bool showProgress)
             return true;
          }
       }
-            
+
       writeFlag = false;
       openFlag  = true;
       if (createCache) {
@@ -264,7 +266,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
             s[ch].peak = 0;
             s[ch].rms = 0;
             }
-            
+
       // only check pos if seek is allowed
       // for realtime drawing of the wave
       // seek may cause writing errors
@@ -276,25 +278,25 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
             float* fp[channels()];
             for (unsigned i = 0; i < channels(); ++i)
                   fp[i] = &data[i][0];
-            
+
             sf_count_t ret = 0;
             if(sfUI)
               ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
             else
               ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
             if(ret == -1)
-              return;  
+              return;
             {
             int srcChannels = channels();
             int dstChannels = sfinfo.channels;
             size_t n        = mag;
             float** dst     = fp;
             float buffer[n * dstChannels];
-            
+
             size_t rn = 0;
             if(sfUI)
               rn = sf_readf_float(sfUI, buffer, n);
-            else  
+            else
               rn = sf_readf_float(sf, buffer, n);
             if(rn != n)
               return;
@@ -322,10 +324,10 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
             }
 
             for (unsigned ch = 0; ch < channels(); ++ch) {
-                  
+
                   if(overwrite)
                     s[ch].peak = 0;
-                  
+
                   float rms = 0.0;
                   for (int i = 0; i < mag; i++) {
                         float fd = data[ch][i];
@@ -336,7 +338,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                         if (s[ch].peak < idata)
                               s[ch].peak = idata;
                         }
-                  
+
                     s[ch].rms = 0;    // TODO rms / mag;
                   }
             }
@@ -355,10 +357,10 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                         if (s[ch].peak < cache[ch][offset].peak)
                               s[ch].peak = cache[ch][offset].peak;
                               }
-      
+
                   if(overwrite)
                     s[ch].rms = rms / mag;
-                  
+
                   else
                     s[ch].rms += rms / mag;
                   }
@@ -759,7 +761,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
       // REMOVE Tim. Sharing. Changed. For testing only so far.
       //SndFile* f = SndFile::sndFiles.search(name);
       SndFile* f = 0;
-      //if (f == 0) 
+      //if (f == 0)
       //{
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
@@ -767,7 +769,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
                   return NULL;
                   }
             f = new SndFile(name);
-            
+
             if(openFlag)
             {
               bool error;
@@ -783,15 +785,15 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
                           QFile(cacheName).remove();
                           f->readCache(cacheName,true);
                           }
-                    
+
               }
               if (error) {
                     fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
                       name.toLocal8Bit().constData(),
                       readOnlyFlag ? "writing" : "reading",
                       f->strerror().toLocal8Bit().constData());
-                      if(showErrorBox) 
-                        QMessageBox::critical(NULL, "MusE import error.", 
+                      if(showErrorBox)
+                        QMessageBox::critical(NULL, "MusE import error.",
                                         "MusE failed to import the file.\n"
                                         "Possibly this wasn't a sound file?\n"
                                         "If it was check the permissions, MusE\n"
@@ -819,7 +821,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
 //                             QFile(cacheName).remove();
 //                             f->readCache(cacheName,true);
 //                             }
-//                       
+//
 //                       }
 //               }
 //             }
@@ -845,9 +847,9 @@ void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsig
             printf("SndFile::applyUndoFile: Internal error: original event is empty - Aborting\n");
             return;
             }
-            
+
       SndFileR orig = original.sndFile();
-      
+
       if (orig.isNull()) {
             printf("SndFile::applyUndoFile: Internal error: original sound file is NULL - Aborting\n");
             return;
@@ -940,14 +942,14 @@ bool SndFile::checkCopyOnWrite()
 {
   QString path_this = canonicalPath();
   if(path_this.isEmpty())
-    return false;  
+    return false;
 
   bool fwrite = finfo->isWritable();
-  
+
   // No exceptions: Even if this wave event is a clone, if it ain't writeable we gotta copy the wave.
   if(!fwrite)
     return true;
-  
+
   // Count the number of unique part wave events (including possibly this one) using this file.
   // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
   int use_count = 0;
@@ -1177,21 +1179,21 @@ int ClipList::idx(const Clip& clip) const
 //   cmdAddRecordedWave
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations) 
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
       {
       if (MusEGlobal::debugMsg)
           printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
 
-      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo, 
+      // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
       //  but the fifo may not be empty yet, it's in the prefetch thread.
-      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the 
-      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages 
+      // Wait a few seconds for the fifo to be empty, until it has been fully transferred to the
+      //  track's recFile sndfile, which is done via Audio::process() sending periodic 'tick' messages
       //  to the prefetch thread to write its fifo to the sndfile, always UNLESS in stop or idle mode.
       // It now sends one final tick message at stop, so we /should/ have all our buffers available here.
       // This GUI thread is notified of the stop condition via the audio thread sending a message
       //  as soon as the state change is read from the driver.
-      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly 
-      //  written to the sndfile and therefore stops immediately when the transport stops and thus is 
+      // NOTE: The fifo scheme is used only if NOT in transport freewheel mode where the data is directly
+      //  written to the sndfile and therefore stops immediately when the transport stops and thus is
       //  safe to read here regardless of waiting.
       int tout = 100; // Ten seconds. Otherwise we gotta move on.
       while(track->recordFifoCount() != 0)
@@ -1204,7 +1206,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
           break;
         }
       }
-      
+
       // It should now be safe to work with the resultant sndfile here in the GUI thread.
       // No other thread should be touching it right now.
       MusECore::SndFileR f = track->recFile();
@@ -1213,11 +1215,11 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
                track->name().toLocal8Bit().constData());
             return;
             }
-      
-      // If externally clocking (and therefore master was forced off), 
+
+      // If externally clocking (and therefore master was forced off),
       //  tempos may have been recorded. We really should temporarily force
       //  the master tempo map on in order to properly determine the ticks below.
-      // Else internal clocking, the user decided to record either with or without 
+      // Else internal clocking, the user decided to record either with or without
       //  master on, so let it be.
       // FIXME: We really should allow the master flag to be on at the same time as
       //  the external sync flag! AFAIR when external sync is on, no part of the app shall
@@ -1228,13 +1230,13 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       bool master_was_on = MusEGlobal::tempomap.masterFlag();
       if(MusEGlobal::extSyncFlag.value() && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, true);
-      
+
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
         s.setTick(lPos().tick());
       // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
       // (Fixed: Added Audio::loopCount)
       // Otherwise if punchout is on, limit the end to the right marker.
-      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )  
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
         e.setTick(rPos().tick());
 
       // No part to be created? Delete the rec sound file.
@@ -1247,24 +1249,24 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
         remove(st.toLocal8Bit().constData());
         if(MusEGlobal::debugMsg)
           printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
-      
-        // Restore master flag. 
+
+        // Restore master flag.
         if(MusEGlobal::extSyncFlag.value() && !master_was_on)
           MusEGlobal::tempomap.setMasterFlag(0, false);
 
         return;
       }
 // REMOVE Tim. Wave. Removed. Probably I should never have done this. It's more annoying than helpful. Look at it another way: Importing a wave DOES NOT do this.
-//       // Round the start down using the Arranger part snap raster value. 
+//       // Round the start down using the Arranger part snap raster value.
 //       int a_rast = MusEGlobal::song->arrangerRaster();
-//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();   
-//       // Round the end up using the Arranger part snap raster value. 
+//       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();
+//       // Round the end up using the Arranger part snap raster value.
 //       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
 // //       unsigned etick = Pos(eframe, false).tick();
       unsigned sframe = s.frame();
       unsigned eframe = e.frame();
-      
-      // Done using master tempo map. Restore master flag. 
+
+      // Done using master tempo map. Restore master flag.
       if(MusEGlobal::extSyncFlag.value() && !master_was_on)
         MusEGlobal::tempomap.setMasterFlag(0, false);
 
@@ -1280,13 +1282,13 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       event.setSndFile(f);
       // We are done with the _recFile member. Set to zero.
       track->setRecFile(0);
-      
+
       event.setSpos(0);
       // Since the part start was snapped down, we must apply the difference so that the
       //  wave event tick lines up with when the user actually started recording.
-      event.setFrame(s.frame() - sframe);   
+      event.setFrame(s.frame() - sframe);
       // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
-      //event.setLenFrame(f.samples()); 
+      //event.setLenFrame(f.samples());
       event.setLenFrame(e.frame() - s.frame());
       part->addEvent(event);
 
@@ -1650,7 +1652,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true;
       }
       samples = f->samples();
-   }   
+   }
 
    MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);
    if (tick)

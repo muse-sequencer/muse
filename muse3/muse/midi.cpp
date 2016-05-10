@@ -96,8 +96,8 @@ QString midiMetaName(int meta)
             case 5:     s = "Text 5: Lyric"; break;
             case 6:     s = "Text 6: Marker"; break;
             case 7:     s = "Text 7: Cue Point"; break;
-            case 8:     s = "Text 8"; break; 
-            case 9:     s = "Text 9: Device Name"; break; 
+            case 8:     s = "Text 8"; break;
+            case 9:     s = "Text 9: Device Name"; break;
             case 0x0a:  s = "Text A"; break;
             case 0x0b:  s = "Text B"; break;
             case 0x0c:  s = "Text C"; break;
@@ -128,7 +128,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* in
       QString s;
       if(len == 0)
         return s;
-      
+
       switch(buf[0]) {
             case 0x00:
                   if(len < 3)
@@ -178,7 +178,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* in
             case 0x43:  s = "Yamaha"; break;
             case 0x44:  s = "Casio"; break;
             case 0x45:  s = "Akai"; break;
-            case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     
+            case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;
             case 0x7d:  s = "Educational Use"; break;
             case 0x7e:  s = "Universal: Non Real Time"; break;
             case 0x7f:  s = "Universal: Real Time"; break;
@@ -188,13 +188,13 @@ QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* in
       if(instr)
       {
         // Check for user-defined sysex in instrument...
-        foreach(const MusECore::SysEx* sx, instr->sysex()) 
+        foreach(const MusECore::SysEx* sx, instr->sysex())
         {
           if((int)len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
             return s + QString(": ") + sx->name;
         }
       }
-      
+
       //
       // following messages should not show up in event list
       // they are filtered while importing midi files
@@ -221,17 +221,17 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
       QString s;
       if(len == 0)
         return s;
-      
+
       if(instr)
       {
         // Check for user-defined sysex in instrument...
-        foreach(const MusECore::SysEx* sx, instr->sysex()) 
+        foreach(const MusECore::SysEx* sx, instr->sysex())
         {
           if((int)len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
             return sx->comment;
         }
       }
-      
+
       // These are the common ones we know about so far...
       if ((len == gmOnMsgLen) && memcmp(buf, gmOnMsg, gmOnMsgLen) == 0)
             s = QObject::tr("Switch on General Midi Level 1 mode");
@@ -277,7 +277,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                || ((ev.channel() == track->outChannel()) && (ev.port() == track->outPort()))))
                   continue;
             unsigned tick = ev.time();
-            
+
             if(doLoops)
             {
               if(tick >= MusEGlobal::song->lPos().tick() && tick < MusEGlobal::song->rPos().tick())
@@ -285,11 +285,11 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                 int loopn = ev.loopNum();
                 int loopc = MusEGlobal::audio->loopCount();
                 int cmode = MusEGlobal::song->cycleMode(); // CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE
-                // If we want REPLACE and the event was recorded in a previous loop, 
+                // If we want REPLACE and the event was recorded in a previous loop,
                 //  just ignore it. This will effectively ignore ALL previous loop events inside
                 //  the left and right markers, regardless of where recording was started or stopped.
-                // We want to keep any loop 0 note-offs from notes which crossed over the left marker. 
-                // To avoid more searching here, just keep ALL note-offs from loop 0, and let code below 
+                // We want to keep any loop 0 note-offs from notes which crossed over the left marker.
+                // To avoid more searching here, just keep ALL note-offs from loop 0, and let code below
                 //  sort out and keep which ones had note-ons.
                 if(!(ev.isNoteOff() && loopn == 0))
                 {
@@ -304,11 +304,11 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                     unsigned endRec = MusEGlobal::audio->getEndRecordPos().tick();
                     if((tick < endRec && loopn < loopc) || (tick >= endRec && loopn < (loopc - 1)))
                       continue;
-                  } 
-                }  
+                  }
+                }
               }
             }
-            
+
             Event e;
             switch(ev.type()) {
                   case ME_NOTEON:
@@ -320,7 +320,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               }
                         else
                               e.setPitch(ev.dataA());
-                        
+
                         e.setVelo(ev.dataB());
                         e.setLenTick(0);
                         break;
@@ -332,7 +332,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               }
                         else
                               e.setPitch(ev.dataA());
-                        
+
                         e.setVelo(0);
                         e.setVeloOff(ev.dataB());
                         e.setLenTick(0);
@@ -342,7 +342,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                         e.setA((CTRL_POLYAFTER & ~0xff) | (ev.dataA() & 0x7f));
                         e.setB(ev.dataB());
                         break;
-                        
+
                   case ME_CONTROLLER:
                         {
                         int val = ev.dataB();
@@ -429,7 +429,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     e.setType(Controller);
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
-                                    
+
                                     if(track->type() == Track::DRUM)
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
@@ -438,7 +438,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                         // Store an index into the drum map.
                                         e.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
                                     }
-                                          
+
                                     e.setB(val);
                                     break;
                               }
@@ -516,7 +516,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     break;
                               case ME_META_KEY_SIGNATURE:  // Key Signature
                                     break;
-                              default: 
+                              default:
                                     printf("buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
@@ -540,12 +540,12 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
               Event ev  = i->second;
               if (ev.isNote()) {
                     if (!ev.isNoteOff()) {
-                    
-                    // If the event length is not zero, it means the event and its 
+
+                    // If the event length is not zero, it means the event and its
                     //  note on/off have already been taken care of. So ignore it.
                     if(ev.lenTick() != 0)
                       continue;
-                    
+
                     iEvent k;
                     for (k = mel.lower_bound(ev.tick()); k != mel.end(); ++k) {
                           Event event = k->second;
@@ -575,20 +575,22 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                           ev.setLenTick(endTick-ev.tick());
                           }
                     else {
-                          if (k==i) 
+                          if (k==i) {
                             //this will never happen, because i->second has to be a NOTE ON,
                             //while k has to be a NOTE OFF. but in case something changes:
                             printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
-                          else
+                          }
+                          else {
                             mel.erase(k);
+                          }
                             i = mel.begin();
                           continue;
                           }
                     }
-									}
+                                    }
               }
 
-      
+
       for (iEvent i = mel.begin(); i != mel.end(); ++i) {
             Event ev  = i->second;
             if (ev.isNoteOff()) {
@@ -652,7 +654,7 @@ void Audio::panic()
 
 //---------------------------------------------------------
 //   initDevices
-//    - called when instrument init sequences plus controller 
+//    - called when instrument init sequences plus controller
 //       defaults should be checked and/or sent
 //    - called from arranger pulldown menu
 //---------------------------------------------------------
@@ -698,10 +700,10 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                   continue;
             unsigned stick = (offset > cts) ? 0 : cts - offset;
             unsigned etick = nts - offset;
-            // Do not play events which are past the end of this part. 
+            // Do not play events which are past the end of this part.
             if(etick > partLen)
               continue;
-              
+
             ciEvent ie   = events.lower_bound(stick);
             ciEvent iend = events.lower_bound(etick);
 
@@ -757,7 +759,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     pitch = 127;
                               if (pitch < 0)
                                     pitch = 0;
-                              
+
                               // Apply track velocity and compression to both note-on and note-off velocity...
                               velo += track->velocity;
                               velo = (velo * track->compression) / 100;
@@ -773,7 +775,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     veloOff = 127;
                               if (veloOff < 1)
                                     veloOff = 0;
-                              
+
                               len = (len *  track->len) / 100;
                               if (len <= 0)     // dont allow zero length
                                     len = 1;
@@ -792,14 +794,14 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     MidiDevice* mdAlt = MusEGlobal::midiPorts[port].device();
                                     if (mdAlt) {
                                         if(MusEGlobal::extSyncFlag.value())  // p3.3.25
-                                          mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));                                          
-                                        else  
-                                          mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));                                          
+                                          mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
+                                        else
+                                          mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
                                         track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
                                           MusECore::ME_NOTEOFF, pitch, veloOff));
                                       }
                                     }
-                              
+
                               if(velo > track->activity())
                                 track->setActivity(velo);
                               }
@@ -825,33 +827,33 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     if(channel == -1)
                                       channel = track->outChannel();
                                     MidiDevice* mdAlt = MusEGlobal::midiPorts[port].device();
-                                    if(mdAlt) 
+                                    if(mdAlt)
                                     {
                                       // If syncing to external midi sync, we cannot use the tempo map.
                                       // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames. p3.3.25
                                       if(MusEGlobal::extSyncFlag.value())
-                                        mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, 
+                                        mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel,
                                                                              MusECore::ME_CONTROLLER, ctl | pitch, ev.dataB()));
                                       else
-                                        mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, 
+                                        mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel,
                                                                              MusECore::ME_CONTROLLER, ctl | pitch, ev.dataB()));
-                                    }  
+                                    }
                                     break;
-                                  }  
+                                  }
                                 }
                                 if(MusEGlobal::extSyncFlag.value())  // p3.3.25
                                   md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, ev));
-                                else  
+                                else
                                   md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, ev));
-                              }     
+                              }
                               break;
-                        
+
                         default:
                               if(MusEGlobal::extSyncFlag.value())  // p3.3.25
                                 md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, ev));
                               else
                                 md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, ev));
-                                
+
                               break;
                         }
                   }
@@ -870,15 +872,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 void Audio::processMidi()
       {
       MusEGlobal::midiBusy=true;
-      
+
       // An experiment, to try and pass input through without having to rec-arm a track. Disabled for now.
       const bool no_mute_midi_input = false;
-      
+
       const bool extsync = MusEGlobal::extSyncFlag.value();
       //
       // TODO: syntis should directly write into recordEventList
       //
-      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
+      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* md = *id;
         int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
@@ -887,7 +889,7 @@ void Audio::processMidi()
         if(md->isSynti())
         {
           SynthI* s = (SynthI*)md;
-          while (s->eventsPending()) 
+          while (s->eventsPending())
           {
             MidiRecordEvent ev = s->receiveEvent();
             // FIXME: This is for recording the events sent by GUI.
@@ -908,25 +910,25 @@ void Audio::processMidi()
               MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
           }
         }
-        
+
         md->collectMidiEvents();
-        
-        // Take snapshots of the current sizes of the recording fifos, 
+
+        // Take snapshots of the current sizes of the recording fifos,
         //  because they may change while here in process, asynchronously.
         md->beforeProcess();
-        
+
         //
         // --------- Handle midi events for audio tracks -----------
-        // 
-        
+        //
+
         if(port < 0)
           continue;
-        
-        for(int chan = 0; chan < MIDI_CHANNELS; ++chan)     
+
+        for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
         {
           MusECore::MidiRecFifo& rf = md->recordEvents(chan);
           int count = md->tmpRecordCount(chan);
-          for(int i = 0; i < count; ++i) 
+          for(int i = 0; i < count; ++i)
           {
             MusECore::MidiRecordEvent event(rf.peek(i));
 
@@ -949,14 +951,14 @@ void Audio::processMidi()
                 ctl = MusECore::CTRL_PROGRAM;
                 val = event.dataA();
               }
-              
-              // Midi learn! 
+
+              // Midi learn!
               MusEGlobal::midiLearnPort = port;
               MusEGlobal::midiLearnChan = chan;
               MusEGlobal::midiLearnCtrl = ctl;
-              
+
               // Send to audio tracks...
-              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t) 
+              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t)
               {
                 if((*t)->isMidiTrack())
                   continue;
@@ -968,17 +970,17 @@ void Audio::processMidi()
                 {
                   const MidiAudioCtrlStruct* macs = &imacm->second;
                   int actrl = macs->audioCtrlId();
-                  
-                  iCtrlList icl = track->controller()->find(actrl); 
+
+                  iCtrlList icl = track->controller()->find(actrl);
                   if(icl == track->controller()->end())
                     continue;
                   CtrlList* cl = icl->second;
                   double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
-                  
-                  // Time here needs to be frames always. 
+
+                  // Time here needs to be frames always.
                   unsigned int ev_t = event.time();
                   unsigned int t = ev_t;
-                  
+
 #ifdef _AUDIO_USE_TRUE_FRAME_
                   unsigned int pframe = _previousPos.frame();
 #else
@@ -988,49 +990,49 @@ void Audio::processMidi()
                     t = 0;
                   else
                     // Subtract the current audio position frame
-                    t -= pframe;  
-                  
+                    t -= pframe;
+
                   // Add the current running sync frame to make the control processing happy
                   t += syncFrame;
                   track->addScheduledControlEvent(actrl, dval, t);
-                    
+
                   // Rec automation...
 
                   // For the record time, if stopped we don't want the circular running position,
                   //  just the static one.
                   unsigned int rec_t = isPlaying() ? ev_t : pframe;
-                  
+
                   if(!MusEGlobal::automation)
                     continue;
                   AutomationType at = track->automationType();
-                  // Unlike our built-in gui controls, there is not much choice here but to 
+                  // Unlike our built-in gui controls, there is not much choice here but to
                   //  just do this:
                   if ( (at == AUTO_WRITE) ||
                        (at == AUTO_READ && !MusEGlobal::audio->isPlaying()) ||
-                       (at == AUTO_TOUCH) )                                       
+                       (at == AUTO_TOUCH) )
                     track->enableController(actrl, false);
                   if(isPlaying())
                   {
                     if(at == AUTO_WRITE || at == AUTO_TOUCH)
-                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));      
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));
                   }
-                  else 
+                  else
                   {
                     if(at == AUTO_WRITE)
-                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));    
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));
                     else if(at == AUTO_TOUCH)
                       // In touch mode and not playing. Send directly to controller list.
                       // Add will replace if found.
-                      cl->add(rec_t, dval);     
+                      cl->add(rec_t, dval);
                   }
                 }
-              }  
+              }
             }
-          }   
+          }
         }
       }
 
-      for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) 
+      for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
       {
             MusECore::MidiTrack* track = *t;
             int port = track->outPort();
@@ -1038,12 +1040,12 @@ void Audio::processMidi()
             if(md)
             {
               // only add track events if the track is unmuted and turned on
-              if(!track->isMute() && !track->off()) 
+              if(!track->isMute() && !track->off())
               {
                 if(isPlaying() && (curTickPos < nextTickPos))
                   collectEvents(track, curTickPos, nextTickPos);
               }
-            }  
+            }
 
             //
             //----------midi recording
@@ -1056,7 +1058,7 @@ void Audio::processMidi()
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
                   {
-                        if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))   
+                        if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))
                           continue;
                         int devport = r->midiPort;
                         if (devport == -1)
@@ -1064,19 +1066,19 @@ void Audio::processMidi()
                         MidiDevice* dev = MusEGlobal::midiPorts[devport].device();
                         if(!dev)
                           continue;
-                        
+
 #ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
-                        
+
                         const int r_chan = r->channel;
 #else
-                        const int channelMask = r->channel;   
+                        const int channelMask = r->channel;
                         if(channelMask == -1 || channelMask == 0)
                           continue;
 #endif // _USE_MIDI_ROUTE_PER_CHANNEL_
-                        
-                        for(int channel = 0; channel < MIDI_CHANNELS; ++channel)     
+
+                        for(int channel = 0; channel < MIDI_CHANNELS; ++channel)
                         {
-                          
+
 #ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
                           if(r_chan != -1 && channel != r_chan)
                             continue;
@@ -1084,15 +1086,15 @@ void Audio::processMidi()
                           if(!(channelMask & (1 << channel)))
                             continue;
 #endif // _USE_MIDI_ROUTE_PER_CHANNEL_
-                          
+
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
                             MusECore::MidiRecFifo& rf = dev->recordEvents(MIDI_CHANNELS);
                             // Get the frozen snapshot of the size.
                             int count = dev->tmpRecordCount(MIDI_CHANNELS);
-                          
-                            for(int i = 0; i < count; ++i) 
+
+                            for(int i = 0; i < count; ++i)
                             {
                               MusECore::MidiRecordEvent event(rf.peek(i));
                               event.setPort(port);
@@ -1104,29 +1106,29 @@ void Audio::processMidi()
                                 unsigned int et = event.time();
 #ifdef _AUDIO_USE_TRUE_FRAME_
                                 unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else                                
+#else
                                 unsigned int t = et + frameOffset;
 #endif
                                 event.setTime(t);
                                 md->addScheduledEvent(event);
                                 event.setTime(et);  // Restore for recording.
                               }
-                              
-                              // Make sure the event is recorded in units of ticks.  
-                              if(extsync)  
+
+                              // Make sure the event is recorded in units of ticks.
+                              if(extsync)
                                 event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
                               else
                                 event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
-                                
+
                               if(recording && track_rec_flag)
                                 rl.add(event);
-                            }      
+                            }
                             dev->setSysexFIFOProcessed(true);
                           }
-                          
+
                           MusECore::MidiRecFifo& rf = dev->recordEvents(channel);
                           int count = dev->tmpRecordCount(channel);
-                          for(int i = 0; i < count; ++i) 
+                          for(int i = 0; i < count; ++i)
                           {
                                 MusECore::MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
@@ -1134,15 +1136,15 @@ void Audio::processMidi()
                                 MusECore::MidiController *mc = 0;
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
-  
+
                                 event.setChannel(track->outChannel());
-                                
-                                if (event.isNote() || event.isNoteOff()) 
+
+                                if (event.isNote() || event.isNoteOff())
                                 {
                                       //
                                       // apply track values
                                       //
-  
+
                                       //Apply drum inkey:
                                       if (track->type() == Track::DRUM)
                                       {
@@ -1181,7 +1183,7 @@ void Audio::processMidi()
                                                   pitch = 0;
                                             event.setA(pitch);
                                       }
-  
+
                                       // Apply track velocity and compression to note-on AND note-off events.
                                       preVelo = event.dataB();
                                       int velo = preVelo + track->velocity;
@@ -1192,7 +1194,7 @@ void Audio::processMidi()
                                             // REMOVE Tim. Noteoff. Changed. Zero means zero. Should mean no note at all?
                                             //velo = 1;
                                             velo = 0; // Use zero as a marker to tell the playback (below) not to sound the note.
-                                      
+
                                       event.setB(velo);
                                 }
                                 else if(event.type() == MusECore::ME_CONTROLLER)
@@ -1200,7 +1202,7 @@ void Audio::processMidi()
                                   if(track->type() == Track::DRUM)
                                   {
                                     ctl = event.dataA();
-                                    // Regardless of what port the event came from, is it a drum controller event 
+                                    // Regardless of what port the event came from, is it a drum controller event
                                     //  according to the track port's instrument?
                                     mc = tport->drumController(ctl);
                                     if(mc)
@@ -1219,7 +1221,7 @@ void Audio::processMidi()
                                       if(mapchan != -1)
                                         event.setChannel(mapchan);
                                       event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
-                                    }  
+                                    }
                                   }
                                   else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
                                   {
@@ -1240,24 +1242,24 @@ void Audio::processMidi()
                                     }
                                   }
                                 }
-                                
-                                // MusE uses a fixed clocks per quarternote of 24. 
-                                // At standard 384 ticks per quarternote for example, 
+
+                                // MusE uses a fixed clocks per quarternote of 24.
+                                // At standard 384 ticks per quarternote for example,
                                 // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
                                 // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent(). p3.3.35
                                 // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
-  
+
                                 // dont't echo controller changes back to software
                                 // synthesizer:
-  
-                                if (!dev->isSynti()) 
+
+                                if (!dev->isSynti())
                                 {
                                   // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
                                   // If the event is marked as a note with zero velocity (above), do not sound the note.
                                   if(!event.isNote() || event.dataB() != 0)
                                   {
-                                    
-                                    // All recorded events arrived in previous period. Shift into this period for playback. 
+
+                                    // All recorded events arrived in previous period. Shift into this period for playback.
                                     //  frameoffset needed to make process happy.
                                     unsigned int et = event.time();
   #ifdef _AUDIO_USE_TRUE_FRAME_
@@ -1317,23 +1319,23 @@ void Audio::processMidi()
                                     track->setActivity(event.dataB());
                                 }
 
-                                if (recording && track_rec_flag) 
+                                if (recording && track_rec_flag)
                                 {
                                       // Make sure the event is recorded in units of ticks.
                                       if(extsync)
                                         event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
                                       else
                                         event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
-                                      
+
                                       // In these next steps, it is essential to set the recorded event's port
-                                      //  to the track port so buildMidiEventList will accept it. Even though 
+                                      //  to the track port so buildMidiEventList will accept it. Even though
                                       //  the port may have no device "<none>".
                                       //
                                       if (track->type() == Track::DRUM)  //FINDMICHJETZT no changes. TEST
                                       {
                                         // Is it a drum controller event?
                                         if(mc)
-                                        {    
+                                        {
                                             MusECore::MidiPlayEvent drumRecEvent = event;
                                             drumRecEvent.setA(ctl | drumRecPitch);
                                             // In this case, preVelo is simply the controller value.
@@ -1352,9 +1354,9 @@ void Audio::processMidi()
                                             drumRecEvent.setPort(port);  //rec-event to current port
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
                                             track->mpevents.add(drumRecEvent);
-                                        }    
+                                        }
                                       }
-                                      else 
+                                      else
                                       {
                                             // Restore record-pitch to non-transposed value since we don't want the note transposed twice next
                                             MusECore::MidiPlayEvent recEvent = event;
@@ -1364,7 +1366,7 @@ void Audio::processMidi()
                                                   recEvent.setB(preVelo);
                                             recEvent.setPort(port);
                                             recEvent.setChannel(track->outChannel());
-                                                  
+
                                             track->mpevents.add(recEvent);
                                       }
                                 }
@@ -1373,7 +1375,7 @@ void Audio::processMidi()
                   }
             }
         }
-        
+
         // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
         // MusEGlobal::audio->isPlaying() might not be true during seek right now.
         //if(MusEGlobal::audio->isPlaying())
@@ -1571,15 +1573,15 @@ void Audio::processMidi()
                   }
                }
             }
-      
+
       //
       // Play all midi events up to curFrame.
       //
-      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
+      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
-        // We are done with the 'frozen' recording fifos, remove the events. 
+        // We are done with the 'frozen' recording fifos, remove the events.
         (*id)->afterProcess();
-        
+
         // ALSA devices handled by another thread.
         if((*id)->deviceType() != MidiDevice::ALSA_MIDI)
           (*id)->processMidi();

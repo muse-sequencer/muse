@@ -132,7 +132,7 @@ class VstNativeSynth : public Synth {
       unsigned int _flags;
       VstIntPtr _id;
       bool _isSynth;
-      
+
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
@@ -141,10 +141,10 @@ class VstNativeSynth : public Synth {
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps vst port numbers to midi controller numbers.
       bool _hasGui;
       bool _hasChunks;
-      
+
    public:
-      VstNativeSynth(const QFileInfo& fi, AEffect* plugin, 
-                     const QString& label, const QString& desc, const QString& maker, const QString& ver, 
+      VstNativeSynth(const QFileInfo& fi, AEffect* plugin,
+                     const QString& label, const QString& desc, const QString& maker, const QString& ver,
                      VstIntPtr id, void *dlHandle, bool isSynth, Plugin::PluginFeatures reqFeatures = Plugin::NoFeatures);
 
       virtual ~VstNativeSynth() {}
@@ -194,13 +194,13 @@ class VstNativeSynthIF : public SynthIF
       {
       friend class VstNativeSynth;
       friend class MusEGui::VstNativeEditor;
-      
+
       VstNativeSynth* _synth;
       AEffect* _plugin;
-      bool _active;    // Whether it's safe to call effIdle or effEditIdle. 
+      bool _active;    // Whether it's safe to call effIdle or effEditIdle.
       MusEGui::VstNativeEditor* _editor;
       bool _guiVisible;
-      bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?      
+      bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?
 
       // Struct array to keep track of pressed flags and so on. // TODO: Not used yet. REMOVE Tim. Or keep.
       VstNativeGuiWidgets* _gw;
@@ -216,22 +216,22 @@ class VstNativeSynthIF : public SynthIF
       void doSelectProgram(int bankH, int bankL, int prog);
       bool processEvent(const MidiPlayEvent&, VstMidiEvent*);
       void setVstEvent(VstMidiEvent* event, int a = 0, int b = 0, int c = 0, int d = 0);
-      
+
       void editorDeleted();
       void editorOpened();
       void editorClosed();
-      
+
    public:
       VstNativeSynthIF(SynthI* s);
       virtual ~VstNativeSynthIF();
 
       virtual bool init(Synth*);
-      
-      AEffect* plugin() const { return _plugin; }      
+
+      AEffect* plugin() const { return _plugin; }
       VstIntPtr dispatch(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
-                  if(_plugin) return _plugin->dispatcher(_plugin, opcode, index, value, ptr, opt); return 0;  }
-      void idleEditor();      
-      
+                  if(_plugin) {return _plugin->dispatcher(_plugin, opcode, index, value, ptr, opt); } return 0;  }
+      void idleEditor();
+
       virtual bool initGui()       { return true; }
       virtual void guiHeartBeat();
       virtual bool guiVisible() const;
@@ -342,8 +342,8 @@ class VstNativePluginWrapper: public Plugin
 private:
     VstNativeSynth *_synth;
     LADSPA_Descriptor _fakeLd;
-    LADSPA_PortDescriptor *_fakePds;    
-    std::vector<float> inControlDefaults;    
+    LADSPA_PortDescriptor *_fakePds;
+    std::vector<float> inControlDefaults;
     std::vector<std::string> portNames;
 public:
     VstNativePluginWrapper ( VstNativeSynth *s, PluginFeatures reqFeatures = NoFeatures );
