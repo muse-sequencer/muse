@@ -1,3 +1,6 @@
+13.05.2016:
+         - Added instrument file for Classic Cantabile SP-250 / Medeli SP4200 from 
+           Mariotte91 at fontenay.tk (rj)
 29.04.2016:
          *Important bug fix: About two dozen CORRUPT usages of QByteArray::constData(). (Tim)
            In: routepopup.cpp lv2host.cpp helper.cpp dssihost.cpp jackmidi.cpp conf.cpp
