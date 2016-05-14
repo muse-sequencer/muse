@@ -154,6 +154,7 @@ option ( ENABLE_VST         "Enable VST/win support (deprecated)"               
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
+option ( ENABLE_LV2_SUPPLIED "Use supplied or system LV2 libraries (lv2, lilv, sord)" OFF)
 option ( ENABLE_LV2_DEBUG        "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
@@ -233,7 +234,8 @@ SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRAR
 
 CHECK_INCLUDE_FILE(ladspa.h HAVE_LADSPA_H)
 if(NOT HAVE_LADSPA_H)
-      message(FATAL_ERROR "** ERROR: header file ladspa.h is required, but was not found.")
+      message(FATAL_ERROR "** ERROR: header file ladspa.h is required, but was not found."
+        ${HAVE_LADSPA_H})
 endif(NOT HAVE_LADSPA_H)
 
 ##
@@ -384,14 +386,64 @@ else (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT FALSE)
 endif (ENABLE_VST_VESTIGE)
 
+##
+## LV2 support
+##
 
 if (ENABLE_LV2)
-      set (LV2_FOUND ON)
-      set(LV2_SUPPORT ON)
-      PKG_CHECK_MODULES(PCRE libpcre)
+    set(LV2_SUPPORT ON)
+    
+    set (muse_lilv_ver "0.22.0" )
+    set (muse_lv2_ver "1.12.0")
+    set (muse_sratom_ver "0.4.6")
+    set (muse_sord_ver "0.14.0")
+    set (muse_serd_ver "0.22.0")
+
+    PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
+    if (LILV_FOUND)
+            include_directories(${LILV_INCLUDE_DIRS})
+    endif (LILV_FOUND)
+    
+    PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
+    if (SORD_FOUND)
+            include_directories(${SORD_INCLUDE_DIRS})
+    endif (SORD_FOUND)
+    
+    PKG_CHECK_MODULES(LV2 lv2>=${muse_lv2_ver})
+    if (LV2_FOUND)
+            include_directories(${LV2_INCLUDE_DIRS})
+    endif (LV2_FOUND)
+
+    if (ENABLE_LV2_SUPPLIED)
+        set (LV2_USE_SUPPLIED_VERSION TRUE)
+    else (ENABLE_LV2_SUPPLIED)
+        set (LV2_USE_SUPPLIED_VERSION FALSE)
+    endif (ENABLE_LV2_SUPPLIED)
+    
+    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        set (LV2_USE_SUPPLIED_VERSION TRUE)
+    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+    
+    if (LV2_USE_SUPPLIED_VERSION)
+        PKG_CHECK_MODULES(PCRE libpcre)
+        set (muse_lv2_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lv2-${muse_lv2_ver}")
+        set (muse_sratom_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sratom-${muse_sratom_ver}")
+        set (muse_sord_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/sord-${muse_sord_ver}")
+        set (muse_serd_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/serd-${muse_serd_ver}")
+        set (muse_lilv_dir "${PROJECT_SOURCE_DIR}/muse/lv2Support/lilv-${muse_lilv_ver}" )
+        include_directories(
+            ${muse_lv2_dir}
+            ${muse_sord_dir}
+            ${muse_sratom_dir}
+            ${muse_serd_dir}
+            ${muse_lilv_dir}
+        )
+    endif (LV2_USE_SUPPLIED_VERSION)
+    
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
+
 
 if (ENABLE_LV2_DEBUG)
       set (DEBUG_LV2 ON)
@@ -594,9 +646,13 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
-if (ENABLE_LV2 AND (NOT LV2_FOUND))
-        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.16.0).")
-endif (ENABLE_LV2 AND (NOT LV2_FOUND))
+if (ENABLE_LV2)
+    if (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
+        message("** WARNING: System LV2 support libraries were chosen, but development files were not found or too old:")
+        message("   Requires lv2 > " ${muse_lv2_ver} ", lilv-0 > " ${muse_lilv_ver} ", sord-0 > " ${muse_sord_ver})
+        message("   Building supplied internal versions instead.")
+    endif (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
+endif (ENABLE_LV2)
 
 message("")
 

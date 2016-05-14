@@ -296,11 +296,10 @@ void initLV2()
          //const char *pluginUri = lilv_node_as_string(uriNode);
          if(MusEGlobal::debugMsg)
            std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
-         const char *lfp = lilv_uri_to_path(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)));
+         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+         const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
          if(MusEGlobal::debugMsg)
            std::cerr << "Library path: " << lfp << std::endl;
-
-
 
          if(MusEGlobal::debugMsg)
          {
@@ -420,6 +419,7 @@ void initLV2()
 
             }
          }
+         lilv_free((void*)lfp); // Must free.
       }
 
       if(nameNode != NULL)
@@ -1304,13 +1304,16 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
       //now open ui library file
 
-      const  char *uiPath = lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)));
+      // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+      const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), NULL);
 // REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
 // TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
 //          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
 //       state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
       //state->uiDlHandle = dlmopen(LM_ID_NEWLM, uiPath, RTLD_LAZY | RTLD_DEEPBIND); // Just a test
       state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
+      
+      lilv_free((void*)uiPath); // Must free.
       if(state->uiDlHandle == NULL)
       {
          win->stopNextTime();
@@ -1345,15 +1348,19 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       }
 
       void *uiW = NULL;
+      // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+      const char* bundle_path = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi)), NULL);
       state->uiInst = state->uiDesc->instantiate(state->uiDesc,
                                                  lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
-                                                 lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
+                                                 bundle_path,
                                                  LV2Synth::lv2ui_PortWrite,
                                                  state,
                                                  &uiW,
                                                  state->_ppifeatures);
 
 
+      lilv_free((void*)bundle_path); // Must free.
+      
       if(state->uiInst != NULL)
       {
          state->uiIdleIface = NULL;

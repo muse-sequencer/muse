@@ -309,7 +309,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
         return 1;
         
       int audioState = Audio::STOP;
-      switch (state) {
+      switch (int(state)) {
             case JackTransportStopped:   
               audioState = Audio::STOP;
             break;  
@@ -326,7 +326,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  
-              //printf("processSync JackTransportNetStarting\n");
+              //fprintf(stderr, "processSync JackTransportNetStarting\n");
               
               audioState = Audio::START_PLAY;
             break;  
@@ -434,8 +434,26 @@ static void jackError(const char *s)
 
 static void noJackError(const char* /* s */)
       {
-            //printf("noJackError()\n");
+            //fprintf(stderr, "noJackError()\n");
       }
+      
+//---------------------------------------------------------
+//   jackInfo
+//---------------------------------------------------------
+
+static void jackInfo(const char* s)
+{
+  fprintf(stderr, "JACK INFO: %s\n", s);
+}
+      
+//---------------------------------------------------------
+//   noJackInfo
+//---------------------------------------------------------
+
+static void noJackInfo(const char* /*s*/)
+{
+  //fprintf(stderr, "noJackInfo()\n");
+}
       
 //---------------------------------------------------------
 //   JackAudioDevice
@@ -541,11 +559,15 @@ bool initJackAudio()
       }
       
       if (MusEGlobal::debugMsg) {
-            fprintf(stderr,"initJackAudio()\n");
+            fprintf(stderr, "initJackAudio(): registering error and info callbacks...\n");
             jack_set_error_function(jackError);
+            jack_set_info_function(jackInfo);
             }
-      else
+      else {
             jack_set_error_function(noJackError);
+            jack_set_info_function(noJackInfo);
+      }
+      
       MusEGlobal::doSetuid();
 
       int opts = JackNullOption;
@@ -571,7 +593,6 @@ bool initJackAudio()
 
       if (MusEGlobal::debugMsg)
             fprintf(stderr, "initJackAudio(): client %s opened.\n", jack_get_client_name(client));
-      //jack_set_error_function(jackError);
       
       // Check if Jack-1 jack_port_by_name() workaround is required:
       if(jack_ver_maj == 0)
@@ -1195,6 +1216,18 @@ void JackAudioDevice::registerClient()
       {
       if (JACK_DEBUG)
             printf("registerClient()\n");
+      
+//       if (MusEGlobal::debugMsg) {
+//             fprintf(stderr, "JackAudioDevice::registerClient(): registering error and info callbacks...\n");
+//             jack_set_error_function(jackError);
+//             jack_set_info_function(jackInfo);
+//             }
+//       else {
+//             fprintf(stderr, "JackAudioDevice::registerClient(): registering no error and no info callbacks...\n");
+//             jack_set_error_function(noJackError);
+//             jack_set_info_function(noJackInfo);
+//       }
+      
       if(!checkJackClient(_client)) return;
 
       jack_set_thread_init_callback(_client, (JackThreadInitCallback) jack_thread_init, 0);
@@ -1999,7 +2032,7 @@ int JackAudioDevice::getState()
       //if (JACK_DEBUG)
       //    printf("JackAudioDevice::getState transportState:%d\n", transportState);
       
-      switch (transportState) {
+      switch (int(transportState)) {
             case JackTransportStopped:  
               return Audio::STOP;
             case JackTransportLooping:

@@ -1,3 +1,19 @@
+12.05.2016:
+         - Update all libs to latest versions. (Tim)
+         * Steps to update the built-in lv2 support library versions:
+           (A guide really, new versions may deprecate things or need new tweaks):
+           1: Bring (copy) all the new versions' folders to lv2Support folder.
+           2: Delete all unnecessary text files and build scripts etc, and doc, 
+               bindings, test, utils folders etc, also the lv2/lv2plug.in/ns/meta 
+               folder and index.html.in We want just all the lib c/h files.
+           3: Comment out all #include "sord_config.h", #include "serd_config.h" 
+               and #include "lilv_config.h" since WE supply those config values.
+           4: Apply the fix of 24.03.2016 if desired.
+           5: Be sure to change the hard-coded lv2, lilv, serd, sord and sratom
+               built-in version numbers, in the top-level cmakelists.txt,
+               so that cmake can find these newly added versions.
+           6: Delete the old versions' folders.
+           7: Remember to remove/add folders from/to the git repo.
 24.03.2016:
          - Changed lilv/lib.c: lilv_lib_open(): Added RTLD_DEEPBIND to dlopen() call. (Tim)
            Fixes at least two Qt4 external-ui synths (synthv1, drumk) crashing.

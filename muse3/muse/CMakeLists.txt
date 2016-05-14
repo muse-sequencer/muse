@@ -43,9 +43,9 @@ set (SubDirs
       widgets
       lv2Gtk2Helper
       )
-if(LV2_SUPPORT)
+if(LV2_SUPPORT AND LV2_USE_SUPPLIED_VERSION)
       set ( SubDirs ${SubDirs} lv2Support )
-endif(LV2_SUPPORT)
+endif(LV2_SUPPORT AND LV2_USE_SUPPLIED_VERSION)
 
 if (PYTHON_SUPPORT)
       set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
@@ -275,10 +275,20 @@ if(OSC_SUPPORT)
 endif(OSC_SUPPORT)
 
 if(LV2_SUPPORT)
-      target_link_libraries(core lv2_support)
-      if (PCRE_FOUND)
-            target_link_libraries(core ${PCRE_LIBRARIES})
-      endif (PCRE_FOUND)
+      if(LV2_USE_SUPPLIED_VERSION)
+            message("Building and linking internal LV2 support libraries (lv2, lilv, sord etc.)")
+            message("")
+            target_link_libraries(core lv2_support)
+            if (PCRE_FOUND)
+                    target_link_libraries(core ${PCRE_LIBRARIES})
+            endif (PCRE_FOUND)
+      else(LV2_USE_SUPPLIED_VERSION)
+            message("Linking system LV2 support libraries (lv2, lilv, sord etc.)")
+            message("")
+            target_link_libraries(core ${LILV_LIBRARIES})
+            target_link_libraries(core ${SORD_LIBRARIES})
+            target_link_libraries(core ${LV2_LIBRARIES})
+      endif(LV2_USE_SUPPLIED_VERSION)
 endif(LV2_SUPPORT)
 
 target_link_libraries(muse
