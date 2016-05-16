@@ -41,11 +41,16 @@ set (SubDirs
       mplugins
       waveedit
       widgets
-      lv2Gtk2Helper
       )
-if(LV2_SUPPORT AND LV2_USE_SUPPLIED_VERSION)
-      set ( SubDirs ${SubDirs} lv2Support )
-endif(LV2_SUPPORT AND LV2_USE_SUPPLIED_VERSION)
+if(LV2_SUPPORT)
+  if(LV2_USE_SUPPLIED_VERSION)
+    set ( SubDirs ${SubDirs} lv2Support )
+  endif(LV2_USE_SUPPLIED_VERSION)
+  
+  if(HAVE_GTK2)
+    set ( SubDirs ${SubDirs} lv2Gtk2Support )
+  endif(HAVE_GTK2)
+endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
       set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
@@ -289,6 +294,11 @@ if(LV2_SUPPORT)
             target_link_libraries(core ${SORD_LIBRARIES})
             target_link_libraries(core ${LV2_LIBRARIES})
       endif(LV2_USE_SUPPLIED_VERSION)
+      
+      if(HAVE_GTK2)
+            target_link_libraries(core lv2_gtk2_support)
+      endif(HAVE_GTK2)
+      
 endif(LV2_SUPPORT)
 
 target_link_libraries(muse

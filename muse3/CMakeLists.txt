@@ -393,6 +393,15 @@ endif (ENABLE_VST_VESTIGE)
 if (ENABLE_LV2)
     set(LV2_SUPPORT ON)
     
+    ##
+    ## find Gtk2
+    ##
+    
+    find_package(GTK2 COMPONENTS gtk gtkmm)
+    if(GTK2_FOUND)
+        set(HAVE_GTK2 ON)
+    endif(GTK2_FOUND)
+    
     set (muse_lilv_ver "0.22.0" )
     set (muse_lv2_ver "1.12.0")
     set (muse_sratom_ver "0.4.6")
@@ -647,6 +656,10 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
 if (ENABLE_LV2)
+    if(NOT GTK2_FOUND)
+        message("** WARNING: LV2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
+    endif(NOT GTK2_FOUND)
+    
     if (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
         message("** WARNING: System LV2 support libraries were chosen, but development files were not found or too old:")
         message("   Requires lv2 > " ${muse_lv2_ver} ", lilv-0 > " ${muse_lilv_ver} ", sord-0 > " ${muse_sord_ver})
@@ -662,6 +675,9 @@ summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("LV2 support" LV2_SUPPORT)
+if(LV2_SUPPORT)
+  summary_add("LV2 Gtk2 UI support" HAVE_GTK2)
+endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
