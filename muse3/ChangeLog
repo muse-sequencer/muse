@@ -1,3 +1,14 @@
+16.05.2016:
+         - Updated lv2Support tree to latest versions. (Tim)
+           Instructions on how to do future upgrades added to lv2Support/ChangeLog.
+         - Added new cmake option 'ENABLE_LV2_SUPPLIED', to use supplied vs. system
+            lv2 support libraries (lv2, lilv, serd, sord, sratom etc). Default off. (Tim)
+         - Removed pre-built lv2Gtk2Helper libraries and folder. (Tim)
+           Replaced with lv2Gtk2Support folder, always built by cmake.
+           * Thus, GTK2 dev packages gtkmm-2, gtk+-2 are now REQUIRED for LV2 Gtk2 UI support.
+         - Fix compile stoppage warning if using Jack-1. The very old 'case 4: hack' in
+            processSync and JackAudioDevice::getState(). (Tim)
+         - Suppress unwanted Jack info terminal output. (Tim)
 13.05.2016:
          - Added instrument file for Classic Cantabile SP-250 / Medeli SP4200 from 
            Mariotte91 at fontenay.tk (rj)
