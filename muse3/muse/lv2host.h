@@ -395,6 +395,7 @@ private:
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
     LV2PluginWrapper_State *_state;
+    
 public:
     LV2SynthIF ( SynthI *s );
     virtual ~LV2SynthIF();

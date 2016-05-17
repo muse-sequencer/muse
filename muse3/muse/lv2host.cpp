@@ -83,11 +83,10 @@
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
 
-#ifdef __x86_64__
-#define LV2_GTK_HELPER LIBDIR "/modules/lv2Gtk2Helper64.so"
-#else
-#define LV2_GTK_HELPER LIBDIR "/modules/lv2Gtk2Helper32.so"
+#ifdef HAVE_GTK2
+#include "lv2Gtk2Support/lv2Gtk2Support.h"
 #endif
+
 
 namespace MusECore
 {
@@ -123,8 +122,6 @@ namespace MusECore
 
 static LilvWorld *lilvWorld = 0;
 static int uniqueID = 1;
-static bool bLV2Gtk2Enabled = true;
-static void *lv2Gtk2HelperHandle = NULL;
 
 //uri cache structure.
 typedef struct
@@ -220,12 +217,17 @@ LV2_Feature lv2Features [] =
 
 std::vector<LV2Synth *> synthsToFree;
 
-
-
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
 
 void initLV2()
 {
+#ifdef HAVE_GTK2
+   //----------------- 
+   // Initialize Gtk
+   //----------------- 
+   MusEGui::lv2Gtk2Helper_init();
+#endif
+      
    std::set<std::string> supportedFeatures;
    uint32_t i = 0;
 
@@ -296,11 +298,10 @@ void initLV2()
          //const char *pluginUri = lilv_node_as_string(uriNode);
          if(MusEGlobal::debugMsg)
            std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
-         const char *lfp = lilv_uri_to_path(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)));
+         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+         const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
          if(MusEGlobal::debugMsg)
            std::cerr << "Library path: " << lfp << std::endl;
-
-
 
          if(MusEGlobal::debugMsg)
          {
@@ -420,6 +421,7 @@ void initLV2()
 
             }
          }
+         lilv_free((void*)lfp); // Must free.
       }
 
       if(nameNode != NULL)
@@ -446,22 +448,14 @@ void deinitLV2()
       lilv_node_free(*n);
    }
 
-   if(bLV2Gtk2Enabled && lv2Gtk2HelperHandle != NULL)
-   {
-      bLV2Gtk2Enabled = false;
-      void (*lv2Gtk2Helper_deinitFn)();
-      *(void **)(&lv2Gtk2Helper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_deinit");
-      lv2Gtk2Helper_deinitFn();
-      dlclose(lv2Gtk2HelperHandle);
-      lv2Gtk2HelperHandle = NULL;
-   }
+#ifdef HAVE_GTK2
+   MusEGui::lv2Gtk2Helper_deinit();
+#endif
 
    lilv_world_free(lilvWorld);
    lilvWorld = NULL;
 
 }
-
-
 
 void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
 {
@@ -793,13 +787,12 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 
    state->uiInst = *(void **)(&state->uiDesc) = NULL;
 
-   if(bLV2Gtk2Enabled && state->gtk2Plug != NULL)
-   {
-      void (*lv2Gtk2Helper_gtk_widget_destroyFn)(void *);
-      *(void **)(&lv2Gtk2Helper_gtk_widget_destroyFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_destroy");
-      lv2Gtk2Helper_gtk_widget_destroyFn(state->gtk2Plug);
-      state->gtk2Plug = NULL;
-   }
+#ifdef HAVE_GTK2
+   if(state->gtk2Plug != NULL)
+     MusEGui::lv2Gtk2Helper_gtk_widget_destroy(state->gtk2Plug);
+#endif      
+
+   state->gtk2Plug = NULL;
 
    if(state->uiDlHandle != NULL)
    {
@@ -808,8 +801,6 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
    }
 
 }
-
-
 
 void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 {
@@ -1093,8 +1084,6 @@ void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
       state->gtk2AllocateCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->setMinimumSize(width, height);
    }
-
-
 }
 
 void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
@@ -1107,16 +1096,12 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
       state->gtk2ResizeCompleted = true;
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
    }
-
 }
-
-
 
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 {
-   LV2Synth *synth = state->synth;
+   LV2Synth* synth = state->synth;
    LV2PluginWrapper_Window *win = NULL;
-   static bool gtkInitCompleted = false;
 
    if(synth->_pluginUiTypes.size() == 0)
       return;
@@ -1127,52 +1112,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    if(!bShow)
       return;
-   if(!gtkInitCompleted)
-   {
-      //first of all try to init gtk 2 helper (for opening lv2 gtk2/gtkmm2 guis)
-      bLV2Gtk2Enabled = false;
-      lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
-      char *dlerr = dlerror();
-      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", dlerr);
-      if(lv2Gtk2HelperHandle != NULL)
-      {
-         bool( * lv2Gtk2Helper_initFn)();
-         *(void **)(&lv2Gtk2Helper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_init");
-         bool bHelperInit = lv2Gtk2Helper_initFn();
-         if(bHelperInit)
-         {
-            bLV2Gtk2Enabled = true;
-            gtkInitCompleted = true;
-         }
-         else
-         {
-            dlclose(lv2Gtk2HelperHandle);
-            lv2Gtk2HelperHandle = NULL;
-         }
-      }
-
-      if(!bLV2Gtk2Enabled)
-      {
-         if(QMessageBox::question(MusEGlobal::muse, "MusE LV2 host error", QString("<b>LV2 GTK2 ui support is not available</b><br />"
-                                                            "This may happen because of the following reasons:<br />"
-                                                            "<b>1.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so is missing needed dependences.<br />"
-                                                            "This may be checked by executing<br />"
-                                                            "<b>ldd " LV2_GTK_HELPER "</b><br />"
-                                                            "in terminal window.<br />"
-                                                            "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                            "It can be recompiled and reinstalled from muse3/muse/lv2Gtk2Helper folder "
-                                                            " from MusE source package. dl error was:"
-                                                             ) + QString::fromUtf8(dlerror())+ "<br />"
-                                                            "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
-                                                            "Press <b>Yes</b> to cancel opening GUI and save your work first.",
-                                                            QMessageBox::Yes | QMessageBox::No)
-               != QMessageBox::No)
-         {
-            return;
-         }
-      }
-   }
-
+   
    LV2_PLUGIN_UI_TYPES::iterator itUi;
 
    if((state->uiCurrent == NULL) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
@@ -1183,7 +1123,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       QAction *aUiTypeSelected = NULL;
       if((synth->_pluginUiTypes.size() == 1) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_USE_FIRST)
       {
-         state->uiCurrent = synth->_pluginUiTypes.begin()->first;
+        state->uiCurrent = synth->_pluginUiTypes.begin()->first;
       }
       else
       {
@@ -1267,31 +1207,24 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       }
       else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
-         if(!bLV2Gtk2Enabled)
-         {
-            win->stopNextTime();
-            return;
-         }
+#ifndef HAVE_GTK2
+         win->stopNextTime();
+         return;
+#else         
+         
          bEmbed = true;
          bGtk = true;
          //ewWin = new QWidget();
 
          //ewWin = new QX11EmbedContainer(win);
          //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
-         void *( *lv2Gtk2Helper_gtk_plug_newFn)(unsigned long, void*);
-         *(void **)(&lv2Gtk2Helper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_plug_new");
-         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(0, state);
+         state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_plug_new(0, state);
          //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
-
-
-         void ( *lv2Gtk2Helper_register_allocate_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
-         *(void **)(&lv2Gtk2Helper_register_allocate_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_allocate_cb");
-         lv2Gtk2Helper_register_allocate_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
-
-         void ( *lv2Gtk2Helper_register_resize_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
-         *(void **)(&lv2Gtk2Helper_register_resize_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_resize_cb");
-         lv2Gtk2Helper_register_resize_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
-
+         MusEGui::lv2Gtk2Helper_register_allocate_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
+         MusEGui::lv2Gtk2Helper_register_resize_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
+         
+#endif         
+         
       }
       else if(strcmp(LV2_F_UI_Qt5_UI, cUiUri) == 0) //Qt5 uis are handled natively
       {
@@ -1304,13 +1237,16 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
       //now open ui library file
 
-      const  char *uiPath = lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)));
+      // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+      const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), NULL);
 // REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
 // TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
 //          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
 //       state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
       //state->uiDlHandle = dlmopen(LM_ID_NEWLM, uiPath, RTLD_LAZY | RTLD_DEEPBIND); // Just a test
       state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
+      
+      lilv_free((void*)uiPath); // Must free.
       if(state->uiDlHandle == NULL)
       {
          win->stopNextTime();
@@ -1345,15 +1281,19 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       }
 
       void *uiW = NULL;
+      // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
+      const char* bundle_path = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi)), NULL);
       state->uiInst = state->uiDesc->instantiate(state->uiDesc,
                                                  lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
-                                                 lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
+                                                 bundle_path,
                                                  LV2Synth::lv2ui_PortWrite,
                                                  state,
                                                  &uiW,
                                                  state->_ppifeatures);
 
 
+      lilv_free((void*)bundle_path); // Must free.
+      
       if(state->uiInst != NULL)
       {
          state->uiIdleIface = NULL;
@@ -1382,21 +1322,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
             {               
                if(bGtk)
                {
-                  void ( *lv2Gtk2Helper_gtk_container_addFn)(void *, void *);
-                  *(void **)(&lv2Gtk2Helper_gtk_container_addFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_container_add");
-
-                  void ( *lv2Gtk2Helper_gtk_widget_show_allFn)(void *);
-                  *(void **)(&lv2Gtk2Helper_gtk_widget_show_allFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_show_all");
-
-                  void ( *lv2Gtk2Helper_gtk_widget_get_allocationFn)(void *, int *, int *);
-                  *(void **)(&lv2Gtk2Helper_gtk_widget_get_allocationFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_get_allocation");
-
-                  lv2Gtk2Helper_gtk_container_addFn(state->gtk2Plug, uiW);
-                  lv2Gtk2Helper_gtk_widget_show_allFn(state->gtk2Plug);
-
-                  unsigned long ( *lv2Gtk2Helper_gdk_x11_drawable_get_xidFn)(void*);
-                  *(void **)(&lv2Gtk2Helper_gdk_x11_drawable_get_xidFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gdk_x11_drawable_get_xid");
-                  unsigned long plugX11Id = lv2Gtk2Helper_gdk_x11_drawable_get_xidFn(state->gtk2Plug);
+                   
+#ifdef HAVE_GTK2
+                  MusEGui::lv2Gtk2Helper_gtk_container_add(state->gtk2Plug, uiW);
+                  MusEGui::lv2Gtk2Helper_gtk_widget_show_all(state->gtk2Plug);
+                  unsigned long plugX11Id = MusEGui::lv2Gtk2Helper_gdk_x11_drawable_get_xid(state->gtk2Plug);
+                  
                   x11QtWindow = QWindow::fromWinId(plugX11Id);
                   ewWin = QWidget::createWindowContainer(x11QtWindow);
                   //ewWin->setParent(win);
@@ -1406,11 +1337,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                   {
                      int w = 0;
                      int h = 0;
-                     lv2Gtk2Helper_gtk_widget_get_allocationFn(uiW, &w, &h);
+                     MusEGui::lv2Gtk2Helper_gtk_widget_get_allocation(uiW, &w, &h);
                      win->setMinimumSize(w, h);
                      win->resize(w, h);
                   }
                   //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+#endif                  
                }
                else
                {
@@ -2488,7 +2420,13 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
             const char *strUiType = lilv_node_as_string(pluginUIType); //internal uis are preferred
             std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << strUiType << std::endl;
 #endif
-            _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(false, pluginUIType)));
+
+#ifndef HAVE_GTK2            
+            const char *cUiUri = lilv_node_as_uri(pluginUIType);
+            if(strcmp(LV2_UI__GtkUI, cUiUri) != 0)
+#endif              
+              
+              _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(false, pluginUIType)));
          }
          else
          {
@@ -2510,7 +2448,13 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 #ifdef DEBUG_LV2
                   std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
 #endif
-                  _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(true, pluginUIType)));
+                  
+#ifndef HAVE_GTK2            
+                  const char *cUiUri = lilv_node_as_uri(pluginUIType);
+                  if(strcmp(LV2_UI__GtkUI, cUiUri) != 0)
+#endif              
+              
+                    _pluginUiTypes.insert(std::make_pair(ui, std::make_pair(true, pluginUIType)));
                }
 
                nit = lilv_nodes_next(nUiClss, nit);
@@ -4380,7 +4324,7 @@ void LV2SynthIF::showNativeGui(bool bShow)
       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
    }
 
-   LV2Synth::lv2ui_ShowNativeGui(_state, bShow);
+  LV2Synth::lv2ui_ShowNativeGui(_state, bShow);
 }
 
 void LV2SynthIF::write(int level, Xml &xml) const
@@ -5016,9 +4960,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
       state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
    }
 
-   LV2Synth::lv2ui_ShowNativeGui(state, bShow);
-
-
+  LV2Synth::lv2ui_ShowNativeGui(state, bShow);
 }
 
 bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)

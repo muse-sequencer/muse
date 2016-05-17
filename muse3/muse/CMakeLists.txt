@@ -41,10 +41,15 @@ set (SubDirs
       mplugins
       waveedit
       widgets
-      lv2Gtk2Helper
       )
 if(LV2_SUPPORT)
-      set ( SubDirs ${SubDirs} lv2Support )
+  if(LV2_USE_SUPPLIED_VERSION)
+    set ( SubDirs ${SubDirs} lv2Support )
+  endif(LV2_USE_SUPPLIED_VERSION)
+  
+  if(HAVE_GTK2)
+    set ( SubDirs ${SubDirs} lv2Gtk2Support )
+  endif(HAVE_GTK2)
 endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
@@ -275,10 +280,25 @@ if(OSC_SUPPORT)
 endif(OSC_SUPPORT)
 
 if(LV2_SUPPORT)
-      target_link_libraries(core lv2_support)
-      if (PCRE_FOUND)
-            target_link_libraries(core ${PCRE_LIBRARIES})
-      endif (PCRE_FOUND)
+      if(LV2_USE_SUPPLIED_VERSION)
+            message("Building and linking internal LV2 support libraries (lv2, lilv, sord etc.)")
+            message("")
+            target_link_libraries(core lv2_support)
+            if (PCRE_FOUND)
+                    target_link_libraries(core ${PCRE_LIBRARIES})
+            endif (PCRE_FOUND)
+      else(LV2_USE_SUPPLIED_VERSION)
+            message("Linking system LV2 support libraries (lv2, lilv, sord etc.)")
+            message("")
+            target_link_libraries(core ${LILV_LIBRARIES})
+            target_link_libraries(core ${SORD_LIBRARIES})
+            target_link_libraries(core ${LV2_LIBRARIES})
+      endif(LV2_USE_SUPPLIED_VERSION)
+      
+      if(HAVE_GTK2)
+            target_link_libraries(core lv2_gtk2_support)
+      endif(HAVE_GTK2)
+      
 endif(LV2_SUPPORT)
 
 target_link_libraries(muse
