@@ -18,19 +18,19 @@ details.
          - Midi file import/export
          - Input filter
          - Support for internal softsynth plugins using
-           DSSI, VST and MESS
+           LV2, DSSI, VST, LinuxVST and MESS
          - much more
 
       Audio sequencing:
          - Realtime Record/Playback several mono/stereo inputs/outputs
          - Graphical editing of automation
-         - Support for LADSPA, DSSI, VST plugins
+         - Support for LADSPA, LV2, DSSI, VST, LinuxVST plugins
 
       Technologies supported:
          - LASH - for session control with external LASH enabled applications 
          - JACK - The Jack Audio Connection Kit can be used for audio and midi
          - ALSA midi output
-         - Plugin formats: DSSI, VST(i), MESS
+         - Plugin formats: LV2, DSSI, VST, LinuxVST, MESS
          - FLAM plugin guis.
          - Built on QT4
 
@@ -89,6 +89,31 @@ details.
       - liblo    Lightweight OSC (Open Sound Control) (development files)   
           http://liblo.sourceforge.net/
 
+      - LV2 (LADSPA Version 2) plugin support:
+      
+        MusE contains built-in versions of these LV2 support libraries:
+         lv2, lilv, serd, sord and sratom, from:
+          http://drobilla.net/software
+          
+        But if it finds system-installed versions (development files) 
+         greater than or equal to all of the built-in versions, 
+         the system-installed versions will be used.
+
+        The cmake option ENABLE_LV2_SUPPLIED (default off) 
+         forces built-in versions to be used.
+         
+        (The built-in versions may be slightly modified from their 
+         corresponding official versions. See muse/lv2Support/ChangeLog.)
+
+      - LV2 Gtk2 User Interface support:
+      
+        Some LV2 plugins may provide a Gtk2 based graphical User Interface.
+        To view them, the following is required (development files):
+        gtkmm-2
+         http://www.gtkmm.org
+        gtk+-2
+         http://www.gtk.org
+         
       - DSSI     Disposable Soft Synth Interface (development files)   
           http://dssi.sourceforge.net/
         (Both recommended - DSSI needs OSC, OSC alone does nothing, for now.)

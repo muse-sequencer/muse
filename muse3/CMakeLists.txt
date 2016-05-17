@@ -662,7 +662,7 @@ if (ENABLE_LV2)
     
     if (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
         message("** WARNING: System LV2 support libraries were chosen, but development files were not found or too old:")
-        message("   Requires lv2 > " ${muse_lv2_ver} ", lilv-0 > " ${muse_lilv_ver} ", sord-0 > " ${muse_sord_ver})
+        message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver})
         message("   Building supplied internal versions instead.")
     endif (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
 endif (ENABLE_LV2)
