@@ -24,11 +24,19 @@ add_library ( lv2_gtk2_support ${MODULES_BUILD}
 #       CACHE INTERNAL ""
 #       )
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -shared -pedantic -Wall -Wextra -Werror -std=c++11")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -g0 -DNDEBUG")
+# # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+# # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g0 -D_DEBUG ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Os -g0 -D_DEBUG")
+
 ##
 ## Compilation flags and target name
 ##
 set_target_properties( lv2_gtk2_support
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-std=c++11"
+      # COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -std=c++11"
       OUTPUT_NAME muse_lv2_gtk2_support
       )
 
