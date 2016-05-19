@@ -1,3 +1,11 @@
+19.05.2016:
+         - Upon startup, Jack midi inputs/outputs are (finally) now paired together 
+            into single MidiDevices just like the ALSA MidiDevices. (Tim)
+           How it works: If the DIFFERENCE between two Jack midi port names are EXACTLY
+            the words "capture" and "playback", or "input" and "output", or "in" and "out", 
+            or finally "c" and "p", then the ports are considered a matched pair. 
+           (The best names or aliases are picked, "system:" are avoided, similar to our 
+            persistent port routes feature.) 
 16.05.2016:
          - Updated lv2Support tree to latest versions. (Tim)
            Instructions on how to do future upgrades added to lv2Support/ChangeLog.

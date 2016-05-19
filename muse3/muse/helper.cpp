@@ -48,6 +48,8 @@
 #include "lv2host.h"
 #include "vst_native.h"
 
+#include <strings.h>
+
 #include <QMenu>
 #include <QApplication>
 #include <QDir>
@@ -96,7 +98,7 @@ QString pitch2string(int v)
       }
 
 
-#if 1
+#if 0
 
 // -------------------------------------------------------------------------------------------------------
 // enumerateJackMidiDevices()
@@ -177,18 +179,12 @@ void enumerateJackMidiDevices()
   }
 }
 
-#else // this code is disabled
-
-// Please don't remove this section as it may be improved.
+#else 
 
 // -------------------------------------------------------------------------------------------------------
 // enumerateJackMidiDevices()
-// This version worked somewhat well with system devices. 
-// But no, it is virtually impossible to tell from the names whether ports should be paired.
-// There is too much room for error - what markers to look for ("capture_"/"playback_") etc.
-// It works kind of OK with 'seq' Jack Midi ALSA devices, but not for 'raw' which have a different
-//  naming structure ("in-hw-0-0-0"/"out-hw-0-0-0").
-// It also fails to combine if the ports were named by a client app, for example another instance of MusE.
+// This version attempts to pair together Jack midi input and outputs into single MidiDevices,
+//  similar to how ALSA presents pairs of inputs and outputs.
 // -------------------------------------------------------------------------------------------------------
 
 void enumerateJackMidiDevices()
@@ -196,85 +192,167 @@ void enumerateJackMidiDevices()
   if(!MusEGlobal::checkAudioDevice())
     return;
 
-  MidiDevice* dev = 0;
+  PendingOperationList operations;
   
   // If Jack is running.
   if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)  
   {
+    MidiDevice* dev = 0;
+    char w_good_name[ROUTE_PERSISTENT_NAME_SIZE];
+    char r_good_name[ROUTE_PERSISTENT_NAME_SIZE];
     std::list<QString> wsl;
     std::list<QString> rsl;
-    wsl = MusEGlobal::audioDevice->inputPorts(true, 0);  // Ask for first aliases.
-    rsl = MusEGlobal::audioDevice->outputPorts(true, 0); // Ask for first aliases.
+    wsl = MusEGlobal::audioDevice->inputPorts(true);
+    rsl = MusEGlobal::audioDevice->outputPorts(true);
 
     for(std::list<QString>::iterator wi = wsl.begin(); wi != wsl.end(); ++wi)
     {
-      QString ws = *wi;
-      int y = ws.lastIndexOf("_");
-      if(y >= 1)
-      {  
-        int x = ws.lastIndexOf("_", y-1);
-        if(x >= 0)
-          ws.remove(x, y - x);
-      }
-      
-      
+      QByteArray w_ba = (*wi).toLatin1();
+      const char* w_port_name = w_ba.constData();
+
       bool match_found = false;
-      for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
+      void* const w_port = MusEGlobal::audioDevice->findPort(w_port_name);
+      if(w_port)
       {
-        QString rs = *ri;
-        int y = rs.lastIndexOf("_");
-        if(y >= 1)
-        {  
-          int x = rs.lastIndexOf("_", y-1);
-          if(x >= 0)
-            rs.remove(x, y - x);
-        }
-        
-        // Do we have a matching pair?
-        if(rs == ws)
-        {
-          dev = MidiJackDevice::createJackMidiDevice(ws, 3); 
-          if(dev)
-          {
-            Route devRoute(dev, -1);
-            Route wdstRoute(*wi, true, -1, Route::JACK_ROUTE);
-            Route rsrcRoute(*ri, false, -1, Route::JACK_ROUTE);
-            MusEGlobal::audio->msgAddRoute(devRoute, wdstRoute);
-            MusEGlobal::audio->msgAddRoute(rsrcRoute, devRoute);
-          }  
+        // Get a good routing name.
+        MusEGlobal::audioDevice->portName(w_port, w_good_name, ROUTE_PERSISTENT_NAME_SIZE);
           
-          rsl.erase(ri);  // Done with this read port. Remove.
-          match_found = true;
-          break;
-        }
-      }  
-      
+        for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
+        {
+          QByteArray r_ba = (*ri).toLatin1();
+          const char* r_port_name = r_ba.constData();
+
+          void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
+          if(r_port)
+          {
+            // Get a good routing name.
+            MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
+
+            const size_t w_sz = strlen(w_good_name);
+            const size_t r_sz = strlen(r_good_name);
+            size_t start_c = 0;
+            size_t w_end_c = w_sz;
+            size_t r_end_c = r_sz;
+            
+            while(start_c < w_sz && start_c < r_sz &&
+                  w_good_name[start_c] == r_good_name[start_c])
+              ++start_c;
+            
+            while(w_end_c > 0 && r_end_c > 0)
+            {
+              if(w_good_name[w_end_c - 1] != r_good_name[r_end_c - 1])
+                break;
+              --w_end_c;
+              --r_end_c;
+            }
+            
+            if(w_end_c > start_c && r_end_c > start_c)
+            {
+              const char* w_str = w_good_name + start_c;
+              const char* r_str = r_good_name + start_c;
+              const size_t w_len = w_end_c - start_c;
+              const size_t r_len = r_end_c - start_c;
+              
+              // Do we have a matching pair?
+              if((w_len == 7 && r_len == 8 &&
+                  strncasecmp(w_str, "capture", w_len) == 0 &&
+                  strncasecmp(r_str, "playback", r_len) == 0) ||
+                  
+                 (w_len == 8 && r_len == 7 &&
+                  strncasecmp(w_str, "playback", w_len) == 0 &&
+                  strncasecmp(r_str, "capture", r_len) == 0) || 
+                  
+                 (w_len == 5 && r_len == 6 &&
+                  strncasecmp(w_str, "input", w_len) == 0 &&
+                  strncasecmp(r_str, "output", r_len) == 0) || 
+                  
+                 (w_len == 6 && r_len == 5 &&
+                  strncasecmp(w_str, "output", w_len) == 0 &&
+                  strncasecmp(r_str, "input", r_len) == 0) || 
+                  
+                 (w_len == 2 && r_len == 3 &&
+                  strncasecmp(w_str, "in", w_len) == 0 &&
+                  strncasecmp(r_str, "out", r_len) == 0) || 
+                  
+                 (w_len == 3 && r_len == 2 &&
+                  strncasecmp(w_str, "out", w_len) == 0 &&
+                  strncasecmp(r_str, "in", r_len) == 0) || 
+                  
+                 (w_len == 1 && r_len == 1 &&
+                  strncasecmp(w_str, "p", w_len) == 0 &&
+                  strncasecmp(r_str, "c", r_len) == 0) || 
+                  
+                 (w_len == 1 && r_len == 1 &&
+                  strncasecmp(w_str, "c", w_len) == 0 &&
+                  strncasecmp(r_str, "p", r_len) == 0))
+              {
+                dev = MidiJackDevice::createJackMidiDevice(QString(), 3); // Let it pick the name
+                if(dev)
+                {
+                  const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
+                  const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+                  // We only want to add the route, not call jack_connect - jack may not have been activated yet.
+                  // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
+                  // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
+                  if(!dev->inRoutes()->contains(srcRoute))
+                    operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
+                  if(!dev->outRoutes()->contains(dstRoute))
+                    operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+                }
+                
+                rsl.erase(ri);  // Done with this read port. Remove.
+                match_found = true;
+                break;
+              }
+            }
+          }
+        }  
+      }
+
       if(!match_found)
       {
         // No match was found. Create a single writeable device.
-        QString s = *wi;
-        dev = MidiJackDevice::createJackMidiDevice(s, 1); 
+        dev = MidiJackDevice::createJackMidiDevice(QString(), 1); // Let it pick the name
         if(dev)
         {
-          Route srcRoute(dev, -1);
-          Route dstRoute(*wi, true, -1, Route::JACK_ROUTE);
-          MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+          // We only want to add the route, not call jack_connect - jack may not have been activated yet.
+          // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
+          // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
+          if(!dev->outRoutes()->contains(dstRoute))
+            operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
         }  
       }
+
     }
 
     // Create the remaining readable ports as single readable devices.
     for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
     {
-      QString s = *ri;
-      dev = MidiJackDevice::createJackMidiDevice(s, 2); 
+      dev = MidiJackDevice::createJackMidiDevice(QString(), 2); // Let it pick the name
       if(dev)
       {
-        Route srcRoute(*ri, false, -1, Route::JACK_ROUTE);
-        Route dstRoute(dev, -1);
-        MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+        QByteArray r_ba = (*ri).toLatin1();
+        const char* r_port_name = r_ba.constData();
+
+        void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
+        if(r_port)
+        {
+          // Get a good routing name.
+          MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
+          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
+          if(!dev->inRoutes()->contains(srcRoute))
+            operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
+        }      
       }  
     }
+  }
+  
+  if(!operations.empty())
+  {
+    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
+    MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
+    //MusEGlobal::song->update(SC_ROUTE);
   }
 }
 #endif   // enumerateJackMidiDevices
