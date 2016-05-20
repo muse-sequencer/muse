@@ -336,11 +336,11 @@ bool AudioMixerApp::stripIsVisible(Strip* s)
       if (!cfg->showSyntiTracks)
         return false;
       break;
-    case MusECore::Track::AUDIO_OUTPUT:
+    case MusECore::Track::AUDIO_INPUT:
       if (!cfg->showInputTracks)
         return false;
       break;
-    case MusECore::Track::AUDIO_INPUT:
+    case MusECore::Track::AUDIO_OUTPUT:
       if (!cfg->showOutputTracks)
         return false;
       break;
