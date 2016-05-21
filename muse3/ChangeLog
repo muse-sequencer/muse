@@ -1,5 +1,6 @@
 21.05.2016:
          - Fixed bug with ctrl+rightclick resize of notes no longer working (rj)
+         - Fixed shortcut for Pointer tool in right click tool menu (rj)
 20.05.2016:
          - Fixed bug with reversed Input/Output hidden in mixer menu (rj)
 19.05.2016:
