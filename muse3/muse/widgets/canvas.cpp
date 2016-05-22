@@ -77,6 +77,7 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       vscrollDir = VSCROLL_NONE;
       scrollTimer=NULL;
       ignore_mouse_move = false;
+      resizeDirection= RESIZE_TO_THE_RIGHT;
 
       supportsResizeToTheLeft = false;
       
@@ -1408,6 +1409,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                     resizeItem(curItem, shift, ctrl);
                     updateSelection();
                     redraw();
+                    resizeDirection = RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
                   }
                   break;
             case DRAG_NEW:
