@@ -755,7 +755,8 @@ QMenu* populateAddSynth(QWidget* parent)
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
         }  
-        QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
+        //QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
+        QAction* act = mmaps[itype]->addAction(synth->description());
         act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
       }  
     }
