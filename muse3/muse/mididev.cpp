@@ -794,12 +794,15 @@ void MidiDevice::handleSeek()
       if(ctlnum == CTRL_SUSTAIN && !MusEGlobal::audio->isPlaying())
         mp->setHwCtrlState(chan, CTRL_SUSTAIN, imcv->second.val);
       else
+      {
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
         // NOTE: Why again was this forced? There was a reason. Think it was RJ in response to bug rep, then I modded.
         // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
         //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
+        //fprintf(stderr, "MidiDevice::handleSeek: found_value: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, imcv->second.val);
         mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), false); //, imcv->first == pos);
         //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
+      }
     }
 
     // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
@@ -814,8 +817,11 @@ void MidiDevice::handleSeek()
       {
         MidiController* mc = imc->second;
         if(mc->initVal() != CTRL_VAL_UNKNOWN)
+        {
+          //fprintf(stderr, "MidiDevice::handleSeek: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
           // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
           mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
+        }
       }
     }
   }

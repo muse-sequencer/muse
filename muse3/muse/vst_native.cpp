@@ -1800,12 +1800,14 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
 
 QString VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) const
 {
-  unsigned long  program = prog & 0x7f;
-  unsigned long  lbank   = (prog >> 8) & 0xff;
-  unsigned long  hbank   = (prog >> 16) & 0xff;
-  if (lbank == 0xff)
+  unsigned long program = prog & 0xff;
+  unsigned long lbank   = (prog >> 8) & 0xff;
+  unsigned long hbank   = (prog >> 16) & 0xff;
+  if (program > 127)  // Map "dont care" to 0
+        program = 0;
+  if (lbank > 127)
         lbank = 0;
-  if (hbank == 0xff)
+  if (hbank > 127)
         hbank = 0;
   unsigned long p = (hbank << 16) | (lbank << 8) | program;
   unsigned long vp          = (hbank << 14) | (lbank << 7) | program;
@@ -2230,7 +2232,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
         #endif
         int v = b + 8192;
-        setVstEvent(event, (type | chn) & 0xff, v & 0x7f, (v >> 7) & 0x7f);
+        setVstEvent(event, (ME_PITCHBEND | chn) & 0xff, v & 0x7f, (v >> 7) & 0x7f);
         return true;
       }
 
@@ -2239,7 +2241,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         #ifdef VST_NATIVE_DEBUG
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
         #endif
-        setVstEvent(event, (type | chn) & 0xff, b & 0x7f);
+        setVstEvent(event, (ME_AFTERTOUCH | chn) & 0xff, b & 0x7f);
         return true;
       }
 
@@ -2248,7 +2250,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         #ifdef VST_NATIVE_DEBUG
         fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
         #endif
-        setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+        setVstEvent(event, (ME_POLYAFTER | chn) & 0xff, a & 0x7f, b & 0x7f);
         return true;
       }
 

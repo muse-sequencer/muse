@@ -4,7 +4,7 @@
 //  $Id: dssihost.cpp,v 1.15.2.16 2009/12/15 03:39:58 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
-//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -1197,11 +1197,21 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
 
-      int lb;
-      synti->currentProg(chn, NULL, &lb, NULL);
-      synti->setCurrentProg(chn, a, lb, 0);
-      if(dssi->select_program)
-        doSelectProgram(_handle, lb, a);
+      int cur_hb, cur_lb;
+      synti->currentProg(chn, NULL, &cur_lb, &cur_hb);
+      synti->setCurrentProg(chn, a & 0xff, cur_lb, cur_hb);
+      
+      // Only if there's something to change...
+      //if(dssi->select_program && (hb < 128 || lb < 128 || a < 128))
+      {
+        if(cur_hb > 127) // Map "dont care" to 0
+          cur_hb = 0;
+        if(cur_lb > 127)
+          cur_lb = 0;
+        if(a > 127)
+          a = 0;
+        doSelectProgram(_handle, (cur_hb << 8) + cur_lb, a);
+      }
       // Event pointer not filled. Return false.
       return false;
     }
@@ -1224,9 +1234,20 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int hb = (b >> 16) & 0xff;
         int lb = (b >> 8) & 0xff;
         int pr = b & 0xff;
+        
         synti->setCurrentProg(chn, pr, lb, hb);
-        if(dssi->select_program)
-          doSelectProgram(_handle, lb, pr);
+        
+        // Only if there's something to change...
+        //if(dssi->select_program && (hb < 128 || lb < 128 || pr < 128))
+        {
+          if(hb > 127) // Map "dont care" to 0
+            hb = 0;
+          if(lb > 127)
+            lb = 0;
+          if(pr > 127)
+            pr = 0;
+          doSelectProgram(_handle, (hb << 8) + lb, pr);
+        }
         // Event pointer not filled. Return false.
         return false;
       }
@@ -1970,8 +1991,14 @@ void DssiSynthIF::guiHeartBeat()
   int chn = 0;  // TODO: Channel?
   int hb, lb, pr;
   synti->currentProg(chn, &pr, &lb, &hb);
+  if(hb > 127) // Map "dont care" to 0
+    hb = 0;
+  if(lb > 127)
+    lb = 0;
+  if(pr > 127)
+    pr = 0;
   // Update the gui's program if needed.
-  _oscif.oscSendProgram(pr, lb);
+  _oscif.oscSendProgram(pr, (hb << 8) + lb);
   
   // Update the gui's controls if needed.
   unsigned long ports = _synth->_controlInPorts;
@@ -2006,7 +2033,13 @@ int DssiSynthIF::oscUpdate()
       int chn = 0;  // TODO: Channel?
       int hb, lb, pr;
       synti->currentProg(chn, &pr, &lb, &hb);
-      _oscif.oscSendProgram(pr, lb, true /*force*/);
+      if(hb > 127) // Map "dont care" to 0
+        hb = 0;
+      if(lb > 127)
+        lb = 0;
+      if(pr > 127)
+        pr = 0;
+      _oscif.oscSendProgram(pr, (hb << 8) + lb, true /*force*/);
       
       // Send current control values.
       unsigned long ports = _synth->_controlInPorts;
@@ -2029,22 +2062,21 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       {
       int ch      = 0;        // TODO: ??
       int port    = synti->midiPort();        
-      
-      bank    &= 0x7f;  
-      program &= 0x7f;
 
-      int hb;
-      synti->currentProg(ch, NULL, NULL, &hb);
-      hb &= 0xff;
-      if(hb > 127)  // Map "dont care" to 0
-        hb = 0;
+      // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+      int hb = bank >> 8;
+      int lb = bank & 0xff;
+      if(hb > 127 || lb > 127 || program > 127)
+        return 0;
+      hb &= 0x7f;
+      lb &= 0x7f;
       
-      synti->setCurrentProg(ch, program, bank, hb);
+      synti->setCurrentProg(ch, program, lb, hb);
       
       if(port != -1)
       {
         // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-        MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (bank << 8) | program);
+        MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (lb << 8) | program);
       
         #ifdef DSSI_DEBUG 
         fprintf(stderr, "DssiSynthIF::oscProgram midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());
@@ -2243,6 +2275,13 @@ void DssiSynthIF::queryPrograms()
             const DSSI_Program_Descriptor* pd = _synth->dssi->get_program(_handle, i);
             if (pd == 0)
                   break;
+            
+            // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+            if((pd->Bank >> 8) > 127 || 
+               (pd->Bank & 0xff) > 127 || 
+               pd->Program > 127)
+              continue;
+            
             DSSI_Program_Descriptor d;
             d.Name    = strdup(pd->Name);
             d.Program = pd->Program;
@@ -2254,11 +2293,6 @@ void DssiSynthIF::queryPrograms()
 void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
 {
   const DSSI_Descriptor* dssi = _synth->dssi;
-  if(bank > 127) // Map "dont care" to 0
-    bank = 0;
-  if(prog > 127)
-    prog = 0;
-
   dssi->select_program(handle, bank, prog);
   
   // Need to update the automation value, otherwise it overwrites later with the last automation value.
@@ -2281,15 +2315,17 @@ void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
 
 QString DssiSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) const
       {
-      unsigned program = prog & 0x7f;
-      int lbank   = (prog >> 8) & 0xff;
-      int hbank   = (prog >> 16) & 0xff;
+      unsigned program = prog & 0xff;
+      unsigned lbank   = (prog >> 8) & 0xff;
+      unsigned hbank   = (prog >> 16) & 0xff;
 
-      if (lbank == 0xff)
+      if (program > 127)  // Map "dont care" to 0
+            program = 0;
+      if (lbank > 127)
             lbank = 0;
-      if (hbank == 0xff)
+      if (hbank > 127)
             hbank = 0;
-      unsigned bank = (hbank << 8) + lbank;
+      const unsigned bank = (hbank << 8) + lbank;
 
       for (std::vector<DSSI_Program_Descriptor>::const_iterator i = programs.begin();
          i != programs.end(); ++i) {
@@ -2313,12 +2349,16 @@ void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool 
 
       for (std::vector<DSSI_Program_Descriptor>::const_iterator i = programs.begin();
          i != programs.end(); ++i) {
-            int bank = i->Bank;
-            int prog = i->Program;
-            int id   = (bank << 16) + prog;
-            
+            // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+            int hb = i->Bank >> 8;
+            int lb = i->Bank & 0xff;
+            if(hb > 127 || lb > 127 || i->Program > 127)
+              continue;
+            hb &= 0x7f;
+            lb &= 0x7f;
+
             QAction *act = menu->addAction(QString(i->Name));
-            act->setData(id);
+            act->setData((hb << 16) | (lb << 8) | (int)i->Program);
             }
       }
 

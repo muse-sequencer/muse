@@ -917,6 +917,12 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
 void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp)
 {
+// REMOVE Tim. yoshimi. Removed. TESTING Reinstate. FIXME TODO
+//  Causes CRASH with Will Godfrey's AKDemo yoshimi test song (but set on MDA Piano synth),
+//   stripped down to one single part with one single midi automation graph - the Aftertouch.
+//  Only HIS file causes this, I tried constructing my own part with hand drawn wild graphs on
+//   several controllers at once including aftertouch, pan, program, pitch etc. It didn't want
+//   to crash !!!
    for(size_t j = 0; j < state->inPortsMidi; j++)
    {
       state->midiInPorts [j].buffer->resetBuffer(true);
@@ -1637,6 +1643,11 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
       while((pDescr = state->prgIface->get_program(
                 lilv_instance_get_handle(state->handle), iPrg)) != NULL)
       {
+        // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+        uint32_t hb = pDescr->bank >> 8;
+        uint32_t lb = pDescr->bank & 0xff;
+        if(hb < 128 && lb < 128 && pDescr->program < 128)
+        {
          lv2ExtProgram extPrg;
          extPrg.index = iPrg;
          extPrg.bank = pDescr->bank;
@@ -1645,8 +1656,11 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
          extPrg.name = QString(pDescr->name);
 
          state->index2prg.insert(std::make_pair(iPrg, extPrg));
-         uint32_t midiprg = ((extPrg.bank & 0xff) << 8) + extPrg.prog;
+         hb &= 0x7f;
+         lb &= 0x7f;
+         uint32_t midiprg = (hb << 16) + (lb << 8) + extPrg.prog;
          state->prg2index.insert(std::make_pair(midiprg, iPrg));
+        }
          ++iPrg;
       }
    }
@@ -2085,13 +2099,15 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
          return;
       int ch      = 0;
       int port    = state->sif->synti->midiPort();
-
       const lv2ExtProgram &extPrg = itIndex->second;
-
-      state->sif->synti->setCurrentProg(ch, extPrg.prog, extPrg.bank, 0);
-
-      int rv = ((((int)itIndex->second.bank)<<8) + (int)extPrg.prog);
-
+      uint32_t hb = extPrg.bank >> 8;
+      uint32_t lb = extPrg.bank & 0xff;
+      if(hb > 127 || lb > 127 || extPrg.prog > 127)
+        return;
+      hb &= 0x7f;
+      lb &= 0x7f;
+      state->sif->synti->setCurrentProg(ch, extPrg.prog, lb, hb);
+      const int rv = (hb << 16) | (lb << 8) | extPrg.prog;
       if(port != -1)
       {
         MidiPlayEvent event(0, port, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
@@ -2105,9 +2121,7 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
            }
         }
       }
-
    }
-
 }
 
 
@@ -3337,36 +3351,29 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_PROGRAM\n");
 #endif
 
-      int bank = (a >> 8) & 0xff;
-      int prog = a & 0xff;
-
-      if(bank & 0x80) //try msb value then
-      {
-         bank = (b >> 16) & 0xff;
-      }
-
-      int pr, hb, lb;
-      synti->currentProg(chn, &pr, &lb, &hb);
-      if(!(bank & 0x80))
-      {
-         hb = 0;
-         lb = bank;
-      }
-      else
-         bank = lb;
-      pr = prog;
-      synti->setCurrentProg(chn, pr, lb, hb);
+      int cur_hb, cur_lb;
+      synti->currentProg(chn, NULL, &cur_lb, &cur_hb);
+      synti->setCurrentProg(chn, a & 0xff, cur_lb, cur_hb);
       
-      doSelectProgram(chn, bank, prog);
+      const int patch = ((cur_hb & 0xff) << 16) | ((cur_lb & 0xff) << 8) | (a & 0xff);
+      
+      // Only if there's something to change...
+      //if(cur_hb < 128 || cur_lb < 128 || a < 128)
+      {
+        if(cur_hb > 127) // Map "dont care" to 0
+          cur_hb = 0;
+        if(cur_lb > 127)
+          cur_lb = 0;
+        if(a > 127)
+          a = 0;
+        doSelectProgram(chn, (cur_hb << 8) + cur_lb, a); 
+      }
 
       //update hardware program state
-
       if(synti->midiPort() != -1)
       {
          MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-         int db = (bank << 8) + prog;
-         mp->setHwCtrlState(chn, CTRL_PROGRAM, db);
-
+         mp->setHwCtrlState(chn, CTRL_PROGRAM, patch);
       }
 
       // Event pointer not filled. Return false.
@@ -3391,36 +3398,29 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PROGRAM\n");
 #endif
 
-         int bank = (b >> 8) & 0xff;
-         int prog = b & 0xff;
-
-         if(bank & 0x80) //try msb value then
-         {
-            bank = (b >> 16) & 0xff;
-         }
-
-         int pr, hb, lb;
-         synti->currentProg(chn, &pr, &lb, &hb);
-         if(!(bank & 0x80))
-         {
+        int hb = (b >> 16) & 0xff;
+        int lb = (b >> 8) & 0xff;
+        int pr = b & 0xff;
+        synti->setCurrentProg(chn, pr, lb, hb);
+        const int patch = (hb << 16) | (lb << 8) | pr;
+        
+        // Only if there's something to change...
+        //if(hb < 128 || lb < 128 || pr < 128)
+        {
+          if(hb > 127) // Map "dont care" to 0
             hb = 0;
-            lb = bank;
-         }
-         else
-            bank = lb;
-         pr = prog;
-         synti->setCurrentProg(chn, pr, lb, hb);
-
-         doSelectProgram(chn, bank, prog);
-
+          if(lb > 127)
+            lb = 0;
+          if(pr > 127)
+            pr = 0;
+          doSelectProgram(chn, (hb << 8) + lb, pr);
+        }
+         
          //update hardware program state
-
          if(synti->midiPort() != -1)
          {
             MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-            int db = (bank << 8) + prog;
-            mp->setHwCtrlState(chn, a, db);
-
+            mp->setHwCtrlState(chn, a, patch);
          }
 
          // Event pointer not filled. Return false.
@@ -3434,7 +3434,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #endif
 
          b += 8192;
-         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, b & 0x7f, (b >> 7) & 0x7f);
+         sendLv2MidiEvent(evBuf, frame, (ME_PITCHBEND | chn) & 0xff, b & 0x7f, (b >> 7) & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3444,8 +3444,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
 #endif
-
-         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, b & 0x7f, 0);
+         sendLv2MidiEvent(evBuf, frame, (ME_AFTERTOUCH | chn) & 0xff, b & 0x7f, 0);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3455,8 +3454,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
 #endif
-
-         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+         sendLv2MidiEvent(evBuf, frame, (ME_POLYAFTER | chn) & 0xff, a & 0x7f, b & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -4135,12 +4133,19 @@ double LV2SynthIF::getParameterOut(long unsigned int n) const
 
 QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
 {
-//   lv2ExtProgram extPrg;
-//   extPrg.index = 0;
-//   extPrg.useIndex = false;
-//   extPrg.bank = (prog >> 8) & 0xff;
-//   extPrg.prog = prog & 0xff;
-   std::map<uint32_t, uint32_t>::iterator itPrg = _state->prg2index.find(prog);
+    uint32_t program = prog & 0xff;
+    uint32_t lbank   = (prog >> 8) & 0xff;
+    uint32_t hbank   = (prog >> 16) & 0xff;
+
+    if (program > 127)  // Map "dont care" to 0
+          program = 0;
+    if (lbank > 127)
+          lbank = 0;
+    if (hbank > 127)
+          hbank = 0;
+    const uint32_t patch = (hbank << 16) | (lbank << 8) | program;
+    
+   std::map<uint32_t, uint32_t>::iterator itPrg = _state->prg2index.find(patch);
    if(itPrg == _state->prg2index.end())
       return QString("?");
    uint32_t index = itPrg->second;
@@ -4214,16 +4219,17 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    for(itIndex = _state->index2prg.begin(); itIndex != _state->index2prg.end(); ++itIndex)
    {
       const lv2ExtProgram &extPrg = itIndex->second;
-      //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
-      int bank = extPrg.bank;
-      //limit bank numbers to 0-255 to keep midi compatibility
-      if(bank > 255)
-      {
+      uint32_t hb = extPrg.bank >> 8;
+      uint32_t lb = extPrg.bank & 0xff;
+      // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
+      if(hb > 127 || lb > 127 || extPrg.prog > 127)
          continue;
-      }
-      int prog = extPrg.prog;
-      int id = ((bank & 0xff) << 8) + prog;
-      std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(bank);
+      hb &= 0x7f;
+      lb &= 0x7f;
+      const uint32_t patch_bank = (hb << 8) | lb;
+      const uint32_t patch = (patch_bank << 8) | extPrg.prog;
+      
+      std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(patch_bank);
       MusEGui::PopupMenu *submenu= NULL;
       if(itS != submenus.end())
       {
@@ -4232,15 +4238,13 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       else
       {
           submenu = new MusEGui::PopupMenu(menu->parent());
-          submenu->setTitle(QString("Bank #") + QString::number(bank + 1));
+          submenu->setTitle(QString("Bank #") + QString::number(extPrg.bank + 1));
           subMenuPrograms->addMenu(submenu);
-          submenus.insert(std::make_pair(bank, submenu));
-
+          submenus.insert(std::make_pair(patch_bank, submenu));
       }
 
       QAction *act = submenu->addAction(extPrg.name);
-      act->setData(id);
-
+      act->setData(patch);
    }
 
    //Second:: Fill presets submenu
