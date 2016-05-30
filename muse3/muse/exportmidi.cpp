@@ -49,10 +49,10 @@ namespace MusECore {
 
 static void addController(MPEventList* l, int tick, int port, int channel, int a, int b)
       {
-      if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
+      if (a >= CTRL_7_OFFSET && a < 128) {          // 7 Bit Controller
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, a, b));
             }
-      else if (a < CTRL_RPN_OFFSET) {     // 14 Bit Controller
+      else if (a >= CTRL_14_OFFSET && a < (CTRL_14_OFFSET + 0x1000)) {     // 14 Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
@@ -60,14 +60,14 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, ctrlH, dataH));
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, ctrlL, dataL));
             }
-      else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+      else if (a >= CTRL_RPN_OFFSET && a < (CTRL_RPN_OFFSET + 0x1000)) {     // RPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
-      else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+      else if (a >= CTRL_NRPN_OFFSET && a < (CTRL_NRPN_OFFSET + 0x1000)) {     // NRPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
@@ -75,9 +75,9 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
       else if (a == CTRL_PITCH) {
-            int a = b + 8192;
-            int b = a >> 7;
-            l->add(MidiPlayEvent(tick, port, channel, ME_PITCHBEND, a & 0x7f, b & 0x7f));
+            int r_a = b + 8192;
+            int r_b = r_a >> 7;
+            l->add(MidiPlayEvent(tick, port, channel, ME_PITCHBEND, r_a & 0x7f, r_b & 0x7f));
             }
       else if (a == CTRL_PROGRAM) {
             int hb = (b >> 16) & 0xff;
@@ -103,9 +103,17 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             //      }
             l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_PROGRAM, pr, 0));
             }
-      else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+      else if(a == CTRL_AFTERTOUCH)
+      {
+        l->add(MidiPlayEvent(tick, port, channel, ME_AFTERTOUCH, b & 0x7f, 0));
+      }
+      else if((a | 0xff) == CTRL_POLYAFTER)
+      {
+        l->add(MidiPlayEvent(tick, port, channel, ME_POLYAFTER, a & 0x7f, b & 0x7f));
+      }
+      else if (a >= CTRL_INTERNAL_OFFSET && a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
             return;
-      else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+      else if (a >= CTRL_RPN14_OFFSET && a < (CTRL_RPN14_OFFSET + 0x1000)) {     // RPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
@@ -115,7 +123,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
             l->add(MidiPlayEvent(tick+3, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
-      else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+      else if (a >= CTRL_NRPN14_OFFSET && a < (CTRL_NRPN14_OFFSET + 0x1000)) {     // NRPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;

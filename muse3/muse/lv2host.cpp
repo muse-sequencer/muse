@@ -82,6 +82,7 @@
 
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
+//#define LV2_DEBUG // REMOVE Tim. yoshimi. TESTING. Remove.
 
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
@@ -893,7 +894,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
    //connect midi and control ports
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(state->midiInPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(true, state->midiInPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
       if(!newEvBuffer)
       {
          abort();
@@ -904,7 +905,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {      
-      LV2EvBuf *newEvBuffer = new LV2EvBuf(state->midiOutPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
+      LV2EvBuf *newEvBuffer = new LV2EvBuf(false, state->midiOutPorts [i].old_api, synth->_uAtom_Sequence, synth->_uAtom_Chunk);
       if(!newEvBuffer)
       {
          abort();
@@ -917,20 +918,14 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
 void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp)
 {
-// REMOVE Tim. yoshimi. Removed. TESTING Reinstate. FIXME TODO
-//  Causes CRASH with Will Godfrey's AKDemo yoshimi test song (but set on MDA Piano synth),
-//   stripped down to one single part with one single midi automation graph - the Aftertouch.
-//  Only HIS file causes this, I tried constructing my own part with hand drawn wild graphs on
-//   several controllers at once including aftertouch, pan, program, pitch etc. It didn't want
-//   to crash !!!
    for(size_t j = 0; j < state->inPortsMidi; j++)
    {
-      state->midiInPorts [j].buffer->resetBuffer(true);
+      state->midiInPorts [j].buffer->resetBuffer();
    }
 
    for(size_t j = 0; j < state->outPortsMidi; j++)
    {
-      state->midiOutPorts [j].buffer->resetBuffer(false);
+      state->midiOutPorts [j].buffer->resetBuffer();
    }
 
    if(state->inPortsMidi > 0)
@@ -960,8 +955,6 @@ void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsig
       }
 
    }
-
-
 }
 
 void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long)
@@ -2900,15 +2893,20 @@ void LV2SynthIF::doSelectProgram(unsigned char channel, int bank, int prog)
    }
 }
 
-void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, uint8_t a, uint8_t b, uint8_t c)
+void LV2SynthIF::sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b, uint8_t c)
 {
+  if(paramCount < 1 || paramCount > 3)
+    return;
+  
    if(evBuf)
    {
-      uint8_t midiEv [3];
+      uint8_t midiEv [paramCount];
       midiEv [0] = a;
-      midiEv [1] = b;
-      midiEv [2] = c;
-      evBuf->write(frame, 0, _synth->_midi_event_id, 3, midiEv);
+      if(paramCount >= 2)
+        midiEv [1] = b;
+      if(paramCount == 3)
+        midiEv [2] = c;
+      evBuf->write(frame, 0, _synth->_midi_event_id, paramCount, midiEv);
    }
 }
 
@@ -3301,19 +3299,19 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
           case MidiInstrument::NoteOffAll:
             //if(MusEGlobal::midiOutputTrace)
             //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note off:\n");
-            sendLv2MidiEvent(evBuf, frame, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
+            sendLv2MidiEvent(evBuf, frame, 3, (ME_NOTEOFF | chn) & 0xff, a & 0x7f, 0);
           break;
           
           // Instrument uses no note offs at all. Send as-is.
           case MidiInstrument::NoteOffNone:
           // Instrument converts all note offs to zero-vel note ons. Send as-is.
           case MidiInstrument::NoteOffConvertToZVNoteOn:
-            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+            sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
           break;
         }
       }
       else
-        sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+        sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
       
       break;
 
@@ -3328,7 +3326,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       {
         // Instrument uses note offs. Send as-is.
         case MidiInstrument::NoteOffAll:
-          sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+          sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
         break;
         
         // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
@@ -3339,7 +3337,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
         case MidiInstrument::NoteOffConvertToZVNoteOn:
           //if(MusEGlobal::midiOutputTrace)
           //  fprintf(stderr, "MidiOut: LV2: Following event will be converted to zero-velocity note on:\n");
-          sendLv2MidiEvent(evBuf, frame, (ME_NOTEON | chn) & 0xff, a & 0x7f, 0);
+          sendLv2MidiEvent(evBuf, frame, 3, (ME_NOTEON | chn) & 0xff, a & 0x7f, 0);
         break;
       }
       
@@ -3434,7 +3432,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #endif
 
          b += 8192;
-         sendLv2MidiEvent(evBuf, frame, (ME_PITCHBEND | chn) & 0xff, b & 0x7f, (b >> 7) & 0x7f);
+         sendLv2MidiEvent(evBuf, frame, 3, (ME_PITCHBEND | chn) & 0xff, b & 0x7f, (b >> 7) & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3444,7 +3442,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
 #endif
-         sendLv2MidiEvent(evBuf, frame, (ME_AFTERTOUCH | chn) & 0xff, b & 0x7f, 0);
+         sendLv2MidiEvent(evBuf, frame, 2, (ME_AFTERTOUCH | chn) & 0xff, b & 0x7f, 0);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3454,7 +3452,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
 #endif
-         sendLv2MidiEvent(evBuf, frame, (ME_POLYAFTER | chn) & 0xff, a & 0x7f, b & 0x7f);
+         sendLv2MidiEvent(evBuf, frame, 3, (ME_POLYAFTER | chn) & 0xff, a & 0x7f, b & 0x7f);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3477,10 +3475,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
             // 38 + (b & 0x7f) - fourth byte
 
 
-            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 99, ((a & 0xff00) >> 8));
-            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 98, (a & 0xff));
-            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 6, ((b & 0x3f80) >> 7));
-            sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, 38, (b & 0x7f));
+            sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, 99, ((a & 0xff00) >> 8));
+            sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, 98, (a & 0xff));
+            sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, 6, ((b & 0x3f80) >> 7));
+            sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, 38, (b & 0x7f));
             return true;
 
          }
@@ -3493,7 +3491,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 #ifdef LV2_DEBUG
          printf("LV2SynthIF::processEvent non-ladspa filling midi event chn:%d dataA:%d dataB:%d\n", chn, a, b);
 #endif
-         sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+         sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
          return true;
       }
 
@@ -3517,7 +3515,8 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       float val = midi2Lv2Value(k, ctlnum, b);
 
 #ifdef LV2_DEBUG
-      fprintf(stderr, "LV2SynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to lv2:%f\n", i, k, a, b, val);
+      //fprintf(stderr, "LV2SynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to lv2:%f\n", i, k, a, b, val);
+      fprintf(stderr, "LV2SynthIF::processEvent port:%lu dataA:%d Converting val from:%d to lv2:%f\n", k, a, b, val);
 #endif
 
       // Set the lv2 port value.
@@ -3537,15 +3536,15 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 
    case ME_PITCHBEND:
       a += 8192;
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, (a >> 7) & 0x7f);
+      sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, (a >> 7) & 0x7f);
       break;
 
    case ME_AFTERTOUCH:
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, 0);
+      sendLv2MidiEvent(evBuf, frame, 2, (type | chn) & 0xff, a & 0x7f, 0);
       break;
 
    case ME_POLYAFTER:
-      sendLv2MidiEvent(evBuf, frame, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
+      sendLv2MidiEvent(evBuf, frame, 3, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
       break;
 
    default:
@@ -3863,7 +3862,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             for(; start_event != el->end(); ++start_event)
             {
 #ifdef LV2_DEBUG
-               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%lu\n", start_event->time(), pos, sample, nsamp, frameOffset);
 #endif
 
                if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
@@ -3934,20 +3933,22 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                // Returns false if the event was not filled. It was handled, but some other way.
                // Time-stamp the event.
                long ft = start_event->time() - frameOffset - pos - sample;
-               if((ft < 0) || (ft >= (long)nsamp))
+               
+               if(ft < 0)
                {
-                  if(ft > 0)
-                  {
-                     fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-                  }
+                  //fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+                  //        start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
+                 ft = 0;
+               }
+               if(ft >= (long)nsamp)
+               {
+                  fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
                   ft = nsamp - 1;
                }
+               
                if(processEvent(*start_event, evBuf, ft))
                {
 
-#ifdef LV2_DEBUG
-                  fprintf(stderr, "LV2SynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
-#endif
                }
             }
          }
@@ -3975,14 +3976,18 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                // Time-stamp the event.
                long ft = e.time() - frameOffset - pos  - sample;
 
-               if((ft < 0) || (ft > (long)nsamp))
+               if(ft < 0)
                {
-                  if(ft > 0)
-                  {
-                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-                  }
-                  ft = nsamp - 1;
+                 //fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+                 //        e.time(), pos, frameOffset, ft, sample, nsamp); // REMOVE Tim. yoshimi. Added.
+                 ft = 0;
                }
+               if(ft >= (long)nsamp)
+               {
+                 fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                 ft = nsamp - 1;
+               }
+               
                processEvent(e, evBuf, ft);
             }
          }
@@ -5073,11 +5078,11 @@ void LV2PluginWrapper_Worker::makeWork()
 
 }
 
-LV2EvBuf::LV2EvBuf(bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
-   :_oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
+   :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
    _buffer.resize(LV2_EVBUF_SIZE);
-   resetBuffer(_isInput);
+   resetBuffer();
 }
 
 size_t LV2EvBuf::mkPadSize(size_t size)
@@ -5109,9 +5114,8 @@ void LV2EvBuf::resetPointers(bool r, bool w)
    }
 }
 
-void LV2EvBuf::resetBuffer(bool input)
+void LV2EvBuf::resetBuffer()
 {
-   _isInput = input;
    if(_oldApi)
    {
       _evbuf = reinterpret_cast<LV2_Event_Buffer *>(&_buffer [0]);

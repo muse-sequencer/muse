@@ -844,7 +844,11 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                 if(MusEGlobal::extSyncFlag.value())  // p3.3.25
                                   md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, ev));
                                 else
+                                {
+                                  //fprintf(stderr, "Audio::collectEvents: frameoffset:%lu frame:%u A:%d B:%d C:%d\n", 
+                                  //        frameOffset, frame, ev.dataA(), ev.dataB(), ev.dataC()); // REMOVE Tim. yoshimi. Added.
                                   md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, ev));
+                                }
                               }
                               break;
 

@@ -1,3 +1,6 @@
+30.05.2016:
+         - LV2: Fix playback crash with certain midi event times, in LV2SynthIF::getData(). (Tim)
+         - Midi file export: Added missing Aftertouch, PolyAftertouch support! (Tim)
 28.05.2016:
          - LV2, LinuxVST: Fixed Aftertouch, PolyAftertouch, Pitch improper composition. (Tim)
          - LV2: Fixed sending redundant program changes with every small seek. (Tim)

@@ -100,17 +100,17 @@ class LV2EvBuf
    std::vector<uint8_t> _buffer;
    size_t curWPointer;
    size_t curRPointer;
+   bool _isInput;
    bool _oldApi;
    LV2_URID _uAtomTypeSequence;
    LV2_URID _uAtomTypeChunk;
    LV2_Atom_Sequence *_seqbuf;
    LV2_Event_Buffer *_evbuf;
-   bool _isInput;
 public:
-   LV2EvBuf(bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk);
+   LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk);
    inline size_t mkPadSize(size_t size);
    inline void resetPointers(bool r, bool w);
-   inline void resetBuffer(bool input);
+   inline void resetBuffer();
    bool write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_t size, const uint8_t *data);
    bool read(uint32_t *frames, uint32_t  *subframes, uint32_t  *type, uint32_t  *size, uint8_t  **data );
    uint8_t *getRawBuffer();
@@ -390,7 +390,7 @@ private:
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
     void doSelectProgram(unsigned char channel, int bank, int prog);
-    inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, uint8_t a, uint8_t b, uint8_t c = 0);
+    inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b = 0, uint8_t c = 0);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
