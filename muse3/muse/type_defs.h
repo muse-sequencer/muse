@@ -24,7 +24,7 @@
 #ifndef __TYPE_DEFS_H__
 #define __TYPE_DEFS_H__
 
-#include "stdint.h"
+#include <stdint.h>
 
 namespace MusECore {
 
@@ -32,8 +32,6 @@ typedef int64_t SongChangedFlags_t;
 
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
-
-typedef uint64_t MuseTime_t; // In microseconds.
 
 }   // namespace MusECore
 

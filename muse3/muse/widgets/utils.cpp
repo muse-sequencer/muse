@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+// REMOVE Tim. timing. Removed. TBD
 #include <sys/time.h>
 //#include <time.h>
 
@@ -44,6 +45,8 @@
 #include "part.h"
 #include "utils.h"
 #include "xml.h"
+// REMOVE Tim. timing. Added.
+#include "muse_time.h"
 
 namespace MusECore {
 
@@ -51,15 +54,48 @@ namespace MusECore {
 //   curTime
 //---------------------------------------------------------
 
-double curTime()
+// REMOVE Tim. timing. Changed.
+// double curTime()
+//       {
+//       // No audio device yet? Just get wall clock time.
+//       if(!MusEGlobal::audioDevice)  
+//       {
+//         struct timeval t;
+//         gettimeofday(&t, 0);
+//         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+//         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+//       }
+//       
+//       // Ask the driver for the system time. 
+//       // May depend on selected clock source. 
+//       // With Jack, may be based upon wallclock time, the   
+//       //  processor cycle counter or the HPET clock etc.
+//       return MusEGlobal::audioDevice->systemTime();
+//       
+//       /*
+//       struct timespec t;
+//       //clock_gettime(CLOCK_MONOTONIC, &t);
+//       //clock_gettime(CLOCK_MONOTONIC_RAW, &t);
+//       //clock_gettime(CLOCK_REALTIME, &t);
+//       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);  // Only this one works for me. Could be my older kernel...
+//       printf("%ld %ld\n", t.tv_sec, t.tv_nsec);  
+//       return (double)((double)t.tv_sec + (t.tv_nsec / 1000000000.0));
+//       */
+//       }
+  
+// double curTime()
+MuseTime_t curTime()
       {
       // No audio device yet? Just get wall clock time.
       if(!MusEGlobal::audioDevice)  
       {
-        struct timeval t;
+//         struct timeval t;
+        MuseTime_t t;
         gettimeofday(&t, 0);
         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+//         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+        //return MuseTime_t(t.tv_sec) * MuseTime_t(1000000) + MuseTime_t(t.tv_usec);
+        return t;
       }
       
       // Ask the driver for the system time. 

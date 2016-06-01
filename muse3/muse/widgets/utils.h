@@ -23,6 +23,9 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+// REMOVE Tim. timing. Added.
+//#include "type_defs.h"
+
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -51,7 +54,9 @@ extern int num2cols(int min, int max);
 extern QFrame* hLine(QWidget* parent);
 extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
-extern double curTime();
+// REMOVE Tim. timing. Changed.
+//extern double curTime();
+extern MuseTime_t curTime();
 
 extern QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner);
 extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner);
