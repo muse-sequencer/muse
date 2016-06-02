@@ -1,3 +1,6 @@
+02.06.2016:
+         - Rolled back transport icons to previous version (the new version looked bad with some themes)
+           and made a new rec icon (rj)
 30.05.2016:
          - LV2: Fix playback crash with certain midi event times, in LV2SynthIF::getData(). (Tim)
          - Midi file export: Added missing Aftertouch, PolyAftertouch support! (Tim)
