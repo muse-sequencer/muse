@@ -32,7 +32,7 @@
 
 #include "config.h"
 // REMOVE Tim. timing. Added.
-#include "muse_time.h"
+//#include "muse_time.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
@@ -176,29 +176,29 @@ class DummyAudioDevice : public AudioDevice {
       
       return _framePos; }
 // REMOVE Tim. timing. Changed.
-//       virtual unsigned frameTime() const {
-//             return lrint(curTime() * MusEGlobal::sampleRate);
-//             }
       virtual unsigned frameTime() const {
             return lrint(curTime() * MusEGlobal::sampleRate);
             }
+//       virtual unsigned frameTime() const {
+//             return lrint(curTime() * MusEGlobal::sampleRate);
+//             }
 // REMOVE Tim. timing. Changed.
-//       virtual double systemTime() const
-//       {
-//         struct timeval t;
-//         gettimeofday(&t, 0);
-//         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-//         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
-//       }
-      virtual MuseTime_t systemTime() const
+      virtual double systemTime() const
       {
-//         struct timeval t;
-        MuseTime_t t;
+        struct timeval t;
         gettimeofday(&t, 0);
         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-//         return MuseTime_t(t.tv_sec) * MuseTime_t(1000000) + MuseTime_t(t.tv_usec);
-        return t;
+        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
       }
+//       virtual MuseTime_t systemTime() const
+//       {
+// //         struct timeval t;
+//         MuseTime_t t;
+//         gettimeofday(&t, 0);
+//         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+// //         return MuseTime_t(t.tv_sec) * MuseTime_t(1000000) + MuseTime_t(t.tv_usec);
+//         return t;
+//       }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }

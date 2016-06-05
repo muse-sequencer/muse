@@ -28,7 +28,7 @@
 // REMOVE Tim. timing. Changed.
 // #include <sys/resource.h>
 // #include <sys/time.h>
-#include "muse_time.h"
+// #include "muse_time.h"
 
 class QString;
 
@@ -59,8 +59,8 @@ class AudioDevice {
       virtual int framePos() const = 0;
       virtual unsigned frameTime() const = 0;
 // REMOVE Tim. timing. Changed.
-//       virtual double systemTime() const = 0;
-      virtual MuseTime_t systemTime() const = 0;
+      virtual double systemTime() const = 0;
+//       virtual MuseTime_t systemTime() const = 0;
 
       // These are meant to be called from inside process thread only.      
       virtual unsigned framesAtCycleStart() const = 0;
