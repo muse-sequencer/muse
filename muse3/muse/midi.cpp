@@ -679,6 +679,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 
       MidiDevice* md          = MusEGlobal::midiPorts[port].device();
 
+      // REMOVE Tim. timing. Added.
+      fprintf(stderr, "Audio::collectEvents cts:%u nts:%u\n", cts, nts);
+      
       PartList* pl = track->parts();
       for (iPart p = pl->begin(); p != pl->end(); ++p) {
             MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);

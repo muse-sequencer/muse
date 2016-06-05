@@ -82,7 +82,7 @@
 
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
-//#define LV2_DEBUG // REMOVE Tim. yoshimi. TESTING. Remove.
+#define LV2_DEBUG // REMOVE Tim. yoshimi. TESTING. Remove.
 
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
@@ -3936,8 +3936,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                
                if(ft < 0)
                {
-                  //fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
-                  //        start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
+                  fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+                          start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
                  ft = 0;
                }
                if(ft >= (long)nsamp)
@@ -4031,7 +4031,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                   lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
                }
             }
-#ifdef LV2_DEBUG_PROCESS
+#ifdef LV2_DEBUG
             //dump atom sequence events to stderr
             if(evBuf)
             {

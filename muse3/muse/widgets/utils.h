@@ -55,8 +55,8 @@ extern QFrame* hLine(QWidget* parent);
 extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 // REMOVE Tim. timing. Changed.
-//extern double curTime();
-extern MuseTime_t curTime();
+extern double curTime();
+// extern MuseTime_t curTime();
 
 extern QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner);
 extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner);

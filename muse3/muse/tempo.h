@@ -104,6 +104,11 @@ class TempoList : public TEMPOLIST {
       unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const;
       unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
       unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
+
+      // These return a floating point tick to provide fractional values where required.
+      double frame2FloatTick(unsigned frame, int* sn = 0) const;
+      double frame2FloatTick(unsigned frame, unsigned tick, int* sn) const;
+      double deltaFrame2FloatTick(unsigned frame1, unsigned frame2, int* sn = 0) const;
       
       int tempoSN() const { return _tempoSN; }
       void setTempo(unsigned tick, int newTempo);
