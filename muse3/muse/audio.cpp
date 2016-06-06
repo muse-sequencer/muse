@@ -46,6 +46,8 @@
 #include "ticksynth.h"
 //#include "operations.h"
 #include "undo.h"
+// REMOVE Tim. timing. Added.
+#include "tempo.h"
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -504,9 +506,11 @@ void Audio::process(unsigned frames)
               else
 #endif                
               {
-                Pos ppp(_pos);
-                ppp += frames;
-                nextTickPos = ppp.tick();
+                // REMOVE Tim. timing. Changed.
+//                 Pos ppp(_pos);
+//                 ppp += frames;
+//                 nextTickPos = ppp.tick();
+                nextTickPos = ceil(MusEGlobal::tempomap.frame2FloatTick(samplePos + frames));
               }
             }
           }
@@ -788,7 +792,9 @@ void Audio::seek(const Pos& p)
         curTickPos = curr_jt_tick;
       else
 #endif
-      curTickPos  = _pos.tick();
+// REMOVE Tim. timing. Changed.
+//       curTickPos  = _pos.tick();
+      curTickPos = ceil(MusEGlobal::tempomap.frame2FloatTick(_pos.frame()));
 
 // ALSA support       
 #if 1 
