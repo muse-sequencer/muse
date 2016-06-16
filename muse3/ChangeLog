@@ -1,3 +1,6 @@
+16.06.2016:
+         - Removed the ability to delete strips from the mixer, atleast temporarily, as it was
+           crashing (rj)
 02.06.2016:
          - Rolled back transport icons to previous version (the new version looked bad with some themes)
            and made a new rec icon (rj)

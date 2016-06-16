@@ -786,10 +786,10 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
-    QAction *act = menu->addAction(tr("Remove track"));
-    act->setData(int(0));
-    menu->addSeparator();
-    act = menu->addAction(tr("Hide strip"));
+//    QAction *act = menu->addAction(tr("Remove track"));
+//    act->setData(int(0));
+//    menu->addSeparator();
+    QAction *act = menu->addAction(tr("Hide strip"));
     act->setData(int(1));
     QPoint pt = QCursor::pos();
     act = menu->exec(pt, 0);
@@ -802,12 +802,13 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
     DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
 
-    if (act->data().toInt() == 0)
-    {
-      DEBUG_STRIP(stderr, "Strip:: delete track\n");
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
-    }
-    else if (act->data().toInt() == 1)
+    //if (act->data().toInt() == 0)
+    //{
+    //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
+    //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+    //}
+    /* else */
+    if (act->data().toInt() == 1)
     {
       DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
       setStripVisible(false);
