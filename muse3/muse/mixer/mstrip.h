@@ -273,7 +273,8 @@ class MidiStrip : public Strip {
    public slots:
       virtual void songChanged(MusECore::SongChangedFlags_t);
       virtual void configChanged();
-
+      void incVolume(int v);
+      void pan(int v);
    public:
       MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false);
       

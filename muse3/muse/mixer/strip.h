@@ -569,7 +569,8 @@ class Strip : public QFrame {
       QPoint mouseWidgetOffset;
       bool dragOn;
       bool _visible;
-   
+      bool _selected;
+
    protected:
       
       MusECore::Track* track;
@@ -593,6 +594,7 @@ class Strip : public QFrame {
       virtual void mousePressEvent(QMouseEvent *);
       virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
+      virtual void keyPressEvent(QKeyEvent*);
 
       virtual void updateRouteButtons();
 
@@ -610,6 +612,11 @@ class Strip : public QFrame {
       virtual void songChanged(MusECore::SongChangedFlags_t) = 0;
       virtual void configChanged() = 0;
       virtual void changeUserWidth(int delta);
+
+      virtual void incVolume(int v) = 0;
+      virtual void pan(int v) = 0;
+   signals:
+      void clearStripSelection();
 
    public:
       Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false);
@@ -632,6 +639,8 @@ class Strip : public QFrame {
       void setUserWidth(int w);
       
       virtual QSize sizeHint() const;
+      bool isSelected() { return _selected; }
+      void setSelected(bool s);
       };
 
 } // namespace MusEGui

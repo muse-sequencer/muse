@@ -146,10 +146,18 @@ class AudioMixerApp : public QMainWindow {
       void initMixer();
       void addStripsTraditionalLayout();
       void addStripToLayoutIfVisible(Strip *s);
+      void selectNextStrip(bool isRight);
+
+
+      bool eventFilter(QObject *obj,QEvent *event);
 
 
    signals:
       void closed();
+      void incVolume(int v);
+      void decVolume(int v);
+      void panLeft(int v);
+      void panRight(int v);
       //void layoutRequest();
 
    private slots:
@@ -172,6 +180,7 @@ class AudioMixerApp : public QMainWindow {
       void showSyntiTracksChanged(bool);
       void stripsMenu();
       void handleMenu(QAction *);
+      void clearStripSelection();
 
    protected:
    //   virtual bool event(QEvent* event);
@@ -179,6 +188,8 @@ class AudioMixerApp : public QMainWindow {
    
       void mousePressEvent(QMouseEvent* ev);
       void mouseReleaseEvent(QMouseEvent* ev);
+      virtual void keyPressEvent(QKeyEvent*);
+
 
    public:
       //AudioMixerApp(QWidget* parent);

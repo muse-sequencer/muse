@@ -607,6 +607,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
    : QFrame(parent)
       {
       setMouseTracking(true);
+      _selected = false;
       
       _curGridRow = 0;
       _userWidth = 0;
@@ -770,6 +771,13 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     //unsetCursor();
     ev->accept();
     return;
+  }
+
+  if (ev->modifiers() & Qt::ControlModifier)
+    setSelected(true);
+  else {
+    emit clearStripSelection();
+    setSelected(true);
   }
   
   //if(_resizeMode == ResizeModeHovering)
@@ -1044,6 +1052,20 @@ void Strip::mouseMoveEvent(QMouseEvent*)
   //QFrame::mouseMoveEvent(ev);
 }
 
+void Strip::keyPressEvent(QKeyEvent *ev)
+{
+  printf("Strip key pressed\n");
+  ev->ignore();
+}
 
+void Strip::setSelected(bool v)
+{
+  if (v)
+    label->setFrameStyle(Raised | StyledPanel);
+  else
+    label->setFrameStyle(Sunken | StyledPanel);
+
+  _selected=v;
+}
 
 } // namespace MusEGui

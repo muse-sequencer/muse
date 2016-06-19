@@ -256,6 +256,11 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       initMixer();
       redrawMixer();
+
+      central->installEventFilter(this);
+      mixerLayout->installEventFilter(this);
+      view ->installEventFilter(this);
+
 }
 
 void AudioMixerApp::stripsMenu()
@@ -418,6 +423,10 @@ void AudioMixerApp::redrawMixer()
       }
 
       break;
+  }
+
+  foreach (Strip *s, stripList) {
+    s->setFocus();
   }
 
   update();
@@ -673,6 +682,10 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
           strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true);
     else
           strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true);
+
+    connect(this, SIGNAL(incVolume(int)), strip, SLOT(incVolume(int)));
+    connect(this, SIGNAL(pan(int)), strip, SLOT(pan(int)));
+    connect(strip, SIGNAL(clearStripSelection()),this,SLOT(clearStripSelection()));
 
     if (DEBUG_MIXER)
       printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());
@@ -989,5 +1002,107 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
 
   xml.etag(level, "Mixer");
   }
+
+void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
+{
+  int val = 5;
+  bool moveEnabled=false;
+  if (ev->modifiers() & Qt::ShiftModifier) {
+    val = 1;
+  }
+  if (ev->modifiers() & Qt::ControlModifier) {
+    moveEnabled=true;
+  }
+
+  switch (ev->key()) {
+    case Qt::Key_Up:
+      emit incVolume(val);
+      break;
+    case Qt::Key_Down:
+      emit incVolume(-val);
+      break;
+    case Qt::Key_Left:
+      if (moveEnabled)
+        selectNextStrip(false);
+       break;
+    case Qt::Key_Right:
+    if (moveEnabled)
+      selectNextStrip(true);
+    break;
+    default:
+      break;
+  }
+}
+
+void AudioMixerApp::clearStripSelection()
+{
+  foreach (Strip *s, stripList)
+    s->setSelected(false);
+}
+void AudioMixerApp::selectNextStrip(bool isRight)
+{
+  //printf("select next strip! count = %d\n", mixerLayout->count());
+  Strip *prev = NULL;
+
+  for (int i = 0; i < mixerLayout->count(); i++)
+  {
+    QWidget *w = mixerLayout->itemAt(i)->widget();
+    if (w)
+    {
+      if (prev && prev->isSelected() && isRight) // got it
+      {
+        emit clearStripSelection();
+        ((Strip*)w)->setSelected(true);
+        return;
+      }
+      else if(((Strip*)w)->isSelected() && prev && !isRight)
+      {
+        emit clearStripSelection();
+        prev->setSelected(true);
+        return;
+      }
+      else {
+        prev = (Strip*)w;
+      }
+    }
+  }
+  //printf("Setting initial strip selection \n");
+  emit clearStripSelection();
+  QWidget *w;
+  if (isRight)
+    w = mixerLayout->itemAt(0)->widget();
+  else
+    w = mixerLayout->itemAt(mixerLayout->count()-1)->widget();
+
+  ((Strip *)w)->setSelected(true);
+
+}
+
+bool AudioMixerApp::eventFilter(QObject *obj,
+                             QEvent *event)
+{
+    QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
+    bool result = false;//return true to consume the keystroke
+
+    if (event->type() == QEvent::KeyPress)
+    {
+         keyEvent = dynamic_cast<QKeyEvent*>(event);
+         this->keyPressEvent(keyEvent);
+         result = true;
+    }//if type()
+
+    else if (event->type() == QEvent::KeyRelease)
+    {
+        keyEvent = dynamic_cast<QKeyEvent*>(event);
+        this->keyReleaseEvent(keyEvent);
+        result = true;
+    }//else if type()
+
+    //### Standard event processing ###
+    else
+        result = QObject::eventFilter(obj, event);
+
+    return result;
+}//eventFilter
 
 } // namespace MusEGui

@@ -1674,7 +1674,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       updateRouteButtons();
 
-      }
+}
 
 void AudioStrip::setClipperTooltip(int ch)
 {
@@ -1716,6 +1716,17 @@ void AudioStrip::oRoutePressed()
       pup->exec(QCursor::pos(), track, true);
       delete pup;
       oR->setDown(false);     
+}
+
+void AudioStrip::incVolume(int v)
+{
+  //printf("astrip inc volume\n");
+  if (isSelected())
+    slider->incValue(v);
+}
+void AudioStrip::pan(int)
+{
+
 }
 
 } // namespace MusEGui

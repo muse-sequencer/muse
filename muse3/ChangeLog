@@ -1,3 +1,12 @@
+
+19.06.2016:
+         - Removed XML printout that warned of malformed xml, mostly due to the parser being
+           incomplete, still prints the warning when debug is enabled and when we are reasonably
+           sure it's wrong. (rj)
+         - Added keyboard navigation between strips in mixer. Ctrl+left/right to move between
+           strips. Up/Down to change volume slider (TODO add pan left/right) (rj)
+         - Strips can also be selected with clicking and ctrl+clicking to select more than
+           one. (TODO select strips from arranger too and allow to move all selected strips)(rj)
 16.06.2016:
          - Removed the ability to delete strips from the mixer, atleast temporarily, as it was
            crashing (rj)

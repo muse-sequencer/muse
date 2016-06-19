@@ -1240,6 +1240,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _upperRack->newComponent(&varSendControllerDesc);
       _upperRack->newComponent(&revSendControllerDesc);
       _upperRack->newComponent(&choSendControllerDesc);
+      _upperRack->setFocusPolicy(Qt::NoFocus);
       
       
 // Keep this if dynamic layout (flip to right side) is desired.
@@ -1272,6 +1273,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       //slider->setFillThumb(false);
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       slider->setId(MusECore::CTRL_VOLUME);
+      slider->setFocusPolicy(Qt::NoFocus);
 
       meter[0] = new MusEGui::Meter(0, MusEGui::Meter::LinMeter);
       meter[0]->setContentsMargins(0, 0, 0, 0);
@@ -1989,5 +1991,15 @@ void MidiStrip::resizeEvent(QResizeEvent* ev)
   ev->ignore();
   Strip::resizeEvent(ev);
 }  
+
+void MidiStrip::incVolume(int v)
+{
+  if (isSelected())
+    slider->incValue(v);
+}
+void MidiStrip::pan(int)
+{
+
+}
 
 } // namespace MusEGui

@@ -179,7 +179,7 @@ class AudioStrip : public Strip {
       void updateVolume();
       void updateChannels();
       void updateRackSizes(bool upper, bool lower);
-      
+
    private slots:
       void stereoToggled(bool);
       void preToggled(bool);
@@ -200,6 +200,8 @@ class AudioStrip : public Strip {
    public slots:
       virtual void configChanged();
       virtual void songChanged(MusECore::SongChangedFlags_t);
+      void incVolume(int v);
+      void pan(int v);
 
    public:
       AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false);
