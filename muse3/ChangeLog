@@ -1,4 +1,6 @@
-
+20.06.2016:
+         - Added connection between arranger and mixer so selecting a track carries over to the
+           mixer. Mostly a visual queue but some keyboard navigation and editing is possible (rj) 
 19.06.2016:
          - Removed XML printout that warned of malformed xml, mostly due to the parser being
            incomplete, still prints the warning when debug is enabled and when we are reasonably

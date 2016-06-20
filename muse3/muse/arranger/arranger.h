@@ -205,6 +205,8 @@ class Arranger : public QWidget {
       ArrangerView* parentWin() const { return _parentWin; }
 
       bool setRasterVal(int);
+
+      TList *getTrackList() { return list; }
       };
 
 } // namespace MusEGui

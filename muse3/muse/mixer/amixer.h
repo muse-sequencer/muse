@@ -158,7 +158,10 @@ class AudioMixerApp : public QMainWindow {
       void decVolume(int v);
       void panLeft(int v);
       void panRight(int v);
+      void selectionChanged(MusECore::Track*, bool);
       //void layoutRequest();
+   public slots:
+      void selectTrackStrip(MusECore::Track*);
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);

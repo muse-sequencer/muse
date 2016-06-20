@@ -686,6 +686,7 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
     connect(this, SIGNAL(incVolume(int)), strip, SLOT(incVolume(int)));
     connect(this, SIGNAL(pan(int)), strip, SLOT(pan(int)));
     connect(strip, SIGNAL(clearStripSelection()),this,SLOT(clearStripSelection()));
+    connect(strip, SIGNAL(trackSelected(MusECore::Track*, bool)),this, SIGNAL(selectionChanged(MusECore::Track*, bool)));
 
     if (DEBUG_MIXER)
       printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());
@@ -1051,14 +1052,16 @@ void AudioMixerApp::selectNextStrip(bool isRight)
     {
       if (prev && prev->isSelected() && isRight) // got it
       {
-        emit clearStripSelection();
+        clearStripSelection();
         ((Strip*)w)->setSelected(true);
+        emit selectionChanged(((Strip*)w)->getTrack(), false);
         return;
       }
       else if(((Strip*)w)->isSelected() && prev && !isRight)
       {
-        emit clearStripSelection();
+        clearStripSelection();
         prev->setSelected(true);
+        emit selectionChanged(((Strip*)w)->getTrack(), false);
         return;
       }
       else {
@@ -1067,7 +1070,7 @@ void AudioMixerApp::selectNextStrip(bool isRight)
     }
   }
   //printf("Setting initial strip selection \n");
-  emit clearStripSelection();
+  clearStripSelection();
   QWidget *w;
   if (isRight)
     w = mixerLayout->itemAt(0)->widget();
@@ -1075,6 +1078,7 @@ void AudioMixerApp::selectNextStrip(bool isRight)
     w = mixerLayout->itemAt(mixerLayout->count()-1)->widget();
 
   ((Strip *)w)->setSelected(true);
+  emit selectionChanged(((Strip*)w)->getTrack(), false);
 
 }
 
@@ -1104,5 +1108,15 @@ bool AudioMixerApp::eventFilter(QObject *obj,
 
     return result;
 }//eventFilter
+
+void AudioMixerApp::selectTrackStrip(MusECore::Track *t)
+{
+  foreach(Strip *s, stripList) {
+    if (s->getTrack() == t) {
+      clearStripSelection();
+      s->setSelected(true);
+    }
+  }
+}
 
 } // namespace MusEGui

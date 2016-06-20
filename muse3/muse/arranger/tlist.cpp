@@ -2449,7 +2449,7 @@ void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool full)
 //---------------------------------------------------------
 //   selectTrack
 //---------------------------------------------------------
-void TList::selectTrack(MusECore::Track* tr)
+void TList::selectTrack(MusECore::Track* tr, bool deselect)
 {
     MusEGlobal::song->deselectTracks();
 
@@ -2466,7 +2466,8 @@ void TList::selectTrack(MusECore::Track* tr)
     }
 
     redraw();
-    emit selectionChanged(tr);
+    if (deselect)
+      emit selectionChanged(tr);
 }
 
 //---------------------------------------------------------

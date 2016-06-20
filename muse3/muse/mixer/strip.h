@@ -570,6 +570,7 @@ class Strip : public QFrame {
       bool dragOn;
       bool _visible;
       bool _selected;
+      bool _highlight;
 
    protected:
       
@@ -595,6 +596,7 @@ class Strip : public QFrame {
       virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
       virtual void keyPressEvent(QKeyEvent*);
+      virtual void paintEvent(QPaintEvent *);
 
       virtual void updateRouteButtons();
 
@@ -617,6 +619,7 @@ class Strip : public QFrame {
       virtual void pan(int v) = 0;
    signals:
       void clearStripSelection();
+      void trackSelected(MusECore::Track*, bool);
 
    public:
       Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false);
@@ -630,6 +633,7 @@ class Strip : public QFrame {
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setLabelFont();
+      void setHighLight(bool highlight);
       QString getLabelText() { return label->text(); }
       
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);

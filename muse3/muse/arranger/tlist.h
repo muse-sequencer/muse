@@ -148,7 +148,7 @@ class TList : public QWidget {
       void tracklistChanged();
       void setYPos(int);
       void redraw();
-      void selectTrack(MusECore::Track*);
+      void selectTrack(MusECore::Track*, bool deselect=true);
       void selectTrackAbove();
       void selectTrackBelow();
       void editTrackNameSlot();

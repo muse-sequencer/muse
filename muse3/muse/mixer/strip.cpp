@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include <QString>
+#include <QPainter>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -516,6 +517,17 @@ void Strip::setLabelFont()
   MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
 }
 
+void Strip::paintEvent(QPaintEvent * /*ev*/)
+{
+  printf ("running paint event highlight %d\n", _highlight);
+  QPainter p(this);
+  if (_highlight) {
+    p.setPen(Qt::darkYellow);
+    p.drawRect(0,0,width()-1,height()-1);
+    p.drawRect(1,1,width()-2,height()-2);
+  }
+}
+
 //---------------------------------------------------------
 //   setLabelText
 //---------------------------------------------------------
@@ -608,7 +620,8 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
       {
       setMouseTracking(true);
       _selected = false;
-      
+      _highlight = false;
+
       _curGridRow = 0;
       _userWidth = 0;
       autoType = 0;
@@ -1060,12 +1073,23 @@ void Strip::keyPressEvent(QKeyEvent *ev)
 
 void Strip::setSelected(bool v)
 {
-  if (v)
+  if (v) {
     label->setFrameStyle(Raised | StyledPanel);
-  else
+    setHighLight(true);
+  }
+  else {
     label->setFrameStyle(Sunken | StyledPanel);
+    setHighLight(false);
+  }
 
   _selected=v;
+  emit trackSelected(track, false);
+}
+
+void Strip::setHighLight(bool highlight)
+{
+  _highlight = highlight;
+  update();
 }
 
 } // namespace MusEGui
