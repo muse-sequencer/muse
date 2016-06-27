@@ -1,3 +1,10 @@
+27.06.2016:
+         - Added instrument definition files from Dennis Schulmeister for:
+	    * Korg Krome (Bank Map KORG).idf
+	    * Korg Krome (Bank Map GM2).idf
+	    * Roland-MT32.idf
+	    * Lexicon-MX200.idf
+	    * Yamaha-Rex50.idf
 20.06.2016:
          - Added connection between arranger and mixer so selecting a track carries over to the
            mixer. Mostly a visual queue but some keyboard navigation and editing is possible (rj) 

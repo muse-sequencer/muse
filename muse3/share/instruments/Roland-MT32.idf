@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+    <!-- Based upon the information found on this website: -->
+    <!-- http://www.youngmonkey.ca/nose/audio_tech/synth/Roland-MT32.html -->
+
+    <MidiInstrument name="Roland MT-32" nullparam="32639">
+        <!-- Preset patches -->
+        <PatchGroup name="Piano">
+            <Patch name="Acou Piano 1" hbank="0" lbank="0" prog="0"/>
+            <Patch name="Acou Piano 2" hbank="0" lbank="0" prog="1"/>
+            <Patch name="Acou Piano 3" hbank="0" lbank="0" prog="2"/>
+            <Patch name="Elec Piano 1" hbank="0" lbank="0" prog="3"/>
+            <Patch name="Elec Piano 2" hbank="0" lbank="0" prog="4"/>
+            <Patch name="Elec Piano 3" hbank="0" lbank="0" prog="5"/>
+            <Patch name="Elec Piano 4" hbank="0" lbank="0" prog="6"/>
+            <Patch name="Honkytonk" hbank="0" lbank="0" prog="7"/>
+        </PatchGroup>
+
+        <PatchGroup name="Organ">
+            <Patch name="Elec Org 1" hbank="0" lbank="0" prog="8"/>
+            <Patch name="Elec Org 2" hbank="0" lbank="0" prog="9"/>
+            <Patch name="Elec Org 3" hbank="0" lbank="0" prog="10"/>
+            <Patch name="Elec Org 4" hbank="0" lbank="0" prog="11"/>
+            <Patch name="Pipe Org 1" hbank="0" lbank="0" prog="12"/>
+            <Patch name="Pipe Org 2" hbank="0" lbank="0" prog="13"/>
+            <Patch name="Pipe Org 3" hbank="0" lbank="0" prog="14"/>
+            <Patch name="Accordion" hbank="0" lbank="0" prog="15"/>
+        </PatchGroup>
+
+        <PatchGroup name="Keyboard">
+            <Patch name="Harpsi 1" hbank="0" lbank="0" prog="16"/>
+            <Patch name="Harpsi 2" hbank="0" lbank="0" prog="17"/>
+            <Patch name="Harpsi 3" hbank="0" lbank="0" prog="18"/>
+            <Patch name="Clavi 1" hbank="0" lbank="0" prog="19"/>
+            <Patch name="Clavi 2" hbank="0" lbank="0" prog="20"/>
+            <Patch name="Clavi 3" hbank="0" lbank="0" prog="21"/>
+            <Patch name="Celesta 1" hbank="0" lbank="0" prog="22"/>
+            <Patch name="Celesta 2" hbank="0" lbank="0" prog="23"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Brass">
+            <Patch name="Syn Brass 1" hbank="0" lbank="0" prog="24"/>
+            <Patch name="Syn Brass 2" hbank="0" lbank="0" prog="25"/>
+            <Patch name="Syn Brass 3" hbank="0" lbank="0" prog="26"/>
+            <Patch name="Syn Brass 4" hbank="0" lbank="0" prog="27"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synth Bass">
+            <Patch name="Syn Bass 1" hbank="0" lbank="0" prog="28"/>
+            <Patch name="Syn Bass 2" hbank="0" lbank="0" prog="29"/>
+            <Patch name="Syn Bass 3" hbank="0" lbank="0" prog="30"/>
+            <Patch name="Syn Bass 4" hbank="0" lbank="0" prog="31"/>
+        </PatchGroup>
+
+        <PatchGroup name="Synthesizer">
+            <Patch name="Fantasy" hbank="0" lbank="0" prog="32"/>
+            <Patch name="Harmo Pan" hbank="0" lbank="0" prog="33"/>
+            <Patch name="Chorale" hbank="0" lbank="0" prog="34"/>
+            <Patch name="Glasses" hbank="0" lbank="0" prog="35"/>
+            <Patch name="Soundtrack" hbank="0" lbank="0" prog="36"/>
+            <Patch name="Atmosphere" hbank="0" lbank="0" prog="37"/>
+            <Patch name="Warm Bell" hbank="0" lbank="0" prog="38"/>
+            <Patch name="Funny Vox" hbank="0" lbank="0" prog="39"/>
+            <Patch name="Echo Bell" hbank="0" lbank="0" prog="40"/>
+            <Patch name="Ice Rain" hbank="0" lbank="0" prog="41"/>
+            <Patch name="Oboe 2001" hbank="0" lbank="0" prog="42"/>
+            <Patch name="Echo Pan" hbank="0" lbank="0" prog="43"/>
+            <Patch name="Doctor Solo" hbank="0" lbank="0" prog="44"/>
+            <Patch name="Schooldaze" hbank="0" lbank="0" prog="45"/>
+            <Patch name="Bellsinger" hbank="0" lbank="0" prog="46"/>
+            <Patch name="Square Wave" hbank="0" lbank="0" prog="47"/>
+        </PatchGroup>
+
+        <PatchGroup name="Strings">
+            <Patch name="Str Sect 1" hbank="0" lbank="0" prog="48"/>
+            <Patch name="Str Sect 2" hbank="0" lbank="0" prog="49"/>
+            <Patch name="Str Sect 3" hbank="0" lbank="0" prog="50"/>
+            <Patch name="Pizzicato" hbank="0" lbank="0" prog="51"/>
+            <Patch name="Violin 1" hbank="0" lbank="0" prog="52"/>
+            <Patch name="Violin 2" hbank="0" lbank="0" prog="53"/>
+            <Patch name="Cello 1" hbank="0" lbank="0" prog="54"/>
+            <Patch name="Cello 2" hbank="0" lbank="0" prog="55"/>
+            <Patch name="Contrabass" hbank="0" lbank="0" prog="56"/>
+            <Patch name="Harp 1" hbank="0" lbank="0" prog="57"/>
+            <Patch name="Harp 2" hbank="0" lbank="0" prog="58"/>
+        </PatchGroup>
+
+        <PatchGroup name="Guitar">
+            <Patch name="Guitar 1" hbank="0" lbank="0" prog="59"/>
+            <Patch name="Guitar 2" hbank="0" lbank="0" prog="60"/>
+            <Patch name="Elec Gtr 1" hbank="0" lbank="0" prog="61"/>
+            <Patch name="Elec Gtr 2" hbank="0" lbank="0" prog="62"/>
+            <Patch name="Sitar" hbank="0" lbank="0" prog="63"/>
+        </PatchGroup>
+
+        <PatchGroup name="Bass">
+            <Patch name="Acou Bass 1" hbank="0" lbank="0" prog="64"/>
+            <Patch name="Acou Bass 2" hbank="0" lbank="0" prog="65"/>
+            <Patch name="Elec Bass 1" hbank="0" lbank="0" prog="66"/>
+            <Patch name="Elec Bass 2" hbank="0" lbank="0" prog="67"/>
+            <Patch name="Slap Bass 1" hbank="0" lbank="0" prog="68"/>
+            <Patch name="Slap Bass 2" hbank="0" lbank="0" prog="69"/>
+            <Patch name="Fretless 1" hbank="0" lbank="0" prog="70"/>
+            <Patch name="Fretless 2" hbank="0" lbank="0" prog="71"/>
+        </PatchGroup>
+
+        <PatchGroup name="Wind">
+            <Patch name="Flute 1" hbank="0" lbank="0" prog="72"/>
+            <Patch name="Flute 2" hbank="0" lbank="0" prog="73"/>
+            <Patch name="Piccolo 1" hbank="0" lbank="0" prog="74"/>
+            <Patch name="Piccolo 2" hbank="0" lbank="0" prog="75"/>
+            <Patch name="Recorder" hbank="0" lbank="0" prog="76"/>
+            <Patch name="Pan Pipes" hbank="0" lbank="0" prog="77"/>
+            <Patch name="Sax 1" hbank="0" lbank="0" prog="78"/>
+            <Patch name="Sax 2" hbank="0" lbank="0" prog="79"/>
+            <Patch name="Sax 3" hbank="0" lbank="0" prog="80"/>
+            <Patch name="Sax 4" hbank="0" lbank="0" prog="81"/>
+            <Patch name="Clarinet 1" hbank="0" lbank="0" prog="82"/>
+            <Patch name="Clarinet 2" hbank="0" lbank="0" prog="83"/>
+            <Patch name="Oboe" hbank="0" lbank="0" prog="84"/>
+            <Patch name="Engl Horn" hbank="0" lbank="0" prog="85"/>
+            <Patch name="Bassoon" hbank="0" lbank="0" prog="86"/>
+            <Patch name="Harmonica" hbank="0" lbank="0" prog="87"/>
+        </PatchGroup>
+
+        <PatchGroup name="Brass">
+            <Patch name="Trumpet 1" hbank="0" lbank="0" prog="88"/>
+            <Patch name="Trumpet 2" hbank="0" lbank="0" prog="89"/>
+            <Patch name="Trombone 1" hbank="0" lbank="0" prog="90"/>
+            <Patch name="Trombone 2" hbank="0" lbank="0" prog="91"/>
+            <Patch name="Fr Horn 1" hbank="0" lbank="0" prog="92"/>
+            <Patch name="Fr Horn 2" hbank="0" lbank="0" prog="93"/>
+            <Patch name="Tuba" hbank="0" lbank="0" prog="94"/>
+            <Patch name="Brs Sect 1" hbank="0" lbank="0" prog="95"/>
+            <Patch name="Brs Sect 2" hbank="0" lbank="0" prog="96"/>
+        </PatchGroup>
+
+        <PatchGroup name="Mallet">
+            <Patch name="Vibe 1" hbank="0" lbank="0" prog="97"/>
+            <Patch name="Vibe 2" hbank="0" lbank="0" prog="98"/>
+            <Patch name="Syn Mallet" hbank="0" lbank="0" prog="99"/>
+            <Patch name="Windbell" hbank="0" lbank="0" prog="100"/>
+            <Patch name="Glock" hbank="0" lbank="0" prog="101"/>
+            <Patch name="Tube Bell" hbank="0" lbank="0" prog="102"/>
+            <Patch name="Xylophone" hbank="0" lbank="0" prog="103"/>
+            <Patch name="Marimba" hbank="0" lbank="0" prog="104"/>
+        </PatchGroup>
+
+        <PatchGroup name="Special">
+            <Patch name="Koto" hbank="0" lbank="0" prog="105"/>
+            <Patch name="Sho" hbank="0" lbank="0" prog="106"/>
+            <Patch name="Shakuhachi" hbank="0" lbank="0" prog="107"/>
+            <Patch name="Whistle 1" hbank="0" lbank="0" prog="108"/>
+            <Patch name="Whistle 2" hbank="0" lbank="0" prog="109"/>
+            <Patch name="Bottleblow" hbank="0" lbank="0" prog="110"/>
+            <Patch name="Breathpipe" hbank="0" lbank="0" prog="111"/>
+        </PatchGroup>
+
+        <PatchGroup name="Percussion">
+            <Patch name="Timpani" hbank="0" lbank="0" prog="112"/>
+            <Patch name="Melodic Tom" hbank="0" lbank="0" prog="113"/>
+            <Patch name="Deep Snare" hbank="0" lbank="0" prog="114"/>
+            <Patch name="Elec Perc 1" hbank="0" lbank="0" prog="115"/>
+            <Patch name="Elec Perc 2" hbank="0" lbank="0" prog="116"/>
+            <Patch name="Taiko" hbank="0" lbank="0" prog="117"/>
+            <Patch name="Taiko Rim" hbank="0" lbank="0" prog="118"/>
+            <Patch name="Cymbal" hbank="0" lbank="0" prog="119"/>
+            <Patch name="Castanets" hbank="0" lbank="0" prog="120"/>
+            <Patch name="Triangle" hbank="0" lbank="0" prog="121"/>
+        </PatchGroup>
+
+        <PatchGroup name="Effects">
+            <Patch name="Orche Hit" hbank="0" lbank="0" prog="122"/>
+            <Patch name="Telephone" hbank="0" lbank="0" prog="123"/>
+            <Patch name="Bird Tweet" hbank="0" lbank="0" prog="124"/>
+            <Patch name="One Note Jam" hbank="0" lbank="0" prog="125"/>
+            <Patch name="Water Bells" hbank="0" lbank="0" prog="126"/>
+            <Patch name="Jungle Tune" hbank="0" lbank="0" prog="127"/>
+        </PatchGroup>
+
+        <!-- Drums -->
+        <PatchGroup name="Drums">
+            <Patch name="Drums" hbank="0" lbank="0" prog="0" drum="1"/>
+        </PatchGroup>
+
+        <Drummaps>
+            <entry>
+                <patch_collection hbank="0" lbank="0" prog="0"/>
+                <drummap>
+                    <entry pitch="35"><name>Bass Drum</name></entry>
+                    <entry pitch="36"><name>Bass Drum</name></entry>
+                    <entry pitch="37"><name>Side Stick</name></entry>
+                    <entry pitch="38"><name>Accoustic Snare</name></entry>
+                    <entry pitch="39"><name>Hand Clap</name></entry>
+                    <entry pitch="40"><name>Electric Snare</name></entry>
+                    <entry pitch="41"><name>Low Floor Tom</name></entry>
+                    <entry pitch="42"><name>Closed Hi-Hat</name></entry>
+                    <entry pitch="43"><name>Low Tom</name></entry>
+                    <entry pitch="44"><name>Pedal Hi-Hat</name></entry>
+                    <entry pitch="45"><name>Mid Tom</name></entry>
+                    <entry pitch="46"><name>Open Hi-Hat</name></entry>
+                    <entry pitch="47"><name>Mid Tom</name></entry>
+                    <entry pitch="48"><name>High Tom</name></entry>
+                    <entry pitch="49"><name>Crash Cymbal</name></entry>
+                    <entry pitch="50"><name>High Tom</name></entry>
+                    <entry pitch="51"><name>Ride Cymbal</name></entry>
+                    <entry pitch="54"><name>Tambourine</name></entry>
+                    <entry pitch="56"><name>Cowbell</name></entry>
+                    <entry pitch="60"><name>High Bongo</name></entry>
+                    <entry pitch="61"><name>Low Bongo</name></entry>
+                    <entry pitch="62"><name>Mute High Conga</name></entry>
+                    <entry pitch="63"><name>Open HighConga</name></entry>
+                    <entry pitch="64"><name>Low Conga</name></entry>
+                    <entry pitch="65"><name>High Timbales</name></entry>
+                    <entry pitch="66"><name>Low Timbales</name></entry>
+                    <entry pitch="67"><name>High Agogo</name></entry>
+                    <entry pitch="68"><name>Low Agogo</name></entry>
+                    <entry pitch="69"><name>Cabasa</name></entry>
+                    <entry pitch="70">Maracas<name></name></entry>
+                    <entry pitch="71">Short Whistle<name></name></entry>
+                    <entry pitch="72">Long Whistle<name></name></entry>
+                    <entry pitch="73">Guiro<name></name></entry>
+                    <entry pitch="75">Claves<name></name></entry>
+                </drummap>
+            </entry>
+        </Drummaps>
+
+        <!-- Controllers -->
+        <Controller name="Pitch Bend" type="Pitch"/>
+        <Controller name="Program Change" type="Program"/>
+
+        <Controller name="Modulation" l="1"/>
+        <Controller name="Main Volume" l="7" init="100"/>
+        <Controller name="Panpot" l="10" min="-64" max="63" init="0"/>
+        <Controller name="Expression" l="11"/>
+        <Controller name="Sustain" l="64"/>
+        <Controller name="Reset All Controllers" l="121"/>
+
+        <!-- SysEx -->
+        <SysEx name="System Area Dump Request">
+            <comment>Byte 3 = Unit Number</comment>
+            <data>F0 41 00 16 11 10 00 00 00 00 17 59 F7</data>
+        </SysEx>
+
+        <SysEx name="Patch Memory Dump Request">
+            <comment>Byte 3 = Unit Number</comment>
+            <data>F0 41 00 16 11 05 00 00 03 00 00 78 F7</data>
+        </SysEx>
+
+        <SysEx name="Timbre Memory Dump Request">
+            <comment>Byte 3 = Unit Number</comment>
+            <data>F0 41 00 16 11 08 00 00 02 00 00 76 F7</data>
+        </SysEx>
+    </MidiInstrument>
+</muse>
