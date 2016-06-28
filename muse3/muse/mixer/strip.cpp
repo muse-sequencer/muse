@@ -519,7 +519,6 @@ void Strip::setLabelFont()
 
 void Strip::paintEvent(QPaintEvent * /*ev*/)
 {
-  printf ("running paint event highlight %d\n", _highlight);
   QPainter p(this);
   if (_highlight) {
     p.setPen(Qt::darkYellow);
