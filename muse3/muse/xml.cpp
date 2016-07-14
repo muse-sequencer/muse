@@ -36,8 +36,8 @@
 
 namespace MusECore {
 
-const int Xml::_latestMajorVersion = 2;   // Latest known songfile major version (as of this release)
-const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version (as of this release)
+const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
+const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version (as of this release)
   
 //---------------------------------------------------------
 //  Note:
