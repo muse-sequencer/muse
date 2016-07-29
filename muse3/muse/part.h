@@ -31,7 +31,7 @@
 #include <uuid/uuid.h>
 
 #include "event.h"
-#include "audioconvert.h"
+#include "audio_convert/lib_audio_convert/audioconvert.h"
 
 class QString;
 
@@ -164,7 +164,7 @@ class MidiPart : public Part {
 class WavePart : public Part {
 
       // p3.3.31
-      AudioConvertMap _converters;
+      //AudioConvertMap _converters;
 
    public:
       WavePart(WaveTrack* t);

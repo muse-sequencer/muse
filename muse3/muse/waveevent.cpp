@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include "audioconvert.h"
+#include "audio_convert/lib_audio_convert/audioconvert.h"
 #include "globals.h"
 #include "event.h"
 #include "waveevent.h"
