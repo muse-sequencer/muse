@@ -72,6 +72,7 @@
 #include "amixer.h"
 #include "track.h"
 #include "plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusECore {
 
@@ -728,6 +729,19 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "pluginLv2PathList")
                               MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", QString::SkipEmptyParts);
                         
+// REMOVE Tim. samplerate. Added.
+//                         else if (tag == "preferredAudioResampler")
+//                               MusEGlobal::config.preferredAudioResampler = xml.parseInt();
+//                         else if (tag == "preferredAudioStretcher")
+//                               MusEGlobal::config.preferredAudioStretcher = xml.parseInt();
+                        else if (tag == "audioConverterSettingsGroup")
+                        {
+                              //AudioConverter::defaultSettings.read(xml);
+                              //MusEGlobal::defaultAudioConverterSettings.read(xml);
+                              if(MusEGlobal::defaultAudioConverterSettings)
+                                MusEGlobal::defaultAudioConverterSettings->read(xml);
+                        }
+
                         else if (tag == "preferredRouteNameOrAlias")
                               MusEGlobal::config.preferredRouteNameOrAlias = static_cast<MusEGlobal::RouteNameAliasPreference>(xml.parseInt());
                         else if (tag == "routerExpandVertically")
@@ -1644,7 +1658,15 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "pluginVstPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
-                        
+      
+// REMOVE Tim. samplerate. Added.
+//       xml.intTag(level, "preferredAudioResampler", MusEGlobal::config.preferredAudioResampler);
+//       xml.intTag(level, "preferredAudioStretcher", MusEGlobal::config.preferredAudioStretcher);
+      //MusECore::AudioConverter::defaultSettings.write(level, xml);
+      //MusEGlobal::defaultAudioConverterSettings.write(level, xml);
+      if(MusEGlobal::defaultAudioConverterSettings)
+        MusEGlobal::defaultAudioConverterSettings->write(level, xml);
+      
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);

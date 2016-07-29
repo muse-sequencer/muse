@@ -260,6 +260,7 @@ void initShortCuts()
 
       // wave editor
       defShrt(SHRT_TOOL_RANGE,      Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Tool: Range"), WAVE_SHRT, "range_tool");
+      defShrt(SHRT_TOOL_STRETCH,    Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Tool: Stretch"), WAVE_SHRT, "stretch_tool");
       
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Tool: Scissor"), ARRANG_SHRT, "scissor_tool");
@@ -347,7 +348,7 @@ void initShortCuts()
       defShrt(SHRT_PREV_MARKER, Qt::Key_F5, QT_TRANSLATE_NOOP("shortcuts", "Goto Prev Marker"), GLOBAL_SHRT,  "me_sel_prev");
 
       defShrt(SHRT_PART_NORMALIZE,  Qt::ALT + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Normalize"), ARRANG_SHRT, "wave_part_normalize");
-      
+
       }
 
  const shortcut_cg shortcut_category[SHRT_NUM_OF_CATEGORIES] = {

@@ -26,8 +26,8 @@
 #include "eventbase.h"
 #include "waveevent.h"
 #include "midievent.h"
-
-//#define USE_SAMPLERATE
+// REMOVE Tim. samplerate. Added.
+#include "part.h"
 
 namespace MusECore {
 
@@ -96,11 +96,7 @@ void EventBase::dump(int n) const
 
 Event Event::duplicate() const
       {
-      #ifdef USE_SAMPLERATE
-      return ev ? Event(ev->duplicate(), _audConv) : Event();
-      #else
       return ev ? Event(ev->duplicate()) : Event();
-      #endif
       }
 
 //---------------------------------------------------------
@@ -109,11 +105,7 @@ Event Event::duplicate() const
 
 Event Event::clone() const
       {
-      #ifdef USE_SAMPLERATE
-      return ev ? Event(ev->clone(), _audConv) : Event();
-      #else
       return ev ? Event(ev->clone()) : Event();
-      #endif
       }
 
 //---------------------------------------------------------
@@ -142,45 +134,18 @@ Event::Event(const Event& e) {
             ev = e.ev;
             if(ev)
               ++(ev->refCount);
-            
-            #ifdef USE_SAMPLERATE
-            if(e._audConv)
-              _audConv = e._audConv->reference();
-            #endif
           }
 Event::Event(EventBase* eb) {
             ev = eb;
 	    if(ev)
               ++(ev->refCount);
-            
-            #ifdef USE_SAMPLERATE
-            if(ev && !ev->sndFile().isNull())
-              _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-            #endif  
             }
-#ifdef USE_SAMPLERATE
-Event::Event(EventBase* eb, AudioConverter* cv) {
-            _sfCurFrame = 0;
-            _audConv = 0;
-            
-            ev = eb;
-	    if(ev)
-              ++(ev->refCount);
-            
-            if(cv)
-              _audConv = cv->reference();
-            }
-#endif  
             
 Event::~Event() {
             if (ev && --(ev->refCount) == 0) {
                   delete ev;
                   ev=0;
                   }
-
-            #ifdef USE_SAMPLERATE
-            AudioConverter::release(_audConv);
-            #endif
             }
 
 bool Event::empty() const      { return ev == 0; }
@@ -211,15 +176,6 @@ Event& Event::operator=(const Event& e) {
               if (ev)
                     ++(ev->refCount);
             }      
-            
-            #ifdef USE_SAMPLERATE
-            if (_audConv != e._audConv)
-            {
-              if(_audConv)
-                AudioConverter::release(_audConv);
-              _audConv = e._audConv->reference();
-            }      
-            #endif
             return *this;
             }
 
@@ -246,16 +202,6 @@ void Event::move(int offset)      { if(ev) ev->move(offset); }
 void Event::read(Xml& xml)            
 { 
   if(ev) ev->read(xml); 
-  
-  #ifdef USE_SAMPLERATE
-  if(ev && !ev->sndFile().isNull())
-  {
-    if(_audConv)
-      _audConv->setChannels(ev->sndFile().channels());
-    else
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }  
-  #endif
 }
 
 
@@ -293,25 +239,42 @@ MusECore::SndFileR Event::sndFile() const    { return ev ? ev->sndFile() : MusEC
 void Event::setSndFile(MusECore::SndFileR& sf) 
 { 
   if(ev) ev->setSndFile(sf);   
-  
-  #ifdef USE_SAMPLERATE
-  if(_audConv)
-  { 
-    if(!sf.isNull())
-      _audConv->setChannels(sf.channels());
-  }
-  else
-  {
-    if(ev && !sf.isNull())
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }
-  #endif
 }
 
-void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+// REMOVE Tim. samplerate. Changed.
+//void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
-        if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
+//         if(ev) ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
+        if(ev) ev->readAudio(offset, bpp, channels, nn, doSeek, overwrite);
       }
+// REMOVE Tim. samplerate. Added.
+void Event::seekAudio(sf_count_t offset)
+      {
+        if(ev) ev->seekAudio(offset);
+      }
+// void Event::clearAudioPrefetchFifo()
+// {
+//         if(ev) ev->clearAudioPrefetchFifo();
+// }
+Fifo* Event::audioPrefetchFifo()
+{
+        return ev ? ev->audioPrefetchFifo() : 0;
+}
+void Event::prefetchAudio(Part* part, sf_count_t frames)
+{
+        if(ev) ev->prefetchAudio(part, frames);
+}
+// void Event::fetchAudioData(WavePart* part, sf_count_t pos, int channels, bool off, sf_count_t frames, float** bp, bool doSeek, bool overwrite)
+// {
+//         if(ev) ev->fetchAudioData(part, pos, channels, off, frames, bp, doSeek, overwrite);
+// }
+// bool Event::getAudioPrefetchBuffer(int segs, unsigned long samples, float** dst, unsigned* pos)
+// {
+//         // Return true if fifo is empty, or event is invalid. 
+//         return ev ? ev->getAudioPrefetchBuffer(segs, pos, samples, dst, pos) : true;
+// }
+      
 void Event::setTick(unsigned val)       { if(ev) ev->setTick(val); }
 unsigned Event::tick() const            { return ev ? ev->tick() : 0; }
 unsigned Event::frame() const           { return ev ? ev->frame() : 0; }

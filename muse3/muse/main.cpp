@@ -61,6 +61,8 @@
 #include "mididev.h"
 #include "plugin.h"
 #include "wavepreview.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -367,6 +369,14 @@ int main(int argc, char* argv[])
       }
 
       MusEGui::initShortCuts();
+      
+      // REMOVE Tim. samplerate. Added.
+      // Discover available MusE audio converters, before reading configuration
+      MusEGlobal::audioConverterPluginList.discover();
+      //MusEGlobal::defaultAudioConverterSettings.populate(&MusEGlobal::audioConverterPluginList, false);
+      MusEGlobal::defaultAudioConverterSettings = new MusECore::AudioConverterSettingsGroup(false); // Default, non-local settings.
+      MusEGlobal::defaultAudioConverterSettings->populate(&MusEGlobal::audioConverterPluginList, false);
+      
       MusECore::readConfiguration();
       
       // Need to put a sane defaults here because we can't use '~' in the file name strings.
@@ -703,7 +713,7 @@ int main(int argc, char* argv[])
       MusEGui::initIcons();
 
       MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
-      
+
       MusEGlobal::muse = new MusEGui::MusE(); 
       app.setMuse(MusEGlobal::muse);
 
@@ -904,6 +914,10 @@ int main(int argc, char* argv[])
 #endif
 
       delete MusEGlobal::muse;
+      
+      // REMOVE Tim. samplerate. Added.
+      if(MusEGlobal::defaultAudioConverterSettings)
+        delete MusEGlobal::defaultAudioConverterSettings;
       
       if(MusEGlobal::debugMsg) 
         printf("Finished! Exiting main, return value:%d\n", rv);

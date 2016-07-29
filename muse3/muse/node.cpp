@@ -1603,7 +1603,9 @@ bool WaveTrack::canEnableRecord() const
 
 void AudioTrack::record()
       {
-      unsigned pos = 0;
+// REMOVE Tim. samplerate. Changed.
+//       unsigned pos = 0;
+      MuseCount_t pos = 0;
       float* buffer[_channels];
       while(fifo.getCount()) {
             if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
@@ -1821,10 +1823,53 @@ void Fifo::clear()
 //    return true if fifo full
 //---------------------------------------------------------
 
-bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
+// REMOVE Tim. samplerate. Changed.
+// bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
+//       {
+//       #ifdef FIFO_DEBUG
+//       printf("FIFO::put segs:%d samples:%lu pos:%u count:%d\n", segs, samples, pos, muse_atomic_read(&count));
+//       #endif
+// 
+//       if (muse_atomic_read(&count) == nbuffer) {
+//             printf("FIFO %p overrun... %d\n", this, muse_atomic_read(&count));
+//             return true;
+//             }
+//       FifoBuffer* b = buffer[widx];
+//       int n         = segs * samples;
+//       if (b->maxSize < n) {
+//             if (b->buffer)
+//             {
+//               free(b->buffer);
+//               b->buffer = 0;
+//             }
+//             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+//             if(rv != 0 || !b->buffer)
+//             {
+//               printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+//               return true;
+//             }
+// 
+//             b->maxSize = n;
+//             }
+//       if(!b->buffer)
+//       {
+//         printf("Fifo::put no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+//         return true;
+//       }
+// 
+//       b->size = samples;
+//       b->segs = segs;
+//       b->pos  = pos;
+//       for (int i = 0; i < segs; ++i)
+//             AL::dsp->cpy(b->buffer + i * samples, src[i], samples);
+//       add();
+//       return false;
+//       }
+// 
+bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::put segs:%d samples:%lu pos:%u count:%d\n", segs, samples, pos, muse_atomic_read(&count));
+      printf("FIFO::put segs:%d samples:%ld pos:%ld count:%d\n", segs, samples, pos, muse_atomic_read(&count));
       #endif
 
       if (muse_atomic_read(&count) == nbuffer) {
@@ -1832,7 +1877,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
             return true;
             }
       FifoBuffer* b = buffer[widx];
-      int n         = segs * samples;
+      MuseCount_t n         = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
             {
@@ -1842,7 +1887,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+              printf("Fifo::put could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
               return true;
             }
 
@@ -1850,7 +1895,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
             }
       if(!b->buffer)
       {
-        printf("Fifo::put no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+        printf("Fifo::put no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
         return true;
       }
 
@@ -1868,10 +1913,37 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
 //    return true if fifo empty
 //---------------------------------------------------------
 
-bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
+// REMOVE Tim. samplerate. Changed.
+// bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
+//       {
+//       #ifdef FIFO_DEBUG
+//       printf("FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
+//       #endif
+// 
+//       if (muse_atomic_read(&count) == 0) {
+//             printf("FIFO %p underrun\n", this);
+//             return true;
+//             }
+//       FifoBuffer* b = buffer[ridx];
+//       if(!b->buffer)
+//       {
+//         printf("Fifo::get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+//         return true;
+//       }
+// 
+//       if (pos)
+//             *pos = b->pos;
+// 
+//       for (int i = 0; i < segs; ++i)
+//             dst[i] = b->buffer + samples * (i % b->segs);
+//       remove();
+//       return false;
+//       }
+// 
+bool Fifo::get(int segs, MuseCount_t samples, float** dst, MuseCount_t* pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
+      printf("FIFO::get segs:%d samples:%ld count:%d\n", segs, samples, muse_atomic_read(&count));
       #endif
 
       if (muse_atomic_read(&count) == 0) {
@@ -1881,7 +1953,7 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
       FifoBuffer* b = buffer[ridx];
       if(!b->buffer)
       {
-        printf("Fifo::get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+        printf("Fifo::get no buffer! segs:%d samples:%ld b->pos:%ld\n", segs, samples, b->pos);
         return true;
       }
 
@@ -1924,16 +1996,58 @@ void Fifo::remove()
 //   getWriteBuffer
 //---------------------------------------------------------
 
-bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos)
+// REMOVE Tim. samplerate. Changed.
+// bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos)
+//       {
+//       #ifdef FIFO_DEBUG
+//       printf("Fifo::getWriteBuffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+//       #endif
+// 
+//       if (muse_atomic_read(&count) == nbuffer)
+//             return true;
+//       FifoBuffer* b = buffer[widx];
+//       int n = segs * samples;
+//       if (b->maxSize < n) {
+//             if (b->buffer)
+//             {
+//               free(b->buffer);
+//               b->buffer = 0;
+//             }
+// 
+//             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+//             if(rv != 0 || !b->buffer)
+//             {
+//               printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+//               return true;
+//             }
+// 
+//             b->maxSize = n;
+//             }
+//       if(!b->buffer)
+//       {
+//         printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+//         return true;
+//       }
+// 
+//       for (int i = 0; i < segs; ++i)
+//             buf[i] = b->buffer + i * samples;
+// 
+//       b->size = samples;
+//       b->segs = segs;
+//       b->pos  = pos;
+//       return false;
+//       }
+// 
+bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_t pos)
       {
       #ifdef FIFO_DEBUG
-      printf("Fifo::getWriteBuffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+      printf("Fifo::getWriteBuffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
       #endif
 
       if (muse_atomic_read(&count) == nbuffer)
             return true;
       FifoBuffer* b = buffer[widx];
-      int n = segs * samples;
+      MuseCount_t n = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
             {
@@ -1944,7 +2058,7 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+              printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
               return true;
             }
 
@@ -1952,7 +2066,7 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
             }
       if(!b->buffer)
       {
-        printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+        printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
         return true;
       }
 

@@ -93,7 +93,6 @@ file (GLOB core_source_files
       app.cpp
       appearance.cpp
       audio.cpp
-      audioconvert.cpp
       audioprefetch.cpp
       audiotrack.cpp
       cobject.cpp
@@ -146,6 +145,7 @@ file (GLOB core_source_files
       tempo.cpp
       thread.cpp
       ticksynth.cpp
+      time_stretch.cpp
       track.cpp
       trackdrummapupdater.cpp
       transport.cpp
@@ -209,6 +209,7 @@ include_directories (
 # Make sure to include the uic generated headers paths.
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/arranger
+#       ${CMAKE_CURRENT_BINARY_DIR}/audio_convert
       ${CMAKE_CURRENT_BINARY_DIR}/driver
       ${CMAKE_CURRENT_BINARY_DIR}/instruments
       ${CMAKE_CURRENT_BINARY_DIR}/liste
@@ -244,6 +245,7 @@ set_target_properties( icons
 target_link_libraries(core
       al
       arranger
+      audio_converter_plugin
       awl
       cliplist
       ctrl
@@ -264,6 +266,7 @@ target_link_libraries(core
 
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
+      # Note that this also appears in the audio_convert/src_resampler shared library.
       ${SAMPLERATE_LIBRARIES}
       ${UUID_LIBRARIES}
       ${REM_LIB}
@@ -321,3 +324,4 @@ if ( ${MODULES_BUILD} STREQUAL SHARED )
             DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
+

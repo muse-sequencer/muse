@@ -254,6 +254,8 @@ DummyAudioDevice* dummyAudio = 0;
 DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       {
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
+      // REMOVE Tim. samplerate. Added.
+      MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
       int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
@@ -378,6 +380,8 @@ static void* dummyLoop(void* ptr)
         tickRate = timer.getTimerFreq();
         
       MusEGlobal::sampleRate = tickRate * MusEGlobal::segmentSize;
+      // REMOVE Tim. samplerate. Added.
+      MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       timer.startTimer();
 #endif        
 

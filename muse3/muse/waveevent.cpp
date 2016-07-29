@@ -21,19 +21,28 @@
 //
 //=========================================================
 
-#include "audioconvert.h"
+// REMOVE Tim. samplerate. Added.
+//#include "audioconvert.h"
+#include "audio_convert/audio_converter_settings_group.h"
+#include "node.h"
+#include "part.h"
+#include "gconfig.h"
+#include "time_stretch.h"
+
 #include "globals.h"
 #include "event.h"
 #include "waveevent.h"
 #include "xml.h"
 #include "wave.h"
+
 #include <iostream>
 #include <math.h>
 
-// Added by Tim. p3.3.18
-//#define USE_SAMPLERATE
+// REMOVE Tim. samplerate. Enabled.
+#define USE_SAMPLERATE
 
-//#define WAVEEVENT_DEBUG
+// REMOVE Tim. samplerate. Enabled.
+#define WAVEEVENT_DEBUG
 //#define WAVEEVENT_DEBUG_PRC
 
 namespace MusECore {
@@ -46,6 +55,12 @@ WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
       _spos = 0;
+      // REMOVE Tim. samplerate. Added.
+      //_stretchList = new StretchList();
+      _prefetchFifo = new Fifo();
+      _prefetchWritePos = ~0;
+      _lastSeekPos  = ~0;
+      //_audioConverterSettings = new AudioConverterSettingsGroup();
       }
 
 WaveEventBase::WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone)
@@ -53,12 +68,60 @@ WaveEventBase::WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone)
 {
       _name = ev._name;
       _spos = ev._spos;
+
+      // REMOVE Tim. samplerate. Added.
+      //_stretchList = new StretchList();
+      // Make a new Fifo.
+      _prefetchFifo = new Fifo();
+      _prefetchWritePos = ~0;
+      _lastSeekPos  = ~0;
+      //*_audioConverterSettings = *ev._audioConverterSettings; // TODO? Or just keep the existing settings?
+
+// REMOVE Tim. samplerate. Added.
+// #ifdef USE_SAMPLERATE
+//       // Create a new converter.
+//       _audConv = new SRCAudioConverter(f.channels(), SRC_SINC_MEDIUM_QUALITY);
+// #endif      
       
       // NOTE: It is necessary to create copies always. Unlike midi events, no shared data is allowed for 
       //        wave events because sndfile handles and audio stretchers etc. ABSOLUTELY need separate instances always. 
       //       So duplicate_not_clone is not used here. 
       if(!ev.f.isNull() && !ev.f.canonicalPath().isEmpty())
-        f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false); // Don't show error box.
+      {
+// REMOVE Tim. samplerate. Changed.
+//         f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false); // Don't show error box.
+        // Don't show error box, and assign the audio converter settings.
+        f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false, ev.f.audioConverterSettings());
+        
+// REMOVE Tim. samplerate. Added.
+// #ifdef USE_SAMPLERATE
+//         if(f.isNull())
+//         {
+//           // Do we have a valid audio converter?
+//           if(_audConv)
+//             _audConv = AudioConverter::release(_audConv);
+//         }
+//         else
+//         {
+//           // Do we already have a valid audio converter?
+//           if(_audConv)
+//             // Just set the channels.
+//             _audConv->setChannels(f.channels());
+//           else
+//             // Create a new converter.
+//             _audConv = new SRCAudioConverter(f.channels(), SRC_SINC_MEDIUM_QUALITY);
+//         }
+// #endif      
+      }
+}
+
+// REMOVE Tim. samplerate. Added.
+WaveEventBase::~WaveEventBase()
+{
+  //_audConv = AudioConverter::release(_audConv);
+  delete _prefetchFifo;
+  //delete _stretchList;
+  //delete _audioConverterSettings;
 }
 
 //---------------------------------------------------------
@@ -76,6 +139,10 @@ void WaveEventBase::assign(const EventBase& ev)
 
   SndFileR sf = ev.sndFile();
   setSndFile(sf);
+  
+  // REMOVE Tim. samplerate. Added.
+  _prefetchWritePos = ~0;
+  _lastSeekPos  = ~0;
 }
 
 bool WaveEventBase::isSimilarTo(const EventBase& other_) const
@@ -86,6 +153,31 @@ bool WaveEventBase::isSimilarTo(const EventBase& other_) const
 	
 	return f.dirPath()==other->f.dirPath() && _spos==other->_spos && this->PosLen::operator==(*other);
 }
+
+// REMOVE Tim. samplerate. Added.
+// void WaveEventBase::setSndFile(SndFileR& sf)
+// { 
+//   f = sf;
+//   // REMOVE Tim. samplerate. Added.
+// #ifdef USE_SAMPLERATE
+//   if(f.isNull())
+//   {
+//     // Do we have a valid audio converter?
+//     if(_audConv)
+//       _audConv = AudioConverter::release(_audConv);
+//   }
+//   else
+//   {
+//     // Do we already have a valid audio converter?
+//     if(_audConv)
+//       // Just set the channels.
+//       _audConv->setChannels(f.channels());
+//     else
+//       // Create a new converter.
+//       _audConv = new SRCAudioConverter(f.channels(), SRC_SINC_MEDIUM_QUALITY);
+//   }
+// #endif
+// }
 
 //---------------------------------------------------------
 //   WaveEvent::mid
@@ -141,8 +233,25 @@ void WaveEventBase::read(Xml& xml)
                               _spos = xml.parseInt();
                         else if (tag == "file") {
                               SndFileR wf = getWave(xml.parse1(), true);
-                              if (wf) f = wf;
+// REMOVE Tim. samplerate. Changed.
+//                               if (wf) f = wf;
+                              if (wf) setSndFile(wf);
                               }
+                              
+// REMOVE Tim. samplerate. Added.
+                        else if (tag == "stretchlist")
+                        {
+                          if(f.stretchList())
+                            f.stretchList()->read(xml);
+                          //stretchList()->read(xml);
+                        }
+                        else if (tag == "audioConverterSettingsGroup")
+                        {
+                          //_audioConverterSettings->read(xml);
+                          if(f.audioConverterSettings())
+                            f.audioConverterSettings()->read(xml);
+                        }
+                        
                         else
                               xml.unknown("Event");
                         break;
@@ -185,14 +294,127 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
             }
       else
             xml.strTag(level, "file", f.path());
+      
+      // REMOVE Tim. samplerate. Added.
+      if(f.stretchList())
+        f.stretchList()->write(level, xml);
+      //stretchList()->write(level, xml);
+      
+      // REMOVE Tim. samplerate. Added.
+      //if(f.staticAudioConverter())
+      //  f.staticAudioConverter()->write(level, xml);
+      //_audioConverterSettings->write(level, xml);
+      if(f.audioConverterSettings())
+        f.audioConverterSettings()->write(level, xml);
+      
       xml.etag(level, "event");
       }
 
-void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
+// REMOVE Tim. samplerate. Added.
+//---------------------------------------------------------
+//   seekAudio
+//---------------------------------------------------------
+
+// void WaveEventBase::seekAudio(sf_count_t offset)
+// {
+//   #ifdef WAVEEVENT_DEBUG_PRC
+//   printf("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
+//   #endif
+// 
+// 
+//   sf_count_t newfr = offset + _spos;
+//   
+// #ifdef USE_SAMPLERATE
+//   // If we have a valid audio converter then use it to do the seek. Otherwise just a normal seek.
+//   if(_audConv)
+//   {
+//     _audConv->seekAudio(f, newfr);
+//     //_audConv->seekAudio(f, offset);   // Hm, just offset not spos? Check...
+//   }
+//   else 
+// #endif
+//   // TODO: May want a 'current frame' variable, just like audio converter, to keep track of the latest position.
+//   if(!f.isNull())
+//   {  
+//     const sf_count_t smps = f.samples();
+//     if(newfr < 0)
+//       newfr = 0;
+//     else if(newfr > smps)
+//       newfr = smps;
+//     f.seek(newfr, SEEK_SET);
+//   }
+// }
+void WaveEventBase::seekAudio(sf_count_t offset)
+{
+  #ifdef WAVEEVENT_DEBUG_PRC
+  //printf("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
+  printf("WaveEventBase::seekAudio offset:%lu\n", offset);
+  #endif
+
+  sf_count_t newfr = offset + _spos;
+
+#ifdef USE_SAMPLERATE
+  if(!f.isNull())
+  {
+//     if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
+//       newfr = f.convertPosition(newfr);
+//     
+//     const sf_count_t smps = f.samples();
+//     
+//     if(newfr < 0)
+//       newfr = 0;
+//     else if(newfr > smps)
+//       newfr = smps;
+//     
+//     //if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
+//     //  _audConv->seekAudio(f, newfr);
+//     //else
+//       f.seek(newfr, SEEK_SET);
+//       
+//     // Reset the converter. Its current state is meaningless now.
+//     if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
+//       _audConv->reset();
+    
+    f.seekConverted(newfr, SEEK_SET);
+  }
+  
+// #ifdef USE_SAMPLERATE
+//   // If we have a valid audio converter then use it to do the seek. Otherwise just a normal seek.
+//   if(_audConv)
+//   {
+//     _audConv->seekAudio(f, newfr);
+//     //_audConv->seekAudio(f, offset);   // Hm, just offset not spos? Check...
+//   }
+//   else 
+// #endif
+//     
+
+#else
+
+  // TODO: May want a 'current frame' variable, just like audio converter, to keep track of the latest position.
+  if(!f.isNull())
+  {  
+    const sf_count_t smps = f.samples();
+    if(newfr < 0)
+      newfr = 0;
+    else if(newfr > smps)
+      // Clamp it at 'one past the end' in other words EOF.
+      newfr = smps;
+    f.seek(newfr, SEEK_SET);
+  }
+#endif
+}
+      
+// REMOVE Tim. samplerate. Changed.
+//void WaveEventBase::readAudio(WavePart* /*part*/, unsigned /*offset*/, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
+void WaveEventBase::readAudio(unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
   // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC
-  printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
+// REMOVE Tim. samplerate. Changed.
+//   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
+  //printf("WaveEventBase::readAudio audConv:%p offset:%u channel:%d n:%d\n", _audConv, offset, channel, n);
+  printf("WaveEventBase::readAudio offset:%u channel:%d n:%d overwrite:%d\n", offset, channel, n, overwrite);
   #endif
   
   // DELETETHIS 270. all the below stuff hasn't changed since revision 462, and 
@@ -203,21 +425,64 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   // Changed by Tim. p3.3.18 
   #ifdef USE_SAMPLERATE
   
-  // TODO: 
-  //>>>>>>>>>>>+++++++++++++++++++++++++++++
-  // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
-  if(audConv)
-    //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite); DELETETHIS
-    sfCurFrame = audConv->readAudio(f, sfCurFrame, offset, buffer, channel, n, doSeek, overwrite);
-  else
-  {
-    if(!f.isNull())
-    {  
-      sfCurFrame = f.seek(offset + _spos, 0);
-      sfCurFrame += f.read(channel, buffer, n, overwrite);
-    }  
+//   // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
+//   if(_audConv)
+//     //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite); DELETETHIS
+// // REMOVE Tim. samplerate. Changed.
+// //     sfCurFrame = audConv->readAudio(f, sfCurFrame, offset, buffer, channel, n, doSeek, overwrite);
+//     _audConv->readAudio(f, offset, buffer, channel, n, doSeek, overwrite); // Hm, just offset not spos? Check...
+//   else
+//   {
+//     if(!f.isNull())
+//     {  
+// // REMOVE Tim. samplerate. Changed.
+// //       sfCurFrame = f.seek(offset + _spos, 0);
+// //       sfCurFrame += f.read(channel, buffer, n, overwrite);
+//       
+// // REMOVE Tim. samplerate. Removed. Should avoid seeking during read - just let it roll on its own. TODO: REINSTATE?      
+// //       off_t e_off = offset + _spos;
+// //       if(e_off < 0)
+// //         e_off = 0;
+// //       f.seek(e_off, 0);
+//       
+//       f.read(channel, buffer, n, overwrite);
+//     }  
+//   }
+//   return;
+
+
+  if(!f.isNull())
+  {  
+    // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
+//     if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
+//     if(f.sampleRateDiffers())
+//     {
+      //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite); DELETETHIS
+  // REMOVE Tim. samplerate. Changed.
+  //     sfCurFrame = audConv->readAudio(f, sfCurFrame, offset, buffer, channel, n, doSeek, overwrite);
+      //_audConv->readAudio(f, offset, buffer, channel, n, doSeek, overwrite); // Hm, just offset not spos? Check...
+      //_audConv->readAudio(f, f.convertPosition(offset), buffer, channel, n, doSeek, overwrite); // Hm, just offset not spos? Check...
+//       _audConv->process(f, buffer, channel, n, overwrite); // Hm, just offset not spos? Check...
+      f.readConverted(offset, channel, buffer, n, overwrite);
+//     }
+//     else
+//     {
+// // REMOVE Tim. samplerate. Changed.
+// //       sfCurFrame = f.seek(offset + _spos, 0);
+// //       sfCurFrame += f.read(channel, buffer, n, overwrite);
+//       
+// // REMOVE Tim. samplerate. Removed. Should avoid seeking during read - just let it roll on its own. TODO: REINSTATE?      
+// //       off_t e_off = offset + _spos;
+// //       if(e_off < 0)
+// //         e_off = 0;
+// //       f.seek(e_off, 0);
+//         
+//       f.read(channel, buffer, n, overwrite);
+//     }  
   }
   return;
+
+
   
   /* DELETETHIS 250
   unsigned fsrate = f.samplerate();
@@ -478,15 +743,221 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   
   //sfCurFrame = f.seek(offset + _spos, 0); DELETETHIS 2
   //sfCurFrame += f.read(channel, buffer, n, overwrite);
-  off_t e_off = offset + _spos;
-  if(e_off < 0)
-    e_off = 0;
-  f.seek(e_off, 0);
+// // REMOVE Tim. samplerate. Removed. Should avoid seeking during read - just let it roll on its own. TODO: REINSTATE?      
+//   off_t e_off = offset + _spos;
+//   if(e_off < 0)
+//     e_off = 0;
+//   f.seek(e_off, 0);
   f.read(channel, buffer, n, overwrite);
       
   return;
   #endif
   
 }
+
+// // REMOVE Tim. samplerate. Added.
+// void WaveEventBase::clearPrefetchFifo()
+// { 
+//   _prefetchFifo->clear(); 
+// }
+
+// REMOVE Tim. samplerate. Added.
+// //---------------------------------------------------------
+// //   fetchData
+// //    called from prefetch thread
+// //---------------------------------------------------------
+// 
+// void WaveEventBase::fetchAudioData(WavePart* part, sf_count_t pos, int channels, bool off, sf_count_t frames, float** bp, bool doSeek, bool overwrite)
+//       {
+//       #ifdef WAVEEVENT_DEBUG
+//       printf("WaveEventBase::fetchData %s channels:%d samples:%lu pos:%ld\n", name().toLatin1().constData(), channels, frames, pos);
+//       #endif
+//       
+//       if(overwrite)
+//       {
+//         // reset buffer to zero
+//         for (int i = 0; i < channels; ++i)
+//               memset(bp[i], 0, frames * sizeof(float));
+//       }
+//       
+//       // Process only if track is not off.
+//       if(!off)
+//       {  
+//         
+// //         PartList* pl = parts();
+//         unsigned n = frames;
+// //         for (iPart ip = pl->begin(); ip != pl->end(); ++ip) 
+// //         {
+// //               WavePart* part = (WavePart*)(ip->second);
+// //               if (part->mute())
+// //                   continue;
+// //               
+//               unsigned p_spos = part->frame();
+//               unsigned p_epos = p_spos + part->lenFrame();
+//               if (pos + n < p_spos)
+//                 break;
+//               if (pos >= p_epos)
+//                 continue;
+// //   
+// //               for (iEvent ie = part->nonconst_events().begin(); ie != part->nonconst_events().end(); ++ie) 
+// //               {
+// //                     Event& event = ie->second;
+//                     
+//                     
+//                     
+// //                     unsigned e_spos  = event.frame() + p_spos;
+// //                     unsigned nn      = event.lenFrame();
+//                     unsigned e_spos  = frame() + p_spos;
+//                     unsigned nn      = lenFrame();
+//                     unsigned e_epos  = e_spos + nn;
+//                     
+//                     if (pos + n < e_spos) 
+//                       break;
+//                     if (pos >= e_epos) 
+//                       continue;
+//   
+//                     int offset = e_spos - pos;
+//   
+//                     unsigned srcOffset, dstOffset;
+//                     if (offset > 0) {
+//                           nn = n - offset;
+//                           srcOffset = 0;
+//                           dstOffset = offset;
+//                           }
+//                     else {
+//                           srcOffset = -offset;
+//                           dstOffset = 0;
+//                           
+//                           nn += offset;
+//                           if (nn > n)
+//                                 nn = n;
+//                           }
+//                     float* bpp[channels];
+//                     for (int i = 0; i < channels; ++i)
+//                           bpp[i] = bp[i] + dstOffset;
+//   
+// //                     event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, false);
+//                     readAudio(part, srcOffset, bpp, channels, nn, doSeek, overwrite);
+//                     
+// //                     }
+// //               }
+//       }
+//               
+//       if(MusEGlobal::config.useDenormalBias) {
+//             // add denormal bias to outdata
+//             for (int i = 0; i < channels; ++i)
+//                   for (unsigned int j = 0; j < frames; ++j)
+//                       bp[i][j] +=MusEGlobal::denormalBias;
+//             }
+//       
+//       _prefetchFifo->add();
+//       }
+
+
+      
+// REMOVE Tim. samplerate. Added.
+//---------------------------------------------------------
+//   prefetchAudio
+//---------------------------------------------------------
+
+//void WaveEventBase::prefetchAudio(WavePart* part, sf_count_t writePos, int channels, bool off, sf_count_t frames)
+void WaveEventBase::prefetchAudio(Part* part, sf_count_t frames)
+{        
+//   float* bp[channels];
+//   if (_prefetchFifo->getWriteBuffer(channels, frames, bp, writePos))
+//         continue;
+// 
+//   fetchAudioData(part, writePos, channels, off, frames, bp, false, false);
+  
+  
+  Fifo* fifo = audioPrefetchFifo();
+  
+  if(!fifo)
+    return;
+  
+  SndFileR sf = sndFile();
+  if(sf.isNull())
+    return;
+
+
+  const sf_count_t p_spos  = part->frame();
+  const sf_count_t p_epos  = p_spos + part->lenFrame();
+
+  const sf_count_t e_spos  = frame() + p_spos;
+  sf_count_t nn            = lenFrame();
+  const sf_count_t e_epos  = e_spos + nn;
+  
+  if(_prefetchWritePos + frames >= p_spos && _prefetchWritePos < p_epos &&
+      _prefetchWritePos + frames >= e_spos && _prefetchWritePos < e_epos)
+  {  
+    const sf_count_t offset = e_spos - _prefetchWritePos;
+
+//     sf_count_t srcOffset, dstOffset;
+    //sf_count_t dstOffset;
+    if(offset > 0) 
+    {
+      nn = frames - offset;
+//       srcOffset = 0;
+      //dstOffset = offset;
+    }
+    else 
+    {
+//       srcOffset = -offset;
+      //dstOffset = 0;
+      
+      nn += offset;
+      if(nn > frames)
+        nn = frames;
+    }
+    
+    //e.prefetchAudio(writePos, nn);
+    //e.prefetchAudio(part, nn);
+    //e.prefetchAudio(part, frames);
+    
+    
+    //sf_count_t sf_smps = sf.samples();
+    //if(nn > sf_smps)
+    //  nn = sf_smps;
+
+
+
+
+
+
+  
+    const int chans = sf.channels();
+    const sf_count_t  samples = chans * frames;
+    //const sf_count_t  samples = chans * nn;
+    
+    float* bp;
+    
+    // Here we allocate ONE interleaved buffer which is fed with direct interleaved soundfile data.
+    if(fifo->getWriteBuffer(1, samples, &bp, _prefetchWritePos))
+      return;
+
+    // Clear the buffer.  TODO: Optimize this by only clearing what's required, and merge with the denormal code below.
+    memset(bp, 0, samples * sizeof(float));
+
+    //sf.readDirect(bp, frames);
+    sf.readDirect(bp, nn);
+    
+    // Add denormal bias to outdata.
+    if(MusEGlobal::config.useDenormalBias) 
+    {
+      for(sf_count_t i = 0; i < samples; ++i)
+        bp[i] += MusEGlobal::denormalBias;
+    }
+    
+    // Increment the prefetch buffer to a new position.
+    fifo->add();
+    _prefetchWritePos += nn;
+  }
+}
+
+// bool WaveEventBase::getAudioPrefetchBuffer(int segs, unsigned long samples, float** dst, unsigned* pos)
+// {
+//   return _prefetchFifo->get(segs, samples, dst, pos);
+// }
+
 
 } // namespace MusECore

@@ -712,6 +712,9 @@ class WaveTrack : public AudioTrack {
 
       void internal_assign(const Track&, int flags);
       
+      // REMOVE Tim. samplerate. Added.
+      bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp);
+      
    public:
 
       WaveTrack();
@@ -730,12 +733,24 @@ class WaveTrack : public AudioTrack {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
 
+      // Called from prefetch thread:
       virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek);
+      
+// REMOVE Tim. samplerate. Added.
+      // REPLACES fetchData().
+      //virtual void fetchAudioData(unsigned pos, int channels, bool off, unsigned frames, float** bp, bool doSeek, bool overwrite);
+      virtual void seekData(sf_count_t pos);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 
-      void clearPrefetchFifo()      { _prefetchFifo.clear(); }
+// REMOVE Tim. samplerate. Changed.
+//       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
+      void clearPrefetchFifo();
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
+      // REMOVE Tim. samplerate. Added.
+      //virtual void prefetchAudio(unsigned writePos, int channels, bool off, unsigned frames);
+      virtual void prefetchAudio(sf_count_t writePos, sf_count_t frames);
+      
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
       bool canEnableRecord() const;

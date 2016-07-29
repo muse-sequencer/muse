@@ -90,6 +90,9 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
+      // REMOVE Tim. samplerate. Added.
+      //_projectAudioSampleRate = 44100;
+      
       _fCpuLoad = 0.0;
       _fDspLoad = 0.0;
       _xRunsCount = 0;
@@ -132,6 +135,39 @@ void Song::putEvent(int pv)
             ++noteFifoSize;
             }
       }
+
+// REMOVE Tim. samplerate. Added.
+// //---------------------------------------------------------
+// //   setProjectSampleRate
+// //---------------------------------------------------------
+// 
+// void Song::setProjectSampleRate(int rate)
+// {
+//   if(rate != MusEGlobal::projectSampleRate)
+//     // TODO: Do the permanent conversion.
+//     convertProjectSampleRate(rate);
+//   
+//   // Now set the rate.
+//   MusEGlobal::projectSampleRate;
+// }
+// 
+// //---------------------------------------------------------
+// //   projectSampleRateDiffers
+// //---------------------------------------------------------
+// 
+// bool Song::projectSampleRateDiffers() const
+// {
+//   return MusEGlobal::projectSampleRate != MusEGlobal::sampleRate;
+// }
+// 
+// //---------------------------------------------------------
+// //   projectSampleRateRatio
+// //---------------------------------------------------------
+// 
+// double Song::projectSampleRateRatio() const
+// {
+//   return (double)MusEGlobal::projectSampleRate / (double)MusEGlobal::sampleRate;
+// }
 
 //---------------------------------------------------------
 //   setTempo

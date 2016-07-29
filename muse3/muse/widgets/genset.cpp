@@ -29,6 +29,7 @@
 #include <QRect>
 #include <QShowEvent>
 #include <QString>
+#include <QDialog>
 
 #include "genset.h"
 #include "app.h"
@@ -38,6 +39,13 @@
 #include "icons.h"
 #include "helper.h"
 #include "filedialog.h"
+
+// REMOVE Tim. samplerate. Added.
+#include "operations.h"
+#include "audio.h"
+#include "audio_converter_settings.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusEGui {
 
@@ -100,6 +108,8 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(pluginPathRemove, SIGNAL(clicked()), SLOT(removePluginPath()));
       connect(pluginPathMoveUp, SIGNAL(clicked()), SLOT(movePluginPathUp()));
       connect(pluginPathMoveDown, SIGNAL(clicked()), SLOT(movePluginPathDown()));
+      
+      connect(audioConvertersButton, SIGNAL(clicked()), SLOT(showAudioConverterSettings()));
       
       addMdiSettings(TopWin::ARRANGER);
       addMdiSettings(TopWin::SCORE);
@@ -586,6 +596,31 @@ void GlobalSettingsConfig::borlandPreset()
   }
   
   updateMdiSettings();
+}
+
+// REMOVE Tim. samplerate. Added.
+void GlobalSettingsConfig::showAudioConverterSettings()
+{
+  if(!MusEGlobal::defaultAudioConverterSettings)
+    return;
+  MusECore::AudioConverterSettingsGroup* wrk_set = new MusECore::AudioConverterSettingsGroup(false); // Default, non-local settings.
+  wrk_set->assign(*MusEGlobal::defaultAudioConverterSettings);
+  AudioConverterSettingsDialog dialog(this, 
+                                      &MusEGlobal::audioConverterPluginList, 
+                                      wrk_set, 
+                                      false); // Default, non-local settings.
+  if(dialog.exec() == QDialog::Accepted)
+  {
+    MusECore::PendingOperationList operations;
+    MusEGlobal::modifyDefaultAudioConverterSettingsOperation(wrk_set, operations);
+    if(!operations.empty())
+    {
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      //MusEGlobal::song->update(SC_);
+    }
+  }
+  else
+    delete wrk_set;
 }
 
 void GlobalSettingsConfig::addPluginPath()

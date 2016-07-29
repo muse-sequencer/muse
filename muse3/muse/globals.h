@@ -55,6 +55,9 @@ extern int sampleRate;
 extern unsigned segmentSize;
 extern unsigned fifoLength; // inversely proportional to segmentSize
 extern int segmentCount;
+// REMOVE Tim. samplerate. Added.
+extern int projectSampleRate;
+
 
 extern bool overrideAudioOutput;
 extern bool overrideAudioInput;
@@ -215,6 +218,9 @@ extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
 extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
+
+//REMOVE Tim. samplerate. Added.
+extern unsigned convertFrame4ProjectSampleRate(unsigned frame);
 
 } // namespace MusEGlobal
 

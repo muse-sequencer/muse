@@ -640,6 +640,8 @@ bool initJackAudio()
       //jackAudio->registerClient(); 
 
       MusEGlobal::sampleRate  = jack_get_sample_rate(client);
+      // REMOVE Tim. samplerate. Added.
+      MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = jack_get_buffer_size(client);
       
       return false;

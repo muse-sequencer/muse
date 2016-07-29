@@ -26,17 +26,54 @@
 
 #include "muse_atomic.h"
 
+// REMOVE Tim. samplerate. Added.
+#include "muse_time.h"
+
 namespace MusECore {
   
 //---------------------------------------------------------
 //   Fifo
 //---------------------------------------------------------
 
+// REMOVE Tim. samplerate. Changed.
+// struct FifoBuffer {
+//       float* buffer;
+//       int size;
+//       int maxSize;
+//       unsigned pos;
+//       int segs;
+// 
+//       FifoBuffer() {
+//             buffer  = 0;
+//             size    = 0;
+//             maxSize = 0;
+//             }
+//       };
+// 
+// class Fifo {
+//       int nbuffer;
+//       int ridx;               // read index; only touched by reader
+//       int widx;               // write index; only touched by writer
+//       muse_atomic_t count;         // buffer count; writer increments, reader decrements
+//       FifoBuffer** buffer;
+// 
+//    public:
+//       Fifo();
+//       ~Fifo();
+//       void clear();
+//       bool put(int, unsigned long, float** buffer, unsigned pos);
+//       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
+//       void add();
+//       bool get(int, unsigned long, float** buffer, unsigned* pos);
+//       void remove();
+//       int getCount();
+//       bool isEmpty();
+//       };
 struct FifoBuffer {
       float* buffer;
-      int size;
-      int maxSize;
-      unsigned pos;
+      MuseCount_t size;
+      MuseCount_t maxSize;
+      MuseCount_t pos;
       int segs;
 
       FifoBuffer() {
@@ -50,22 +87,22 @@ class Fifo {
       int nbuffer;
       int ridx;               // read index; only touched by reader
       int widx;               // write index; only touched by writer
-      muse_atomic_t count;         // buffer count; writer increments, reader decrements
+      muse_atomic_t count;    // buffer count; writer increments, reader decrements
       FifoBuffer** buffer;
 
    public:
       Fifo();
       ~Fifo();
       void clear();
-      bool put(int, unsigned long, float** buffer, unsigned pos);
-      bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
+      bool put(int, MuseCount_t, float** buffer, MuseCount_t pos);
+      bool getWriteBuffer(int, MuseCount_t, float** buffer, MuseCount_t pos);
       void add();
-      bool get(int, unsigned long, float** buffer, unsigned* pos);
+      bool get(int, MuseCount_t, float** buffer, MuseCount_t* pos);
       void remove();
       int getCount();
       bool isEmpty();
       };
-
+  
 } // namespace MusECore
 
 #endif

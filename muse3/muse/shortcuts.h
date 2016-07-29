@@ -368,6 +368,9 @@ enum {
       //arragner
       SHRT_PART_NORMALIZE, // Alt+N
 
+      // REMOVE Tim. samplerate. Added.
+      SHRT_TOOL_STRETCH,
+      
       //Last item:
       SHRT_NUM_OF_ELEMENTS        // must be last
       };

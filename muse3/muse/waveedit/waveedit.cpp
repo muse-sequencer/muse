@@ -60,6 +60,12 @@
 #include "shortcuts.h"
 #include "cmd.h"
 
+#define ERROR_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
+
+// REMOVE Tim. samplerate. Enabled.
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
+
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
 }
@@ -67,7 +73,8 @@ extern QColor readColor(MusECore::Xml& xml);
 namespace MusEGui {
 
 static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
-                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool;
+                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool |
+                           StretchTool; // REMOVE Tim. samplerate. Added.
 
 int WaveEdit::_rasterInit = 96;
 int WaveEdit::colorModeInit = 0;
@@ -468,6 +475,7 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
+      DEBUG_WAVEEDIT(stderr, "WaveEdit dtor\n");
       }
 
 //---------------------------------------------------------
@@ -708,6 +716,11 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_TOOL_RANGE].key) {
             tools2->set(MusEGui::RangeTool);
+            return;
+            }
+      // REMOVE Tim. samplerate. Added.
+      else if (key == shortcuts[SHRT_TOOL_STRETCH].key) {
+            tools2->set(MusEGui::StretchTool);
             return;
             }
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {

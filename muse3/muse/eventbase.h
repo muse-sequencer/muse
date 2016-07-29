@@ -25,13 +25,18 @@
 #define __EVENTBASE_H__
 
 #include <sys/types.h>
+#include <sndfile.h>
 
 #include "type_defs.h"
 #include "pos.h"
 #include "event.h"
 
 namespace MusECore {
-class WavePart;
+// REMOVE Tim. samplerate. Changed.
+//class WavePart;
+class Part;
+// REMOVE Tim. samplerate. Added.
+class Fifo;
 
 //---------------------------------------------------------
 //   EventBase
@@ -120,8 +125,17 @@ class EventBase : public PosLen {
       // Creates a copy of the event base, excluding the 'group' _id. 
       virtual EventBase* duplicate() const = 0; 
       
-      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
-                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
+// REMOVE Tim. samplerate. Changed.
+//       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
+      virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
+// REMOVE Tim. samplerate. Added.
+      virtual void seekAudio(sf_count_t /*offset*/) { }
+      //virtual void clearAudioPrefetchFifo() { }
+      virtual Fifo* audioPrefetchFifo()     { return 0; }
+      virtual void prefetchAudio(Part* /*part*/, sf_count_t /*frames*/) { }
+      //virtual void fetchAudioData(WavePart* /*part*/, sf_count_t /*pos*/, int /*channels*/, bool /*off*/, 
+      //                            sf_count_t /*frames*/, float** /*bp*/, bool /*doSeek*/, bool /*overwrite*/) { }
+      //virtual bool getAudioPrefetchBuffer(int segs, unsigned long samples, float** dst, unsigned* pos) { }
       };
 
 } // namespace MusECore

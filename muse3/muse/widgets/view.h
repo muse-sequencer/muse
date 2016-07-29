@@ -114,6 +114,7 @@ class View : public QWidget {
 
    public:
       View(QWidget*, int, int, const char* name = 0);
+      virtual ~View() { }
       void setBg(const QPixmap& pm);
       void setBg(const QColor& color) { brush.setColor(color); redraw(); }
       void setXOffset(int v)   { setXPos(mapx(v)); }

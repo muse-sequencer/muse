@@ -68,7 +68,7 @@ class Xml {
       void stoken();
       QString strip(const QString& s);
       void putLevel(int n);
-
+      
    public:
       enum Token {Error, TagStart, TagEnd, Flag,
          Proc, Text, Attribut, End};
@@ -86,7 +86,9 @@ class Xml {
       QString parse(const QString&);
       QString parse1();
       int parseInt();
+      long int parseLongInt();
       unsigned int parseUInt();
+      unsigned long int parseLongUInt();
       float parseFloat();
       double parseDouble();
       void unknown(const char*);
@@ -104,7 +106,9 @@ class Xml {
       void tag(int level, const char* format, ...);
       void etag(int level, const char* format, ...);
       void intTag(int level, const char* const name, int val);
+      void longIntTag(int level, const char* const name, long int val);
       void uintTag(int level, const char* const name, unsigned int val);
+      void longUintTag(int level, const char* const name, unsigned long int val);
       void doubleTag(int level, const char* const name, double val);
       void floatTag(int level, const char* const name, float val);
       void strTag(int level, const char* const name, const char* val);

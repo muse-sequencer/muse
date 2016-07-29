@@ -24,7 +24,7 @@
 #ifndef __TYPE_DEFS_H__
 #define __TYPE_DEFS_H__
 
-#include "stdint.h"
+#include <stdint.h>
 
 namespace MusECore {
 

@@ -27,18 +27,25 @@
 #include <map> 
 
 #include "type_defs.h"
+#include "muse_time.h"
 #include "event.h"
 #include "midictrl.h" 
 #include "ctrl.h"
 #include "tempo.h" 
 #include "al/sig.h" 
 #include "keyevent.h"
+#include "time_stretch.h"
 #include "part.h"
 #include "track.h"
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
 #include "instruments/minstrument.h"
+//REMOVE Tim. samplerate. Added.
+#include "wave.h"
+#include "audio_convert/lib_audio_convert/audioconvert.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusECore {
 
@@ -48,21 +55,30 @@ struct PendingOperationItem
 {
   enum PendingOperationType { Uninitialized = 0,
                               ModifySongLength,
-                              AddMidiInstrument, DeleteMidiInstrument,
-                              AddMidiDevice,     DeleteMidiDevice,       
-                              ModifyMidiDeviceAddress,        ModifyMidiDeviceFlags,        ModifyMidiDeviceName,
-                              AddTrack,          DeleteTrack, MoveTrack,                    ModifyTrackName,
-                              SetTrackRecord,    SetTrackMute, SetTrackSolo,
-                              AddPart,           DeletePart,  MovePart, ModifyPartLength,   ModifyPartName,
-                              AddEvent,          DeleteEvent,
-                              AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
-                              AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-                              AddTempo,          DeleteTempo,           ModifyTempo,        SetGlobalTempo, 
-                              AddSig,            DeleteSig,             ModifySig,
-                              AddKey,            DeleteKey,             ModifyKey,
+                              AddMidiInstrument,       DeleteMidiInstrument,
+                              AddMidiDevice,           DeleteMidiDevice,       
+                              ModifyMidiDeviceAddress, ModifyMidiDeviceFlags,   ModifyMidiDeviceName,
+                              AddTrack,                DeleteTrack,             MoveTrack,          ModifyTrackName,
+                              SetTrackRecord,          SetTrackMute,            SetTrackSolo,
+                              AddPart,                 DeletePart,  MovePart,   ModifyPartLength,   ModifyPartName,
+                              AddEvent,                DeleteEvent,
+                              AddMidiCtrlVal,          DeleteMidiCtrlVal,       ModifyMidiCtrlVal,  AddMidiCtrlValList,
+                              AddAudioCtrlVal,         DeleteAudioCtrlVal,      ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+                              AddTempo,                DeleteTempo,             ModifyTempo,        SetGlobalTempo, 
+                              AddSig,                  DeleteSig,               ModifySig,
+                              AddKey,                  DeleteKey,               ModifyKey,
+                              //REMOVE Tim. samplerate. Added.
+                              ModifyDefaultAudioConverterSettings,              ModifyLocalAudioConverterSettings, 
+                              AddStretchRatioAt,       DeleteStretchRatioAt,    ModifyStretchRatioAt,
+                              AddSamplerateRatioAt,    DeleteSamplerateRatioAt, ModifySamplerateRatioAt,
+                              AddPitchRatioAt,         DeletePitchRatioAt,      ModifyPitchRatioAt,
+                              ModifyStretchRatio,      ModifySamplerateRatio,   ModifyPitchRatio,
+                              ModifyStretchedFrameForStretch,                   ModifySquishedFrameForStretch,
+                              ModifyStretchedFrameForResample,                  ModifySquishedFrameForResample,
+                              
                               AddAuxSendValue,   
-                              AddRoute,          DeleteRoute, 
-                              AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
+                              AddRoute,                DeleteRoute, 
+                              AddRouteNode,            DeleteRouteNode,         ModifyRouteNode,
                               UpdateSoloStates,
                               EnableAllAudioControllers
                               }; 
@@ -73,6 +89,7 @@ struct PendingOperationItem
     Part* _part;
     MidiPort* _midi_port;
     void* _void_track_list;
+    SndFile* _sndFile; //REMOVE Tim. samplerate. Added.
   };
   
   union {
@@ -81,6 +98,7 @@ struct PendingOperationItem
     TempoList* _tempo_list;  
     AL::SigList* _sig_list; 
     KeyList* _key_list;
+    StretchList* _stretch_list;  
     PartList* _part_list; 
     TrackList* _track_list;
     MidiDeviceList* _midi_device_list;
@@ -98,6 +116,8 @@ struct PendingOperationItem
     TEvent* _tempo_event; 
     AL::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
+    //StretchEvent* _stretch_event; //REMOVE Tim. samplerate. Added.
+    AudioConverterSettingsGroup* _audio_converter_settings; //REMOVE Tim. samplerate. Added.
   };
 
   iPart _iPart; 
@@ -109,6 +129,7 @@ struct PendingOperationItem
   iTEvent _iTEvent;
   AL::iSigEvent _iSigEvent;
   iKeyEvent _iKeyEvent;
+  iStretchEvent _iStretchEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
   iRoute _iRoute;
@@ -125,6 +146,8 @@ struct PendingOperationItem
     int _address_client;
     int _rw_flags;
     int _frame;
+    MuseFrame_t _museFrame;
+    AudioConverterPluginI* _audio_converter;
   };
   
   union {
@@ -133,14 +156,28 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+    AudioConverterPluginI* _audio_converter_ui;
   };
 
   union {
     int _intC;
     int _ctl_val;
     double _ctl_dbl_val;
+    double _audio_converter_value;
   };
 
+  // REMOVE Tim. samplerate. Added.
+  PendingOperationItem(AudioConverterSettingsGroup* new_settings, PendingOperationType type = ModifyDefaultAudioConverterSettings)
+    { _type = type; _audio_converter_settings = new_settings; }
+      
+  // REMOVE Tim. samplerate. Added.
+  PendingOperationItem(SndFile* sf, AudioConverterSettingsGroup* new_settings, 
+                       AudioConverterPluginI* newAudioConverter, AudioConverterPluginI* newAudioConverterUI, 
+                       PendingOperationType type = ModifyLocalAudioConverterSettings)
+    { _type = type; _sndFile = sf; 
+      _audio_converter = newAudioConverter; _audio_converter_ui = newAudioConverterUI; 
+      _audio_converter_settings = new_settings; }
+    
   PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
     { _type = type; _track_list = tl; }
   
@@ -290,7 +327,46 @@ struct PendingOperationItem
     
   PendingOperationItem(KeyList* kl, const iKeyEvent& ike, key_enum ke, PendingOperationType type = ModifyKey)
     { _type = type; _key_list = kl; _iKeyEvent = ike; _intA = ke; }
+
+
     
+    
+//REMOVE Tim. samplerate. Added.
+//   // NOTE: 'frame' is the desired frame. se is a new StretchEvent with stretch and (same) desired frame. Swapping with NEXT event is done.
+//   PendingOperationItem(StretchList* sl, StretchEvent* se, MuseFrame_t frame, PendingOperationType type = AddStretch)
+//     { _type = type; _stretch_list = sl; _stretch_event = se; _museFrame = frame; }
+//     
+//   // NOTE: _stretch_event is required. We must erase 'ise' in stage 2, then delete the StretchEvent* in stage 3 (not stage 1),
+//   //        so 'ise' is unavailable to fetch the StretchEvent* from it (in ise->second).
+//   PendingOperationItem(StretchList* sl, const iStretchEvent& ise, PendingOperationType type = DeleteStretch)
+//     { _type = type; _stretch_list = sl; _iStretchEvent = ise; _stretch_event = ise->second; }
+//     
+//   PendingOperationItem(StretchList* sl, const iStretchEvent& ise, double stretch, PendingOperationType type = ModifyStretch)
+//     { _type = type; _stretch_list = sl; _iStretchEvent = ise; _stretch_value = stretch; }
+
+  PendingOperationItem(StretchList* sl, MuseFrame_t frame, double ratio, 
+                       PendingOperationType type) // Type is AddStretchRatioAt or AddSamplerateRatioAt or AddPitchRatioAt
+    { _type = type; _stretch_list = sl; _museFrame = frame; _audio_converter_value = ratio; }
+    
+  PendingOperationItem(StretchList* sl, const iStretchEvent& ise, 
+                       PendingOperationType type) // Type is DeleteStretchRatioAt or DeleteSamplerateRatioAt or DeletePitchRatioAt
+    { _type = type; _stretch_list = sl; _iStretchEvent = ise; }
+    
+  PendingOperationItem(StretchList* sl, const iStretchEvent& ise, MuseFrame_t new_frame, double ratio, 
+                       PendingOperationType type) // Type is ModifyStretchRatioAt or ModifySamplerateRatioAt or ModifyPitchRatioAt
+    { _type = type; _stretch_list = sl; _iStretchEvent = ise; _museFrame = new_frame; _audio_converter_value = ratio; }
+  
+  PendingOperationItem(StretchList* sl, double ratio, 
+                       PendingOperationType type) // Type is ModifyStretchRatio or ModifySamplerateRatio or ModifyPitchRatio
+    { _type = type; _stretch_list = sl; _audio_converter_value = ratio; }
+  
+  PendingOperationItem(StretchList* sl, MuseFrame_t new_frame, 
+                       PendingOperationType type) // Type is ModifyStretchedFrameForStretch or ModifyStretchedFrameForResample
+                                                  //       or ModifySquishedFrameForStretch or ModifySquishedFrameForResample
+    { _type = type; _stretch_list = sl; _museFrame = new_frame; }
+  
+
+  
   PendingOperationItem(int len, PendingOperationType type = ModifySongLength)
     { _type = type; _intA = len; }
 

@@ -36,7 +36,7 @@ namespace MusECore {
 
 class Event;
 
-class Xml;
+//class Xml;
 
 //---------------------------------------------------------
 //   SampleV
@@ -51,6 +51,12 @@ struct SampleV {
 typedef std::vector<SampleV> SampleVtype;
 
 class SndFileList;
+// REMOVE Tim. samplerate. Added.
+//class AudioConverter;
+class AudioConverterPluginI;
+class StretchList;
+class AudioConverterSettingsGroup;
+class PendingOperationList;
 
 //---------------------------------------------------------
 //   SndFile
@@ -60,6 +66,14 @@ class SndFile {
       QFileInfo* finfo;
       SNDFILE* sf;
       SNDFILE* sfUI;
+      // REMOVE Tim. samplerate. Added.
+      AudioConverterPluginI* _staticAudioConverter;
+      AudioConverterPluginI* _staticAudioConverterUI;
+      AudioConverterPluginI* _dynamicAudioConverter;
+      AudioConverterPluginI* _dynamicAudioConverterUI;
+      AudioConverterSettingsGroup* _audioConverterSettings;
+      StretchList* _stretchList;
+      
       SF_INFO sfinfo;
       SampleVtype* cache;
       sf_count_t csize;                    //!< frames in cache
@@ -73,6 +87,12 @@ class SndFile {
       bool writeFlag;
       size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
       size_t realWrite(int channel, float**, size_t n, size_t offs = 0);
+      // Creates a new converter based on the supplied settings and AudioConverterSettings::ModeType mode.
+      // If isLocalSettings is true, settings is treated as a local settings which may override the 
+      //  global default settings.
+      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      //  directly used instead of the comparison to, and possible use of, the global default above.
+      AudioConverterPluginI* setupAudioConverter(AudioConverterSettingsGroup* settings, bool isLocalSettings, int mode);
       
    protected:
       int refCount;
@@ -88,6 +108,12 @@ class SndFile {
       void createCache(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
       void readCache(const QString& path, bool progress);
 
+      // REMOVE Tim. samplerate. Added.
+      // Creates a converted cache if a samplerate or shift/stretch converter is active. Otherwise a normal createCache() is called.
+      //void createCacheConverted(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart = 0);
+      // Reads a converted cache if a samplerate or shift/stretch converter is active. Otherwise a normal readCache() is called.
+      //void readCacheConverted(const QString& path, bool progress);
+      
       bool openRead(bool createCache=true, bool showProgress=true);        //!< returns true on error
       bool openWrite();       //!< returns true on error
       void close();
@@ -105,10 +131,24 @@ class SndFile {
       QString canonicalPath() const; //!< path with filename, resolved (no symlinks or . .. etc)
       QString name() const;         //!< filename
 
+      // REMOVE Tim. samplerate. Added.
+      // Ratio of the file's sample rate to the current audio sample rate.
+      double sampleRateRatio() const;
+      // Whether the sample rate ratio is exactly 1.
+      bool sampleRateDiffers() const;
+      // Convert a frame position to its resampled or stretched position.
+      sf_count_t convertPosition(sf_count_t pos) const;
+      // Returns whether ANY stretch event has a stretch ratio other than 1.0 
+      //  ie. the map is stretched, a stretcher must be engaged.
+      bool isStretched() const;
+      // Returns whether ANY stretch event has a samplerate ratio other than 1.0 
+      //  ie. the map is stretched, a samplerate converter must be engaged.
+      bool isResampled() const;
+      
       sf_count_t samples() const;
-      unsigned channels() const;
-      unsigned samplerate() const;
-      unsigned format() const;
+      int channels() const;
+      int samplerate() const;
+      int format() const;
       int sampleBits() const;
       void setFormat(int fmt, int ch, int rate);
 
@@ -118,10 +158,35 @@ class SndFile {
       size_t write(int channel, float**, size_t);
       size_t writeDirect(float *buf, size_t n) { return sf_writef_float(sf, buf, n); }
 
-      off_t seek(off_t frames, int whence);
+      // REMOVE Tim. samplerate. Added. For now I must provide separate routines here, don't want to upset anything else.
+      // Reads realtime audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
+      sf_count_t readConverted(sf_count_t pos, int srcChannels, float** buffer, sf_count_t frames, bool overwrite = true);
+      // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
+      void readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite = true, bool allowSeek = true);
+      // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
+      sf_count_t seekConverted(sf_count_t frames, int whence);
+//       AudioConverterPluginI* staticAudioConverter() const { return _staticAudioConverter; }
+//       AudioConverterPluginI* staticAudioConverterUI() const { return _staticAudioConverterUI; }
+//       AudioConverterPluginI* dynamicAudioConverter() const { return _dynamicAudioConverter; }
+//       AudioConverterPluginI* dynamicAudioConverterUI() const { return _dynamicAudioConverterUI; }
+      AudioConverterPluginI* staticAudioConverter(int mode) const;
+      void setStaticAudioConverter(AudioConverterPluginI* converter, int mode);
+      AudioConverterSettingsGroup* audioConverterSettings() const { return _audioConverterSettings; }
+      void setAudioConverterSettings(AudioConverterSettingsGroup* settings);
+      StretchList* stretchList() const { return _stretchList; }
+      
+// REMOVE Tim. samplerate. Changed.
+//       off_t seek(off_t frames, int whence);
+      sf_count_t seek(sf_count_t frames, int whence);
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
+      // If isLocalSettings is true, settings is treated as a local settings which may override the 
+      //  global default settings.
+      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      //  directly used instead of the comparison to, and possible use of, the global default above.
+      void modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops); 
+      
       static SndFile* search(const QString& name);
 
       friend class SndFileR;
@@ -167,10 +232,20 @@ class SndFileR {
       QString canonicalPath() const  { return sf ? sf->canonicalPath() : QString(); }
       QString name() const     { return sf ? sf->name() : QString(); }
 
-      unsigned samples() const    { return sf ? sf->samples() : 0; }
-      unsigned channels() const   { return sf ? sf->channels() : 0; }
-      unsigned samplerate() const { return sf ? sf->samplerate() : 0; }
-      unsigned format() const     { return sf ? sf->format() : 0; }
+      // REMOVE Tim. samplerate. Added.
+      // Ratio of the file's sample rate to the current audio sample rate.
+      inline double sampleRateRatio() const { return sf ? sf->sampleRateRatio() : 1.0; };
+      // Whether the sample rate ratio is exactly 1.
+      inline bool sampleRateDiffers() const { return sf ? sf->sampleRateDiffers() : false; };
+      // Convert a frame position to its resampled or stretched position.
+      inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
+      
+// REMOVE Tim. samplerate. Changed.
+//       unsigned samples() const    { return sf ? sf->samples() : 0; }
+      sf_count_t samples() const    { return sf ? sf->samples() : 0; }
+      int channels() const   { return sf ? sf->channels() : 0; }
+      int samplerate() const { return sf ? sf->samplerate() : 0; }
+      int format() const     { return sf ? sf->format() : 0; }
       int sampleBits() const      { return sf ? sf->sampleBits() : 0; }
       void setFormat(int fmt, int ch, int rate) {
             if(sf) sf->setFormat(fmt, ch, rate);
@@ -186,9 +261,40 @@ class SndFileR {
       size_t write(int channel, float** f, size_t n) {
             return sf ? sf->write(channel, f, n) : 0;
             }
-      off_t seek(off_t frames, int whence) {
-            return sf ? sf->seek(frames, whence) : 0;
-            }
+            
+      // REMOVE Tim. samplerate. Added. For now I must provide separate routines here, don't want to upset anything else.
+      // Reads realtime audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
+      sf_count_t readConverted(sf_count_t pos, int channel, float** buffer, sf_count_t frames, bool overwrite = true) {
+            return sf ? sf->readConverted(pos, channel, buffer, frames, overwrite) : 0; }
+      // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
+      void readConverted(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
+            if(sf) sf->readConverted(s, mag, pos, overwrite, allowSeek); }
+      // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
+      sf_count_t seekConverted(sf_count_t frames, int whence) { return sf ? sf->seekConverted(frames, whence) : 0; }
+//       AudioConverter* audioConverter() { return sf ? sf->staticAudioConverter() : 0; }
+//       AudioConverter* audioConverterUI() { return sf ? sf->staticAudioConverterUI() : 0; }
+//       AudioConverterPluginI* staticAudioConverter() const { return sf ? sf->staticAudioConverter() : 0; }
+//       AudioConverterPluginI* staticAudioConverterUI() const { return sf ? sf->staticAudioConverterUI() : 0; }
+//       AudioConverterPluginI* dynamicAudioConverter() const { return sf ? sf->dynamicAudioConverter() : 0; }
+//       AudioConverterPluginI* dynamicAudioConverterUI() const { return sf ? sf->dynamicAudioConverterUI() : 0; }
+      AudioConverterPluginI* staticAudioConverter(int mode) const
+      { return sf ? sf->staticAudioConverter(mode) : 0; }
+      void setStaticAudioConverter(AudioConverterPluginI* converter, int mode)
+      { if(sf) sf->setStaticAudioConverter(converter, mode); }
+      AudioConverterSettingsGroup* audioConverterSettings() const { return sf ? sf->audioConverterSettings() : 0; }
+      void setAudioConverterSettings(AudioConverterSettingsGroup* settings)
+      { if(sf) sf->setAudioConverterSettings(settings); }
+      StretchList* stretchList() const { return sf ? sf->stretchList() : 0; }
+      // If isLocalSettings is true, settings is treated as a local settings which may override the 
+      //  global default settings.
+      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      //  directly used instead of the comparison to, and possible use of, the global default above.
+      void modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops) 
+      { if(sf) sf->modifyAudioConverterOperation(settings, isLocalSettings, ops); }
+      
+// REMOVE Tim. samplerate. Changed.
+//       off_t seek(off_t frames, int whence) {
+      sf_count_t seek(sf_count_t frames, int whence) { return sf ? sf->seek(frames, whence) : 0; }
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
             if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
             }
@@ -301,7 +407,8 @@ typedef ClipList::const_iterator ciClip;
 extern ClipBase* readClip(Xml& xml);
 #endif
 
-extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true);
+extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
+                        AudioConverterSettingsGroup* audioConverterSettings = NULL);
 
 } // namespace MusECore
 

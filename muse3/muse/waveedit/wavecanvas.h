@@ -37,13 +37,24 @@
 #include <QWheelEvent>
 #include <QResizeEvent>
 #include <QTimer>
+// REMOVE Tim. samplerate. Added.
+#include <QList>
+#include <map>
+#include "muse_time.h"
+#include "time_stretch.h"
 
 class QRect;
+// REMOVE Tim. samplerate. Added.
+class QMenu;
+class QPainter;
+class QPoint;
 
 namespace MusECore {
 class SndFileR;
 class WavePart;
 class WaveTrack;
+// REMOVE Tim. samplerate. Added.
+class StretchList;
 
 struct WaveEventSelection {
       Event event;         
@@ -67,6 +78,46 @@ class WEvent : public CItem {
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
       };
 
+      
+// REMOVE Tim. samplerate. Added.
+struct StretchSelectedItem
+{
+  MusECore::StretchList* _list;
+  //MusECore::MuseFrame_t _frame;
+};
+
+typedef std::multimap<MusECore::MuseFrame_t, StretchSelectedItem, std::less<MusECore::MuseFrame_t> > StretchSelectedList_t;
+typedef StretchSelectedList_t::iterator iStretchSelectedItem;
+typedef StretchSelectedList_t::const_iterator ciStretchSelectedItem;
+typedef StretchSelectedList_t::reverse_iterator riStretchSelectedItem;
+typedef StretchSelectedList_t::const_reverse_iterator criStretchSelectedItem;
+
+
+enum StretchControllerVals { stretchDoNothing, stretchMovingController, stretchAddNewController };
+struct StretchAutomationObject {
+  StretchSelectedList_t _stretchSelectedList;
+  StretchControllerVals _controllerState;
+  bool _moveController;
+  QPoint startMovePoint;
+  
+  
+  
+//   QPoint startMovePoint;
+//   QList<MusECore::MuseFrame_t> currentCtrlFrameList;
+//   bool currentCtrlValid;
+//   //MusECore::CtrlList *currentCtrlList;
+//   MusECore::StretchList* currentCtrlList;
+//   MusECore::Track *currentTrack;
+//   bool moveController;
+//   StretchControllerVals controllerState;
+//   QString currentText;
+//   bool breakUndoCombo;
+  //QRect currentTextRect;
+  //QRect currentVertexRect;
+  //int currentTick;
+  //int currentYNorm;
+};
+
 //---------------------------------------------------------
 //   WaveCanvas
 //---------------------------------------------------------
@@ -77,6 +128,10 @@ class WaveCanvas : public EventCanvas {
       enum { NORMAL, DRAG } mode;
       enum { MUTE = 0, NORMALIZE, FADE_IN, FADE_OUT, REVERSE, GAIN, EDIT_EXTERNAL, CUT, COPY, PASTE }; //!< Modify operations
       
+      static const int _stretchAutomationPointDetectDist;
+      static const int _stretchAutomationPointWidthUnsel;
+      static const int _stretchAutomationPointWidthSel;
+      
       int yScale;
       int button;
       unsigned startSample;
@@ -85,6 +140,8 @@ class WaveCanvas : public EventCanvas {
       int selectionStart, selectionStop, dragstartx;
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
       QString copiedPart;
+
+      StretchAutomationObject _stretchAutomation;
       
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
       MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
@@ -99,6 +156,16 @@ class WaveCanvas : public EventCanvas {
       void editExternal(unsigned file_format, unsigned file_samplerate, unsigned channels, float** data, unsigned length);
       //void applyLadspa(unsigned channels, float** data, unsigned length); //!< Apply LADSPA plugin on selection
 
+      // REMOVE Tim. samplerate. Added.
+      void drawStretchAutomation(QPainter& p, const QRect& r, WEvent* wevent);
+//       void drawStretchAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
+//       void drawStretchAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
+//       void checkStretchAutomation(CItem* item, const QPoint& pointer, bool addNewCtrl);
+//       void processStretchAutomationMovements(QPoint pos, bool slowMotion);
+//       double logToVal(double inLog, double min, double max);
+//       double valToLog(double inV, double min, double max);
+//       void newStretchAutomationVertex(QPoint inPos);
+      MusECore::iStretchEvent stretchListHitTest(QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
       
    protected:
       virtual QPoint raster(const QPoint&) const;
@@ -138,6 +205,11 @@ class WaveCanvas : public EventCanvas {
       virtual void resizeEvent(QResizeEvent*);
       void adjustWaveOffset(); 
       
+      // REMOVE Tim. samplerate. Added.
+      //void editAudioConverterSettings();
+      virtual QMenu* genItemPopup(CItem*);
+      virtual void itemPopup(CItem*, int, const QPoint&);
+      
    private slots:
       void setPos(int idx, unsigned val, bool adjustScrollbar);
 
@@ -150,6 +222,8 @@ class WaveCanvas : public EventCanvas {
    public slots:
       void setYScale(int);
       void waveCmd(int);
+      // REMOVE Tim. samplerate. Added.
+//       void stretchControllerChanged(MusECore::Track *t, int CtrlId);
 
    public:
      

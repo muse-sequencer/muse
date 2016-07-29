@@ -77,44 +77,46 @@ class AudioDevice;
 //  be taken (redraw, refill lists etc.) upon the signal's reception.
 // NOTE: Use the SongChangedFlags_t typedef in type_defs.h to support all the bits.
 
-#define SC_TRACK_INSERTED             1
-#define SC_TRACK_REMOVED              2
-#define SC_TRACK_MODIFIED             4
-#define SC_PART_INSERTED              8
-#define SC_PART_REMOVED               0x10
-#define SC_PART_MODIFIED              0x20
-#define SC_EVENT_INSERTED             0x40
-#define SC_EVENT_REMOVED              0x80
-#define SC_EVENT_MODIFIED             0x100
-#define SC_SIG                        0x200        // timing signature
-#define SC_TEMPO                      0x400        // tempo map changed
-#define SC_MASTER                     0x800        // master flag changed
-#define SC_SELECTION                  0x1000       // event selection. part and track selection have their own.
-#define SC_MUTE                       0x2000
-#define SC_SOLO                       0x4000
-#define SC_RECFLAG                    0x8000
-#define SC_ROUTE                      0x10000      // A route was added, changed, or deleted. Or a midi track's out channel/port was changed.
-#define SC_CHANNELS                   0x20000
-#define SC_CONFIG                     0x40000      // midiPort-midiDevice
-#define SC_DRUMMAP                    0x80000     // must update drumeditor
-#define SC_MIDI_INSTRUMENT            0x100000     // A midi port or device's instrument has changed
-#define SC_AUDIO_CONTROLLER           0x200000     // An audio controller value was added deleted or modified.
-#define SC_AUTOMATION                 0x400000     // A track's automation mode setting changed (off, read, touch, write etc).
-#define SC_AUX                        0x800000    // A mixer aux was added or deleted. Not adjusted.
-#define SC_RACK                       0x1000000    // mixer rack changed
-#define SC_CLIP_MODIFIED              0x2000000
-#define SC_MIDI_CONTROLLER_ADD        0x4000000    // a hardware midi controller was added or deleted
+#define SC_TRACK_INSERTED             1L
+#define SC_TRACK_REMOVED              2L
+#define SC_TRACK_MODIFIED             4L
+#define SC_PART_INSERTED              8L
+#define SC_PART_REMOVED               0x10L
+#define SC_PART_MODIFIED              0x20L
+#define SC_EVENT_INSERTED             0x40L
+#define SC_EVENT_REMOVED              0x80L
+#define SC_EVENT_MODIFIED             0x100L
+#define SC_SIG                        0x200L        // timing signature
+#define SC_TEMPO                      0x400L        // tempo map changed
+#define SC_MASTER                     0x800L        // master flag changed
+#define SC_SELECTION                  0x1000L       // event selection. part and track selection have their own.
+#define SC_MUTE                       0x2000L
+#define SC_SOLO                       0x4000L
+#define SC_RECFLAG                    0x8000L
+#define SC_ROUTE                      0x10000L      // A route was added, changed, or deleted. Or a midi track's out channel/port was changed.
+#define SC_CHANNELS                   0x20000L
+#define SC_CONFIG                     0x40000L      // midiPort-midiDevice
+#define SC_DRUMMAP                    0x80000L      // must update drumeditor
+#define SC_MIDI_INSTRUMENT            0x100000L     // A midi port or device's instrument has changed
+#define SC_AUDIO_CONTROLLER           0x200000L     // An audio controller value was added deleted or modified.
+#define SC_AUTOMATION                 0x400000L     // A track's automation mode setting changed (off, read, touch, write etc).
+#define SC_AUX                        0x800000L     // A mixer aux was added or deleted. Not adjusted.
+#define SC_RACK                       0x1000000L    // mixer rack changed
+#define SC_CLIP_MODIFIED              0x2000000L
+#define SC_MIDI_CONTROLLER_ADD        0x4000000L    // a hardware midi controller was added or deleted
 // SC_MIDI_TRACK_PROP: A midi track's properties changed (name, thru etc). 
 // For fairly 'static' properties, not frequently changing transp del compr velo or len, 
 //  nor output channel/port (use SC_ROUTE).
-#define SC_MIDI_TRACK_PROP            0x8000000   
-#define SC_PART_SELECTION             0x10000000   // part selection changed
-#define SC_KEY                        0x20000000   // key map changed
-#define SC_TRACK_SELECTION            0x40000000   // track selection changed
-#define SC_PORT_ALIAS_PREFERENCE      0x80000000  // (Jack) port alias viewing preference has changed
-#define SC_ROUTER_CHANNEL_GROUPING    0x100000000  // Router channel grouping changed
-#define SC_AUDIO_CONTROLLER_LIST      0x200000000  // An audio controller list was added deleted or modified.
-#define SC_EVERYTHING                 -1           // global update
+#define SC_MIDI_TRACK_PROP            0x8000000L   
+#define SC_PART_SELECTION             0x10000000L   // part selection changed
+#define SC_KEY                        0x20000000L   // key map changed
+#define SC_TRACK_SELECTION            0x40000000L   // track selection changed
+#define SC_PORT_ALIAS_PREFERENCE      0x80000000L   // (Jack) port alias viewing preference has changed
+#define SC_ROUTER_CHANNEL_GROUPING    0x100000000L  // Router channel grouping changed
+#define SC_AUDIO_CONTROLLER_LIST      0x200000000L  // An audio controller list was added deleted or modified.
+#define SC_STRETCH                    0x400000000L  // A stretch map changed.
+#define SC_AUDIO_CONVERTER            0x800000000L  // An audio converter or audio converter setting changed.
+#define SC_EVERYTHING                 -1L           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
 
@@ -165,6 +167,10 @@ class Song : public QObject {
       Pos _vcpos;               // virtual CPOS (locate in progress)
       MarkerList* _markerList;
 
+      // REMOVE Tim. samplerate. Added.
+      // The project's sample rate. This can be different than the current actual sample rate.
+      //int _projectAudioSampleRate;
+      
       float _fCpuLoad;
       float _fDspLoad;
       long _xRunsCount;
@@ -250,6 +256,19 @@ class Song : public QObject {
 
       int globalPitchShift() const      { return _globalPitchShift; }
       void setGlobalPitchShift(int val) { _globalPitchShift = val; }
+      
+      // REMOVE Tim. samplerate. Added.
+      // Set the project's sample rate. This can be different than the current actual sample rate.
+//       void setProjectSampleRate(int rate);
+//       // Ratio of the project's sample rate to the current audio sample rate.
+//       double projectSampleRateRatio() const;
+//       // Whether the project's sample rate ratio is exactly 1.
+//       bool projectSampleRateDiffers() const;
+      // This scales the sample rate, by scaling the frame values of all objects or properties that use or store 
+      //  a value in 'frames', such as wave parts/events position and length, and audio automation graphs.
+      // It does NOT resample audio files, that is another function.
+      // Caution: Slight rounding errors can degrade timing accuracy, especially if repeated scalings are done.
+      //void convertProjectSampleRate(int newRate);
 
       //-----------------------------------------
       //   Marker

@@ -37,6 +37,26 @@ extern int mtcType;
 namespace MusECore {
 
 
+//REMOVE Tim. samplerate. Added.
+// //---------------------------------------------------------
+// //   MuseFrame
+// //---------------------------------------------------------
+// 
+// MuseFrame::MuseFrame(unsigned frame)
+// {
+//   _frame = double(MusEGlobal::projectSampleRate) / double(MusEGlobal::sampleRate);
+// }
+// 
+// MuseFrame::operator unsigned() const
+// { 
+//   return double(MusEGlobal::sampleRate) / double(MusEGlobal::projectSampleRate);
+// }
+// 
+// MuseFrame::operator=(const MuseFrame& other)
+// {
+//   _frame = other._frame;
+// }
+  
 //---------------------------------------------------------
 //   Pos
 //---------------------------------------------------------
@@ -129,6 +149,16 @@ void Pos::setType(TType t)
             }
       _type = t;
       }
+
+// //REMOVE Tim. samplerate. Added.
+// //---------------------------------------------------------
+// //   convertFrame4SampleRate
+// //---------------------------------------------------------
+// 
+// unsigned Pos::convertFrame4SampleRate(unsigned frame) const
+// {
+//   return double(frame) * double(MusEGlobal::sampleRate) / double(MusEGlobal::projectSampleRate);
+// }
 
 //---------------------------------------------------------
 //   operator+=
@@ -400,12 +430,19 @@ void Pos::read(Xml& xml, const char* name)
                               _tick = xml.s2().toInt();
                               _type = TICKS;
                               }
-                        else if (tag == "frame") {
-                              _frame = xml.s2().toInt();
-                              _type = FRAMES;
-                              }
-                        else if (tag == "sample") {   // obsolete
-                              _frame = xml.s2().toInt();
+//REMOVE Tim. samplerate. Changed.
+//                         else if (tag == "frame") {
+//                               _frame = xml.s2().toInt();
+//                               _type = FRAMES;
+//                               }
+//                         else if (tag == "sample") {   // obsolete
+//                               _frame = xml.s2().toInt();
+//                               _type = FRAMES;
+//                               }
+                        else if (tag == "frame" || tag == "sample") {
+                              // For now, the conversion only has a TEMPORARY effect during song loading.
+                              // See comments in Song::read at the "samplerate" tag.
+                              _frame = MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt());
                               _type = FRAMES;
                               }
                         else
@@ -516,7 +553,11 @@ void PosLen::read(Xml& xml, const char* name)
                               }
                         else if (tag == "sample") {
                               setType(FRAMES);
-                              setFrame(xml.s2().toInt());
+//REMOVE Tim. samplerate. Changed.
+//                               setFrame(xml.s2().toInt());
+                              // For now, the conversion only has a TEMPORARY effect during song loading.
+                              // See comments in Song::read at the "samplerate" tag.
+                              setFrame(MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt()));
                               }
                         else if (tag == "len") {
                               int n = xml.s2().toInt();
@@ -525,7 +566,11 @@ void PosLen::read(Xml& xml, const char* name)
                                           setLenTick(n);
                                           break;
                                     case FRAMES:
-                                          setLenFrame(n);
+//REMOVE Tim. samplerate. Changed.
+//                                           setLenFrame(n);
+                                          // For now, the conversion only has a TEMPORARY effect during song loading.
+                                          // See comments in Song::read at the "samplerate" tag.
+                                          setLenFrame(MusEGlobal::convertFrame4ProjectSampleRate(n));
                                           break;
                                     }
                               }

@@ -88,6 +88,7 @@
 #endif
 #include "routepopup.h"
 #include "shortcutconfig.h"
+#include "song.h"
 #include "songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
@@ -206,7 +207,9 @@ bool MusE::seqStart()
       MusEGlobal::audioPrefetch->start(pfprio);
 
       // In case prefetch is not filled, do it now.
-      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
+      // REMOVE Tim. samplerate. Changed.
+      //MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
+      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
 
       MusEGlobal::midiSeq->start(midiprio);
 
@@ -1509,6 +1512,20 @@ void MusE::closeEvent(QCloseEvent* event)
                   return;
             }
             }
+      
+      // REMOVE Tim. samplerate. Added. 
+      // NOTICE: In the TopWin constructor, recently all top levels were changed to parentless, 
+      //  to fix stay-on-top behaviour that seems to have been introduced in Qt5.
+      // But now, when the app closes by main mindow for example, all other top win destructors 
+      //  are not called. So we must do it here.
+      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) 
+      {
+        TopWin* tw = *i;
+        // Top win has no parent? Manually delete it.
+        if(!tw->parent())
+          delete tw;
+      }
+              
       seqStop();
 
       MusECore::WaveTrackList* wt = MusEGlobal::song->waves();

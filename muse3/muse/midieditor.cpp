@@ -34,6 +34,12 @@
 #include <QColor>
 #include <QGridLayout>
 
+#define ERROR_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
+
+// REMOVE Tim. samplerate. Enabled.
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -127,6 +133,7 @@ void MidiEditor::addPart(MusECore::Part* p)
 
 MidiEditor::~MidiEditor()
       {
+      DEBUG_MIDIEDITOR(stderr, "MidiEditor dtor\n");
       if (_pl)
             delete _pl;
       }

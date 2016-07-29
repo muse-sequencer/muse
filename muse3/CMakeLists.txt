@@ -23,6 +23,7 @@
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
 include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
@@ -157,6 +158,8 @@ option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
 option ( ENABLE_LV2_SUPPLIED "Use supplied or system LV2 libraries (lv2, lilv, sord)" OFF)
 option ( ENABLE_LV2_DEBUG        "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
+option ( ENABLE_RUBBERBAND  "Enable RubberBand Audio Stretcher/Pitch Shifter/Sample Rate Converter" ON)
+#option ( ENABLE_ZITA_RESAMPLER "Enable Zita Resampler Audio Sample Rate Converter" ON)  # TODO See below...
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
@@ -483,6 +486,38 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
+
+##
+## check for rubberband
+##
+
+if ( ENABLE_RUBBERBAND )
+      PKG_CHECK_MODULES(RUBBERBAND rubberband>=1.8.1)
+      if (RUBBERBAND_FOUND)
+            include_directories(${RUBBERBAND_INCLUDE_DIRS})
+            set(RUBBERBAND_SUPPORT ON)
+      endif (RUBBERBAND_FOUND)
+else ( ENABLE_RUBBERBAND )
+      message("RubberBand disabled")
+endif ( ENABLE_RUBBERBAND )
+
+
+##
+## check for zita-resampler
+##
+
+# TODO FIXME: The check finds the file, but for some reason the check's test program fails
+#              due to a problem in the zita resampler-table header.
+if (ENABLE_ZITA_RESAMPLER)
+    CHECK_INCLUDE_FILE_CXX(zita-resampler/resampler.h HAVE_ZITA_RESAMPLER_H)
+    if (HAVE_ZITA_RESAMPLER_H)
+        set(ZITA_RESAMPLER_SUPPORT ON)
+    endif (HAVE_ZITA_RESAMPLER_H)
+else (ENABLE_ZITA_RESAMPLER)
+      message("Zita resampler disabled")
+endif (ENABLE_ZITA_RESAMPLER)
+
+
 ##
 ##   End OPTIONAL packages.
 ##
@@ -573,7 +608,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMA
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs al awl grepmidi man plugins muse synti packaging utils demos share)
+subdirs(doc libs al awl grepmidi man plugins audio_convert muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files
@@ -667,6 +702,14 @@ if (ENABLE_LV2)
     endif (LV2_USE_SUPPLIED_VERSION AND (NOT ENABLE_LV2_SUPPLIED))
 endif (ENABLE_LV2)
 
+if (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+        message("** WARNING: RubberBand was enabled, but development files were not found.")
+endif (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+
+if (ENABLE_ZITA_RESAMPLER AND (NOT HAVE_ZITA_RESAMPLER_H))
+        message("** WARNING: Zita Resampler was enabled, but development files were not found.")
+endif (ENABLE_ZITA_RESAMPLER AND (NOT HAVE_ZITA_RESAMPLER_H))
+
 message("")
 
 ## Show a summary of what we got
@@ -681,6 +724,8 @@ endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
+summary_add("RubberBand support" RUBBERBAND_SUPPORT)
+summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 

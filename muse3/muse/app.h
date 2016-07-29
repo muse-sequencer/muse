@@ -73,7 +73,6 @@ class ClipListEdit;
 class EditInstrument;
 class EditToolBar;
 class GlobalSettingsConfig;
-class GlobalSettingsConfig;
 class MRConfig;
 class MarkerView;
 class MetronomeConfig;

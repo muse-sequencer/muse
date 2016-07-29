@@ -29,6 +29,8 @@
 #cmakedefine VST_NATIVE_SUPPORT
 #cmakedefine VST_VESTIGE_SUPPORT
 #cmakedefine USE_SSE
+#cmakedefine RUBBERBAND_SUPPORT
+#cmakedefine ZITA_RESAMPLER_SUPPORT
 
 #define VERSION          "${MusE_VERSION_FULL}"
 #define GITSTRING        "${MusE_GITSTRING}"

@@ -32,7 +32,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 
-#include "xml.h"
+//#include "xml.h"
 #include "song.h"
 #include "wave.h"
 #include "app.h"
@@ -48,8 +48,23 @@
 #include "gconfig.h"
 #include "type_defs.h"
 
+// REMOVE Tim. samplerate. Added.
+#include "config.h"
+#include "operations.h"
+#include "time_stretch.h"
+//#include "audioconvert.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
+
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
+
+// REMOVE Tim. samplerate. Added.
+#define USE_SAMPLERATE
+#define ERROR_WAVE(dev, format, args...)  fprintf(dev, format, ##args)
+#define INFO_WAVE(dev, format, args...)  fprintf(dev, format, ##args)
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_WAVE(dev, format, args...)  // fprintf(dev, format, ##args)
 
 namespace MusECore {
 
@@ -64,25 +79,43 @@ SndFileList SndFile::sndFiles;
 
 SndFile::SndFile(const QString& name)
       {
+      // REMOVE Tim. samplerate. Added.
+      _stretchList = new StretchList();
+      //_audioConverterSettings = new AudioConverterSettingsGroup(true);  // true = Local settings, initialized to -1.
+      
+      // true = Local settings, initialized to -1.
+      _audioConverterSettings = new AudioConverterSettingsGroup(true); // Local settings.
+        //MusEGlobal::defaultAudioConverterSettings.createSettings(&MusEGlobal::audioConverterPluginList, true);
+        //new AudioConverterSettingsGroup(&MusEGlobal::audioConverterPluginList, true);
+      _audioConverterSettings->populate(&MusEGlobal::audioConverterPluginList, true);
+      
       finfo = new QFileInfo(name);
-      sf    = 0;
-      sfUI  = 0;
+      sf    = NULL;
+      sfUI  = NULL;
       csize = 0;
-      cache = 0;
+      cache = NULL;
       openFlag = false;
       sndFiles.push_back(this);
-      refCount=0;
-      writeBuffer = 0;
+      refCount = 0;
+      writeBuffer = NULL;
       writeSegSize = std::max((size_t)MusEGlobal::segmentSize, (size_t)cacheMag);// cache minimum segment size for write operations
+      
+      // REMOVE Tim. samplerate. Added.
+      _staticAudioConverter    = NULL;
+      _staticAudioConverterUI  = NULL;
+      _dynamicAudioConverter   = NULL;
+      _dynamicAudioConverterUI = NULL;
       }
 
 SndFile::~SndFile()
       {
+      //DEBUG_WAVE(stderr, "SndFile:: already open\n");
+      INFO_WAVE(stderr, "SndFile dtor this:%p\n", this); // REMOVE Tim. samplerate. Added. TESTING Change back to DEBUG_WAVE!
       if (openFlag)
             close();
       for (iSndFile i = sndFiles.begin(); i != sndFiles.end(); ++i) {
             if (*i == this) {
-                  //fprintf(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLatin1().constData());
+                  //DEBUG_WAVE(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLatin1().constData());
                   sndFiles.erase(i);
                   break;
                   }
@@ -90,13 +123,16 @@ SndFile::~SndFile()
       delete finfo;
       if (cache) {
             delete[] cache;
-            cache = 0;
+            cache = NULL;
             }
       if(writeBuffer) {
          delete [] writeBuffer;
-          writeBuffer = 0;
+          writeBuffer = NULL;
       }
 
+      // REMOVE Tim. samplerate. Added.
+      delete _stretchList;
+      delete _audioConverterSettings;
       }
 
 //---------------------------------------------------------
@@ -106,33 +142,260 @@ SndFile::~SndFile()
 bool SndFile::openRead(bool createCache, bool showProgress)
       {
       if (openFlag) {
-            printf("SndFile:: already open\n");
+            DEBUG_WAVE(stderr, "SndFile:: already open\n");
             return false;
             }
       QString p = path();
       sfinfo.format = 0;
-      sfUI = 0;
+      sfUI = NULL;
       sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-      if (sf == 0)
+      if (!sf)
             return true;
       if(createCache){
          sfinfo.format = 0;
          sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
-         if (sfUI == 0){
+         if (!sfUI){
             sf_close(sf);
-            sf = 0;
+            sf = NULL;
             return true;
          }
       }
 
+      // REMOVE Tim. samplerate. Added.
+      _staticAudioConverter   = setupAudioConverter(_audioConverterSettings, true, AudioConverterSettings::RealtimeMode); // true = Local settings.
+      _staticAudioConverterUI = setupAudioConverter(_audioConverterSettings, true, AudioConverterSettings::GuiMode); // true = Local settings.
+      
       writeFlag = false;
       openFlag  = true;
       if (createCache) {
         QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
+        
+// REMOVE Tim. samplerate. Added.
+// #ifdef USE_SAMPLERATE
+//         readCacheConverted(cacheName, showProgress);
+// #else
+        
         readCache(cacheName, showProgress);
+// #endif
+        
       }
       return false;
       }
+
+// REMOVE Tim. samplerate. Added.
+//bool SndFile::setupAudioConverter(AudioConverterSettingsGroup* settings, AudioConverterPluginI** p_plugI, int mode)
+AudioConverterPluginI* SndFile::setupAudioConverter(AudioConverterSettingsGroup* settings, bool isLocalSettings, int mode)
+{
+#ifdef USE_SAMPLERATE
+
+  if(!MusEGlobal::defaultAudioConverterSettings)
+    return NULL;
+  
+  AudioConverterPluginI* plugI = NULL;
+  
+  int pref_resampler = 
+    //(settings && settings->_options._useSettings) ? 
+    (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
+      settings->_options._preferredResampler :
+      //MusEGlobal::defaultAudioConverterSettings._options._preferredResampler;
+      MusEGlobal::defaultAudioConverterSettings->_options._preferredResampler;
+  
+  int pref_shifter = 
+    //(settings && settings->_options._useSettings) ? 
+    (settings && (settings->_options._useSettings || !isLocalSettings)) ? 
+      settings->_options._preferredShifter:
+      //MusEGlobal::defaultAudioConverterSettings._options._preferredShifter;
+      MusEGlobal::defaultAudioConverterSettings->_options._preferredShifter;
+
+  AudioConverterSettingsI* def_res_settings = NULL;
+  AudioConverterSettingsI* local_res_settings = NULL;
+  AudioConverterSettingsI* rt_res_settings = NULL;
+//   AudioConverterSettingsI* gui_res_settings = NULL;
+  AudioConverterPlugin* res_plugin = MusEGlobal::audioConverterPluginList.find(0, pref_resampler, AudioConverter::SampleRate);
+  if(res_plugin)
+  {
+    if(isLocalSettings)
+    {
+      //def_res_settings = MusEGlobal::defaultAudioConverterSettings.find(
+      //    MusEGlobal::defaultAudioConverterSettings._options._preferredResampler);
+      def_res_settings = MusEGlobal::defaultAudioConverterSettings->find(
+          MusEGlobal::defaultAudioConverterSettings->_options._preferredResampler);
+      local_res_settings = settings ? settings->find(pref_resampler) : NULL;
+  //     rt_res_settings = (local_res_settings && local_res_settings->useSettings(AudioConverterSettings::RealtimeMode)) ? 
+      rt_res_settings = (local_res_settings && local_res_settings->useSettings(mode)) ? local_res_settings : def_res_settings;
+  //     gui_res_settings = (local_res_settings && local_res_settings->useSettings(AudioConverterSettings::GuiMode)) ? 
+  //       local_res_settings : def_res_settings;
+    }
+    else
+      rt_res_settings = settings->find(pref_resampler);
+  }
+
+  AudioConverterSettingsI* def_str_settings = NULL;
+  AudioConverterSettingsI* local_str_settings = NULL;
+  AudioConverterSettingsI* rt_str_settings = NULL;
+//   AudioConverterSettingsI* gui_str_settings = NULL;
+  AudioConverterPlugin* str_plugin = MusEGlobal::audioConverterPluginList.find(0, pref_shifter, AudioConverter::Stretch);
+  if(str_plugin)
+  {
+    if(isLocalSettings)
+    {
+      //def_str_settings = MusEGlobal::defaultAudioConverterSettings.find(
+      //    MusEGlobal::defaultAudioConverterSettings._options._preferredShifter);
+      def_str_settings = MusEGlobal::defaultAudioConverterSettings->find(
+          MusEGlobal::defaultAudioConverterSettings->_options._preferredShifter);
+      local_str_settings = settings ? settings->find(pref_shifter) : NULL;
+      //rt_str_settings = (local_str_settings && local_str_settings->useSettings(AudioConverterSettings::RealtimeMode)) ? 
+      rt_str_settings = (local_str_settings && local_str_settings->useSettings(mode)) ? local_str_settings : def_str_settings;
+      
+      if(rt_str_settings) { } // Dummy for now, to avoid unused warning.
+      
+  //     gui_str_settings = (local_str_settings && local_str_settings->useSettings(AudioConverterSettings::GuiMode)) ? 
+  //       local_str_settings : def_str_settings;
+    }
+    else
+      rt_str_settings = settings->find(pref_shifter);
+  }
+
+  
+  //if(sf)
+//   if(sf && (sampleRateDiffers() || stretchList()->isStretched()))
+  if(sf && (sampleRateDiffers() || stretchList()->isResampled() || stretchList()->isStretched()))
+  {
+    // Do we already have a valid audio converter?
+    //if(_staticAudioConverter)
+//     if(plugI)
+      // Just set the channels.
+      //_staticAudioConverter->setChannels(sfinfo.channels);
+//       plugI->setChannels(sfinfo.channels);
+//     else
+    {  
+      // Realtime audio section...
+      // Create a new converter.
+      
+      AudioConverterPlugin* fin_plug  = 
+        stretchList()->isStretched() ? str_plugin : (res_plugin ? res_plugin : str_plugin);
+        
+      AudioConverterSettingsI* fin_set = 
+        stretchList()->isStretched() ? rt_str_settings : (rt_res_settings ? rt_res_settings : rt_str_settings);
+        
+      if(fin_set && fin_plug && (fin_plug->maxChannels() < 0 || sfinfo.channels <= fin_plug->maxChannels()))
+      {
+        //_staticAudioConverter = new AudioConverterPluginI();
+        plugI = new AudioConverterPluginI();
+        //_staticAudioConverter->initPluginInstance(
+        plugI->initPluginInstance(
+          fin_plug,
+          sfinfo.channels,
+          fin_set->settings(), 
+          //AudioConverterSettings::RealtimeMode);
+          mode);
+      }
+    } 
+  }
+//   //else if(_staticAudioConverter)
+//   else if(plugI)
+//   {
+//     //_staticAudioConverter = AudioConverter::release(_staticAudioConverter);
+//     //delete _staticAudioConverter;
+//     delete plugI;
+//     //_staticAudioConverter = NULL;
+//     plugI = NULL;
+//   }
+    
+//   //if(sfUI)
+//   if(sfUI && (sampleRateDiffers() || stretchList()->isStretched()))
+//   {
+//     // Do we already have a valid audio converter?
+//     if(_staticAudioConverterUI)
+//       // Just set the channels.
+//       _staticAudioConverterUI->setChannels(sfinfo.channels);
+//     else
+//     {
+//       // Gui section...
+//       // Create a new converter.
+//       if(gui_res_settings)
+//       {
+//         _staticAudioConverterUI = new AudioConverterPluginI();
+//         _staticAudioConverterUI->initPluginInstance(
+//           res_plugin,
+//           sfinfo.channels,
+//           gui_res_settings->settings(),
+//           AudioConverterSettings::GuiMode);
+//       }
+//     }
+//   }
+//   else if(_staticAudioConverterUI)
+//   {
+//     //_staticAudioConverterUI = AudioConverter::release(_staticAudioConverterUI);
+//     delete _staticAudioConverterUI;
+//     _staticAudioConverterUI = NULL;
+//   }
+  
+return plugI;
+
+#else
+
+return NULL;
+
+#endif
+}
+
+AudioConverterPluginI* SndFile::staticAudioConverter(int mode) const 
+{ 
+  switch(mode)
+  {
+    case AudioConverterSettings::OfflineMode:
+      return NULL;  // TODO ?
+    break;
+
+    case AudioConverterSettings::RealtimeMode:
+      return _staticAudioConverter;
+    break;
+
+    case AudioConverterSettings::GuiMode:
+      return _staticAudioConverterUI;
+    break;
+  }
+  return NULL; 
+}
+
+void SndFile::setStaticAudioConverter(AudioConverterPluginI* converter, int mode)
+{
+  switch(mode)
+  {
+    case AudioConverterSettings::OfflineMode:
+      return;  // TODO ?
+    break;
+
+    case AudioConverterSettings::RealtimeMode:
+      _staticAudioConverter = converter;
+    break;
+
+    case AudioConverterSettings::GuiMode:
+      _staticAudioConverterUI = converter;
+    break;
+  }
+}
+
+void SndFile::setAudioConverterSettings(AudioConverterSettingsGroup* settings)
+{ 
+  _audioConverterSettings = settings;
+}
+
+void SndFile::modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops)
+{
+//   if(!settings)
+//     //return;
+//     settings = _audioConverterSettings;
+  
+  AudioConverterPluginI* converter   = setupAudioConverter(settings, isLocalSettings, AudioConverterSettings::RealtimeMode);
+  AudioConverterPluginI* converterUI = setupAudioConverter(settings, isLocalSettings, AudioConverterSettings::GuiMode);
+
+  if(!converter && !converterUI)
+    return;
+
+  ops.add(PendingOperationItem(this, settings, converter, converterUI, PendingOperationItem::ModifyLocalAudioConverterSettings));
+}
 
 //---------------------------------------------------------
 //   update
@@ -148,7 +411,7 @@ void SndFile::update(bool showProgress)
          QString("/") + finfo->completeBaseName() + QString(".wca");
       ::remove(cacheName.toLocal8Bit().constData());
       if (openRead(true, showProgress)) {
-            printf("SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
+            ERROR_WAVE(stderr, "SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }
 
@@ -160,7 +423,7 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
 {
    if(cstart >= csize)
       return;
-   QProgressDialog* progress = 0;
+   QProgressDialog* progress = NULL;
    if (showProgress) {
       QString label(QWidget::tr("create peakfile for "));
       label += basename();
@@ -169,9 +432,11 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
       progress->setMinimumDuration(0);
       progress->show();
    }
-   float data[channels()][cacheMag];
-   float* fp[channels()];
-   for (unsigned k = 0; k < channels(); ++k)
+   
+   const int srcChannels = channels();
+   float data[srcChannels][cacheMag];
+   float* fp[srcChannels];
+   for (int k = 0; k < srcChannels; ++k)
       fp[k] = &data[k][0];
    int interval = (csize - cstart) / 10;
 
@@ -181,8 +446,8 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
       if (showProgress && ((i % interval) == 0))
          progress->setValue(i);
       seek(i * cacheMag, 0);
-      read(channels(), fp, cacheMag);
-      for (unsigned ch = 0; ch < channels(); ++ch) {
+      read(srcChannels, fp, cacheMag);
+      for (int ch = 0; ch < srcChannels; ++ch) {
          float rms = 0.0;
          cache[ch][i].peak = 0;
          for (int n = 0; n < cacheMag; n++) {
@@ -210,6 +475,76 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
 
 }
 
+//---------------------------------------------------
+//  createCacheConverted
+//---------------------------------------------------
+
+// void SndFile::createCacheConverted(const QString& path, bool showProgress, bool bWrite, sf_count_t cstart)
+// {
+//     if(!sampleRateDiffers() || !_audConvUI)
+//     {
+//       createCache(path, showProgress, bWrite, cstart);
+//       return;
+//     }
+//       
+//    if(convertPosition(cstart) >= csize)
+//       return;
+//    QProgressDialog* progress = 0;
+//    if (showProgress) {
+//       QString label(QWidget::tr("create peakfile for "));
+//       label += basename();
+//       progress = new QProgressDialog(label,
+//                                      QString::null, 0, csize, 0);
+//       progress->setMinimumDuration(0);
+//       progress->show();
+//    }
+//    
+//    const int srcChannels = channels();
+//    
+//    float data[srcChannels][cacheMag];
+//    float* fp[srcChannels];
+//    for (int k = 0; k < srcChannels; ++k)
+//       fp[k] = &data[k][0];
+//    int interval = (csize - convertPosition(cstart)) / 10;
+// 
+//    if(!interval)
+//       interval = 1;
+//    for (int i = convertPosition(cstart); i < csize; i++) {
+//       if (showProgress && ((i % interval) == 0))
+//          progress->setValue(i);
+//       seek(i * cacheMag, 0);
+//       // Reset the converter. Its current state is meaningless now.
+//       _audConv->reset();
+//       //read(channels(), fp, cacheMag);
+//       readConverted(srcChannels, fp, cacheMag);
+//       for (int ch = 0; ch < srcChannels; ++ch) {
+//          float rms = 0.0;
+//          cache[ch][i].peak = 0;
+//          for (int n = 0; n < cacheMag; n++) {
+//             float fd = data[ch][n];
+//             rms += fd * fd;
+//             int idata = int(fd * 255.0);
+//             if (idata < 0)
+//                idata = -idata;
+//             if (cache[ch][i].peak < idata)
+//                cache[ch][i].peak = idata;
+//          }
+//          // amplify rms value +12dB
+//          int rmsValue = int((sqrt(rms/cacheMag) * 255.0));
+//          if (rmsValue > 255)
+//             rmsValue = 255;
+//          cache[ch][i].rms = rmsValue;
+//       }
+//    }
+//    if (showProgress)
+//       progress->setValue(csize);
+//    if(bWrite)
+//       writeCache(path);
+//    if (showProgress)
+//       delete progress;
+// 
+// }
+
 //---------------------------------------------------------
 //   readCache
 //---------------------------------------------------------
@@ -222,16 +557,18 @@ void SndFile::readCache(const QString& path, bool showProgress)
    if (samples() == 0)
       return;
 
+   const int srcChannels = channels();
+   
    csize = (samples() + cacheMag - 1)/cacheMag;
-   cache = new SampleVtype[channels()];
-   for (unsigned ch = 0; ch < channels(); ++ch)
+   cache = new SampleVtype[srcChannels];
+   for (int ch = 0; ch < srcChannels; ++ch)
    {
       cache [ch].resize(csize);
    }
 
    FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
    if (cfile) {
-      for (unsigned ch = 0; ch < channels(); ++ch)
+      for (int ch = 0; ch < srcChannels; ++ch)
          fread(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
       fclose(cfile);
       return;
@@ -242,6 +579,45 @@ void SndFile::readCache(const QString& path, bool showProgress)
 }
 
 //---------------------------------------------------------
+//   readCacheConverted
+//---------------------------------------------------------
+
+// void SndFile::readCacheConverted(const QString& path, bool showProgress)
+// {
+//    if(!sampleRateDiffers() || !_audConvUI)
+//    {
+//      readCache(path, showProgress);
+//      return;
+//    }
+//       
+//    if (cache) {
+//       delete[] cache;
+//    }
+//    if (samples() == 0)
+//       return;
+// 
+//    const int srcChannels = channels();
+//    
+//    csize = (convertPosition(samples()) + cacheMag - 1)/cacheMag;
+//    cache = new SampleVtype[srcChannels];
+//    for (int ch = 0; ch < srcChannels; ++ch)
+//    {
+//       cache [ch].resize(csize);
+//    }
+// 
+//    FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
+//    if (cfile) {
+//       for (int ch = 0; ch < srcChannels; ++ch)
+//          fread(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
+//       fclose(cfile);
+//       return;
+//    }
+// 
+// 
+//    createCacheConverted(path, showProgress, true);
+// }
+
+//---------------------------------------------------------
 //   writeCache
 //---------------------------------------------------------
 
@@ -250,7 +626,8 @@ void SndFile::writeCache(const QString& path)
       FILE* cfile = fopen(path.toLocal8Bit().constData(), "w");
       if (cfile == 0)
             return;
-      for (unsigned ch = 0; ch < channels(); ++ch)
+      const int srcChannels = channels();
+      for (int ch = 0; ch < srcChannels; ++ch)
             fwrite(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
       fclose(cfile);
       }
@@ -261,8 +638,10 @@ void SndFile::writeCache(const QString& path)
 
 void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allowSeek)
       {
+      const int srcChannels = channels();
+      
       if(overwrite)
-        for (unsigned ch = 0; ch < channels(); ++ch) {
+        for (int ch = 0; ch < srcChannels; ++ch) {
             s[ch].peak = 0;
             s[ch].rms = 0;
             }
@@ -274,9 +653,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
             return;
 
       if (mag < cacheMag) {
-            float data[channels()][mag];
-            float* fp[channels()];
-            for (unsigned i = 0; i < channels(); ++i)
+            float data[srcChannels][mag];
+            float* fp[srcChannels];
+            for (int i = 0; i < srcChannels; ++i)
                   fp[i] = &data[i][0];
 
             sf_count_t ret = 0;
@@ -284,12 +663,12 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
               ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
             else
               ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
+            
             if(ret == -1)
               return;
             {
-            int srcChannels = channels();
-            int dstChannels = sfinfo.channels;
-            size_t n        = mag;
+            const int dstChannels = sfinfo.channels;
+            const size_t n        = mag;
             float** dst     = fp;
             float buffer[n * dstChannels];
 
@@ -298,6 +677,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
               rn = sf_readf_float(sfUI, buffer, n);
             else
               rn = sf_readf_float(sf, buffer, n);
+            
             if(rn != n)
               return;
             float* src = buffer;
@@ -323,7 +703,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                   }
             }
 
-            for (unsigned ch = 0; ch < channels(); ++ch) {
+            for (int ch = 0; ch < srcChannels; ++ch) {
 
                   if(overwrite)
                     s[ch].peak = 0;
@@ -349,10 +729,177 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
             if (rest < mag)
                   end = rest;
 
-            for (unsigned ch = 0; ch < channels(); ++ch) {
+            for (int ch = 0; ch < srcChannels; ++ch) {
                   int rms = 0;
                   int off = pos/cacheMag;
                   for (int offset = off; offset < off+end; offset++) {
+                        rms += cache[ch][offset].rms;
+                        if (s[ch].peak < cache[ch][offset].peak)
+                              s[ch].peak = cache[ch][offset].peak;
+                              }
+
+                  if(overwrite)
+                    s[ch].rms = rms / mag;
+
+                  else
+                    s[ch].rms += rms / mag;
+                  }
+            }
+      }
+
+// REMOVE Tim. samplerate. Added.
+//---------------------------------------------------------
+//   readConverted
+//---------------------------------------------------------
+
+void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite, bool allowSeek)
+      {
+      if(!(_staticAudioConverterUI && _staticAudioConverterUI->isValid() &&
+          (((sampleRateDiffers() || isResampled()) && (_staticAudioConverterUI->capabilities() & AudioConverter::SampleRate)) ||
+           (isStretched() && (_staticAudioConverterUI->capabilities() & AudioConverter::Stretch))) ))
+      {
+        read(s, mag, pos, overwrite, allowSeek);
+        return;
+      }
+        
+      const int srcChannels = channels();
+        
+      if(overwrite)
+        for (int ch = 0; ch < srcChannels; ++ch) {
+            s[ch].peak = 0;
+            s[ch].rms = 0;
+            }
+
+      // only check pos if seek is allowed
+      // for realtime drawing of the wave
+      // seek may cause writing errors
+// REMOVE Tim. samplerate. Changed.
+//       if (allowSeek && pos > samples())
+//             return;
+      if(allowSeek && convertPosition(pos) > convertPosition(samples()))
+            return;
+
+      if (mag < cacheMag) {
+            float data[srcChannels][mag];
+            float* fp[srcChannels];
+            for (int i = 0; i < srcChannels; ++i)
+                  fp[i] = &data[i][0];
+
+            sf_count_t ret = 0;
+// REMOVE Tim. samplerate. Changed.
+//             if(sfUI)
+//               ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
+//             else
+//               ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
+            if(sfUI)
+            {
+              ret = sf_seek(sfUI, convertPosition(pos), SEEK_SET | SFM_READ);
+              // Reset the converter. Its current state is meaningless now.
+              _staticAudioConverterUI->reset();
+            }
+            else
+            {
+              ret = sf_seek(sf, convertPosition(pos), SEEK_SET | SFM_READ);
+              // Reset the converter. Its current state is meaningless now.
+              _staticAudioConverter->reset();
+            }
+            
+            // Reset the converter. Its current state is meaningless now.
+            //_audConvUI->reset();
+            
+            if(ret == -1)
+              return;
+            
+            
+            //{
+//             const int srcChannels = channels();
+//             int dstChannels = sfinfo.channels;
+            const sf_count_t n        = mag;
+//             float** dst     = fp;
+//             float buffer[n * dstChannels];
+
+//             sf_count_t rn = 0;
+// REMOVE Tim. samplerate. Changed.
+//             if(sfUI)
+//               rn = sf_readf_float(sfUI, buffer, n);
+//             else
+//               rn = sf_readf_float(sf, buffer, n);
+            if(sfUI)
+              //rn = sf_readf_float(sfUI, buffer, n);
+              //rn = _audConvUI->process(this, buffer, srcChannels, n, true);
+              //rn = _audConvUI->process(this, dst, srcChannels, n, true);
+              //rn = _audConvUI->process(this, sfUI,  dst, srcChannels, n, true);
+              //rn = _audConvUI->process(this, sfUI,  fp, srcChannels, n, true);
+              ret = _staticAudioConverterUI->process(this, sfUI, pos, fp, srcChannels, n, true);
+            else
+              //rn = sf_readf_float(sf, buffer, n);
+              //rn = _audConv->process(this, buffer, srcChannels, n, true);
+              //rn = _audConv->process(this, dst, srcChannels, n, true);
+              //rn = _audConv->process(this, sf, dst, srcChannels, n, true);
+              //rn = _audConv->process(this, sf, fp, srcChannels, n, true);
+              ret = _staticAudioConverter->process(this, sf, pos, fp, srcChannels, n, true);
+            
+            //if(rn != n)
+            if(ret != n)
+              return;
+//             float* src = buffer;
+// 
+//             if (srcChannels == dstChannels) {
+//                   for (sf_count_t i = 0; i < rn; ++i) {
+//                         for (int ch = 0; ch < srcChannels; ++ch)
+//                               *(dst[ch]+i) = *src++;
+//                         }
+//                   }
+//             else if ((srcChannels == 1) && (dstChannels == 2)) {
+//                   // stereo to mono
+//                   for (sf_count_t i = 0; i < rn; ++i)
+//                         *(dst[0] + i) = src[i + i] + src[i + i + 1];
+//                   }
+//             else if ((srcChannels == 2) && (dstChannels == 1)) {
+//                   // mono to stereo
+//                   for (sf_count_t i = 0; i < rn; ++i) {
+//                         float data = *src++;
+//                         *(dst[0]+i) = data;
+//                         *(dst[1]+i) = data;
+//                         }
+//                   }
+            //}
+
+//             for (unsigned ch = 0; ch < channels(); ++ch) {
+            for (int ch = 0; ch < srcChannels; ++ch) {
+
+                  if(overwrite)
+                    s[ch].peak = 0;
+
+                  float rms = 0.0;
+                  for (int i = 0; i < mag; i++) {
+                        float fd = data[ch][i];
+                        rms += fd;
+                        int idata = int(fd * 255.0);
+                        if (idata < 0)
+                              idata = -idata;
+                        if (s[ch].peak < idata)
+                              s[ch].peak = idata;
+                        }
+
+                    s[ch].rms = 0;    // TODO rms / mag;
+                  }
+            }
+      else {
+            mag /= cacheMag;
+//             int rest = csize - (pos/cacheMag);
+            sf_count_t rest = csize - (convertPosition(pos)/cacheMag);
+//             int end  = mag;
+            sf_count_t end  = mag;
+            if (rest < mag)
+                  end = rest;
+
+            for (int ch = 0; ch < srcChannels; ++ch) {
+                  int rms = 0;
+//                   int off = pos/cacheMag;
+                  sf_count_t off = convertPosition(pos)/cacheMag;
+//                   for (int offset = off; offset < off+end; offset++) {
+                  for (sf_count_t offset = off; offset < off+end; offset++) {
                         rms += cache[ch][offset].rms;
                         if (s[ch].peak < cache[ch][offset].peak)
                               s[ch].peak = cache[ch][offset].peak;
@@ -374,13 +921,13 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
 bool SndFile::openWrite()
       {
       if (openFlag) {
-            printf("SndFile:: alread open\n");
+            DEBUG_WAVE(stderr, "SndFile:: alread open\n");
             return false;
             }
   QString p = path();
 
       sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
-      sfUI = 0;
+      sfUI = NULL;
       if (sf) {
             if(writeBuffer)
               delete [] writeBuffer;
@@ -391,7 +938,7 @@ bool SndFile::openWrite()
                QString("/") + finfo->completeBaseName() + QString(".wca");
             readCache(cacheName, true);
             }
-      return sf == 0;
+      return !sf;
       }
 
 //---------------------------------------------------------
@@ -400,22 +947,55 @@ bool SndFile::openWrite()
 
 void SndFile::close()
       {
+      //DEBUG_WAVE(stderr, "SndFile::close this:%p\n", this);
+      INFO_WAVE(stderr, "SndFile::close this:%p\n", this); // REMOVE Tim. samplerate. Added. TESTING Change back to DEBUG_WAVE!
       if (!openFlag) {
-            printf("SndFile:: alread closed\n");
+            DEBUG_WAVE(stderr, "SndFile:: alread closed\n");
             return;
             }
       if(int err = sf_close(sf))
-        fprintf(stderr, "SndFile::close Error:%d on sf_close(sf:%p)\n", err, sf);
+        ERROR_WAVE(stderr, "SndFile::close Error:%d on sf_close(sf:%p)\n", err, sf);
       else
-        sf = 0;
+        sf = NULL;
       if (sfUI)
       {
             if(int err = sf_close(sfUI))
-              fprintf(stderr, "SndFile::close Error:%d on sf_close(sfUI:%p)\n", err, sfUI);
+              ERROR_WAVE(stderr, "SndFile::close Error:%d on sf_close(sfUI:%p)\n", err, sfUI);
             else
-              sfUI = 0;
+              sfUI = NULL;
       }
       openFlag = false;
+      
+      // REMOVE Tim. samplerate. Added.
+//       if(_staticAudioConverter)
+//         _staticAudioConverter = AudioConverter::release(_staticAudioConverter);
+//       if(_staticAudioConverterUI)
+//         _staticAudioConverterUI = AudioConverter::release(_staticAudioConverterUI);
+//       if(_dynamicAudioConverter)
+//         _dynamicAudioConverter = AudioConverter::release(_dynamicAudioConverter);
+//       if(_dynamicAudioConverterUI)
+//         _dynamicAudioConverterUI = AudioConverter::release(_dynamicAudioConverterUI);
+      if(_staticAudioConverter)
+      {
+        delete _staticAudioConverter;
+        _staticAudioConverter = NULL;
+      }
+      if(_staticAudioConverterUI)
+      {
+        delete _staticAudioConverterUI;
+        _staticAudioConverterUI = NULL;
+      }
+      if(_dynamicAudioConverter)
+      {
+        delete _dynamicAudioConverter;
+        _dynamicAudioConverter = NULL;
+      }
+      if(_dynamicAudioConverterUI)
+      {
+        delete _dynamicAudioConverterUI;
+        _dynamicAudioConverterUI = NULL;
+      }
+
       }
 
 //---------------------------------------------------------
@@ -459,6 +1039,74 @@ QString SndFile::name() const
       return finfo->fileName();
       }
 
+      
+//---------------------------------------------------------
+//   sampleRateRatio
+//---------------------------------------------------------
+
+double SndFile::sampleRateRatio() const
+{
+  //if(sampleRateDiffers())
+    return (double)sfinfo.samplerate / (double)MusEGlobal::sampleRate;
+  //return 1.0;
+}
+
+//---------------------------------------------------------
+//   sampleRateDiffers
+//---------------------------------------------------------
+
+bool SndFile::sampleRateDiffers() const
+{
+  return sfinfo.samplerate != MusEGlobal::sampleRate;
+}
+
+bool SndFile::isStretched() const 
+{ 
+  return _stretchList->isStretched();
+}
+
+bool SndFile::isResampled() const 
+{ 
+  return _stretchList->isResampled();
+}
+
+//---------------------------------------------------------
+//   convertPosition
+//---------------------------------------------------------
+
+sf_count_t SndFile::convertPosition(sf_count_t pos) const
+{
+  //return sf_count_t((double)pos * sampleRateRatio()) + 1  // From MusE-2 file converter.
+  //return floor(((double)pos * sampleRateRatio()));          // From simplesynth.
+//   return double(pos) * sampleRateRatio();
+  
+//   double new_pos = pos;
+//   
+//   //double samplerate_ratio = 1.0;
+//   if(_staticAudioConverter && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate))
+//     new_pos *= sampleRateRatio();
+// 
+//   //double stretch_ratio = 1.0;
+//   //if(_staticAudioConverter && _stretchList && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))
+//   if(_staticAudioConverter && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))
+//     //stretch_ratio = _stretchList->stretch();
+//     new_pos = _stretchList->stretch(new_pos);
+//   //return double(pos) * sampleRateRatio();
+  
+  //
+  // Must do stretch first, then samplerate conversion.
+  //
+  double new_pos = pos;
+  if(_staticAudioConverter && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))
+//     new_pos = _stretchList->stretch(pos);
+    new_pos = _stretchList->unSquish(pos);
+    //new_pos = pos;
+  if(_staticAudioConverter && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate))
+    new_pos *= sampleRateRatio();
+
+  return new_pos;
+}
+
 //---------------------------------------------------------
 //   samples
 //---------------------------------------------------------
@@ -480,17 +1128,17 @@ sf_count_t SndFile::samples() const
 //   channels
 //---------------------------------------------------------
 
-unsigned SndFile::channels() const
+int SndFile::channels() const
       {
       return sfinfo.channels;
       }
 
-unsigned SndFile::samplerate() const
+int SndFile::samplerate() const
       {
       return sfinfo.samplerate;
       }
 
-unsigned SndFile::format() const
+int SndFile::format() const
       {
       return sfinfo.format;
       }
@@ -569,7 +1217,7 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
                   }
             }
       else {
-            printf("SndFile:read channel mismatch %d -> %d\n",
+            ERROR_WAVE(stderr, "SndFile:read channel mismatch %d -> %d\n",
                srcChannels, dstChannels);
             }
 
@@ -577,6 +1225,14 @@ size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwr
 
 }
 
+sf_count_t SndFile::readConverted(sf_count_t pos, int srcChannels, float** buffer, sf_count_t frames, bool overwrite)
+{
+  if(_staticAudioConverter && _staticAudioConverter->isValid() &&
+     (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
+      (isStretched() && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))) )
+    return _staticAudioConverter->process(this, sf, pos, buffer, srcChannels, frames, overwrite);
+  return read(srcChannels, buffer, frames, overwrite);
+}
 
 //---------------------------------------------------------
 //   write
@@ -653,7 +1309,7 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs)
       }
    }
    else {
-      printf("SndFile:write channel mismatch %d -> %d\n",
+      ERROR_WAVE(stderr, "SndFile:write channel mismatch %d -> %d\n",
              srcChannels, dstChannels);
       return 0;
    }
@@ -708,9 +1364,25 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs)
 //   seek
 //---------------------------------------------------------
 
-off_t SndFile::seek(off_t frames, int whence)
+// REMOVE Tim. samplerate. Changed.
+//off_t SndFile::seek(off_t frames, int whence)
+sf_count_t SndFile::seek(sf_count_t frames, int whence)
       {
       return sf_seek(sf, frames, whence);
+      }
+
+// REMOVE Tim. samplerate. Added.
+//---------------------------------------------------------
+//   seekConverted
+//---------------------------------------------------------
+
+sf_count_t SndFile::seekConverted(sf_count_t frames, int whence)
+      {
+      if(_staticAudioConverter && _staticAudioConverter->isValid() &&
+         (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
+          (isStretched() && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))) )
+        return _staticAudioConverter->seekAudio(this, frames);
+      return seek(frames, whence);
       }
 
 //---------------------------------------------------------
@@ -742,7 +1414,8 @@ SndFile* SndFileList::search(const QString& name)
 //   getWave
 //---------------------------------------------------------
 
-SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool showErrorBox)
+SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool showErrorBox, 
+                 AudioConverterSettingsGroup* audioConverterSettings)
       {
       QString name = inName;
 
@@ -758,18 +1431,23 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
             }
 
       // only open one instance of wave file
-      // REMOVE Tim. Sharing. Changed. For testing only so far.
+      // REMOVE Tim. Sharing. Changed. Allow multiple instances. For testing only so far.
       //SndFile* f = SndFile::sndFiles.search(name);
-      SndFile* f = 0;
-      //if (f == 0)
+      SndFile* f = NULL;
+      //if (!f)
       //{
             if (!QFile::exists(name)) {
-                  fprintf(stderr, "wave file <%s> not found\n",
+                  ERROR_WAVE(stderr, "wave file <%s> not found\n",
                      name.toLocal8Bit().constData());
                   return NULL;
                   }
             f = new SndFile(name);
 
+            // REMOVE Tim. samplerate. Added.
+            // Assign audio converter settings if given.
+            if(audioConverterSettings)
+              f->audioConverterSettings()->assign(*audioConverterSettings); 
+              
             if(openFlag)
             {
               bool error;
@@ -788,7 +1466,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
 
               }
               if (error) {
-                    fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
+                    ERROR_WAVE(stderr, "open wave file(%s) for %s failed: %s\n",
                       name.toLocal8Bit().constData(),
                       readOnlyFlag ? "writing" : "reading",
                       f->strerror().toLocal8Bit().constData());
@@ -800,7 +1478,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
                                         "sometimes requires write access to the file.");
 
                     delete f;
-                    f = 0;
+                    f = NULL;
                     }
               }
 //             }
@@ -844,24 +1522,24 @@ void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsig
       // file. The data is merely switched.
 
       if (original.empty()) {
-            printf("SndFile::applyUndoFile: Internal error: original event is empty - Aborting\n");
+            ERROR_WAVE(stderr, "SndFile::applyUndoFile: Internal error: original event is empty - Aborting\n");
             return;
             }
 
       SndFileR orig = original.sndFile();
 
       if (orig.isNull()) {
-            printf("SndFile::applyUndoFile: Internal error: original sound file is NULL - Aborting\n");
+            ERROR_WAVE(stderr, "SndFile::applyUndoFile: Internal error: original sound file is NULL - Aborting\n");
             return;
             }
       if (orig.canonicalPath().isEmpty()) {
-            printf("SndFile::applyUndoFile: Error: Original sound file name is empty - Aborting\n");
+            ERROR_WAVE(stderr, "SndFile::applyUndoFile: Error: Original sound file name is empty - Aborting\n");
             return;
             }
 
       if (!orig.isOpen()) {
             if (orig.openRead()) {
-                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", orig.canonicalPath().toLocal8Bit().constData());
+                  ERROR_WAVE(stderr, "Cannot open original file %s for reading - cannot undo! Aborting\n", orig.canonicalPath().toLocal8Bit().constData());
                   return;
                   }
             }
@@ -869,7 +1547,7 @@ void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsig
       SndFile tmp  = SndFile(*tmpfile);
       if (!tmp.isOpen()) {
             if (tmp.openRead()) {
-                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile->toLocal8Bit().constData());
+                  ERROR_WAVE(stderr, "Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile->toLocal8Bit().constData());
                   return;
                   }
             }
@@ -901,7 +1579,7 @@ void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsig
 
       // Write temporary data to original file:
       if (orig.openWrite()) {
-            printf("Cannot open orig for write - aborting.\n");
+            ERROR_WAVE(stderr, "Cannot open orig for write - aborting.\n");
             return;
             }
 
@@ -915,7 +1593,7 @@ void SndFile::applyUndoFile(const Event& original, const QString* tmpfile, unsig
 
       // Write the overwritten data to the tmpfile
       if (tmp.openWrite()) {
-            printf("Cannot open tmpfile for writing - redo operation of this file won't be possible. Aborting.\n");
+            ERROR_WAVE(stderr, "Cannot open tmpfile for writing - redo operation of this file won't be possible. Aborting.\n");
             MusEGlobal::audio->msgIdle(false);
             return;
             }
@@ -954,7 +1632,7 @@ bool SndFile::checkCopyOnWrite()
   // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
   int use_count = 0;
   EventID_t id = MUSE_INVALID_EVENT_ID;
-  Part* part = 0;
+  Part* part = NULL;
   WaveTrackList* wtl = MusEGlobal::song->waves();
   for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
   {
@@ -987,7 +1665,7 @@ bool SndFile::checkCopyOnWrite()
           {
             // Double check.
             if(part && !p->isCloneOf(part))
-              fprintf(stderr, "SndFile::checkCopyOnWrite() Error: Two event ids are the same:%d but their parts:%p, %p are not clones!\n", (int)id, p, part);
+              ERROR_WAVE(stderr, "SndFile::checkCopyOnWrite() Error: Two event ids are the same:%d but their parts:%p, %p are not clones!\n", (int)id, p, part);
             continue;
           }
           part = p;
@@ -1182,7 +1860,7 @@ int ClipList::idx(const Clip& clip) const
 void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e, Undo& operations)
       {
       if (MusEGlobal::debugMsg)
-          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
+          INFO_WAVE(stderr, "cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
 
       // Driver should now be in transport 'stop' mode and no longer pummping the recording wave fifo,
       //  but the fifo may not be empty yet, it's in the prefetch thread.
@@ -1202,7 +1880,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
         --tout;
         if(tout == 0)
         {
-          fprintf(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n", track->prefetchFifo()->getCount());
+          ERROR_WAVE(stderr, "Song::cmdAddRecordedWave: Error: Timeout waiting for _tempoFifo to empty! Count:%d\n", track->prefetchFifo()->getCount());
           break;
         }
       }
@@ -1211,7 +1889,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       // No other thread should be touching it right now.
       MusECore::SndFileR f = track->recFile();
       if (f.isNull()) {
-            printf("cmdAddRecordedWave: no snd file for track <%s>\n",
+            ERROR_WAVE(stderr, "cmdAddRecordedWave: no snd file for track <%s>\n",
                track->name().toLocal8Bit().constData());
             return;
             }
@@ -1248,7 +1926,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
                                  // counter has dropped by 2 and _recFile will probably deleted then
         remove(st.toLocal8Bit().constData());
         if(MusEGlobal::debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
+          INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
 
         // Restore master flag.
         if(MusEGlobal::extSyncFlag.value() && !master_was_on)
@@ -1366,7 +2044,7 @@ namespace MusEGui {
 void MusE::importWave()
 {
    MusECore::Track* track = _arranger->curTrack();
-   if (track == 0 || track->type() != MusECore::Track::WAVE) {
+   if (!track || track->type() != MusECore::Track::WAVE) {
 
       //just create new wave track and go on...
       if(MusEGlobal::song)
@@ -1376,7 +2054,7 @@ void MusE::importWave()
          track = MusEGlobal::song->addNewTrack(&act, NULL);
       }
 
-      if(track == 0)
+      if(!track)
       {
          QMessageBox::critical(this, QString("MusE"),
                  tr("to import an audio file you have first to select"
@@ -1424,13 +2102,13 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    MusECore::SndFileR f = MusECore::getWave(name, true);
 
    if (f.isNull()) {
-      printf("import audio file failed\n");
+      ERROR_WAVE(stderr, "import audio file failed\n");
       return true;
    }
    track->setChannels(f->channels());
    track->resetMeter();
    int samples = f->samples();
-   if ((unsigned)MusEGlobal::sampleRate != f->samplerate()) {
+   if (MusEGlobal::sampleRate != f->samplerate()) {
       if(QMessageBox::question(this, tr("Import Wavefile"),
                                tr("This wave file has a samplerate of %1,\n"
                                   "as opposed to current setting %2.\n"
@@ -1442,216 +2120,218 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }
 
-      //save project if neccesary
-      //copy wave to project's folder,
-      //rename it if there is a duplicate,
-      //resample to project's rate
+// REMOVE Tim. samplerate. Removed. TESTING Audio converters. Reinstate!
 
-      if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
-      {
-         if(!MusEGlobal::muse->saveAs())
-            return true;
-      }
-
-      QFileInfo fi(f.name());
-      QString projectPath = MusEGlobal::museProject + QDir::separator();
-      QString fExt = "wav";
-      QString fBaseName = fi.baseName();
-      QString fNewPath = "";
-      bool bNameIsNotUsed = false;
-      for(int i = 0; i < 1000; i++)
-      {
-         fNewPath = projectPath + fBaseName + ((i == 0) ? "" : QString::number(i)) +  "." + fExt;
-         if(!QFile(fNewPath).exists())
-         {
-            bNameIsNotUsed = true;
-            break;
-         }
-      }
-
-      if(!bNameIsNotUsed)
-      {
-         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-                               tr("There are too many wave files\n"
-                                  "of the same base name as imported wave file\n"
-                                  "Can not continue."));
-         return true;
-      }
-
-      SF_INFO sfiNew;
-      sfiNew.channels = f.channels();
-      sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
-      sfiNew.frames = 0;
-      sfiNew.samplerate = MusEGlobal::sampleRate;
-      sfiNew.seekable = 1;
-      sfiNew.sections = 0;
-
-      SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
-      if(sfNew == NULL)
-      {
-         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-                               tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
-         return true;
-      }
-
-      int srErr = 0;
-      SRC_STATE *srState = src_new(SRC_SINC_BEST_QUALITY, sfiNew.channels, &srErr);
-      if(!srState)
-      {
-         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-                               tr("Failed to initialize sample rate converter!"));
-         sf_close(sfNew);
-         QFile(fNewPath).remove();
-         return true;
-      }
-
-
-
-      float fPeekMax = 1.0f; //if output save file will peek above this walue
-      //it should be normalized later
-      float fNormRatio = 1.0f / fPeekMax;
-      int nTriesMax = 5;
-      int nCurTry = 0;
-      do
-      {
-         QProgressDialog pDlg(MusEGlobal::muse);
-         pDlg.setMinimum(0);
-         pDlg.setMaximum(f.samples());
-         pDlg.setCancelButtonText(tr("Cancel"));
-         if(nCurTry == 0)
-         {
-            pDlg.setLabelText(tr("Resampling wave file\n"
-                                    "\"%1\"\n"
-                                    "from %2 to %3 Hz...")
-                                 .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
-         }
-         else
-         {
-            pDlg.setLabelText(tr("Output has clipped\n"
-                                 "Resampling again and normalizing wave file\n"
-                                 "\"%1\"\n"
-                                 "Try %2 of %3...")
-                              .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
-         }
-         pDlg.setWindowModality(Qt::WindowModal);
-         src_reset(srState);
-         SRC_DATA sd;
-         sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
-         sf_count_t szBuf = 8192;
-         float srcBuffer [szBuf];
-         float dstBuffer [szBuf];
-         unsigned sChannels = f.channels();
-         sf_count_t szBufInFrames = szBuf / sChannels;
-         sf_count_t szFInFrames = f.samples();
-         sf_count_t nFramesRead = 0;
-         sf_count_t nFramesWrote = 0;
-         sd.end_of_input = 0;
-         bool bEndOfInput = false;
-         pDlg.setValue(0);
-
-         f.seek(0, SEEK_SET);
-
-         while(sd.end_of_input == 0)
-         {
-            size_t nFramesBuf = 0;
-            if(bEndOfInput)
-               sd.end_of_input = 1;
-            else
-            {
-               nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
-               if(nFramesBuf == 0)
-                  break;
-               nFramesRead += nFramesBuf;
-            }
-
-            sd.data_in = srcBuffer;
-            sd.data_out = dstBuffer;
-            sd.input_frames = nFramesBuf;
-            sd.output_frames = szBufInFrames;
-            sd.input_frames_used = 0;
-            sd.output_frames_gen = 0;
-            do
-            {
-               if(src_process(srState, &sd) != 0)
-                  break;
-               sd.data_in += sd.input_frames_used * sChannels;
-               sd.input_frames -= sd.input_frames_used;
-
-               if(sd.output_frames_gen > 0)
-               {
-                  nFramesWrote += sd.output_frames_gen;
-                  //detect maximum peek value;
-                  for(unsigned ch = 0; ch < sChannels; ch++)
-                  {
-
-                     for(long k = 0; k < sd.output_frames_gen; k++)
-                     {
-                        dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
-                        float fCurPeek = dstBuffer [k * sChannels + ch];
-                        if(fPeekMax < fCurPeek)
-                        {
-                           //update maximum peek value
-                           fPeekMax = fCurPeek;
-                        }
-                     }
-                  }
-                  sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
-               }
-               else
-                  break;
-
-            }
-            while(true);
-
-            pDlg.setValue(nFramesRead);
-
-            if(nFramesRead >= szFInFrames)
-            {
-               bEndOfInput = true;
-            }
-
-            if(pDlg.wasCanceled())//free all resources
-            {
-               src_delete(srState);
-               sf_close(sfNew);
-               f.close();
-               f = NULL;
-               QFile(fNewPath).remove();
-               return true;
-            }
-         }
-
-         pDlg.setValue(szFInFrames);
-
-         if(fPeekMax > 1.0f) //output has clipped. Normilize it
-         {
-            nCurTry++;
-            sf_seek(sfNew, 0, SEEK_SET);
-            f.seek(0, SEEK_SET);
-            pDlg.setValue(0);
-            fNormRatio = 1.0f / fPeekMax;
-            fPeekMax = 1.0f;
-         }
-         else
-            break;
-      }
-      while(nCurTry <= nTriesMax);
-
-      src_delete(srState);
-
-      sf_close(sfNew);
-
-      f.close();
-      f = NULL;
-
-      //reopen resampled wave again
-      f = MusECore::getWave(fNewPath, true);
-      if(!f)
-      {
-         printf("import audio file failed\n");
-         return true;
-      }
-      samples = f->samples();
+//       //save project if neccesary
+//       //copy wave to project's folder,
+//       //rename it if there is a duplicate,
+//       //resample to project's rate
+// 
+//       if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+//       {
+//          if(!MusEGlobal::muse->saveAs())
+//             return true;
+//       }
+// 
+//       QFileInfo fi(f.name());
+//       QString projectPath = MusEGlobal::museProject + QDir::separator();
+//       QString fExt = "wav";
+//       QString fBaseName = fi.baseName();
+//       QString fNewPath = "";
+//       bool bNameIsNotUsed = false;
+//       for(int i = 0; i < 1000; i++)
+//       {
+//          fNewPath = projectPath + fBaseName + ((i == 0) ? "" : QString::number(i)) +  "." + fExt;
+//          if(!QFile(fNewPath).exists())
+//          {
+//             bNameIsNotUsed = true;
+//             break;
+//          }
+//       }
+// 
+//       if(!bNameIsNotUsed)
+//       {
+//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+//                                tr("There are too many wave files\n"
+//                                   "of the same base name as imported wave file\n"
+//                                   "Can not continue."));
+//          return true;
+//       }
+// 
+//       SF_INFO sfiNew;
+//       sfiNew.channels = f.channels();
+//       sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+//       sfiNew.frames = 0;
+//       sfiNew.samplerate = MusEGlobal::sampleRate;
+//       sfiNew.seekable = 1;
+//       sfiNew.sections = 0;
+// 
+//       SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
+//       if(sfNew == NULL)
+//       {
+//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+//                                tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
+//          return true;
+//       }
+// 
+//       int srErr = 0;
+//       SRC_STATE *srState = src_new(SRC_SINC_BEST_QUALITY, sfiNew.channels, &srErr);
+//       if(!srState)
+//       {
+//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+//                                tr("Failed to initialize sample rate converter!"));
+//          sf_close(sfNew);
+//          QFile(fNewPath).remove();
+//          return true;
+//       }
+// 
+// 
+// 
+//       float fPeekMax = 1.0f; //if output save file will peek above this walue
+//       //it should be normalized later
+//       float fNormRatio = 1.0f / fPeekMax;
+//       int nTriesMax = 5;
+//       int nCurTry = 0;
+//       do
+//       {
+//          QProgressDialog pDlg(MusEGlobal::muse);
+//          pDlg.setMinimum(0);
+//          pDlg.setMaximum(f.samples());
+//          pDlg.setCancelButtonText(tr("Cancel"));
+//          if(nCurTry == 0)
+//          {
+//             pDlg.setLabelText(tr("Resampling wave file\n"
+//                                     "\"%1\"\n"
+//                                     "from %2 to %3 Hz...")
+//                                  .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
+//          }
+//          else
+//          {
+//             pDlg.setLabelText(tr("Output has clipped\n"
+//                                  "Resampling again and normalizing wave file\n"
+//                                  "\"%1\"\n"
+//                                  "Try %2 of %3...")
+//                               .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
+//          }
+//          pDlg.setWindowModality(Qt::WindowModal);
+//          src_reset(srState);
+//          SRC_DATA sd;
+//          sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
+//          sf_count_t szBuf = 8192;
+//          float srcBuffer [szBuf];
+//          float dstBuffer [szBuf];
+//          unsigned sChannels = f.channels();
+//          sf_count_t szBufInFrames = szBuf / sChannels;
+//          sf_count_t szFInFrames = f.samples();
+//          sf_count_t nFramesRead = 0;
+//          sf_count_t nFramesWrote = 0;
+//          sd.end_of_input = 0;
+//          bool bEndOfInput = false;
+//          pDlg.setValue(0);
+// 
+//          f.seek(0, SEEK_SET);
+// 
+//          while(sd.end_of_input == 0)
+//          {
+//             size_t nFramesBuf = 0;
+//             if(bEndOfInput)
+//                sd.end_of_input = 1;
+//             else
+//             {
+//                nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
+//                if(nFramesBuf == 0)
+//                   break;
+//                nFramesRead += nFramesBuf;
+//             }
+// 
+//             sd.data_in = srcBuffer;
+//             sd.data_out = dstBuffer;
+//             sd.input_frames = nFramesBuf;
+//             sd.output_frames = szBufInFrames;
+//             sd.input_frames_used = 0;
+//             sd.output_frames_gen = 0;
+//             do
+//             {
+//                if(src_process(srState, &sd) != 0)
+//                   break;
+//                sd.data_in += sd.input_frames_used * sChannels;
+//                sd.input_frames -= sd.input_frames_used;
+// 
+//                if(sd.output_frames_gen > 0)
+//                {
+//                   nFramesWrote += sd.output_frames_gen;
+//                   //detect maximum peek value;
+//                   for(unsigned ch = 0; ch < sChannels; ch++)
+//                   {
+// 
+//                      for(long k = 0; k < sd.output_frames_gen; k++)
+//                      {
+//                         dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
+//                         float fCurPeek = dstBuffer [k * sChannels + ch];
+//                         if(fPeekMax < fCurPeek)
+//                         {
+//                            //update maximum peek value
+//                            fPeekMax = fCurPeek;
+//                         }
+//                      }
+//                   }
+//                   sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
+//                }
+//                else
+//                   break;
+// 
+//             }
+//             while(true);
+// 
+//             pDlg.setValue(nFramesRead);
+// 
+//             if(nFramesRead >= szFInFrames)
+//             {
+//                bEndOfInput = true;
+//             }
+// 
+//             if(pDlg.wasCanceled())//free all resources
+//             {
+//                src_delete(srState);
+//                sf_close(sfNew);
+//                f.close();
+//                f = NULL;
+//                QFile(fNewPath).remove();
+//                return true;
+//             }
+//          }
+// 
+//          pDlg.setValue(szFInFrames);
+// 
+//          if(fPeekMax > 1.0f) //output has clipped. Normilize it
+//          {
+//             nCurTry++;
+//             sf_seek(sfNew, 0, SEEK_SET);
+//             f.seek(0, SEEK_SET);
+//             pDlg.setValue(0);
+//             fNormRatio = 1.0f / fPeekMax;
+//             fPeekMax = 1.0f;
+//          }
+//          else
+//             break;
+//       }
+//       while(nCurTry <= nTriesMax);
+// 
+//       src_delete(srState);
+// 
+//       sf_close(sfNew);
+// 
+//       f.close();
+//       f = NULL;
+// 
+//       //reopen resampled wave again
+//       f = MusECore::getWave(fNewPath, true);
+//       if(!f)
+//       {
+//          printf("import audio file failed\n");
+//          return true;
+//       }
+//       samples = f->samples();
    }
 
    MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);

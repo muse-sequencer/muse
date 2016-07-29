@@ -486,9 +486,25 @@ int Xml::parseInt()
       }
 
 //---------------------------------------------------------
+//   parseLongInt
+//---------------------------------------------------------
+
+long int Xml::parseLongInt()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      long int n = s.toLong(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
 //   parseUInt
 //---------------------------------------------------------
-// Added by Tim. p3.3.8
 
 unsigned int Xml::parseUInt()
       {
@@ -500,6 +516,23 @@ unsigned int Xml::parseUInt()
             s = s.mid(2);
             }
       unsigned int n = s.toUInt(&ok, base);
+      return n;
+      }
+
+//---------------------------------------------------------
+//   parseLongUInt
+//---------------------------------------------------------
+
+unsigned long int Xml::parseLongUInt()
+      {
+      QString s(parse1().simplified());
+      bool ok;
+      int base = 10;
+      if (s.startsWith("0x") || s.startsWith("0X")) {
+            base = 16;
+            s = s.mid(2);
+            }
+      unsigned long int n = s.toULong(&ok, base);
       return n;
       }
 
@@ -633,10 +666,22 @@ void Xml::intTag(int level, const char* name, int val)
       fprintf(f, "<%s>%d</%s>\n", name, val, name);
       }
 
+void Xml::longIntTag(int level, const char* name, long int val)
+      {
+      putLevel(level);
+      fprintf(f, "<%s>%ld</%s>\n", name, val, name);
+      }
+
 void Xml::uintTag(int level, const char* name, unsigned int val)
       {
       putLevel(level);
       fprintf(f, "<%s>%u</%s>\n", name, val, name);
+      }
+
+void Xml::longUintTag(int level, const char* name, unsigned long int val)
+      {
+      putLevel(level);
+      fprintf(f, "<%s>%lu</%s>\n", name, val, name);
       }
 
 void Xml::floatTag(int level, const char* name, float val)
@@ -776,5 +821,5 @@ void Xml::dump(QString &dump)
           dump.append(lbuffer);
        fsetpos(f, &pos);
       }
-
+      
 } // namespace MusECore
