@@ -31,6 +31,8 @@
 
 #include <sndfile.h>
 
+class QWidget;
+
 namespace MusECore {
 class SndFile;
 class Xml;
