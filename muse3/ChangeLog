@@ -1,6 +1,7 @@
 03.08.2016:
   - Merged fix for bug where configuration storage had stopped working, from AndreeeCZ
   - Updated templates to 3.0 (rj)
+  - Fixed color-theme switching no longer working (rj)
 
 27.06.2016:
   - Added instrument definition files from Dennis Schulmeister for:

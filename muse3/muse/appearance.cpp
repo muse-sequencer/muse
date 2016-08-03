@@ -685,6 +685,8 @@ void Appearance::changeTheme()
     {
       styleSheetPath->setText(themeDir + QFileInfo(currentTheme).baseName()+ ".qss");
       MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+      if (MusEGlobal::debugMsg)
+          printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
     }
     else
     {
@@ -698,7 +700,7 @@ void Appearance::changeTheme()
     colorSchemeComboBox->setCurrentIndex(0);
     MusEGlobal::muse->changeConfig(true);
 
-    close();
+    hide();
 }
 //---------------------------------------------------------
 //   apply
