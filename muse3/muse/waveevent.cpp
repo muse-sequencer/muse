@@ -218,6 +218,9 @@ void WaveEventBase::dump(int n) const
 
 void WaveEventBase::read(Xml& xml)
       {
+      StretchList sl;
+      AudioConverterSettingsGroup settings(true); // Local non-default settings.
+      QString filename;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -232,24 +235,25 @@ void WaveEventBase::read(Xml& xml)
                         else if (tag == "frame")
                               _spos = xml.parseInt();
                         else if (tag == "file") {
-                              SndFileR wf = getWave(xml.parse1(), true);
-// REMOVE Tim. samplerate. Changed.
-//                               if (wf) f = wf;
-                              if (wf) setSndFile(wf);
+//                               SndFileR wf = getWave(xml.parse1(), true);
+// // REMOVE Tim. samplerate. Changed.
+// //                               if (wf) f = wf;
+//                               if (wf) setSndFile(wf);
+                              filename = xml.parse1();
                               }
                               
 // REMOVE Tim. samplerate. Added.
                         else if (tag == "stretchlist")
                         {
-                          if(f.stretchList())
-                            f.stretchList()->read(xml);
-                          //stretchList()->read(xml);
+//                           if(f.stretchList())
+//                             f.stretchList()->read(xml);
+                          sl.read(xml);
                         }
                         else if (tag == "audioConverterSettingsGroup")
                         {
-                          //_audioConverterSettings->read(xml);
-                          if(f.audioConverterSettings())
-                            f.audioConverterSettings()->read(xml);
+//                           if(f.audioConverterSettings())
+//                             f.audioConverterSettings()->read(xml);
+                          settings.read(xml);
                         }
                         
                         else
@@ -258,6 +262,15 @@ void WaveEventBase::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "event") {
                               Pos::setType(FRAMES);   // DEBUG
+                              
+                              // REMOVE Tim.samplerate. Added.
+                              if(!filename.isEmpty())
+                              {
+                                SndFileR wf = getWave(filename, true, true, true, &settings, &sl);
+                                if(wf) 
+                                  setSndFile(wf);
+                              }
+                              
                               return;
                               }
                   default:

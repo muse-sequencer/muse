@@ -407,8 +407,9 @@ typedef ClipList::const_iterator ciClip;
 extern ClipBase* readClip(Xml& xml);
 #endif
 
+// If audioConverterSettings and stretchList are given, they are assigned.
 extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
-                        AudioConverterSettingsGroup* audioConverterSettings = NULL, StretchList* stretchList = NULL);
+                        const AudioConverterSettingsGroup* audioConverterSettings = NULL, const StretchList* stretchList = NULL);
 
 } // namespace MusECore
 
