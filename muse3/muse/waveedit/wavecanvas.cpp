@@ -45,6 +45,8 @@
 #include <QVector>
 // REMOVE Tim. samplerate. Added.
 #include <QMenu>
+#include <QColor>
+#include <QPen>
 
 #include <set>
 
@@ -81,6 +83,7 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "sndfile.h"
+#include "operations.h"
 
 #define ABS(x) (abs(x))
 
@@ -922,9 +925,10 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
 
 bool WaveCanvas::mousePress(QMouseEvent* event)
       {
-    if (event->modifiers() & Qt::ControlModifier) {
-            return true;
-            }
+//     if (event->modifiers() & Qt::ControlModifier) {
+//             return true;
+//             }
+      const bool ctl = event->modifiers() & Qt::ControlModifier;
       button = event->button();
       QPoint pt = event->pos();
       //CItem* item = items.find(pt);
@@ -936,6 +940,8 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
             default:
                   break;
             case RangeTool:
+                  if (ctl)
+                          return true;
                   switch (button) 
                   {
                         case Qt::LeftButton:
@@ -963,6 +969,118 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                   }
 
             break;
+            
+            case StretchTool:
+            case SamplerateTool:
+            {
+              if(button != Qt::LeftButton)
+                return true;
+              
+              StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+//               if(!ctl)
+//               {
+//                 ssl.clear();
+//                 update();
+//               }
+              
+              // TODO Look properly through the whole list instead of just current one.
+              if(!curItem)
+                break;
+              WEvent* wevent = static_cast<WEvent*>(curItem);
+              const MusECore::Event event = wevent->event();
+              if(event.type() != MusECore::Wave)
+                break;
+              
+              const MusECore::SndFileR sf = event.sndFile();
+              if(sf.isNull())
+                break;
+              
+              MusECore::StretchList* sl = sf.stretchList();
+              if(!sl)
+                break;
+              
+              MusECore::StretchListItem::StretchEventType type;
+              if(_tool == StretchTool)
+                type = MusECore::StretchListItem::StretchEvent;
+              else if(_tool == SamplerateTool)
+                type = MusECore::StretchListItem::SamplerateEvent;
+              
+              MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+              if(isli_hit_test == sl->end())
+              {
+                if(!ctl)
+                {
+                  ssl.clear();
+                  update();
+                }
+                double newframe = sl->unSquish(MusECore::MuseFrame_t(x - wevent->x()));
+                MusECore::PendingOperationList operations;
+                sl->addListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
+                MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sl)));
+                _stretchAutomation._startMovePoint = pt;
+                _stretchAutomation._controllerState = stretchStartMove;
+                break;
+              }
+
+              iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
+              iStretchSelectedItem isi;
+              for(isi = res.first; isi != res.second; ++isi)
+                if(isi->second._list == sl && isi->second._type)
+                  break;
+
+              if(isi != res.second)
+              {
+                if(ctl)
+                {
+                  ssl.erase(isi);
+                  update();
+                }
+                else
+                {
+                  _stretchAutomation._startMovePoint = pt;
+                  _stretchAutomation._controllerState = stretchStartMove;
+                }
+              }
+              else
+              {
+                if(!ctl)
+                  ssl.clear();
+                ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first, 
+                                                                                 StretchSelectedItem(type, sl)));
+                _stretchAutomation._startMovePoint = pt;
+                _stretchAutomation._controllerState = stretchStartMove;
+                update();
+              }
+              
+/*              
+              bool found;
+              int xpixel;
+              ciStretchSelectedItemPair res;
+              for(MusECore::ciStretchListItem is = sl->begin(); is != sl->end(); ++is)
+              {
+                const MusECore::StretchListItem& sli = is->second;
+                if((_tool == StretchTool && (sli._type & MusECore::StretchListItem::StretchEvent)) ||
+                  (_tool == SamplerateTool && (sli._type & MusECore::StretchListItem::SamplerateEvent)))
+                {
+                  xpixel = mapx(sl->squish((double)is->first) + curItem->x());
+                  found = false;
+                  res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
+                  for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
+                  {
+                    if(ise->first == is->first && ise->second._list == sl)
+                    {
+                      found = true;
+                      break;
+                    }
+                  }
+                  
+                  
+                }
+              }*/
+            }
+            break;
+            
       }
       
 //   switch(button) 
@@ -1011,13 +1129,93 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
 //   viewMouseReleaseEvent
 //---------------------------------------------------------
 
-void WaveCanvas::mouseRelease(const QPoint&)
+void WaveCanvas::mouseRelease(QMouseEvent* ev)
+{
+  QPoint pt = ev->pos();
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+
+  switch(_tool)
+  {
+    case StretchTool:
+    case SamplerateTool:
+    {
+      if(button != Qt::LeftButton)
       {
-      button = Qt::NoButton;
-      if (mode == DRAG) {
-            mode = NORMAL;
-            }
+        _stretchAutomation._controllerState = stretchDoNothing;
+        return;
       }
+
+      StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+      switch(_stretchAutomation._controllerState)
+      {
+        case stretchMovingController:
+        case stretchAddNewController:
+          break;
+
+        case stretchDoNothing:
+        case stretchStartMove:
+          if(!ctl)
+          {
+            ssl.clear();
+            update();
+          }
+
+          // TODO Look properly through the whole list instead of just current one.
+          if(!curItem)
+            break;
+          WEvent* wevent = static_cast<WEvent*>(curItem);
+          const MusECore::Event event = wevent->event();
+          if(event.type() != MusECore::Wave)
+            break;
+
+          const MusECore::SndFileR sf = event.sndFile();
+          if(sf.isNull())
+            break;
+
+          MusECore::StretchList* sl = sf.stretchList();
+          if(!sl)
+            break;
+
+          MusECore::StretchListItem::StretchEventType type;
+          if(_tool == StretchTool)
+            type = MusECore::StretchListItem::StretchEvent;
+          else if(_tool == SamplerateTool)
+            type = MusECore::StretchListItem::SamplerateEvent;
+
+          MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+          if(isli_hit_test == sl->end())
+            break;
+
+          iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
+          iStretchSelectedItem isi;
+          for(isi = res.first; isi != res.second; ++isi)
+            if(isi->second._list == sl && isi->second._type)
+              break;
+
+          if(isi == res.second)
+          {
+            ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first,
+                                                                              StretchSelectedItem(type, sl)));
+            update();
+          }
+
+          break;
+      }
+
+
+    }
+    break;
+
+    default:
+      break;
+  }
+
+  _stretchAutomation._controllerState = stretchDoNothing;
+      
+  button = Qt::NoButton;
+  if(mode == DRAG)
+    mode = NORMAL;
+}
 
 //---------------------------------------------------------
 //   viewMousevent
@@ -1025,71 +1223,315 @@ void WaveCanvas::mouseRelease(const QPoint&)
 
 void WaveCanvas::mouseMove(QMouseEvent* event)
       {
-      int x = event->x();
+      QPoint pt = event->pos();
+      int x = pt.x();
       if (x < 0)
             x = 0;
       
-      //if (_tool == AutomationTool) {
-      if (_tool == StretchTool) {
-        event->accept();
-//         bool slowMotion = event->modifiers() & Qt::ShiftModifier;
-//         processStretchAutomationMovements(event->pos(), slowMotion);
-        emit timeChanged(x);
-        return;
-      }
-      
-      event->ignore();
       emit timeChanged(x);
-      //emit timeChanged(editor->rasterVal(x));
-      //emit timeChanged(AL::sigmap.raster(x, *_raster));
 
-      switch (button) {
-            case Qt::LeftButton:
-                  if (mode == DRAG) {
-                        int mx      = mapx(x);
-                        int mstart  = mapx(selectionStart);
-                        int mstop   = mapx(selectionStop);
-                        //int mdstart = mapx(dragstartx);
-                        QRect r(0, 0, 0, height());
+      //const bool ctl = event->modifiers() & Qt::ControlModifier;
+      
+      switch(_tool)
+      {
+            case StretchTool:
+            case SamplerateTool:
+            {
+              event->accept();
+              //bool slowMotion = event->modifiers() & Qt::ShiftModifier;
+              //processStretchAutomationMovements(event->pos(), slowMotion);
+
+              if(button != Qt::LeftButton)
+              {
+                _stretchAutomation._controllerState = stretchDoNothing;
+                return;
+              }
+              
+              switch(_stretchAutomation._controllerState)
+              {
+                case stretchDoNothing:
+                case stretchAddNewController:
+                break;
+                
+                case stretchStartMove:
+                  _stretchAutomation._controllerState = stretchMovingController;
+                case stretchMovingController:
+                {
+                  QPoint delta_pt = QPoint(pt.x() - _stretchAutomation._startMovePoint.x(), 
+                                        pt.y() - _stretchAutomation._startMovePoint.y());
+                  if(delta_pt.x() == 0)
+                    break;
+                  double newVal;
+                  MusECore::PendingOperationList operations;
+                  StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+                  for(ciStretchSelectedItem iss = ssl.begin(); iss != ssl.end(); ++iss)
+                  {
+                    const StretchSelectedItem& ssi = iss->second;
+                    MusECore::StretchList* sl = ssi._list;
+                    
+                    MusECore::iStretchListItem isli = sl->findEvent(ssi._type, iss->first);
+                    if(isli == sl->end())
+                      continue;
+                    
+                    //if(isli == sl->begin())
+                    //  continue;
+                    //MusECore::iStretchListItem prev_isli = isli;
+                    //--prev_isli;
+                    
+                    MusECore::iStretchListItem prev_isli_typed = sl->previousEvent(ssi._type, isli);
+                    if(prev_isli_typed == sl->end())
+                      continue;
+                    
+                    const MusECore::StretchListItem& prev_sli_typed = prev_isli_typed->second;
+                    //const MusECore::StretchListItem& sli = isli->second;
+                    const int delta_fr = isli->first - prev_isli_typed->first;
+                    //const int delta_fr = isli->first - prev_isli->first;
+                    if(delta_fr == 0)
+                      continue;
+                    //const int delta_sqfr = sli._squishedFrame - prev_sli._squishedFrame;
+                    switch(ssi._type)
+                    {
+                      case MusECore::StretchListItem::StretchEvent:
+                      {
+                        //newVal = prev_sli._stretchRatio * (1.0 + delta_pt.x() / sli._squishedFrame);
+                        //newVal = sli._stretchRatio * (1.0 + delta_pt.x() * sli._stretchedFrame);
+                        //newVal = sli._stretchRatio + (delta_pt.x() / sli._squishedFrame);
+                        //newVal = delta_fr / delta_pt.x();
+                        //newVal = prev_sli._stretchRatio * (1.0 + (double)delta_pt.x() / (double)delta_fr);
                         
-                        if (x < dragstartx) {
-                              if(x < selectionStart)
-                              {
-                                r.setLeft(mx);
-                                r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
-                              }
-                              else
-                              {
-                                r.setLeft(mstart);
-                                r.setWidth(mx - mstart);
-                              }
-                              selectionStart = x;
-                              selectionStop = dragstartx;
-                              }
-                        else {
-                              if(x >= selectionStop)
-                              {
-                                r.setLeft(selectionStart < dragstartx ? mstart : mstop);
-                                r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
-                              }
-                              else
-                              {
-                                r.setLeft(mx);
-                                r.setWidth(mstop - mx);
-                              }
-                              selectionStart = dragstartx;
-                              selectionStop = x;
-                              }
-                        update(r);
-                        }
-                  break;
-            case Qt::MidButton:
-                  break;
-            case Qt::RightButton:
-                  break;
-            default:
-                  return;
+//                         newVal = prev_sli_typed._stretchRatio + ((double)delta_pt.x() / (double)delta_fr);
+                        
+                        int prev_smpx = prev_sli_typed._samplerateSquishedFrame;
+                        double smpx = sl->squish(isli->first, MusECore::StretchListItem::SamplerateEvent);
+                        double dsmpx = smpx - double(prev_smpx);
+                        double effective_sr = dsmpx / (double)delta_fr;
+                        
+                        double effective_x = (double)delta_pt.x() / effective_sr;
+                        newVal = prev_sli_typed._stretchRatio + (effective_x / (double)delta_fr);
+                      }
+                      break;
+                      case MusECore::StretchListItem::SamplerateEvent:
+                      {
+                        //newVal = prev_sli._samplerateRatio / (1.0 + delta_pt.x() / sli._squishedFrame);
+                        //newVal = sli._samplerateRatio / (1.0 + delta_pt.x() * sli._stretchedFrame);
+                        //newVal = sli._samplerateRatio - (delta_pt.x() / sli._squishedFrame);
+                        //newVal = delta_pt.x() / delta_fr;
+                        //newVal = prev_sli._samplerateRatio * (1.0 - (double)delta_pt.x() / (double)delta_fr);
+                        //newVal = prev_sli._samplerateRatio - ((double)delta_fr / (double)delta_pt.x());
+                        
+//                         newVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + ((double)delta_pt.x() / (double)delta_fr));
+                        
+                        int prev_strx = prev_sli_typed._stretchSquishedFrame;
+                        double strx = sl->squish(isli->first, MusECore::StretchListItem::StretchEvent);
+                        double dstrx = strx - double(prev_strx);
+                        double effective_str = dstrx / (double)delta_fr;
+                        
+                        double effective_x = (double)delta_pt.x() / effective_str;
+                        
+                        newVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (effective_x / (double)delta_fr));
+                      }
+                      break;
+                      case MusECore::StretchListItem::PitchEvent:
+                        newVal = prev_sli_typed._pitchRatio; // TODO
+                      break;
+                    }
+                    
+                    sl->modifyListOperation(ssi._type, prev_isli_typed->first, newVal, operations);
+                  }
+                  if(!operations.empty())
+                    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                  _stretchAutomation._startMovePoint = pt;
+                } 
+                break;
+              }
+              
+              //_stretchAutomation._startMovePoint = pt;
+              
+              
+              
+//               StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+// //               if(!ctl)
+// //               {
+// //                 ssl.clear();
+// //                 update();
+// //               }
+//               
+//               // TODO Look properly through the whole list instead of just current one.
+//               if(!curItem)
+//                 break;
+//               WEvent* wevent = static_cast<WEvent*>(curItem);
+//               const MusECore::Event event = wevent->event();
+//               if(event.type() != MusECore::Wave)
+//                 break;
+//               
+//               const MusECore::SndFileR sf = event.sndFile();
+//               if(sf.isNull())
+//                 break;
+//               
+//               MusECore::StretchList* sl = sf.stretchList();
+//               if(!sl)
+//                 break;
+//               
+//               MusECore::StretchListItem::StretchEventType type;
+//               if(_tool == StretchTool)
+//                 type = MusECore::StretchListItem::StretchEvent;
+//               else if(_tool == SamplerateTool)
+//                 type = MusECore::StretchListItem::SamplerateEvent;
+//               
+//               MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+//               if(isli_hit_test == sl->end())
+//                 break;
+// 
+//               iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
+//               iStretchSelectedItem isi;
+//               for(isi = res.first; isi != res.second; ++isi)
+//                 if(isi->second._list == sl && isi->second._type)
+//                   break;
+// 
+//               if(isi != res.second)
+//               {
+//                 if(ctl)
+//                 {
+//                   ssl.erase(isi);
+//                   update();
+//                 }
+//                 else
+//                   _stretchAutomation._controllerState = stretchStartMove;
+//               }
+//               else
+//               {
+//                 ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first, 
+//                                                                                  StretchSelectedItem(type, sl)));
+//                 _stretchAutomation._controllerState = stretchStartMove;
+//                 update();
+//               }
+
             }
+            break;
+            
+            
+            default:
+            {
+              event->ignore();
+              
+              switch (button) 
+              {
+                case Qt::LeftButton:
+                      if (mode == DRAG) 
+                      {
+                            int mx      = mapx(x);
+                            int mstart  = mapx(selectionStart);
+                            int mstop   = mapx(selectionStop);
+                            //int mdstart = mapx(dragstartx);
+                            QRect r(0, 0, 0, height());
+                            
+                            if (x < dragstartx) {
+                                  if(x < selectionStart)
+                                  {
+                                    r.setLeft(mx);
+                                    r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
+                                  }
+                                  else
+                                  {
+                                    r.setLeft(mstart);
+                                    r.setWidth(mx - mstart);
+                                  }
+                                  selectionStart = x;
+                                  selectionStop = dragstartx;
+                                  }
+                            else {
+                                  if(x >= selectionStop)
+                                  {
+                                    r.setLeft(selectionStart < dragstartx ? mstart : mstop);
+                                    r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
+                                  }
+                                  else
+                                  {
+                                    r.setLeft(mx);
+                                    r.setWidth(mstop - mx);
+                                  }
+                                  selectionStart = dragstartx;
+                                  selectionStop = x;
+                                  }
+                            update(r);
+                      }
+                      break;
+                case Qt::MidButton:
+                      break;
+                case Qt::RightButton:
+                      break;
+                default:
+                      return;
+              }              
+              
+          }
+          break;
+      }
+
+
+
+
+//       //if (_tool == AutomationTool) {
+//       if (_tool == StretchTool) {
+//         event->accept();
+// //         bool slowMotion = event->modifiers() & Qt::ShiftModifier;
+// //         processStretchAutomationMovements(event->pos(), slowMotion);
+//         emit timeChanged(x);
+//         return;
+//       }
+//       
+//       event->ignore();
+//       emit timeChanged(x);
+//       //emit timeChanged(editor->rasterVal(x));
+//       //emit timeChanged(AL::sigmap.raster(x, *_raster));
+// 
+//       switch (button) {
+//             case Qt::LeftButton:
+//                   if (mode == DRAG) {
+//                         int mx      = mapx(x);
+//                         int mstart  = mapx(selectionStart);
+//                         int mstop   = mapx(selectionStop);
+//                         //int mdstart = mapx(dragstartx);
+//                         QRect r(0, 0, 0, height());
+//                         
+//                         if (x < dragstartx) {
+//                               if(x < selectionStart)
+//                               {
+//                                 r.setLeft(mx);
+//                                 r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
+//                               }
+//                               else
+//                               {
+//                                 r.setLeft(mstart);
+//                                 r.setWidth(mx - mstart);
+//                               }
+//                               selectionStart = x;
+//                               selectionStop = dragstartx;
+//                               }
+//                         else {
+//                               if(x >= selectionStop)
+//                               {
+//                                 r.setLeft(selectionStart < dragstartx ? mstart : mstop);
+//                                 r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
+//                               }
+//                               else
+//                               {
+//                                 r.setLeft(mx);
+//                                 r.setWidth(mstop - mx);
+//                               }
+//                               selectionStart = dragstartx;
+//                               selectionStop = x;
+//                               }
+//                         update(r);
+//                         }
+//                   break;
+//             case Qt::MidButton:
+//                   break;
+//             case Qt::RightButton:
+//                   break;
+//             default:
+//                   return;
+//             }
       }
       
 //---------------------------------------------------------
@@ -1393,17 +1835,17 @@ void WaveCanvas::drawTopItem(QPainter& p, const QRect& rect)
 //   drawAutomation
 //---------------------------------------------------------
 
-void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* item)
+void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* item) const
 {
-    MusECore::Event event = item->event();
+    const MusECore::Event event = item->event();
     if(event.type() != MusECore::Wave)
       return;
     
-    MusECore::SndFileR sf = event.sndFile();
+    const MusECore::SndFileR sf = event.sndFile();
     if(sf.isNull())
       return;
     
-    MusECore::StretchList* sl = sf.stretchList();
+    const MusECore::StretchList* sl = sf.stretchList();
     if(!sl)
       return;
 
@@ -1423,16 +1865,79 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
 
     p.setBrush(Qt::NoBrush);
 
-    for(MusECore::ciStretchEvent is = sl->begin(); is != sl->end(); ++is)
+    QColor c;
+    QPen pen;
+    int xpixel;
+    QVector<qreal> pattern;
+    pattern << 4 << 4;
+    const StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+    ciStretchSelectedItemPair res;
+    for(MusECore::ciStretchListItem is = sl->begin(); is != sl->end(); ++is)
     {
 //       const MusECore::StretchEvent& se = is->second;
       
 //       const int xpixel = mapx(se._newFrame + item->x());
-      const int xpixel = mapx(sl->squish((double)is->first) + item->x());
-      p.setPen(Qt::white);
       
-      DEBUG_WAVECANVAS(stderr, "drawStretchAutomation: rr.x:%d rr.w:%d xpixel:%d\n", rr.x(), rr.width(), xpixel);
-      p.drawLine(xpixel, rr.top() - 2, xpixel, rr.bottom() - 2);
+      const MusECore::StretchListItem& sli = is->second;
+      //if((_tool == StretchTool && (sli._type & MusECore::StretchListItem::StretchEvent)) ||
+      //   (_tool == SamplerateTool && (sli._type & MusECore::StretchListItem::SamplerateEvent)))
+      {
+        xpixel = mapx(sl->squish((double)is->first) + item->x());
+        
+        DEBUG_WAVECANVAS(stderr, "drawStretchAutomation: rr.x:%d rr.w:%d xpixel:%d\n", rr.x(), rr.width(), xpixel);
+        
+        if(sli._type & MusECore::StretchListItem::StretchEvent)
+        {
+          //if(_tool == StretchTool)
+            c = Qt::magenta;
+          //else 
+          //  c = Qt::darkMagenta;
+          
+          res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
+          for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
+          {
+            if(ise->first == is->first && ise->second._list == sl && ise->second._type == MusECore::StretchListItem::StretchEvent)
+            {
+              c = Qt::white;
+              break;
+            }
+          }
+          
+          //c.setAlpha(200);
+          pen.setColor(c);
+          pen.setDashPattern(pattern);
+          p.setPen(pen);
+          p.drawLine(xpixel, rr.top() - 2, xpixel, rr.bottom() - 2);
+        }
+        
+        if(sli._type & MusECore::StretchListItem::SamplerateEvent)
+        {
+          //if(_tool == SamplerateTool)
+            c = Qt::cyan;
+          //else 
+          //  c = Qt::darkCyan;
+
+          res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
+          for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
+          {
+            if(ise->first == is->first && ise->second._list == sl && ise->second._type == MusECore::StretchListItem::SamplerateEvent)
+            {
+              c = Qt::white;
+              break;
+            }
+          }
+          
+          //c.setAlpha(200);
+          pen.setColor(c);
+          pen.setDashPattern(pattern);
+          // Offset to help distinguish from stretch lines.
+          pen.setDashOffset(4.0);
+          p.setPen(pen);
+          //p.drawLine(xpixel, rr.top() - 2, xpixel, rr.bottom() - 2);
+          // Draw reverse direction to help distinguish from stretch lines.
+          p.drawLine(xpixel, rr.bottom() - 2, xpixel, rr.top() - 2);
+        }
+      }
     }    
     
     
@@ -2273,20 +2778,23 @@ bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circum
 //     return outVal;
 // }
 
-MusECore::iStretchEvent WaveCanvas::stretchListHitTest(QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList)
+MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList)
 {
   const int pt_x = pt.x();
   int closest_dist = _stretchAutomationPointDetectDist;
-  MusECore::iStretchEvent closest_ev = stretchList->end();
-  for(MusECore::iStretchEvent is = stretchList->begin(); is != stretchList->end(); ++is)
+  MusECore::iStretchListItem closest_ev = stretchList->end();
+  for(MusECore::iStretchListItem is = stretchList->begin(); is != stretchList->end(); ++is)
   {
-    const MusECore::StretchEvent& se = is->second;
+    const MusECore::StretchListItem& se = is->second;
+    if(!(se._type & types))
+      continue;
     
     //const int xpixel = mapx(stretchList->squish((double)is->first) + wevent->x());
-    const double newSqFrame = se._squishedFrame;
+    const double newSqFrame = se._finSquishedFrame;
     const int xpixel = mapx(newSqFrame + wevent->x());
+    const int pt_pixel = mapx(pt_x);
     
-    const int x_diff = (xpixel > pt_x) ? (xpixel - pt_x) : (pt_x - xpixel);
+    const int x_diff = (xpixel > pt_pixel) ? (xpixel - pt_pixel) : (pt_pixel - xpixel);
     if(x_diff <= closest_dist)
     {
       closest_dist = x_diff;
@@ -4007,3 +4515,4 @@ void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
 }
 
 } // namespace MusEGui
+

@@ -112,13 +112,13 @@ int PendingOperationItem::getIndex() const
     // REMOVE Tim. samplerate. Added.
     case ModifyLocalAudioConverterSettings:
     case ModifyDefaultAudioConverterSettings:
-    case ModifyStretchedFrameForStretch:
-    case ModifyStretchedFrameForResample:
-    case ModifySquishedFrameForStretch:
-    case ModifySquishedFrameForResample:
-    case ModifyStretchRatio:
-    case ModifySamplerateRatio:
-    case ModifyPitchRatio:
+    //case ModifyStretchedFrameForStretch:
+    //case ModifyStretchedFrameForResample:
+    //case ModifySquishedFrameForStretch:
+    //case ModifySquishedFrameForResample:
+    case ModifyStretchListRatio:
+    //case ModifySamplerateRatio:
+    //case ModifyPitchRatio:
       
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
@@ -198,25 +198,25 @@ int PendingOperationItem::getIndex() const
     
     
     // REMOVE Tim. samplerate. Added.
-    case AddStretchRatioAt:
+    case AddStretchListRatioAt:
       return _museFrame;  // Frame
     
-    case DeleteStretchRatioAt:
+    case DeleteStretchListRatioAt:
       return _iStretchEvent->first;  // Frame
     
-    case ModifyStretchRatioAt:
+    case ModifyStretchListRatioAt:
       return _iStretchEvent->first;  // Frame
 
       
       // REMOVE Tim. samplerate. Added.
-    case AddSamplerateRatioAt:
-      return _museFrame;  // Frame
-    
-    case DeleteSamplerateRatioAt:
-      return _iStretchEvent->first;  // Frame
-    
-    case ModifySamplerateRatioAt:
-      return _iStretchEvent->first;  // Frame
+//     case AddSamplerateRatioAt:
+//       return _museFrame;  // Frame
+//     
+//     case DeleteSamplerateRatioAt:
+//       return _iStretchEvent->first;  // Frame
+//     
+//     case ModifySamplerateRatioAt:
+//       return _iStretchEvent->first;  // Frame
 
       
     default:
@@ -820,7 +820,7 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     break;
     
     case MovePart:
-      fprintf(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%d\n", _part, _track, _intA);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%d\n", _part, _track, _intA);
       if(_track)
       {
         if(_part->track() && _iPart != _part->track()->parts()->end())
@@ -1012,13 +1012,13 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
 
     
     
-    case ModifyStretchRatio:
+    case ModifyStretchListRatio:
       // REMOVE Tim. samplerate. Added.
-      //fprintf(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
+      //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
       //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch, _stretch_value);
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchRatio: stretchlist:%p new_ratio:%f\n", 
-                       _stretch_list, _audio_converter_value);
-      _stretch_list->setStretchRatio(_audio_converter_value);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchListRatio: stretchType:%d stretchlist:%p new_ratio:%f\n", 
+                       _stretch_type, _stretch_list, _audio_converter_value);
+      _stretch_list->setRatio(StretchListItem::StretchEventType(_stretch_type), _audio_converter_value, false);   // Defer normalize until end of stage 2.
       flags |= SC_STRETCH;
     break;
     
@@ -1027,114 +1027,108 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
 
 
     
-    case AddStretchRatioAt:
+    case AddStretchListRatioAt:
       // REMOVE Tim. samplerate. Added.
-      //fprintf(stderr, "PendingOperationItem::executeRTStage AddStretch: stretchlist:%p stretch:%p %f frame:%ld\n", 
+      //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddStretch: stretchlist:%p stretch:%p %f frame:%ld\n", 
       //                 _stretch_list, _stretch_event, _stretch_event->_stretch, _stretch_event->_frame);
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddStretchRatioAt: stretchlist:%p ratio:%f frame:%ld\n", 
-                       _stretch_list, _audio_converter_value, _museFrame);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddStretchListRatioAt: stretchType:%d stretchlist:%p ratio:%f frame:%ld\n", 
+                       _stretch_type, _stretch_list, _audio_converter_value, _museFrame);
       // REMOVE Tim. samplerate. Added.
       //_stretch_list->add(_museFrame, _stretch_event, false);  // Defer normalize until end of stage 2.
       //_stretch_list->add(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
-      _stretch_list->addStretch(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
+      _stretch_list->addRatioAt(StretchListItem::StretchEventType(_stretch_type), _museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
       
       flags |= SC_STRETCH;
     break;
     
-    case DeleteStretchRatioAt:
+    case DeleteStretchListRatioAt:
       {
         // REMOVE Tim. samplerate. Added.
-        //fprintf(stderr, "PendingOperationItem::executeRTStage DeleteStretch: stretchlist:%p event:%p: frame:%ld stretch:%f\n", 
+        //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteStretch: stretchlist:%p event:%p: frame:%ld stretch:%f\n", 
         //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch);
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteStretchRatioAt: stretchlist:%p frame:%ld ratio:%f\n", 
-                         _stretch_list, _iStretchEvent->first, _iStretchEvent->second._stretchRatio);
-        //_stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
-        _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
+        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteStretchListRatioAt: stretchlist:%p frame:%ld types:%d\n", 
+                         _stretch_list, _iStretchEvent->first, _stretch_type);
+        _stretch_list->del(_stretch_type, _iStretchEvent, false); // Defer normalize until end of stage 2.
         flags |= SC_STRETCH;
       }
     break;
     
-    case ModifyStretchRatioAt:
+    case ModifyStretchListRatioAt:
       // REMOVE Tim. samplerate. Added.
-      //fprintf(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
+      //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
       //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch, _stretch_value);
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchRatioAt: stretchlist:%p frame:%ld new_frame:%ld old_ratio:%f new_ratio:%f\n", 
-                       _stretch_list, _iStretchEvent->first, _museFrame, _iStretchEvent->second._stretchRatio, _audio_converter_value);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretchListRatioAt: "
+                               "stretchType:%d stretchlist:%p frame:%ld new_frame:%ld new_ratio:%f\n", 
+                       _stretch_type, _stretch_list, _iStretchEvent->first, _museFrame, _audio_converter_value);
       
       // REMOVE Tim. samplerate. Added.
       // If the frame is the same, just change the value.
       if(_iStretchEvent->first == _museFrame)
-      {
-        _iStretchEvent->second._stretchRatio = _audio_converter_value;
-        _iStretchEvent->second._type |= StretchEvent::StretchEventType;
-      }
+        _stretch_list->setRatioAt(StretchListItem::StretchEventType(_stretch_type), _iStretchEvent, _audio_converter_value, false); // Defer normalize until end of stage 2.
       // Otherwise erase + add is required.
       else
       {
-        //_stretch_list->erase(_iStretchEvent);
-        _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
-        _stretch_list->insert(std::pair<const MuseFrame_t, StretchEvent> 
-          (_museFrame, 
-           StretchEvent(_audio_converter_value, 1.0, StretchEvent::StretchEventType)));  // 1.0 dummy samplerate replaced by normalize().
+        _stretch_list->del(_stretch_type, _iStretchEvent, false); // Defer normalize until end of stage 2.
+        _stretch_list->add(StretchListItem::StretchEventType(_stretch_type), _museFrame, _audio_converter_value, false);
       }
       
       flags |= SC_STRETCH;
     break;
     
     
-    case AddSamplerateRatioAt:
-      // REMOVE Tim. samplerate. Added.
-      //fprintf(stderr, "PendingOperationItem::executeRTStage AddStretch: stretchlist:%p stretch:%p %f frame:%ld\n", 
-      //                 _stretch_list, _stretch_event, _stretch_event->_stretch, _stretch_event->_frame);
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddSamplerateRatioAt: stretchlist:%p ratio:%f frame:%ld\n", 
-                       _stretch_list, _audio_converter_value, _museFrame);
-      // REMOVE Tim. samplerate. Added.
-      //_stretch_list->add(_museFrame, _stretch_event, false);  // Defer normalize until end of stage 2.
-      //_stretch_list->add(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
-      _stretch_list->addSamplerate(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
-      
-      flags |= SC_STRETCH;
-    break;
-    
-    case DeleteSamplerateRatioAt:
-      {
-        // REMOVE Tim. samplerate. Added.
-        //fprintf(stderr, "PendingOperationItem::executeRTStage DeleteStretch: stretchlist:%p event:%p: frame:%ld stretch:%f\n", 
-        //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch);
-        DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteSamplerateRatioAt: stretchlist:%p frame:%ld ratio:%f\n", 
-                         _stretch_list, _iStretchEvent->first, _iStretchEvent->second._samplerateRatio);
-        //_stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
-        _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
-        flags |= SC_STRETCH;
-      }
-    break;
-    
-    case ModifySamplerateRatioAt:
-      // REMOVE Tim. samplerate. Added.
-      //fprintf(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
-      //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch, _stretch_value);
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySamplerateRatioAt: stretchlist:%p frame:%ld new_frame:%ld old_ratio:%f new_ratio:%f\n", 
-                       _stretch_list, _iStretchEvent->first, _museFrame, _iStretchEvent->second._samplerateRatio, _audio_converter_value);
-      
-      // REMOVE Tim. samplerate. Added.
-      // If the frame is the same, just change the value.
-      if(_iStretchEvent->first == _museFrame)
-      {
-        _iStretchEvent->second._samplerateRatio = _audio_converter_value;
-        _iStretchEvent->second._type |= StretchEvent::SamplerateEventType;
-      }
-      // Otherwise erase + add is required.
-      else
-      {
-        //_stretch_list->erase(_iStretchEvent);
-        _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
-        _stretch_list->insert(std::pair<const MuseFrame_t, StretchEvent> 
-          (_museFrame, 
-           StretchEvent(1.0, _audio_converter_value, StretchEvent::SamplerateEventType))); // 1.0 dummy stretch replaced by normalize().
-      }
-      
-      flags |= SC_STRETCH;
-    break;
+//     case AddSamplerateRatioAt:
+//       // REMOVE Tim. samplerate. Added.
+//       //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddStretch: stretchlist:%p stretch:%p %f frame:%ld\n", 
+//       //                 _stretch_list, _stretch_event, _stretch_event->_stretch, _stretch_event->_frame);
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddSamplerateRatioAt: stretchlist:%p ratio:%f frame:%ld\n", 
+//                        _stretch_list, _audio_converter_value, _museFrame);
+//       // REMOVE Tim. samplerate. Added.
+//       //_stretch_list->add(_museFrame, _stretch_event, false);  // Defer normalize until end of stage 2.
+//       //_stretch_list->add(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
+//       _stretch_list->addSamplerate(_museFrame, _audio_converter_value, false);  // Defer normalize until end of stage 2.
+//       
+//       flags |= SC_STRETCH;
+//     break;
+//     
+//     case DeleteSamplerateRatioAt:
+//       {
+//         // REMOVE Tim. samplerate. Added.
+//         //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteStretch: stretchlist:%p event:%p: frame:%ld stretch:%f\n", 
+//         //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch);
+//         DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteSamplerateRatioAt: stretchlist:%p frame:%ld ratio:%f\n", 
+//                          _stretch_list, _iStretchEvent->first, _iStretchEvent->second._samplerateRatio);
+//         //_stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
+//         _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
+//         flags |= SC_STRETCH;
+//       }
+//     break;
+//     
+//     case ModifySamplerateRatioAt:
+//       // REMOVE Tim. samplerate. Added.
+//       //DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyStretch: stretchlist:%p event:%p: frame:%ld old_stretch:%f new_stretch:%f\n", 
+//       //                 _stretch_list, _iStretchEvent->second, _iStretchEvent->second->_frame,  _iStretchEvent->second->_stretch, _stretch_value);
+//       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifySamplerateRatioAt: stretchlist:%p frame:%ld new_frame:%ld old_ratio:%f new_ratio:%f\n", 
+//                        _stretch_list, _iStretchEvent->first, _museFrame, _iStretchEvent->second._samplerateRatio, _audio_converter_value);
+//       
+//       // REMOVE Tim. samplerate. Added.
+//       // If the frame is the same, just change the value.
+//       if(_iStretchEvent->first == _museFrame)
+//       {
+//         _iStretchEvent->second._samplerateRatio = _audio_converter_value;
+//         _iStretchEvent->second._type |= StretchEvent::SamplerateEventType;
+//       }
+//       // Otherwise erase + add is required.
+//       else
+//       {
+//         //_stretch_list->erase(_iStretchEvent);
+//         _stretch_list->del(_iStretchEvent, false); // Defer normalize until end of stage 2.
+//         _stretch_list->insert(std::pair<const MuseFrame_t, StretchEvent> 
+//           (_museFrame, 
+//            StretchEvent(1.0, _audio_converter_value, StretchEvent::SamplerateEventType))); // 1.0 dummy stretch replaced by normalize().
+//       }
+//       
+//       flags |= SC_STRETCH;
+//     break;
     
     
     case ModifySongLength:
@@ -1164,7 +1158,7 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     break;
     
     default:
-      fprintf(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
+      ERROR_OPERATIONS(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
     break;
   }
   return flags;
@@ -1267,12 +1261,13 @@ SongChangedFlags_t PendingOperationList::executeRTStage()
     const PendingOperationItem& poi = *ip;
     switch(poi._type)
     {
-      case PendingOperationItem::AddSamplerateRatioAt:
-      case PendingOperationItem::DeleteSamplerateRatioAt:
-      case PendingOperationItem::ModifySamplerateRatioAt:
-      case PendingOperationItem::AddStretchRatioAt:
-      case PendingOperationItem::DeleteStretchRatioAt:
-      case PendingOperationItem::ModifyStretchRatioAt:
+      //case PendingOperationItem::AddSamplerateRatioAt:
+      //case PendingOperationItem::DeleteSamplerateRatioAt:
+      //case PendingOperationItem::ModifySamplerateRatioAt:
+      case PendingOperationItem::AddStretchListRatioAt:
+      case PendingOperationItem::DeleteStretchListRatioAt:
+      case PendingOperationItem::ModifyStretchListRatioAt:
+      case PendingOperationItem::ModifyStretchListRatio:
         sl = poi._stretch_list;
         if(sl && !sl->isNormalized())
         {
@@ -2122,21 +2117,25 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;*/
 
-      case PendingOperationItem::AddStretchRatioAt:
-        if(poi._type == PendingOperationItem::AddStretchRatioAt && poi._stretch_list == op._stretch_list)
+      case PendingOperationItem::AddStretchListRatioAt:
+        if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+           poi._stretch_type == op._stretch_type)
         {
           // Simply replace the value.
           poi._audio_converter_value = op._audio_converter_value; 
           return true;
         }
-        else if(poi._type == PendingOperationItem::DeleteStretchRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyStretchRatioAt;
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifyStretchRatioAt && poi._stretch_list == op._stretch_list)
+// Todo?
+//         else if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+//            poi._stretch_type == op._stretch_type)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyStretchListRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+        else if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
         {
           // Simply replace the value.
           poi._audio_converter_value = op._audio_converter_value;
@@ -2144,44 +2143,50 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
-      case PendingOperationItem::DeleteStretchRatioAt:
-        if(poi._type == PendingOperationItem::DeleteStretchRatioAt && poi._stretch_list == op._stretch_list)
+      case PendingOperationItem::DeleteStretchListRatioAt:
+        if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+           poi._stretch_type == op._stretch_type)
         {
           // Multiple delete commands not allowed! 
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteStretchRatioAt. Ignoring.\n");
           return false;
         }
-        else if(poi._type == PendingOperationItem::AddStretchRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-          erase(ipos->second);
-          _map.erase(ipos);
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifyStretchRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteStretchRatioAt;
-          return true;
-        }
+// Todo?
+//         else if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//           erase(ipos->second);
+//           _map.erase(ipos);
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteStretchListRatioAt;
+//           return true;
+//         }
       break;
       
-      case PendingOperationItem::ModifyStretchRatioAt:
-        if(poi._type == PendingOperationItem::ModifyStretchRatioAt && poi._stretch_list == op._stretch_list)
+      case PendingOperationItem::ModifyStretchListRatioAt:
+        if(poi._type == PendingOperationItem::ModifyStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
         {
           // Simply replace the value.
           poi._audio_converter_value = op._audio_converter_value;
           return true;
         }
-        else if(poi._type == PendingOperationItem::DeleteStretchRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifyStretchRatioAt;
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddStretchRatioAt && poi._stretch_list == op._stretch_list)
+// Todo?
+//         else if(poi._type == PendingOperationItem::DeleteStretchListRatioAt && poi._stretch_list == op._stretch_list && 
+//            poi._stretch_type == op._stretch_type)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifyStretchListRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+        else if(poi._type == PendingOperationItem::AddStretchListRatioAt && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
         {
           // Simply replace the add value with the modify value.
           poi._audio_converter_value = op._audio_converter_value; 
@@ -2189,22 +2194,10 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
-      
-      case PendingOperationItem::AddSamplerateRatioAt:
-        if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Simply replace the value.
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifySamplerateRatioAt;
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
+
+      case PendingOperationItem::ModifyStretchListRatio:
+        if(poi._type == PendingOperationItem::ModifyStretchListRatio && poi._stretch_list == op._stretch_list &&
+           poi._stretch_type == op._stretch_type)
         {
           // Simply replace the value.
           poi._audio_converter_value = op._audio_converter_value;
@@ -2212,50 +2205,72 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
-      case PendingOperationItem::DeleteSamplerateRatioAt:
-        if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Multiple delete commands not allowed! 
-          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteSamplerateRatioAt. Ignoring.\n");
-          return false;
-        }
-        else if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
-          erase(ipos->second);
-          _map.erase(ipos);
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Modify followed by delete is equivalent to just deleting.
-          // Transform existing modify command into a delete command.
-          poi._type = PendingOperationItem::DeleteSamplerateRatioAt;
-          return true;
-        }
-      break;
-      
-      case PendingOperationItem::ModifySamplerateRatioAt:
-        if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Simply replace the value.
-          poi._audio_converter_value = op._audio_converter_value;
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Transform existing delete command into a modify command.
-          poi._type = PendingOperationItem::ModifySamplerateRatioAt;
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-        else if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
-        {
-          // Simply replace the add value with the modify value.
-          poi._audio_converter_value = op._audio_converter_value; 
-          return true;
-        }
-      break;
+//       case PendingOperationItem::AddSamplerateRatioAt:
+//         if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Simply replace the value.
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifySamplerateRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Simply replace the value.
+//           poi._audio_converter_value = op._audio_converter_value;
+//           return true;
+//         }
+//       break;
+//       
+//       case PendingOperationItem::DeleteSamplerateRatioAt:
+//         if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Multiple delete commands not allowed! 
+//           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double DeleteSamplerateRatioAt. Ignoring.\n");
+//           return false;
+//         }
+//         else if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//           erase(ipos->second);
+//           _map.erase(ipos);
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Modify followed by delete is equivalent to just deleting.
+//           // Transform existing modify command into a delete command.
+//           poi._type = PendingOperationItem::DeleteSamplerateRatioAt;
+//           return true;
+//         }
+//       break;
+//       
+//       case PendingOperationItem::ModifySamplerateRatioAt:
+//         if(poi._type == PendingOperationItem::ModifySamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Simply replace the value.
+//           poi._audio_converter_value = op._audio_converter_value;
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::DeleteSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Transform existing delete command into a modify command.
+//           poi._type = PendingOperationItem::ModifySamplerateRatioAt;
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+//         else if(poi._type == PendingOperationItem::AddSamplerateRatioAt && poi._stretch_list == op._stretch_list)
+//         {
+//           // Simply replace the add value with the modify value.
+//           poi._audio_converter_value = op._audio_converter_value; 
+//           return true;
+//         }
+//       break;
 
       
       case PendingOperationItem::ModifySongLength:
@@ -2272,7 +2287,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() EnableAllAudioControllers\n");
         if(poi._type == PendingOperationItem::EnableAllAudioControllers)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
+          ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
           return false;  
         }
       break;  

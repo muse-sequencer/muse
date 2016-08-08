@@ -1415,7 +1415,7 @@ SndFile* SndFileList::search(const QString& name)
 //---------------------------------------------------------
 
 SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool showErrorBox, 
-                 AudioConverterSettingsGroup* audioConverterSettings)
+                 AudioConverterSettingsGroup* audioConverterSettings, StretchList* stretchList)
       {
       QString name = inName;
 
@@ -1447,6 +1447,9 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
             // Assign audio converter settings if given.
             if(audioConverterSettings)
               f->audioConverterSettings()->assign(*audioConverterSettings); 
+            // Assign stretch list if given.
+            if(stretchList)
+              *f->stretchList() = *stretchList;
               
             if(openFlag)
             {

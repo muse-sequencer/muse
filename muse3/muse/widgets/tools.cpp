@@ -63,6 +63,7 @@ const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Panning 
 const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Zoom Tool");
 // REMOVE Tim. samplerate. Added.
 const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Stretch Tool");
+const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Sample Rate Tool");
 
 ToolB toolList[] = {
       {&pointerIcon,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
@@ -80,7 +81,8 @@ ToolB toolList[] = {
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
       {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor},
 // REMOVE Tim. samplerate. Added.
-      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "stretch"),        infoStretch}
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "stretch"),        infoStretch},
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "sample rate"),    infoSamplerate}
       };
 
 QMap<int,int> toolShortcuts;
@@ -148,6 +150,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
       // REMOVE Tim. samplerate. Added.
       toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
+      toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
       }
 
 //---------------------------------------------------------

@@ -144,15 +144,200 @@ class StretchList : public STRETCHLIST {
 #else // USE_ALTERNATE_STRETCH_LIST
 
 //---------------------------------------------------------
+//   StretchListItem
+//---------------------------------------------------------
+
+// struct StretchListItem
+// {
+//   double _value;
+//   
+//   // Pre-computed stretch and squish frames.
+//   double _stretchedFrame;
+//   double _squishedFrame;
+// 
+//   StretchListItem(double value = 1.0,
+//                   double stretchedFrame = 0,
+//                   double squishedFrame = 0)
+//   {
+//     _value = value;
+//     _stretchedFrame = stretchedFrame;
+//     _squishedFrame = squishedFrame;
+//   }
+// };
+
+// //---------------------------------------------------------
+// //  frameMapItem
+// //---------------------------------------------------------
+// 
+// struct frameMapItem
+// {
+//   // Pre-computed stretch and squish frames.
+//   double _stretchedFrame;
+//   double _squishedFrame;
+// 
+//   frameMapItem(double stretchedFrame = 0,
+//                double squishedFrame = 0)
+//   {
+//     _stretchedFrame = stretchedFrame;
+//     _squishedFrame = squishedFrame;
+//   }
+// };
+
+//---------------------------------------------------------
+//   StretchList
+//---------------------------------------------------------
+
+// typedef std::map<MuseFrame_t, StretchListItem, std::less<MuseFrame_t> > StretchList_t;
+// typedef StretchList_t::iterator iStretchEvent;
+// typedef StretchList_t::const_iterator ciStretchEvent;
+// typedef StretchList_t::reverse_iterator riStretchEvent;
+// typedef StretchList_t::const_reverse_iterator criStretchEvent;
+// 
+// typedef std::pair<iStretchEvent, iStretchEvent> iStretchEventPair;
+// typedef std::pair<ciStretchEvent, ciStretchEvent> ciStretchEventPair;
+
+
+// typedef std::map<MuseFrame_t, frameMapItem, std::less<MuseFrame_t> > FrameStretchMap_t;
+// typedef FrameStretchMap_t::iterator iFrameMapItem;
+// typedef FrameStretchMap_t::const_iterator ciFrameMapItem;
+// typedef FrameStretchMap_t::reverse_iterator riFrameMapItem;
+// typedef FrameStretchMap_t::const_reverse_iterator criFrameMapItem;
+// 
+// typedef std::pair<iFrameMapItem, iFrameMapItem> iFrameMapItemPair;
+// typedef std::pair<ciFrameMapItem, ciFrameMapItem> ciFrameMapItemPair;
+
+// class StretchList {
+//       friend struct PendingOperationItem;
+//       
+//    public:
+//       // Can be OR'd together.
+//       enum StretchEventType { StretchEvent = 0x01, SamplerateEvent = 0x02, PitchEvent = 0x04 };
+//       
+//    private:
+//       // Intrinsic values.
+//       MuseFrame_t _startFrame;
+//       MuseFrame_t _endFrame;
+//       MuseFrame_t _stretchedEndFrame;
+//       MuseFrame_t _squishedEndFrame;
+//       double _stretchRatio;
+//       double _samplerateRatio;
+//       double _pitchRatio;
+//       
+//       // Lists.
+//       StretchList_t _stretchRatioList;
+//       StretchList_t _samplerateRatioList;
+//       StretchList_t _pitchRatioList;
+//       //FrameStretchMap_t _frameStretchMap;
+//       
+//       // Whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool _isStretched;
+//       bool _isResampled;
+//       bool _isPitchShifted;
+// 
+//       // Whether the list is already normalized, or else a normalization is required.
+//       bool _isNormalized;
+//       
+//       void add(int type, MuseFrame_t frame, double value, bool do_normalize = true);
+//       void add(int type, MuseFrame_t frame, const StretchListItem& e, bool do_normalize = true);
+//       void del(int type, MuseFrame_t frame, bool do_normalize = true);
+//       void del(int type, const iStretchEvent& e, bool do_normalize = true);
+// 
+//    public:
+//       StretchList();
+//       virtual ~StretchList();
+//       
+//       // Returns whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool isStretched()    const { return _isStretched; }
+//       bool isResampled()    const { return _isResampled; }
+//       bool isPitchShifted() const { return _isPitchShifted; }
+//       
+//       void normalize();
+//       
+// //       void normalizeFrames();
+// //       void normalizeRatios();
+// //       void normalizeListFrames();
+// //       void normalizeListRatios();
+//       // Whether the list is already normalized, or else a normalization is required.
+//       bool isNormalized() const { return _isNormalized; }
+//       
+//       void clear();
+// //       void eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe);
+// //       void eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe);
+// //       void eraseRange(MuseFrame_t sframe, MuseFrame_t eframe);
+//       void eraseRange(int type, MuseFrame_t sframe, MuseFrame_t eframe);
+// 
+//       void read(Xml&);
+//       void write(int, Xml&) const;
+//       void dump() const;
+// 
+//       // ------------------------------------------
+//       //  Intrinsic functions:
+//       //-------------------------------------------
+//       
+//       MuseFrame_t startFrame() const { return _startFrame; }
+//       MuseFrame_t endFrame() const { return _endFrame; }
+//       MuseFrame_t stretchedEndFrame() const { return _stretchedEndFrame; }
+//       MuseFrame_t squishedEndFrame() const { return _squishedEndFrame; }
+// //       double stretchRatio() const { return _stretchRatio; }
+// //       double samplerateRatio() const { return _samplerateRatio; }
+// //       double pitchRatio() const { return _pitchRatio; }
+// 
+//       void setStartFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setEndFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setStretchedEndFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setSquishedEndFrame(MuseFrame_t frame, bool do_normalize = true);
+// //       void setStretchRatio(double ratio, bool do_normalize = true);
+// //       void setSamplerateRatio(double ratio, bool do_normalize = true);
+// //       void setPitchRatio(double ratio, bool do_normalize = true);
+//       
+//       double ratio(int type) const;
+//       void setRatio(int type, double ratio, bool do_normalize = true);
+// 
+//       
+//       // ------------------------------------------
+//       //  List functions:
+//       //-------------------------------------------
+//       
+//       iStretchEvent findEvent(int type, MuseFrame_t frame);
+//       ciStretchEvent findEvent(int type, const MusECore::MuseFrame_t frame) const;
+//       
+// //       double stretchAt(MuseFrame_t frame) const;
+// //       double samplerateAt(MuseFrame_t frame) const;
+//       double ratioAt(int type, MuseFrame_t frame) const;
+//       
+//       double stretch(MuseFrame_t frame) const;
+//       double stretch(double frame) const;
+//       double squish(MuseFrame_t frame) const;
+//       double squish(double frame) const;
+//       MuseFrame_t unStretch(double frame) const;
+//       MuseFrame_t unSquish(double frame) const;
+//       
+//       void setStretch(MuseFrame_t frame, double newStretchRatio);
+//       void setSamplerate(MuseFrame_t frame, double newSamplerateRatio);
+//       void addStretch(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void addSamplerate(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void delStretch(MuseFrame_t frame, bool do_normalize = true);
+//       void delSamplerate(MuseFrame_t frame, bool do_normalize = true);
+//       
+//       void addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
+//       void addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops); 
+//       void delStretchOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       void delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       };
+
+
+      
+
+//---------------------------------------------------------
 //   StretchEvent
 //---------------------------------------------------------
 
-struct StretchEvent
+struct StretchListItem
 {
   // Can be OR'd together.
-  enum StretchEventType { StretchEventType = 0x01, SamplerateEventType = 0x02, PitchEventType = 0x04 };
-//   // Combination of StretchEventType flags.
-  // One of the StretchEventType flags.
+  enum StretchEventType { StretchEvent = 0x01, SamplerateEvent = 0x02, PitchEvent = 0x04 };
+//   // One of the StretchEventType flags.
+  // Combination of StretchEventType flags.
   int _type;
   
   double _stretchRatio;
@@ -160,37 +345,113 @@ struct StretchEvent
   double _pitchRatio;
   
   // Pre-computed stretch and squish frames.
-  double _stretchedFrame;
-  double _squishedFrame;
+  double _finStretchedFrame;
+  double _finSquishedFrame;
+  double _stretchStretchedFrame;
+  double _stretchSquishedFrame;
+  double _samplerateStretchedFrame;
+  double _samplerateSquishedFrame;
 
-  StretchEvent(double stretchRatio = 1.0,
-               double samplerateRatio = 1.0, 
-               double pitchRatio = 1.0, 
-               int type = 0)
+  StretchListItem(double stretchRatio = 1.0,
+                  double samplerateRatio = 1.0, 
+                  double pitchRatio = 1.0, 
+                  int type = 0)
   {
     _stretchRatio = stretchRatio;
     _samplerateRatio = samplerateRatio;
     _pitchRatio = pitchRatio;
     _type = type;
-    _stretchedFrame = _squishedFrame = 0.0;
+    _finStretchedFrame = _finSquishedFrame = _stretchStretchedFrame = 
+      _stretchSquishedFrame = _samplerateStretchedFrame = _samplerateSquishedFrame = 0.0;
   }
 };
+
+
+// //---------------------------------------------------------
+// //   FrameStretchMap
+// //---------------------------------------------------------
+// 
+// typedef std::map<MuseFrame_t, double, std::less<MuseFrame_t> > FRAME_STRETCH_MAP;
+// typedef FRAME_STRETCH_MAP::iterator iFrameStretch;
+// typedef FRAME_STRETCH_MAP::const_iterator ciFrameStretch;
+// typedef FRAME_STRETCH_MAP::reverse_iterator riFrameStretch;
+// typedef FRAME_STRETCH_MAP::const_reverse_iterator criFrameStretch;
+// 
+// class FrameStretchMap : public FRAME_STRETCH_MAP 
+// {
+//    friend struct PendingOperationItem;
+//     
+// //       int _tempoSN;           // serial no to track tempo changes
+// //       bool useList;
+// //       int _tempo;             // tempo if not using tempo list
+// //       int _globalTempo;       // %percent 50-200%
+//       // Whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool _isStretched;
+// 
+//       void add(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       //void add(MuseFrame_t frame, StretchEvent* e, bool do_normalize = true);
+//       void add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize = true);
+//       void del(iStretchEvent, bool do_normalize = true);
+//       void del(MuseFrame_t frame, bool do_normalize = true);
+// 
+//    public:
+//       FrameStretchMap();
+//       ~FrameStretchMap();
+//       void normalize();
+//       void clear();
+//       void eraseRange(MuseFrame_t sframe, MuseFrame_t eframe);
+// 
+//       void read(Xml&);
+//       void write(int, Xml&) const;
+//       void dump() const;
+// 
+//       //int stretch(unsigned tick) const;
+//       double frameAt(MuseFrame_t frame) const;
+// //       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
+// //       unsigned tick2frame(unsigned tick, int* sn = 0) const;
+// //       unsigned frame2tick(unsigned frame, int* sn = 0) const;
+// //       unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const;
+// //       unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
+// //       unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
+//       
+//       double stretch(MuseFrame_t frame) const;
+//       double stretch(double frame) const;
+//       //double unStretch(MuseFrame_t frame) const;
+//       MuseFrame_t unStretch(double frame) const;
+//       // Returns whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool isStretched() const { return _isStretched; }
+//       
+// //       int tempoSN() const { return _tempoSN; }
+//       void setFrame(MuseFrame_t frame, double newFrame);
+//       void addFrame(MuseFrame_t frame, double newFrame, bool do_normalize = true);
+//       void delFrame(MuseFrame_t frame, bool do_normalize = true);
+// //       bool masterFlag() const { return useList; }
+// //       bool setMasterFlag(unsigned tick, bool val);
+// //       int globalTempo() const           { return _globalTempo; }
+// //       void setGlobalTempo(int val);
+//       
+// //       void addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
+// //       void delOperation(MuseFrame_t frame, PendingOperationList& ops);
+// };
+
+
+
 
 //---------------------------------------------------------
 //   StretchList
 //---------------------------------------------------------
 
-//typedef std::map<MuseFrame_t, StretchEvent, std::less<MuseFrame_t> > STRETCHLIST;
-typedef std::multimap<MuseFrame_t, StretchEvent, std::less<MuseFrame_t> > STRETCHLIST;
-typedef STRETCHLIST::iterator iStretchEvent;
-typedef STRETCHLIST::const_iterator ciStretchEvent;
-typedef STRETCHLIST::reverse_iterator riStretchEvent;
-typedef STRETCHLIST::const_reverse_iterator criStretchEvent;
+typedef std::map<MuseFrame_t, StretchListItem, std::less<MuseFrame_t> > StretchList_t;
+typedef StretchList_t::iterator iStretchListItem;
+typedef StretchList_t::const_iterator ciStretchListItem;
+typedef StretchList_t::reverse_iterator riStretchListItem;
+typedef StretchList_t::const_reverse_iterator criStretchListItem;
 
-typedef std::pair<iStretchEvent, iStretchEvent> iStretchEventPair;
-typedef std::pair<ciStretchEvent, ciStretchEvent> ciStretchEventPair;
+typedef std::pair<iStretchListItem, iStretchListItem> iStretchListItemPair;
+typedef std::pair<ciStretchListItem, ciStretchListItem> ciStretchListItemPair;
 
-class StretchList : public STRETCHLIST {
+
+class StretchList : public StretchList_t {
       friend struct PendingOperationItem;
       
       // Intrinsic values.
@@ -210,12 +471,18 @@ class StretchList : public STRETCHLIST {
       // Whether the list is already normalized, or else a normalization is required.
       bool _isNormalized;
       
-      void addStr(MuseFrame_t frame, double stretch, bool do_normalize = true);
-      void addSR(MuseFrame_t frame, double samplerate, bool do_normalize = true);
-      void add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize = true);
-      void del(iStretchEvent, bool do_normalize = true);
-      void delStr(MuseFrame_t frame, bool do_normalize = true);
-      void delSR(MuseFrame_t frame, bool do_normalize = true);
+//       void addStr(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void addSR(MuseFrame_t frame, double samplerate, bool do_normalize = true);
+//       void add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize = true);
+      
+      void add(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, bool do_normalize = true);
+      void add(MuseFrame_t frame, const StretchListItem& e, bool do_normalize = true);
+      
+//       void del(iStretchEvent, bool do_normalize = true);
+//       void delStr(MuseFrame_t frame, bool do_normalize = true);
+//       void delSR(MuseFrame_t frame, bool do_normalize = true);
+      void del(int types, iStretchListItem, bool do_normalize = true);
+      void del(int types, MuseFrame_t frame, bool do_normalize = true);
 
    public:
       StretchList();
@@ -234,9 +501,9 @@ class StretchList : public STRETCHLIST {
       bool isNormalized() const { return _isNormalized; }
       
       void clear();
-      void eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe);
-      void eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe);
-      void eraseRange(MuseFrame_t sframe, MuseFrame_t eframe);
+//       void eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe);
+//       void eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe);
+      void eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe);
 
       void read(Xml&);
       void write(int, Xml&) const;
@@ -250,49 +517,179 @@ class StretchList : public STRETCHLIST {
       MuseFrame_t endFrame() const { return _endFrame; }
       MuseFrame_t stretchedEndFrame() const { return _stretchedEndFrame; }
       MuseFrame_t squishedEndFrame() const { return _squishedEndFrame; }
-      double stretchRatio() const { return _stretchRatio; }
-      double samplerateRatio() const { return _samplerateRatio; }
-      double pitchRatio() const { return _pitchRatio; }
-
       void setStartFrame(MuseFrame_t frame, bool do_normalize = true);
       void setEndFrame(MuseFrame_t frame, bool do_normalize = true);
       void setStretchedEndFrame(MuseFrame_t frame, bool do_normalize = true);
       void setSquishedEndFrame(MuseFrame_t frame, bool do_normalize = true);
-      void setStretchRatio(double ratio, bool do_normalize = true);
-      void setSamplerateRatio(double ratio, bool do_normalize = true);
-      void setPitchRatio(double ratio, bool do_normalize = true);
       
+      double ratio(StretchListItem::StretchEventType type) const;
+      void setRatio(StretchListItem::StretchEventType type, double ratio, bool do_normalize = true);
+      
+      void modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops);
+
       // ------------------------------------------
       //  List functions:
       //-------------------------------------------
       
-      iStretchEvent findEvent(MuseFrame_t frame, int type);
-      const_iterator findEvent(const MusECore::MuseFrame_t frame, int type) const;
+      iStretchListItem findEvent(int type, MuseFrame_t frame);
+      ciStretchListItem cFindEvent(int type, MuseFrame_t frame) const;
+      iStretchListItem previousEvent(int type, iStretchListItem);
+      ciStretchListItem cPreviousEvent(int type, ciStretchListItem) const;
+      iStretchListItem nextEvent(int type, iStretchListItem);
+      ciStretchListItem cNextEvent(int type, ciStretchListItem) const;
       
-      double stretchAt(MuseFrame_t frame) const;
-      double samplerateAt(MuseFrame_t frame) const;
+      double ratioAt(StretchListItem::StretchEventType type, MuseFrame_t frame) const;
+      void setRatioAt(StretchListItem::StretchEventType type, MuseFrame_t frame, double ratio, bool do_normalize = true);
+      void setRatioAt(StretchListItem::StretchEventType type, iStretchListItem, double ratio, bool do_normalize = true);
+      void addRatioAt(StretchListItem::StretchEventType type, MuseFrame_t frame, double ratio, bool do_normalize = true);
+      void delRatioAt(int types, MuseFrame_t frame, bool do_normalize = true);
       
-      double stretch(MuseFrame_t frame) const;
-      double stretch(double frame) const;
-      double squish(MuseFrame_t frame) const;
-      double squish(double frame) const;
-      MuseFrame_t unStretch(double frame) const;
-      MuseFrame_t unSquish(double frame) const;
+//       double stretch(MuseFrame_t frame) const;
+      double stretch(MuseFrame_t frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      double stretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      double squish(MuseFrame_t frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      double squish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      MuseFrame_t unStretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      MuseFrame_t unSquish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
       
-      void setStretch(MuseFrame_t frame, double newStretchRatio);
-      void setSamplerate(MuseFrame_t frame, double newSamplerateRatio);
-      void addStretch(MuseFrame_t frame, double stretch, bool do_normalize = true);
-      void addSamplerate(MuseFrame_t frame, double stretch, bool do_normalize = true);
-      void delStretch(MuseFrame_t frame, bool do_normalize = true);
-      void delSamplerate(MuseFrame_t frame, bool do_normalize = true);
+//       void addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
+//       void addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops); 
+//       void delStretchOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       void delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops);
       
-      void addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
-      void addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops); 
-      void delStretchOperation(MuseFrame_t frame, PendingOperationList& ops);
-      void delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops);
+      void addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
+      void delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops);
+      void modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
       };
 
 
+
+
+
+
+      
+// //---------------------------------------------------------
+// //   StretchList
+// //---------------------------------------------------------
+// 
+// //typedef std::map<MuseFrame_t, StretchEvent, std::less<MuseFrame_t> > STRETCHLIST;
+// typedef std::multimap<MuseFrame_t, StretchEvent, std::less<MuseFrame_t> > STRETCHLIST;
+// typedef STRETCHLIST::iterator iStretchEvent;
+// typedef STRETCHLIST::const_iterator ciStretchEvent;
+// typedef STRETCHLIST::reverse_iterator riStretchEvent;
+// typedef STRETCHLIST::const_reverse_iterator criStretchEvent;
+// 
+// typedef std::pair<iStretchEvent, iStretchEvent> iStretchEventPair;
+// typedef std::pair<ciStretchEvent, ciStretchEvent> ciStretchEventPair;
+// 
+// class StretchList : public STRETCHLIST {
+//       friend struct PendingOperationItem;
+//       
+//       // Intrinsic values.
+//       MuseFrame_t _startFrame;
+//       MuseFrame_t _endFrame;
+//       MuseFrame_t _stretchedEndFrame;
+//       MuseFrame_t _squishedEndFrame;
+//       double _stretchRatio;
+//       double _samplerateRatio;
+//       double _pitchRatio;
+//       
+//       // Whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool _isStretched;
+//       bool _isResampled;
+//       bool _isPitchShifted;
+// 
+//       // Whether the list is already normalized, or else a normalization is required.
+//       bool _isNormalized;
+//       
+//       void addStr(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void addSR(MuseFrame_t frame, double samplerate, bool do_normalize = true);
+//       void add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize = true);
+//       void del(iStretchEvent, bool do_normalize = true);
+//       void delStr(MuseFrame_t frame, bool do_normalize = true);
+//       void delSR(MuseFrame_t frame, bool do_normalize = true);
+// 
+//    public:
+//       StretchList();
+//       virtual ~StretchList();
+//       
+//       // Returns whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
+//       bool isStretched()    const { return _isStretched; }
+//       bool isResampled()    const { return _isResampled; }
+//       bool isPitchShifted() const { return _isPitchShifted; }
+//       
+//       void normalizeFrames();
+//       void normalizeRatios();
+//       void normalizeListFrames();
+//       void normalizeListRatios();
+//       // Whether the list is already normalized, or else a normalization is required.
+//       bool isNormalized() const { return _isNormalized; }
+//       
+//       void clear();
+//       void eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe);
+//       void eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe);
+//       void eraseRange(MuseFrame_t sframe, MuseFrame_t eframe);
+// 
+//       void read(Xml&);
+//       void write(int, Xml&) const;
+//       void dump() const;
+// 
+//       // ------------------------------------------
+//       //  Intrinsic functions:
+//       //-------------------------------------------
+//       
+//       MuseFrame_t startFrame() const { return _startFrame; }
+//       MuseFrame_t endFrame() const { return _endFrame; }
+//       MuseFrame_t stretchedEndFrame() const { return _stretchedEndFrame; }
+//       MuseFrame_t squishedEndFrame() const { return _squishedEndFrame; }
+//       double stretchRatio() const { return _stretchRatio; }
+//       double samplerateRatio() const { return _samplerateRatio; }
+//       double pitchRatio() const { return _pitchRatio; }
+// 
+//       void setStartFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setEndFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setStretchedEndFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setSquishedEndFrame(MuseFrame_t frame, bool do_normalize = true);
+//       void setStretchRatio(double ratio, bool do_normalize = true);
+//       void setSamplerateRatio(double ratio, bool do_normalize = true);
+//       void setPitchRatio(double ratio, bool do_normalize = true);
+//       
+//       // ------------------------------------------
+//       //  List functions:
+//       //-------------------------------------------
+//       
+//       iStretchEvent findEvent(MuseFrame_t frame, int type);
+//       const_iterator findEvent(const MusECore::MuseFrame_t frame, int type) const;
+//       
+//       double stretchAt(MuseFrame_t frame) const;
+//       double samplerateAt(MuseFrame_t frame) const;
+//       
+//       double stretch(MuseFrame_t frame) const;
+//       double stretch(double frame) const;
+//       double squish(MuseFrame_t frame) const;
+//       double squish(double frame) const;
+//       MuseFrame_t unStretch(double frame) const;
+//       MuseFrame_t unSquish(double frame) const;
+//       
+//       void setStretch(MuseFrame_t frame, double newStretchRatio);
+//       void setSamplerate(MuseFrame_t frame, double newSamplerateRatio);
+//       void addStretch(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void addSamplerate(MuseFrame_t frame, double stretch, bool do_normalize = true);
+//       void delStretch(MuseFrame_t frame, bool do_normalize = true);
+//       void delSamplerate(MuseFrame_t frame, bool do_normalize = true);
+//       
+//       void addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
+//       void addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops); 
+//       void delStretchOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       void delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops);
+//       };
+
+
+      
+      
+      
+      
+      
 
       
 // //---------------------------------------------------------
@@ -365,73 +762,6 @@ class StretchList : public STRETCHLIST {
 #endif // USE_ALTERNATE_STRETCH_LIST      
 
       
-      
-// //---------------------------------------------------------
-// //   FrameStretchMap
-// //---------------------------------------------------------
-// 
-// typedef std::map<MuseFrame_t, double, std::less<MuseFrame_t> > FRAME_STRETCH_MAP;
-// typedef FRAME_STRETCH_MAP::iterator iFrameStretch;
-// typedef FRAME_STRETCH_MAP::const_iterator ciFrameStretch;
-// typedef FRAME_STRETCH_MAP::reverse_iterator riFrameStretch;
-// typedef FRAME_STRETCH_MAP::const_reverse_iterator criFrameStretch;
-// 
-// class FrameStretchMap : public FRAME_STRETCH_MAP {
-//     
-//    friend struct PendingOperationItem;
-//     
-// //       int _tempoSN;           // serial no to track tempo changes
-// //       bool useList;
-// //       int _tempo;             // tempo if not using tempo list
-// //       int _globalTempo;       // %percent 50-200%
-//       // Whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
-//       bool _isStretched;
-// 
-//       void add(MuseFrame_t frame, double stretch, bool do_normalize = true);
-//       //void add(MuseFrame_t frame, StretchEvent* e, bool do_normalize = true);
-//       void add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize = true);
-//       void del(iStretchEvent, bool do_normalize = true);
-//       void del(MuseFrame_t frame, bool do_normalize = true);
-// 
-//    public:
-//       FrameStretchMap();
-//       ~FrameStretchMap();
-//       void normalize();
-//       void clear();
-//       void eraseRange(MuseFrame_t sframe, MuseFrame_t eframe);
-// 
-//       void read(Xml&);
-//       void write(int, Xml&) const;
-//       void dump() const;
-// 
-//       //int stretch(unsigned tick) const;
-//       double frameAt(MuseFrame_t frame) const;
-// //       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
-// //       unsigned tick2frame(unsigned tick, int* sn = 0) const;
-// //       unsigned frame2tick(unsigned frame, int* sn = 0) const;
-// //       unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const;
-// //       unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
-// //       unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
-//       
-//       double stretch(MuseFrame_t frame) const;
-//       double stretch(double frame) const;
-//       //double unStretch(MuseFrame_t frame) const;
-//       MuseFrame_t unStretch(double frame) const;
-//       // Returns whether ANY event has a stretch other than 1.0 ie. the map is stretched, a stretcher must be engaged.
-//       bool isStretched() const { return _isStretched; }
-//       
-// //       int tempoSN() const { return _tempoSN; }
-//       void setFrame(MuseFrame_t frame, double newFrame);
-//       void addFrame(MuseFrame_t frame, double newFrame, bool do_normalize = true);
-//       void delFrame(MuseFrame_t frame, bool do_normalize = true);
-// //       bool masterFlag() const { return useList; }
-// //       bool setMasterFlag(unsigned tick, bool val);
-// //       int globalTempo() const           { return _globalTempo; }
-// //       void setGlobalTempo(int val);
-//       
-// //       void addOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops); 
-// //       void delOperation(MuseFrame_t frame, PendingOperationList& ops);
-//       };
       
       
 }   // namespace MusECore

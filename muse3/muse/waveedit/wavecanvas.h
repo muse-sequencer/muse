@@ -82,8 +82,16 @@ class WEvent : public CItem {
 // REMOVE Tim. samplerate. Added.
 struct StretchSelectedItem
 {
+  MusECore::StretchListItem::StretchEventType _type;
   MusECore::StretchList* _list;
   //MusECore::MuseFrame_t _frame;
+  
+  StretchSelectedItem(MusECore::StretchListItem::StretchEventType type, 
+                      MusECore::StretchList* list = NULL)
+  {
+    _type = type;
+    _list = list;
+  }
 };
 
 typedef std::multimap<MusECore::MuseFrame_t, StretchSelectedItem, std::less<MusECore::MuseFrame_t> > StretchSelectedList_t;
@@ -92,13 +100,17 @@ typedef StretchSelectedList_t::const_iterator ciStretchSelectedItem;
 typedef StretchSelectedList_t::reverse_iterator riStretchSelectedItem;
 typedef StretchSelectedList_t::const_reverse_iterator criStretchSelectedItem;
 
+typedef std::pair<iStretchSelectedItem, iStretchSelectedItem> iStretchSelectedItemPair;
+typedef std::pair<ciStretchSelectedItem, ciStretchSelectedItem> ciStretchSelectedItemPair;
 
-enum StretchControllerVals { stretchDoNothing, stretchMovingController, stretchAddNewController };
+typedef std::pair<MusECore::MuseFrame_t, StretchSelectedItem> StretchSelectedItemInsertPair_t;
+
+enum StretchControllerVals { stretchDoNothing, stretchStartMove, stretchMovingController, stretchAddNewController };
 struct StretchAutomationObject {
   StretchSelectedList_t _stretchSelectedList;
   StretchControllerVals _controllerState;
   bool _moveController;
-  QPoint startMovePoint;
+  QPoint _startMovePoint;
   
   
   
@@ -116,6 +128,12 @@ struct StretchAutomationObject {
   //QRect currentVertexRect;
   //int currentTick;
   //int currentYNorm;
+  
+  StretchAutomationObject()
+  {
+    _controllerState = stretchDoNothing;
+    _moveController = false;
+  }
 };
 
 //---------------------------------------------------------
@@ -157,7 +175,7 @@ class WaveCanvas : public EventCanvas {
       //void applyLadspa(unsigned channels, float** data, unsigned length); //!< Apply LADSPA plugin on selection
 
       // REMOVE Tim. samplerate. Added.
-      void drawStretchAutomation(QPainter& p, const QRect& r, WEvent* wevent);
+      void drawStretchAutomation(QPainter& p, const QRect& r, WEvent* wevent) const;
 //       void drawStretchAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
 //       void drawStretchAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
 //       void checkStretchAutomation(CItem* item, const QPoint& pointer, bool addNewCtrl);
@@ -165,7 +183,7 @@ class WaveCanvas : public EventCanvas {
 //       double logToVal(double inLog, double min, double max);
 //       double valToLog(double inV, double min, double max);
 //       void newStretchAutomationVertex(QPoint inPos);
-      MusECore::iStretchEvent stretchListHitTest(QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
+      MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
       
    protected:
       virtual QPoint raster(const QPoint&) const;
@@ -177,7 +195,7 @@ class WaveCanvas : public EventCanvas {
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
-      virtual void mouseRelease(const QPoint&);
+      virtual void mouseRelease(QMouseEvent*);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter &p, const QRect &rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);

@@ -1051,7 +1051,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
 //   viewMouseReleaseEvent
 //---------------------------------------------------------
 
-void PartCanvas::mouseRelease(const QPoint&)
+void PartCanvas::mouseRelease(QMouseEvent*)
       {
           // clear all the automation parameters
           automation.moveController=false;

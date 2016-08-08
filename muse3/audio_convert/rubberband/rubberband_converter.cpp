@@ -235,8 +235,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   //const MuseFrame_t new_frame = sf->convertPosition(pos);
   //const MuseFrame_t new_frame = stretch_list->unStretch(pos);
   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
-  const double stretchVal    = stretch_list->stretchAt(new_frame);
-  const double samplerateVal = stretch_list->samplerateAt(new_frame);
+  const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
+  const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
   //DEBUG_AUDIOCONVERT(stderr, 
   //  "RubberBandAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
   
@@ -365,7 +365,7 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
     // We didn't get the total required frames. Zero the rest.
     const size_t zeros = frames - savail;
     for(int i = 0; i < fchan; ++i)
-      memset(rboutbuffer[fchan] + savail, 0, zeros * sizeof(float));
+      memset(rboutbuffer[i] + savail, 0, zeros * sizeof(float));
   }
   
   if(fchan == channels) 

@@ -90,8 +90,8 @@ WaveEventBase::WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone)
       {
 // REMOVE Tim. samplerate. Changed.
 //         f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false); // Don't show error box.
-        // Don't show error box, and assign the audio converter settings.
-        f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false, ev.f.audioConverterSettings());
+        // Don't show error box, and assign the audio converter settings and stretch list.
+        f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false, ev.f.audioConverterSettings(), ev.f.stretchList());
         
 // REMOVE Tim. samplerate. Added.
 // #ifdef USE_SAMPLERATE

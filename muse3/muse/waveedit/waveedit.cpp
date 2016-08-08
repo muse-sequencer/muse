@@ -74,7 +74,7 @@ namespace MusEGui {
 
 static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
                            MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool |
-                           StretchTool; // REMOVE Tim. samplerate. Added.
+                           StretchTool | SamplerateTool; // REMOVE Tim. samplerate. Added.
 
 int WaveEdit::_rasterInit = 96;
 int WaveEdit::colorModeInit = 0;
@@ -723,6 +723,11 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::StretchTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_SAMPLERATE].key) {
+            tools2->set(MusEGui::SamplerateTool);
+            return;
+            }
+            
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
             if (colorMode == 0)
                   colorMode = 1;

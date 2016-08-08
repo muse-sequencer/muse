@@ -57,28 +57,28 @@ struct PendingOperationItem
                               ModifySongLength,
                               AddMidiInstrument,       DeleteMidiInstrument,
                               AddMidiDevice,           DeleteMidiDevice,       
-                              ModifyMidiDeviceAddress, ModifyMidiDeviceFlags,   ModifyMidiDeviceName,
-                              AddTrack,                DeleteTrack,             MoveTrack,          ModifyTrackName,
-                              SetTrackRecord,          SetTrackMute,            SetTrackSolo,
-                              AddPart,                 DeletePart,  MovePart,   ModifyPartLength,   ModifyPartName,
+                              ModifyMidiDeviceAddress, ModifyMidiDeviceFlags,     ModifyMidiDeviceName,
+                              AddTrack,                DeleteTrack,               MoveTrack,          ModifyTrackName,
+                              SetTrackRecord,          SetTrackMute,              SetTrackSolo,
+                              AddPart,                 DeletePart,  MovePart,     ModifyPartLength,   ModifyPartName,
                               AddEvent,                DeleteEvent,
-                              AddMidiCtrlVal,          DeleteMidiCtrlVal,       ModifyMidiCtrlVal,  AddMidiCtrlValList,
-                              AddAudioCtrlVal,         DeleteAudioCtrlVal,      ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-                              AddTempo,                DeleteTempo,             ModifyTempo,        SetGlobalTempo, 
-                              AddSig,                  DeleteSig,               ModifySig,
-                              AddKey,                  DeleteKey,               ModifyKey,
+                              AddMidiCtrlVal,          DeleteMidiCtrlVal,         ModifyMidiCtrlVal,  AddMidiCtrlValList,
+                              AddAudioCtrlVal,         DeleteAudioCtrlVal,        ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+                              AddTempo,                DeleteTempo,               ModifyTempo,        SetGlobalTempo, 
+                              AddSig,                  DeleteSig,                 ModifySig,
+                              AddKey,                  DeleteKey,                 ModifyKey,
                               //REMOVE Tim. samplerate. Added.
-                              ModifyDefaultAudioConverterSettings,              ModifyLocalAudioConverterSettings, 
-                              AddStretchRatioAt,       DeleteStretchRatioAt,    ModifyStretchRatioAt,
-                              AddSamplerateRatioAt,    DeleteSamplerateRatioAt, ModifySamplerateRatioAt,
-                              AddPitchRatioAt,         DeletePitchRatioAt,      ModifyPitchRatioAt,
-                              ModifyStretchRatio,      ModifySamplerateRatio,   ModifyPitchRatio,
-                              ModifyStretchedFrameForStretch,                   ModifySquishedFrameForStretch,
-                              ModifyStretchedFrameForResample,                  ModifySquishedFrameForResample,
+                              ModifyDefaultAudioConverterSettings,                ModifyLocalAudioConverterSettings, 
+                              AddStretchListRatioAt,   DeleteStretchListRatioAt,  ModifyStretchListRatioAt,
+                              //AddSamplerateRatioAt,    DeleteSamplerateRatioAt, ModifySamplerateRatioAt,
+                              //AddPitchRatioAt,         DeletePitchRatioAt,      ModifyPitchRatioAt,
+                              ModifyStretchListRatio,      //ModifySamplerateRatio,   ModifyPitchRatio,
+                              //ModifyStretchedFrameForStretch,                   ModifySquishedFrameForStretch,
+                              //ModifyStretchedFrameForResample,                  ModifySquishedFrameForResample,
                               
                               AddAuxSendValue,   
                               AddRoute,                DeleteRoute, 
-                              AddRouteNode,            DeleteRouteNode,         ModifyRouteNode,
+                              AddRouteNode,            DeleteRouteNode,           ModifyRouteNode,
                               UpdateSoloStates,
                               EnableAllAudioControllers
                               }; 
@@ -129,7 +129,7 @@ struct PendingOperationItem
   iTEvent _iTEvent;
   AL::iSigEvent _iSigEvent;
   iKeyEvent _iKeyEvent;
-  iStretchEvent _iStretchEvent;
+  iStretchListItem _iStretchEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
   iRoute _iRoute;
@@ -156,6 +156,7 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+    int _stretch_type;
     AudioConverterPluginI* _audio_converter_ui;
   };
 
@@ -344,26 +345,46 @@ struct PendingOperationItem
 //   PendingOperationItem(StretchList* sl, const iStretchEvent& ise, double stretch, PendingOperationType type = ModifyStretch)
 //     { _type = type; _stretch_list = sl; _iStretchEvent = ise; _stretch_value = stretch; }
 
-  PendingOperationItem(StretchList* sl, MuseFrame_t frame, double ratio, 
-                       PendingOperationType type) // Type is AddStretchRatioAt or AddSamplerateRatioAt or AddPitchRatioAt
-    { _type = type; _stretch_list = sl; _museFrame = frame; _audio_converter_value = ratio; }
+//   PendingOperationItem(StretchList* sl, MuseFrame_t frame, double ratio, 
+//                        PendingOperationType type) // Type is AddStretchRatioAt or AddSamplerateRatioAt or AddPitchRatioAt
+//     { _type = type; _stretch_list = sl; _museFrame = frame; _audio_converter_value = ratio; }
+//     
+//   PendingOperationItem(StretchList* sl, const iStretchEvent& ise, 
+//                        PendingOperationType type) // Type is DeleteStretchRatioAt or DeleteSamplerateRatioAt or DeletePitchRatioAt
+//     { _type = type; _stretch_list = sl; _iStretchEvent = ise; }
+//     
+//   PendingOperationItem(StretchList* sl, const iStretchEvent& ise, MuseFrame_t new_frame, double ratio, 
+//                        PendingOperationType type) // Type is ModifyStretchRatioAt or ModifySamplerateRatioAt or ModifyPitchRatioAt
+//     { _type = type; _stretch_list = sl; _iStretchEvent = ise; _museFrame = new_frame; _audio_converter_value = ratio; }
+//   
+//   PendingOperationItem(StretchList* sl, double ratio, 
+//                        PendingOperationType type) // Type is ModifyStretchRatio or ModifySamplerateRatio or ModifyPitchRatio
+//     { _type = type; _stretch_list = sl; _audio_converter_value = ratio; }
+//   
+//   PendingOperationItem(StretchList* sl, MuseFrame_t new_frame, 
+//                        PendingOperationType type) // Type is ModifyStretchedFrameForStretch or ModifyStretchedFrameForResample
+//                                                   //       or ModifySquishedFrameForStretch or ModifySquishedFrameForResample
+//     { _type = type; _stretch_list = sl; _museFrame = new_frame; }
+
+  PendingOperationItem(int stretchType, StretchList* sl, MuseFrame_t frame, double ratio, PendingOperationType type = AddStretchListRatioAt)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _museFrame = frame; _audio_converter_value = ratio; }
     
-  PendingOperationItem(StretchList* sl, const iStretchEvent& ise, 
-                       PendingOperationType type) // Type is DeleteStretchRatioAt or DeleteSamplerateRatioAt or DeletePitchRatioAt
-    { _type = type; _stretch_list = sl; _iStretchEvent = ise; }
+  PendingOperationItem(int stretchTypes, StretchList* sl, const iStretchListItem& ise, PendingOperationType type = DeleteStretchListRatioAt)
+    { _type = type; _stretch_type = stretchTypes, _stretch_list = sl; _iStretchEvent = ise; }
     
-  PendingOperationItem(StretchList* sl, const iStretchEvent& ise, MuseFrame_t new_frame, double ratio, 
-                       PendingOperationType type) // Type is ModifyStretchRatioAt or ModifySamplerateRatioAt or ModifyPitchRatioAt
-    { _type = type; _stretch_list = sl; _iStretchEvent = ise; _museFrame = new_frame; _audio_converter_value = ratio; }
+  PendingOperationItem(int stretchType, StretchList* sl, const iStretchListItem& ise, MuseFrame_t new_frame, double ratio, 
+                       PendingOperationType type = ModifyStretchListRatioAt)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _iStretchEvent = ise; 
+      _museFrame = new_frame; _audio_converter_value = ratio; }
   
-  PendingOperationItem(StretchList* sl, double ratio, 
-                       PendingOperationType type) // Type is ModifyStretchRatio or ModifySamplerateRatio or ModifyPitchRatio
-    { _type = type; _stretch_list = sl; _audio_converter_value = ratio; }
   
-  PendingOperationItem(StretchList* sl, MuseFrame_t new_frame, 
-                       PendingOperationType type) // Type is ModifyStretchedFrameForStretch or ModifyStretchedFrameForResample
-                                                  //       or ModifySquishedFrameForStretch or ModifySquishedFrameForResample
-    { _type = type; _stretch_list = sl; _museFrame = new_frame; }
+  PendingOperationItem(int stretchType, StretchList* sl, double ratio, PendingOperationType type = ModifyStretchListRatio)
+    { _type = type; _stretch_type = stretchType, _stretch_list = sl; _audio_converter_value = ratio; }
+  
+//   PendingOperationItem(StretchList* sl, MuseFrame_t new_frame, 
+//                        PendingOperationType type) // Type is ModifyStretchedFrameForStretch or ModifyStretchedFrameForResample
+//                                                   //       or ModifySquishedFrameForStretch or ModifySquishedFrameForResample
+//     { _type = type; _stretch_list = sl; _museFrame = new_frame; }
   
 
   

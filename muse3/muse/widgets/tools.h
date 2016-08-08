@@ -49,7 +49,9 @@ enum Tool {
    MuteTool=2048,
    AutomationTool=4096,
    CursorTool=8192,
-   StretchTool=16384 // REMOVE Tim. samplerate. Added.
+   // REMOVE Tim. samplerate. Added.
+   StretchTool=16384,
+   SamplerateTool=32768
 };
 
 extern QMap<int,int> toolShortcuts;

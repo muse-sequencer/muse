@@ -163,7 +163,7 @@ void StretchList::normalize()
       double newFrame = 0;
       _isStretched = false;
       for (iStretchEvent e = begin(); e != end(); ++e) {
-            e->second->_stretchedFrame = newFrame;
+            e->second->_finStretchedFrame = newFrame;
             // If ANY event has a stretch other than 1.0, the map is stretched, a stretcher must be engaged.
             if(e->second->_stretch != 1.0)
               _isStretched = true;
@@ -186,7 +186,7 @@ void StretchList::dump() const
       for (ciStretchEvent i = begin(); i != end(); ++i) {
             fprintf(stderr, "%6ld %06ld Stretch %f newFrame %f\n",
                i->first, i->second->_frame, i->second->_stretch,
-               i->second->_stretchedFrame);
+               i->second->_finStretchedFrame);
             }
       }
 
@@ -398,8 +398,8 @@ double StretchList::stretch(MuseFrame_t frame) const
             double dtime   = double(dframe) / i->second->_stretch;
             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
             //MuseFrame_t dNewframe   = lrint(dtime);
-            //f = i->second->_stretchedFrame + dNewframe;
-            f = i->second->_stretchedFrame + dtime;
+            //f = i->second->_finStretchedFrame + dNewframe;
+            f = i->second->_finStretchedFrame + dtime;
       }
       //else
       //{
@@ -425,7 +425,7 @@ double StretchList::stretch(double frame) const
                   }
             double dframe = frame - (double)i->second->_frame;
             double dtime   = dframe / i->second->_stretch;
-            f = i->second->_stretchedFrame + dtime;
+            f = i->second->_finStretchedFrame + dtime;
       }
       //else
       //{
@@ -465,15 +465,15 @@ MuseFrame_t StretchList::unStretch(double frame) const
                   ++ee;
                   if (ee == end())
                         break;
-                  if (frame < ee->second->_stretchedFrame)
+                  if (frame < ee->second->_finStretchedFrame)
                         break;
                   e = ee;
                   }
             //unsigned te  = e->second->tempo;
             double te  = e->second->_stretch;
             //int dframe   = frame - e->second->frame;
-            //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
-            double dframe  = frame - e->second->_stretchedFrame;
+            //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
+            double dframe  = frame - e->second->_finStretchedFrame;
             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
             //double dtime = double(dframe);
             //tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
@@ -696,6 +696,7 @@ MuseFrame_t StretchEvent::read(Xml& xml)
 #else  // USE_ALTERNATE_STRETCH_LIST
 
 
+
 //---------------------------------------------------------
 //   StretchList
 //---------------------------------------------------------
@@ -719,34 +720,52 @@ StretchList::~StretchList()
 {
 }
 
-//---------------------------------------------------------
-//   add
-//---------------------------------------------------------
-
-// void StretchList::add(MuseFrame_t frame, double stretch, bool do_normalize)
-//       {
-//       std::pair<iStretchEvent, bool> res = insert(std::pair<const MuseFrame_t, StretchEvent> (frame, StretchEvent(stretch)));
-//       // Item already exists? Assign.
-//       if(!res.second)
-//         res.first->second._stretch = stretch;
-//       
-//       if(do_normalize)      
-//         normalize();
-//       }
-void StretchList::addStr(MuseFrame_t frame, double stretch, bool do_normalize)
+void StretchList::add(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, bool do_normalize)
 {
-  // The '1.0' samplerate will be filled in if neccessary by normalize() below.
-  std::pair<iStretchEvent, bool> res = 
-    insert(std::pair<const MuseFrame_t, StretchEvent> 
-      (frame, StretchEvent(stretch, 1.0, StretchEvent::StretchEventType)));
+  // Some '1.0' values will be filled in if neccessary by normalize() below.
+  double str = 1.0;
+  double srr = 1.0;
+  double psr = 1.0;
+  switch(type)
+  {
+    case StretchListItem::StretchEvent:
+      str = value;
+    break;
+    
+    case StretchListItem::SamplerateEvent:
+      srr = value;
+    break;
+    
+    case StretchListItem::PitchEvent:
+      psr = value;
+    break;
+  }
+  
+  std::pair<iStretchListItem, bool> res = 
+    insert(std::pair<const MuseFrame_t, StretchListItem> 
+      (frame, StretchListItem(str, srr, psr, type)));
     
   // Item already exists? Assign.
   if(!res.second)
   {
-    // Set the stretch. But leave the samplerate alone.
-    res.first->second._stretchRatio = stretch;
+    // Set the type's value. But leave the others alone.
+    switch(type)
+    {
+      case StretchListItem::StretchEvent:
+        res.first->second._stretchRatio = value;
+      break;
+      
+      case StretchListItem::SamplerateEvent:
+        res.first->second._samplerateRatio = value;
+      break;
+      
+      case StretchListItem::PitchEvent:
+        res.first->second._pitchRatio = value;
+      break;
+    }
+    
     // Combine the type.
-    res.first->second._type |= StretchEvent::StretchEventType;
+    res.first->second._type |= type;
   }
   
   // Mark as invalidated, normalization is required.
@@ -756,22 +775,19 @@ void StretchList::addStr(MuseFrame_t frame, double stretch, bool do_normalize)
     normalizeListFrames();
 }
 
-void StretchList::addSR(MuseFrame_t frame, double samplerate, bool do_normalize)
+void StretchList::add(MuseFrame_t frame, const StretchListItem& e, bool do_normalize)
 {
-  // The '1.0' stretch will be filled in if neccessary by normalize() below.
-  std::pair<iStretchEvent, bool> res = 
-    insert(std::pair<const MuseFrame_t, StretchEvent> 
-      (frame, StretchEvent(1.0, samplerate, StretchEvent::SamplerateEventType)));
-    
+  std::pair<iStretchListItem, bool> res = insert(std::pair<const MuseFrame_t, StretchListItem> (frame, e));
+  
   // Item already exists? Assign.
   if(!res.second)
   {
-    // Set the samplerate. But leave the stretch alone.
-    res.first->second._samplerateRatio = samplerate;
-    // Combine the type.
-    res.first->second._type |= StretchEvent::SamplerateEventType;
+    //res.first->second = e;
+    res.first->second._stretchRatio = e._stretchRatio;
+    res.first->second._samplerateRatio = e._samplerateRatio;
+    res.first->second._pitchRatio = e._pitchRatio;
   }
-  
+    
   // Mark as invalidated, normalization is required.
   _isNormalized = false;
   
@@ -779,100 +795,39 @@ void StretchList::addSR(MuseFrame_t frame, double samplerate, bool do_normalize)
     normalizeListFrames();
 }
 
-void StretchList::add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize)
+void StretchList::del(int types, MuseFrame_t frame, bool do_normalize)
 {
-  std::pair<iStretchEvent, bool> res = insert(std::pair<const MuseFrame_t, StretchEvent> (frame, e));
-  
-  // Item already exists? Assign.
-  if(!res.second)
+  iStretchListItem e = find(frame);
+  if(e == end()) 
   {
-    //fprintf(stderr, "StretchList::add insert failed: stretchlist:%p stretch:%f samplerate:%f frame:%ld\n", 
-    //                  this, e._stretchRatio, e._samplerateRatio, frame);
-//     // Set the stretch. But leave the samplerate alone.
-//     res.first->second._stretchRatio = e._stretchRatio;
-//     // Set the samplerate. But leave the stretch alone.
-//     res.first->second._samplerateRatio = e._samplerateRatio;
-//     // Combine the type.
-//     res.first->second._type = e._type;
-    res.first->second = e; // Assign.
+    ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", frame);
+    return;
   }
-//   else
-//   {
-//     iStretchEvent ine = res.first;
-//     ++ine; // There is always a 'next' stretch event - there is always one at index MAX_FRAME + 1.
-//     StretchEvent* ne = ine->second;
-//     
-//     // Swap the values. (This is how the stretch list works.)
-//     e->_stretch = ne->_stretch;
-//     e->_frame = ne->_frame;
-//     ne->_stretch = stretch;
-//     ne->_frame = frame;
-    
+  e->second._type &= ~types;
+  if(e->second._type == 0)
+    erase(e);
+  
   // Mark as invalidated, normalization is required.
   _isNormalized = false;
   
-    if(do_normalize)      
-      normalizeListFrames();
-//   }
+  if(do_normalize)
+    normalizeListFrames();
 }
 
-//---------------------------------------------------------
-//   addStretchOperation
-//---------------------------------------------------------
-
-void StretchList::addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
+void StretchList::del(int types, iStretchListItem item, bool do_normalize)
 {
-  iStretchEvent ie = find(frame);
-  if(ie != end())
-    ops.add(PendingOperationItem(this, ie, frame, stretch, PendingOperationItem::ModifyStretchRatioAt));
-  else
-    ops.add(PendingOperationItem(this, frame, stretch, PendingOperationItem::AddStretchRatioAt));
+  item->second._type &= ~types;
+
+  if(item->second._type == 0)
+    erase(item);
+  
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
 }
 
-void StretchList::addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops)
-{
-  iStretchEvent ie = find(frame);
-  if(ie != end())
-    ops.add(PendingOperationItem(this, ie, frame, samplerate, PendingOperationItem::ModifySamplerateRatioAt));
-  else
-    ops.add(PendingOperationItem(this, frame, samplerate, PendingOperationItem::AddSamplerateRatioAt));
-}
-
-//---------------------------------------------------------
-//   delStretchOperation
-//---------------------------------------------------------
-
-void StretchList::delStretchOperation(MuseFrame_t frame, PendingOperationList& ops)
-{
-  iStretchEvent e = find(frame);
-  if (e == end()) {
-        printf("StretchList::delStretchOperation frame:%ld not found\n", frame);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteStretchRatioAt);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
-
-//---------------------------------------------------------
-//   delSamplerateOperation
-//---------------------------------------------------------
-
-void StretchList::delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops)
-{
-  iStretchEvent e = find(frame);
-  if (e == end()) {
-        printf("StretchList::delSamplerateOperation frame:%ld not found\n", frame);
-        return;
-        }
-  PendingOperationItem poi(this, e, PendingOperationItem::DeleteSamplerateRatioAt);
-  // NOTE: Deletion is done in post-RT stage 3.
-  ops.add(poi);
-}
-
-//---------------------------------------------------------
-//   normalizeFrames
-//---------------------------------------------------------
 
 void StretchList::normalizeFrames()
 {
@@ -896,29 +851,39 @@ void StretchList::normalizeListFrames()
   MuseFrame_t prevFrame;
   double prevNewFrame;
   double prevNewUnFrame;
+  double prevNewStretchFrame;
+  double prevNewUnStretchFrame;
+  double prevNewSamplerateFrame;
+  double prevNewUnSamplerateFrame;
+  
   double prevStretch = 1.0;
   double prevSamplerate = 1.0;
   double prevPitch = 1.0;
-  _isStretched = false;
-  _isResampled = false;
-  _isPitchShifted = false;
-  for(iStretchEvent ise = begin(); ise != end(); ++ise)
+  
+  // If ANY intrinsic or list event has a stretch or samplerate other than 1.0, 
+  //  the map is stretched, a stretcher or samplerate converter must be engaged.
+  _isStretched = (_stretchRatio != 1.0);
+  _isResampled = (_samplerateRatio != 1.0);
+  _isPitchShifted = (_pitchRatio != 1.0);
+  for(iStretchListItem ise = begin(); ise != end(); ++ise)
   {
-    StretchEvent& se = ise->second;
-    
-    // If ANY event has a stretch or samplerate other than 1.0, the map is stretched, 
-    //  a stretcher or samplerate converter must be engaged.
-    if(((se._type & StretchEvent::StretchEventType) && se._stretchRatio != 1.0) || _stretchRatio != 1.0) 
+    StretchListItem& se = ise->second;
+    if(((se._type & StretchListItem::StretchEvent) && se._stretchRatio != 1.0)) 
       _isStretched = true;
-    if(((se._type & StretchEvent::SamplerateEventType) && se._samplerateRatio != 1.0) || _samplerateRatio != 1.0)
+    if(((se._type & StretchListItem::SamplerateEvent) && se._samplerateRatio != 1.0))
       _isResampled = true;
-    if(((se._type & StretchEvent::PitchEventType) && se._pitchRatio != 1.0) || _pitchRatio != 1.0)
+    if(((se._type & StretchListItem::PitchEvent) && se._pitchRatio != 1.0))
       _isPitchShifted = true;
     
     if(ise == begin())
     {
-//       prevFrame = prevNewFrame = se._stretchedFrame = ise->first;
-      prevFrame = prevNewUnFrame = prevNewFrame = se._squishedFrame = se._stretchedFrame = ise->first;
+//       prevFrame = prevNewFrame = se._finStretchedFrame = ise->first;
+      prevFrame = prevNewUnFrame = prevNewFrame = 
+        prevNewStretchFrame = prevNewUnStretchFrame = 
+        prevNewSamplerateFrame = prevNewUnSamplerateFrame = 
+        se._finSquishedFrame = se._finStretchedFrame = 
+        se._stretchStretchedFrame = se._stretchSquishedFrame = 
+        se._samplerateStretchedFrame = se._samplerateSquishedFrame = ise->first;
     }
     else
     {
@@ -927,27 +892,50 @@ void StretchList::normalizeListFrames()
       //dtime = double(dframe) / (prevStretch + prevSamplerate - 1.0);
       factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
       dtime = double(dframe) * factor;
-      se._stretchedFrame = prevNewFrame + dtime;
-      prevNewFrame = se._stretchedFrame;
+      se._finStretchedFrame = prevNewFrame + dtime;
+      prevNewFrame = se._finStretchedFrame;
       
       duntime = double(dframe) / factor;
-      se._squishedFrame = prevNewUnFrame + duntime;
-      prevNewUnFrame = se._squishedFrame;
+      se._finSquishedFrame = prevNewUnFrame + duntime;
+      prevNewUnFrame = se._finSquishedFrame;
+
+
+      
+      factor = 1.0 / (_stretchRatio * prevStretch);
+      dtime = double(dframe) * factor;
+      se._stretchStretchedFrame = prevNewStretchFrame + dtime;
+      prevNewStretchFrame = se._stretchStretchedFrame;
+      
+      duntime = double(dframe) / factor;
+      se._stretchSquishedFrame = prevNewUnStretchFrame + duntime;
+      prevNewUnStretchFrame = se._stretchSquishedFrame;
+
+
+      
+      factor = (_samplerateRatio * prevSamplerate);
+      dtime = double(dframe) * factor;
+      se._samplerateStretchedFrame = prevNewSamplerateFrame + dtime;
+      prevNewSamplerateFrame = se._samplerateStretchedFrame;
+      
+      duntime = double(dframe) / factor;
+      se._samplerateSquishedFrame = prevNewUnSamplerateFrame + duntime;
+      prevNewUnSamplerateFrame = se._samplerateSquishedFrame;
+
       
       prevFrame = ise->first;
     }
 
-    if(se._type & StretchEvent::StretchEventType)
+    if(se._type & StretchListItem::StretchEvent)
       prevStretch = se._stretchRatio;
     else
       se._stretchRatio = prevStretch;
     
-    if(se._type & StretchEvent::SamplerateEventType)
+    if(se._type & StretchListItem::SamplerateEvent)
       prevSamplerate = se._samplerateRatio;
     else
       se._samplerateRatio = prevSamplerate;
     
-    if(se._type & StretchEvent::PitchEventType)
+    if(se._type & StretchListItem::PitchEvent)
       prevPitch = se._pitchRatio;
     else
       se._pitchRatio = prevPitch;
@@ -969,586 +957,49 @@ void StretchList::normalizeListRatios()
   
 }
 
-
-
-//---------------------------------------------------------
-//   dump
-//---------------------------------------------------------
-
-void StretchList::dump() const
-{
-  fprintf(stderr, "\nStretchList:\n");
-  for(ciStretchEvent i = begin(); i != end(); ++i) 
-  {
-    fprintf(stderr, "frame:%6ld StretchRatio:%f SamplerateRatio:%f PitchRatio:%f "
-                    "newFrame:%f newUnFrame:%f isNormalized:%d\n",
-      i->first, i->second._stretchRatio, i->second._samplerateRatio, i->second._pitchRatio, 
-      i->second._stretchedFrame, i->second._squishedFrame, _isNormalized);
-  }
-}
-
 //---------------------------------------------------------
 //   clear
 //---------------------------------------------------------
 
 void StretchList::clear()
 {
-  STRETCHLIST::clear();
+  StretchList_t::clear();
   // Mark as invalidated, normalization is required.
   _isNormalized = false;
 }
 
-//---------------------------------------------------------
-//   eraseStretchRange
-//---------------------------------------------------------
-
-void StretchList::eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe)
-{
-  if(sframe >= eframe)
-    return;
-  iStretchEvent se = lower_bound(sframe);
-  if(se == end())
-    return;
-  iStretchEvent ee = upper_bound(eframe);
-  
-  for(iStretchEvent ise = se; ise != ee; )
-  {
-    ise->second._type &= ~StretchEvent::StretchEventType;
-    if(ise->second._type == 0)
-    {
-      iStretchEvent ise_save = ise;
-      erase(ise);
-      ise = ise_save;
-    }
-    else
-      ++ise;
-  }
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  normalizeListFrames();
-}
-      
-//---------------------------------------------------------
-//   eraseSamplerateRange
-//---------------------------------------------------------
-
-void StretchList::eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe)
-{
-  if(sframe >= eframe)
-    return;
-  iStretchEvent se = lower_bound(sframe);
-  if(se == end())
-    return;
-  iStretchEvent ee = upper_bound(eframe);
-  
-  for(iStretchEvent ise = se; ise != ee; )
-  {
-    ise->second._type &= ~StretchEvent::SamplerateEventType;
-    if(ise->second._type == 0)
-    {
-      iStretchEvent ise_save = ise;
-      erase(ise);
-      ise = ise_save;
-    }
-    else
-      ++ise;
-  }
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  normalizeListFrames();
-}
-      
 //---------------------------------------------------------
 //   eraseRange
 //---------------------------------------------------------
 
-void StretchList::eraseRange(MuseFrame_t sframe, MuseFrame_t eframe)
+void StretchList::eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe)
 {
   if(sframe >= eframe)
     return;
-  iStretchEvent se = lower_bound(sframe);
+  iStretchListItem se = lower_bound(sframe);
   if(se == end())
     return;
-  iStretchEvent ee = upper_bound(eframe);
-  erase(se, ee); // Erase range does NOT include the last element.
-    
+  iStretchListItem ee = upper_bound(eframe);
+  
+  for(iStretchListItem ise = se; ise != ee; )
+  {
+    ise->second._type &= ~types;
+    if(ise->second._type == 0)
+    {
+      iStretchListItem ise_save = ise;
+      erase(ise);
+      ise = ise_save;
+    }
+    else
+      ++ise;
+  }
+  
   // Mark as invalidated, normalization is required.
   _isNormalized = false;
   
   normalizeListFrames();
 }
-
-
-void StretchList::setStartFrame(MuseFrame_t frame, bool do_normalize)
-{ 
-  _startFrame = frame;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setEndFrame(MuseFrame_t frame, bool do_normalize)
-{ 
-  _endFrame = frame;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setStretchedEndFrame(MuseFrame_t frame, bool do_normalize)
-{ 
-  _stretchedEndFrame = frame;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setSquishedEndFrame(MuseFrame_t frame, bool do_normalize)
-{ 
-  _squishedEndFrame = frame;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setStretchRatio(double ratio, bool do_normalize)
-{ 
-  _stretchRatio = ratio;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setSamplerateRatio(double ratio, bool do_normalize)
-{ 
-  _samplerateRatio = ratio;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-void StretchList::setPitchRatio(double ratio, bool do_normalize)
-{ 
-  _pitchRatio = ratio;
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-
-iStretchEvent StretchList::findEvent(MuseFrame_t frame, int type)
-{
-  iStretchEventPair res = equal_range(frame);
-  for(iStretchEvent ise = res.first; ise != res.second; ++ise)
-  {
-    if(ise->second._type == type)
-      return ise;
-  }
-  return end();
-}
-
-ciStretchEvent StretchList::findEvent(MuseFrame_t frame, int type) const
-{
-  ciStretchEventPair res = equal_range(frame);  // FIXME Calls non-const version ??
-  for(ciStretchEvent ise = res.first; ise != res.second; ++ise)
-  {
-    if(ise->second._type == type)
-      return ise;
-  }
-  return end();
-}
-
-
-//---------------------------------------------------------
-//   stretchAt
-//---------------------------------------------------------
-
-double StretchList::stretchAt(MuseFrame_t frame) const
-{
-  ciStretchEvent i = upper_bound(frame);
-  if(i == begin())
-    return 1.0;
-  --i;
-  return i->second._stretchRatio;
-}
-
-//---------------------------------------------------------
-//   samplerateAt
-//---------------------------------------------------------
-
-double StretchList::samplerateAt(MuseFrame_t frame) const
-{
-  ciStretchEvent i = upper_bound(frame);
-  if(i == begin())
-    return 1.0;
-  --i;
-  return i->second._samplerateRatio;
-}
-
-// //---------------------------------------------------------
-// //   eventAt
-// //---------------------------------------------------------
-// 
-// StretchEvent StretchList::eventAt(MuseFrame_t frame) const
-// {
-//   ciStretchEvent i = upper_bound(frame);
-//   if(i == begin())
-//     return 1.0;
-//   --i;
-//   return i->second._samplerateRatio;
-// }
-
-//---------------------------------------------------------
-//   delStr
-//---------------------------------------------------------
-
-void StretchList::delStr(MuseFrame_t frame, bool do_normalize)
-{
-  iStretchEvent e = find(frame);
-  if(e == end()) 
-  {
-    fprintf(stderr, "StretchList::delStr(%ld): not found\n", frame);
-    return;
-  }
-  e->second._type &= ~StretchEvent::StretchEventType;
-  if(e->second._type == 0)
-    erase(e);
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-//---------------------------------------------------------
-//   delSR
-//---------------------------------------------------------
-
-void StretchList::delSR(MuseFrame_t frame, bool do_normalize)
-{
-  iStretchEvent e = find(frame);
-  if(e == end()) 
-  {
-    fprintf(stderr, "StretchList::delSR(%ld): not found\n", frame);
-    return;
-  }
-  e->second._type &= ~StretchEvent::SamplerateEventType;
-  if(e->second._type == 0)
-    erase(e);
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  if(do_normalize)
-    normalizeListFrames();
-}
-
-//---------------------------------------------------------
-//   del
-//---------------------------------------------------------
-
-void StretchList::del(iStretchEvent e, bool do_normalize)
-{
-  erase(e);
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  if(do_normalize)
-    normalizeListFrames();
-}
       
-//---------------------------------------------------------
-//   setStretch
-//---------------------------------------------------------
-
-void StretchList::setStretch(MuseFrame_t frame, double newStretch)
-{
-  addStr(frame, newStretch);
-}
-
-//---------------------------------------------------------
-//   addStretch
-//---------------------------------------------------------
-
-void StretchList::addStretch(MuseFrame_t frame, double stretch, bool do_normalize)
-{
-  addStr(frame, stretch, do_normalize);
-}
-
-//---------------------------------------------------------
-//   delStretch
-//---------------------------------------------------------
-
-void StretchList::delStretch(MuseFrame_t frame, bool do_normalize)
-{
-  delStr(frame, do_normalize);
-}
-
-//---------------------------------------------------------
-//   setSamplerate
-//---------------------------------------------------------
-
-void StretchList::setSamplerate(MuseFrame_t frame, double newSamplerate)
-{
-  addSR(frame, newSamplerate);
-}
-
-//---------------------------------------------------------
-//   addSamplerate
-//---------------------------------------------------------
-
-void StretchList::addSamplerate(MuseFrame_t frame, double samplerate, bool do_normalize)
-{
-  addSR(frame, samplerate, do_normalize);
-}
-
-//---------------------------------------------------------
-//   delSamplerate
-//---------------------------------------------------------
-
-void StretchList::delSamplerate(MuseFrame_t frame, bool do_normalize)
-{
-  delSR(frame, do_normalize);
-}
-      
-//---------------------------------------------------------
-//   stretch
-//---------------------------------------------------------
-
-double StretchList::stretch(MuseFrame_t frame) const
-{
-  double f;
-  MuseFrame_t prevFrame;
-  double prevNewFrame;
-  double prevStretch;
-  double prevSamplerate;
-  //if (useList)
-  {
-    ciStretchEvent i = upper_bound(frame);
-    if(i == begin())
-      return frame;
-    
-    --i;
-    prevFrame = i->first;
-    prevNewFrame = i->second._stretchedFrame;
-    prevStretch = i->second._stretchRatio;
-    prevSamplerate = i->second._samplerateRatio;
-    
-    const MuseFrame_t dframe = frame - prevFrame;
-    const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
-    const double dtime   = double(dframe) * factor;
-    
-    f = prevNewFrame + dtime;
-  }
-  return f;
-}
-
-double StretchList::stretch(double frame) const
-{
-  double f;
-  MuseFrame_t prevFrame;
-  double prevNewFrame;
-  double prevStretch;
-  double prevSamplerate;
-  //if (useList)
-  {
-    ciStretchEvent i = upper_bound(frame);
-    if(i == begin())
-      return frame;
-    
-    --i;
-    prevFrame = i->first;
-    prevNewFrame = i->second._stretchedFrame;
-    prevStretch = i->second._stretchRatio;
-    prevSamplerate = i->second._samplerateRatio;
-    
-    const double dframe = frame - (double)prevFrame;
-    const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
-    const double dtime   = dframe * factor;
-    f = prevNewFrame + dtime;
-  }
-  return f;
-}
-
-double StretchList::squish(MuseFrame_t frame) const
-{
-  double f;
-  MuseFrame_t prevFrame;
-  double prevNewUnFrame;
-  double prevStretch;
-  double prevSamplerate;
-  //if (useList)
-  {
-    ciStretchEvent i = upper_bound(frame);
-    if(i == begin())
-      return frame;
-    
-    --i;
-    prevFrame = i->first;
-    prevNewUnFrame = i->second._squishedFrame;
-    prevStretch = i->second._stretchRatio;
-    prevSamplerate = i->second._samplerateRatio;
-    
-    const MuseFrame_t dframe = frame - prevFrame;
-    const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
-    const double dtime   = (double)dframe * factor;
-    f = prevNewUnFrame + dtime;
-  }
-  return f;
-}
-      
-double StretchList::squish(double frame) const
-{
-  double f;
-  MuseFrame_t prevFrame;
-  double prevNewUnFrame;
-  double prevStretch;
-  double prevSamplerate;
-  //if (useList)
-  {
-    ciStretchEvent i = upper_bound(frame);
-    if(i == begin())
-      return frame;
-    
-    --i;
-    prevFrame = i->first;
-    prevNewUnFrame = i->second._squishedFrame;
-    prevStretch = i->second._stretchRatio;
-    prevSamplerate = i->second._samplerateRatio;
-    
-    const double dframe = frame - (double)prevFrame;
-    const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
-    const double dtime   = dframe * factor;
-    f = prevNewUnFrame + dtime;
-  }
-  return f;
-}
-      
-//---------------------------------------------------------
-//   unStretch
-//---------------------------------------------------------
-
-MuseFrame_t StretchList::unStretch(double frame) const
-{
-  if(empty())
-    return frame;
-    
-  MuseFrame_t prevFrame;
-  double prevNewFrame;
-  double prevStretch;
-  double prevSamplerate;
-  MuseFrame_t uframe;
-  //if (useList)
-  {
-    ciStretchEvent e;
-    for(e = begin(); e != end(); ++e) 
-    {
-      if(frame < e->second._squishedFrame)
-        break;
-    }
-          
-    if(e == begin())
-      return frame;
-          
-    --e;
-    prevFrame = e->first;
-    prevNewFrame = e->second._stretchedFrame;
-    prevStretch = e->second._stretchRatio;
-    prevSamplerate = e->second._samplerateRatio;
-    
-    const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
-    uframe = prevFrame + lrint((frame - prevNewFrame) * factor);
-  }
-  return uframe;
-}
-
-//---------------------------------------------------------
-//   unStretch
-//---------------------------------------------------------
-
-MuseFrame_t StretchList::unSquish(double frame) const
-{
-  if(empty())
-    return frame;
-    
-  MuseFrame_t prevFrame;
-  double prevNewUnFrame;
-  double prevStretch;
-  double prevSamplerate;
-  MuseFrame_t uframe;
-  //if (useList)
-  {
-    ciStretchEvent e;
-    for(e = begin(); e != end(); ++e) 
-    {
-      if(frame < e->second._squishedFrame)
-        break;
-    }
-          
-    if(e == begin())
-      return frame;
-          
-    --e;
-    prevFrame = e->first;
-    prevNewUnFrame = e->second._squishedFrame;
-    prevStretch = e->second._stretchRatio;
-    prevSamplerate = e->second._samplerateRatio;
-    
-    const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
-    uframe = prevFrame + lrint((frame - prevNewUnFrame) * factor);
-  }
-  return uframe;
-}
-
-//---------------------------------------------------------
-//   write
-//---------------------------------------------------------
-
-void StretchList::write(int level, Xml& xml) const
-{
-//       //xml.put(level++, "<stretchlist fix=\"%d\">", _tempo);
-//       xml.put(level++, "<stretchlist>");
-//       //if (_globalTempo != 100)
-//       //      xml.intTag(level, "globalTempo", _globalTempo);
-//       for (ciStretchEvent i = begin(); i != end(); ++i)
-//             //i->second->write(level, xml, i->first);
-//             i->second.write(level, xml, i->first);
-//       xml.tag(level, "/stretchlist");
-      
-      
-  if(empty())
-    return;
-  
-  //for (ciStretchEvent ise = begin(); ise != end(); ++ise)
-  //{
-        //const CtrlList* cl = icl->second;
-
-        //QString s= QString("stretchlist");
-        //s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
-        //xml.tag(level++, s.toLatin1().constData());
-        xml.tag(level++, "stretchlist");
-        int i = 0;
-        QString seStr("%1 %2 %3 %4, ");
-        for (ciStretchEvent ise = begin(); ise != end(); ++ise) {
-              xml.nput(level, 
-                       seStr.arg(ise->first)
-                            .arg(ise->second._stretchRatio)
-                            .arg(ise->second._samplerateRatio)
-                            .arg(ise->second._type)
-                            .toLatin1().constData());
-              ++i;
-              if (i >= 3) {
-                    xml.put(level, "");
-                    i = 0;
-                    }
-              }
-        if (i)
-              xml.put(level, "");
-        xml.etag(level--, "stretchlist");
-  //}
-  
-      
-}
-
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -1642,7 +1093,7 @@ void StretchList::read(Xml& xml)
 //                               _displayColor.setNamedColor(xml.s2());
 //                         }
 //                         else
-                              fprintf(stderr, "stretchlist unknown tag %s\n", tag.toLatin1().constData());
+                              ERROR_TIMESTRETCH(stderr, "stretchlist unknown tag %s\n", tag.toLatin1().constData());
                         break;
                   case Xml::Text:
                         {
@@ -1668,10 +1119,11 @@ void StretchList::read(Xml& xml)
                                 MuseFrame_t frame = fs.toLong(&ok);
                                 if(!ok)
                                 {
-                                  fprintf(stderr, "CtrlList::read failed reading frame string: %s\n", fs.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading frame string: %s\n", fs.toLatin1().constData());
                                   break;
                                 }
-                                  
+
+                                
                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
                                   ++i;
                                 if(i == len)
@@ -1686,10 +1138,11 @@ void StretchList::read(Xml& xml)
                                 double stretchVal = stretchStr.toDouble(&ok);
                                 if(!ok)
                                 {
-                                  fprintf(stderr, "CtrlList::read failed reading stretch ratio string: %s\n", stretchStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading stretch ratio string: %s\n", stretchStr.toLatin1().constData());
                                   break;
                                 }
 
+                                
                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
                                   ++i;
                                 if(i == len)
@@ -1704,10 +1157,28 @@ void StretchList::read(Xml& xml)
                                 double SRVal = SRStr.toDouble(&ok);
                                 if(!ok)
                                 {
-                                  fprintf(stderr, "CtrlList::read failed reading samplerate ratio string: %s\n", SRStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading samplerate ratio string: %s\n", SRStr.toLatin1().constData());
                                   break;
                                 }
                                 
+                                while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+                                  ++i;
+                                if(i == len)
+                                      break;
+                                QString pitchStr;
+                                while(i < len && tag[i] != ' ' && tag[i] != ',')
+                                {
+                                  pitchStr.append(tag[i]); 
+                                  ++i;
+                                }
+                                //double pitchVal = loc.toDouble(pitchStr, &ok);
+                                double pitchVal = pitchStr.toDouble(&ok);
+                                if(!ok)
+                                {
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading pitch ratio string: %s\n", pitchStr.toLatin1().constData());
+                                  break;
+                                }
+
                                 
                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
                                   ++i;
@@ -1723,14 +1194,14 @@ void StretchList::read(Xml& xml)
                                 int typeVal = typeStr.toInt(&ok);
                                 if(!ok)
                                 {
-                                  fprintf(stderr, "CtrlList::read failed reading value string: %s\n", typeStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading type string: %s\n", typeStr.toLatin1().constData());
                                   break;
                                 }
 
                                 
 // REMOVE Tim. samplerate. Changed.
 //                                 add(frame, stretchVal, false); // Defer normalize until tag end.
-                                add(frame, StretchEvent(stretchVal, SRVal, typeVal), false); // Defer normalize until tag end.
+                                add(frame, StretchListItem(stretchVal, SRVal, pitchVal, typeVal), false); // Defer normalize until tag end.
                                 // For now, the conversion only has a TEMPORARY effect during song loading.
                                 // See comments in Song::read at the "samplerate" tag.
                                 //add(MusEGlobal::convertFrame4ProjectSampleRate(frame), val);
@@ -1752,6 +1223,2467 @@ void StretchList::read(Xml& xml)
             }
         
       }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void StretchList::write(int level, Xml& xml) const
+{
+//       //xml.put(level++, "<stretchlist fix=\"%d\">", _tempo);
+//       xml.put(level++, "<stretchlist>");
+//       //if (_globalTempo != 100)
+//       //      xml.intTag(level, "globalTempo", _globalTempo);
+//       for (ciStretchEvent i = begin(); i != end(); ++i)
+//             //i->second->write(level, xml, i->first);
+//             i->second.write(level, xml, i->first);
+//       xml.tag(level, "/stretchlist");
+      
+      
+  if(empty())
+    return;
+  
+  const StretchList* sl = this;
+  
+  //for (ciStretchEvent ise = begin(); ise != end(); ++ise)
+  //{
+        //const CtrlList* cl = icl->second;
+
+        //QString s= QString("stretchlist");
+        //s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
+        //xml.tag(level++, s.toLatin1().constData());
+        xml.tag(level++, "stretchlist");
+        int i = 0;
+        QString seStr("%1 %2 %3 %4 %5, ");
+        for (ciStretchListItem ise = sl->begin(); ise != sl->end(); ++ise) {
+              xml.nput(level, 
+                       seStr.arg(ise->first)
+                            .arg(ise->second._stretchRatio)
+                            .arg(ise->second._samplerateRatio)
+                            .arg(ise->second._pitchRatio)
+                            .arg(ise->second._type)
+                            .toLatin1().constData());
+              ++i;
+              if (i >= 3) {
+                    xml.put(level, "");
+                    i = 0;
+                    }
+              }
+        if (i)
+              xml.put(level, "");
+        xml.etag(level--, "stretchlist");
+  //}
+}
+
+//---------------------------------------------------------
+//   dump
+//---------------------------------------------------------
+
+void StretchList::dump() const
+{
+  const StretchList* sl = this;
+  INFO_TIMESTRETCH(stderr, "\nStretchList: isNormalized:%d\n", _isNormalized);
+  for(ciStretchListItem i = sl->begin(); i != sl->end(); ++i) 
+  {
+    INFO_TIMESTRETCH(stderr, "frame:%6ld StretchRatio:%f SamplerateRatio:%f PitchRatio:%f "
+                    "stretchedFrame:%f squishedFrame:%f\n",
+      i->first, i->second._stretchRatio, i->second._samplerateRatio, i->second._pitchRatio, 
+      i->second._finStretchedFrame, i->second._finSquishedFrame);
+  }
+}
+
+// ------------------------------------------
+//  Intrinsic functions:
+//-------------------------------------------
+
+void StretchList::setStartFrame(MuseFrame_t frame, bool do_normalize)
+{ 
+  _startFrame = frame;
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+void StretchList::setEndFrame(MuseFrame_t frame, bool do_normalize)
+{ 
+  _endFrame = frame;
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+void StretchList::setStretchedEndFrame(MuseFrame_t frame, bool do_normalize)
+{ 
+  _stretchedEndFrame = frame;
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+void StretchList::setSquishedEndFrame(MuseFrame_t frame, bool do_normalize)
+{ 
+  _squishedEndFrame = frame;
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+double StretchList::ratio(StretchListItem::StretchEventType type) const
+{
+  switch(type)
+  {
+    case StretchListItem::StretchEvent:
+      return _stretchRatio;
+    break;
+    
+    case StretchListItem::SamplerateEvent:
+      return _samplerateRatio;
+    break;
+    
+    case StretchListItem::PitchEvent:
+      return _pitchRatio;
+    break;
+  }
+  return 1.0;
+}
+
+void StretchList::setRatio(StretchListItem::StretchEventType type, double ratio, bool do_normalize)
+{ 
+  switch(type)
+  {
+    case StretchListItem::StretchEvent:
+      _stretchRatio = ratio;
+    break;
+    
+    case StretchListItem::SamplerateEvent:
+      _samplerateRatio = ratio;
+    break;
+    
+    case StretchListItem::PitchEvent:
+      _pitchRatio = ratio;
+    break;
+  }
+  
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+void StretchList::modifyOperation(StretchListItem::StretchEventType type, double value, PendingOperationList& ops)
+{
+  ops.add(PendingOperationItem(type, this, value, PendingOperationItem::ModifyStretchListRatio));
+}
+
+
+// ------------------------------------------
+//  List functions:
+//-------------------------------------------
+
+iStretchListItem StretchList::findEvent(int type, MuseFrame_t frame)
+{
+  iStretchListItemPair res = equal_range(frame);
+  for(iStretchListItem ise = res.first; ise != res.second; ++ise)
+  {
+    if(ise->second._type & type)
+      return ise;
+  }
+  return end();
+}
+
+ciStretchListItem StretchList::cFindEvent(int type, MuseFrame_t frame) const
+{
+  const StretchList* sl = this;
+  ciStretchListItemPair res = sl->equal_range(frame);  // FIXME Calls non-const version unless cast ??
+  for(ciStretchListItem ise = res.first; ise != res.second; ++ise)
+  {
+    if(ise->second._type & type)
+      return ise;
+  }
+  return sl->end();
+}
+
+iStretchListItem StretchList::previousEvent(int type, iStretchListItem item)
+{
+  iStretchListItem i = item;
+  while(i != begin())
+  {
+    --i;
+    if(i->second._type & type)
+      return i;
+  }
+  return end();
+}
+
+ciStretchListItem StretchList::cPreviousEvent(int type, ciStretchListItem item) const
+{
+  const StretchList* sl = this;
+  ciStretchListItem i = item;
+  while(i != sl->begin())
+  {
+    --i;
+    if(i->second._type & type)
+      return i;
+  }
+  return sl->end();
+}
+
+iStretchListItem StretchList::nextEvent(int type, iStretchListItem item)
+{
+  iStretchListItem i = item;
+  while(i != end())
+  {
+    ++i;
+    if(i->second._type & type)
+      return i;
+  }
+  return end();
+}
+
+ciStretchListItem StretchList::cNextEvent(int type, ciStretchListItem item) const
+{
+  const StretchList* sl = this;
+  ciStretchListItem i = item;
+  while(i != sl->end())
+  {
+    ++i;
+    if(i->second._type & type)
+      return i;
+  }
+  return sl->end();
+}
+
+
+
+//---------------------------------------------------------
+//   ratioAt
+//---------------------------------------------------------
+
+double StretchList::ratioAt(StretchListItem::StretchEventType type, MuseFrame_t frame) const
+{
+  const StretchList* sl = this;
+  ciStretchListItem i = sl->upper_bound(frame);
+  if(i == sl->begin())
+    return 1.0;
+  --i;
+  
+  switch(type)
+  {
+    case StretchListItem::StretchEvent:
+      return i->second._stretchRatio;
+    break;
+    
+    case StretchListItem::SamplerateEvent:
+      return i->second._samplerateRatio;
+    break;
+    
+    case StretchListItem::PitchEvent:
+      return i->second._pitchRatio;
+    break;
+  }
+  
+  return 1.0;
+}
+
+//---------------------------------------------------------
+//   setRatioAt
+//---------------------------------------------------------
+
+void StretchList::setRatioAt(StretchListItem::StretchEventType type, MuseFrame_t frame, double ratio, bool do_normalize)
+{
+  add(type, frame, ratio, do_normalize);
+}
+
+void StretchList::setRatioAt(StretchListItem::StretchEventType type, iStretchListItem item, double ratio, bool do_normalize)
+{
+  item->second._type |= type;
+  switch(type)
+  {
+    case StretchListItem::StretchEvent:
+      item->second._stretchRatio = ratio;
+    break;
+    
+    case StretchListItem::SamplerateEvent:
+      item->second._samplerateRatio = ratio;
+    break;
+    
+    case StretchListItem::PitchEvent:
+      item->second._pitchRatio = ratio;
+    break;
+  }
+  
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+  
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+void StretchList::addRatioAt(StretchListItem::StretchEventType type, MuseFrame_t frame, double ratio, bool do_normalize)
+{
+  add(type, frame, ratio, do_normalize);
+}
+
+void StretchList::delRatioAt(int types, MuseFrame_t frame, bool do_normalize)
+{
+  del(types, frame, do_normalize);
+}
+
+//---------------------------------------------------------
+//   stretch
+//---------------------------------------------------------
+
+// double StretchList::stretch(MuseFrame_t frame) const
+// {
+//   const StretchList* sl = this;
+//   double f;
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   //if (useList)
+//   {
+//     ciStretchListItem i = sl->upper_bound(frame);
+//     if(i == sl->begin())
+//       return frame;
+//     
+//     --i;
+//     prevFrame = i->first;
+//     prevNewFrame = i->second._finStretchedFrame;
+//     prevStretch = i->second._stretchRatio;
+//     prevSamplerate = i->second._samplerateRatio;
+//     
+//     const MuseFrame_t dframe = frame - prevFrame;
+//     const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//     const double dtime   = double(dframe) * factor;
+//     
+//     f = prevNewFrame + dtime;
+//   }
+//   return f;
+// }
+double StretchList::stretch(MuseFrame_t frame, int type) const
+{
+  const StretchList* sl = this;
+  MuseFrame_t prevFrame;
+  double prevNewFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double dtime;
+  
+  ciStretchListItem i = sl->upper_bound(frame);
+  if(i == sl->begin())
+    return frame;
+  
+  --i;
+  prevFrame = i->first;
+  prevStretch = i->second._stretchRatio;
+  prevSamplerate = i->second._samplerateRatio;
+  const MuseFrame_t dframe = frame - prevFrame;
+  
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewFrame = i->second._finStretchedFrame;
+    dtime = double(dframe) * (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewFrame = i->second._stretchStretchedFrame;
+    dtime   = double(dframe) / (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewFrame = i->second._samplerateStretchedFrame;
+    dtime   = double(dframe) * _samplerateRatio * prevSamplerate;
+  }
+  
+  return prevNewFrame + dtime;
+}
+
+
+double StretchList::stretch(double frame, int type) const
+{
+  const StretchList* sl = this;
+  MuseFrame_t prevFrame;
+  double prevNewFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double dtime;
+  
+  ciStretchListItem i = sl->upper_bound(frame);
+  if(i == sl->begin())
+    return frame;
+  
+  --i;
+  prevFrame = i->first;
+  prevStretch = i->second._stretchRatio;
+  prevSamplerate = i->second._samplerateRatio;
+  const double dframe = frame - (double)prevFrame;
+
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewFrame = i->second._finStretchedFrame;
+    dtime = dframe * (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewFrame = i->second._stretchStretchedFrame;
+    dtime   = dframe / (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewFrame = i->second._samplerateStretchedFrame;
+    dtime   = dframe * _samplerateRatio * prevSamplerate;
+  }
+
+  return prevNewFrame + dtime;
+}
+
+double StretchList::squish(MuseFrame_t frame, int type) const
+{
+  const StretchList* sl = this;
+  MuseFrame_t prevFrame;
+  double prevNewUnFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double dtime;
+  
+  ciStretchListItem i = sl->upper_bound(frame);
+  if(i == sl->begin())
+    return frame;
+  
+  --i;
+  prevFrame = i->first;
+  prevStretch = i->second._stretchRatio;
+  prevSamplerate = i->second._samplerateRatio;
+  const MuseFrame_t dframe = frame - prevFrame;
+    
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewUnFrame = i->second._finSquishedFrame;
+    dtime = double(dframe) * (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewUnFrame = i->second._stretchSquishedFrame;
+    dtime   = double(dframe) * (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewUnFrame = i->second._samplerateSquishedFrame;
+    dtime   = double(dframe) / (_samplerateRatio * prevSamplerate);
+  }
+    
+  return prevNewUnFrame + dtime;
+}
+      
+double StretchList::squish(double frame, int type) const
+{
+  const StretchList* sl = this;
+  MuseFrame_t prevFrame;
+  double prevNewUnFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double dtime;
+  
+  ciStretchListItem i = sl->upper_bound(frame);
+  if(i == sl->begin())
+    return frame;
+  
+  --i;
+  prevFrame = i->first;
+  prevStretch = i->second._stretchRatio;
+  prevSamplerate = i->second._samplerateRatio;
+  const double dframe = frame - (double)prevFrame;
+    
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewUnFrame = i->second._finSquishedFrame;
+    dtime = dframe * (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewUnFrame = i->second._stretchSquishedFrame;
+    dtime   = dframe * (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewUnFrame = i->second._samplerateSquishedFrame;
+    dtime   = dframe / (_samplerateRatio * prevSamplerate);
+  }
+    
+  return prevNewUnFrame + dtime;
+}
+      
+//---------------------------------------------------------
+//   unStretch
+//---------------------------------------------------------
+
+MuseFrame_t StretchList::unStretch(double frame, int type) const
+{
+  const StretchList* sl = this;
+  if(sl->empty())
+    return frame;
+    
+  MuseFrame_t prevFrame;
+  double prevNewFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double factor;
+  
+  ciStretchListItem e;
+  for(e = sl->begin(); e != sl->end(); ++e) 
+  {
+    if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+        (type & StretchListItem::SamplerateEvent) && //
+        frame < e->second._finStretchedFrame) ||
+       ((type & StretchListItem::StretchEvent) &&    // Stretch only.
+        frame < e->second._stretchStretchedFrame) ||
+       ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
+        frame < e->second._samplerateStretchedFrame))
+      break;
+  }
+        
+  if(e == sl->begin())
+    return frame;
+        
+  --e;
+  prevFrame = e->first;
+  prevStretch = e->second._stretchRatio;
+  prevSamplerate = e->second._samplerateRatio;
+  
+  
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewFrame = e->second._finStretchedFrame;
+    factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewFrame = e->second._stretchStretchedFrame;
+    factor = (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewFrame = e->second._samplerateStretchedFrame;
+    factor = 1.0 / (_samplerateRatio * prevSamplerate);
+  }
+    
+  return prevFrame + lrint((frame - prevNewFrame) * factor);
+}
+
+//---------------------------------------------------------
+//   unStretch
+//---------------------------------------------------------
+
+MuseFrame_t StretchList::unSquish(double frame, int type) const
+{
+  const StretchList* sl = this;
+  if(sl->empty())
+    return frame;
+    
+  MuseFrame_t prevFrame;
+  double prevNewUnFrame;
+  double prevStretch;
+  double prevSamplerate;
+  double factor;
+  
+  ciStretchListItem e;
+  for(e = sl->begin(); e != sl->end(); ++e) 
+  {
+    if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+        (type & StretchListItem::SamplerateEvent) && //
+        frame < e->second._finSquishedFrame) ||
+       ((type & StretchListItem::StretchEvent) &&    // Stretch only.
+        frame < e->second._stretchSquishedFrame) ||
+       ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
+        frame < e->second._samplerateSquishedFrame))
+      break;
+  }
+        
+  if(e == sl->begin())
+    return frame;
+        
+  --e;
+  prevFrame = e->first;
+  prevStretch = e->second._stretchRatio;
+  prevSamplerate = e->second._samplerateRatio;
+  
+  // Full conversion requested.
+  if((type & StretchListItem::StretchEvent) && (type & StretchListItem::SamplerateEvent))
+  {
+    prevNewUnFrame = e->second._finSquishedFrame;
+    factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+  }
+  // Stretch only.
+  else if(type & StretchListItem::StretchEvent)
+  {
+    prevNewUnFrame = e->second._stretchSquishedFrame;
+    factor = 1.0 / (_stretchRatio * prevStretch);
+  }
+  // Samplerate only.
+  else if(type & StretchListItem::SamplerateEvent)
+  {
+    prevNewUnFrame = e->second._samplerateSquishedFrame;
+    factor = (_samplerateRatio * prevSamplerate);
+  }
+
+  return prevFrame + lrint((frame - prevNewUnFrame) * factor);
+}
+
+void StretchList::addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
+{
+  iStretchListItem ie = find(frame);
+  if(ie != end())
+    ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+  else
+    ops.add(PendingOperationItem(type, this, frame, value, PendingOperationItem::AddStretchListRatioAt));
+}
+
+void StretchList::delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
+{
+  iStretchListItem e = find(frame);
+  if (e == end()) {
+        ERROR_TIMESTRETCH(stderr, "StretchList::delOperation frame:%ld not found\n", frame);
+        return;
+        }
+  PendingOperationItem poi(types, this, e, PendingOperationItem::DeleteStretchListRatioAt);
+  // NOTE: Deletion is done in post-RT stage 3.
+  ops.add(poi);
+}
+
+void StretchList::modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops)
+{
+  iStretchListItem ie = find(frame);
+  if(ie == end()) {
+        ERROR_TIMESTRETCH(stderr, "StretchList::modifyListOperation frame:%ld not found\n", frame);
+        return;
+        }
+  ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// //---------------------------------------------------------
+// //   StretchList
+// //---------------------------------------------------------
+// 
+// StretchList::StretchList()
+// {
+//   _isStretched = false;
+//   _isResampled = false;
+//   _isPitchShifted = false;
+//   _isNormalized = false;
+//   _startFrame = 0;
+//   _endFrame = 0;
+//   _stretchedEndFrame = 0;
+//   _squishedEndFrame = 0;
+//   _stretchRatio = 1.0;
+//   _samplerateRatio = 1.0;
+//   _pitchRatio = 1.0;
+// }
+// 
+// StretchList::~StretchList()
+// {
+// }
+// 
+// void StretchList::add(int type, MuseFrame_t frame, double value, bool do_normalize = true)
+// {
+//   StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+//   
+//   std::pair<iStretchEvent, bool> res = list->insert(
+//     std::pair<const MuseFrame_t, StretchListItem> (frame, StretchListItem(value)));
+//   
+//   // Item already exists? Assign.
+//   if(!res.second)
+//     // Set the stretch. But leave the samplerate alone.
+//     res.first->second._value = value;
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)      
+//     normalize();
+// }
+// 
+// void StretchList::add(int type, MuseFrame_t frame, const StretchListItem& e, bool do_normalize = true)
+// {
+//   StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+//   
+//   std::pair<iStretchEvent, bool> res = list->insert(
+//     std::pair<const MuseFrame_t, StretchListItem> (frame, e));
+//   
+//   // Item already exists? Assign.
+//   if(!res.second)
+//     res.first->second = e; // Assign.
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)      
+//     normalize();
+// }
+// 
+// void StretchList::del(int type, MuseFrame_t frame, bool do_normalize = true)
+// {
+//   StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+// 
+//   iStretchEvent e = list->find(frame);
+//   if(e == list->end()) 
+//   {
+//     fprintf(stderr, "StretchList::delStr(%ld): not found\n", frame);
+//     return;
+//   }
+// 
+//   list->erase(e);
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// void StretchList::del(int type, const iStretchEvent& e, bool do_normalize = true)
+// {
+//   StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+// 
+//   list->erase(e);
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// 
+// void StretchList::normalize()
+// {
+//   double dtime;
+//   double factor;
+//   double duntime;
+//   MuseFrame_t dframe;
+//   //double newFrame = 0;
+//   
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevNewUnFrame;
+//   double prevStretch = 1.0;
+//   double prevSamplerate = 1.0;
+//   double prevPitch = 1.0;
+//   _isStretched = false;
+//   _isResampled = false;
+//   _isPitchShifted = false;
+//   
+//   
+//   for(iStretchEvent ise = begin(); ise != end(); ++ise)
+//   {
+//     StretchEvent& se = ise->second;
+//     
+//     // If ANY event has a stretch or samplerate other than 1.0, the map is stretched, 
+//     //  a stretcher or samplerate converter must be engaged.
+//     if(((se._type & StretchEvent::StretchEventType) && se._stretchRatio != 1.0) || _stretchRatio != 1.0) 
+//       _isStretched = true;
+//     if(((se._type & StretchEvent::SamplerateEventType) && se._samplerateRatio != 1.0) || _samplerateRatio != 1.0)
+//       _isResampled = true;
+//     if(((se._type & StretchEvent::PitchEventType) && se._pitchRatio != 1.0) || _pitchRatio != 1.0)
+//       _isPitchShifted = true;
+//     
+//     if(ise == begin())
+//     {
+// //       prevFrame = prevNewFrame = se._finStretchedFrame = ise->first;
+//       prevFrame = prevNewUnFrame = prevNewFrame = se._finSquishedFrame = se._finStretchedFrame = ise->first;
+//     }
+//     else
+//     {
+//       dframe = ise->first - prevFrame;
+//       
+//       //dtime = double(dframe) / (prevStretch + prevSamplerate - 1.0);
+//       factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//       dtime = double(dframe) * factor;
+//       se._finStretchedFrame = prevNewFrame + dtime;
+//       prevNewFrame = se._finStretchedFrame;
+//       
+//       duntime = double(dframe) / factor;
+//       se._finSquishedFrame = prevNewUnFrame + duntime;
+//       prevNewUnFrame = se._finSquishedFrame;
+//       
+//       prevFrame = ise->first;
+//     }
+// 
+//     if(se._type & StretchEvent::StretchEventType)
+//       prevStretch = se._stretchRatio;
+//     else
+//       se._stretchRatio = prevStretch;
+//     
+//     if(se._type & StretchEvent::SamplerateEventType)
+//       prevSamplerate = se._samplerateRatio;
+//     else
+//       se._samplerateRatio = prevSamplerate;
+//     
+//     if(se._type & StretchEvent::PitchEventType)
+//       prevPitch = se._pitchRatio;
+//     else
+//       se._pitchRatio = prevPitch;
+//   }
+//   
+//   // TODO 
+//   normalizeFrames();
+//   
+//   
+//   
+//   
+//   //iStretchEvent curEvent = StretchList_t::end();
+//   iStretchEvent curEvent;
+//   MuseFrame_t stretch_frame = 0;
+//   iStretchEvent istretch = _stretchRatioList.begin();
+//   if(istretch != _stretchRatioList.end())
+//   {
+//     stretch_frame = istretch->first;
+//     curEvent = istretch;
+//   }
+// 
+//   MuseFrame_t samplerate_frame = 0;
+//   iStretchEvent isamplerate = _samplerateRatioList.begin();  
+//   if(isamplerate != _samplerateRatioList.end())
+//   {
+//     samplerate_frame = isamplerate->first;
+//     if(samplerate_frame < stretch_frame || istretch == _stretchRatioList.end())
+//       curEvent = isamplerate;
+//   }
+//   
+//   //stretch_frame < samplerate_frame ? istretch : isamplerate;
+//   
+//   prevFrame = prevNewUnFrame = prevNewFrame = se._finSquishedFrame = se._finStretchedFrame = ise->first;
+//   
+//   
+//   
+//   // Mark as validated, normalization is done.
+//   _isNormalized = true;
+//   
+// #ifdef DEBUG_TIMESTRETCH
+//   dump();
+// #endif
+// }
+//       
+// //---------------------------------------------------------
+// //   clear
+// //---------------------------------------------------------
+// 
+// void StretchList::clear()
+// {
+//   _stretchRatioList.clear();
+//   _samplerateRatioList.clear();
+//   _pitchRatioList.clear();
+//   //_frameStretchMap.clear();
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+// }
+// 
+// //---------------------------------------------------------
+// //   eraseRange
+// //---------------------------------------------------------
+// 
+// void StretchList::eraseRange(int type, MuseFrame_t sframe, MuseFrame_t eframe)
+// {
+//   if(sframe >= eframe)
+//     return;
+//   
+//   if(type & StretchEvent)
+//   {
+//     iStretchEvent se = _stretchRatioList.lower_bound(sframe);
+//     if(se != _stretchRatioList.end())
+//     {
+//       iStretchEvent ee = _stretchRatioList.upper_bound(eframe);
+//       _stretchRatioList.erase(se, ee); // Erase range does NOT include the last element.
+//     }
+//   }
+//   
+//   if(type & SamplerateEvent)
+//   {
+//     iStretchEvent se = _samplerateRatioList.lower_bound(sframe);
+//     if(se != _samplerateRatioList.end())
+//     {
+//       iStretchEvent ee = _samplerateRatioList.upper_bound(eframe);
+//       _samplerateRatioList.erase(se, ee); // Erase range does NOT include the last element.
+//     }
+//   }
+//   
+//   if(type & PitchEvent)
+//   {
+//     iStretchEvent se = _pitchRatioList.lower_bound(sframe);
+//     if(se != _pitchRatioList.end())
+//     {
+//       iStretchEvent ee = _pitchRatioList.upper_bound(eframe);
+//       _pitchRatioList.erase(se, ee); // Erase range does NOT include the last element.
+//     }
+//   }
+// 
+// //   // Check if _frameStretchMap needs updating.
+// //   const iFrameMapItem se = _frameStretchMap.lower_bound(sframe);
+// //   if(se != _frameStretchMap.end())
+// //   {
+// //     const iFrameMapItem ee = _frameStretchMap.upper_bound(eframe);
+// //     MuseFrame_t frame;
+// //     iFrameMapItem ise_save;
+// //     for(iFrameMapItem ise = se; ise != ee; )
+// //     {
+// //       frame = ise->first;
+// //       // No stretch ratio or samplerate ratio at this frame? Erase the stretch map item.
+// //       if(_stretchRatioList.find(frame) == _stretchRatioList.end() && 
+// //          _samplerateRatioList.find(frame) == _samplerateRatioList.end())
+// //       {
+// //         ise_save = ise;
+// //         _frameStretchMap.erase(ise);
+// //         ise = ise_save;
+// //       }
+// //       else
+// //         ++ise;
+// //     }
+// //   }
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   normalize();
+// }
+//       
+// //---------------------------------------------------------
+// //   read
+// //---------------------------------------------------------
+// 
+// void StretchList::read(Xml& xml)
+// {
+//       //QLocale loc = QLocale::c();
+//       bool ok;
+//       for (;;) {
+//             Xml::Token token = xml.parse();
+//             const QString& tag = xml.s1();
+//             switch (token) {
+//                   case Xml::Error:
+//                   case Xml::End:
+//                         return;
+//                   case Xml::Attribut:
+//                           fprintf(stderr, "stretchlist unknown tag %s\n", tag.toLatin1().constData());
+//                         break;
+//                   case Xml::Text:
+//                         {
+//                           int len = tag.length();
+//                           int i = 0;
+//                           for(;;) 
+//                           {
+//                                 while(i < len && (tag[i] == ',' || tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 
+//                                 QString fs;
+//                                 while(i < len && tag[i] != ' ')
+//                                 {
+//                                   fs.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 if(i == len)
+//                                       break;
+//                                 
+//                                 MuseFrame_t frame = fs.toLong(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading frame string: %s\n", fs.toLatin1().constData());
+//                                   break;
+//                                 }
+//                                   
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString stretchStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   stretchStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //double stretchVal = loc.toDouble(stretchStr, &ok);
+//                                 double stretchVal = stretchStr.toDouble(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading stretch ratio string: %s\n", stretchStr.toLatin1().constData());
+//                                   break;
+//                                 }
+// 
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString SRStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   SRStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //double SRVal = loc.toDouble(SRStr, &ok);
+//                                 double SRVal = SRStr.toDouble(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading samplerate ratio string: %s\n", SRStr.toLatin1().constData());
+//                                   break;
+//                                 }
+//                                 
+//                                 
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString typeStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   typeStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //int typeVal = loc.toInt(typeStr, &ok);
+//                                 int typeVal = typeStr.toInt(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading value string: %s\n", typeStr.toLatin1().constData());
+//                                   break;
+//                                 }
+// 
+//                                 
+// // REMOVE Tim. samplerate. Changed.
+// //                                 add(frame, stretchVal, false); // Defer normalize until tag end.
+//                                 add(frame, StretchEvent(stretchVal, SRVal, typeVal), false); // Defer normalize until tag end.
+//                                 // For now, the conversion only has a TEMPORARY effect during song loading.
+//                                 // See comments in Song::read at the "samplerate" tag.
+//                                 //add(MusEGlobal::convertFrame4ProjectSampleRate(frame), val);
+//                                 
+//                                 if(i == len)
+//                                       break;
+//                           }
+//                         }
+//                         break;
+//                   case Xml::TagEnd:
+//                         if (tag == "stretchlist")
+//                         {
+//                               normalize();
+//                               return;
+//                         }
+//                   default:
+//                         break;
+//                   }
+//             }
+//         
+// }
+// 
+// //---------------------------------------------------------
+// //   write
+// //---------------------------------------------------------
+// 
+// void StretchList::write(int level, Xml& xml) const
+// {
+// //       //xml.put(level++, "<stretchlist fix=\"%d\">", _tempo);
+// //       xml.put(level++, "<stretchlist>");
+// //       //if (_globalTempo != 100)
+// //       //      xml.intTag(level, "globalTempo", _globalTempo);
+// //       for (ciStretchEvent i = begin(); i != end(); ++i)
+// //             //i->second->write(level, xml, i->first);
+// //             i->second.write(level, xml, i->first);
+// //       xml.tag(level, "/stretchlist");
+//       
+//       
+//   if(empty())
+//     return;
+//   
+//   //for (ciStretchEvent ise = begin(); ise != end(); ++ise)
+//   //{
+//         //const CtrlList* cl = icl->second;
+// 
+//         //QString s= QString("stretchlist");
+//         //s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
+//         //xml.tag(level++, s.toLatin1().constData());
+//         xml.tag(level++, "stretchlist");
+//         int i = 0;
+//         QString seStr("%1 %2 %3 %4, ");
+//         for (ciStretchEvent ise = begin(); ise != end(); ++ise) {
+//               xml.nput(level, 
+//                        seStr.arg(ise->first)
+//                             .arg(ise->second._stretchRatio)
+//                             .arg(ise->second._samplerateRatio)
+//                             .arg(ise->second._type)
+//                             .toLatin1().constData());
+//               ++i;
+//               if (i >= 3) {
+//                     xml.put(level, "");
+//                     i = 0;
+//                     }
+//               }
+//         if (i)
+//               xml.put(level, "");
+//         xml.etag(level--, "stretchlist");
+//   //}
+//   
+//       
+// }
+// 
+// //---------------------------------------------------------
+// //   dump
+// //---------------------------------------------------------
+// 
+// void StretchList::dump() const
+// {
+// //   fprintf(stderr, "\nStretchList: isNormalized:%d\n", _isNormalized);
+// //   for(ciStretchEvent i = _stretchRatioList.begin(); i != _stretchRatioList.end(); ++i) 
+// //     fprintf(stderr, "frame:%6ld StretchRatio:%f\n", i->first, i->second._value);
+// //   
+// //   for(ciStretchEvent i = _samplerateRatioList.begin(); i != _samplerateRatioList.end(); ++i) 
+// //     fprintf(stderr, "frame:%6ld SamplerateRatio:%f\n", i->first, i->second._value);
+// //   
+// //   for(ciStretchEvent i = _pitchRatioList.begin(); i != _pitchRatioList.end(); ++i) 
+// //     fprintf(stderr, "frame:%6ld PitchRatio:%f\n", i->first, i->second._value);
+// //   
+// //   for(ciFrameMapItem i = _frameStretchMap.begin(); i != _frameStretchMap.end(); ++i) 
+// //   {
+// //     fprintf(stderr, "frame:%6ld newFrame:%f newUnFrame:%f\n",
+// //       i->first, i->second._finStretchedFrame, i->second._finSquishedFrame);
+// //   }
+//   
+//   
+//   fprintf(stderr, "\nStretchList: isNormalized:%d\n", _isNormalized);
+//   
+//   for(ciStretchEvent i = _stretchRatioList.begin(); i != _stretchRatioList.end(); ++i) 
+//     fprintf(stderr, "frame:%6ld StretchRatio:%f stretchedFrame:%f squishedFrame:%f\n", 
+//             i->first, i->second._value, i->second._finStretchedFrame, i->second._finSquishedFrame);
+//   
+//   for(ciStretchEvent i = _samplerateRatioList.begin(); i != _samplerateRatioList.end(); ++i) 
+//     fprintf(stderr, "frame:%6ld SamplerateRatio:%f stretchedFrame:%f squishedFrame:%f\n", 
+//             i->first, i->second._value, i->second._finStretchedFrame, i->second._finSquishedFrame);
+//   
+//   for(ciStretchEvent i = _pitchRatioList.begin(); i != _pitchRatioList.end(); ++i) 
+//     fprintf(stderr, "frame:%6ld PitchRatio:%f stretchedFrame:%f squishedFrame:%f\n", 
+//             i->first, i->second._value, i->second._finStretchedFrame, i->second._finSquishedFrame);
+// }
+// 
+// //---------------------------------------------------------
+// //   dump
+// //---------------------------------------------------------
+// 
+// double StretchList::ratio(int type) const 
+// { 
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       return _stretchRatio; 
+//     break;
+//     
+//     case SamplerateEvent:
+//       return _samplerateRatio; 
+//     break;
+//     
+//     case PitchEvent:
+//       return _pitchRatio; 
+//     break;
+//   }
+//   return 1.0;
+// }
+//       
+// void StretchList::setRatio(int type, double ratio, bool do_normalize)
+// {
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       _stretchRatio = ratio;
+//     break;
+//     
+//     case SamplerateEvent:
+//       _samplerateRatio = ratio;
+//     break;
+//     
+//     case PitchEvent:
+//       _pitchRatio = ratio;
+//     break;
+//   }
+// 
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+//       
+// void StretchList::setStartFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _startFrame = frame;
+// 
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// void StretchList::setEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _endFrame = frame;
+// 
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// void StretchList::setStretchedEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _stretchedEndFrame = frame;
+// 
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// void StretchList::setSquishedEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _squishedEndFrame = frame;
+// 
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalize();
+// }
+// 
+// iStretchEvent StretchList::findEvent(int type, MuseFrame_t frame)
+// {
+//   StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+//   return list->find(frame);
+// }
+// 
+// ciStretchEvent StretchList::findEvent(int type, MuseFrame_t frame) const
+// {
+//   const StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+//   return list->find(frame);
+// }
+// 
+// double StretchList::ratioAt(int type, MuseFrame_t frame) const
+// {
+//   const StretchList_t* list;
+//   switch(type)
+//   {
+//     case StretchEvent:
+//       list = &_stretchRatioList;
+//     break;
+//     
+//     case SamplerateEvent:
+//       list = &_samplerateRatioList;
+//     break;
+//     
+//     case PitchEvent:
+//       list = &_pitchRatioList;
+//     break;
+//   }
+//   ciStretchEvent i = list->upper_bound(frame);
+//   if(i == list->begin())
+//     return 1.0;
+//   --i;
+//   return i->second._value;
+//   
+// }
+//       
+//       
+//       
+//       
+//       
+// 
+// 
+// //---------------------------------------------------------
+// //   StretchList
+// //---------------------------------------------------------
+// 
+// StretchList::StretchList()
+// {
+//   _isStretched = false;
+//   _isResampled = false;
+//   _isPitchShifted = false;
+//   _isNormalized = false;
+//   _startFrame = 0;
+//   _endFrame = 0;
+//   _stretchedEndFrame = 0;
+//   _squishedEndFrame = 0;
+//   _stretchRatio = 1.0;
+//   _samplerateRatio = 1.0;
+//   _pitchRatio = 1.0;
+// }
+// 
+// StretchList::~StretchList()
+// {
+// }
+// 
+// //---------------------------------------------------------
+// //   add
+// //---------------------------------------------------------
+// 
+// // void StretchList::add(MuseFrame_t frame, double stretch, bool do_normalize)
+// //       {
+// //       std::pair<iStretchEvent, bool> res = insert(std::pair<const MuseFrame_t, StretchEvent> (frame, StretchEvent(stretch)));
+// //       // Item already exists? Assign.
+// //       if(!res.second)
+// //         res.first->second._stretch = stretch;
+// //       
+// //       if(do_normalize)      
+// //         normalize();
+// //       }
+// void StretchList::addStr(MuseFrame_t frame, double stretch, bool do_normalize)
+// {
+//   // The '1.0' samplerate will be filled in if neccessary by normalize() below.
+//   std::pair<iStretchEvent, bool> res = 
+//     insert(std::pair<const MuseFrame_t, StretchEvent> 
+//       (frame, StretchEvent(stretch, 1.0, StretchEvent::StretchEventType)));
+//     
+//   // Item already exists? Assign.
+//   if(!res.second)
+//   {
+//     // Set the stretch. But leave the samplerate alone.
+//     res.first->second._stretchRatio = stretch;
+//     // Combine the type.
+//     res.first->second._type |= StretchEvent::StretchEventType;
+//   }
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)      
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::addSR(MuseFrame_t frame, double samplerate, bool do_normalize)
+// {
+//   // The '1.0' stretch will be filled in if neccessary by normalize() below.
+//   std::pair<iStretchEvent, bool> res = 
+//     insert(std::pair<const MuseFrame_t, StretchEvent> 
+//       (frame, StretchEvent(1.0, samplerate, StretchEvent::SamplerateEventType)));
+//     
+//   // Item already exists? Assign.
+//   if(!res.second)
+//   {
+//     // Set the samplerate. But leave the stretch alone.
+//     res.first->second._samplerateRatio = samplerate;
+//     // Combine the type.
+//     res.first->second._type |= StretchEvent::SamplerateEventType;
+//   }
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)      
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::add(MuseFrame_t frame, const StretchEvent& e, bool do_normalize)
+// {
+//   std::pair<iStretchEvent, bool> res = insert(std::pair<const MuseFrame_t, StretchEvent> (frame, e));
+//   
+//   // Item already exists? Assign.
+//   if(!res.second)
+//   {
+//     //fprintf(stderr, "StretchList::add insert failed: stretchlist:%p stretch:%f samplerate:%f frame:%ld\n", 
+//     //                  this, e._stretchRatio, e._samplerateRatio, frame);
+// //     // Set the stretch. But leave the samplerate alone.
+// //     res.first->second._stretchRatio = e._stretchRatio;
+// //     // Set the samplerate. But leave the stretch alone.
+// //     res.first->second._samplerateRatio = e._samplerateRatio;
+// //     // Combine the type.
+// //     res.first->second._type = e._type;
+//     res.first->second = e; // Assign.
+//   }
+// //   else
+// //   {
+// //     iStretchEvent ine = res.first;
+// //     ++ine; // There is always a 'next' stretch event - there is always one at index MAX_FRAME + 1.
+// //     StretchEvent* ne = ine->second;
+// //     
+// //     // Swap the values. (This is how the stretch list works.)
+// //     e->_stretch = ne->_stretch;
+// //     e->_frame = ne->_frame;
+// //     ne->_stretch = stretch;
+// //     ne->_frame = frame;
+//     
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//     if(do_normalize)      
+//       normalizeListFrames();
+// //   }
+// }
+// 
+// //---------------------------------------------------------
+// //   addStretchOperation
+// //---------------------------------------------------------
+// 
+// void StretchList::addStretchOperation(MuseFrame_t frame, double stretch, PendingOperationList& ops)
+// {
+//   iStretchEvent ie = find(frame);
+//   if(ie != end())
+//     ops.add(PendingOperationItem(this, ie, frame, stretch, PendingOperationItem::ModifyStretchRatioAt));
+//   else
+//     ops.add(PendingOperationItem(this, frame, stretch, PendingOperationItem::AddStretchRatioAt));
+// }
+// 
+// void StretchList::addSamplerateOperation(MuseFrame_t frame, double samplerate, PendingOperationList& ops)
+// {
+//   iStretchEvent ie = find(frame);
+//   if(ie != end())
+//     ops.add(PendingOperationItem(this, ie, frame, samplerate, PendingOperationItem::ModifySamplerateRatioAt));
+//   else
+//     ops.add(PendingOperationItem(this, frame, samplerate, PendingOperationItem::AddSamplerateRatioAt));
+// }
+// 
+// //---------------------------------------------------------
+// //   delStretchOperation
+// //---------------------------------------------------------
+// 
+// void StretchList::delStretchOperation(MuseFrame_t frame, PendingOperationList& ops)
+// {
+//   iStretchEvent e = find(frame);
+//   if (e == end()) {
+//         printf("StretchList::delStretchOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   PendingOperationItem poi(this, e, PendingOperationItem::DeleteStretchRatioAt);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   ops.add(poi);
+// }
+// 
+// //---------------------------------------------------------
+// //   delSamplerateOperation
+// //---------------------------------------------------------
+// 
+// void StretchList::delSamplerateOperation(MuseFrame_t frame, PendingOperationList& ops)
+// {
+//   iStretchEvent e = find(frame);
+//   if (e == end()) {
+//         printf("StretchList::delSamplerateOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   PendingOperationItem poi(this, e, PendingOperationItem::DeleteSamplerateRatioAt);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   ops.add(poi);
+// }
+// 
+// //---------------------------------------------------------
+// //   normalizeFrames
+// //---------------------------------------------------------
+// 
+// void StretchList::normalizeFrames()
+// {
+//   _stretchedEndFrame = stretch(_endFrame);
+//   _squishedEndFrame = squish(_endFrame);
+// }
+// 
+// void StretchList::normalizeRatios()
+// {
+//   
+// }
+// 
+// void StretchList::normalizeListFrames()
+// {
+//   double dtime;
+//   double factor;
+//   double duntime;
+//   MuseFrame_t dframe;
+//   //double newFrame = 0;
+//   
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevNewUnFrame;
+//   double prevStretch = 1.0;
+//   double prevSamplerate = 1.0;
+//   double prevPitch = 1.0;
+//   _isStretched = false;
+//   _isResampled = false;
+//   _isPitchShifted = false;
+//   for(iStretchEvent ise = begin(); ise != end(); ++ise)
+//   {
+//     StretchEvent& se = ise->second;
+//     
+//     // If ANY event has a stretch or samplerate other than 1.0, the map is stretched, 
+//     //  a stretcher or samplerate converter must be engaged.
+//     if(((se._type & StretchEvent::StretchEventType) && se._stretchRatio != 1.0) || _stretchRatio != 1.0) 
+//       _isStretched = true;
+//     if(((se._type & StretchEvent::SamplerateEventType) && se._samplerateRatio != 1.0) || _samplerateRatio != 1.0)
+//       _isResampled = true;
+//     if(((se._type & StretchEvent::PitchEventType) && se._pitchRatio != 1.0) || _pitchRatio != 1.0)
+//       _isPitchShifted = true;
+//     
+//     if(ise == begin())
+//     {
+// //       prevFrame = prevNewFrame = se._finStretchedFrame = ise->first;
+//       prevFrame = prevNewUnFrame = prevNewFrame = se._finSquishedFrame = se._finStretchedFrame = ise->first;
+//     }
+//     else
+//     {
+//       dframe = ise->first - prevFrame;
+//       
+//       //dtime = double(dframe) / (prevStretch + prevSamplerate - 1.0);
+//       factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//       dtime = double(dframe) * factor;
+//       se._finStretchedFrame = prevNewFrame + dtime;
+//       prevNewFrame = se._finStretchedFrame;
+//       
+//       duntime = double(dframe) / factor;
+//       se._finSquishedFrame = prevNewUnFrame + duntime;
+//       prevNewUnFrame = se._finSquishedFrame;
+//       
+//       prevFrame = ise->first;
+//     }
+// 
+//     if(se._type & StretchEvent::StretchEventType)
+//       prevStretch = se._stretchRatio;
+//     else
+//       se._stretchRatio = prevStretch;
+//     
+//     if(se._type & StretchEvent::SamplerateEventType)
+//       prevSamplerate = se._samplerateRatio;
+//     else
+//       se._samplerateRatio = prevSamplerate;
+//     
+//     if(se._type & StretchEvent::PitchEventType)
+//       prevPitch = se._pitchRatio;
+//     else
+//       se._pitchRatio = prevPitch;
+//   }
+//   
+//   // TODO 
+//   normalizeFrames();
+//   
+//   // Mark as validated, normalization is done.
+//   _isNormalized = true;
+//   
+// #ifdef DEBUG_TIMESTRETCH
+//   dump();
+// #endif
+// }
+// 
+// void StretchList::normalizeListRatios()
+// {
+//   
+// }
+// 
+// 
+// 
+// //---------------------------------------------------------
+// //   dump
+// //---------------------------------------------------------
+// 
+// void StretchList::dump() const
+// {
+//   fprintf(stderr, "\nStretchList:\n");
+//   for(ciStretchEvent i = begin(); i != end(); ++i) 
+//   {
+//     fprintf(stderr, "frame:%6ld StretchRatio:%f SamplerateRatio:%f PitchRatio:%f "
+//                     "newFrame:%f newUnFrame:%f isNormalized:%d\n",
+//       i->first, i->second._stretchRatio, i->second._samplerateRatio, i->second._pitchRatio, 
+//       i->second._finStretchedFrame, i->second._finSquishedFrame, _isNormalized);
+//   }
+// }
+// 
+// //---------------------------------------------------------
+// //   clear
+// //---------------------------------------------------------
+// 
+// void StretchList::clear()
+// {
+//   STRETCHLIST::clear();
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+// }
+// 
+// //---------------------------------------------------------
+// //   eraseStretchRange
+// //---------------------------------------------------------
+// 
+// void StretchList::eraseStretchRange(MuseFrame_t sframe, MuseFrame_t eframe)
+// {
+//   if(sframe >= eframe)
+//     return;
+//   iStretchEvent se = lower_bound(sframe);
+//   if(se == end())
+//     return;
+//   iStretchEvent ee = upper_bound(eframe);
+//   
+//   for(iStretchEvent ise = se; ise != ee; )
+//   {
+//     ise->second._type &= ~StretchEvent::StretchEventType;
+//     if(ise->second._type == 0)
+//     {
+//       iStretchEvent ise_save = ise;
+//       erase(ise);
+//       ise = ise_save;
+//     }
+//     else
+//       ++ise;
+//   }
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   normalizeListFrames();
+// }
+//       
+// //---------------------------------------------------------
+// //   eraseSamplerateRange
+// //---------------------------------------------------------
+// 
+// void StretchList::eraseSamplerateRange(MuseFrame_t sframe, MuseFrame_t eframe)
+// {
+//   if(sframe >= eframe)
+//     return;
+//   iStretchEvent se = lower_bound(sframe);
+//   if(se == end())
+//     return;
+//   iStretchEvent ee = upper_bound(eframe);
+//   
+//   for(iStretchEvent ise = se; ise != ee; )
+//   {
+//     ise->second._type &= ~StretchEvent::SamplerateEventType;
+//     if(ise->second._type == 0)
+//     {
+//       iStretchEvent ise_save = ise;
+//       erase(ise);
+//       ise = ise_save;
+//     }
+//     else
+//       ++ise;
+//   }
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   normalizeListFrames();
+// }
+//       
+// //---------------------------------------------------------
+// //   eraseRange
+// //---------------------------------------------------------
+// 
+// void StretchList::eraseRange(MuseFrame_t sframe, MuseFrame_t eframe)
+// {
+//   if(sframe >= eframe)
+//     return;
+//   iStretchEvent se = lower_bound(sframe);
+//   if(se == end())
+//     return;
+//   iStretchEvent ee = upper_bound(eframe);
+//   erase(se, ee); // Erase range does NOT include the last element.
+//     
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   normalizeListFrames();
+// }
+// 
+// 
+// void StretchList::setStartFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _startFrame = frame;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _endFrame = frame;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setStretchedEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _stretchedEndFrame = frame;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setSquishedEndFrame(MuseFrame_t frame, bool do_normalize)
+// { 
+//   _squishedEndFrame = frame;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setStretchRatio(double ratio, bool do_normalize)
+// { 
+//   _stretchRatio = ratio;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setSamplerateRatio(double ratio, bool do_normalize)
+// { 
+//   _samplerateRatio = ratio;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// void StretchList::setPitchRatio(double ratio, bool do_normalize)
+// { 
+//   _pitchRatio = ratio;
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// 
+// iStretchEvent StretchList::findEvent(MuseFrame_t frame, int type)
+// {
+//   iStretchEventPair res = equal_range(frame);
+//   for(iStretchEvent ise = res.first; ise != res.second; ++ise)
+//   {
+//     if(ise->second._type == type)
+//       return ise;
+//   }
+//   return end();
+// }
+// 
+// ciStretchEvent StretchList::findEvent(MuseFrame_t frame, int type) const
+// {
+//   ciStretchEventPair res = equal_range(frame);  // FIXME Calls non-const version ??
+//   for(ciStretchEvent ise = res.first; ise != res.second; ++ise)
+//   {
+//     if(ise->second._type == type)
+//       return ise;
+//   }
+//   return end();
+// }
+// 
+// 
+// //---------------------------------------------------------
+// //   stretchAt
+// //---------------------------------------------------------
+// 
+// double StretchList::stretchAt(MuseFrame_t frame) const
+// {
+//   ciStretchEvent i = upper_bound(frame);
+//   if(i == begin())
+//     return 1.0;
+//   --i;
+//   return i->second._stretchRatio;
+// }
+// 
+// //---------------------------------------------------------
+// //   samplerateAt
+// //---------------------------------------------------------
+// 
+// double StretchList::samplerateAt(MuseFrame_t frame) const
+// {
+//   ciStretchEvent i = upper_bound(frame);
+//   if(i == begin())
+//     return 1.0;
+//   --i;
+//   return i->second._samplerateRatio;
+// }
+// 
+// // //---------------------------------------------------------
+// // //   eventAt
+// // //---------------------------------------------------------
+// // 
+// // StretchEvent StretchList::eventAt(MuseFrame_t frame) const
+// // {
+// //   ciStretchEvent i = upper_bound(frame);
+// //   if(i == begin())
+// //     return 1.0;
+// //   --i;
+// //   return i->second._samplerateRatio;
+// // }
+// 
+// //---------------------------------------------------------
+// //   delStr
+// //---------------------------------------------------------
+// 
+// void StretchList::delStr(MuseFrame_t frame, bool do_normalize)
+// {
+//   iStretchEvent e = find(frame);
+//   if(e == end()) 
+//   {
+//     fprintf(stderr, "StretchList::delStr(%ld): not found\n", frame);
+//     return;
+//   }
+//   e->second._type &= ~StretchEvent::StretchEventType;
+//   if(e->second._type == 0)
+//     erase(e);
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// //---------------------------------------------------------
+// //   delSR
+// //---------------------------------------------------------
+// 
+// void StretchList::delSR(MuseFrame_t frame, bool do_normalize)
+// {
+//   iStretchEvent e = find(frame);
+//   if(e == end()) 
+//   {
+//     fprintf(stderr, "StretchList::delSR(%ld): not found\n", frame);
+//     return;
+//   }
+//   e->second._type &= ~StretchEvent::SamplerateEventType;
+//   if(e->second._type == 0)
+//     erase(e);
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+// 
+// //---------------------------------------------------------
+// //   del
+// //---------------------------------------------------------
+// 
+// void StretchList::del(iStretchEvent e, bool do_normalize)
+// {
+//   erase(e);
+//   
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//   
+//   if(do_normalize)
+//     normalizeListFrames();
+// }
+//       
+// //---------------------------------------------------------
+// //   setStretch
+// //---------------------------------------------------------
+// 
+// void StretchList::setStretch(MuseFrame_t frame, double newStretch)
+// {
+//   addStr(frame, newStretch);
+// }
+// 
+// //---------------------------------------------------------
+// //   addStretch
+// //---------------------------------------------------------
+// 
+// void StretchList::addStretch(MuseFrame_t frame, double stretch, bool do_normalize)
+// {
+//   addStr(frame, stretch, do_normalize);
+// }
+// 
+// //---------------------------------------------------------
+// //   delStretch
+// //---------------------------------------------------------
+// 
+// void StretchList::delStretch(MuseFrame_t frame, bool do_normalize)
+// {
+//   delStr(frame, do_normalize);
+// }
+// 
+// //---------------------------------------------------------
+// //   setSamplerate
+// //---------------------------------------------------------
+// 
+// void StretchList::setSamplerate(MuseFrame_t frame, double newSamplerate)
+// {
+//   addSR(frame, newSamplerate);
+// }
+// 
+// //---------------------------------------------------------
+// //   addSamplerate
+// //---------------------------------------------------------
+// 
+// void StretchList::addSamplerate(MuseFrame_t frame, double samplerate, bool do_normalize)
+// {
+//   addSR(frame, samplerate, do_normalize);
+// }
+// 
+// //---------------------------------------------------------
+// //   delSamplerate
+// //---------------------------------------------------------
+// 
+// void StretchList::delSamplerate(MuseFrame_t frame, bool do_normalize)
+// {
+//   delSR(frame, do_normalize);
+// }
+//       
+// //---------------------------------------------------------
+// //   stretch
+// //---------------------------------------------------------
+// 
+// double StretchList::stretch(MuseFrame_t frame) const
+// {
+//   double f;
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   //if (useList)
+//   {
+//     ciStretchEvent i = upper_bound(frame);
+//     if(i == begin())
+//       return frame;
+//     
+//     --i;
+//     prevFrame = i->first;
+//     prevNewFrame = i->second._finStretchedFrame;
+//     prevStretch = i->second._stretchRatio;
+//     prevSamplerate = i->second._samplerateRatio;
+//     
+//     const MuseFrame_t dframe = frame - prevFrame;
+//     const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//     const double dtime   = double(dframe) * factor;
+//     
+//     f = prevNewFrame + dtime;
+//   }
+//   return f;
+// }
+// 
+// double StretchList::stretch(double frame) const
+// {
+//   double f;
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   //if (useList)
+//   {
+//     ciStretchEvent i = upper_bound(frame);
+//     if(i == begin())
+//       return frame;
+//     
+//     --i;
+//     prevFrame = i->first;
+//     prevNewFrame = i->second._finStretchedFrame;
+//     prevStretch = i->second._stretchRatio;
+//     prevSamplerate = i->second._samplerateRatio;
+//     
+//     const double dframe = frame - (double)prevFrame;
+//     const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//     const double dtime   = dframe * factor;
+//     f = prevNewFrame + dtime;
+//   }
+//   return f;
+// }
+// 
+// double StretchList::squish(MuseFrame_t frame) const
+// {
+//   double f;
+//   MuseFrame_t prevFrame;
+//   double prevNewUnFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   //if (useList)
+//   {
+//     ciStretchEvent i = upper_bound(frame);
+//     if(i == begin())
+//       return frame;
+//     
+//     --i;
+//     prevFrame = i->first;
+//     prevNewUnFrame = i->second._finSquishedFrame;
+//     prevStretch = i->second._stretchRatio;
+//     prevSamplerate = i->second._samplerateRatio;
+//     
+//     const MuseFrame_t dframe = frame - prevFrame;
+//     const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+//     const double dtime   = (double)dframe * factor;
+//     f = prevNewUnFrame + dtime;
+//   }
+//   return f;
+// }
+//       
+// double StretchList::squish(double frame) const
+// {
+//   double f;
+//   MuseFrame_t prevFrame;
+//   double prevNewUnFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   //if (useList)
+//   {
+//     ciStretchEvent i = upper_bound(frame);
+//     if(i == begin())
+//       return frame;
+//     
+//     --i;
+//     prevFrame = i->first;
+//     prevNewUnFrame = i->second._finSquishedFrame;
+//     prevStretch = i->second._stretchRatio;
+//     prevSamplerate = i->second._samplerateRatio;
+//     
+//     const double dframe = frame - (double)prevFrame;
+//     const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+//     const double dtime   = dframe * factor;
+//     f = prevNewUnFrame + dtime;
+//   }
+//   return f;
+// }
+//       
+// //---------------------------------------------------------
+// //   unStretch
+// //---------------------------------------------------------
+// 
+// MuseFrame_t StretchList::unStretch(double frame) const
+// {
+//   if(empty())
+//     return frame;
+//     
+//   MuseFrame_t prevFrame;
+//   double prevNewFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   MuseFrame_t uframe;
+//   //if (useList)
+//   {
+//     ciStretchEvent e;
+//     for(e = begin(); e != end(); ++e) 
+//     {
+//       if(frame < e->second._finSquishedFrame)
+//         break;
+//     }
+//           
+//     if(e == begin())
+//       return frame;
+//           
+//     --e;
+//     prevFrame = e->first;
+//     prevNewFrame = e->second._finStretchedFrame;
+//     prevStretch = e->second._stretchRatio;
+//     prevSamplerate = e->second._samplerateRatio;
+//     
+//     const double factor = (_stretchRatio * prevStretch) / (_samplerateRatio * prevSamplerate);
+//     uframe = prevFrame + lrint((frame - prevNewFrame) * factor);
+//   }
+//   return uframe;
+// }
+// 
+// //---------------------------------------------------------
+// //   unStretch
+// //---------------------------------------------------------
+// 
+// MuseFrame_t StretchList::unSquish(double frame) const
+// {
+//   if(empty())
+//     return frame;
+//     
+//   MuseFrame_t prevFrame;
+//   double prevNewUnFrame;
+//   double prevStretch;
+//   double prevSamplerate;
+//   MuseFrame_t uframe;
+//   //if (useList)
+//   {
+//     ciStretchEvent e;
+//     for(e = begin(); e != end(); ++e) 
+//     {
+//       if(frame < e->second._finSquishedFrame)
+//         break;
+//     }
+//           
+//     if(e == begin())
+//       return frame;
+//           
+//     --e;
+//     prevFrame = e->first;
+//     prevNewUnFrame = e->second._finSquishedFrame;
+//     prevStretch = e->second._stretchRatio;
+//     prevSamplerate = e->second._samplerateRatio;
+//     
+//     const double factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
+//     uframe = prevFrame + lrint((frame - prevNewUnFrame) * factor);
+//   }
+//   return uframe;
+// }
+// 
+// //---------------------------------------------------------
+// //   write
+// //---------------------------------------------------------
+// 
+// void StretchList::write(int level, Xml& xml) const
+// {
+// //       //xml.put(level++, "<stretchlist fix=\"%d\">", _tempo);
+// //       xml.put(level++, "<stretchlist>");
+// //       //if (_globalTempo != 100)
+// //       //      xml.intTag(level, "globalTempo", _globalTempo);
+// //       for (ciStretchEvent i = begin(); i != end(); ++i)
+// //             //i->second->write(level, xml, i->first);
+// //             i->second.write(level, xml, i->first);
+// //       xml.tag(level, "/stretchlist");
+//       
+//       
+//   if(empty())
+//     return;
+//   
+//   //for (ciStretchEvent ise = begin(); ise != end(); ++ise)
+//   //{
+//         //const CtrlList* cl = icl->second;
+// 
+//         //QString s= QString("stretchlist");
+//         //s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
+//         //xml.tag(level++, s.toLatin1().constData());
+//         xml.tag(level++, "stretchlist");
+//         int i = 0;
+//         QString seStr("%1 %2 %3 %4, ");
+//         for (ciStretchEvent ise = begin(); ise != end(); ++ise) {
+//               xml.nput(level, 
+//                        seStr.arg(ise->first)
+//                             .arg(ise->second._stretchRatio)
+//                             .arg(ise->second._samplerateRatio)
+//                             .arg(ise->second._type)
+//                             .toLatin1().constData());
+//               ++i;
+//               if (i >= 3) {
+//                     xml.put(level, "");
+//                     i = 0;
+//                     }
+//               }
+//         if (i)
+//               xml.put(level, "");
+//         xml.etag(level--, "stretchlist");
+//   //}
+//   
+//       
+// }
+// 
+// //---------------------------------------------------------
+// //   read
+// //---------------------------------------------------------
+// 
+// void StretchList::read(Xml& xml)
+//       {
+// //       for (;;) {
+// //             Xml::Token token = xml.parse();
+// //             const QString& tag = xml.s1();
+// //             switch (token) {
+// //                   case Xml::Error:
+// //                   case Xml::End:
+// //                   case Xml::Attribut: //
+// //                         return;
+// //                   case Xml::TagStart:
+// //                         if (tag == "stretch") {
+// // //                               StretchEvent* t = new StretchEvent();
+// // //                               //unsigned tick = t->read(xml);
+// // //                               MuseFrame_t frame = t->read(xml);
+// // //                               iStretchEvent pos = find(frame);
+// // //                               if (pos != end())
+// // //                                     erase(pos);
+// // //                               insert(std::pair<const MuseFrame_t, StretchEvent*> (frame, t));
+// //                               
+// //                               StretchEvent e;
+// //                               MuseFrame_t frame = e.read(xml);
+// //                               std::pair<iStretchEvent, bool> res = insert(std::pair<const MuseFrame_t, StretchEvent> (frame, e));
+// //                               // Item already exists? Assign.
+// //                               if(!res.second)
+// //                                 res.first->second = e;
+// //                               
+// //                               }
+// //                         //else if (tag == "globalTempo")
+// //                         //      _globalTempo = xml.parseInt();
+// //                         else
+// //                               xml.unknown("StretchList");
+// //                         break;
+// //                   //case Xml::Attribut:
+// //                   //      if (tag == "fix")
+// //                   //            _tempo = xml.s2().toInt();
+// //                   //      break;
+// //                   case Xml::TagEnd:
+// //                         if (tag == "stretchlist") {
+// //                               normalize();
+// //                               //++_tempoSN;
+// //                               return;
+// //                               }
+// //                   default:
+// //                         break;
+// //                   }
+// //             }
+//         
+//         
+//       //QLocale loc = QLocale::c();
+//       bool ok;
+//       for (;;) {
+//             Xml::Token token = xml.parse();
+//             const QString& tag = xml.s1();
+//             switch (token) {
+//                   case Xml::Error:
+//                   case Xml::End:
+//                         return;
+//                   case Xml::Attribut:
+// //                         if (tag == "id")
+// //                         {
+// //                               _id = loc.toInt(xml.s2(), &ok);
+// //                               if(!ok)
+// //                                 printf("CtrlList::read failed reading _id string: %s\n", xml.s2().toLatin1().constData());
+// //                         }
+// //                         else if (tag == "cur")
+// //                         {
+// //                               _curVal = loc.toDouble(xml.s2(), &ok);
+// //                               if(!ok)
+// //                                 printf("CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
+// //                         }        
+// //                         else if (tag == "visible")
+// //                         {
+// //                               _visible = loc.toInt(xml.s2(), &ok);
+// //                               if(!ok)
+// //                                 printf("CtrlList::read failed reading _visible string: %s\n", xml.s2().toLatin1().constData());
+// //                         }
+// //                         else if (tag == "color")
+// //                         {
+// // #if QT_VERSION >= 0x040700
+// //                               ok = _displayColor.isValidColor(xml.s2());
+// //                               if (!ok) {
+// //                                 printf("CtrlList::read failed reading color string: %s\n", xml.s2().toLatin1().constData());
+// //                                 break;
+// //                               }
+// // #endif
+// //                               _displayColor.setNamedColor(xml.s2());
+// //                         }
+// //                         else
+//                               fprintf(stderr, "stretchlist unknown tag %s\n", tag.toLatin1().constData());
+//                         break;
+//                   case Xml::Text:
+//                         {
+//                           int len = tag.length();
+//                           int i = 0;
+//                           for(;;) 
+//                           {
+//                                 while(i < len && (tag[i] == ',' || tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 
+//                                 QString fs;
+//                                 while(i < len && tag[i] != ' ')
+//                                 {
+//                                   fs.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 if(i == len)
+//                                       break;
+//                                 
+//                                 //int frame = loc.toLong(fs, &ok);
+//                                 MuseFrame_t frame = fs.toLong(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading frame string: %s\n", fs.toLatin1().constData());
+//                                   break;
+//                                 }
+//                                   
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString stretchStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   stretchStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //double stretchVal = loc.toDouble(stretchStr, &ok);
+//                                 double stretchVal = stretchStr.toDouble(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading stretch ratio string: %s\n", stretchStr.toLatin1().constData());
+//                                   break;
+//                                 }
+// 
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString SRStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   SRStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //double SRVal = loc.toDouble(SRStr, &ok);
+//                                 double SRVal = SRStr.toDouble(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading samplerate ratio string: %s\n", SRStr.toLatin1().constData());
+//                                   break;
+//                                 }
+//                                 
+//                                 
+//                                 while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
+//                                   ++i;
+//                                 if(i == len)
+//                                       break;
+//                                 QString typeStr;
+//                                 while(i < len && tag[i] != ' ' && tag[i] != ',')
+//                                 {
+//                                   typeStr.append(tag[i]); 
+//                                   ++i;
+//                                 }
+//                                 //int typeVal = loc.toInt(typeStr, &ok);
+//                                 int typeVal = typeStr.toInt(&ok);
+//                                 if(!ok)
+//                                 {
+//                                   fprintf(stderr, "CtrlList::read failed reading value string: %s\n", typeStr.toLatin1().constData());
+//                                   break;
+//                                 }
+// 
+//                                 
+// // REMOVE Tim. samplerate. Changed.
+// //                                 add(frame, stretchVal, false); // Defer normalize until tag end.
+//                                 add(frame, StretchEvent(stretchVal, SRVal, typeVal), false); // Defer normalize until tag end.
+//                                 // For now, the conversion only has a TEMPORARY effect during song loading.
+//                                 // See comments in Song::read at the "samplerate" tag.
+//                                 //add(MusEGlobal::convertFrame4ProjectSampleRate(frame), val);
+//                                 
+//                                 if(i == len)
+//                                       break;
+//                           }
+//                         }
+//                         break;
+//                   case Xml::TagEnd:
+//                         if (tag == "stretchlist")
+//                         {
+//                               normalizeListFrames();
+//                               return;
+//                         }
+//                   default:
+//                         break;
+//                   }
+//             }
+//         
+//       }
+
+
+
+
+
+
 
 
 //=================================================================================
@@ -1897,7 +3829,7 @@ void StretchList::read(Xml& xml)
 // //       double newFrame = 0;
 // //       _isStretched = false;
 // //       for (iStretchEvent e = begin(); e != end(); ++e) {
-// //             e->second->_stretchedFrame = newFrame;
+// //             e->second->_finStretchedFrame = newFrame;
 // //             // If ANY event has a stretch other than 1.0, the map is stretched, a stretcher must be engaged.
 // //             if(e->second->_stretch != 1.0)
 // //               _isStretched = true;
@@ -1922,14 +3854,14 @@ void StretchList::read(Xml& xml)
 //     
 //     if(e == begin())
 //     {
-//       prevFrame = prevNewFrame = e->second._stretchedFrame = e->first;
+//       prevFrame = prevNewFrame = e->second._finStretchedFrame = e->first;
 //     }
 //     else
 //     {
 //       dframe = e->first - prevFrame;
 //       dtime = double(dframe) / prevStretch;
-//       e->second._stretchedFrame = prevNewFrame + dtime;
-//       prevNewFrame = e->second._stretchedFrame;
+//       e->second._finStretchedFrame = prevNewFrame + dtime;
+//       prevNewFrame = e->second._finStretchedFrame;
 //       prevFrame = e->first;
 //     }
 // 
@@ -1947,7 +3879,7 @@ void StretchList::read(Xml& xml)
 //       fprintf(stderr, "\nStretchList:\n");
 //       for (ciStretchEvent i = begin(); i != end(); ++i) {
 //             fprintf(stderr, "%6ld Stretch %f newFrame %f\n",
-//                i->first, i->second._stretch, i->second._stretchedFrame);
+//                i->first, i->second._stretch, i->second._finStretchedFrame);
 //             }
 //       }
 // 
@@ -2128,8 +4060,8 @@ void StretchList::read(Xml& xml)
 // //             double dtime   = double(dframe) / i->second->_stretch;
 // //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 // //             //MuseFrame_t dNewframe   = lrint(dtime);
-// //             //f = i->second->_stretchedFrame + dNewframe;
-// //             f = i->second->_stretchedFrame + dtime;
+// //             //f = i->second->_finStretchedFrame + dNewframe;
+// //             f = i->second->_finStretchedFrame + dtime;
 // //       }
 // //       //else
 // //       //{
@@ -2158,7 +4090,7 @@ void StretchList::read(Xml& xml)
 //             
 //             --i;
 //             prevFrame = i->first;
-//             prevNewFrame = i->second._stretchedFrame;
+//             prevNewFrame = i->second._finStretchedFrame;
 //             prevStretch = i->second._stretch;
 //             
 //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -2171,9 +4103,9 @@ void StretchList::read(Xml& xml)
 //             
 //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 //             //MuseFrame_t dNewframe   = lrint(dtime);
-//             //f = i->second->_stretchedFrame + dNewframe;
+//             //f = i->second->_finStretchedFrame + dNewframe;
 //             
-//             //f = i->second->_stretchedFrame + dtime;
+//             //f = i->second->_finStretchedFrame + dtime;
 //             f = prevNewFrame + dtime;
 //       }
 //       //else
@@ -2201,7 +4133,7 @@ void StretchList::read(Xml& xml)
 // //                   }
 // //             double dframe = frame - (double)i->second->_frame;
 // //             double dtime   = dframe / i->second->_stretch;
-// //             f = i->second->_stretchedFrame + dtime;
+// //             f = i->second->_finStretchedFrame + dtime;
 // //       }
 // //       //else
 // //       //{
@@ -2231,7 +4163,7 @@ void StretchList::read(Xml& xml)
 //             
 //             --i;
 //             prevFrame = i->first;
-//             prevNewFrame = i->second._stretchedFrame;
+//             prevNewFrame = i->second._finStretchedFrame;
 //             prevStretch = i->second._stretch;
 //             
 //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -2247,9 +4179,9 @@ void StretchList::read(Xml& xml)
 //             
 //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 //             //MuseFrame_t dNewframe   = lrint(dtime);
-//             //f = i->second->_stretchedFrame + dNewframe;
+//             //f = i->second->_finStretchedFrame + dNewframe;
 //             
-//             //f = i->second->_stretchedFrame + dtime;
+//             //f = i->second->_finStretchedFrame + dtime;
 //             f = prevNewFrame + dtime;
 //       }
 //       //else
@@ -2281,15 +4213,15 @@ void StretchList::read(Xml& xml)
 // //                   ++ee;
 // //                   if (ee == end())
 // //                         break;
-// //                   if (frame < ee->second->_stretchedFrame)
+// //                   if (frame < ee->second->_finStretchedFrame)
 // //                         break;
 // //                   e = ee;
 // //                   }
 // //             //unsigned te  = e->second->tempo;
 // //             double te  = e->second->_stretch;
 // //             //int dframe   = frame - e->second->frame;
-// //             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
-// //             double dframe  = frame - e->second->_stretchedFrame;
+// //             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
+// //             double dframe  = frame - e->second->_finStretchedFrame;
 // //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
 // //             //double dtime = double(dframe);
 // //             //tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
@@ -2322,11 +4254,11 @@ void StretchList::read(Xml& xml)
 // //                   ++ee;
 // //                   if (ee == end())
 // //                         break;
-// //                   if (frame < ee->second->_stretchedFrame)
+// //                   if (frame < ee->second->_finStretchedFrame)
 // //                         break;
 // //                   e = ee;
 //                   
-//                   if (frame < e->second._stretchedFrame)
+//                   if (frame < e->second._finStretchedFrame)
 //                         break;
 //             }
 //                   
@@ -2335,7 +4267,7 @@ void StretchList::read(Xml& xml)
 //                   
 //             --e;
 //             prevFrame = e->first;
-//             prevNewFrame = e->second._stretchedFrame;
+//             prevNewFrame = e->second._finStretchedFrame;
 //             prevStretch = e->second._stretch;
 //             
 //             //unsigned te  = e->second->tempo;
@@ -2344,9 +4276,9 @@ void StretchList::read(Xml& xml)
 //             //double te  = prevStretch;
 //             
 //             //int dframe   = frame - e->second->frame;
-//             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
+//             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
 //             
-//             //double dframe  = frame - e->second->_stretchedFrame;
+//             //double dframe  = frame - e->second->_finStretchedFrame;
 //             double dframe  = frame - prevNewFrame;
 //             
 //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
@@ -2759,7 +4691,7 @@ void StretchList::read(Xml& xml)
 // // //       double newFrame = 0;
 // // //       _isStretched = false;
 // // //       for (iStretchEvent e = begin(); e != end(); ++e) {
-// // //             e->second->_stretchedFrame = newFrame;
+// // //             e->second->_finStretchedFrame = newFrame;
 // // //             // If ANY event has a stretch other than 1.0, the map is stretched, a stretcher must be engaged.
 // // //             if(e->second->_stretch != 1.0)
 // // //               _isStretched = true;
@@ -2784,14 +4716,14 @@ void StretchList::read(Xml& xml)
 // //     
 // //     if(e == begin())
 // //     {
-// //       prevFrame = prevNewFrame = e->second._stretchedFrame = e->first;
+// //       prevFrame = prevNewFrame = e->second._finStretchedFrame = e->first;
 // //     }
 // //     else
 // //     {
 // //       dframe = e->first - prevFrame;
 // //       dtime = double(dframe) / prevStretch;
-// //       e->second._stretchedFrame = prevNewFrame + dtime;
-// //       prevNewFrame = e->second._stretchedFrame;
+// //       e->second._finStretchedFrame = prevNewFrame + dtime;
+// //       prevNewFrame = e->second._finStretchedFrame;
 // //       prevFrame = e->first;
 // //     }
 // // 
@@ -2809,7 +4741,7 @@ void StretchList::read(Xml& xml)
 // //       fprintf(stderr, "\nStretchList:\n");
 // //       for (ciStretchEvent i = begin(); i != end(); ++i) {
 // //             fprintf(stderr, "%6ld Stretch %f newFrame %f\n",
-// //                i->first, i->second._stretch, i->second._stretchedFrame);
+// //                i->first, i->second._stretch, i->second._finStretchedFrame);
 // //             }
 // //       }
 // void StretchList::dump() const
@@ -3014,8 +4946,8 @@ void StretchList::read(Xml& xml)
 // // //             double dtime   = double(dframe) / i->second->_stretch;
 // // //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 // // //             //MuseFrame_t dNewframe   = lrint(dtime);
-// // //             //f = i->second->_stretchedFrame + dNewframe;
-// // //             f = i->second->_stretchedFrame + dtime;
+// // //             //f = i->second->_finStretchedFrame + dNewframe;
+// // //             f = i->second->_finStretchedFrame + dtime;
 // // //       }
 // // //       //else
 // // //       //{
@@ -3044,7 +4976,7 @@ void StretchList::read(Xml& xml)
 // //             
 // //             --i;
 // //             prevFrame = i->first;
-// //             prevNewFrame = i->second._stretchedFrame;
+// //             prevNewFrame = i->second._finStretchedFrame;
 // //             prevStretch = i->second._stretch;
 // //             
 // //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -3057,9 +4989,9 @@ void StretchList::read(Xml& xml)
 // //             
 // //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 // //             //MuseFrame_t dNewframe   = lrint(dtime);
-// //             //f = i->second->_stretchedFrame + dNewframe;
+// //             //f = i->second->_finStretchedFrame + dNewframe;
 // //             
-// //             //f = i->second->_stretchedFrame + dtime;
+// //             //f = i->second->_finStretchedFrame + dtime;
 // //             f = prevNewFrame + dtime;
 // //       }
 // //       //else
@@ -3087,7 +5019,7 @@ void StretchList::read(Xml& xml)
 // // //                   }
 // // //             double dframe = frame - (double)i->second->_frame;
 // // //             double dtime   = dframe / i->second->_stretch;
-// // //             f = i->second->_stretchedFrame + dtime;
+// // //             f = i->second->_finStretchedFrame + dtime;
 // // //       }
 // // //       //else
 // // //       //{
@@ -3117,7 +5049,7 @@ void StretchList::read(Xml& xml)
 // //             
 // //             --i;
 // //             prevFrame = i->first;
-// //             prevNewFrame = i->second._stretchedFrame;
+// //             prevNewFrame = i->second._finStretchedFrame;
 // //             prevStretch = i->second._stretch;
 // //             
 // //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -3133,9 +5065,9 @@ void StretchList::read(Xml& xml)
 // //             
 // //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 // //             //MuseFrame_t dNewframe   = lrint(dtime);
-// //             //f = i->second->_stretchedFrame + dNewframe;
+// //             //f = i->second->_finStretchedFrame + dNewframe;
 // //             
-// //             //f = i->second->_stretchedFrame + dtime;
+// //             //f = i->second->_finStretchedFrame + dtime;
 // //             f = prevNewFrame + dtime;
 // //       }
 // //       //else
@@ -3167,15 +5099,15 @@ void StretchList::read(Xml& xml)
 // // //                   ++ee;
 // // //                   if (ee == end())
 // // //                         break;
-// // //                   if (frame < ee->second->_stretchedFrame)
+// // //                   if (frame < ee->second->_finStretchedFrame)
 // // //                         break;
 // // //                   e = ee;
 // // //                   }
 // // //             //unsigned te  = e->second->tempo;
 // // //             double te  = e->second->_stretch;
 // // //             //int dframe   = frame - e->second->frame;
-// // //             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
-// // //             double dframe  = frame - e->second->_stretchedFrame;
+// // //             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
+// // //             double dframe  = frame - e->second->_finStretchedFrame;
 // // //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
 // // //             //double dtime = double(dframe);
 // // //             //tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
@@ -3208,11 +5140,11 @@ void StretchList::read(Xml& xml)
 // // //                   ++ee;
 // // //                   if (ee == end())
 // // //                         break;
-// // //                   if (frame < ee->second->_stretchedFrame)
+// // //                   if (frame < ee->second->_finStretchedFrame)
 // // //                         break;
 // // //                   e = ee;
 // //                   
-// //                   if (frame < e->second._stretchedFrame)
+// //                   if (frame < e->second._finStretchedFrame)
 // //                         break;
 // //             }
 // //                   
@@ -3221,7 +5153,7 @@ void StretchList::read(Xml& xml)
 // //                   
 // //             --e;
 // //             prevFrame = e->first;
-// //             prevNewFrame = e->second._stretchedFrame;
+// //             prevNewFrame = e->second._finStretchedFrame;
 // //             prevStretch = e->second._stretch;
 // //             
 // //             //unsigned te  = e->second->tempo;
@@ -3230,9 +5162,9 @@ void StretchList::read(Xml& xml)
 // //             //double te  = prevStretch;
 // //             
 // //             //int dframe   = frame - e->second->frame;
-// //             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
+// //             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
 // //             
-// //             //double dframe  = frame - e->second->_stretchedFrame;
+// //             //double dframe  = frame - e->second->_finStretchedFrame;
 // //             double dframe  = frame - prevNewFrame;
 // //             
 // //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
@@ -3805,7 +5737,7 @@ void StretchList::read(Xml& xml)
 // //       double newFrame = 0;
 // //       _isStretched = false;
 // //       for (iStretchEvent e = begin(); e != end(); ++e) {
-// //             e->second->_stretchedFrame = newFrame;
+// //             e->second->_finStretchedFrame = newFrame;
 // //             // If ANY event has a stretch other than 1.0, the map is stretched, a stretcher must be engaged.
 // //             if(e->second->_stretch != 1.0)
 // //               _isStretched = true;
@@ -3830,14 +5762,14 @@ void StretchList::read(Xml& xml)
 //     
 //     if(e == begin())
 //     {
-//       prevFrame = prevNewFrame = e->second._stretchedFrame = e->first;
+//       prevFrame = prevNewFrame = e->second._finStretchedFrame = e->first;
 //     }
 //     else
 //     {
 //       dframe = e->first - prevFrame;
 //       dtime = double(dframe) / prevStretch;
-//       e->second._stretchedFrame = prevNewFrame + dtime;
-//       prevNewFrame = e->second._stretchedFrame;
+//       e->second._finStretchedFrame = prevNewFrame + dtime;
+//       prevNewFrame = e->second._finStretchedFrame;
 //       prevFrame = e->first;
 //     }
 // 
@@ -3977,8 +5909,8 @@ void StretchList::read(Xml& xml)
 // //             double dtime   = double(dframe) / i->second->_stretch;
 // //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 // //             //MuseFrame_t dNewframe   = lrint(dtime);
-// //             //f = i->second->_stretchedFrame + dNewframe;
-// //             f = i->second->_stretchedFrame + dtime;
+// //             //f = i->second->_finStretchedFrame + dNewframe;
+// //             f = i->second->_finStretchedFrame + dtime;
 // //       }
 // //       //else
 // //       //{
@@ -4007,7 +5939,7 @@ void StretchList::read(Xml& xml)
 //             
 //             --i;
 //             prevFrame = i->first;
-//             prevNewFrame = i->second._stretchedFrame;
+//             prevNewFrame = i->second._finStretchedFrame;
 //             prevStretch = i->second._stretch;
 //             
 //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -4020,9 +5952,9 @@ void StretchList::read(Xml& xml)
 //             
 //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 //             //MuseFrame_t dNewframe   = lrint(dtime);
-//             //f = i->second->_stretchedFrame + dNewframe;
+//             //f = i->second->_finStretchedFrame + dNewframe;
 //             
-//             //f = i->second->_stretchedFrame + dtime;
+//             //f = i->second->_finStretchedFrame + dtime;
 //             f = prevNewFrame + dtime;
 //       }
 //       //else
@@ -4050,7 +5982,7 @@ void StretchList::read(Xml& xml)
 // //                   }
 // //             double dframe = frame - (double)i->second->_frame;
 // //             double dtime   = dframe / i->second->_stretch;
-// //             f = i->second->_stretchedFrame + dtime;
+// //             f = i->second->_finStretchedFrame + dtime;
 // //       }
 // //       //else
 // //       //{
@@ -4080,7 +6012,7 @@ void StretchList::read(Xml& xml)
 //             
 //             --i;
 //             prevFrame = i->first;
-//             prevNewFrame = i->second._stretchedFrame;
+//             prevNewFrame = i->second._finStretchedFrame;
 //             prevStretch = i->second._stretch;
 //             
 //             //MuseFrame_t dframe = frame - i->second->_frame;
@@ -4096,9 +6028,9 @@ void StretchList::read(Xml& xml)
 //             
 //             //unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
 //             //MuseFrame_t dNewframe   = lrint(dtime);
-//             //f = i->second->_stretchedFrame + dNewframe;
+//             //f = i->second->_finStretchedFrame + dNewframe;
 //             
-//             //f = i->second->_stretchedFrame + dtime;
+//             //f = i->second->_finStretchedFrame + dtime;
 //             f = prevNewFrame + dtime;
 //       }
 //       //else
@@ -4130,15 +6062,15 @@ void StretchList::read(Xml& xml)
 // //                   ++ee;
 // //                   if (ee == end())
 // //                         break;
-// //                   if (frame < ee->second->_stretchedFrame)
+// //                   if (frame < ee->second->_finStretchedFrame)
 // //                         break;
 // //                   e = ee;
 // //                   }
 // //             //unsigned te  = e->second->tempo;
 // //             double te  = e->second->_stretch;
 // //             //int dframe   = frame - e->second->frame;
-// //             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
-// //             double dframe  = frame - e->second->_stretchedFrame;
+// //             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
+// //             double dframe  = frame - e->second->_finStretchedFrame;
 // //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);
 // //             //double dtime = double(dframe);
 // //             //tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
@@ -4171,11 +6103,11 @@ void StretchList::read(Xml& xml)
 // //                   ++ee;
 // //                   if (ee == end())
 // //                         break;
-// //                   if (frame < ee->second->_stretchedFrame)
+// //                   if (frame < ee->second->_finStretchedFrame)
 // //                         break;
 // //                   e = ee;
 //                   
-//                   if (frame < e->second._stretchedFrame)
+//                   if (frame < e->second._finStretchedFrame)
 //                         break;
 //             }
 //                   
@@ -4184,7 +6116,7 @@ void StretchList::read(Xml& xml)
 //                   
 //             --e;
 //             prevFrame = e->first;
-//             prevNewFrame = e->second._stretchedFrame;
+//             prevNewFrame = e->second._finStretchedFrame;
 //             prevStretch = e->second._stretch;
 //             
 //             //unsigned te  = e->second->tempo;
@@ -4193,9 +6125,9 @@ void StretchList::read(Xml& xml)
 //             //double te  = prevStretch;
 //             
 //             //int dframe   = frame - e->second->frame;
-//             //MuseFrame_t dframe   = frame - e->second->_stretchedFrame;
+//             //MuseFrame_t dframe   = frame - e->second->_finStretchedFrame;
 //             
-//             //double dframe  = frame - e->second->_stretchedFrame;
+//             //double dframe  = frame - e->second->_finStretchedFrame;
 //             double dframe  = frame - prevNewFrame;
 //             
 //             //double dtime = double(dframe) / double(MusEGlobal::sampleRate);

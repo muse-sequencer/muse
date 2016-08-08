@@ -260,7 +260,9 @@ void initShortCuts()
 
       // wave editor
       defShrt(SHRT_TOOL_RANGE,      Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Tool: Range"), WAVE_SHRT, "range_tool");
+      // REMOVE Tim. samplerate. Added.
       defShrt(SHRT_TOOL_STRETCH,    Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Tool: Stretch"), WAVE_SHRT, "stretch_tool");
+      defShrt(SHRT_TOOL_SAMPLERATE, Qt::Key_Q, QT_TRANSLATE_NOOP("shortcuts", "Tool: Sample rate"), WAVE_SHRT, "samplerate_tool");
       
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Tool: Scissor"), ARRANG_SHRT, "scissor_tool");

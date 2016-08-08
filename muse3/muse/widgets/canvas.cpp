@@ -1489,7 +1489,9 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       setCursor(); // Calls showCursor().
       setMouseGrab(false);
 
-      mouseRelease(pos);
+      QMouseEvent e(event->type(), pos,
+         event->globalPos(), event->button(), event->buttons(), event->modifiers());
+      mouseRelease(&e);
 }
 
 //---------------------------------------------------------
@@ -1588,6 +1590,7 @@ void Canvas::setTool(int t)
             return;
       _tool = Tool(t);
       setCursor();
+      update();
       }
 
 //---------------------------------------------------------

@@ -408,7 +408,7 @@ extern ClipBase* readClip(Xml& xml);
 #endif
 
 extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true, 
-                        AudioConverterSettingsGroup* audioConverterSettings = NULL);
+                        AudioConverterSettingsGroup* audioConverterSettings = NULL, StretchList* stretchList = NULL);
 
 } // namespace MusECore
 

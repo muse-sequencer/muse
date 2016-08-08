@@ -370,6 +370,7 @@ enum {
 
       // REMOVE Tim. samplerate. Added.
       SHRT_TOOL_STRETCH,
+      SHRT_TOOL_SAMPLERATE,
       
       //Last item:
       SHRT_NUM_OF_ELEMENTS        // must be last
