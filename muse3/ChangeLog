@@ -1,3 +1,7 @@
+17.08.2016:
+  - Bug by Martin Drautzburg: ALSA Midi controllers not working. (Tim)
+  - Bug by Michael Oswald: Change 3 delete to delete[]. (Tim)
+  
 03.08.2016:
   - Merged fix for bug where configuration storage had stopped working, from AndreeeCZ (rj)
   - Updated templates to 3.0 (rj)

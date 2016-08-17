@@ -180,7 +180,7 @@ MidiSeq::MidiSeq(const char* name)
 MidiSeq::~MidiSeq()
     {
     delete timer;
-    delete _clockAveragerStages;
+    delete[] _clockAveragerStages;
     }
 
 //---------------------------------------------------------
