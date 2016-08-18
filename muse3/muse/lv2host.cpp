@@ -2289,7 +2289,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       if(_nPname != 0)
       {
          _portName = lilv_node_as_string(_nPname);
-         lilv_node_free(_nPname);
       }
 
       if(_nPsym != 0)
@@ -2314,6 +2313,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 #ifdef DEBUG_LV2
          std::cerr << "plugin has port with unknown direction - ignoring" << std::endl;
 #endif
+        if(_nPname != 0)
+          lilv_node_free(_nPname);
          continue;
       }
 
@@ -2374,8 +2375,13 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 //#ifdef DEBUG_LV2
          std::cerr << "plugin has port with unknown type - ignoring plugin " << label.toStdString() << "!" << std::endl;
 //#endif
+        if(_nPname != 0)
+          lilv_node_free(_nPname);
          return;
       }
+
+      if(_nPname != 0)
+        lilv_node_free(_nPname);
    }
 
    for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
