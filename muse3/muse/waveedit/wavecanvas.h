@@ -83,14 +83,17 @@ class WEvent : public CItem {
 struct StretchSelectedItem
 {
   MusECore::StretchListItem::StretchEventType _type;
-  MusECore::StretchList* _list;
+  //MusECore::StretchList* _list;
+  MusECore::SndFileR _sndFile;
   //MusECore::MuseFrame_t _frame;
   
   StretchSelectedItem(MusECore::StretchListItem::StretchEventType type, 
-                      MusECore::StretchList* list = NULL)
+                      //MusECore::StretchList* list = NULL)
+                      MusECore::SndFileR sndFile = MusECore::SndFileR())
   {
     _type = type;
-    _list = list;
+    //_list = list;
+    _sndFile = sndFile;
   }
 };
 

@@ -450,6 +450,20 @@ typedef StretchList_t::const_reverse_iterator criStretchListItem;
 typedef std::pair<iStretchListItem, iStretchListItem> iStretchListItemPair;
 typedef std::pair<ciStretchListItem, ciStretchListItem> ciStretchListItemPair;
 
+struct StretchListInfo
+{
+  bool _isStretched;
+  bool _isResampled;
+  bool _isPitchShifted;
+  StretchListInfo(bool isStretched = false, 
+                  bool isResampled = false, 
+                  bool isPitchShifted = false) :
+    _isStretched(isStretched), 
+    _isResampled(isResampled), 
+    _isPitchShifted(isPitchShifted)
+  {
+  }
+};
 
 class StretchList : public StretchList_t {
       friend struct PendingOperationItem;
@@ -531,12 +545,12 @@ class StretchList : public StretchList_t {
       //  List functions:
       //-------------------------------------------
       
-      iStretchListItem findEvent(int type, MuseFrame_t frame);
-      ciStretchListItem cFindEvent(int type, MuseFrame_t frame) const;
-      iStretchListItem previousEvent(int type, iStretchListItem);
-      ciStretchListItem cPreviousEvent(int type, ciStretchListItem) const;
-      iStretchListItem nextEvent(int type, iStretchListItem);
-      ciStretchListItem cNextEvent(int type, ciStretchListItem) const;
+      iStretchListItem findEvent(int types, MuseFrame_t frame);
+      ciStretchListItem cFindEvent(int types, MuseFrame_t frame) const;
+      iStretchListItem previousEvent(int types, iStretchListItem);
+      ciStretchListItem cPreviousEvent(int types, ciStretchListItem) const;
+      iStretchListItem nextEvent(int types, iStretchListItem);
+      ciStretchListItem cNextEvent(int types, ciStretchListItem) const;
       
       double ratioAt(StretchListItem::StretchEventType type, MuseFrame_t frame) const;
       void setRatioAt(StretchListItem::StretchEventType type, MuseFrame_t frame, double ratio, bool do_normalize = true);
@@ -560,6 +574,9 @@ class StretchList : public StretchList_t {
       void addListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
       void delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops);
       void modifyListOperation(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, PendingOperationList& ops);
+      // Whether deleting the item would cause isStretched, isResampled, or isPitchShifted
+      //  to become false.
+      StretchListInfo testDelListOperation(int types, MuseFrame_t frame) const;
       };
 
 

@@ -24,6 +24,7 @@
 // REMOVE Tim. samplerate. Added.
 //#include "audio_convert/lib_audio_convert/audioconvert.h"
 #include "audio_convert/audio_converter_settings_group.h"
+#include "audio_convert/audio_converter_plugin.h"
 #include "node.h"
 #include "part.h"
 #include "gconfig.h"
@@ -220,6 +221,7 @@ void WaveEventBase::read(Xml& xml)
       {
       StretchList sl;
       AudioConverterSettingsGroup settings(true); // Local non-default settings.
+      settings.populate(&MusEGlobal::audioConverterPluginList, true);  // Local non-default settings.
       QString filename;
       for (;;) {
             Xml::Token token = xml.parse();

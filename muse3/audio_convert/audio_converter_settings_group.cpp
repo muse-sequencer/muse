@@ -77,7 +77,13 @@ void modifyDefaultAudioConverterSettingsOperation(MusECore::AudioConverterSettin
           // Is the event using its own local settings? Ignore.
           if(cur_ev_settings->useSettings())
             continue;
-          e.sndFile().modifyAudioConverterOperation(defaultAudioConverterSettings, false, ops); // false = Default, non-local settings.
+          //MusECore::StretchList* sl = e.sndFile().stretchList();
+          //if(sl)
+            e.sndFile().modifyAudioConverterSettingsOperation(defaultAudioConverterSettings, 
+                                                      false,  // false = Default, non-local settings.
+                                                      ops); //, 
+                                                      //sl->isResampled(), 
+                                                      //sl->isStretched());
         }
       }
     }

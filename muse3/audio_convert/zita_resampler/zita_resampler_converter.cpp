@@ -87,6 +87,13 @@ extern "C"
     "Zita Resampler",
     "Zita",
     -1,
+    1.0,
+    1.0,
+    // "The VResampler class provides an arbitrary ratio r in the range 1/16 ≤ r ≤ 64 ..."
+    0.0625,
+    64.0,
+    1.0,
+    1.0,
     instantiate,
     cleanup,
     createSettings,

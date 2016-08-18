@@ -274,6 +274,14 @@ AudioConverterPlugin::AudioConverterPlugin(QFileInfo* f, const AudioConverterDes
 //   _copyright = QString(d->Copyright);
   _maxChannels = d->_maxChannels;
   _capabilities = d->_capabilities;
+
+  _minStretchRatio = d->_minStretchRatio;
+  _maxStretchRatio = d->_maxStretchRatio;
+  _minSamplerateRatio = d->_minSamplerateRatio;
+  _maxSamplerateRatio = d->_maxSamplerateRatio;
+  _minPitchShiftRatio = d->_minPitchShiftRatio;
+  _maxPitchShiftRatio = d->_maxPitchShiftRatio;
+
 //   _defaultSettings = 0;
 //   if(d->createSettings)
 //     // Create non-local default settings.

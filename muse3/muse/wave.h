@@ -30,6 +30,9 @@
 
 #include <QString>
 
+// REMOVE Tim. samplerate. Added.
+#include "muse_time.h"
+
 class QFileInfo;
 
 namespace MusECore {
@@ -87,12 +90,19 @@ class SndFile {
       bool writeFlag;
       size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
       size_t realWrite(int channel, float**, size_t n, size_t offs = 0);
+      
       // Creates a new converter based on the supplied settings and AudioConverterSettings::ModeType mode.
       // If isLocalSettings is true, settings is treated as a local settings which may override the 
       //  global default settings.
       // If isLocalSettings is false, settings is treated as the global default settings and is 
       //  directly used instead of the comparison to, and possible use of, the global default above.
-      AudioConverterPluginI* setupAudioConverter(AudioConverterSettingsGroup* settings, bool isLocalSettings, int mode);
+//       // A stretch list is needed to influence whether converters should be created or modified. 
+//       // If strList is not given, it uses this sndfile's own stretch list.
+      AudioConverterPluginI* setupAudioConverter(AudioConverterSettingsGroup* settings, 
+                                                 bool isLocalSettings, 
+                                                 int mode, 
+                                                 bool doResample,
+                                                 bool doStretch);
       
    protected:
       int refCount;
@@ -181,11 +191,44 @@ class SndFile {
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
+// REMOVE Tim. samplerate. Added.
+      // Absolute minimum and maximum ratios depending on chosen converters. -1 means infinite, don't care.
+      double minStretchRatio() const;
+      double maxStretchRatio() const;
+      double minSamplerateRatio() const;
+      double maxSamplerateRatio() const;
+      double minPitchShiftRatio() const;
+      double maxPitchShiftRatio() const;
+      // If isLocalSettings is true, settings is treated as a local settings which may override the
+      //  global default settings.
+      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      //  directly used instead of the comparison to, and possible use of, the global default above.
+      // doResample and doStretch are needed to influence whether converters should be created or modified. 
+      void modifyAudioConverterSettingsOperation(
+        AudioConverterSettingsGroup* settings, 
+        bool isLocalSettings, 
+        PendingOperationList& ops); //, 
+        //bool doResample,
+        //bool doStretch);
       // If isLocalSettings is true, settings is treated as a local settings which may override the 
       //  global default settings.
       // If isLocalSettings is false, settings is treated as the global default settings and is 
       //  directly used instead of the comparison to, and possible use of, the global default above.
-      void modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops); 
+      // doResample and doStretch are needed to influence whether converters should be created or modified. 
+      void modifyAudioConverterOperation(
+        //AudioConverterSettingsGroup* settings, 
+        //bool isLocalSettings, 
+        PendingOperationList& ops, 
+        bool doResample,
+        bool doStretch);
+      // Modify one of the stretch list's intrinsic ratio type values. Type is one of StretchListItem::StretchEventType.
+      void modifyStretchListOperation(int type, double value, PendingOperationList& ops);
+      // Add one ratio type value to the stretch list at frame. Type is one of StretchListItem::StretchEventType.
+      void addAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops);
+      // Delete one or more ratio types' values in the stretch list at frame. Types is a combination of StretchListItem::StretchEventType.
+      void delAtStretchListOperation(int types, MuseFrame_t frame, PendingOperationList& ops);
+      // Modify one ratio type value in the stretch list at frame. Type is one of StretchListItem::StretchEventType.
+      void modifyAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops);
       
       static SndFile* search(const QString& name);
 
@@ -285,12 +328,62 @@ class SndFileR {
       void setAudioConverterSettings(AudioConverterSettingsGroup* settings)
       { if(sf) sf->setAudioConverterSettings(settings); }
       StretchList* stretchList() const { return sf ? sf->stretchList() : 0; }
+      
+// REMOVE Tim. samplerate. Added.
+      // Absolute minimum and maximum ratios depending on chosen converters. -1 means infinite, don't care.
+      double minStretchRatio() const
+      { return sf ? sf->minStretchRatio() : 1.0; }
+      double maxStretchRatio() const
+      { return sf ? sf->maxStretchRatio() : 1.0; }
+      double minSamplerateRatio() const
+      { return sf ? sf->minSamplerateRatio() : 1.0; }
+      double maxSamplerateRatio() const
+      { return sf ? sf->maxSamplerateRatio() : 1.0; }
+      double minPitchShiftRatio() const
+      { return sf ? sf->minPitchShiftRatio() : 1.0; }
+      double maxPitchShiftRatio() const
+      { return sf ? sf->maxPitchShiftRatio() : 1.0; }
+
+      // If isLocalSettings is true, settings is treated as a local settings which may override the
+      //  global default settings.
+      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      //  directly used instead of the comparison to, and possible use of, the global default above.
+      // doResample and doStretch are needed to influence whether converters should be created or modified. 
+      void modifyAudioConverterSettingsOperation(
+        AudioConverterSettingsGroup* settings, 
+        bool isLocalSettings, 
+        PendingOperationList& ops) //, 
+        //bool doResample,
+        //bool doStretch) 
+      //{ if(sf) sf->modifyAudioConverterSettingsOperation(settings, isLocalSettings, ops, doResample, doStretch); }
+      { if(sf) sf->modifyAudioConverterSettingsOperation(settings, isLocalSettings, ops); }
+      
       // If isLocalSettings is true, settings is treated as a local settings which may override the 
       //  global default settings.
       // If isLocalSettings is false, settings is treated as the global default settings and is 
       //  directly used instead of the comparison to, and possible use of, the global default above.
-      void modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops) 
-      { if(sf) sf->modifyAudioConverterOperation(settings, isLocalSettings, ops); }
+      // doResample and doStretch are needed to influence whether converters should be created or modified. 
+      void modifyAudioConverterOperation(
+        //AudioConverterSettingsGroup* settings, 
+        //bool isLocalSettings, 
+        PendingOperationList& ops, 
+        bool doResample,
+        bool doStretch) 
+      //{ if(sf) sf->modifyAudioConverterOperation(settings, isLocalSettings, ops, doResample, doStretch); }
+      { if(sf) sf->modifyAudioConverterOperation(ops, doResample, doStretch); }
+      
+      // Modify one of the stretch list's intrinsic ratio type values. Type is one of StretchListItem::StretchEventType.
+      void modifyStretchListOperation(int type, double value, PendingOperationList& ops)
+      { if(sf) sf->modifyStretchListOperation(type, value, ops); }
+      // Add one ratio type value to the stretch list at frame. Type is one of StretchListItem::StretchEventType.
+      void addAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops)
+      { if(sf) sf->addAtStretchListOperation(type, frame, value, ops); }
+      // Delete one or more ratio types' values in the stretch list at frame. Types is a combination of StretchListItem::StretchEventType.
+      void delAtStretchListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
+      { if(sf) sf->delAtStretchListOperation(types, frame, ops); }
+      // Modify one ratio type value in the stretch list at frame. Type is one of StretchListItem::StretchEventType.
+      void modifyAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops)
+      { if(sf) sf->modifyAtStretchListOperation(type, frame, value, ops); }
       
 // REMOVE Tim. samplerate. Changed.
 //       off_t seek(off_t frames, int whence) {

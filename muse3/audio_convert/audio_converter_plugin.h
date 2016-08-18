@@ -58,7 +58,14 @@ class AudioConverterPlugin {
       int _maxChannels;
       // Combination of AudioConverter::Capabilities values.
       int _capabilities;
-      
+      // Minimum and maximum ratios. -1 means infinite, don't care.
+      double _minStretchRatio;
+      double _maxStretchRatio;
+      double _minSamplerateRatio;
+      double _maxSamplerateRatio;
+      double _minPitchShiftRatio;
+      double _maxPitchShiftRatio;
+
       // Default settings object created at discovery time, destroyed by us.
 //       AudioConverterSettings* _defaultSettings;
       
@@ -71,7 +78,14 @@ class AudioConverterPlugin {
       int maxChannels() const { return _maxChannels; }
       // Combination of AudioConverter::Capabilities values.
       int capabilities() const { return _capabilities; }
-      
+      // Minimum and maximum ratios. -1 means infinite, don't care.
+      double minStretchRatio() const { return _minStretchRatio; }
+      double maxStretchRatio() const { return _maxStretchRatio; }
+      double minSamplerateRatio() const { return _minSamplerateRatio; }
+      double maxSamplerateRatio() const { return _maxSamplerateRatio; }
+      double minPitchShiftRatio() const { return _minPitchShiftRatio; }
+      double maxPitchShiftRatio() const { return _maxPitchShiftRatio; }
+
       QString lib(bool complete = true) const      { return complete ? fi.completeBaseName() : fi.baseName(); }
       QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
@@ -178,6 +192,20 @@ class AudioConverterPluginI {
       int capabilities() const 
       { return _plugin ? _plugin->capabilities() : 0; }
       
+      // Minimum and maximum ratios. -1 means infinite, don't care.
+      double minStretchRatio() const
+      { return _plugin ? _plugin->minStretchRatio() : 1.0; }
+      double maxStretchRatio() const
+      { return _plugin ? _plugin->maxStretchRatio() : 1.0; }
+      double minSamplerateRatio() const
+      { return _plugin ? _plugin->minSamplerateRatio() : 1.0; }
+      double maxSamplerateRatio() const
+      { return _plugin ? _plugin->maxSamplerateRatio() : 1.0; }
+      double minPitchShiftRatio() const
+      { return _plugin ? _plugin->minPitchShiftRatio() : 1.0; }
+      double maxPitchShiftRatio() const
+      { return _plugin ? _plugin->maxPitchShiftRatio() : 1.0; }
+
       //AudioConverterSettings* createSettings(AudioConverterPlugin* plug, bool isLocal = false);
       
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.

@@ -162,8 +162,17 @@ bool SndFile::openRead(bool createCache, bool showProgress)
       }
 
       // REMOVE Tim. samplerate. Added.
-      _staticAudioConverter   = setupAudioConverter(_audioConverterSettings, true, AudioConverterSettings::RealtimeMode); // true = Local settings.
-      _staticAudioConverterUI = setupAudioConverter(_audioConverterSettings, true, AudioConverterSettings::GuiMode); // true = Local settings.
+      const StretchList* sl = stretchList();
+      _staticAudioConverter   = setupAudioConverter(audioConverterSettings(), 
+                                                    true,  // true = Local settings.
+                                                    AudioConverterSettings::RealtimeMode,
+                                                    sl->isResampled(),
+                                                    sl->isStretched());
+      _staticAudioConverterUI = setupAudioConverter(audioConverterSettings(), 
+                                                    true,  // true = Local settings.
+                                                    AudioConverterSettings::GuiMode, 
+                                                    sl->isResampled(),
+                                                    sl->isStretched());
       
       writeFlag = false;
       openFlag  = true;
@@ -184,12 +193,19 @@ bool SndFile::openRead(bool createCache, bool showProgress)
 
 // REMOVE Tim. samplerate. Added.
 //bool SndFile::setupAudioConverter(AudioConverterSettingsGroup* settings, AudioConverterPluginI** p_plugI, int mode)
-AudioConverterPluginI* SndFile::setupAudioConverter(AudioConverterSettingsGroup* settings, bool isLocalSettings, int mode)
+AudioConverterPluginI* SndFile::setupAudioConverter(AudioConverterSettingsGroup* settings, 
+                                                    bool isLocalSettings, 
+                                                    int mode, 
+                                                    bool doResample,
+                                                    bool doStretch)
 {
 #ifdef USE_SAMPLERATE
 
   if(!MusEGlobal::defaultAudioConverterSettings)
     return NULL;
+  
+//   if(!strList)
+//     strList = stretchList();
   
   AudioConverterPluginI* plugI = NULL;
   
@@ -258,8 +274,9 @@ AudioConverterPluginI* SndFile::setupAudioConverter(AudioConverterSettingsGroup*
 
   
   //if(sf)
-//   if(sf && (sampleRateDiffers() || stretchList()->isStretched()))
-  if(sf && (sampleRateDiffers() || stretchList()->isResampled() || stretchList()->isStretched()))
+//   if(sf && (sampleRateDiffers() || strList->isStretched()))
+  //if(sf && (sampleRateDiffers() || strList->isResampled() || strList->isStretched()))
+  if(sf && (sampleRateDiffers() || doResample || doStretch))
   {
     // Do we already have a valid audio converter?
     //if(_staticAudioConverter)
@@ -273,10 +290,10 @@ AudioConverterPluginI* SndFile::setupAudioConverter(AudioConverterSettingsGroup*
       // Create a new converter.
       
       AudioConverterPlugin* fin_plug  = 
-        stretchList()->isStretched() ? str_plugin : (res_plugin ? res_plugin : str_plugin);
+        doStretch ? str_plugin : (res_plugin ? res_plugin : str_plugin);
         
       AudioConverterSettingsI* fin_set = 
-        stretchList()->isStretched() ? rt_str_settings : (rt_res_settings ? rt_res_settings : rt_str_settings);
+        doStretch ? rt_str_settings : (rt_res_settings ? rt_res_settings : rt_str_settings);
         
       if(fin_set && fin_plug && (fin_plug->maxChannels() < 0 || sfinfo.channels <= fin_plug->maxChannels()))
       {
@@ -377,24 +394,264 @@ void SndFile::setStaticAudioConverter(AudioConverterPluginI* converter, int mode
   }
 }
 
+double SndFile::minStretchRatio() const
+{
+  double m = 0.0;
+  if(_staticAudioConverter && _staticAudioConverter->minStretchRatio() > m)
+    m = _staticAudioConverter->minStretchRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->minStretchRatio() > m)
+    m = _staticAudioConverterUI->minStretchRatio();
+  return m;
+}
+
+double SndFile::maxStretchRatio() const
+{
+  double m = -1.0;
+  if(_staticAudioConverter && _staticAudioConverter->maxStretchRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxStretchRatio() < m))
+    m = _staticAudioConverter->maxStretchRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxStretchRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxStretchRatio() < m))
+    m = _staticAudioConverterUI->maxStretchRatio();
+  return m;
+}
+
+double SndFile::minSamplerateRatio() const
+{
+  double m = 0.0;
+  if(_staticAudioConverter && _staticAudioConverter->minSamplerateRatio() > m)
+    m = _staticAudioConverter->minSamplerateRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->minSamplerateRatio() > m)
+    m = _staticAudioConverterUI->minSamplerateRatio();
+  return m;
+}
+
+double SndFile::maxSamplerateRatio() const
+{
+  double m = -1.0;
+  if(_staticAudioConverter && _staticAudioConverter->maxSamplerateRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxSamplerateRatio() < m))
+    m = _staticAudioConverter->maxSamplerateRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxSamplerateRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxSamplerateRatio() < m))
+    m = _staticAudioConverterUI->maxStretchRatio();
+  return m;
+}
+
+double SndFile::minPitchShiftRatio() const
+{
+  double m = 0.0;
+  if(_staticAudioConverter && _staticAudioConverter->minPitchShiftRatio() > m)
+    m = _staticAudioConverter->minPitchShiftRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->minPitchShiftRatio() > m)
+    m = _staticAudioConverterUI->minPitchShiftRatio();
+  return m;
+}
+
+double SndFile::maxPitchShiftRatio() const
+{
+  double m = -1.0;
+  if(_staticAudioConverter && _staticAudioConverter->maxPitchShiftRatio() > 0.0 && (m < 0.0 || _staticAudioConverter->maxPitchShiftRatio() < m))
+    m = _staticAudioConverter->maxPitchShiftRatio();
+  if(_staticAudioConverterUI && _staticAudioConverterUI->maxPitchShiftRatio() > 0.0 && (m < 0.0 || _staticAudioConverterUI->maxPitchShiftRatio() < m))
+    m = _staticAudioConverterUI->maxPitchShiftRatio();
+  return m;
+}
+
 void SndFile::setAudioConverterSettings(AudioConverterSettingsGroup* settings)
 { 
   _audioConverterSettings = settings;
 }
 
-void SndFile::modifyAudioConverterOperation(AudioConverterSettingsGroup* settings, bool isLocalSettings, PendingOperationList& ops)
+void SndFile::modifyAudioConverterSettingsOperation(
+  AudioConverterSettingsGroup* settings, 
+  bool isLocalSettings, 
+  PendingOperationList& ops) //, 
+  //bool doResample,
+  //bool doStretch)
 {
-//   if(!settings)
-//     //return;
-//     settings = _audioConverterSettings;
-  
-  AudioConverterPluginI* converter   = setupAudioConverter(settings, isLocalSettings, AudioConverterSettings::RealtimeMode);
-  AudioConverterPluginI* converterUI = setupAudioConverter(settings, isLocalSettings, AudioConverterSettings::GuiMode);
+  const StretchList* sl = stretchList();
+  const bool doStretch = sl->isStretched();
+  const bool doResample = sl->isResampled();
+  AudioConverterPluginI* converter   = setupAudioConverter(settings,
+                                                           isLocalSettings,
+                                                           AudioConverterSettings::RealtimeMode,
+                                                           doResample,
+                                                           doStretch);
+  AudioConverterPluginI* converterUI = setupAudioConverter(settings,
+                                                           isLocalSettings,
+                                                           AudioConverterSettings::GuiMode,
+                                                           doResample,
+                                                           doStretch);
 
-  if(!converter && !converterUI)
-    return;
+//   if(!converter && !converterUI)
+//     return;
 
+  // We want to change the settings, and the converters if neccesary.
   ops.add(PendingOperationItem(this, settings, converter, converterUI, PendingOperationItem::ModifyLocalAudioConverterSettings));
+}
+
+void SndFile::modifyAudioConverterOperation(
+  //AudioConverterSettingsGroup* settings, 
+  //bool isLocalSettings, 
+  PendingOperationList& ops, 
+  bool doResample,
+  bool doStretch)
+{
+  AudioConverterSettingsGroup* settings = _audioConverterSettings->useSettings() ? 
+    _audioConverterSettings : MusEGlobal::defaultAudioConverterSettings;
+    
+  const bool isLocalSettings = _audioConverterSettings->useSettings();
+  
+  AudioConverterPluginI* converter   = setupAudioConverter(settings, 
+                                                           isLocalSettings, 
+                                                           AudioConverterSettings::RealtimeMode, 
+                                                           doResample, 
+                                                           doStretch);
+  AudioConverterPluginI* converterUI = setupAudioConverter(settings, 
+                                                           isLocalSettings, 
+                                                           AudioConverterSettings::GuiMode, 
+                                                           doResample, 
+                                                           doStretch);
+
+//   if(!converter && !converterUI)
+//     return;
+
+  // NULL = we only want to change the converters, not the settings.
+  ops.add(PendingOperationItem(this, NULL, converter, converterUI, PendingOperationItem::ModifyLocalAudioConverterSettings));
+}
+
+void SndFile::modifyStretchListOperation(int type, double value, PendingOperationList& ops)
+{
+  ops.add(PendingOperationItem(type, stretchList(), value, PendingOperationItem::ModifyStretchListRatio));
+}
+
+void SndFile::addAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops)
+{
+  StretchList* sl = stretchList();
+//   iStretchListItem ie = sl->find(frame);
+//   if(ie != sl->end())
+//     ops.add(PendingOperationItem(type, sl, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+//   else
+//     ops.add(PendingOperationItem(type, sl, frame, value, PendingOperationItem::AddStretchListRatioAt));
+  stretchList()->addListOperation(StretchListItem::StretchEventType(type), frame, value, ops);
+  
+  bool wantStretch = false;
+  bool wantResample = sampleRateDiffers();
+  bool wantPitch = false;
+  const bool haveStretch = sl->isStretched();
+  const bool haveResample = sl->isResampled() || sampleRateDiffers();
+  const bool havePitch = sl->isPitchShifted();
+  
+  //// If the requested value is anything other than 1.0, request converters.
+  //if(value != 1.0)
+  //{
+    switch(type)
+    {
+      case StretchListItem::StretchEvent:
+        wantStretch = true;
+      break;
+      case StretchListItem::SamplerateEvent:
+        wantResample = true;
+      break;
+      case StretchListItem::PitchEvent:
+        wantPitch = true;
+      break;
+    }
+  //}
+  
+  if((wantStretch  && !haveStretch) || 
+     (wantResample && !haveResample) || 
+     (wantPitch    && !havePitch))
+  {
+    const bool doStretch  = wantStretch  ? true : haveStretch;
+    const bool doResample = wantResample ? true : haveResample;
+  //const bool doPitch    = wantPitch    ? true : havePitch;
+    
+    modifyAudioConverterOperation(ops, doResample, doStretch);
+  }
+}
+
+void SndFile::delAtStretchListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
+{
+  // Do not delete the item at zeroth frame.
+  if(frame == 0)
+    return;
+  
+  StretchList* sl = stretchList();
+//   iStretchListItem e = sl->find(frame);
+//   if (e == sl->end()) {
+//         ERROR_WAVE(stderr, "SndFile::delAtStretchListOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   PendingOperationItem poi(types, sl, e, PendingOperationItem::DeleteStretchListRatioAt);
+//   // NOTE: Deletion is done in post-RT stage 3.
+//   ops.add(poi);
+  sl->delListOperation(types, frame, ops);
+
+  StretchListInfo info =  sl->testDelListOperation(types, frame);
+  
+  const bool wantStretch  = info._isStretched;
+  const bool wantResample = info._isResampled || sampleRateDiffers();
+  const bool wantPitch    = info._isPitchShifted;
+  
+  const bool haveStretch  = sl->isStretched();
+  const bool haveResample = sl->isResampled() || sampleRateDiffers();
+  const bool havePitch    = sl->isPitchShifted();
+  
+  if((!wantStretch  && haveStretch) || 
+     (!wantResample && haveResample) || 
+     (!wantPitch    && havePitch))
+  {
+    const bool doStretch  = !wantStretch  ? false : haveStretch;
+    const bool doResample = !wantResample ? false : haveResample;
+  //const bool doPitch    = !wantPitch    ? false : havePitch;
+    
+    modifyAudioConverterOperation(ops, doResample, doStretch);
+  }
+}
+
+void SndFile::modifyAtStretchListOperation(int type, MuseFrame_t frame, double value, PendingOperationList& ops)
+{
+  StretchList* sl = stretchList();
+//   iStretchListItem ie = sl->find(frame);
+//   if(ie == sl->end()) {
+//         ERROR_WAVE(stderr, "SndFile::modifyAtStretchListOperation frame:%ld not found\n", frame);
+//         return;
+//         }
+//   ops.add(PendingOperationItem(type, sl, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
+  sl->modifyListOperation(StretchListItem::StretchEventType(type), frame, value, ops);
+  
+  bool wantStretch = false;
+  bool wantResample = sampleRateDiffers();
+  bool wantPitch = false;
+  const bool haveStretch = sl->isStretched();
+  const bool haveResample = sl->isResampled() || sampleRateDiffers();
+  const bool havePitch = sl->isPitchShifted();
+  
+  //// If the requested value is anything other than 1.0, request converters.
+  //if(value != 1.0)
+  //{
+    switch(type)
+    {
+      case StretchListItem::StretchEvent:
+        wantStretch = true;
+      break;
+      case StretchListItem::SamplerateEvent:
+        wantResample = true;
+      break;
+      case StretchListItem::PitchEvent:
+        wantPitch = true;
+      break;
+    }
+  //}
+  
+  if((wantStretch  && !haveStretch) || 
+     (wantResample && !haveResample) || 
+     (wantPitch    && !havePitch))
+  {
+    const bool doStretch  = wantStretch  ? true : haveStretch;
+    const bool doResample = wantResample ? true : haveResample;
+  //const bool doPitch    = wantPitch    ? true : havePitch;
+    
+    modifyAudioConverterOperation(ops, doResample, doStretch);
+  }
 }
 
 //---------------------------------------------------------

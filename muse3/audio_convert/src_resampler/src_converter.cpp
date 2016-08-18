@@ -90,6 +90,13 @@ extern "C"
     "SRC Resampler",
     "SRC",
     -1,
+    1.0,
+    1.0,
+    // "SRC is capable of ... downsampling by a factor of 256 to upsampling by the same factor."
+    0.004,
+    256.0,
+    1.0,
+    1.0,
     instantiate,
     cleanup,
     createSettings,

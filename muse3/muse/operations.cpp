@@ -249,9 +249,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     
     // REMOVE Tim. samplerate. Added.
     case ModifyLocalAudioConverterSettings:
+    {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyLocalAudioConverterSettings: "
                                 "sndFile:%p settings:%p audio_converter:%p audio_converter_ui:%p\n", 
                                 _sndFile, _audio_converter_settings, _audio_converter, _audio_converter_ui);
+
+      // _audio_converter_settings can be NULL meaning don't touch, settings can only be 
+      //  'replaced' but not deleted, while _audio_converter and _audio_converter_ui 
+      //  can be NULL meaning delete them.
       if(_audio_converter_settings)
       {
         AudioConverterSettingsGroup* cur_settings = _sndFile->audioConverterSettings();
@@ -261,23 +266,20 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
         flags |= SC_AUDIO_CONVERTER;
       }
       
-      if(_audio_converter)
-      {
-        AudioConverterPluginI* cur_conv = _sndFile->staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      AudioConverterPluginI* cur_conv = _sndFile->staticAudioConverter(AudioConverterSettings::RealtimeMode);
+      //if(_audio_converter)
         _sndFile->setStaticAudioConverter(_audio_converter, AudioConverterSettings::RealtimeMode);
-        // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
-        _audio_converter = cur_conv;
-        flags |= SC_AUDIO_CONVERTER;
-      }
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter = cur_conv;
+      flags |= SC_AUDIO_CONVERTER;
       
-      if(_audio_converter_ui)
-      {
-        AudioConverterPluginI* cur_convUI = _sndFile->staticAudioConverter(AudioConverterSettings::GuiMode);
+      AudioConverterPluginI* cur_convUI = _sndFile->staticAudioConverter(AudioConverterSettings::GuiMode);
+      //if(_audio_converter_ui)
         _sndFile->setStaticAudioConverter(_audio_converter_ui, AudioConverterSettings::GuiMode);
-        // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
-        _audio_converter_ui = cur_convUI;
-        flags |= SC_AUDIO_CONVERTER;
-      }
+      // Transfer the original pointer into the member, so it can be deleted in the non-RT stage.
+      _audio_converter_ui = cur_convUI;
+      flags |= SC_AUDIO_CONVERTER;
+    }
     break;
       
     case UpdateSoloStates:

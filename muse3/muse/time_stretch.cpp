@@ -706,7 +706,6 @@ StretchList::StretchList()
   _isStretched = false;
   _isResampled = false;
   _isPitchShifted = false;
-  _isNormalized = false;
   _startFrame = 0;
   _endFrame = 0;
   _stretchedEndFrame = 0;
@@ -714,6 +713,17 @@ StretchList::StretchList()
   _stretchRatio = 1.0;
   _samplerateRatio = 1.0;
   _pitchRatio = 1.0;
+
+  // Ensure that there is always an item at frame zero.
+  insert(std::pair<const MuseFrame_t, StretchListItem> 
+    (0, StretchListItem(1.0, 1.0, 1.0, 
+                        StretchListItem::StretchEvent | 
+                        StretchListItem::SamplerateEvent | 
+                        StretchListItem::PitchEvent)));
+  
+  // Technically it is normalized now, since StretchListItem
+  //  constructor fills in zeros for the frame values.
+  _isNormalized = true;
 }
 
 StretchList::~StretchList()
@@ -797,25 +807,58 @@ void StretchList::add(MuseFrame_t frame, const StretchListItem& e, bool do_norma
 
 void StretchList::del(int types, MuseFrame_t frame, bool do_normalize)
 {
+  // Do not delete the item at zeroth frame.
+  if(frame == 0)
+    return;
+  
   iStretchListItem e = find(frame);
   if(e == end()) 
   {
     ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", frame);
     return;
   }
-  e->second._type &= ~types;
-  if(e->second._type == 0)
-    erase(e);
-  
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
-  
-  if(do_normalize)
-    normalizeListFrames();
+
+  del(types, e, do_normalize);
+
+//   e->second._type &= ~types;
+//   if(e->second._type == 0)
+//     erase(e);
+//
+//   // Mark as invalidated, normalization is required.
+//   _isNormalized = false;
+//
+//   if(do_normalize)
+//     normalizeListFrames();
 }
 
 void StretchList::del(int types, iStretchListItem item, bool do_normalize)
 {
+  // Do not delete the item at zeroth frame.
+  if(item->first == 0)
+    return;
+  
+  // We must restore any previous event's ratio to 1.0.
+  // This is crucial so that when the last user marker is finally removed, the special zeroth marker (non-user)
+  //  will be set to 1.0 ratio and the converters are not required anymore and can be deleted.
+  if(types & StretchListItem::StretchEvent)
+  {
+    iStretchListItem prevStretchTyped = previousEvent(StretchListItem::StretchEvent, item);
+    if(prevStretchTyped != end())
+      prevStretchTyped->second._stretchRatio = 1.0;
+  }
+  if(types & StretchListItem::SamplerateEvent)
+  {
+    iStretchListItem prevSamplerateTyped = previousEvent(StretchListItem::SamplerateEvent, item);
+    if(prevSamplerateTyped != end())
+      prevSamplerateTyped->second._samplerateRatio = 1.0;
+  }
+  if(types & StretchListItem::PitchEvent)
+  {
+    iStretchListItem prevPitchTyped = previousEvent(StretchListItem::PitchEvent, item);
+    if(prevPitchTyped != end())
+      prevPitchTyped->second._stretchRatio = 1.0;
+  }
+
   item->second._type &= ~types;
 
   if(item->second._type == 0)
@@ -848,7 +891,7 @@ void StretchList::normalizeListFrames()
   MuseFrame_t dframe;
   //double newFrame = 0;
   
-  MuseFrame_t prevFrame;
+  MuseFrame_t thisFrame, prevFrame;
   double prevNewFrame;
   double prevNewUnFrame;
   double prevNewStretchFrame;
@@ -856,38 +899,59 @@ void StretchList::normalizeListFrames()
   double prevNewSamplerateFrame;
   double prevNewUnSamplerateFrame;
   
-  double prevStretch = 1.0;
-  double prevSamplerate = 1.0;
-  double prevPitch = 1.0;
+//   double prevStretch = 1.0;
+//   double prevSamplerate = 1.0;
+//   double prevPitch = 1.0;
+  double prevStretch;
+  double prevSamplerate;
+  double prevPitch;
   
-  // If ANY intrinsic or list event has a stretch or samplerate other than 1.0, 
+////If ANY intrinsic or list event has a stretch or samplerate other than 1.0,
+//// the map is stretched, a stretcher or samplerate converter must be engaged.
+
+  // If any intrinsic value has a stretch or samplerate other than 1.0,
   //  the map is stretched, a stretcher or samplerate converter must be engaged.
   _isStretched = (_stretchRatio != 1.0);
   _isResampled = (_samplerateRatio != 1.0);
   _isPitchShifted = (_pitchRatio != 1.0);
   for(iStretchListItem ise = begin(); ise != end(); ++ise)
   {
+    thisFrame = ise->first;
     StretchListItem& se = ise->second;
-    if(((se._type & StretchListItem::StretchEvent) && se._stretchRatio != 1.0)) 
-      _isStretched = true;
-    if(((se._type & StretchListItem::SamplerateEvent) && se._samplerateRatio != 1.0))
-      _isResampled = true;
-    if(((se._type & StretchListItem::PitchEvent) && se._pitchRatio != 1.0))
-      _isPitchShifted = true;
+
+    // The policy is such that if there are user items (non zeroth item) of a given type,
+    //  the list is said to be in that state (stretched, resampled, shifted etc), even if all
+    //  the items' ratios are 1.0.
+    // Ignore the special zeroth frame.
+    // If the zeroth frame is the only item, its ratios must (should) all be at 1.0 right now
+    //  so they will be ignored.
+    if(thisFrame != 0)
+    {
+      if(((se._type & StretchListItem::StretchEvent))) //&& se._stretchRatio != 1.0))
+        _isStretched = true;
+      if(((se._type & StretchListItem::SamplerateEvent))) //&& se._samplerateRatio != 1.0))
+        _isResampled = true;
+      if(((se._type & StretchListItem::PitchEvent))) //&& se._pitchRatio != 1.0))
+        _isPitchShifted = true;
+    }
     
     if(ise == begin())
     {
-//       prevFrame = prevNewFrame = se._finStretchedFrame = ise->first;
+//       prevFrame = prevNewFrame = se._finStretchedFrame = thisFrame;
       prevFrame = prevNewUnFrame = prevNewFrame = 
         prevNewStretchFrame = prevNewUnStretchFrame = 
         prevNewSamplerateFrame = prevNewUnSamplerateFrame = 
         se._finSquishedFrame = se._finStretchedFrame = 
         se._stretchStretchedFrame = se._stretchSquishedFrame = 
-        se._samplerateStretchedFrame = se._samplerateSquishedFrame = ise->first;
+        se._samplerateStretchedFrame = se._samplerateSquishedFrame = thisFrame;
+        
+      prevStretch = se._stretchRatio;
+      prevSamplerate = se._samplerateRatio;
+      prevPitch = se._pitchRatio;
     }
     else
     {
-      dframe = ise->first - prevFrame;
+      dframe = thisFrame - prevFrame;
       
       //dtime = double(dframe) / (prevStretch + prevSamplerate - 1.0);
       factor = (_samplerateRatio * prevSamplerate) / (_stretchRatio * prevStretch);
@@ -922,23 +986,38 @@ void StretchList::normalizeListFrames()
       prevNewUnSamplerateFrame = se._samplerateSquishedFrame;
 
       
-      prevFrame = ise->first;
+      prevFrame = thisFrame;
+      
+      if(se._type & StretchListItem::StretchEvent)
+        prevStretch = se._stretchRatio;
+      else
+        se._stretchRatio = prevStretch;
+      
+      if(se._type & StretchListItem::SamplerateEvent)
+        prevSamplerate = se._samplerateRatio;
+      else
+        se._samplerateRatio = prevSamplerate;
+      
+      if(se._type & StretchListItem::PitchEvent)
+        prevPitch = se._pitchRatio;
+      else
+        se._pitchRatio = prevPitch;
     }
 
-    if(se._type & StretchListItem::StretchEvent)
-      prevStretch = se._stretchRatio;
-    else
-      se._stretchRatio = prevStretch;
-    
-    if(se._type & StretchListItem::SamplerateEvent)
-      prevSamplerate = se._samplerateRatio;
-    else
-      se._samplerateRatio = prevSamplerate;
-    
-    if(se._type & StretchListItem::PitchEvent)
-      prevPitch = se._pitchRatio;
-    else
-      se._pitchRatio = prevPitch;
+//     if(se._type & StretchListItem::StretchEvent)
+//       prevStretch = se._stretchRatio;
+//     else
+//       se._stretchRatio = prevStretch;
+//     
+//     if(se._type & StretchListItem::SamplerateEvent)
+//       prevSamplerate = se._samplerateRatio;
+//     else
+//       se._samplerateRatio = prevSamplerate;
+//     
+//     if(se._type & StretchListItem::PitchEvent)
+//       prevPitch = se._pitchRatio;
+//     else
+//       se._pitchRatio = prevPitch;
   }
   
   // TODO 
@@ -964,8 +1043,17 @@ void StretchList::normalizeListRatios()
 void StretchList::clear()
 {
   StretchList_t::clear();
-  // Mark as invalidated, normalization is required.
-  _isNormalized = false;
+  
+  // Ensure that there is always an item at frame zero.
+  insert(std::pair<const MuseFrame_t, StretchListItem> 
+    (0, StretchListItem(1.0, 1.0, 1.0, 
+                        StretchListItem::StretchEvent | 
+                        StretchListItem::SamplerateEvent | 
+                        StretchListItem::PitchEvent)));
+  
+  // Technically it is normalized now, since StretchListItem
+  //  constructor fills in zeros for the frame values.
+  _isNormalized = true;
 }
 
 //---------------------------------------------------------
@@ -983,6 +1071,13 @@ void StretchList::eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe)
   
   for(iStretchListItem ise = se; ise != ee; )
   {
+    // Do not delete the item at zeroth frame.
+    if(ise->first == 0)
+    {
+      ++ise;
+      continue;
+    }
+    
     ise->second._type &= ~types;
     if(ise->second._type == 0)
     {
@@ -1393,74 +1488,74 @@ void StretchList::modifyOperation(StretchListItem::StretchEventType type, double
 //  List functions:
 //-------------------------------------------
 
-iStretchListItem StretchList::findEvent(int type, MuseFrame_t frame)
+iStretchListItem StretchList::findEvent(int types, MuseFrame_t frame)
 {
   iStretchListItemPair res = equal_range(frame);
   for(iStretchListItem ise = res.first; ise != res.second; ++ise)
   {
-    if(ise->second._type & type)
+    if(ise->second._type & types)
       return ise;
   }
   return end();
 }
 
-ciStretchListItem StretchList::cFindEvent(int type, MuseFrame_t frame) const
+ciStretchListItem StretchList::cFindEvent(int types, MuseFrame_t frame) const
 {
   const StretchList* sl = this;
   ciStretchListItemPair res = sl->equal_range(frame);  // FIXME Calls non-const version unless cast ??
   for(ciStretchListItem ise = res.first; ise != res.second; ++ise)
   {
-    if(ise->second._type & type)
+    if(ise->second._type & types)
       return ise;
   }
   return sl->end();
 }
 
-iStretchListItem StretchList::previousEvent(int type, iStretchListItem item)
+iStretchListItem StretchList::previousEvent(int types, iStretchListItem item)
 {
   iStretchListItem i = item;
   while(i != begin())
   {
     --i;
-    if(i->second._type & type)
+    if(i->second._type & types)
       return i;
   }
   return end();
 }
 
-ciStretchListItem StretchList::cPreviousEvent(int type, ciStretchListItem item) const
+ciStretchListItem StretchList::cPreviousEvent(int types, ciStretchListItem item) const
 {
   const StretchList* sl = this;
   ciStretchListItem i = item;
   while(i != sl->begin())
   {
     --i;
-    if(i->second._type & type)
+    if(i->second._type & types)
       return i;
   }
   return sl->end();
 }
 
-iStretchListItem StretchList::nextEvent(int type, iStretchListItem item)
+iStretchListItem StretchList::nextEvent(int types, iStretchListItem item)
 {
   iStretchListItem i = item;
   while(i != end())
   {
     ++i;
-    if(i->second._type & type)
+    if(i->second._type & types)
       return i;
   }
   return end();
 }
 
-ciStretchListItem StretchList::cNextEvent(int type, ciStretchListItem item) const
+ciStretchListItem StretchList::cNextEvent(int types, ciStretchListItem item) const
 {
   const StretchList* sl = this;
   ciStretchListItem i = item;
   while(i != sl->end())
   {
     ++i;
-    if(i->second._type & type)
+    if(i->second._type & types)
       return i;
   }
   return sl->end();
@@ -1474,12 +1569,17 @@ ciStretchListItem StretchList::cNextEvent(int type, ciStretchListItem item) cons
 
 double StretchList::ratioAt(StretchListItem::StretchEventType type, MuseFrame_t frame) const
 {
+  // If the zeroth frame is the only item, its ratios must (should) all be at 1.0 right now
+  //  so they will be ignored.
   const StretchList* sl = this;
+  if(sl->size() == 1)
+    return 1.0;
+
   ciStretchListItem i = sl->upper_bound(frame);
   if(i == sl->begin())
     return 1.0;
   --i;
-  
+
   switch(type)
   {
     case StretchListItem::StretchEvent:
@@ -1614,7 +1714,6 @@ double StretchList::stretch(MuseFrame_t frame, int type) const
   
   return prevNewFrame + dtime;
 }
-
 
 double StretchList::stretch(double frame, int type) const
 {
@@ -1758,14 +1857,37 @@ MuseFrame_t StretchList::unStretch(double frame, int type) const
   ciStretchListItem e;
   for(e = sl->begin(); e != sl->end(); ++e) 
   {
-    if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
-        (type & StretchListItem::SamplerateEvent) && //
-        frame < e->second._finStretchedFrame) ||
-       ((type & StretchListItem::StretchEvent) &&    // Stretch only.
-        frame < e->second._stretchStretchedFrame) ||
-       ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
-        frame < e->second._samplerateStretchedFrame))
-      break;
+//     if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+//         (type & StretchListItem::SamplerateEvent) && //
+//         frame < e->second._finStretchedFrame) ||
+//        ((type & StretchListItem::StretchEvent) &&    // Stretch only.
+//         frame < e->second._stretchStretchedFrame) ||
+//        ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
+//         frame < e->second._samplerateStretchedFrame))
+//       break;
+    
+    if((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+        (type & StretchListItem::SamplerateEvent))
+    { 
+      if(frame < e->second._finStretchedFrame)
+        break;
+      else
+        continue;
+    } 
+    else if(type & StretchListItem::StretchEvent)   // Only stretch conversion requested.
+    {
+      if(frame < e->second._stretchStretchedFrame)
+        break;
+      else
+        continue;
+    }
+    else if(type & StretchListItem::SamplerateEvent) // Only samplerate conversion requested.
+    {
+      if(frame < e->second._samplerateStretchedFrame)
+        break;
+      else
+        continue;
+    }
   }
         
   if(e == sl->begin())
@@ -1818,14 +1940,37 @@ MuseFrame_t StretchList::unSquish(double frame, int type) const
   ciStretchListItem e;
   for(e = sl->begin(); e != sl->end(); ++e) 
   {
-    if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
-        (type & StretchListItem::SamplerateEvent) && //
-        frame < e->second._finSquishedFrame) ||
-       ((type & StretchListItem::StretchEvent) &&    // Stretch only.
-        frame < e->second._stretchSquishedFrame) ||
-       ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
-        frame < e->second._samplerateSquishedFrame))
-      break;
+//     if(((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+//         (type & StretchListItem::SamplerateEvent) && //
+//         frame < e->second._finSquishedFrame) ||
+//        ((type & StretchListItem::StretchEvent) &&    // Stretch only.
+//         frame < e->second._stretchSquishedFrame) ||
+//        ((type & StretchListItem::SamplerateEvent) && // Samplerate only. 
+//         frame < e->second._samplerateSquishedFrame))
+//       break;
+    
+    if((type & StretchListItem::StretchEvent) &&    // Full conversion requested.
+        (type & StretchListItem::SamplerateEvent))
+    { 
+      if(frame < e->second._finSquishedFrame)
+        break;
+      else
+        continue;
+    } 
+    else if(type & StretchListItem::StretchEvent)   // Only stretch conversion requested.
+    {
+      if(frame < e->second._stretchSquishedFrame)
+        break;
+      else
+        continue;
+    }
+    else if(type & StretchListItem::SamplerateEvent) // Only samplerate conversion requested.
+    {
+      if(frame < e->second._samplerateSquishedFrame)
+        break;
+      else
+        continue;
+    }
   }
         
   if(e == sl->begin())
@@ -1869,6 +2014,10 @@ void StretchList::addListOperation(StretchListItem::StretchEventType type, MuseF
 
 void StretchList::delListOperation(int types, MuseFrame_t frame, PendingOperationList& ops)
 {
+  // Do not delete the item at zeroth frame.
+  if(frame == 0)
+    return;
+  
   iStretchListItem e = find(frame);
   if (e == end()) {
         ERROR_TIMESTRETCH(stderr, "StretchList::delOperation frame:%ld not found\n", frame);
@@ -1889,6 +2038,51 @@ void StretchList::modifyListOperation(StretchListItem::StretchEventType type, Mu
   ops.add(PendingOperationItem(type, this, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));
 }
 
+StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) const
+{
+  // The policy is such that if (after deletion) there are still user items (non zeroth item) of a given type,
+  //  the list is said to still be in that state (stretched, resampled, shifted etc),
+  //  even if all the items' ratios are 1.0.
+  StretchListInfo info;
+  MuseFrame_t fr;
+  // If any intrinsic value has a stretch or samplerate other than 1.0,
+  //  the map is stretched, a stretcher or samplerate converter must be engaged.
+  info._isStretched = (_stretchRatio != 1.0);
+  info._isResampled = (_samplerateRatio != 1.0);
+  info._isPitchShifted = (_pitchRatio != 1.0);
+  for(ciStretchListItem ise = begin(); ise != end(); ++ise)
+  {
+    fr = ise->first;
+    // Ignore the special zeroth frame.
+    // If the zeroth frame is the only item, its ratios must (should) all be at 1.0 right now
+    //  so they will be ignored.
+    if(fr == 0)
+      continue;
+
+    const StretchListItem& se = ise->second;
+    if(((se._type & StretchListItem::StretchEvent) && 
+       //(types & StretchListItem::StretchEvent) &&
+       (!(types & StretchListItem::StretchEvent) ||
+       fr != frame))) //&&
+       //se._stretchRatio != 1.0))
+      info._isStretched = true;
+    
+    if(((se._type & StretchListItem::SamplerateEvent) && 
+       //(types & StretchListItem::SamplerateEvent) &&
+       (!(types & StretchListItem::SamplerateEvent) ||
+       fr != frame))) //&&
+       //se._samplerateRatio != 1.0))
+      info._isResampled = true;
+
+    if(((se._type & StretchListItem::PitchEvent) && 
+       //(types & StretchListItem::PitchEvent) &&
+       (!(types & StretchListItem::PitchEvent) ||
+       fr != frame))) //&&
+       //se._pitchRatio != 1.0))
+      info._isPitchShifted = true;
+  }
+  return info;
+}
 
 
 

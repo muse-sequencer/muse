@@ -52,7 +52,15 @@ struct AudioConverterDescriptor
   const char* _label;
   // Maximum available channels. -1 means infinite, don't care.
   int _maxChannels;
-  
+
+  // Minimum and maximum ratios. -1 means infinite, don't care.
+  double _minStretchRatio;
+  double _maxStretchRatio;
+  double _minSamplerateRatio;
+  double _maxSamplerateRatio;
+  double _minPitchShiftRatio;
+  double _maxPitchShiftRatio;
+
   // Create an instance of the plugin.
   // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
   AudioConverterHandle (*instantiate)(const struct AudioConverterDescriptor* Descriptor,

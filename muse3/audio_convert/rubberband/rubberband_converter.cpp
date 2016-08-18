@@ -87,6 +87,12 @@ extern "C"
     "Rubberband Stretcher",
     "Rubberband",
     -1,
+    0.0,
+    -1.0,
+    0.0,
+    -1.0,
+    0.0,
+    -1.0,
     instantiate,
     cleanup,
     createSettings,
@@ -237,8 +243,8 @@ int RubberBandAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t p
   const MuseFrame_t new_frame = stretch_list->unSquish(pos);
   const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
   const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
-  //DEBUG_AUDIOCONVERT(stderr, 
-  //  "RubberBandAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
+  DEBUG_AUDIOCONVERT(stderr, 
+    "RubberBandAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
   
   const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
   

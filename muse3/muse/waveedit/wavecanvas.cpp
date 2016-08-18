@@ -91,6 +91,8 @@
 
 #define ERROR_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
 
+#define INFO_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
+
 // REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
@@ -247,7 +249,9 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
         {
           MusECore::MuseFrame_t frame   = is->first;
           StretchSelectedItem& ssi  = is->second;
-          MusECore::StretchList* sl = ssi._list;
+          MusECore::StretchList* sl = ssi._sndFile.stretchList();
+          if(!sl)
+            continue;
           
           MusEGui::ciCItem i;
           for(i = items.begin(); i != items.end(); ++i)
@@ -385,13 +389,39 @@ void WaveCanvas::keyPress(QKeyEvent* event)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
+      if (key == shortcuts[SHRT_DELETE].key)
+      {
+        switch (_tool)
+        {
+          case StretchTool:
+          case SamplerateTool:
+          {
+            MusECore::PendingOperationList operations;
+            StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
+            for(iStretchSelectedItem isi = ssl.begin(); isi != ssl.end(); ++isi)
+            {
+              StretchSelectedItem& ssi = isi->second;
+              ssi._sndFile.delAtStretchListOperation(ssi._type, isi->first, operations);
+            }
+            ssl.clear();
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+          }
+          break;
+
+          default:
+          break;
+        }
+
+        return;
+      }
+
       // TODO: New WaveCanvas: Convert these to frames, and remove unneeded functions.
             
       //
       //  Shortcut for DrumEditor & PianoRoll
       //  Sets locators to selected events
       //
-      if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
+      else if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
             int tick_max = 0;
             int tick_min = INT_MAX;
             bool found = false;
@@ -991,7 +1021,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               if(event.type() != MusECore::Wave)
                 break;
               
-              const MusECore::SndFileR sf = event.sndFile();
+              MusECore::SndFileR sf = event.sndFile();
               if(sf.isNull())
                 break;
               
@@ -1015,9 +1045,10 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 }
                 double newframe = sl->unSquish(MusECore::MuseFrame_t(x - wevent->x()));
                 MusECore::PendingOperationList operations;
-                sl->addListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
+                //sl->addListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
+                sf.addAtStretchListOperation(type, newframe, sl->ratioAt(type, newframe), operations);
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-                ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sl)));
+                ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
                 _stretchAutomation._controllerState = stretchStartMove;
                 break;
@@ -1026,7 +1057,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
               iStretchSelectedItem isi;
               for(isi = res.first; isi != res.second; ++isi)
-                if(isi->second._list == sl && isi->second._type)
+                if(isi->second._sndFile.stretchList() == sl && isi->second._type)
                   break;
 
               if(isi != res.second)
@@ -1047,7 +1078,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 if(!ctl)
                   ssl.clear();
                 ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first, 
-                                                                                 StretchSelectedItem(type, sl)));
+                                                                                 StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
                 _stretchAutomation._controllerState = stretchStartMove;
                 update();
@@ -1189,13 +1220,13 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
           iStretchSelectedItemPair res = ssl.equal_range(isli_hit_test->first);
           iStretchSelectedItem isi;
           for(isi = res.first; isi != res.second; ++isi)
-            if(isi->second._list == sl && isi->second._type)
+            if(isi->second._sndFile.stretchList() == sl && isi->second._type)
               break;
 
           if(isi == res.second)
           {
             ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first,
-                                                                              StretchSelectedItem(type, sl)));
+                                                                              StretchSelectedItem(type, sf)));
             update();
           }
 
@@ -1261,85 +1292,226 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                                         pt.y() - _stretchAutomation._startMovePoint.y());
                   if(delta_pt.x() == 0)
                     break;
-                  double newVal;
+                  double prevNewVal, thisNewVal;
+                  MusECore::MuseFrame_t prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
                   MusECore::PendingOperationList operations;
                   StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
                   for(ciStretchSelectedItem iss = ssl.begin(); iss != ssl.end(); ++iss)
                   {
                     const StretchSelectedItem& ssi = iss->second;
-                    MusECore::StretchList* sl = ssi._list;
-                    
-                    MusECore::iStretchListItem isli = sl->findEvent(ssi._type, iss->first);
-                    if(isli == sl->end())
+                    MusECore::SndFileR sf = ssi._sndFile;
+                    if(sf.isNull())
+                      continue;
+                    MusECore::StretchList* sl = sf.stretchList();
+                    if(!sl)
                       continue;
                     
-                    //if(isli == sl->begin())
-                    //  continue;
-                    //MusECore::iStretchListItem prev_isli = isli;
-                    //--prev_isli;
+                    MusECore::iStretchListItem isli_typed = sl->findEvent(ssi._type, iss->first);
+                    if(isli_typed == sl->end())
+                      continue;
                     
-                    MusECore::iStretchListItem prev_isli_typed = sl->previousEvent(ssi._type, isli);
+                    thisFrame = isli_typed->first;
+                    
+                    const MusECore::StretchListItem& sli_typed = isli_typed->second;
+                    
+                    MusECore::iStretchListItem prev_isli_typed = sl->previousEvent(ssi._type, isli_typed);
                     if(prev_isli_typed == sl->end())
                       continue;
                     
+                    prevFrame = prev_isli_typed->first;
+                    
                     const MusECore::StretchListItem& prev_sli_typed = prev_isli_typed->second;
-                    //const MusECore::StretchListItem& sli = isli->second;
-                    const int delta_fr = isli->first - prev_isli_typed->first;
-                    //const int delta_fr = isli->first - prev_isli->first;
-                    if(delta_fr == 0)
+                    
+                    MusECore::iStretchListItem next_isli_typed = sl->nextEvent(ssi._type, isli_typed);
+                    if(next_isli_typed == sl->end())
+                      nextFrame = sf.samples();
+                    else
+                      nextFrame = next_isli_typed->first;
+                    
+                    next_delta_fr = nextFrame - thisFrame;
+                    if(next_delta_fr <= 0)
                       continue;
-                    //const int delta_sqfr = sli._squishedFrame - prev_sli._squishedFrame;
+                    
+                    delta_fr = thisFrame - prevFrame;
+                    if(delta_fr <= 0)
+                      continue;
+                    
+                    const double minStretchRatio = sf.minStretchRatio();
+                    const double maxStretchRatio = sf.maxStretchRatio();
+                    const double minSamplerateRatio = sf.minSamplerateRatio();
+                    const double maxSamplerateRatio = sf.maxSamplerateRatio();
+
                     switch(ssi._type)
                     {
                       case MusECore::StretchListItem::StretchEvent:
                       {
-                        //newVal = prev_sli._stretchRatio * (1.0 + delta_pt.x() / sli._squishedFrame);
-                        //newVal = sli._stretchRatio * (1.0 + delta_pt.x() * sli._stretchedFrame);
-                        //newVal = sli._stretchRatio + (delta_pt.x() / sli._squishedFrame);
-                        //newVal = delta_fr / delta_pt.x();
-                        //newVal = prev_sli._stretchRatio * (1.0 + (double)delta_pt.x() / (double)delta_fr);
+                        //{
+                          const double left_prev_smpx = prev_sli_typed._samplerateSquishedFrame;
+                          const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
+                          const double left_dsmpx = left_this_smpx - left_prev_smpx;
+                          const double left_effective_sr = left_dsmpx / (double)delta_fr;
+                          
+                          const double right_this_smpx = sli_typed._samplerateSquishedFrame;
+                          const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
+                          const double right_dsmpx = right_next_smpx - right_this_smpx;
+                          const double right_effective_sr = right_dsmpx / (double)next_delta_fr;
+
+                          INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove StretchEvent delta_pt.x:%d\n", delta_pt.x());
+
+                          double left_min_stretch_delta_x =
+                            (minStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
+                          if(left_min_stretch_delta_x > 0.0)
+                            left_min_stretch_delta_x = 0.0;
+                          if((double)delta_pt.x() < left_min_stretch_delta_x)
+                            delta_pt.setX(left_min_stretch_delta_x);
+
+                          double right_min_stretch_delta_x =
+                            (minStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+                          if(right_min_stretch_delta_x > 0.0)
+                            right_min_stretch_delta_x = 0.0;
+                          if(-(double)delta_pt.x() < right_min_stretch_delta_x)
+                            delta_pt.setX(right_min_stretch_delta_x);
+
+                          INFO_WAVECANVAS(stderr, "  left_min_stretch_delta_x:%f right_min_stretch_delta_x:%f\n", // REMOVE Tim. samplerate. Added.
+                                          left_min_stretch_delta_x, right_min_stretch_delta_x);
+
+                          if(maxStretchRatio > 0.0)
+                          {
+                            double left_max_stretch_delta_x =
+                              (maxStretchRatio - prev_sli_typed._stretchRatio) * left_effective_sr * (double)delta_fr;
+                            if(left_max_stretch_delta_x < 0.0)
+                              left_max_stretch_delta_x = 0.0;
+                            if((double)delta_pt.x() > left_max_stretch_delta_x)
+                              delta_pt.setX(left_max_stretch_delta_x);
+
+                            double right_max_stretch_delta_x =
+                              (maxStretchRatio - sli_typed._stretchRatio) * right_effective_sr * (double)next_delta_fr;
+                            if(right_max_stretch_delta_x < 0.0)
+                              right_max_stretch_delta_x = 0.0;
+                            if((double)delta_pt.x() > right_max_stretch_delta_x)
+                              delta_pt.setX(right_max_stretch_delta_x);
+                          }
+
+                          const double left_effective_dx = (double)delta_pt.x() / left_effective_sr;
+                          prevNewVal = prev_sli_typed._stretchRatio + (left_effective_dx / (double)delta_fr);
+
+                          const double right_effective_dx = (double)delta_pt.x() / right_effective_sr;
+                          thisNewVal = sli_typed._stretchRatio - (right_effective_dx / (double)next_delta_fr);
+
+                          
+//                           //if(prevNewVal < sf.minStretchRatio())
+//                           //  prevNewVal = sf.minStretchRatio();
+//                           if(prevNewVal < 0.0)
+//                             prevNewVal = 0.0;
+//                           else if(sf.maxStretchRatio() > 0.0 && prevNewVal > sf.maxStretchRatio())
+//                             prevNewVal = sf.maxStretchRatio();
+//                         }
                         
-//                         newVal = prev_sli_typed._stretchRatio + ((double)delta_pt.x() / (double)delta_fr);
-                        
-                        int prev_smpx = prev_sli_typed._samplerateSquishedFrame;
-                        double smpx = sl->squish(isli->first, MusECore::StretchListItem::SamplerateEvent);
-                        double dsmpx = smpx - double(prev_smpx);
-                        double effective_sr = dsmpx / (double)delta_fr;
-                        
-                        double effective_x = (double)delta_pt.x() / effective_sr;
-                        newVal = prev_sli_typed._stretchRatio + (effective_x / (double)delta_fr);
+//                         {
+//                           const int right_this_smpx = sli_typed._samplerateSquishedFrame;
+//                           const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
+//                           const double right_dsmpx = right_next_smpx - (double)right_this_smpx;
+//                           const double right_effective_sr = right_dsmpx / (double)next_delta_fr;
+//
+//                           const double right_effective_dx = (double)delta_pt.x() / right_effective_sr;
+//                           thisNewVal = sli_typed._stretchRatio - (right_effective_dx / (double)next_delta_fr);
+//
+//                           //if(thisNewVal < sf.minStretchRatio())
+//                           //  thisNewVal = sf.minStretchRatio();
+// //                           if(thisNewVal < 0.0)
+// //                             thisNewVal = 0.0;
+// //                           else if(sf.maxStretchRatio() > 0.0 && thisNewVal > sf.maxStretchRatio())
+// //                             thisNewVal = sf.maxStretchRatio();
+//                         }
                       }
                       break;
                       case MusECore::StretchListItem::SamplerateEvent:
                       {
-                        //newVal = prev_sli._samplerateRatio / (1.0 + delta_pt.x() / sli._squishedFrame);
-                        //newVal = sli._samplerateRatio / (1.0 + delta_pt.x() * sli._stretchedFrame);
-                        //newVal = sli._samplerateRatio - (delta_pt.x() / sli._squishedFrame);
-                        //newVal = delta_pt.x() / delta_fr;
-                        //newVal = prev_sli._samplerateRatio * (1.0 - (double)delta_pt.x() / (double)delta_fr);
-                        //newVal = prev_sli._samplerateRatio - ((double)delta_fr / (double)delta_pt.x());
-                        
-//                         newVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + ((double)delta_pt.x() / (double)delta_fr));
-                        
-                        int prev_strx = prev_sli_typed._stretchSquishedFrame;
-                        double strx = sl->squish(isli->first, MusECore::StretchListItem::StretchEvent);
-                        double dstrx = strx - double(prev_strx);
-                        double effective_str = dstrx / (double)delta_fr;
-                        
-                        double effective_x = (double)delta_pt.x() / effective_str;
-                        
-                        newVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (effective_x / (double)delta_fr));
+                        //{
+                          const double left_prev_strx = prev_sli_typed._stretchSquishedFrame;
+                          const double left_this_strx = sl->squish(thisFrame, MusECore::StretchListItem::StretchEvent);
+                          const double left_dstrx = left_this_strx - (double)left_prev_strx;
+                          const double left_effective_str = left_dstrx / (double)delta_fr;
+
+                          const double right_this_strx = sli_typed._stretchSquishedFrame;
+                          const double right_next_strx = sl->squish(nextFrame, MusECore::StretchListItem::StretchEvent);
+                          const double right_dstrx = right_next_strx - (double)right_this_strx;
+                          const double right_effective_str = right_dstrx / (double)next_delta_fr;
+
+                          INFO_WAVECANVAS(stderr, "WaveCanvas::mouseMove SamplerateEvent delta_pt.x:%d\n", delta_pt.x());
+
+                          double left_min_samplerate_delta_x =
+                            (minSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+                          if(left_min_samplerate_delta_x > 0.0)
+                            left_min_samplerate_delta_x = 0.0;
+                          if((double)delta_pt.x() < left_min_samplerate_delta_x)
+                            delta_pt.setX(left_min_samplerate_delta_x);
+
+                          double right_min_samplerate_delta_x =
+                            (minSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+                          if(right_min_samplerate_delta_x > 0.0)
+                            right_min_samplerate_delta_x = 0.0;
+                          if(-(double)delta_pt.x() < right_min_samplerate_delta_x)
+                            delta_pt.setX(right_min_samplerate_delta_x);
+
+                          INFO_WAVECANVAS(stderr, "  left_min_samplerate_delta_x:%f right_min_samplerate_delta_x:%f\n", // REMOVE Tim. samplerate. Added.
+                                          left_min_samplerate_delta_x, right_min_samplerate_delta_x);
+
+                          if(maxSamplerateRatio > 0.0)
+                          {
+                            double left_max_samplerate_delta_x =
+                              (maxSamplerateRatio - prev_sli_typed._samplerateRatio) * left_effective_str * (double)delta_fr;
+                            if(left_max_samplerate_delta_x < 0.0)
+                              left_max_samplerate_delta_x = 0.0;
+                            if((double)delta_pt.x() > left_max_samplerate_delta_x)
+                              delta_pt.setX(left_max_samplerate_delta_x);
+
+                            double right_max_samplerate_delta_x =
+                              (maxSamplerateRatio - sli_typed._samplerateRatio) * right_effective_str * (double)next_delta_fr;
+                            if(right_max_samplerate_delta_x < 0.0)
+                              right_max_samplerate_delta_x = 0.0;
+                            if((double)delta_pt.x() > right_max_samplerate_delta_x)
+                              delta_pt.setX(right_max_samplerate_delta_x);
+                          }
+
+                          const double left_effective_dx = (double)delta_pt.x() / left_effective_str;
+                          prevNewVal = 1.0 / ((1.0 / prev_sli_typed._samplerateRatio) + (left_effective_dx / (double)delta_fr));
+
+                          const double right_effective_dx = (double)delta_pt.x() / right_effective_str;
+                          thisNewVal = 1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_dx / (double)next_delta_fr));
+
+
+//                           //if(prevNewVal < sf.minSamplerateRatio())
+//                           //  prevNewVal = sf.minSamplerateRatio();
+//                           if(prevNewVal < 0.0)
+//                             prevNewVal = 0.0;
+//                           else if(sf.maxSamplerateRatio() > 0.0 && prevNewVal > sf.maxSamplerateRatio())
+//                             prevNewVal = sf.maxSamplerateRatio();
+//                         }
+//
+//                         {
+//
+//                           const double right_effective_x = (double)delta_pt.x() / right_effective_str;
+//                           thisNewVal = 1.0 / ((1.0 / sli_typed._samplerateRatio) - (right_effective_x / (double)next_delta_fr));
+//
+//                           //if(thisNewVal < sf.minSamplerateRatio())
+//                           //  thisNewVal = sf.minSamplerateRatio();
+//                           if(thisNewVal < 0.0)
+//                             thisNewVal = 0.0;
+//                           else if(sf.maxSamplerateRatio() > 0.0 && thisNewVal > sf.maxSamplerateRatio())
+//                             thisNewVal = sf.maxSamplerateRatio();
+//                         }
                       }
                       break;
                       case MusECore::StretchListItem::PitchEvent:
-                        newVal = prev_sli_typed._pitchRatio; // TODO
+                        prevNewVal = prev_sli_typed._pitchRatio; // TODO
                       break;
                     }
                     
-                    sl->modifyListOperation(ssi._type, prev_isli_typed->first, newVal, operations);
+                    sf.modifyAtStretchListOperation(ssi._type, prevFrame, prevNewVal, operations);
+                    sf.modifyAtStretchListOperation(ssi._type, thisFrame, thisNewVal, operations);
                   }
-                  if(!operations.empty())
-                    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                   _stretchAutomation._startMovePoint = pt;
                 } 
                 break;
@@ -1874,6 +2046,10 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
     ciStretchSelectedItemPair res;
     for(MusECore::ciStretchListItem is = sl->begin(); is != sl->end(); ++is)
     {
+      // Do not recognize or draw the item at zeroth frame.
+      if(is->first == 0)
+        continue;
+  
 //       const MusECore::StretchEvent& se = is->second;
       
 //       const int xpixel = mapx(se._newFrame + item->x());
@@ -1896,7 +2072,7 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
           res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
           for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
           {
-            if(ise->first == is->first && ise->second._list == sl && ise->second._type == MusECore::StretchListItem::StretchEvent)
+            if(ise->first == is->first && ise->second._sndFile.stretchList() == sl && ise->second._type == MusECore::StretchListItem::StretchEvent)
             {
               c = Qt::white;
               break;
@@ -1920,7 +2096,7 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
           res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
           for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
           {
-            if(ise->first == is->first && ise->second._list == sl && ise->second._type == MusECore::StretchListItem::SamplerateEvent)
+            if(ise->first == is->first && ise->second._sndFile.stretchList() == sl && ise->second._type == MusECore::StretchListItem::SamplerateEvent)
             {
               c = Qt::white;
               break;
@@ -2785,6 +2961,10 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
   MusECore::iStretchListItem closest_ev = stretchList->end();
   for(MusECore::iStretchListItem is = stretchList->begin(); is != stretchList->end(); ++is)
   {
+    // Do not recognize or draw the item at zeroth frame.
+    if(is->first == 0)
+      continue;
+  
     const MusECore::StretchListItem& se = is->second;
     if(!(se._type & types))
       continue;
@@ -4374,12 +4554,19 @@ void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
         if(dialog.exec() == QDialog::Accepted)
         {
           MusECore::PendingOperationList operations;
-          curItem->event().sndFile().modifyAudioConverterOperation(wrk_set, true, operations); // Local settings.
-          if(!operations.empty())
-          {
-            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-            //MusEGlobal::song->update(SC_);
-          }
+          //if(MusECore::StretchList* sl = curItem->event().sndFile().stretchList())
+          //{
+            curItem->event().sndFile().modifyAudioConverterSettingsOperation(wrk_set, 
+                                                                     true,  // Local settings.
+                                                                     operations); //, 
+                                                                     //sl->isResampled(), 
+                                                                     //sl->isStretched());
+            if(!operations.empty())
+            {
+              MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+              //MusEGlobal::song->update(SC_);
+            }
+          //}
         }
         else
         {
