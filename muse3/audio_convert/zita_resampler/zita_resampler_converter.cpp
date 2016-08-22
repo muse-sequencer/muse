@@ -385,9 +385,10 @@ void ZitaResamplerAudioConverterSettings::assign(const AudioConverterSettings& o
 
 bool ZitaResamplerAudioConverterSettings::useSettings(int mode) const 
 { 
-  if(mode & ~(AudioConverterSettings::OfflineMode | 
+  if(mode > 0 &&
+     (mode & ~(AudioConverterSettings::OfflineMode |
               AudioConverterSettings::RealtimeMode | 
-              AudioConverterSettings::GuiMode))
+              AudioConverterSettings::GuiMode)))
     fprintf(stderr, "ZitaResamplerAudioConverterSettings::useSettings() Warning: Unknown modes included:%d\n", mode);
   
   if((mode <= 0 || (mode & AudioConverterSettings::OfflineMode)) && _offlineOptions.useSettings())

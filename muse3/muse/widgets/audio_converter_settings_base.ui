@@ -96,7 +96,7 @@
    <item>
     <widget class="QCheckBox" name="useDefaultPreferences">
      <property name="text">
-      <string>Use default preferences</string>
+      <string>Use default preferences (see Global Settings)</string>
      </property>
     </widget>
    </item>

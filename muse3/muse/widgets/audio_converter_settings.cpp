@@ -28,6 +28,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
+#include <QList>
 
 #include "audio_convert/audio_converter_settings_group.h"
 #include "audio_convert/audio_converter_plugin.h"
@@ -69,8 +70,7 @@ AudioConverterSettingsDialog::AudioConverterSettingsDialog(
   useDefaultPreferences->setVisible(isLocal && _settings);
   
   
-  connect(converterList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-      SLOT(currentConverterChanged(QListWidgetItem*, QListWidgetItem*)));
+  connect(converterList, SIGNAL(itemSelectionChanged()), SLOT(converterSelectionChanged()));
    
   connect(offlineSettingsButton, SIGNAL(clicked()), SLOT(offlineSettingsClicked()));
   connect(realtimeSettingsButton, SIGNAL(clicked()), SLOT(realtimeSettingsClicked()));
@@ -84,7 +84,7 @@ AudioConverterSettingsDialog::AudioConverterSettingsDialog(
   connect(OKButton, SIGNAL(clicked()), SLOT(okClicked()));
   connect(cancelButton, SIGNAL(clicked()), SLOT(cancelClicked()));
   
-  currentConverterChanged(converterList->item(0), 0);
+  converterSelectionChanged();
 }
 
 void AudioConverterSettingsDialog::fillList()
@@ -114,9 +114,10 @@ void AudioConverterSettingsDialog::fillList()
         shiftingPreferenceComboBox->addItem(plugin->name(), plugin->id());
     }
   }
+  converterList->setCurrentItem(NULL);
 }
 
-void AudioConverterSettingsDialog::currentConverterChanged(QListWidgetItem* /*cur_item*/, QListWidgetItem* /*prev_item*/)
+void AudioConverterSettingsDialog::converterSelectionChanged()
 {
   enableSettingsButtons();
 }
@@ -126,9 +127,11 @@ void AudioConverterSettingsDialog::enableSettingsButtons()
   bool enable = false;
   if(_pluginList)
   {
-    if(QListWidgetItem* cur_item = converterList->currentItem())
+    QList<QListWidgetItem*> selections = converterList->selectedItems();
+    if(!selections.isEmpty())
     {
-      int id = cur_item->data(Qt::UserRole).toInt();
+      QListWidgetItem* sel_item = selections.first();
+      int id = sel_item->data(Qt::UserRole).toInt();
       if(id >= 0 && _pluginList->find(NULL, id))
         enable = true;
     }

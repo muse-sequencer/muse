@@ -49,6 +49,8 @@
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
 
+// Fixed audio input buffer size.
+#define SRC_IN_BUFFER_FRAMES 1024
 
 //namespace MusECore {
   
@@ -154,7 +156,19 @@ SRCAudioConverter::SRCAudioConverter(int channels, AudioConverterSettings* setti
   
   _src_state = 0;
   _channels = channels;
-  
+
+  //_inBufferSize = MusEGlobal::segmentSize;
+  _inBufferSize = SRC_IN_BUFFER_FRAMES * _channels;
+  _inbuffer = new float[_inBufferSize];
+  _curInBufferFrame = 0;
+  _needBuffer = true;
+  //_endPending = false;
+  //_outBufferSize = MusEGlobal::segmentSize;
+  //_outbuffer = new float[_outBufferSize];
+
+  // Reset the SRC_DATA structure.
+  resetSrcData();
+
   int srcerr;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::SRCaudioConverter Creating samplerate converter type:%d with %d channels\n", _type, _channels);
   _src_state = src_new(_type, _channels, &srcerr); 
@@ -165,6 +179,13 @@ SRCAudioConverter::SRCAudioConverter(int channels, AudioConverterSettings* setti
 SRCAudioConverter::~SRCAudioConverter()
 {
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::~SRCAudioConverter this:%p\n", this);
+
+  //if(_outbuffer)
+  //  delete[] _outbuffer;
+
+  if(_inbuffer)
+    delete[] _inbuffer;
+
   if(_src_state)
     src_delete(_src_state);
 }
@@ -177,6 +198,12 @@ void SRCAudioConverter::setChannels(int ch)
   _src_state = 0;
   
   _channels = ch;
+
+  if(_inbuffer)
+    delete[] _inbuffer;
+  _inBufferSize = SRC_IN_BUFFER_FRAMES * _channels;
+  _inbuffer = new float[_inBufferSize];
+
   int srcerr;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::setChannels Creating samplerate converter type:%d with %d channels\n", _type, ch);
   _src_state = src_new(_type, ch, &srcerr);  
@@ -187,6 +214,7 @@ void SRCAudioConverter::setChannels(int ch)
 
 void SRCAudioConverter::reset()
 {
+  resetSrcData();
   if(!_src_state)
     return;
   DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::reset this:%p\n", this);
@@ -194,6 +222,28 @@ void SRCAudioConverter::reset()
   if(srcerr != 0)      
     ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::reset Converter reset failed: %s\n", src_strerror(srcerr));
   return;  
+}
+
+void SRCAudioConverter::resetSrcData()
+{
+//   _srcdata.data_in = _inbuffer;
+//   //_srcdata.data_out = _outbuffer;
+//   _srcdata.data_out = NULL;
+//
+//   //_srcdata.input_frames = _inBufferSize;
+//   _srcdata.input_frames = 0;
+//   //_srcdata.output_frames = _outBufferSize;
+//   _srcdata.output_frames = 0;
+//
+//   _srcdata.input_frames_used = 0;
+//   _srcdata.output_frames_gen = 0;
+//
+//   _srcdata.end_of_input = false;
+//
+//   _srcdata.src_ratio = 1.0;
+
+  _curInBufferFrame = 0;
+  _needBuffer = true;
 }
 
 // sf_count_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
@@ -430,7 +480,8 @@ void SRCAudioConverter::reset()
 // sf_count_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 //sf_count_t SRCAudioConverter::process(MusECore::SndFileR f, float** buffer, int channel, int n, bool overwrite)
 // sf_count_t SRCAudioConverter::process(SndFile* f, float** buffer, int channel, int n, bool overwrite)
-int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/, float** buffer, int channel, int n, bool overwrite)
+int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
+                               float** buffer, int channels, int frames, bool overwrite)
 {
   if(!_src_state)
     return 0;
@@ -461,102 +512,248 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
     return 0;
   }  
 
-  const double srcratio = sf->sampleRateRatio();
-  const double inv_srcratio = 1.0 / srcratio;
+  StretchList* stretch_list = sf->stretchList();
+
+  const MuseFrame_t new_frame = stretch_list->unSquish(pos);
+  //const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
+  const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
+  DEBUG_AUDIOCONVERT(stderr,
+    //"SRCAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
+    "SRCAudioConverter::process: frame:%ld new_frame:%ld samplerateRatio:%f\n", pos, new_frame, samplerateVal);
+
+  const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
+
+  if(fin_samplerateRatio < 0.0001)
+  {
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
+//     return _sfCurFrame;
+    return 0;
+  }
+
+  const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
+
+
+
+
+
+
+
+//   const double srcratio = sf->sampleRateRatio();
+//   const double inv_srcratio = 1.0 / srcratio;
   
-  SRC_DATA srcdata;
+//   SRC_DATA srcdata;
+
   int fchan       = sf->channels();
 //   // Ratio is defined as output sample rate over input samplerate.
 //   double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
   
   // Extra input compensation.
-//   long inComp = 1;
-  sf_count_t inComp = 1;
+  //sf_count_t inComp = 1;
   
-//   long outFrames  = n;  
-  sf_count_t outFrames  = n;  
-  //long outSize   = outFrames * channel; DELETETHIS
-//   long outSize    = outFrames * fchan;
+  sf_count_t outFrames  = frames;
   sf_count_t outSize    = outFrames * fchan;
   
   //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter. DELETETHIS3
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
   //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
-//   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
-//   long inFrames = (long)ceil(((double)outFrames * srcratio)) + inComp;    // From simplesynth.
-  sf_count_t inFrames = ceil(((double)outFrames * srcratio)) + inComp;    // From simplesynth.
+  //long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
+  //long inFrames = (long)ceil(((double)outFrames * srcratio)) + inComp;    // From simplesynth.
+//   sf_count_t inFrames = ceil(((double)outFrames * fin_samplerateRatio)) + inComp;    // From simplesynth.
   
-//   long inSize = inFrames * fchan;
-  sf_count_t inSize = inFrames * fchan;
-  //long inSize = inFrames * channel; DELETETHIS
+  //long inSize = inFrames * fchan;
+//   sf_count_t inSize = inFrames * fchan;
   
   // Start with buffers at expected sizes. We won't need anything larger than this, but add 4 for good luck.
-  float inbuffer[inSize + 4];
+//   float inbuffer[inSize + 4];
   float outbuffer[outSize];
       
-  //size_t sfTotalRead  = 0; DELETETHIS
-//   size_t rn           = 0;
-  sf_count_t rn           = 0;
-//   long totalOutFrames = 0;
+  //sf_count_t rn           = 0;
   sf_count_t totalOutFrames = 0;
   
-  srcdata.data_in       = inbuffer;
-  srcdata.data_out      = outbuffer;
-//  srcdata.data_out      = buffer; DELETETHIS
-  
+//   srcdata.data_in       = inbuffer;
+  _srcdata.data_out      = outbuffer;
+
+  // Set some kind of limit on the number of attempts to completely fill the output buffer,
+  //  in case something is really screwed up - we don't want to get stuck in a loop here.
+  int attempts = 20;
+  while(totalOutFrames < outFrames && attempts > 0)
+  {
+    //if(_curInBufferFrame == 0)
+    if(_needBuffer)
+    {
+      _srcdata.input_frames = sf_readf_float(handle, _inbuffer, _inBufferSize);
+      //_srcdata.input_frames = SRC_IN_BUFFER_FRAMES;
+      //_endPending = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
+      _srcdata.end_of_input = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
+      // Zero any unread portion of the input buffer.
+      for(int i = _srcdata.input_frames * fchan; i < _inBufferSize; ++i)
+        *(_inbuffer + i) = 0.0f;
+      _needBuffer = false;
+    }
+    else
+    {
+      _srcdata.input_frames = SRC_IN_BUFFER_FRAMES - _curInBufferFrame;
+      //_srcdata.end_of_input = false;
+    }
+
+    _srcdata.data_in = _inbuffer + fchan * _curInBufferFrame;
+
+    _srcdata.output_frames = outFrames - totalOutFrames;
+    _srcdata.data_out      = outbuffer + fchan * totalOutFrames;
+    _srcdata.src_ratio     = inv_fin_samplerateRatio;
+
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Calling src_process _curInBufferFrame:%d totalOutFrames:%ld\n",
+                       _curInBufferFrame, totalOutFrames);
+
+    int srcerr = src_process(_src_state, &_srcdata);
+    if(srcerr != 0)
+    {
+      ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::process SampleRate converter process failed: %s\n", src_strerror(srcerr));
+      return 0;
+    }
+
+    DEBUG_AUDIOCONVERT(stderr, "   input_frames_used:%ld output_frames_gen:%ld\n\n",
+                       _srcdata.input_frames_used, _srcdata.output_frames_gen);
+
+    // Note that if SRC is fed more than it needs, the next process call(s)
+    //  will generate output but will report NO frames used!
+    // If some input frames were used:
+    if(_srcdata.input_frames_used > 0)
+    {
+      // Advance the current input frame.
+      _curInBufferFrame += _srcdata.input_frames_used;
+      // Rollover?
+      if(_curInBufferFrame >= SRC_IN_BUFFER_FRAMES)
+      {
+        // Reset the counter.
+        _curInBufferFrame = 0;
+        // Request a new buffer.
+        _needBuffer = true;
+      }
+    }
+
+    totalOutFrames += _srcdata.output_frames_gen;
+
+    if(_srcdata.input_frames == 0)
+      break;
+
+    --attempts;
+  }
+
+  if(attempts == 0)
+    ERROR_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s Too may attempts to process! totalOutFrames:%ld frames:%d\n",
+                       sf->name().toLatin1().constData(), totalOutFrames, frames);
+
+  // If we didn't get the desired number of output frames.
+  if(totalOutFrames != frames)
+  {
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s totalOutFrames:%ld != frames:%d\n", sf->name().toLatin1().constData(), totalOutFrames, frames);
+
+    // Let's zero the rest of it.
+    sf_count_t b = totalOutFrames * channels;
+    sf_count_t e = frames * channels;
+    for(sf_count_t i = b; i < e; ++i)
+      outbuffer[i] = 0.0f;
+  }
+
+
+
+
+
+
+
+//   while(totalOutFrames < outFrames)
+//   {
+//     if(_srcdata.input_frames_used >= SRC_IN_BUFFER_FRAMES)
+//       //_srcdata.input_frames_used = _srcdata.input_frames;
+//       _srcdata.input_frames_used = 0;
+//
+//     if(_srcdata.input_frames_used == 0)
+//     {
+//       _srcdata.input_frames = sf_readf_float(handle, _inbuffer, _inBufferSize);
+//       _srcdata.end_of_input = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
+//     }
+//     else
+//     {
+//       //_srcdata.input_frames = SRC_IN_BUFFER_FRAMES - _srcdata.input_frames_used;
+//       _srcdata.input_frames -= _srcdata.input_frames_used;
+//       _srcdata.end_of_input = false;
+//     }
+//
+//     //_srcdata.data_in = _inbuffer + fchan * _srcdata.input_frames_used;
+//     _srcdata.data_in += fchan * _srcdata.input_frames_used;
+//
+//     _srcdata.output_frames = outFrames;
+//     _srcdata.src_ratio     = inv_fin_samplerateRatio;
+//
+//     if(_srcdata.input_frames == 0)
+//       break;
+//
+//     int srcerr = src_process(_src_state, &_srcdata);
+//     if(srcerr != 0)
+//     {
+//       ERROR_AUDIOCONVERT(stderr, "\nSRCAudioConverter::process SampleRate converter process failed: %s\n", src_strerror(srcerr));
+//       return 0;
+//     }
+//     totalOutFrames += _srcdata.output_frames_gen;
+//   }
+
+
+
+
+/*
+
+
+
   // Set some kind of limit on the number of attempts to completely fill the output buffer, 
   //  in case something is really screwed up - we don't want to get stuck in a loop here.
   int attempts = 10;
   for(int attempt = 0; attempt < attempts; ++attempt)
   {
-//     rn = f->readDirect(inbuffer, inFrames);
-    rn = sf_readf_float(handle,  inbuffer, inFrames);
-    //sfTotalRead += rn; DELETETHIS
-    
+    //rn = f->readDirect(inbuffer, inFrames);
+//     rn = sf_readf_float(handle,  inbuffer, inFrames);
+    rn = sf_readf_float(handle,  _inbuffer, SRC_IN_BUFFER_FRAMES);
+
     // convert
-    //srcdata.data_in       = inbuffer; DELETETHIS 4
-    //srcdata.data_out      = outbuffer;
-    //srcdata.data_out      = poutbuf;
-    //srcdata.input_frames  = inSize;
-    srcdata.input_frames  = rn;
-    srcdata.output_frames = outFrames;
-//     srcdata.end_of_input  = ((long)rn != inFrames);
-    srcdata.end_of_input  = (rn != inFrames);
+    _srcdata.input_frames  = rn;
+    _srcdata.output_frames = outFrames;
+//     _srcdata.end_of_input  = (rn != inFrames);
+    _srcdata.end_of_input  = (rn != SRC_IN_BUFFER_FRAMES);
     // Ratio is defined as output sample rate over input samplerate.
-//     srcdata.src_ratio     = srcratio;
-    srcdata.src_ratio     = inv_srcratio;
-  
+    _srcdata.src_ratio     = inv_fin_samplerateRatio;
+
     //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment it in, or maybe add an additional if (heavyDebugMsg)?
     //DEBUG_AUDIOCONVERT(stderr, "AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
     //  attempt, inFrames, outFrames, rn, srcdata.data_in, srcdata.data_out);
     //#endif
     
-    int srcerr = src_process(_src_state, &srcdata);
-    if(srcerr != 0)      
+    int srcerr = src_process(_src_state, &_srcdata);
+    if(srcerr != 0)
     {
       ERROR_AUDIOCONVERT(stderr, "\nSRCAudioConverter::process SampleRate converter process failed: %s\n", src_strerror(srcerr));
 //       return _sfCurFrame += rn;
       return rn;
     }
     
-    totalOutFrames += srcdata.output_frames_gen;
-    
+    totalOutFrames += _srcdata.output_frames_gen;
+
     //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment in or heavyDebugMsg
     //DEBUG_AUDIOCONVERT(stderr, " frames used in:%ld out:%ld totalOutFrames:%ld data in:%p out:%p\n", srcdata.input_frames_used, srcdata.output_frames_gen, totalOutFrames, srcdata.data_in, srcdata.data_out);
     //#endif
     
-    if(srcdata.output_frames_gen != outFrames)
-      DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%lu\n", 
-        sf->name().toLatin1().constData(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
+    if(_srcdata.output_frames_gen != outFrames)
+      DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%lu\n",
+        sf->name().toLatin1().constData(), _srcdata.output_frames_gen, outFrames, inFrames, _srcdata.input_frames_used, rn);
     
     // If the number of frames read by the soundfile equals the input frames, go back.
     // Otherwise we have reached the end of the file, so going back is useless since
     //  there shouldn't be any further calls. 
-//     if((long)rn == inFrames)
-    if(rn == inFrames)
+    //if((long)rn == inFrames)
+//     if(rn == inFrames)
+    if(rn == SRC_IN_BUFFER_FRAMES)
     {
       // Go back by the amount of unused frames.
-      sf_count_t seekn = inFrames - srcdata.input_frames_used;
+      sf_count_t seekn = inFrames - _srcdata.input_frames_used;
       if(seekn != 0)
       {
         DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Seek-back by:%ld\n", seekn);
@@ -566,7 +763,7 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
       else  
         _sfCurFrame += rn;
       
-      if(totalOutFrames == n)
+      if(totalOutFrames == frames)
       {
         // We got our desired number of output frames. Stop attempting.
         break;
@@ -577,19 +774,20 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
         if(attempt == (attempts - 1))
           break;
           
-        DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", sf->name().toLatin1().constData(), attempt, totalOutFrames, n);
+        DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != frames:%d try again\n",
+                           sf->name().toLatin1().constData(), attempt, totalOutFrames, frames);
         
         // SRC didn't give us the number of frames we requested. 
         // This can occasionally be radically different from the requested frames, or zero,
         //  even when ample excess input frames are supplied.
         // Move the src output pointer to a new position.
-        srcdata.data_out += srcdata.output_frames_gen * channel;
+        _srcdata.data_out += _srcdata.output_frames_gen * channels;
         // Set new number of maximum out frames.
-        outFrames -= srcdata.output_frames_gen;
+        outFrames -= _srcdata.output_frames_gen;
         // Calculate the new number of file input frames required.
 //         inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;
 //         inFrames = (long)ceil(((double)outFrames * srcratio)) + inComp;
-        inFrames = ceil(((double)outFrames * srcratio)) + inComp;
+        inFrames = ceil(((double)outFrames * fin_samplerateRatio)) + inComp;
         // Keep trying.
         continue;
       }  
@@ -598,7 +796,7 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
     {
       _sfCurFrame += rn;
       DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
-        sf->name().toLatin1().constData(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
+        sf->name().toLatin1().constData(), rn, inFrames, _srcdata.output_frames_gen, outFrames, _srcdata.input_frames_used);
       
       // We've reached the end of the file. Convert the number of frames read.
       //rn = (double)rn * srcratio + 1;   DELETETHIS 5
@@ -611,59 +809,60 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
   }
   
   // If we still didn't get the desired number of output frames.
-  if(totalOutFrames != n)
+  if(totalOutFrames != frames)
   {
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s totalOutFrames:%ld != n:%d\n", sf->name().toLatin1().constData(), totalOutFrames, n);
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s totalOutFrames:%ld != frames:%d\n", sf->name().toLatin1().constData(), totalOutFrames, frames);
           
     // Let's zero the rest of it.
 //     long b = totalOutFrames * channel;
 //     long e = n * channel;
 //     for(long i = b; i < e; ++i)
 //       outbuffer[i] = 0.0f;
-    sf_count_t b = totalOutFrames * channel;
-    sf_count_t e = n * channel;
+    sf_count_t b = totalOutFrames * channels;
+    sf_count_t e = frames * channels;
     for(sf_count_t i = b; i < e; ++i)
       outbuffer[i] = 0.0f;
-  }
-  
+  }*/
+
+
   float*  poutbuf = outbuffer;
-  if(fchan == channel) 
+  if(fchan == channels)
   {
     if(overwrite)
-      for (sf_count_t i = 0; i < n; ++i) 
+      for (sf_count_t i = 0; i < frames; ++i)
       {
-        for(sf_count_t ch = 0; ch < channel; ++ch)
+        for(sf_count_t ch = 0; ch < channels; ++ch)
           *(buffer[ch] + i) = *poutbuf++;
       }
     else
-      for(sf_count_t i = 0; i < n; ++i) 
+      for(sf_count_t i = 0; i < frames; ++i)
       {
-        for(sf_count_t ch = 0; ch < channel; ++ch)
+        for(sf_count_t ch = 0; ch < channels; ++ch)
           *(buffer[ch] + i) += *poutbuf++;
       }
   }
-  else if((fchan == 2) && (channel == 1)) 
+  else if((fchan == 2) && (channels == 1))
   {
     // stereo to mono
     if(overwrite)
-      for(sf_count_t i = 0; i < n; ++i)
+      for(sf_count_t i = 0; i < frames; ++i)
         *(buffer[0] + i) = poutbuf[i + i] + poutbuf[i + i + 1];
     else  
-      for(sf_count_t i = 0; i < n; ++i)
+      for(sf_count_t i = 0; i < frames; ++i)
         *(buffer[0] + i) += poutbuf[i + i] + poutbuf[i + i + 1];
   }
-  else if((fchan == 1) && (channel == 2)) 
+  else if((fchan == 1) && (channels == 2))
   {
     // mono to stereo
     if(overwrite)
-      for(sf_count_t i = 0; i < n; ++i) 
+      for(sf_count_t i = 0; i < frames; ++i)
       {
         float data = *poutbuf++;
         *(buffer[0]+i) = data;
         *(buffer[1]+i) = data;
       }
     else  
-      for(sf_count_t i = 0; i < n; ++i) 
+      for(sf_count_t i = 0; i < frames; ++i)
       {
         float data = *poutbuf++;
         *(buffer[0]+i) += data;
@@ -672,11 +871,11 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t /*pos*/,
   }
   else 
   {
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channel);
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n", fchan, channels);
   }
   
 //   return _sfCurFrame;
-  return n;
+  return frames;
 }
 
 // void SRCAudioConverter::read(Xml&)
@@ -807,9 +1006,10 @@ void SRCAudioConverterSettings::assign(const AudioConverterSettings& other)
 
 bool SRCAudioConverterSettings::useSettings(int mode) const 
 { 
-  if(mode & ~(AudioConverterSettings::OfflineMode | 
+  if(mode > 0 &&
+     (mode & ~(AudioConverterSettings::OfflineMode |
               AudioConverterSettings::RealtimeMode | 
-              AudioConverterSettings::GuiMode))
+              AudioConverterSettings::GuiMode)))
     fprintf(stderr, "SRCAudioConverterSettings::useSettings() Warning: Unknown modes included:%d\n", mode);
   
   if((mode <= 0 || (mode & AudioConverterSettings::OfflineMode)) && _offlineOptions.useSettings())

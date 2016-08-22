@@ -51,7 +51,7 @@ class AudioConverterSettingsDialog : public QDialog, public Ui::AudioConverterSe
       void okClicked();
       void cancelClicked();
       void accept();
-      void currentConverterChanged(QListWidgetItem*,QListWidgetItem*);
+      void converterSelectionChanged();
       void preferredResamplerChanged(int);
       void preferredShifterChanged(int);
       void offlineSettingsClicked();

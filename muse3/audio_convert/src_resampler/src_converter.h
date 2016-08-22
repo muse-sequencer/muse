@@ -174,7 +174,18 @@ class SRCAudioConverter : public AudioConverter
       //SRCAudioConverterSettings _localSettings;
       int _type;
       SRC_STATE* _src_state;
-   
+      SRC_DATA _srcdata;
+      float* _inbuffer;
+      int _inBufferSize;
+      int _curInBufferFrame;
+      //bool _endPending;
+      bool _needBuffer;
+
+      //float* _outbuffer;
+      //int _outBufferSize;
+
+      void resetSrcData();
+
    public:   
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
       SRCAudioConverter(int channels, AudioConverterSettings* settings, int mode);
