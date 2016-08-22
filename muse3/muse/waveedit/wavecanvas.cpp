@@ -1056,6 +1056,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 ssl.insert(StretchSelectedItemInsertPair_t(newframe, StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
                 _stretchAutomation._controllerState = stretchStartMove;
+                QWidget::setCursor(Qt::SizeHorCursor);
                 break;
               }
 
@@ -1070,12 +1071,14 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 if(ctl)
                 {
                   ssl.erase(isi);
+                  //setCursor();
                   update();
                 }
                 else
                 {
                   _stretchAutomation._startMovePoint = pt;
                   _stretchAutomation._controllerState = stretchStartMove;
+                  QWidget::setCursor(Qt::SizeHorCursor);
                 }
               }
               else
@@ -1086,6 +1089,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                                                                                  StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
                 _stretchAutomation._controllerState = stretchStartMove;
+                QWidget::setCursor(Qt::SizeHorCursor);
                 update();
               }
               
@@ -1178,6 +1182,7 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
       if(button != Qt::LeftButton)
       {
         _stretchAutomation._controllerState = stretchDoNothing;
+        setStretchAutomationCursor(pt);
         return;
       }
 
@@ -1186,6 +1191,7 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
       {
         case stretchMovingController:
         case stretchAddNewController:
+          //setCursor();
           break;
 
         case stretchDoNothing:
@@ -1256,6 +1262,8 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
   button = Qt::NoButton;
   if(mode == DRAG)
     mode = NORMAL;
+
+  setStretchAutomationCursor(pt);
 }
 
 //---------------------------------------------------------
@@ -1282,23 +1290,31 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
               //bool slowMotion = event->modifiers() & Qt::ShiftModifier;
               //processStretchAutomationMovements(event->pos(), slowMotion);
 
-              if(button != Qt::LeftButton)
-              {
-                _stretchAutomation._controllerState = stretchDoNothing;
-                return;
-              }
+//               if(button != Qt::LeftButton)
+//               {
+//                 _stretchAutomation._controllerState = stretchDoNothing;
+//                 setCursor();
+//                 return;
+//               }
               
               switch(_stretchAutomation._controllerState)
               {
                 case stretchDoNothing:
                 case stretchAddNewController:
+                  setStretchAutomationCursor(pt);
                 break;
                 
                 case stretchStartMove:
                   _stretchAutomation._controllerState = stretchMovingController;
                 case stretchMovingController:
                 {
-                  QPoint delta_pt = QPoint(pt.x() - _stretchAutomation._startMovePoint.x(), 
+                  if(button != Qt::LeftButton)
+                  {
+                    _stretchAutomation._controllerState = stretchDoNothing;
+                    //setCursor();
+                    break;;
+                  }
+                  QPoint delta_pt = QPoint(pt.x() - _stretchAutomation._startMovePoint.x(),
                                         pt.y() - _stretchAutomation._startMovePoint.y());
                   if(delta_pt.x() == 0)
                     break;
@@ -2993,6 +3009,50 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
   }
   
   return closest_ev;
+}
+
+void WaveCanvas::setStretchAutomationCursor(QPoint pt)
+{
+  CItem* item = items.find(pt);
+  if(!item)
+  {
+    setCursor();
+    return;
+  }
+  WEvent* wevent = static_cast<WEvent*>(item);
+
+  const MusECore::Event event = wevent->event();
+  if(event.type() != MusECore::Wave)
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::SndFileR sf = event.sndFile();
+  if(sf.isNull())
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::StretchList* sl = sf.stretchList();
+  if(!sl)
+  {
+    setCursor();
+    return;
+  }
+
+  MusECore::StretchListItem::StretchEventType type;
+  if(_tool == StretchTool)
+    type = MusECore::StretchListItem::StretchEvent;
+  else if(_tool == SamplerateTool)
+    type = MusECore::StretchListItem::SamplerateEvent;
+
+  MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent, sl);
+  if(isli_hit_test == sl->end())
+    setCursor();
+  else
+    QWidget::setCursor(Qt::SizeHorCursor);
 }
 
 

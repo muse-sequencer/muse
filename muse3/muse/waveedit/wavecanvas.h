@@ -187,7 +187,8 @@ class WaveCanvas : public EventCanvas {
 //       double valToLog(double inV, double min, double max);
 //       void newStretchAutomationVertex(QPoint inPos);
       MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent, MusECore::StretchList* stretchList);
-      
+      void setStretchAutomationCursor(QPoint pt);
+
    protected:
       virtual QPoint raster(const QPoint&) const;
       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
