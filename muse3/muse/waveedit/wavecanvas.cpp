@@ -1014,9 +1014,14 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
 //               }
               
               // TODO Look properly through the whole list instead of just current one.
-              if(!curItem)
+              //if(!curItem)
+              //  break;
+              //WEvent* wevent = static_cast<WEvent*>(curItem);
+              CItem* item = items.find(pt);
+              if(!item)
                 break;
-              WEvent* wevent = static_cast<WEvent*>(curItem);
+              WEvent* wevent = static_cast<WEvent*>(item);
+
               const MusECore::Event event = wevent->event();
               if(event.type() != MusECore::Wave)
                 break;
@@ -1192,9 +1197,14 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
           }
 
           // TODO Look properly through the whole list instead of just current one.
-          if(!curItem)
+          //if(!curItem)
+          //  break;
+          //WEvent* wevent = static_cast<WEvent*>(curItem);
+          CItem* item = items.find(pt);
+          if(!item)
             break;
-          WEvent* wevent = static_cast<WEvent*>(curItem);
+          WEvent* wevent = static_cast<WEvent*>(item);
+
           const MusECore::Event event = wevent->event();
           if(event.type() != MusECore::Wave)
             break;
