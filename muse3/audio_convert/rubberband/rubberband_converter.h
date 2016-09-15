@@ -228,6 +228,7 @@ class RubberBandAudioConverterSettings : public AudioConverterSettings
 class RubberBandAudioConverter : public AudioConverter
 {
   private:
+      bool _latencyCompPending;
 //       static AudioConverterDescriptor _descriptor;
       //RubberBandAudioConverterSettings _localSettings;
       int _options;

@@ -47,7 +47,7 @@
 
 // REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 // Fixed audio input buffer size.
 #define SRC_IN_BUFFER_FRAMES 1024
@@ -512,25 +512,36 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
     return 0;
   }  
 
+  const int fchan           = sf->channels();
+  const double sf_sr_ratio  = sf->sampleRateRatio();
   StretchList* stretch_list = sf->stretchList();
 
-  const MuseFrame_t new_frame = stretch_list->unSquish(pos);
-  //const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
-  const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
-  DEBUG_AUDIOCONVERT(stderr,
-    //"SRCAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
-    "SRCAudioConverter::process: frame:%ld new_frame:%ld samplerateRatio:%f\n", pos, new_frame, samplerateVal);
 
-  const double fin_samplerateRatio = sf->sampleRateRatio() + samplerateVal - 1.0;
 
-  if(fin_samplerateRatio < 0.0001)
-  {
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
-//     return _sfCurFrame;
-    return 0;
-  }
+//   for(ciStretchListItem isli = stretch_list->begin(); isli != stretch_list->end(); ++isli)
+//   {
+//     const StretchListItem& sli = *isli;
+//   }
 
-  const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
+
+
+  const MuseFrame_t unsquished_pos = stretch_list->unSquish(pos);
+//   //const double stretchVal    = stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
+//   const double samplerateVal = stretch_list->ratioAt(StretchListItem::SamplerateEvent, unsquished_pos);
+//   DEBUG_AUDIOCONVERT(stderr,
+//     //"SRCAudioConverter::process: frame:%ld new_frame:%ld stretchRatio:%f samplerateRatio:%f\n", pos, new_frame, stretchVal, samplerateVal);
+//     "SRCAudioConverter::process: frame:%ld new_frame:%ld samplerateRatio:%f\n", pos, new_frame, samplerateVal);
+//
+//   const double fin_samplerateRatio = sf_sr_ratio + samplerateVal - 1.0;
+//
+//   if(fin_samplerateRatio < 0.0001)
+//   {
+//     DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
+// //     return _sfCurFrame;
+//     return 0;
+//   }
+//
+//   const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
 
 
 
@@ -543,15 +554,13 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
   
 //   SRC_DATA srcdata;
 
-  int fchan       = sf->channels();
 //   // Ratio is defined as output sample rate over input samplerate.
 //   double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
   
   // Extra input compensation.
   //sf_count_t inComp = 1;
   
-  sf_count_t outFrames  = frames;
-  sf_count_t outSize    = outFrames * fchan;
+  sf_count_t outSize    = frames * fchan;
   
   //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter. DELETETHIS3
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
@@ -573,17 +582,40 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 //   srcdata.data_in       = inbuffer;
   _srcdata.data_out      = outbuffer;
 
+  const int debug_min_pos = 120;
+  bool need_slice = true;
+
+  double cur_ratio = 1.0;
+  iStretchListItem next_isli = stretch_list->upper_bound(unsquished_pos);
+  if(next_isli != stretch_list->begin())
+  {
+    --next_isli;
+    cur_ratio = next_isli->second._samplerateRatio;
+  }
+  if(next_isli != stretch_list->end())
+    next_isli = stretch_list->nextEvent(StretchListItem::SamplerateEvent, next_isli);
+  double fin_samplerateRatio, inv_fin_samplerateRatio;
+
+  MuseFrame_t cur_squished_pos;
+  //MuseFrame_t cur_unsquished_pos;
+  const MuseFrame_t end_squished_pos = pos + frames;
+  //const MuseFrame_t end_unsquished_pos = stretch_list->unSquish(end_squished_pos);
+  sf_count_t outFrames = frames - totalOutFrames;
   // Set some kind of limit on the number of attempts to completely fill the output buffer,
   //  in case something is really screwed up - we don't want to get stuck in a loop here.
   int attempts = 20;
-  while(totalOutFrames < outFrames && attempts > 0)
+  if(pos <= debug_min_pos)
+    fprintf(stderr, "SRCAudioConverter::process pos:%ld end_pos:%ld unsquished_pos:%ld\n", pos, end_squished_pos, unsquished_pos);
+  while(totalOutFrames < frames && attempts > 0)
   {
-    //if(_curInBufferFrame == 0)
+    cur_squished_pos = pos + totalOutFrames;
+    //cur_unsquished_pos = unsquished_pos + totalOutFrames;
+    if(pos <= debug_min_pos)
+      fprintf(stderr, "   cur_squished_pos:%ld outFrames:%ld totalOutFrames:%ld\n", cur_squished_pos, outFrames, totalOutFrames);
+
     if(_needBuffer)
     {
       _srcdata.input_frames = sf_readf_float(handle, _inbuffer, _inBufferSize);
-      //_srcdata.input_frames = SRC_IN_BUFFER_FRAMES;
-      //_endPending = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
       _srcdata.end_of_input = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
       // Zero any unread portion of the input buffer.
       for(int i = _srcdata.input_frames * fchan; i < _inBufferSize; ++i)
@@ -595,12 +627,55 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
       _srcdata.input_frames = SRC_IN_BUFFER_FRAMES - _curInBufferFrame;
       //_srcdata.end_of_input = false;
     }
-
     _srcdata.data_in = _inbuffer + fchan * _curInBufferFrame;
 
-    _srcdata.output_frames = outFrames - totalOutFrames;
+
+
+    if(need_slice)
+    {
+      if(pos <= debug_min_pos)
+        fprintf(stderr, "   new slice: cur_ratio:%f\n", cur_ratio);
+
+      fin_samplerateRatio = sf_sr_ratio + cur_ratio - 1.0;
+      if(fin_samplerateRatio < 0.000001)
+      {
+        DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
+        fin_samplerateRatio = 0.000001;
+      }
+      inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
+
+      if(next_isli != stretch_list->end() &&
+         //next_isli->first >= cur_unsquished_pos &&
+         //next_isli->first < end_unsquished_pos)
+         next_isli->second._finSquishedFrame >= cur_squished_pos &&
+         next_isli->second._finSquishedFrame < end_squished_pos)
+      {
+        cur_ratio = next_isli->second._samplerateRatio;
+        //outFrames = next_isli->first - cur_unsquished_pos;
+        outFrames = next_isli->second._finSquishedFrame - cur_squished_pos;
+        if(pos <= debug_min_pos)
+          fprintf(stderr, "   new next_isli: next cur_ratio:%f outFrames:%ld\n", cur_ratio, outFrames);
+        next_isli = stretch_list->nextEvent(StretchListItem::SamplerateEvent, next_isli);
+      }
+      else
+        outFrames = frames - totalOutFrames;
+
+      need_slice = false;
+    }
+    // "When using the src_process or src_callback_process APIs and
+    //   updating the src_ratio field of the SRC_STATE struct,
+    //   the library will try to smoothly transition between the
+    //   conversion ratio of the last call and the conversion ratio of the current call.
+    //  If the user want to bypass this smooth transition and achieve a step response
+    //   in the conversion ratio, the src_set_ratio function can be used to set the
+    //   starting conversion ratio of the next call to src_process or src_callback_process."
+    _srcdata.src_ratio = inv_fin_samplerateRatio;
+    //_srcdata.src_ratio = 1.0; // Set it to neutral I guess?
+    src_set_ratio(_src_state, inv_fin_samplerateRatio);
+    _srcdata.output_frames = outFrames;
     _srcdata.data_out      = outbuffer + fchan * totalOutFrames;
-    _srcdata.src_ratio     = inv_fin_samplerateRatio;
+
+
 
     DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Calling src_process _curInBufferFrame:%d totalOutFrames:%ld\n",
                        _curInBufferFrame, totalOutFrames);
@@ -614,6 +689,7 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
     DEBUG_AUDIOCONVERT(stderr, "   input_frames_used:%ld output_frames_gen:%ld\n\n",
                        _srcdata.input_frames_used, _srcdata.output_frames_gen);
+
 
     // Note that if SRC is fed more than it needs, the next process call(s)
     //  will generate output but will report NO frames used!
@@ -634,10 +710,18 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
     totalOutFrames += _srcdata.output_frames_gen;
 
+    // If we got the number of slice frames, ask for a new slice.
+    if(_srcdata.output_frames_gen >= outFrames)
+      need_slice = true;
+    else
+      outFrames -= _srcdata.output_frames_gen;
+
     if(_srcdata.input_frames == 0)
       break;
 
-    --attempts;
+    // Countdown the attempts only if no output was generated. If at least something was generated allow it to keep trying indefinitely.
+    if(_srcdata.output_frames_gen == 0)
+      --attempts;
   }
 
   if(attempts == 0)

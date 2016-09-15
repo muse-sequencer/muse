@@ -460,9 +460,9 @@ void SndFile::setAudioConverterSettings(AudioConverterSettingsGroup* settings)
 }
 
 void SndFile::modifyAudioConverterSettingsOperation(
-  AudioConverterSettingsGroup* settings, 
-  bool isLocalSettings, 
-  PendingOperationList& ops) //, 
+  AudioConverterSettingsGroup* settings,
+  bool isLocalSettings,
+  PendingOperationList& ops) //,
   //bool doResample,
   //bool doStretch)
 {
@@ -490,24 +490,24 @@ void SndFile::modifyAudioConverterSettingsOperation(
 void SndFile::modifyAudioConverterOperation(
   //AudioConverterSettingsGroup* settings, 
   //bool isLocalSettings, 
-  PendingOperationList& ops, 
+  PendingOperationList& ops,
   bool doResample,
   bool doStretch)
 {
-  AudioConverterSettingsGroup* settings = _audioConverterSettings->useSettings() ? 
+  AudioConverterSettingsGroup* settings = _audioConverterSettings->useSettings() ?
     _audioConverterSettings : MusEGlobal::defaultAudioConverterSettings;
-    
+
   const bool isLocalSettings = _audioConverterSettings->useSettings();
-  
-  AudioConverterPluginI* converter   = setupAudioConverter(settings, 
-                                                           isLocalSettings, 
-                                                           AudioConverterSettings::RealtimeMode, 
-                                                           doResample, 
+
+  AudioConverterPluginI* converter   = setupAudioConverter(settings,
+                                                           isLocalSettings,
+                                                           AudioConverterSettings::RealtimeMode,
+                                                           doResample,
                                                            doStretch);
-  AudioConverterPluginI* converterUI = setupAudioConverter(settings, 
-                                                           isLocalSettings, 
-                                                           AudioConverterSettings::GuiMode, 
-                                                           doResample, 
+  AudioConverterPluginI* converterUI = setupAudioConverter(settings,
+                                                           isLocalSettings,
+                                                           AudioConverterSettings::GuiMode,
+                                                           doResample,
                                                            doStretch);
 
 //   if(!converter && !converterUI)
@@ -1033,8 +1033,9 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite,
 // REMOVE Tim. samplerate. Changed.
 //       if (allowSeek && pos > samples())
 //             return;
-      if(allowSeek && convertPosition(pos) > convertPosition(samples()))
-            return;
+// Removed. NOTE Seeking is now done only once in the graphic code.
+//       if(allowSeek && convertPosition(pos) > convertPosition(samples()))
+//             return;
 
       if (mag < cacheMag) {
             float data[srcChannels][mag];
@@ -1048,24 +1049,26 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite,
 //               ret = sf_seek(sfUI, pos, SEEK_SET | SFM_READ);
 //             else
 //               ret = sf_seek(sf, pos, SEEK_SET | SFM_READ);
-            if(sfUI)
-            {
-              ret = sf_seek(sfUI, convertPosition(pos), SEEK_SET | SFM_READ);
-              // Reset the converter. Its current state is meaningless now.
-              _staticAudioConverterUI->reset();
-            }
-            else
-            {
-              ret = sf_seek(sf, convertPosition(pos), SEEK_SET | SFM_READ);
-              // Reset the converter. Its current state is meaningless now.
-              _staticAudioConverter->reset();
-            }
-            
-            // Reset the converter. Its current state is meaningless now.
-            //_audConvUI->reset();
-            
-            if(ret == -1)
-              return;
+
+// Removed. NOTE Seeking is now done only once in the graphic code.
+//             if(sfUI)
+//             {
+//               ret = sf_seek(sfUI, convertPosition(pos), SEEK_SET | SFM_READ);
+//               // Reset the converter. Its current state is meaningless now.
+//               _staticAudioConverterUI->reset();
+//             }
+//             else
+//             {
+//               ret = sf_seek(sf, convertPosition(pos), SEEK_SET | SFM_READ);
+//               // Reset the converter. Its current state is meaningless now.
+//               _staticAudioConverter->reset();
+//             }
+//
+//             // Reset the converter. Its current state is meaningless now.
+//             //_audConvUI->reset();
+//
+//             if(ret == -1)
+//               return;
             
             
             //{
@@ -1645,6 +1648,38 @@ sf_count_t SndFile::seek(sf_count_t frames, int whence)
       {
       return sf_seek(sf, frames, whence);
       }
+
+// REMOVE Tim. samplerate. Added.
+sf_count_t SndFile::seekUI(sf_count_t frames, int whence)
+{
+  sf_count_t rn = 0;
+  if(sfUI)
+    rn = sf_seek(sfUI, frames, whence);
+  else if(sf)
+    rn = sf_seek(sf, frames, whence);
+  return rn;
+}
+
+// REMOVE Tim. samplerate. Added.
+sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence)
+{
+  sf_count_t rn = 0;
+  if(sfUI)
+  {
+    rn = sf_seek(sfUI, convertPosition(frames), whence);
+    // Reset the converter. Its current state is meaningless now.
+    if(_staticAudioConverterUI)
+      _staticAudioConverterUI->reset();
+  }
+  else if(sf)
+  {
+    rn = sf_seek(sf, convertPosition(frames), whence);
+    // Reset the converter. Its current state is meaningless now.
+    if(_staticAudioConverter)
+      _staticAudioConverter->reset();
+  }
+  return rn;
+}
 
 // REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------

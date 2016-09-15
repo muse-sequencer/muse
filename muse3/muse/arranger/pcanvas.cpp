@@ -2169,6 +2169,8 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
    int ex = mapx(MusEGlobal::tempomap.frame2tick(rootFrame + startFrame + lengthFrames));
    if(ex > x2)
      ex = x2;
+   bool isfirst = true;
+   const sf_count_t smps = f.convertPosition(f.samples());
    if (h < 20) {
          //    combine multi channels into one waveform
          int y = startY + h;
@@ -2178,7 +2180,17 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
 // REMOVE Tim. samplerate. Changed.
 //                f.read(sa, xScale, pos, true, false);
+               if(f.convertPosition(pos) > smps)
+                 break;
+               // Seek the file only once, not with every read!
+               if(isfirst)
+               {
+                 isfirst = false;
+                 if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+                   break;
+               }
                f.readConverted(sa, xScale, pos, true, false);
+
                postick += tickstep;
                pos += xScale;
                int peak = 0;
@@ -2212,7 +2224,17 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
 // REMOVE Tim. samplerate. Changed.
 //                f.read(sa, xScale, pos, true, false);
+               if(f.convertPosition(pos) > smps)
+                 break;
+               // Seek the file only once, not with every read!
+               if(isfirst)
+               {
+                 isfirst = false;
+                 if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+                   break;
+               }
                f.readConverted(sa, xScale, pos, true, false);
+
                postick += tickstep;
                pos += xScale;
                for (unsigned k = 0; k < channels; ++k) {

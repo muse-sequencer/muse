@@ -91,7 +91,7 @@
 
 #define ERROR_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
 
-#define INFO_WAVECANVAS(dev, format, args...)  fprintf(dev, format, ##args)
+#define INFO_WAVECANVAS(dev, format, args...) // fprintf(dev, format, ##args)
 
 // REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
@@ -1762,20 +1762,20 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
         return;
 
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-      QRect rr = map(rect);                      // Use our own map instead.        
+      QRect rr = map(rect);                      // Use our own map instead.
 
       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
-      
+
       QRect r = item->bbox();
-      QRect mer = map(r);                              
+      QRect mer = map(r);
       QRect mr = rr & mer & mwpr;
       if(mr.isNull())
         return;
-      
+
       MusECore::Event event  = item->event();
       if(event.empty())
         return;
-      
+
       int x1 = mr.x();
       int x2 = x1 + mr.width();
       if (x1 < 0)
@@ -1797,7 +1797,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       p.setWorldMatrixEnabled(false);
 
       int sx, ex;
-      
+
       sx = event.frame() + px + xScale/2;
       ex = sx + event.lenFrame();
       sx = sx / xScale - xpos;
@@ -1809,9 +1809,9 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
             ex = x2;
 
       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
-      
+
       QBrush brush;
-      if (item->isMoving()) 
+      if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -1821,8 +1821,8 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
             brush = QBrush(gradient);
             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
-      else 
-      if (item->isSelected()) 
+      else
+      if (item->isSelected())
       {
           QColor c(Qt::black);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -1850,12 +1850,31 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 
         unsigned peoffset = px + event.frame() - event.spos();
 
+        const sf_count_t smps = f.convertPosition(f.samples());
+
+        // REMOVE Tim. samplerate. Added.
+        fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+                rect.x(), rect.width(),
+                rr.x(), rr.width(),
+                mr.x(), mr.width(),
+                pos,
+                sx, ex);
+
         for (int i = sx; i < ex; i++) {
               int y = h;
               MusECore::SampleV sa[f.channels()];
 // REMOVE Tim. samplerate. Changed.
 //               f.read(sa, xScale, pos);
+              if(f.convertPosition(pos) > smps)
+                break;
+              // Seek the file only once, not with every read!
+              if(i == sx)
+              {
+                if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+                  break;
+              }
               f.readConverted(sa, xScale, pos);
+
               pos += xScale;
               if (pos < event.spos())
                     continue;
@@ -1903,7 +1922,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                     y += 2 * h;
                   }
               }
-            
+
         int hn = hh / ev_channels;
         int hhn = hn / 2;
         for (int i = 0; i < ev_channels; ++i) {
@@ -1922,7 +1941,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
             }
       }
 
-      //      
+      //
       // Draw custom dashed borders around the wave event
       //
 
@@ -1969,6 +1988,260 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       // Done. Restore and return.
       p.setWorldMatrixEnabled(wmtxen);
 }
+
+// //---------------------------------------------------------
+// //   drawItem
+// //    draws a wave
+// //---------------------------------------------------------
+//
+// void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+// {
+//       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
+//       if(!wp || !wp->track())
+//         return;
+//
+//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect rr = map(rect);                      // Use our own map instead.
+//
+//       QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
+//
+//       QRect r = item->bbox();
+//       QRect mer = map(r);
+//       QRect mr = rr & mer & mwpr;
+//       if(mr.isNull())
+//         return;
+//
+//       MusECore::Event event  = item->event();
+//       if(event.empty())
+//         return;
+//
+//       int x1 = mr.x();
+//       int x2 = x1 + mr.width();
+//       if (x1 < 0)
+//             x1 = 0;
+//       if (x2 > width())
+//             x2 = width();
+//       int hh = height();
+//       int y1 = mr.y();
+//       int y2 = y1 + mr.height();
+//
+//       int xScale = xmag;
+//       if (xScale < 0)
+//             xScale = -xScale;
+//
+//       //int t_channels = wp->track()->channels();
+//       int px = wp->frame();
+//
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//
+// //       int sx, ex;
+//       double sx, ex;
+//
+//       //sx = event.frame() + px + xScale/2;
+//       sx = event.frame() + px + (double)xScale/2.0;
+//       ex = sx + event.lenFrame();
+// //       sx = sx / xScale - xpos;
+//       sx = sx / (double)xScale - xpos;
+// //       ex = ex / xScale - xpos;
+//       ex = ex / (double)xScale - xpos;
+//
+//       // REMOVE Tim. samplerate. Added.
+//       sx = floor(sx);
+//       ex = ceil(ex);
+//
+//       if (sx < x1)
+//             sx = x1;
+//       if (ex > x2)
+//             ex = x2;
+//
+//       // REMOVE Tim. samplerate. Added.
+//       //ex += 2.0;
+//
+// //       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
+//       double pos = ((double)xpos + sx) * (double)xScale + event.spos() - event.frame() - px;
+//
+//       // REMOVE Tim. samplerate. Added.
+//       fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d  rr x:%d w:%d  mwpr x:%d w:%d  r x:%d w:%d  mer x:%d y:%d  mr x:%d w:%d  pos:%f sx:%f ex:%f\n",
+//               rect.x(), rect.width(),
+//               rr.x(), rr.width(),
+//               mwpr.x(), mwpr.width(),
+//               r.x(), r.width(),
+//               mer.x(), mer.width(),
+//               mr.x(), mr.width(),
+//               pos,
+//               sx, ex);
+//
+//       QBrush brush;
+//       if (item->isMoving())
+//       {
+//             QColor c(Qt::gray);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//       else
+//       if (item->isSelected())
+//       {
+//           QColor c(Qt::black);
+//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//           QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
+//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
+//           gradient.setColorAt(1, c);
+//           brush = QBrush(gradient);
+//           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//
+//       MusECore::SndFileR f = event.sndFile();
+//       if(!f.isNull())
+//       {
+//         int ev_channels = f.channels();
+//         if (ev_channels == 0) {
+//               p.setWorldMatrixEnabled(wmtxen);
+//               printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
+//               return;
+//               }
+//
+//         int h   = hh / (ev_channels * 2);
+//         int cc  = hh % (ev_channels * 2) ? 0 : 1;
+//
+//         unsigned peoffset = px + event.frame() - event.spos();
+//
+//         const sf_count_t smps = f.convertPosition(f.samples());
+//
+//         for (int i = sx; i < ex; i++) {
+//               int y = h;
+//               MusECore::SampleV sa[f.channels()];
+// // REMOVE Tim. samplerate. Changed.
+// //               f.read(sa, xScale, pos);
+//               if(f.convertPosition(pos) > smps)
+//                 break;
+//               // Seek the file only once, not with every read!
+//               if(i == sx)
+//               {
+//                 if(f.seekUIConverted(pos, SEEK_SET | SFM_READ) == -1)
+//                   break;
+//               }
+//               f.readConverted(sa, xScale, pos);
+//
+//               pos += xScale;
+//               if (pos < event.spos())
+//                     continue;
+//
+//               int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+//               int selectionStopPos  = selectionStop  - peoffset;
+//
+//               for (int k = 0; k < ev_channels; ++k) {
+//                     int kk = k % f.channels();
+//                     int peak = (sa[kk].peak * (h - 1)) / yScale;
+//                     int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+//                     if (peak > h)
+//                           peak = h;
+//                     if (rms > h)
+//                           rms = h;
+//                     QColor peak_color = MusEGlobal::config.wavePeakColor;
+//                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
+//
+//                     if (pos > selectionStartPos && pos < selectionStopPos) {
+//                           peak_color = MusEGlobal::config.wavePeakColorSelected;
+//                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
+//                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
+//                           if(!l_inv.isNull())
+//                           {
+//                             // Draw inverted
+//                             p.setPen(QColor(Qt::black));
+//                             p.drawLine(l_inv);
+//                           }
+//                         }
+//
+//                     QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mr);
+//                     if(!l_peak.isNull())
+//                     {
+//                       p.setPen(peak_color);
+//                       p.drawLine(l_peak);
+//                     }
+//
+//                     QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mr);
+//                     if(!l_rms.isNull())
+//                     {
+//                       p.setPen(rms_color);
+//                       p.drawLine(l_rms);
+//                     }
+//
+//                     y += 2 * h;
+//                   }
+//               }
+//
+//         int hn = hh / ev_channels;
+//         int hhn = hn / 2;
+//         for (int i = 0; i < ev_channels; ++i) {
+//               int h2     = hn * i;
+//               int center = hhn + h2;
+//               if(center >= y1 && center < y2)
+//               {
+//                 p.setPen(QColor(i & 1 ? Qt::red : Qt::blue));
+//                 p.drawLine(sx, center, ex, center);
+//               }
+//               if(i != 0 && h2 >= y1 && h2 < y2)
+//               {
+//                 p.setPen(QColor(Qt::black));
+//                 p.drawLine(sx, h2, ex, h2);
+//               }
+//             }
+//       }
+//
+//       //
+//       // Draw custom dashed borders around the wave event
+//       //
+//
+//       QColor color(item->isSelected() ? Qt::white : Qt::black);
+//       QPen penH(color);
+//       QPen penV(color);
+//       penH.setCosmetic(true);
+//       penV.setCosmetic(true);
+//       QVector<qreal> customDashPattern;
+//       customDashPattern << 4.0 << 6.0;
+//       penH.setDashPattern(customDashPattern);
+//       penV.setDashPattern(customDashPattern);
+//       penV.setDashOffset(2.0);
+//       // FIXME: Some shifting still going on. Values likely not quite right here.
+//       //int xdiff = sx - r.x();
+//       int xdiff = sx - mer.x();
+//       if(xdiff > 0)
+//       {
+//         int doff = xdiff % 10;
+//         penH.setDashOffset(doff);
+//       }
+//       // Tested OK. Each segment drawn only when necessary.
+//       if(y1 <= 0)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, 0, ex, 0);
+//       }
+//       if(y2 >= hh - 1)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, hh - 1, ex, hh - 1);
+//       }
+//       if(x1 <= mer.x())
+//       {
+//         p.setPen(penV);
+//         p.drawLine(mer.x(), y1, mer.x(), y2);
+//       }
+//       if(x2 >= mer.x() + mer.width())
+//       {
+//         p.setPen(penV);
+//         p.drawLine(mer.x() + mer.width(), y1, mer.x() + mer.width(), y2);
+//       }
+//
+//       // Done. Restore and return.
+//       p.setWorldMatrixEnabled(wmtxen);
+// }
 
 //---------------------------------------------------------
 //   drawTopItem

@@ -534,8 +534,10 @@ void View::pdraw(QPainter& p, const QRect& r)
             int h = r.height();
             if (xmag <= 0) {
                   // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
-                  x -= 1;   
+// REMOVE Tim. samplerate. Changed.
+                  x -= 1;
                   w += 2;
+                  //w += 2;
                   //x = (x + xpos + rmapx(xorg)) * (-xmag);
                   x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
                   w = w * (-xmag);
@@ -545,12 +547,16 @@ void View::pdraw(QPainter& p, const QRect& r)
                   x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
                   //w = (w + xmag - 1) / xmag;
                   w = lrint(double(w) / double(xmag));
+// REMOVE Tim. samplerate. Changed.
                   x -= 1;
                   w += 2;
+                  //w += 2;
                   }
             if (ymag <= 0) {
+// REMOVE Tim. samplerate. Changed.
                   y -= 1;
                   h += 2;
+                  //h += 2;
                   //y = (y + ypos + rmapy(yorg)) * (-ymag);
                   y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
                   h = h * (-ymag);
@@ -560,8 +566,10 @@ void View::pdraw(QPainter& p, const QRect& r)
                   y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
                   //h = (h + ymag - 1) / ymag;
                   h = lrint(double(h) / double(ymag));
+// REMOVE Tim. samplerate. Changed.
                   y -= 1;
                   h += 2;
+                  //h += 2;
                   }
 
             if (x < 0)

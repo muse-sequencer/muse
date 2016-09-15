@@ -188,6 +188,8 @@ class SndFile {
 // REMOVE Tim. samplerate. Changed.
 //       off_t seek(off_t frames, int whence);
       sf_count_t seek(sf_count_t frames, int whence);
+      sf_count_t seekUI(sf_count_t frames, int whence);
+      sf_count_t seekUIConverted(sf_count_t frames, int whence);
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
       QString strerror() const;
 
@@ -388,6 +390,8 @@ class SndFileR {
 // REMOVE Tim. samplerate. Changed.
 //       off_t seek(off_t frames, int whence) {
       sf_count_t seek(sf_count_t frames, int whence) { return sf ? sf->seek(frames, whence) : 0; }
+      sf_count_t seekUI(sf_count_t frames, int whence) { return sf ? sf->seekUI(frames, whence) : 0; }
+      sf_count_t seekUIConverted(sf_count_t frames, int whence) { return sf ? sf->seekUIConverted(frames, whence) : 0; }
       void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
             if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
             }
