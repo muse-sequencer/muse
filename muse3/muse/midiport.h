@@ -106,7 +106,7 @@ class MidiPort {
       const QString& portname() const;
       MidiInstrument* instrument() const   { return _instrument; }
       void setInstrument(MidiInstrument* i);
-      MidiController* midiController(int num) const;
+      MidiController* midiController(int num, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val);

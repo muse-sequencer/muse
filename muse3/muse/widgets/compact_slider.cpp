@@ -34,9 +34,11 @@
 #include <QToolTip>
 
 #include "utils.h"
+#include "popup_double_spinbox.h"
 #include "compact_slider.h"
 #include "slider.h"
 //#include "icons.h"
+//#include "lcd_widgets.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_COMPACT_SLIDER(dev, format, args...) // fprintf(dev, format, ##args);
@@ -44,137 +46,6 @@
 
 namespace MusEGui {
 
-//---------------------------------------------------------
-//   PopupDoubleSpinBox
-//---------------------------------------------------------
-
-PopupDoubleSpinBox::PopupDoubleSpinBox(QWidget* parent)
-   : QDoubleSpinBox(parent)
-{
-  // Reset these since our parent will typically turn them on for speed.
-  setAutoFillBackground(true);
-  setAttribute(Qt::WA_NoSystemBackground, false);
-  setAttribute(Qt::WA_StaticContents, false);
-  setAttribute(Qt::WA_OpaquePaintEvent, false);    
-
-  _closePending = false;
-  
-//   DoubleSpinBoxLineEdit* le = new DoubleSpinBoxLineEdit(this);
-//   setLineEdit(le);
-//   setKeyboardTracking(false);
-//   
-//   connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
-//   connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
-//   //connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
-}
-
-bool PopupDoubleSpinBox::event(QEvent* e)
-{
-  switch(e->type())
-  {
-    case QEvent::KeyPress:
-    {
-      QKeyEvent* ke = static_cast<QKeyEvent*>(e);
-      switch(ke->key()) 
-      {
-        // For return, we want to close the editor but don't want the
-        //  parent to receive the event which will just open the box again.
-        case Qt::Key_Return:
-        case Qt::Key_Enter:
-          //e->ignore();
-//           QDoubleSpinBox::event(e);
-          e->accept();
-          //emit editingFinished();
-          if(!_closePending)
-          {
-           _closePending = true;
-            emit returnPressed();
-          }
-//           // Will emit editingFinished.
-//           deleteLater();
-          return true;
-        break;
-        
-        case Qt::Key_Escape:
-        {
-          e->accept();
-          //emit editingFinished();
-          if(!_closePending)
-          {
-           _closePending = true;
-            emit escapePressed();
-          }
-//           // Will emit editingFinished.
-//           deleteLater();
-          return true;
-        }
-        break;
-        
-        default:
-        break;
-      }
-    }
-    break;
-    
-    case QEvent::NonClientAreaMouseButtonPress:
-      // FIXME: Doesn't work.
-      DEBUG_COMPACT_SLIDER(stderr, "PopupDoubleSpinBox::event NonClientAreaMouseButtonPress\n");
-    case QEvent::FocusOut:
-      e->accept();
-      if(!_closePending)
-      {
-        _closePending = true;
-        emit escapePressed();
-      }
-      return true;
-    break;
-    
-    default:
-    break;
-  }
-  
-  // Do not pass ANY events on to the parent.
-  QDoubleSpinBox::event(e);
-  e->accept();
-  return true;
-}
-
-// void PopupDoubleSpinBox::keyPressEvent(QKeyEvent* e)
-// {
-// //     switch (e->key()) {
-// //       // For return, we want to close the editor but don't want the
-// //       //  parent to receive the event which will just open the box again.
-// //       case Qt::Key_Return:
-// //       case Qt::Key_Escape:
-// //         e->accept();
-// //         //emit editingFinished(); // Already emitted
-// //         return;
-// //       break;
-// //       default:
-// //       break;
-// //     }
-// //     e->ignore();
-//     
-//     // Do not pass ANY events on to the parent.
-//     e->accept();
-//     QDoubleSpinBox::keyPressEvent(e);
-// }
-
-// void PopupDoubleSpinBox::wheelEvent(QWheelEvent* e)
-// {
-//   QDoubleSpinBox::wheelEvent(e);
-//   // Need this because Qt doesn't deselect the text if not focused.
-//   if(!hasFocus() && lineEdit())
-//     lineEdit()->deselect();
-// }
-
-// void PopupDoubleSpinBox::focusOutEvent(QFocusEvent*)
-// {
-//   emit editingFinished();
-// }
-  
-  
-  
 //-------------------------------------------------------------
 //  Slider - The Slider Widget
 //
@@ -211,10 +82,10 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
                const QString& valPrefix, 
                const QString& valSuffix,
                const QString& specialValueText,
-               QColor borderColor,
-               QColor barColor,
-               QColor slotColor,
-               QColor thumbColor)
+               const QColor& borderColor,
+               const QColor& barColor,
+               const QColor& slotColor,
+               const QColor& thumbColor)
                : SliderBase(parent,name)
       {
       if(objectName().isEmpty())
@@ -237,6 +108,8 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       
       setEnableValueToolTips(true);
       
+      //_LCDPainter = new LCDPainter();
+
       //_onPath = 0;
       //_offPath = 0;
       _editor = 0;
@@ -259,6 +132,7 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       _valueDecimals = 2;
       _off = false;
       d_offText = tr("off");
+      _showValue = true;
 
       _detectThumb = false;
       _autoHideThumb = true;
@@ -270,6 +144,7 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       d_thumbWidthMargin = 0;
       _mouseOverThumb = false;
       _hovered = false;
+      _activeBorders = AllBorders;
 
       d_scaleDist   = 4;
       d_scaleStep   = 0.0;
@@ -303,6 +178,9 @@ CompactSlider::~CompactSlider()
         //  delete _onPath;
         //if(_offPath)
         //  delete _offPath;
+
+        //if(_LCDPainter)
+        //  delete _LCDPainter;
       }
 
 // Static.      
@@ -376,13 +254,36 @@ void CompactSlider::showValueToolTip(QPoint /*p*/)
   const QString txt = toolTipValueText(true, true);
   if(!txt.isEmpty())
   {
-//     QFont fnt = font();
-//     fnt.setPointSize(14);
-//     QToolTip::setFont(fnt);
+    // Seems to be a small problem with ToolTip: Even if we force the font size,
+    //  if a previous tooltip was showing from another control at another font size,
+    //  it refuses to change font size. Also, if we supply the widget to showText(),
+    //  it refuses to change font size and uses the widget's font size instead.
+    // Also, this craziness with ToolTip's self-offsetting is weird: In class CompactKnob
+    //  it is best when we supply the parent's position, while in class CompactSlider
+    //  it is best when we supply the widget's position - and it STILL isn't right!
+    // Supplying the widget's position to CompactKnob, or parent's position to CompactSlider
+    //  actually makes the offsetting worse!
+    if(QToolTip::font().pointSize() != 10)
+    {
+      QFont fnt = font();
+      fnt.setPointSize(10);
+      QToolTip::setFont(fnt);
+      QToolTip::hideText();
+    }
     //QToolTip::showText(p, txt, this, QRect(), 1000);
     //QToolTip::showText(p, txt, 0, QRect(), 1000);
     QToolTip::showText(mapToGlobal(pos()), txt, 0, QRect(), 3000);
+    //QToolTip::showText(mapToGlobal(pos()), txt);
+    //QToolTip::showText(mapToGlobal(parentWidget() ? parentWidget()->pos() : pos()), txt, parentWidget() ? parentWidget() : this, QRect(), 3000);
   }
+}
+
+void CompactSlider::setActiveBorders(ActiveBorders_t borders)
+{
+  _activeBorders = borders;
+  resize(size());
+  updateGeometry();
+  update();
 }
 
 //----------------------------------------------------
@@ -806,6 +707,8 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
 
   const int req_thumb_margin = d_thumbLength == 0 ? 0 : ((d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1);
 
+  const int label_to_val_margin = 6;
+
   const QPen orig_pen = p.pen();
   
   const QColor& margin_color = isEnabled() ? (d_borderColor.isValid() ? d_borderColor : pal.color(QPalette::Active, QPalette::Button)) :
@@ -815,57 +718,77 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   if(_textHighlightMode & TextHighlightFocus)
     border_color = _hovered ? pal.color(isEnabled() ? QPalette::Active : QPalette::Disabled, QPalette::Highlight).lighter() : margin_color;
   else
-    border_color = hasFocus() ? pal.color(isEnabled() ? QPalette::Active : QPalette::Disabled, QPalette::Highlight).lighter() : margin_color;
-    
+    //border_color = hasFocus() ? pal.color(isEnabled() ? QPalette::Active : QPalette::Disabled, QPalette::Highlight).lighter() : margin_color;
+    border_color = isEnabled() ? (hasFocus() ? margin_color.lighter() : margin_color) : pal.color(QPalette::Disabled, QPalette::Highlight);
+
+  const QColor c4 = isEnabled() ? (d_slotColor.isValid() ? d_slotColor : pal.color(QPalette::Active, QPalette::Dark)) :
+                    pal.color(QPalette::Disabled, QPalette::Dark);
+  const QColor c3 = c4.darker(125);
+
+  QColor inactive_border_color;
+
+  if(_textHighlightMode & TextHighlightFocus)
+    //inactive_border_color = _hovered ? pal.color(isEnabled() ? QPalette::Active : QPalette::Disabled, QPalette::Highlight).lighter() : margin_color;
+    inactive_border_color = isEnabled() ? (_hovered ? border_color : c3) : pal.color(QPalette::Disabled, QPalette::Highlight);
+  else
+    //border_color = hasFocus() ? pal.color(isEnabled() ? QPalette::Active : QPalette::Disabled, QPalette::Highlight).lighter() : margin_color;
+    inactive_border_color = isEnabled() ? (hasFocus() ? border_color : c3) : pal.color(QPalette::Disabled, QPalette::Highlight);
+
   // Draw margins:
   if(d_yMargin)
   {
     // Top
-    p.fillRect(geo.x(), 
-                geo.y(), 
-                geo.width(), 
-                d_yMargin, 
-                border_color);
+    //if(_activeBorders & TopBorder)
+      p.fillRect(geo.x(),
+                  geo.y(),
+                  geo.width(),
+                  d_yMargin,
+                  _activeBorders & TopBorder ? border_color : inactive_border_color);
   
     // Bottom
-    p.fillRect(geo.x(), 
-                geo.height() - d_yMargin, 
-                geo.width(), 
-                d_yMargin, 
-                border_color);
+    //if(_activeBorders & BottomBorder)
+      p.fillRect(geo.x(),
+                  geo.height() - d_yMargin,
+                  geo.width(),
+                  d_yMargin,
+                  _activeBorders & BottomBorder ? border_color : inactive_border_color);
   }
   
   if(d_xMargin)
   {
     // Left
-    p.fillRect(geo.x(), 
-                geo.y(), 
-                d_xMargin, 
-                geo.height(), 
-                border_color);
+    //if(_activeBorders & LeftBorder)
+      p.fillRect(geo.x(),
+                  geo.y(),
+                  d_xMargin,
+                  geo.height(),
+                  _activeBorders & LeftBorder ? border_color : inactive_border_color);
     
     // Right
-    p.fillRect(geo.width() - d_xMargin, 
-                geo.y(), 
-                d_xMargin, 
-                geo.height(), 
-                border_color);
+    //if(_activeBorders & RightBorder)
+      p.fillRect(geo.width() - d_xMargin,
+                  geo.y(),
+                  d_xMargin,
+                  geo.height(),
+                  _activeBorders & RightBorder ? border_color : inactive_border_color);
   }
   
   // Extra left margin
-  p.fillRect(d_xMargin, 
-              d_yMargin, 
-              req_thumb_margin, 
-              geo.height() - 2 * d_yMargin, 
-              margin_color);
+  //if(_activeBorders & LeftBorder)
+    p.fillRect(d_xMargin,
+                d_yMargin,
+                req_thumb_margin,
+                geo.height() - 2 * d_yMargin,
+                _activeBorders & LeftBorder ? margin_color : inactive_border_color);
   
   // Extra right margin
-  p.fillRect(
-              geo.width() - d_xMargin - req_thumb_margin, 
-              d_yMargin, 
-              req_thumb_margin, 
-              geo.height() - 2 * d_yMargin, 
-              margin_color);
+  //if(_activeBorders & RightBorder)
+    p.fillRect(
+                geo.width() - d_xMargin - req_thumb_margin,
+                d_yMargin,
+                req_thumb_margin,
+                geo.height() - 2 * d_yMargin,
+                _activeBorders & RightBorder ? margin_color : inactive_border_color);
   
 //   const QPainterPath& onPath = *_onPath;
 //   
@@ -905,9 +828,6 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     p.fillPath(onPath, linearGrad_a);
 
 
-  const QColor c4 = isEnabled() ? (d_slotColor.isValid() ? d_slotColor : pal.color(QPalette::Active, QPalette::Dark)) :
-                    pal.color(QPalette::Disabled, QPalette::Dark);
-  const QColor c3 = c4.darker(125);
   linearGrad_a.setColorAt(0, c3);
   linearGrad_a.setColorAt(0.5, c4);
   linearGrad_a.setColorAt(1, c3);
@@ -967,16 +887,20 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
                                          pal.color(QPalette::Disabled, QPalette::Mid));
   }
 
+  const QFont& fnt = font();
+  QFont aliased_fnt(fnt);
   // Turn off anti-aliasing for sharper text. if we want it:
-  if(font().pointSize() <= _maxAliasedPointSize)
+  if(fnt.pointSize() <= _maxAliasedPointSize)
   {
-    QFont fnt = font();
-    fnt.setFamily("Sans");
-    //fnt.setHintingPreference(QFont::PreferVerticalHinting);
-    //fnt.setStyleStrategy(QFont::PreferBitmap);
-    fnt.setStyleStrategy(QFont::NoAntialias);
-    p.setFont(fnt);
+    aliased_fnt.setFamily("Sans");
+    //aliased_fnt.setHintingPreference(QFont::PreferVerticalHinting);
+    //aliased_fnt.setStyleStrategy(QFont::PreferBitmap);
+    aliased_fnt.setStyleStrategy(QFont::NoAntialias);
+    //p.setFont(aliased_fnt);
   }
+  const QFontMetrics aliased_fm(aliased_fnt);
+
+  const bool show_val = _showValue;
 
   const QFontMetrics fm = p.fontMetrics();
   
@@ -985,28 +909,39 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   const QString comp_val_text = isOff() ? d_offText :
                                 ((val <= minV && !d_specialValueText.isEmpty()) ? 
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
-  const int val_width = fm.width(comp_val_text);
+  //const int val_width = fm.width(comp_val_text);
+  const int val_width = aliased_fm.width(comp_val_text);
   int vx = text_area.width() - val_width;
   if(vx < 0)
     vx = 0;
   const QRect val_area(vx, text_area.y(), val_width, text_area.height());
   
-  int lw = text_area.width() - val_width - 4;
+  int lw = text_area.width();
+  if(show_val)
+    lw = lw - val_width - label_to_val_margin;
   if(lw < 0)
     lw = 0;
-  const QRect label_area(text_area.x(), text_area.y(), lw, text_area.height());
+  QRect label_area(text_area.x(), text_area.y(), lw, text_area.height());
   
   //const QString elided_label_text = fm.elidedText(d_labelText, Qt::ElideMiddle, text_area.width());
 //   const QString elided_label_text = fm.elidedText(d_labelText, Qt::ElideMiddle, label_area.width());
   const QString elided_label_text = d_labelText;
-  
+  if(!show_val)
+  {
+    const QRect label_br = fm.boundingRect(d_labelText);
+    const int label_bw = label_br.width();
+    int label_xoff = (label_area.width() - label_bw) / 2;
+    if(label_xoff < 0)
+      label_xoff = 0;
+    label_area.adjust(label_xoff, 0, 0, 0);
+  }
+
   //const int label_width = fm.width(elided_label_text);
   
   //const bool show_both = (text_area.width() - val_width) > (label_area.width() + 2);
-  //const bool show_both = label_area.width() > 4;
-  const bool show_label = label_area.width() > 4;
-  const bool show_val = true;
-  
+  //const bool show_both = label_area.width() > label_to_val_margin;
+  const bool show_label = show_val || label_area.width() > label_to_val_margin;
+
   const bool on  = _textHighlightMode & TextHighlightOn;
   const bool shd = _textHighlightMode & TextHighlightShadow;
   const bool spl = _textHighlightMode & TextHighlightSplit;
@@ -1027,8 +962,13 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
     val_bkg.adjust(1, 1, 1, 1);
     label_bkg.adjust(1, 1, 1, 1);
     if(show_val)
+    {
+      p.setFont(aliased_fnt);
       //p.drawText(text_bkg, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(val_bkg, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      //_LCDPainter->drawText(&p, val_bkg, comp_val_text, Qt::AlignRight | Qt::AlignVCenter);
+      p.setFont(fnt);
+    }
     if(show_label)
       //p.drawText(text_bkg, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
       p.drawText(label_bkg, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
@@ -1043,8 +983,13 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       p.setClipRect(geo);
     
     if(show_val)
+    {
+      p.setFont(aliased_fnt);
       //p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(val_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      //_LCDPainter->drawText(&p, val_area, comp_val_text, Qt::AlignRight | Qt::AlignVCenter);
+      p.setFont(fnt);
+    }
     if(show_label)
       //p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
       p.drawText(label_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
@@ -1061,8 +1006,13 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       p.setClipRect(geo);
 
     if(show_val)
+    {
+      p.setFont(aliased_fnt);
       //p.drawText(text_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
       p.drawText(val_area, Qt::AlignRight | Qt::AlignVCenter, comp_val_text);
+      //_LCDPainter->drawText(&p, val_area, comp_val_text, Qt::AlignRight | Qt::AlignVCenter);
+      p.setFont(fnt);
+    }
     if(show_label)
       //p.drawText(text_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
       p.drawText(label_area, Qt::AlignLeft | Qt::AlignVCenter, elided_label_text);
@@ -1300,6 +1250,9 @@ void CompactSlider::resizeEvent(QResizeEvent *e)
   //updatePixmaps();
   getActiveArea(); 
   getPixelValues();
+
+  if(_editor && _editor->isVisible())
+    _editor->setGeometry(rect());
 }
 
 void CompactSlider::showEditor()
@@ -1356,7 +1309,15 @@ void CompactSlider::getMouseOverThumb(QPoint &p)
     _hovered = hv;
 }      
 
-void CompactSlider::setOff(bool v) 
+void CompactSlider::setShowValue(bool show)
+{
+  _showValue = show;
+  resize(size());
+  updateGeometry(); // Required.
+  update();
+}
+
+void CompactSlider::setOff(bool v)
 { 
   if(v && !_hasOffMode)
     _hasOffMode = true;
@@ -1472,7 +1433,8 @@ void CompactSlider::rangeChange()
        d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
     getPixelValues();
     SliderBase::rangeChange();
-    repaint();
+//     repaint();
+    update();
 }
 
 //------------------------------------------------------------

@@ -85,6 +85,7 @@ class SliderBase : public QWidget, public DoubleRange
 
  protected:
   bool d_enableValueToolTips;
+  bool d_showValueToolTipsOnHover;
   int d_scrollMode;
   double d_mouseOffset;
   int d_direction;
@@ -162,6 +163,9 @@ class SliderBase : public QWidget, public DoubleRange
   
   bool enableValueToolTips() const { return d_enableValueToolTips; }
   void setEnableValueToolTips(bool enable) { d_enableValueToolTips = enable; }
+  bool showValueToolTipsOnHover() const { return d_showValueToolTipsOnHover; }
+  void setShowValueToolTipsOnHover(bool enable) { d_showValueToolTipsOnHover = enable; }
+
   void setUpdateTime(int t);
   void stopMoving();
   bool tracking() const { return d_tracking; }

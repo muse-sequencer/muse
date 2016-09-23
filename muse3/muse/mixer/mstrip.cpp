@@ -60,6 +60,7 @@
 
 #include "minstrument.h"
 #include "midievent.h"
+#include "compact_knob.h"
 #include "compact_slider.h"
 #include "compact_patch_edit.h"
 #include "scroll_area.h"
@@ -100,7 +101,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
   int val = 0;
   bool hasOffMode = false;
   bool off = false;
-  
+  bool showval = MusEGlobal::config.showControlValues;
+
   switch(desc->_componentType)
   {
     case controllerComponent:
@@ -160,62 +162,72 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       
       if(desc->_label.isEmpty())
       {
-        switch(midiCtrlNum)
+        QString ctlname = mc->name();
+        if(ctlname.isEmpty())
         {
-          case MusECore::CTRL_PROGRAM:
-            desc->_label = tr("Pro");
-          break;
-          
-          case MusECore::CTRL_VARIATION_SEND:
-            desc->_label = tr("Var");
-          break;
+          switch(midiCtrlNum)
+          {
+            case MusECore::CTRL_PROGRAM:
+              ctlname = tr("Pro");
+            break;
 
-          case MusECore::CTRL_REVERB_SEND:
-            desc->_label = tr("Rev");
-          break;
+            case MusECore::CTRL_VARIATION_SEND:
+              ctlname = tr("Var");
+            break;
 
-          case MusECore::CTRL_CHORUS_SEND:
-            desc->_label = tr("Cho");
-          break;
+            case MusECore::CTRL_REVERB_SEND:
+              ctlname = tr("Rev");
+            break;
 
-          case MusECore::CTRL_PANPOT:
-            desc->_label = tr("Pan");
-          break;
-          
-          default:
-            desc->_label = mc->name() + tr("\n(Ctrl-double-click on/off)");
-          break;
+            case MusECore::CTRL_CHORUS_SEND:
+              ctlname = tr("Cho");
+            break;
+
+            case MusECore::CTRL_PANPOT:
+              ctlname = tr("Pan");
+            break;
+
+            default:
+              ctlname = QString("#%1").arg(midiCtrlNum);
+            break;
+          }
         }
+        desc->_label = ctlname;
       }
       
       if(desc->_toolTipText.isEmpty())
       {
-        switch(midiCtrlNum)
+        QString ctlname = mc->name();
+        if(ctlname.isEmpty())
         {
-          case MusECore::CTRL_PROGRAM:
-            desc->_toolTipText = tr("Program");
-          break;
-          
-          case MusECore::CTRL_VARIATION_SEND:
-            desc->_toolTipText = tr("VariationSend\n(Ctrl-double-click on/off)");
-          break;
+          switch(midiCtrlNum)
+          {
+            case MusECore::CTRL_PROGRAM:
+              ctlname = tr("Program");
+            break;
 
-          case MusECore::CTRL_REVERB_SEND:
-            desc->_toolTipText = tr("ReverbSend\n(Ctrl-double-click on/off)");
-          break;
+            case MusECore::CTRL_VARIATION_SEND:
+              ctlname = tr("VariationSend");
+            break;
 
-          case MusECore::CTRL_CHORUS_SEND:
-            desc->_toolTipText = tr("ChorusSend\n(Ctrl-double-click on/off)");
-          break;
+            case MusECore::CTRL_REVERB_SEND:
+              ctlname = tr("ReverbSend");
+            break;
 
-          case MusECore::CTRL_PANPOT:
-            desc->_toolTipText = tr("Pan/Balance\n(Ctrl-double-click on/off)");
-          break;
-          
-          default:
-            desc->_toolTipText = mc->name() + tr("\n(Ctrl-double-click on/off)");
-          break;
+            case MusECore::CTRL_CHORUS_SEND:
+              ctlname = tr("ChorusSend");
+            break;
+
+            case MusECore::CTRL_PANPOT:
+              ctlname = tr("Pan/Balance");
+            break;
+
+            default:
+              ctlname = tr("Controller");
+            break;
+          }
         }
+        desc->_toolTipText = QString("%1 (# %2)\n%3").arg(ctlname).arg(midiCtrlNum).arg(tr("(Ctrl-double-click on/off)"));
       }
       
       if(!desc->_color.isValid())
@@ -227,7 +239,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
           break;
           
           case MusECore::CTRL_PROGRAM:
-            desc->_color = MusEGlobal::config.midiPatchSliderColor;
+            desc->_color = MusEGlobal::config.midiPatchReadoutColor;
           break;
           
           default:
@@ -356,6 +368,26 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
     }
     break;
     
+    case CompactKnobComponentWidget:
+    {
+      CompactKnobComponentDescriptor* d = static_cast<CompactKnobComponentDescriptor*>(desc);
+      d->_min = min;
+      d->_max = max;
+      d->_precision = 0;
+      d->_step = 1.0;
+      d->_initVal = val;
+      d->_hasOffMode = hasOffMode;
+      d->_isOff = off;
+      d->_showValue = showval;
+      if(!d->_color.isValid())
+        d->_color = MusEGlobal::config.sliderDefaultColor;
+
+      // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
+      // Connects known widget types' signals to slots.
+      newComponentWidget(d, before);
+    }
+    break;
+
     case CompactSliderComponentWidget:
     {
       CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
@@ -366,11 +398,13 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       d->_initVal = val;
       d->_hasOffMode = hasOffMode;
       d->_isOff = off;
+      d->_showValue = showval;
       if(!d->_color.isValid())
         d->_color = MusEGlobal::config.sliderDefaultColor;
       // Set the bar color the same.
       if(!d->_barColor.isValid())
-        d->_barColor = d->_color;
+        //d->_barColor = d->_color;
+        d->_barColor = MusEGlobal::config.sliderBarDefaultColor;
 
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
@@ -384,10 +418,7 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
       d->_initVal = val;
       d->_isOff = off;
       if(!d->_color.isValid())
-        d->_color = MusEGlobal::config.midiPatchSliderColor;
-      // Set the bar color the same.
-      if(!d->_barColor.isValid())
-        d->_barColor = d->_color;
+        d->_color = MusEGlobal::config.midiPatchReadoutColor;
       
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
@@ -406,10 +437,12 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
       CompactPatchEditComponentDescriptor* d = static_cast<CompactPatchEditComponentDescriptor*>(desc);
       if(!d->_compactPatchEdit)
       {
-        CompactPatchEdit* control = new CompactPatchEdit(0, d->_objName, Qt::Horizontal, CompactSlider::None);
+        CompactPatchEdit* control = new CompactPatchEdit(0,
+                                                         d->_objName,
+                                                         CompactSlider::None);
         d->_compactPatchEdit = control;
         control->setId(d->_index);
-        control->setValueState(d->_initVal, d->_isOff);
+        control->setValue(d->_initVal);
         // Don't allow anything here, it interferes with the CompactPatchEdit which sets it's own controls' tooltips.
         //control->setToolTip(d->_toolTipText);
         control->setEnabled(d->_enabled);
@@ -417,29 +450,23 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
         control->setContentsMargins(0, 0, 0, 0);
 
         if(d->_color.isValid())
-          control->setBorderColor(d->_color);
-        if(d->_barColor.isValid())
-          control->setBarColor(d->_barColor);
-        if(d->_slotColor.isValid())
-          control->setSlotColor(d->_slotColor);
-        if(d->_thumbColor.isValid())
-          control->setThumbColor(d->_thumbColor);
+          control->setReadoutColor(d->_color);
         
         control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
         
         if(d->_patchEditChangedSlot)
-          connect(d->_compactPatchEdit, SIGNAL(valueStateChanged(double,bool,int, int)), d->_patchEditChangedSlot);
-        if(d->_patchEditSliderRightClickedSlot)
-          connect(d->_compactPatchEdit, SIGNAL(sliderRightClicked(QPoint,int)), d->_patchEditSliderRightClickedSlot);
+          connect(d->_compactPatchEdit, SIGNAL(valueChanged(int, int)), d->_patchEditChangedSlot);
+        if(d->_patchEditValueRightClickedSlot)
+          connect(d->_compactPatchEdit, SIGNAL(patchValueRightClicked(QPoint,int)), d->_patchEditValueRightClickedSlot);
         if(d->_patchEditNameClickedSlot)
           connect(d->_compactPatchEdit, SIGNAL(patchNameClicked(QPoint,int)), d->_patchEditNameClickedSlot);
         if(d->_patchEditNameRightClickedSlot)
           connect(d->_compactPatchEdit, SIGNAL(patchNameRightClicked(QPoint,int)), d->_patchEditNameRightClickedSlot);
     
         if(!d->_patchEditChangedSlot)
-          connect(d->_compactPatchEdit, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(controllerChanged(double,bool,int,int)));
-        if(!d->_patchEditSliderRightClickedSlot)
-          connect(d->_compactPatchEdit, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+          connect(d->_compactPatchEdit, SIGNAL(valueChanged(int,int)), SLOT(controllerChanged(int,int)));
+        if(!d->_patchEditValueRightClickedSlot)
+          connect(d->_compactPatchEdit, SIGNAL(patchValueRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
         if(!d->_patchEditNameClickedSlot)
           connect(d->_compactPatchEdit, SIGNAL(patchNameClicked(QPoint,int)), SLOT(patchEditNameClicked(QPoint,int)));
         if(!d->_patchEditNameRightClickedSlot)
@@ -471,6 +498,7 @@ void MidiComponentRack::scanControllerComponents()
   if(chan < 0 || chan >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
     return;
   
+  QString namestr;
   std::vector<iComponentWidget> to_be_erased;
   for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
@@ -482,9 +510,26 @@ void MidiComponentRack::scanControllerComponents()
     {
       case controllerComponent:
       {
-        MusECore::MidiCtrlValListList* mcvll = MusEGlobal::midiPorts[port].controller();
-        if(mcvll->find(chan, cw._index) == mcvll->end())
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiCtrlValListList* mcvll = mp->controller();
+        MusECore::ciMidiCtrlValList imcvll = mcvll->find(chan, cw._index);
+        if(imcvll == mcvll->end())
           to_be_erased.push_back(ic);
+        else
+        {
+          // While we are here, let's update the name of the control, in case the instrument changed.
+          switch(cw._widgetType)
+          {
+            case CompactKnobComponentWidget:
+            case CompactSliderComponentWidget:
+            {
+              // false = do not create the controller if not found.
+              MusECore::MidiController* mc = mp->midiController(cw._index, false);
+              setComponentText(cw, mc->name());
+            }
+            break;
+          }
+        }
       }
       break;
     }
@@ -541,43 +586,19 @@ void MidiComponentRack::updateComponents()
               {
                 case mStripCompactPatchEditComponentWidget:
                 {    
+                  // Special for new LCD patch edit control: Need to give both current and last values.
+                  // Keeping a local last value with the control won't work.
                   CompactPatchEdit* control = static_cast<CompactPatchEdit*>(cw._widget);
-                  int hwVal = mcvl->hwVal();
+                  const int hwVal = mcvl->hwVal();
+                  control->blockSignals(true);
+                  control->setLastValidValue(mcvl->lastValidHWVal());
+                  control->setLastValidBytes(mcvl->lastValidByte2(), mcvl->lastValidByte1(), mcvl->lastValidByte0());
+                  control->setValue(hwVal);
+                  control->blockSignals(false);
+
                   if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
                   {
-                    hwVal = mcvl->lastValidHWVal();
-                    if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
-                    {
-                      if(!control->isOff())
-                      {
-                        control->blockSignals(true);
-                        control->setOff(true);
-                        control->blockSignals(false);
-                      }
-                    }
-                    else
-                    {
-                      if(!control->isOff() || double(hwVal) != control->value())
-                      {
-                        control->blockSignals(true);
-                        control->setValueState(double(hwVal), true);
-                        control->blockSignals(false);
-                      }  
-                    }
-                  }
-                  else
-                  {
-                    if(control->isOff() || double(hwVal) != control->value()) 
-                    {
-                      control->blockSignals(true);
-                      control->setValueState(double(hwVal), false);
-                      control->blockSignals(false);
-                    }  
-                    
-                  }  
-                  
-                  if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
-                  {
+                    control->setPatchNameOff(true);
                     const QString patchName(tr("<unknown>"));
                     if(control->patchName() != patchName)
                       control->setPatchName(patchName);
@@ -587,6 +608,7 @@ void MidiComponentRack::updateComponents()
                     // Try to avoid calling MidiInstrument::getPatchName too often.
 //                     if(_heartBeatCounter == 0)
                     {
+                      control->setPatchNameOff(false);
                       MusECore::MidiInstrument* instr = mp->instrument();
                       QString patchName(instr->getPatchName(channel, hwVal, _track->isDrumTrack()));
                       if(patchName.isEmpty())
@@ -605,6 +627,86 @@ void MidiComponentRack::updateComponents()
             {
               switch(cw._widgetType)
               {
+                case CompactKnobComponentWidget:
+                {
+                  CompactKnob* control = static_cast<CompactKnob*>(cw._widget);
+
+                  int hwVal = mcvl->hwVal();
+                  int min = 0;
+                  int max = 127;
+                  int bias = 0;
+                  int initval = 0;
+                  MusECore::MidiController* mc = mp->midiController(cw._index);
+                  if(mc)
+                  {
+                    bias = mc->bias();
+                    min = mc->minVal();
+                    max = mc->maxVal();
+                    initval = mc->initVal();
+                    if(initval == MusECore::CTRL_VAL_UNKNOWN)
+                      initval = 0;
+                  }
+
+                  const double dmin = (double)min;
+                  const double dmax = (double)max;
+                  const double c_dmin = control->minValue();
+                  const double c_dmax = control->maxValue();
+                  if(c_dmin != min && c_dmax != max)
+                  {
+                    control->blockSignals(true);
+                    control->setRange(dmin, dmax, 1.0);
+                    control->blockSignals(false);
+                  }
+                  else if(c_dmin != min)
+                  {
+                    control->blockSignals(true);
+                    control->setMinValue(min);
+                    control->blockSignals(false);
+                  }
+                  else if(c_dmax != max)
+                  {
+                    control->blockSignals(true);
+                    control->setMaxValue(max);
+                    control->blockSignals(false);
+                  }
+
+                  if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+                  {
+                    hwVal = mcvl->lastValidHWVal();
+                    if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+                    {
+                      hwVal = initval;
+                      if(!control->isOff() || hwVal != control->value())
+                      {
+                        control->blockSignals(true);
+                        control->setValueState(hwVal, true);
+                        control->blockSignals(false);
+                      }
+                    }
+                    else
+                    {
+                      hwVal -= bias;
+                      if(!control->isOff() || hwVal != control->value())
+                      {
+                        control->blockSignals(true);
+                        control->setValueState(hwVal, true);
+                        control->blockSignals(false);
+                      }
+                    }
+                  }
+                  else
+                  {
+                    hwVal -= bias;
+                    if(control->isOff() || hwVal != control->value())
+                    {
+                      control->blockSignals(true);
+                      control->setValueState(hwVal, false);
+                      control->blockSignals(false);
+                    }
+                  }
+                }
+                break;
+
                 case CompactSliderComponentWidget:
                 {                  
                   CompactSlider* control = static_cast<CompactSlider*>(cw._widget);
@@ -613,12 +715,16 @@ void MidiComponentRack::updateComponents()
                   int min = 0;
                   int max = 127;
                   int bias = 0;
+                  int initval = 0;
                   MusECore::MidiController* mc = mp->midiController(cw._index);
                   if(mc)
                   {
                     bias = mc->bias();
                     min = mc->minVal();
                     max = mc->maxVal();
+                    initval = mc->initVal();
+                    if(initval == MusECore::CTRL_VAL_UNKNOWN)
+                      initval = 0;
                   }
                   
                   const double dmin = (double)min;
@@ -649,20 +755,21 @@ void MidiComponentRack::updateComponents()
                     hwVal = mcvl->lastValidHWVal();
                     if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
                     {
-                      if(!control->isOff())
+                      hwVal = initval;
+                      if(!control->isOff() || hwVal != control->value())
                       {
                         control->blockSignals(true);
-                        control->setOff(true);
+                        control->setValueState(hwVal, true);
                         control->blockSignals(false);
                       }
                     }
                     else
                     {
                       hwVal -= bias;
-                      if(!control->isOff() || double(hwVal) != control->value())
+                      if(!control->isOff() || hwVal != control->value())
                       {
                         control->blockSignals(true);
-                        control->setValueState(double(hwVal), true);
+                        control->setValueState(hwVal, true);
                         control->blockSignals(false);
                       }  
                     }
@@ -670,10 +777,10 @@ void MidiComponentRack::updateComponents()
                   else
                   {
                     hwVal -= bias;
-                    if(control->isOff() || hwVal != control->value()) 
+                    if(control->isOff() || hwVal != control->value())
                     {
                       control->blockSignals(true);
-                      control->setValueState(double(hwVal), false);
+                      control->setValueState(hwVal, false);
                       control->blockSignals(false);
                     }  
                   }  
@@ -864,6 +971,46 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   }
 }
 
+void MidiComponentRack::controllerChanged(int val, int id)
+{
+  DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%d\n", id, val);
+//   if (inHeartBeat)
+//         return;
+  int port     = _track->outPort();
+  int channel  = _track->outChannel();
+  if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
+    return;
+
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+
+  MusECore::MidiCtrlValListList* mcvll = mp->controller();
+  MusECore::ciMidiCtrlValList imcvl = mcvll->find(channel, id);
+  if(imcvl == mcvll->end())
+    return;
+
+  MusECore::MidiController* mc = mp->midiController(id);
+  MusECore::MidiCtrlValList* mcvl = imcvl->second;
+
+//   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
+  if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
+  {
+    if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
+      MusEGlobal::audio->msgSetHwCtrlState(mp, channel, id, MusECore::CTRL_VAL_UNKNOWN);
+  }
+  else
+  {
+    val += mc->bias();
+    int tick     = MusEGlobal::song->cpos();
+    MusECore::MidiPlayEvent ev(tick, port, channel, MusECore::ME_CONTROLLER, id, val);
+    MusEGlobal::audio->msgPlayMidiEvent(&ev);
+  }
+}
+
+void MidiComponentRack::controllerChanged(double val, int id)
+{
+  DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%.20f\n", id, val);
+  controllerChanged(int(lrint(val)), id);
+}
 
 void MidiComponentRack::controllerChanged(double val, bool off, int id, int /*scrollMode*/)
 {
@@ -1021,7 +1168,7 @@ void MidiComponentRack::patchEditNameClicked(QPoint /*p*/, int id)
 void MidiComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
 {
   // Scan controllers.
-  if(flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD))
+  if(flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
   {
     scanControllerComponents();
   }
@@ -1043,12 +1190,22 @@ void MidiComponentRack::configChanged()
     if(!cw._widget)
       continue;
     
+    // Whether to show values along with labels for certain controls.
+    setComponentShowValue(cw, MusEGlobal::config.showControlValues);
+
     switch(cw._widgetType)
     {
       case mStripCompactPatchEditComponentWidget:
       {
-        CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
-        w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+        //CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
+        //w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+      }
+      break;
+
+      case CompactKnobComponentWidget:
+      {
+        //CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+        //w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
       }
       break;
     }
@@ -1080,7 +1237,7 @@ void MidiComponentRack::setComponentColors()
           break;
           
           case MusECore::CTRL_PROGRAM:
-            color = MusEGlobal::config.midiPatchSliderColor;
+            color = MusEGlobal::config.midiPatchReadoutColor;
           break;
           
           default:
@@ -1111,19 +1268,26 @@ void MidiComponentRack::setComponentColors()
 
     switch(cw._widgetType)
     {
+      case CompactKnobComponentWidget:
+      {
+        CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+        w->setFaceColor(color);
+      }
+      break;
+
       case CompactSliderComponentWidget:
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
-        w->setBarColor(color);
+        //w->setBarColor(color);
+        w->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
       }
       break;
       
       case mStripCompactPatchEditComponentWidget:
       {
         CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
-        w->setBorderColor(color);
-        w->setBarColor(color);
+        w->setReadoutColor(color);
       }
       break;
     }  
@@ -1140,6 +1304,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       inHeartBeat = true;
       _heartBeatCounter = 0;
 
+      _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
@@ -1151,33 +1317,62 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       t->setActivity(0);
       t->setLastActivity(0);
       
-      _preScrollAreaPos_A  = GridPosStruct(_curGridRow,     0, 1, 3);
-      
-      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 1, 2, 1, 1);
-      _sliderPos           = GridPosStruct(_curGridRow + 1, 0, 4, 2);
+//       _preScrollAreaPos_A  = GridPosStruct(_curGridRow,     0, 1, 3);
+//
+//       _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 1, 2, 1, 1);
+//       _sliderPos           = GridPosStruct(_curGridRow + 1, 0, 4, 2);
+//
+//       _infoSpacerTop       = GridPosStruct(_curGridRow + 2, 2, 1, 1);
+//
+//       _propertyRackPos     = GridPosStruct(_curGridRow + 3, 2, 1, 1);
+//
+//       _infoSpacerBottom    = GridPosStruct(_curGridRow + 4, 2, 1, 1);
+//
+//       _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
+//       _postScrollAreaPos_B = GridPosStruct(_curGridRow + 5, 2, 1, 1);
+//
+//       _postScrollAreaPos_A = GridPosStruct(_curGridRow + 6, 0, 1, 3);
+//
+//       _offPos              = GridPosStruct(_curGridRow + 7, 0, 1, 1);
+//       _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
+//
+//       _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
+//       _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
+//
+//       _routesPos           = GridPosStruct(_curGridRow + 9, 0, 1, 2);
+//
+//       _automationPos       = GridPosStruct(_curGridRow + 10, 0, 1, 2);
+//
+//       _rightSpacerPos      = GridPosStruct(_curGridRow + 10, 2, 1, 1);
 
-      _infoSpacerTop       = GridPosStruct(_curGridRow + 2, 2, 1, 1);
-      
-      _propertyRackPos     = GridPosStruct(_curGridRow + 3, 2, 1, 1);
-      
-      _infoSpacerBottom    = GridPosStruct(_curGridRow + 4, 2, 1, 1);
-      
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
-      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 5, 2, 1, 1);
-      
-      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 6, 0, 1, 3);
-      
-      _offPos              = GridPosStruct(_curGridRow + 7, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
-      
-      _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
-      
-      _routesPos        = GridPosStruct(_curGridRow + 9, 0, 1, 2);
-      
+      _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
+
+      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+
+      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 2, 2, 1, 1);
+      _sliderPos           = GridPosStruct(_curGridRow + 2, 0, 4, 2);
+
+      _infoSpacerTop       = GridPosStruct(_curGridRow + 3, 2, 1, 1);
+
+      _propertyRackPos     = GridPosStruct(_curGridRow + 4, 2, 1, 1);
+
+      _infoSpacerBottom    = GridPosStruct(_curGridRow + 5, 2, 1, 1);
+
+      _sliderLabelPos      = GridPosStruct(_curGridRow + 6, 0, 1, 2);
+      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 6, 2, 1, 1);
+
+      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 7, 0, 1, 3);
+
+      _offPos              = GridPosStruct(_curGridRow + 8, 0, 1, 1);
+      _recPos              = GridPosStruct(_curGridRow + 8, 1, 1, 1);
+
+      _mutePos             = GridPosStruct(_curGridRow + 9, 0, 1, 1);
+      _soloPos             = GridPosStruct(_curGridRow + 9, 1, 1, 1);
+
       _automationPos       = GridPosStruct(_curGridRow + 10, 0, 1, 2);
-      
+
       _rightSpacerPos      = GridPosStruct(_curGridRow + 10, 2, 1, 1);
+
 
       volume      = MusECore::CTRL_VAL_UNKNOWN;
       
@@ -1194,19 +1389,19 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-      CompactSliderComponentDescriptor transpPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiTranspProperty", MidiComponentRack::mStripTranspProperty);
-      CompactSliderComponentDescriptor delayPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiDelayProperty", MidiComponentRack::mStripDelayProperty);
-      CompactSliderComponentDescriptor lenPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiLenProperty", MidiComponentRack::mStripLenProperty);
-      CompactSliderComponentDescriptor veloPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiVeloProperty", MidiComponentRack::mStripVeloProperty);
-      CompactSliderComponentDescriptor comprPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiComprProperty", MidiComponentRack::mStripComprProperty);
-      
-      _infoRack->newComponent(&transpPropertyDesc);
-      _infoRack->newComponent(&delayPropertyDesc);
-      _infoRack->newComponent(&lenPropertyDesc);
-      _infoRack->newComponent(&veloPropertyDesc);
-      _infoRack->newComponent(&comprPropertyDesc);
-      
-      _infoRack->addStretch();
+//       CompactSliderComponentDescriptor transpPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiTranspProperty", MidiComponentRack::mStripTranspProperty);
+//       CompactSliderComponentDescriptor delayPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiDelayProperty", MidiComponentRack::mStripDelayProperty);
+//       CompactSliderComponentDescriptor lenPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiLenProperty", MidiComponentRack::mStripLenProperty);
+//       CompactSliderComponentDescriptor veloPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiVeloProperty", MidiComponentRack::mStripVeloProperty);
+//       CompactSliderComponentDescriptor comprPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiComprProperty", MidiComponentRack::mStripComprProperty);
+//
+//       _infoRack->newComponent(&transpPropertyDesc);
+//       _infoRack->newComponent(&delayPropertyDesc);
+//       _infoRack->newComponent(&lenPropertyDesc);
+//       _infoRack->newComponent(&veloPropertyDesc);
+//       _infoRack->newComponent(&comprPropertyDesc);
+//
+//       _infoRack->addStretch();
       
       addGridWidget(_infoRack, _propertyRackPos);
                   
@@ -1226,27 +1421,40 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-      ElidedLabelComponentDescriptor instrPropertyDesc(ComponentRack::propertyComponent, 
-                                                "MixerStripInstrumentProperty", 
-                                                MidiComponentRack::mStripInstrumentProperty);
-      _upperRack->newComponent(&instrPropertyDesc);
-      
-      CompactPatchEditComponentDescriptor progControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiProgramController", MusECore::CTRL_PROGRAM);
-      CompactSliderComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
-      CompactSliderComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
-      CompactSliderComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
-      
-      _upperRack->newComponent(&progControllerDesc);
-      _upperRack->newComponent(&varSendControllerDesc);
-      _upperRack->newComponent(&revSendControllerDesc);
-      _upperRack->newComponent(&choSendControllerDesc);
-      _upperRack->setFocusPolicy(Qt::NoFocus);
-      
-      
-// Keep this if dynamic layout (flip to right side) is desired.
-      _upperRack->addStretch();
+//       ElidedLabelComponentDescriptor instrPropertyDesc(ComponentRack::propertyComponent,
+//                                                 "MixerStripInstrumentProperty",
+//                                                 MidiComponentRack::mStripInstrumentProperty,
+//                                                 Qt::ElideNone);
+//       _upperRack->newComponent(&instrPropertyDesc);
+//
+//       CompactPatchEditComponentDescriptor progControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiProgramController", MusECore::CTRL_PROGRAM);
+//       _upperRack->newComponent(&progControllerDesc);
+//
+//       if(MusEGlobal::config.preferKnobsVsSliders)
+//       {
+//         CompactKnobComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
+//         CompactKnobComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
+//         CompactKnobComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
+//         _upperRack->newComponent(&varSendControllerDesc);
+//         _upperRack->newComponent(&revSendControllerDesc);
+//         _upperRack->newComponent(&choSendControllerDesc);
+//       }
+//       else
+//       {
+//         CompactSliderComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
+//         CompactSliderComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
+//         CompactSliderComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
+//         _upperRack->newComponent(&varSendControllerDesc);
+//         _upperRack->newComponent(&revSendControllerDesc);
+//         _upperRack->newComponent(&choSendControllerDesc);
+//       }
+//
+// // Keep this if dynamic layout (flip to right side) is desired.
+//       _upperRack->addStretch();
+//
+//      updateRackSizes(true, false);
 
-      updateRackSizes(true, false);
+      _upperRack->setFocusPolicy(Qt::NoFocus);
 
       addGridWidget(_upperRack, _preScrollAreaPos_A);
       
@@ -1361,14 +1569,33 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-      CompactSliderComponentDescriptor panControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiPanController", MusECore::CTRL_PANPOT);
-      _lowerRack->newComponent(&panControllerDesc);
-      
-      
-// Keep this if dynamic layout (flip to right side) is desired.
-       _lowerRack->addStretch();
-       
-      updateRackSizes(false, true);
+
+//       if(MusEGlobal::config.preferKnobsVsSliders)
+//       {
+//         CompactKnobComponentDescriptor panControllerDesc
+//         (
+//           ComponentRack::controllerComponent,
+//           "MixerStripMidiPanController",
+//           MusECore::CTRL_PANPOT
+//         );
+//         _lowerRack->newComponent(&panControllerDesc);
+//       }
+//       else
+//       {
+//         CompactSliderComponentDescriptor panControllerDesc
+//         (
+//           ComponentRack::controllerComponent,
+//           "MixerStripMidiPanController",
+//           MusECore::CTRL_PANPOT
+//         );
+//         _lowerRack->newComponent(&panControllerDesc);
+//       }
+//
+//
+// // Keep this if dynamic layout (flip to right side) is desired.
+//        _lowerRack->addStretch();
+/*
+      updateRackSizes(false, true);*/
       
       addGridWidget(_lowerRack, _postScrollAreaPos_A);
       
@@ -1515,13 +1742,169 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored), 
                     _rightSpacerPos._row, _rightSpacerPos._col, _rightSpacerPos._rowSpan, _rightSpacerPos._colSpan);
 
-      
+
+      // Now build the strip components.
+      buildStrip();
+
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       }
+
+//---------------------------------------------------
+//  buildStrip
+//    Destroy and rebuild strip components.
+//---------------------------------------------------
+
+void MidiStrip::buildStrip()
+{
+  // Destroys all components and clears the component list.
+  _infoRack->clearDelete();
+  _upperRack->clearDelete();
+  _lowerRack->clearDelete();
+
+  //---------------------------------------------------
+  //    Upper rack
+  //---------------------------------------------------
+
+  ElidedLabelComponentDescriptor instrPropertyDesc(ComponentRack::propertyComponent,
+                                            "MixerStripInstrumentProperty",
+                                            MidiComponentRack::mStripInstrumentProperty,
+                                            Qt::ElideNone);
+  _upperRack->newComponent(&instrPropertyDesc);
+
+  CompactPatchEditComponentDescriptor progControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiProgramController", MusECore::CTRL_PROGRAM);
+  _upperRack->newComponent(&progControllerDesc);
+
+  if(_preferKnobs)
+  {
+    CompactKnobComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
+    CompactKnobComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
+    CompactKnobComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
+    _upperRack->newComponent(&varSendControllerDesc);
+    _upperRack->newComponent(&revSendControllerDesc);
+    _upperRack->newComponent(&choSendControllerDesc);
+  }
+  else
+  {
+    // To avoid too bright or annoying joined borders which are twice the normal width,
+    //  show no bottom borders except for last one!
+    CompactSliderComponentDescriptor varSendControllerDesc(
+      ComponentRack::controllerComponent,
+      "MixerStripMidiVarSendController",
+      MusECore::CTRL_VARIATION_SEND,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor revSendControllerDesc(
+      ComponentRack::controllerComponent,
+      "MixerStripMidiRevSendController",
+      MusECore::CTRL_REVERB_SEND,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor choSendControllerDesc(
+      ComponentRack::controllerComponent,
+      "MixerStripMidiChoSendController",
+      MusECore::CTRL_CHORUS_SEND,
+      CompactSlider::AllBorders);
+    _upperRack->newComponent(&varSendControllerDesc);
+    _upperRack->newComponent(&revSendControllerDesc);
+    _upperRack->newComponent(&choSendControllerDesc);
+  }
+
+  // Keep this if dynamic layout (flip to right side) is desired.
+  _upperRack->addStretch();
+
+  updateRackSizes(true, false);
+
+
+  //---------------------------------------------------
+  //    Track properties rack
+  //---------------------------------------------------
+
+  if(_preferKnobs)
+  {
+    CompactKnobComponentDescriptor transpPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiTranspProperty", MidiComponentRack::mStripTranspProperty);
+    CompactKnobComponentDescriptor delayPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiDelayProperty", MidiComponentRack::mStripDelayProperty);
+    CompactKnobComponentDescriptor lenPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiLenProperty", MidiComponentRack::mStripLenProperty);
+    CompactKnobComponentDescriptor veloPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiVeloProperty", MidiComponentRack::mStripVeloProperty);
+    CompactKnobComponentDescriptor comprPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiComprProperty", MidiComponentRack::mStripComprProperty);
+
+    _infoRack->newComponent(&transpPropertyDesc);
+    _infoRack->newComponent(&delayPropertyDesc);
+    _infoRack->newComponent(&lenPropertyDesc);
+    _infoRack->newComponent(&veloPropertyDesc);
+    _infoRack->newComponent(&comprPropertyDesc);
+  }
+  else
+  {
+    // To avoid too bright or annoying joined borders which are twice the normal width,
+    //  show no bottom borders except for last one!
+    CompactSliderComponentDescriptor transpPropertyDesc(
+      ComponentRack::propertyComponent,
+      "MixerStripMidiTranspProperty",
+      MidiComponentRack::mStripTranspProperty,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor delayPropertyDesc(
+      ComponentRack::propertyComponent,
+      "MixerStripMidiDelayProperty",
+      MidiComponentRack::mStripDelayProperty,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor lenPropertyDesc(
+      ComponentRack::propertyComponent,
+      "MixerStripMidiLenProperty",
+      MidiComponentRack::mStripLenProperty,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor veloPropertyDesc(
+      ComponentRack::propertyComponent,
+      "MixerStripMidiVeloProperty",
+      MidiComponentRack::mStripVeloProperty,
+      CompactSlider::AllBordersExceptBottom);
+    CompactSliderComponentDescriptor comprPropertyDesc(
+      ComponentRack::propertyComponent,
+      "MixerStripMidiComprProperty",
+      MidiComponentRack::mStripComprProperty,
+      CompactSlider::AllBorders);
+
+    _infoRack->newComponent(&transpPropertyDesc);
+    _infoRack->newComponent(&delayPropertyDesc);
+    _infoRack->newComponent(&lenPropertyDesc);
+    _infoRack->newComponent(&veloPropertyDesc);
+    _infoRack->newComponent(&comprPropertyDesc);
+  }
+  _infoRack->addStretch();
+
+
+  //---------------------------------------------------
+  //    Lower rack
+  //---------------------------------------------------
+
+  // Pan...
+  if(_preferKnobs)
+  {
+    CompactKnobComponentDescriptor panControllerDesc
+    (
+      ComponentRack::controllerComponent,
+      "MixerStripMidiPanController",
+      MusECore::CTRL_PANPOT
+    );
+    _lowerRack->newComponent(&panControllerDesc);
+  }
+  else
+  {
+    CompactSliderComponentDescriptor panControllerDesc
+    (
+      ComponentRack::controllerComponent,
+      "MixerStripMidiPanController",
+      MusECore::CTRL_PANPOT
+    );
+    _lowerRack->newComponent(&panControllerDesc);
+  }
+
+  // Keep this if dynamic layout (flip to right side) is desired.
+  _lowerRack->addStretch();
+
+  updateRackSizes(false, true);
+}
 
 //---------------------------------------------------------
 //   updateOffState
@@ -1618,6 +2001,13 @@ void MidiStrip::updateRackSizes(bool upper, bool lower)
 
 void MidiStrip::configChanged()
 {
+  // Detect when knobs are preferred and rebuild.
+  if(_preferKnobs != MusEGlobal::config.preferKnobsVsSliders)
+  {
+    _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+    buildStrip();
+  }
+
   // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
   {

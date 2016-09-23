@@ -162,6 +162,8 @@ class AudioStrip : public Strip {
       
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
+      // Current local state of knobs versus sliders preference global setting.
+      bool _preferKnobs;
       
       QToolButton* stereo;
       QToolButton* pre;
@@ -219,6 +221,9 @@ class AudioStrip : public Strip {
       static const double gainSliderMin;
       static const double gainSliderMax;
       static const int    gainSliderPrec;
+
+      // Destroy and rebuild strip components.
+      virtual void buildStrip();
       };
 
 } // namespace MusEGui

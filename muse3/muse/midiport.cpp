@@ -1109,7 +1109,7 @@ void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
 //   midiController
 //---------------------------------------------------------
 
-MidiController* MidiPort::midiController(int num) const
+MidiController* MidiPort::midiController(int num, bool createIfNotFound) const
       {
       if (_instrument) {
             MidiControllerList* mcl = _instrument->controller();
@@ -1132,7 +1132,9 @@ MidiController* MidiPort::midiController(int num) const
                   return i->second;
             }
       
-      
+      if(!createIfNotFound)
+        return NULL;
+
       QString name = midiCtrlName(num);
       int min = 0;
       int max = 127;

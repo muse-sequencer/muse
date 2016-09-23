@@ -90,6 +90,8 @@ class MidiComponentRack : public ComponentRack
     void setComponentColors();
     
   protected slots:
+    virtual void controllerChanged(int val, int id);
+    virtual void controllerChanged(double val, int id);
     virtual void controllerChanged(double val, bool isOff, int id, int scrollMode);
     virtual void controllerMoved(double, int, bool);
     virtual void controllerPressed(int);
@@ -108,8 +110,6 @@ class MidiComponentRack : public ComponentRack
 
     
     virtual void patchEditNameClicked(QPoint p, int id);
-//     virtual void patchEditSliderRightClicked(QPoint p, int id);
-//     virtual void patchEditValueStateChanged(double value, bool off, int id, int scrollMode);
     
    public slots:
     virtual void configChanged();
@@ -141,13 +141,11 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
     
     double _initVal;
     bool _isOff;
-    QColor _barColor;
-    QColor _slotColor;
-    QColor _thumbColor;
+    QColor _readoutColor;
 
     // Slots:
     const char* _patchEditChangedSlot;
-    const char* _patchEditSliderRightClickedSlot;
+    const char* _patchEditValueRightClickedSlot;
     const char* _patchEditNameClickedSlot;
     const char* _patchEditNameRightClickedSlot;
     
@@ -158,7 +156,7 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
       _compactPatchEdit(0),
       _initVal(0.0),
       _isOff(false),
-      _patchEditChangedSlot(0), _patchEditSliderRightClickedSlot(0), _patchEditNameClickedSlot(0), _patchEditNameRightClickedSlot(0)
+      _patchEditChangedSlot(0), _patchEditValueRightClickedSlot(0), _patchEditNameClickedSlot(0), _patchEditNameRightClickedSlot(0)
       { }
                             
     CompactPatchEditComponentDescriptor(
@@ -167,10 +165,7 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
       int index = 0,
       const QString& toolTipText = QString(),
       const QString& label = QString(),
-      const QColor& borderColour = QColor(),
-      const QColor& barColour = QColor(),
-      const QColor& slotColour = QColor(),
-      const QColor& thumbColour = QColor(),
+      const QColor& readoutColour = QColor(),
       bool enabled = true,
       double initVal = 0.0,
       bool isOff = false,
@@ -185,17 +180,14 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
                           index,
                           toolTipText,
                           label,
-                          borderColour,
+                          readoutColour,
                           enabled
                          ),
       _compactPatchEdit(0),
       _initVal(initVal),
       _isOff(isOff),
-      _barColor(barColour),
-      _slotColor(slotColour),
-      _thumbColor(thumbColour),
       _patchEditChangedSlot(patchEditChangedSlot),
-      _patchEditSliderRightClickedSlot(patchEditSliderRightClickedSlot),
+      _patchEditValueRightClickedSlot(patchEditSliderRightClickedSlot),
       _patchEditNameClickedSlot(patchEditNameClickedSlot),
       _patchEditNameRightClickedSlot(patchEditNameRightClickedSlot)
       { }
@@ -241,7 +233,9 @@ class MidiStrip : public Strip {
       
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
-      
+      // Current local state of knobs versus sliders preference global setting.
+      bool _preferKnobs;
+
       CompactToolButton* _midiThru;
       int _heartBeatCounter;
       
@@ -282,6 +276,9 @@ class MidiStrip : public Strip {
       static const int yMarginHorSlider;
       static const int upperRackSpacerHeight;
       static const int rackFrameWidth;
+
+      // Destroy and rebuild strip components.
+      virtual void buildStrip();
       };
 
 } // namespace MusEGui

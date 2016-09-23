@@ -224,6 +224,12 @@ const char* audio_file_pattern[] = {
       0
 };
 
+const char* colors_config_file_pattern[] = {
+      QT_TRANSLATE_NOOP("file_patterns", "Color configuration files (*.cfc)"),
+      QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
+      0
+};
+
 Qt::KeyboardModifiers globalKeyState;
 
 // Midi Filter Parameter

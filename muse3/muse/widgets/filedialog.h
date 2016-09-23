@@ -72,9 +72,9 @@ class MFileDialog : public QFileDialog {
          QWidget* parent = 0, bool writeFlag = false);
       };
 
-QString getSaveFileName(const QString& startWidth, const char** filters,
+QString getSaveFileName(const QString& startWith, const char** filters,
          QWidget* parent, const QString& name, bool* writeWinState=NULL);
-QString getOpenFileName(const QString& startWidth, const char** filters,
+QString getOpenFileName(const QString& startWith, const char** filters,
                         QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
 QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);

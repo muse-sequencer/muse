@@ -165,21 +165,22 @@ GlobalConfigValues config = {
       QColor(54,54,54),             // partMidiDarkEventColor
       QColor(200,200,200),          // partMidiLightEventColor
 
-      QColor(228,203,36),           // sliderDefaultColor
-      QColor(158,212,86),           // panSliderColor
-      QColor(255,158,131),          // gainSliderColor
-      QColor(142, 157, 6),          // auxSliderColor
-      QColor(221,177,101),          // audioVolumeSliderColor
-      QColor(112,192,103),          // midiVolumeSliderColor
-      QColor(115,176,255),          // audioControllerSliderDefaultColor
-      QColor(166,161,242),          // audioPropertySliderDefaultColor
-      QColor(115,176,255),          // midiControllerSliderDefaultColor
-      QColor(166,161,242),          // midiPropertySliderDefaultColor
-      QColor(228,203,36),           // midiPatchSliderColor
+      QColor(0,181,241  ),          // sliderBarDefaultColor
+      QColor(228,203,36 ),          // sliderDefaultColor
+      QColor(78,172,35  ),          // panSliderColor
+      QColor(209,86,86  ),          // gainSliderColor
+      QColor(190,190,39 ),          // auxSliderColor
+      QColor(154,135,124),          // audioVolumeSliderColor
+      QColor(153,156,124),          // midiVolumeSliderColor
+      QColor(37,121,255 ),          // audioControllerSliderDefaultColor
+      QColor(220,77,255 ),          // audioPropertySliderDefaultColor
+      QColor(37,121,255 ),          // midiControllerSliderDefaultColor
+      QColor(220,77,255 ),          // midiPropertySliderDefaultColor
+      QColor(100,255,255),          // midiPatchReadoutColor
+      QColor(0,221,255  ),          // audioMeterPrimaryColor
+      QColor(0,221,255  ),          // midiMeterPrimaryColor
+      QColor(208,145,49 ),          // rackItemBackgroundColor
 
-      QColor(0,221,255),            // audioMeterPrimaryColor
-      QColor(0,221,255),            // midiMeterPrimaryColor
-      
       MusEGlobal::WaveOutLine,      // waveDrawing
       
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
@@ -284,6 +285,8 @@ GlobalConfigValues config = {
       true,                         // liveWaveUpdate
       true,                         // warnOnFileVersions Warn if file version different than current
       MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
+      true,                         // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
+      true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample

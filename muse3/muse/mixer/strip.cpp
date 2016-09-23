@@ -45,8 +45,10 @@
 #include "icons.h"
 #include "undo.h"
 #include "amixer.h"
+#include "compact_knob.h"
 #include "compact_slider.h"
 #include "elided_label.h"
+#include "menutitleitem.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -67,7 +69,18 @@ ComponentRack::ComponentRack(int id, QWidget* parent, Qt::WindowFlags f)
   _layout->setSpacing(0);
   _layout->setContentsMargins(0, 0, 0, 0);
 }
-  
+
+void ComponentRack::clearDelete()
+{
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    if(cw._widget)
+      delete cw._widget;
+  }
+  _components.clear();
+}
+
 void ComponentRack::addComponentWidget( const ComponentWidget& cw, const ComponentWidget& before )
 {
   if(cw._widget)
@@ -115,6 +128,92 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
   ComponentWidget cw;
   switch(desc->_widgetType)
   {
+    case CompactKnobComponentWidget:
+    {
+      CompactKnobComponentDescriptor* d = static_cast<CompactKnobComponentDescriptor*>(desc);
+      if(!d->_compactKnob)
+      {
+        CompactKnob* control = new CompactKnob(0,
+                                               d->_objName,
+                                               CompactKnob::Right,
+                                               d->_label);
+        d->_compactKnob = control;
+        control->setId(d->_index);
+        control->setRange(d->_min, d->_max, d->_step);
+        control->setValueDecimals(d->_precision);
+        control->setSpecialValueText(d->_specialValueText);
+        control->setHasOffMode(d->_hasOffMode);
+        control->setValueState(d->_initVal, d->_isOff);
+        control->setValPrefix(d->_prefix);
+        control->setValSuffix(d->_suffix);
+        control->setShowValue(d->_showValue);
+        // Do not set. Compact knob needs to manage it's own tooltips.
+        //control->setToolTip(d->_toolTipText);
+        control->setEnabled(d->_enabled);
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+        control->setContentsMargins(0, 0, 0, 0);
+        if(d->_color.isValid())
+          control->setFaceColor(d->_color);
+        //if(d->_rimColor.isValid())
+        //  control->setRimColor(d->_rimColor);
+        if(d->_faceColor.isValid())
+          control->setFaceColor(d->_faceColor);
+        if(d->_shinyColor.isValid())
+          control->setShinyColor(d->_shinyColor);
+
+        //control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+
+        if(d->_changedSlot)
+          connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), d->_changedSlot);
+        if(d->_movedSlot)
+          connect(control, SIGNAL(sliderMoved(double,int,bool)), d->_movedSlot);
+        if(d->_pressedSlot)
+          connect(control, SIGNAL(sliderPressed(int)), d->_pressedSlot);
+        if(d->_releasedSlot)
+          connect(control, SIGNAL(sliderReleased(int)), d->_releasedSlot);
+        if(d->_rightClickedSlot)
+          connect(control, SIGNAL(sliderRightClicked(QPoint,int)), d->_rightClickedSlot);
+
+        switch(d->_componentType)
+        {
+          case controllerComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(controllerChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(controllerMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(controllerPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(controllerReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+          break;
+
+          case propertyComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(propertyChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(propertyMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(propertyPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(propertyReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
+          break;
+        }
+      }
+
+      cw = ComponentWidget(
+                            d->_compactKnob,
+                            d->_widgetType,
+                            d->_componentType,
+                            d->_index
+                          );
+
+    }
+    break;
+
     case CompactSliderComponentWidget:
     {
       CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
@@ -130,6 +229,8 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
         control->setValueState(d->_initVal, d->_isOff);
         control->setValPrefix(d->_prefix);
         control->setValSuffix(d->_suffix);
+        control->setShowValue(d->_showValue);
+        control->setActiveBorders(d->_activeBorders);
         control->setToolTip(d->_toolTipText);
         control->setEnabled(d->_enabled);
         control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -297,6 +398,18 @@ void ComponentRack::setComponentMinValue(const ComponentWidget& cw, double min)
       }
     }
     break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(min != w->minValue())
+      {
+        w->blockSignals(true);
+        w->setMinValue(min);
+        w->blockSignals(false);
+      }
+    }
+    break;
   }
 }
 
@@ -310,6 +423,18 @@ void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max)
     case CompactSliderComponentWidget:
     {
       CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(max != w->maxValue())
+      {
+        w->blockSignals(true);
+        w->setMaxValue(max);
+        w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
       if(max != w->maxValue())
       {
         w->blockSignals(true);
@@ -346,6 +471,23 @@ void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, dou
       }
     }
     break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(min != w->minValue() || max != w->maxValue())
+      {
+        w->blockSignals(true);
+        if(min != w->minValue() && max != w->maxValue())
+          w->setRange(min, max, step, pageSize, mode);
+        else if(min != w->minValue())
+          w->setMinValue(max);
+        else
+          w->setMaxValue(max);
+        w->blockSignals(false);
+      }
+    }
+    break;
   }
 }
 
@@ -357,6 +499,10 @@ double ComponentRack::componentValue(const ComponentWidget& cw) const
     {
       case CompactSliderComponentWidget:
         return static_cast<CompactSlider*>(cw._widget)->value();
+      break;
+
+      case CompactKnobComponentWidget:
+        return static_cast<CompactKnob*>(cw._widget)->value();
       break;
     }
   }
@@ -374,6 +520,20 @@ void ComponentRack::setComponentValue(const ComponentWidget& cw, double val)
     case CompactSliderComponentWidget:
     {
       CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      //if(val != cw->_currentValue) // TODO ?
+      if(val != w->value())
+      {
+        w->blockSignals(true);
+        w->setValue(val);
+        w->blockSignals(false);
+        //cw->_currentValue = val;  // TODO ?
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
       //if(val != cw->_currentValue) // TODO ?
       if(val != w->value())
       {
@@ -405,6 +565,30 @@ void ComponentRack::setComponentText(const ComponentWidget& cw, const QString& t
       }
     }
     break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(text != w->labelText())
+      {
+        w->blockSignals(true);
+        w->setLabelText(text);
+        w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(text != w->labelText())
+      {
+        w->blockSignals(true);
+        w->setLabelText(text);
+        w->blockSignals(false);
+      }
+    }
+    break;
   }
 }
 
@@ -415,6 +599,39 @@ void ComponentRack::setComponentEnabled(const ComponentWidget& cw, bool enable)
 
   // Nothing special for now. Just operate on the widget itself.
   cw._widget->setEnabled(enable);
+}
+
+void ComponentRack::setComponentShowValue(const ComponentWidget& cw, bool show)
+{
+  if(!cw._widget)
+    return;
+
+  switch(cw._widgetType)
+  {
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(show != w->showValue())
+      {
+        w->blockSignals(true);
+        w->setShowValue(show);
+        w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(show != w->showValue())
+      {
+        w->blockSignals(true);
+        w->setShowValue(show);
+        w->blockSignals(false);
+      }
+    }
+    break;
+  }
 }
 
 //---------------------------------------------------------
@@ -432,6 +649,13 @@ void ComponentRack::configChanged()
     
     switch(cw._widgetType)
     {
+      case CompactKnobComponentWidget:
+      {
+        //CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+        //w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+      }
+      break;
+
       case CompactSliderComponentWidget:
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
@@ -747,7 +971,7 @@ void Strip::updateRouteButtons()
   {
       if (track->noInRoute())
       {
-        iR->setStyleSheet("background-color:red;");
+        iR->setStyleSheet("background-color:rgb(200, 84, 84);");
         iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
       }
       else
@@ -761,7 +985,7 @@ void Strip::updateRouteButtons()
   {
     if (track->noOutRoute())
     {
-      oR->setStyleSheet("background-color:red;");
+      oR->setStyleSheet("background-color:rgb(200, 84, 84);");
       oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
     }
     else
@@ -806,11 +1030,27 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
-//    QAction *act = menu->addAction(tr("Remove track"));
+
+    menu->addAction(new MenuTitleItem(tr("Configuration:"), menu));
+
+    QAction* act = menu->addAction(tr("Prefer knobs, not sliders"));
+    act->setData(int(2));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.preferKnobsVsSliders);
+
+    act = menu->addAction(tr("Show values in controls"));
+    act->setData(int(3));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.showControlValues);
+
+    menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
+
+//    act = menu->addAction(tr("Remove track"));
 //    act->setData(int(0));
 //    menu->addSeparator();
-    QAction *act = menu->addAction(tr("Hide strip"));
+    act = menu->addAction(tr("Hide strip"));
     act->setData(int(1));
+
     QPoint pt = QCursor::pos();
     act = menu->exec(pt, 0);
     if (!act)
@@ -822,19 +1062,41 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
     DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
 
-    //if (act->data().toInt() == 0)
-    //{
-    //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
-    //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
-    //}
-    /* else */
-    if (act->data().toInt() == 1)
+    const int sel = act->data().toInt();
+    const bool checked = act->isChecked();
+    delete menu;
+
+    switch(sel)
     {
-      DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
-      setStripVisible(false);
-      setVisible(false);
-      MusEGlobal::song->update();
+      case 0:
+        //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
+        //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+      break;
+
+      case 1:
+        DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
+        setStripVisible(false);
+        setVisible(false);
+        MusEGlobal::song->update();
+      break;
+
+      case 2:
+        if(MusEGlobal::config.preferKnobsVsSliders != checked)
+        {
+          MusEGlobal::config.preferKnobsVsSliders = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
+
+      case 3:
+        if(MusEGlobal::config.showControlValues != checked)
+        {
+          MusEGlobal::config.showControlValues = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
     }
+
     ev->accept();
     return;
   }

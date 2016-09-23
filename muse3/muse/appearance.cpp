@@ -230,28 +230,30 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x500, id, "background");
            new IdListViewItem(0x501, id, "midi label");
            new IdListViewItem(0x502, id, "drum label");
-           new IdListViewItem(0x509, id, "new drum label");
-           new IdListViewItem(0x503, id, "wave label");
-           new IdListViewItem(0x504, id, "audio output label");
-           new IdListViewItem(0x505, id, "audio input label");
-           new IdListViewItem(0x506, id, "group label");
-           new IdListViewItem(0x507, id, "aux label");
-           new IdListViewItem(0x508, id, "synth label");
-           //   0x509 is already used (between 502 and 503)
-           new IdListViewItem(0x50a, id, "Slider default");
-           new IdListViewItem(0x50b, id, "Pan slider");
-           new IdListViewItem(0x50c, id, "Gain slider");
-           new IdListViewItem(0x50d, id, "Aux slider");
-           new IdListViewItem(0x50e, id, "Audio volume");
-           new IdListViewItem(0x50f, id, "Midi volume");
-           new IdListViewItem(0x510, id, "Audio controller default");
-           new IdListViewItem(0x511, id, "Audio property default");
-           new IdListViewItem(0x512, id, "Midi controller default");
-           new IdListViewItem(0x513, id, "Midi property default");
-           new IdListViewItem(0x514, id, "Midi patch slider");
-           new IdListViewItem(0x515, id, "Audio meter primary");
-           new IdListViewItem(0x516, id, "Midi meter primary");
-           
+           new IdListViewItem(0x503, id, "new drum label");
+           new IdListViewItem(0x504, id, "wave label");
+           new IdListViewItem(0x505, id, "audio output label");
+           new IdListViewItem(0x506, id, "audio input label");
+           new IdListViewItem(0x507, id, "group label");
+           new IdListViewItem(0x508, id, "aux label");
+           new IdListViewItem(0x509, id, "synth label");
+
+           new IdListViewItem(0x50a, id, "Slider bar default");
+           new IdListViewItem(0x50b, id, "Slider default");
+           new IdListViewItem(0x50c, id, "Pan slider");
+           new IdListViewItem(0x50d, id, "Gain slider");
+           new IdListViewItem(0x50e, id, "Aux slider");
+           new IdListViewItem(0x50f, id, "Audio volume");
+           new IdListViewItem(0x510, id, "Midi volume");
+           new IdListViewItem(0x511, id, "Audio controller default");
+           new IdListViewItem(0x512, id, "Audio property default");
+           new IdListViewItem(0x513, id, "Midi controller default");
+           new IdListViewItem(0x514, id, "Midi property default");
+           new IdListViewItem(0x515, id, "Midi patch readout");
+           new IdListViewItem(0x516, id, "Audio meter primary");
+           new IdListViewItem(0x517, id, "Midi meter primary");
+           new IdListViewItem(0x518, id, "Rack item background");
+
       colorNameLineEdit->setEnabled(false);
 
       connect(loadColorsButton, SIGNAL(clicked(bool)), SLOT(loadColors()));
@@ -397,28 +399,29 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x500: return &MusEGlobal::config.mixerBg;   break;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;   break;
       case 0x502: return &MusEGlobal::config.drumTrackLabelBg;   break;
-      case 0x509: return &MusEGlobal::config.newDrumTrackLabelBg;break;
-      case 0x503: return &MusEGlobal::config.waveTrackLabelBg;   break;
-      case 0x504: return &MusEGlobal::config.outputTrackLabelBg; break;
-      case 0x505: return &MusEGlobal::config.inputTrackLabelBg;  break;
-      case 0x506: return &MusEGlobal::config.groupTrackLabelBg;  break;
-      case 0x507: return &MusEGlobal::config.auxTrackLabelBg;    break;
-      case 0x508: return &MusEGlobal::config.synthTrackLabelBg;  break;
-      //   0x509 is already used (between 502 and 503)
+      case 0x503: return &MusEGlobal::config.newDrumTrackLabelBg;break;
+      case 0x504: return &MusEGlobal::config.waveTrackLabelBg;   break;
+      case 0x505: return &MusEGlobal::config.outputTrackLabelBg; break;
+      case 0x506: return &MusEGlobal::config.inputTrackLabelBg;  break;
+      case 0x507: return &MusEGlobal::config.groupTrackLabelBg;  break;
+      case 0x508: return &MusEGlobal::config.auxTrackLabelBg;    break;
+      case 0x509: return &MusEGlobal::config.synthTrackLabelBg;  break;
       
-      case 0x50a: return &MusEGlobal::config.sliderDefaultColor;                  break;
-      case 0x50b: return &MusEGlobal::config.panSliderColor;                      break;
-      case 0x50c: return &MusEGlobal::config.gainSliderColor;                     break;
-      case 0x50d: return &MusEGlobal::config.auxSliderColor;                      break;
-      case 0x50e: return &MusEGlobal::config.audioVolumeSliderColor;              break;
-      case 0x50f: return &MusEGlobal::config.midiVolumeSliderColor;               break;
-      case 0x510: return &MusEGlobal::config.audioControllerSliderDefaultColor;   break;
-      case 0x511: return &MusEGlobal::config.audioPropertySliderDefaultColor;     break;
-      case 0x512: return &MusEGlobal::config.midiControllerSliderDefaultColor;    break;
-      case 0x513: return &MusEGlobal::config.midiPropertySliderDefaultColor;      break;
-      case 0x514: return &MusEGlobal::config.midiPatchSliderColor;                break;
-      case 0x515: return &MusEGlobal::config.audioMeterPrimaryColor;              break;
-      case 0x516: return &MusEGlobal::config.midiMeterPrimaryColor;               break;
+      case 0x50a: return &MusEGlobal::config.sliderBarDefaultColor;               break;
+      case 0x50b: return &MusEGlobal::config.sliderDefaultColor;                  break;
+      case 0x50c: return &MusEGlobal::config.panSliderColor;                      break;
+      case 0x50d: return &MusEGlobal::config.gainSliderColor;                     break;
+      case 0x50e: return &MusEGlobal::config.auxSliderColor;                      break;
+      case 0x50f: return &MusEGlobal::config.audioVolumeSliderColor;              break;
+      case 0x510: return &MusEGlobal::config.midiVolumeSliderColor;               break;
+      case 0x511: return &MusEGlobal::config.audioControllerSliderDefaultColor;   break;
+      case 0x512: return &MusEGlobal::config.audioPropertySliderDefaultColor;     break;
+      case 0x513: return &MusEGlobal::config.midiControllerSliderDefaultColor;    break;
+      case 0x514: return &MusEGlobal::config.midiPropertySliderDefaultColor;      break;
+      case 0x515: return &MusEGlobal::config.midiPatchReadoutColor;               break;
+      case 0x516: return &MusEGlobal::config.audioMeterPrimaryColor;              break;
+      case 0x517: return &MusEGlobal::config.midiMeterPrimaryColor;               break;
+      case 0x518: return &MusEGlobal::config.rackItemBackgroundColor;             break;
 
       default:
             return 0;

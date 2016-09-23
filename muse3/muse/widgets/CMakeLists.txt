@@ -34,7 +34,7 @@ QT5_WRAP_CPP (widget_mocs
       aboutbox_impl.h 
       arrangercolumns.h 
       action.h
-      bigtime.h  
+      bigtime.h
       canvas.h  
       checkbox.h
       choose_sysex.h
@@ -43,6 +43,7 @@ QT5_WRAP_CPP (widget_mocs
       comboQuant.h  
       combobox.h  
       comment.h  
+      compact_knob.h
       compact_patch_edit.h
       compact_slider.h  
       copy_on_write.h
@@ -63,6 +64,7 @@ QT5_WRAP_CPP (widget_mocs
       intlabel.h  
       knob.h  
       knob_and_meter.h
+      lcd_widgets.h
       lcombo.h  
       menutitleitem.h
       meter.h
@@ -84,6 +86,7 @@ QT5_WRAP_CPP (widget_mocs
       pitchlabel.h  
       pixmap_button.h
       plugindialog.h
+      popup_double_spinbox.h
       popupmenu.h  
       # posedit.h  
       poslabel.h  
@@ -170,6 +173,7 @@ QT5_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 file (GLOB widgets_source_files
       aboutbox_impl.cpp 
       arrangercolumns.cpp 
+      background_painter.cpp
       bigtime.cpp 
       canvas.cpp 
       checkbox.cpp 
@@ -180,6 +184,7 @@ file (GLOB widgets_source_files
       comboQuant.cpp 
       combobox.cpp  
       comment.cpp 
+      compact_knob.cpp
       compact_patch_edit.cpp
       compact_slider.cpp 
       copy_on_write.cpp
@@ -224,6 +229,7 @@ file (GLOB widgets_source_files
       pitchlabel.cpp 
       pixmap_button.cpp
       plugindialog.cpp
+      popup_double_spinbox.cpp
       popupmenu.cpp 
       # posedit.cpp 
       poslabel.cpp

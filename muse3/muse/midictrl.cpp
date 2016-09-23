@@ -693,8 +693,7 @@ int MidiController::genNum(MidiController::ControllerType t, int h, int l)
 MidiCtrlValList::MidiCtrlValList(int c)
       {
       ctrlNum = c;
-      _hwVal = CTRL_VAL_UNKNOWN;
-      _lastValidHWVal = CTRL_VAL_UNKNOWN;
+      _hwVal = _lastValidHWVal = _lastValidByte2 = _lastValidByte1 = _lastValidByte0 = CTRL_VAL_UNKNOWN;
       }
 
 //---------------------------------------------------------
@@ -1018,7 +1017,18 @@ bool MidiCtrlValList::setHwVal(const int v)
   
   _hwVal = v;
   if(_hwVal != CTRL_VAL_UNKNOWN)
+  {
     _lastValidHWVal = _hwVal;
+    const int hb = (_lastValidHWVal >> 16) & 0xff;
+    const int lb = (_lastValidHWVal >> 8) & 0xff;
+    const int pr = _lastValidHWVal & 0xff;
+    if(hb >= 0 && hb <= 127)
+      _lastValidByte2 = hb;
+    if(lb >= 0 && lb <= 127)
+      _lastValidByte1 = lb;
+    if(pr >= 0 && pr <= 127)
+      _lastValidByte0 = pr;
+  }
     
   return true;  
 }
@@ -1043,7 +1053,20 @@ bool MidiCtrlValList::setHwVals(const int v, int const lastv)
     _lastValidHWVal = _hwVal;
   else  
     _lastValidHWVal = lastv;
-    
+
+  if(_lastValidHWVal != CTRL_VAL_UNKNOWN)
+  {
+    const int hb = (_lastValidHWVal >> 16) & 0xff;
+    const int lb = (_lastValidHWVal >> 8) & 0xff;
+    const int pr = _lastValidHWVal & 0xff;
+    if(hb >= 0 && hb <= 127)
+      _lastValidByte2 = hb;
+    if(lb >= 0 && lb <= 127)
+      _lastValidByte1 = lb;
+    if(pr >= 0 && pr <= 127)
+      _lastValidByte0 = pr;
+  }
+
   return true;  
 }
 

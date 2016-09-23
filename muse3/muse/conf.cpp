@@ -22,7 +22,6 @@
 //=========================================================
 
 #include <QFile>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
 #include <QByteArray>
@@ -72,6 +71,7 @@
 #include "amixer.h"
 #include "track.h"
 #include "plugin.h"
+#include "filedialog.h"
 
 namespace MusECore {
 
@@ -749,6 +749,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.scrollableSubMenus = xml.parseInt();
                         else if (tag == "liveWaveUpdate")
                               MusEGlobal::config.liveWaveUpdate = xml.parseInt();
+                        else if (tag == "preferKnobsVsSliders")
+                              MusEGlobal::config.preferKnobsVsSliders = xml.parseInt();
+                        else if (tag == "showControlValues")
+                              MusEGlobal::config.showControlValues = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -934,33 +938,37 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "synthTrackBg")
                               MusEGlobal::config.synthTrackBg = readColor(xml);
 
-                        else if (tag == "sliderDefaultColor")
+                        else if (tag == "sliderBarDefaultColor")
+                              MusEGlobal::config.sliderBarDefaultColor = readColor(xml);
+                        else if (tag == "sliderDefaultColor2")
                               MusEGlobal::config.sliderDefaultColor = readColor(xml);
-                        else if (tag == "panSliderColor")
+                        else if (tag == "panSliderColor2")
                               MusEGlobal::config.panSliderColor = readColor(xml);
-                        else if (tag == "gainSliderColor")
+                        else if (tag == "gainSliderColor2")
                               MusEGlobal::config.gainSliderColor = readColor(xml);
-                        else if (tag == "auxSliderColor")
+                        else if (tag == "auxSliderColor2")
                               MusEGlobal::config.auxSliderColor = readColor(xml);
-                        else if (tag == "audioVolumeSliderColor")
+                        else if (tag == "audioVolumeSliderColor2")
                               MusEGlobal::config.audioVolumeSliderColor = readColor(xml);
-                        else if (tag == "midiVolumeSliderColor")
+                        else if (tag == "midiVolumeSliderColor2")
                               MusEGlobal::config.midiVolumeSliderColor = readColor(xml);
-                        else if (tag == "audioControllerSliderDefaultColor")
+                        else if (tag == "audioControllerSliderDefaultColor2")
                               MusEGlobal::config.audioControllerSliderDefaultColor = readColor(xml);
-                        else if (tag == "audioPropertySliderDefaultColor")
+                        else if (tag == "audioPropertySliderDefaultColor2")
                               MusEGlobal::config.audioPropertySliderDefaultColor = readColor(xml);
-                        else if (tag == "midiControllerSliderDefaultColor")
+                        else if (tag == "midiControllerSliderDefaultColor2")
                               MusEGlobal::config.midiControllerSliderDefaultColor = readColor(xml);
-                        else if (tag == "midiPropertySliderDefaultColor")
+                        else if (tag == "midiPropertySliderDefaultColor2")
                               MusEGlobal::config.midiPropertySliderDefaultColor = readColor(xml);
-                        else if (tag == "midiPatchSliderColor")
-                              MusEGlobal::config.midiPatchSliderColor = readColor(xml);
+                        else if (tag == "midiPatchReadoutColor")
+                              MusEGlobal::config.midiPatchReadoutColor = readColor(xml);
                         else if (tag == "audioMeterPrimaryColor")
                               MusEGlobal::config.audioMeterPrimaryColor = readColor(xml);
                         else if (tag == "midiMeterPrimaryColor")
                               MusEGlobal::config.midiMeterPrimaryColor = readColor(xml);
-                        
+                        else if (tag == "rackItemBackgroundColor")
+                              MusEGlobal::config.rackItemBackgroundColor = readColor(xml);
+
                         else if (tag == "extendedMidi")
                               MusEGlobal::config.extendedMidi = xml.parseInt();
                         else if (tag == "midiExportDivision")
@@ -1512,20 +1520,22 @@ static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partCol
       xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
       xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
 
-      xml.colorTag(level, "sliderDefaultColor",  MusEGlobal::config.sliderDefaultColor);
-      xml.colorTag(level, "panSliderColor",  MusEGlobal::config.panSliderColor);
-      xml.colorTag(level, "gainSliderColor",  MusEGlobal::config.gainSliderColor);
-      xml.colorTag(level, "auxSliderColor",  MusEGlobal::config.auxSliderColor);
-      xml.colorTag(level, "audioVolumeSliderColor",  MusEGlobal::config.audioVolumeSliderColor);
-      xml.colorTag(level, "midiVolumeSliderColor",  MusEGlobal::config.midiVolumeSliderColor);
-      xml.colorTag(level, "audioControllerSliderDefaultColor",  MusEGlobal::config.audioControllerSliderDefaultColor);
-      xml.colorTag(level, "audioPropertySliderDefaultColor",  MusEGlobal::config.audioPropertySliderDefaultColor);
-      xml.colorTag(level, "midiControllerSliderDefaultColor",  MusEGlobal::config.midiControllerSliderDefaultColor);
-      xml.colorTag(level, "midiPropertySliderDefaultColor",  MusEGlobal::config.midiPropertySliderDefaultColor);
-      xml.colorTag(level, "midiPatchSliderColor",  MusEGlobal::config.midiPatchSliderColor);
+      xml.colorTag(level, "sliderBarDefaultColor",  MusEGlobal::config.sliderBarDefaultColor);
+      xml.colorTag(level, "sliderDefaultColor2",  MusEGlobal::config.sliderDefaultColor);
+      xml.colorTag(level, "panSliderColor2",  MusEGlobal::config.panSliderColor);
+      xml.colorTag(level, "gainSliderColor2",  MusEGlobal::config.gainSliderColor);
+      xml.colorTag(level, "auxSliderColor2",  MusEGlobal::config.auxSliderColor);
+      xml.colorTag(level, "audioVolumeSliderColor2",  MusEGlobal::config.audioVolumeSliderColor);
+      xml.colorTag(level, "midiVolumeSliderColor2",  MusEGlobal::config.midiVolumeSliderColor);
+      xml.colorTag(level, "audioControllerSliderDefaultColor2",  MusEGlobal::config.audioControllerSliderDefaultColor);
+      xml.colorTag(level, "audioPropertySliderDefaultColor2",  MusEGlobal::config.audioPropertySliderDefaultColor);
+      xml.colorTag(level, "midiControllerSliderDefaultColor2",  MusEGlobal::config.midiControllerSliderDefaultColor);
+      xml.colorTag(level, "midiPropertySliderDefaultColor2",  MusEGlobal::config.midiPropertySliderDefaultColor);
+      xml.colorTag(level, "midiPatchReadoutColor",  MusEGlobal::config.midiPatchReadoutColor);
       xml.colorTag(level, "audioMeterPrimaryColor",  MusEGlobal::config.audioMeterPrimaryColor);
       xml.colorTag(level, "midiMeterPrimaryColor",  MusEGlobal::config.midiMeterPrimaryColor);
-      
+      xml.colorTag(level, "rackItemBackgroundColor",  MusEGlobal::config.rackItemBackgroundColor);
+
       xml.colorTag(level, "transportHandleColor",  MusEGlobal::config.transportHandleColor);
       xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
       xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
@@ -1582,7 +1592,10 @@ bool MusE::loadConfigurationColors(QWidget* parent)
 {
   if(!parent)
     parent = this;
-  QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+  //QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+  QString file = MusEGui::getOpenFileName(QString("templates"), MusEGlobal::colors_config_file_pattern, this,
+                                               tr("Load configuration colors"), NULL, MusEGui::MFileDialog::GLOBAL_VIEW);
+
   if(file.isEmpty())
     return false;
   
@@ -1606,9 +1619,15 @@ bool MusE::saveConfigurationColors(QWidget* parent)
 {
   if(!parent)
     parent = this;
-  QString file = QFileDialog::getSaveFileName(parent, tr("Save configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+//   QString file = QFileDialog::getSaveFileName(parent, tr("Save configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
+//   if(file.isEmpty())
+//     return false;
+  QString file = MusEGui::getSaveFileName(QString("templates"), MusEGlobal::colors_config_file_pattern, this,
+                                               tr("Save configuration colors"));
+
   if(file.isEmpty())
     return false;
+
 
   if(QFile::exists(file))
   {
@@ -1729,6 +1748,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
       xml.intTag(level, "scrollableSubMenus", MusEGlobal::config.scrollableSubMenus);
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
+      xml.intTag(level, "preferKnobsVsSliders", MusEGlobal::config.preferKnobsVsSliders);
+      xml.intTag(level, "showControlValues", MusEGlobal::config.showControlValues);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 

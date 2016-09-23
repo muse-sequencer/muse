@@ -2565,9 +2565,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   if(!track && !part)
     return -1;
     
-  enum { ADD_EVENT, CLEAR_EVENT };
-  QMenu* menu = new QMenu;
-
+  enum { BYPASS_CONTROLLER, ADD_EVENT, CLEAR_EVENT };
   bool isEvent = false;
   
   MidiTrack* mt;
@@ -2581,8 +2579,8 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   
   int dctl = ctlnum;
   // Is it a drum controller, according to the track port's instrument?
-  MidiController *mc = mp->drumController(ctlnum);
-  if(mc)
+  MidiController *dmc = mp->drumController(ctlnum);
+  if(dmc)
   {
     // Change the controller event's index into the drum map to an instrument note.
     int note = ctlnum & 0x7f;
@@ -2645,6 +2643,38 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     }  
   }
   
+  int initval = 0;
+  MidiController* mc = mp->midiController(ctlnum, false);
+  if(mc)
+  {
+    const int bias = mc->bias();
+    initval = mc->initVal();
+    if(initval == CTRL_VAL_UNKNOWN)
+    {
+      if(ctlnum == CTRL_PROGRAM)
+        // Special for program controller: Set HBank and LBank off (0xff), and program to 0.
+        initval = 0xffff00;
+      else
+       // Otherwise start with the bias.
+       initval = bias;
+    }
+    else
+     // Auto bias.
+     initval += bias;
+  }
+  const int cur_val = mp->hwCtrlState(channel, dctl);
+
+  QMenu* menu = new QMenu;
+
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Controller:"), menu));
+  QAction* bypassEvent = new QAction(menu);
+  menu->addAction(bypassEvent);
+  bypassEvent->setText(tr("bypass"));
+  bypassEvent->setData(BYPASS_CONTROLLER);
+  bypassEvent->setEnabled(true);
+  bypassEvent->setCheckable(true);
+  bypassEvent->setChecked(cur_val == CTRL_VAL_UNKNOWN);
+
   menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
   
   QAction* addEvent = new QAction(menu);
@@ -2667,23 +2697,42 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     return -1;
   }
   
-  int sel = act->data().toInt();
+  const int sel = act->data().toInt();
+  const bool checked = act->isChecked();
   delete menu;
   
   switch(sel)
   {
+    case BYPASS_CONTROLLER:
+    {
+      if(checked)
+        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, dctl, MusECore::CTRL_VAL_UNKNOWN);
+      else
+      {
+        int v = mp->lastValidHWCtrlState(channel, dctl);
+        if(v == MusECore::CTRL_VAL_UNKNOWN)
+          v = initval;
+        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, dctl, v);
+      }
+    }
+    break;
+
     case ADD_EVENT:
     {
-          int val = mp->hwCtrlState(channel, dctl);
-          if(val == CTRL_VAL_UNKNOWN) 
-            return -1;
+          int v = cur_val;
+          if(v == CTRL_VAL_UNKNOWN)
+          {
+            v = mp->lastValidHWCtrlState(channel, dctl);
+            if(v == MusECore::CTRL_VAL_UNKNOWN)
+              v = initval;
+          }
           Event e(Controller);
           e.setA(ctlnum);
-          e.setB(val);
+          e.setB(v);
           // Do we replace an old event?
           if(isEvent)
           {
-            if(ev.dataB() == val) // Don't bother if already set.
+            if(ev.dataB() == v) // Don't bother if already set.
               return -1;
               
             e.setTick(tick - part->tick());
