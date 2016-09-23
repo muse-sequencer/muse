@@ -1593,7 +1593,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   if(!parent)
     parent = this;
   //QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
-  QString file = MusEGui::getOpenFileName(QString("templates"), MusEGlobal::colors_config_file_pattern, this,
+  QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
                                                tr("Load configuration colors"), NULL, MusEGui::MFileDialog::GLOBAL_VIEW);
 
   if(file.isEmpty())
@@ -1619,10 +1619,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
 {
   if(!parent)
     parent = this;
-//   QString file = QFileDialog::getSaveFileName(parent, tr("Save configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
-//   if(file.isEmpty())
-//     return false;
-  QString file = MusEGui::getSaveFileName(QString("templates"), MusEGlobal::colors_config_file_pattern, this,
+  QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
                                                tr("Save configuration colors"));
 
   if(file.isEmpty())
