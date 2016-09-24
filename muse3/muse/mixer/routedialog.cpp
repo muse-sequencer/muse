@@ -1111,6 +1111,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             //painter->setPen(ch_struct._selected ? option.palette.highlightedText().color() : option.palette.text().color());
             //painter->setPen(ch_struct._routeSelected ? Qt::yellow : option.palette.text().color());
             painter->setPen(option.palette.text().color());
+            painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawPath(path);
 
             //const int ch_num = (i + 1) % 10;
@@ -1149,6 +1150,9 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
   //             painter->setPen(ch_struct._selected ? option.palette.highlight().color() : option.palette.text().color());
 //               painter->setPen(color);
 
+              // Need sharp lines here.
+              painter->setRenderHint(QPainter::Antialiasing, false);
+              
               const int line_x = x_offset + ch_rect.x() + RouteDialog::channelDotDiameter / 2;
               const int line_y = option.rect.y() + ch_struct._lineY;
               if(_isInput)
