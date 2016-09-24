@@ -1221,9 +1221,8 @@ void MPConfig::deviceSelectionChanged()
     // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
     case MusECore::MidiDevice::ALSA_MIDI:
     {
-      snd_seq_addr_t* addr = static_cast<snd_seq_addr_t*>(md->inClientPort());
       // Allow removing ('purging') an unavailable ALSA device.
-      if(addr->client == SND_SEQ_ADDRESS_UNKNOWN || addr->port == SND_SEQ_ADDRESS_UNKNOWN)
+      if(md->isAddressUnknown())
         removeDevice->setEnabled(true);
       else
         removeDevice->setEnabled(false);
@@ -1616,14 +1615,17 @@ void MPConfig::removeInstanceClicked()
 
       MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
             
-      // Is it an ALSA midi device? 
-      // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
-      if(md->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
+      switch(md->deviceType())
       {
-        snd_seq_addr_t* addr = static_cast<snd_seq_addr_t*>(md->inClientPort());
-        // Allow removing ('purging') an unavailable ALSA device.
-        if(addr->client != SND_SEQ_ADDRESS_UNKNOWN && addr->port != SND_SEQ_ADDRESS_UNKNOWN)
-          return;
+        case MusECore::MidiDevice::JACK_MIDI:
+        case MusECore::MidiDevice::SYNTH_MIDI:
+        break;
+
+        case MusECore::MidiDevice::ALSA_MIDI:
+          // Allow removing ('purging') an unavailable ALSA device.
+          if(!md->isAddressUnknown())
+            return;
+        break;
       }
       
       MusECore::SynthI* s = dynamic_cast<MusECore::SynthI*>(md);

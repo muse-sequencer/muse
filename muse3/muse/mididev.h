@@ -119,12 +119,18 @@ class MidiDevice {
       virtual MidiDeviceType deviceType() const = 0;
       virtual QString deviceTypeString();
       
+      // The meaning of the returned pointer depends on the driver.
+      // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
       virtual void* inClientPort() { return 0; }
       virtual void* outClientPort() { return 0; }
-      // These two are generally for ALSA.
+
+      // These three are generally for ALSA.
       virtual void setAddressClient(int) { }
       virtual void setAddressPort(int) { }
-      
+      // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to
+      //  mean 'unavailable' if either client and port equal it.
+      virtual bool isAddressUnknown() const { return true; }
+
       virtual QString open() = 0;
       virtual void close() = 0;
       virtual void writeRouting(int, Xml&) const {  };
