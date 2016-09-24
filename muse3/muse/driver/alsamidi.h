@@ -85,7 +85,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void setAddressClient(int client) { adr.client = client; }
       virtual void setAddressPort(int port) { adr.port = port; }
       // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to mean 'unavailable' - if BOTH client and port equal it.
-      virtual bool isAddressUnknown() const { return adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port != SND_SEQ_ADDRESS_UNKNOWN; }
+      virtual bool isAddressUnknown() const { return adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN; }
       };
 
 extern bool initMidiAlsa();
