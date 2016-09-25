@@ -1205,41 +1205,50 @@ void MPConfig::selectionChanged()
 void MPConfig::deviceSelectionChanged()
 {
   DEBUG_PRST_ROUTES(stderr, "synthesizerConfig::deviceSelectionChanged() currentItem:%p\n", instanceList->currentItem());
-  QTableWidgetItem* item = instanceList->currentItem();
-  if(!item || !item->data(DeviceRole).canConvert<void*>())
+  bool can_remove = false;
+  bool can_rename = false;
+
+  int rowSelCount = 0;
+  const int sz = instanceList->rowCount();
+  for(int i = 0; i < sz; ++i)
   {
-    renameDevice->setEnabled(false);
-    removeDevice->setEnabled(false);
-    return;
+    QTableWidgetItem* item = instanceList->item(i, INSTCOL_NAME);
+    if(!item || !item->data(DeviceRole).canConvert<void*>() || !item->isSelected())
+      continue;
+
+    MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+    if(!md)
+      continue;
+
+    ++rowSelCount;
+
+    switch(md->deviceType())
+    {
+      // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
+      case MusECore::MidiDevice::ALSA_MIDI:
+        // Allow removing ('purging') an unavailable ALSA device.
+        if(md->isAddressUnknown())
+          can_remove = true;
+      break;
+
+      case MusECore::MidiDevice::JACK_MIDI:
+        can_remove = true;
+        can_rename = true;
+      break;
+
+      case MusECore::MidiDevice::SYNTH_MIDI:
+        can_remove = true;
+      break;
+    }
+
+    // Optimize: No need to check further.
+    if(can_rename && can_remove && rowSelCount >= 2)
+      break;
   }
   
-  MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
-
-  switch(md->deviceType())
-  {
-    // Is it an ALSA midi device? 
-    // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
-    case MusECore::MidiDevice::ALSA_MIDI:
-    {
-      // Allow removing ('purging') an unavailable ALSA device.
-      if(md->isAddressUnknown())
-        removeDevice->setEnabled(true);
-      else
-        removeDevice->setEnabled(false);
-      renameDevice->setEnabled(false);
-      return;
-    }
-    
-    case MusECore::MidiDevice::JACK_MIDI:
-      renameDevice->setEnabled(true);
-      removeDevice->setEnabled(true);
-    break;
-    
-    case MusECore::MidiDevice::SYNTH_MIDI:
-      renameDevice->setEnabled(false);
-      removeDevice->setEnabled(true);
-    break;
-  }
+  // Only one rename at a time, for now...
+  renameDevice->setEnabled(can_rename && rowSelCount == 1);
+  removeDevice->setEnabled(can_remove);
 }
 
 //---------------------------------------------------------
@@ -1606,43 +1615,94 @@ void MPConfig::addInstanceClicked()
 //---------------------------------------------------------
 
 void MPConfig::removeInstanceClicked()
-      {
-      QTableWidgetItem* item = instanceList->currentItem();
-      if (item == 0)
-            return;
-      if(!item->data(DeviceRole).canConvert<void*>())
-        return;
+{
+  const int sz = instanceList->rowCount();
+  if(sz == 0)
+    return;
 
-      MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
-            
-      switch(md->deviceType())
-      {
-        case MusECore::MidiDevice::JACK_MIDI:
-        case MusECore::MidiDevice::SYNTH_MIDI:
-        break;
+  bool doupd = false;
 
-        case MusECore::MidiDevice::ALSA_MIDI:
-          // Allow removing ('purging') an unavailable ALSA device.
-          if(!md->isAddressUnknown())
-            return;
-        break;
-      }
-      
-      MusECore::SynthI* s = dynamic_cast<MusECore::SynthI*>(md);
-      if(s)
-        MusEGlobal::audio->msgRemoveTrack(s);
-      else
-      {
-        MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+  // Two passes: One for synths and one for all others (so far).
+
+  //
+  // Others:
+  //
+  bool isIdle = false;
+  for(int i = 0; i < sz; ++i)
+  {
+    QTableWidgetItem* item = instanceList->item(i, INSTCOL_NAME);
+    if(!item || !item->data(DeviceRole).canConvert<void*>() || !item->isSelected())
+      continue;
+    MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+    if(!md)
+      continue;
+
+    switch(md->deviceType())
+    {
+      // TODO: For now, don't allow creating/removing/renaming them until we decide on addressing strategy.
+      case MusECore::MidiDevice::ALSA_MIDI:
+        // Allow removing ('purging') an unavailable ALSA device.
+        if(!md->isAddressUnknown())
+          break;
+      // Fall through.
+      case MusECore::MidiDevice::JACK_MIDI:
+        if(!isIdle)
+        {
+          MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+          isIdle = true;
+        }
         if(md->midiPort() != -1)
           MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(0);
         //MusEGlobal::midiDevices.erase(imd);
         MusEGlobal::midiDevices.remove(md);
-        MusEGlobal::audio->msgIdle(false);
-        MusEGlobal::song->update(SC_CONFIG);
+      break;
+
+      case MusECore::MidiDevice::SYNTH_MIDI:
+      break;
+    }
+  }
+  if(isIdle)
+  {
+    MusEGlobal::audio->msgIdle(false);
+    // Defer update until end, otherwise instanceList is wiped and
+    //  rebuilt upon songChanged so next section won't work!
+    doupd = true;
+  }
+
+  //
+  // Synths:
+  //
+  MusECore::Undo operations;
+  for(int i = 0; i < sz; ++i)
+  {
+    QTableWidgetItem* item = instanceList->item(i, INSTCOL_NAME);
+    if(!item || !item->data(DeviceRole).canConvert<void*>() || !item->isSelected())
+      continue;
+    MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+    if(!md)
+      continue;
+
+    switch(md->deviceType())
+    {
+      case MusECore::MidiDevice::ALSA_MIDI:
+      case MusECore::MidiDevice::JACK_MIDI:
+      break;
+
+      case MusECore::MidiDevice::SYNTH_MIDI:
+      {
+        MusECore::SynthI* s = dynamic_cast<MusECore::SynthI*>(md);
+        if(s)
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(s), s));
       }
-      
-      }
+      break;
+    }
+  }
+  if(!operations.empty())
+    MusEGlobal::song->applyOperationGroup(operations, true);
+
+  if(doupd)
+    MusEGlobal::song->update(SC_CONFIG);
+}
 
 //---------------------------------------------------------
 //   renameInstanceClicked
