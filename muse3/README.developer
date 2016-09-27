@@ -1,0 +1,37 @@
+MusE is really not big on making developers do it the MusE way.
+For good and bad (probably mostly bad) it's a bit of happy anarchy out there.
+But whatever, it's a labor of love.
+
+Anyway, maybe some things should be a bit more clearly defined so I started this 
+document with some pointers for best practices and procedures.
+
+* STYLE *
+whatever floats your boat. Okay, maybe try to keep it atleast somewhat consistent :)
+
+* TOOLS *
+MusE is highly dependent on Qt, mostly this is a good thing, especially as we want to
+make MusE even more portable. So, when implementing stuff that requires some support 
+library, do check if Qt can provide the necessary functionality. Many times it can.
+
+* DEVELOPMENT *
+
+
+* RELEASE PROCEDURE *
+When making a release there are some steps that should always be done to make the
+packaging consistent and traceable.
+
+1. make sure that version info is updated.
+   CMakeLists.txt:SET(MusE_VERSION       "3.0.0pre1")
+   CMakeLists.txt:SET(MusE_VERSION_FULL  "3.0.0pre1")
+2. add a release-line to the ChangeLog (search for old ones for some format hints)
+3. commit everything to git
+4. now create the tarball from the build dir (could be a good idea to create a new build dir)
+   $ make clean (otherwise the tarball will way too big)
+   $ make package_source
+   feel free to ctrl-c out of this as soon as it is finished
+5. verify that the built package has the right name and can be built
+6. make a tag in git for this particular checkin when you are satisfied the release is correct
+7. create a releasenote
+8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
+   it's time)
+
