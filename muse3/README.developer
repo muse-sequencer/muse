@@ -31,6 +31,8 @@ packaging consistent and traceable.
    feel free to ctrl-c out of this as soon as it is finished
 5. verify that the built package has the right name and can be built
 6. make a tag in git for this particular checkin when you are satisfied the release is correct
+   'git tag -l' lists all of the previous tags and gives a hint as to the format to use.
+   
 7. create a releasenote
 8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
    it's time)
