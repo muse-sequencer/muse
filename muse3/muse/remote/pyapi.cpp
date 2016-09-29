@@ -353,9 +353,11 @@ PyObject* createPart(PyObject*, PyObject* args)
             }
 
       QString qtrackname(trackname);
-      MidiTrack* track = (MidiTrack*) MusEGlobal::song->findTrack(trackname);
-      if (track == NULL)
+      Track* t = MusEGlobal::song->findTrack(trackname);
+      if (t == NULL || t->isMidiTrack() == false)
             return NULL;
+
+      MidiTrack* track = (MidiTrack*)t;
 
       MidiPart* npart = new MidiPart(track);
       npart->setTick(tick);
@@ -511,7 +513,7 @@ PyObject* setMidiTrackParameter(PyObject*, PyObject* args)
             return NULL;
 
       Track* track = MusEGlobal::song->findTrack(QString(trackname));
-      if (track == NULL)
+      if (track == NULL || track->isMidiTrack() == false)
             return NULL;
 
       MidiTrack* mt = (MidiTrack*) track;

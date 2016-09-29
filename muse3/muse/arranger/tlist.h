@@ -139,7 +139,6 @@ class TList : public QWidget {
       void copyTrackDrummap(MusECore::MidiTrack*, bool full);
 
    signals:
-      void selectionChanged(MusECore::Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
       void verticalScrollSetYpos(int ypos);

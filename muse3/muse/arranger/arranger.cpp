@@ -429,9 +429,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       tlistLayout->addWidget(header);
       tlistLayout->addWidget(list);
       
-      connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SLOT(trackSelectionChanged()));
-      connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SIGNAL(selectionChanged()));
-      connect(list, SIGNAL(selectionChanged(MusECore::Track*)), midiTrackInfo, SLOT(setTrack(MusECore::Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
 
@@ -539,7 +536,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(MusEGlobal::song,   SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
-      connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
+
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
       connect(canvas, SIGNAL(dropMidiFile(const QString&)), SIGNAL(dropMidiFile(const QString&)));
 
@@ -663,9 +660,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
               MusECore::Track* t = w->getTrack();
               if(t)
               {
-                MusECore::TrackList* tl = MusEGlobal::song->tracks();
-                MusECore::iTrack it = tl->find(t);
-                if(it == tl->end())
+                if(!MusEGlobal::song->trackExists(t))
                 {
                   delete w;
                   trackInfoWidget->addWidget(0, 2);
@@ -683,9 +678,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
               MusECore::Track* t = w->getTrack();
               if(t)
               {
-                MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
-                MusECore::iMidiTrack it = tl->find(t);
-                if(it == tl->end())
+                if(!MusEGlobal::song->trackExists(t))
                 {
                   delete w;
                   trackInfoWidget->addWidget(0, 3);
@@ -753,7 +746,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
 
 void Arranger::trackSelectionChanged()
       {
-      MusECore::Track* track = MusEGlobal::song->tracks()->currentSelection();
+      MusECore::Track* track = MusEGlobal::song->selectedTrack();
       if (track == selected)
             return;
       selected = track;

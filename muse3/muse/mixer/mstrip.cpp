@@ -1298,8 +1298,8 @@ void MidiComponentRack::setComponentColors()
 //   MidiStrip
 //---------------------------------------------------------
 
-MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
-   : Strip(parent, t, hasHandle)
+MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bool isEmbedded)
+   : Strip(parent, t, hasHandle, isEmbedded)
       {
       inHeartBeat = true;
       _heartBeatCounter = 0;
@@ -1317,34 +1317,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       t->setActivity(0);
       t->setLastActivity(0);
       
-//       _preScrollAreaPos_A  = GridPosStruct(_curGridRow,     0, 1, 3);
-//
-//       _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 1, 2, 1, 1);
-//       _sliderPos           = GridPosStruct(_curGridRow + 1, 0, 4, 2);
-//
-//       _infoSpacerTop       = GridPosStruct(_curGridRow + 2, 2, 1, 1);
-//
-//       _propertyRackPos     = GridPosStruct(_curGridRow + 3, 2, 1, 1);
-//
-//       _infoSpacerBottom    = GridPosStruct(_curGridRow + 4, 2, 1, 1);
-//
-//       _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
-//       _postScrollAreaPos_B = GridPosStruct(_curGridRow + 5, 2, 1, 1);
-//
-//       _postScrollAreaPos_A = GridPosStruct(_curGridRow + 6, 0, 1, 3);
-//
-//       _offPos              = GridPosStruct(_curGridRow + 7, 0, 1, 1);
-//       _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
-//
-//       _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
-//       _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
-//
-//       _routesPos           = GridPosStruct(_curGridRow + 9, 0, 1, 2);
-//
-//       _automationPos       = GridPosStruct(_curGridRow + 10, 0, 1, 2);
-//
-//       _rightSpacerPos      = GridPosStruct(_curGridRow + 10, 2, 1, 1);
-
       _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
       _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 1, 0, 1, 3);
@@ -1389,20 +1361,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-//       CompactSliderComponentDescriptor transpPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiTranspProperty", MidiComponentRack::mStripTranspProperty);
-//       CompactSliderComponentDescriptor delayPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiDelayProperty", MidiComponentRack::mStripDelayProperty);
-//       CompactSliderComponentDescriptor lenPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiLenProperty", MidiComponentRack::mStripLenProperty);
-//       CompactSliderComponentDescriptor veloPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiVeloProperty", MidiComponentRack::mStripVeloProperty);
-//       CompactSliderComponentDescriptor comprPropertyDesc(ComponentRack::propertyComponent, "MixerStripMidiComprProperty", MidiComponentRack::mStripComprProperty);
-//
-//       _infoRack->newComponent(&transpPropertyDesc);
-//       _infoRack->newComponent(&delayPropertyDesc);
-//       _infoRack->newComponent(&lenPropertyDesc);
-//       _infoRack->newComponent(&veloPropertyDesc);
-//       _infoRack->newComponent(&comprPropertyDesc);
-//
-//       _infoRack->addStretch();
-      
       addGridWidget(_infoRack, _propertyRackPos);
                   
       grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
@@ -1420,39 +1378,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
       _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
-
-//       ElidedLabelComponentDescriptor instrPropertyDesc(ComponentRack::propertyComponent,
-//                                                 "MixerStripInstrumentProperty",
-//                                                 MidiComponentRack::mStripInstrumentProperty,
-//                                                 Qt::ElideNone);
-//       _upperRack->newComponent(&instrPropertyDesc);
-//
-//       CompactPatchEditComponentDescriptor progControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiProgramController", MusECore::CTRL_PROGRAM);
-//       _upperRack->newComponent(&progControllerDesc);
-//
-//       if(MusEGlobal::config.preferKnobsVsSliders)
-//       {
-//         CompactKnobComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
-//         CompactKnobComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
-//         CompactKnobComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
-//         _upperRack->newComponent(&varSendControllerDesc);
-//         _upperRack->newComponent(&revSendControllerDesc);
-//         _upperRack->newComponent(&choSendControllerDesc);
-//       }
-//       else
-//       {
-//         CompactSliderComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
-//         CompactSliderComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
-//         CompactSliderComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
-//         _upperRack->newComponent(&varSendControllerDesc);
-//         _upperRack->newComponent(&revSendControllerDesc);
-//         _upperRack->newComponent(&choSendControllerDesc);
-//       }
-//
-// // Keep this if dynamic layout (flip to right side) is desired.
-//       _upperRack->addStretch();
-//
-//      updateRackSizes(true, false);
 
       _upperRack->setFocusPolicy(Qt::NoFocus);
 
@@ -1569,34 +1494,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle)
       _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-
-//       if(MusEGlobal::config.preferKnobsVsSliders)
-//       {
-//         CompactKnobComponentDescriptor panControllerDesc
-//         (
-//           ComponentRack::controllerComponent,
-//           "MixerStripMidiPanController",
-//           MusECore::CTRL_PANPOT
-//         );
-//         _lowerRack->newComponent(&panControllerDesc);
-//       }
-//       else
-//       {
-//         CompactSliderComponentDescriptor panControllerDesc
-//         (
-//           ComponentRack::controllerComponent,
-//           "MixerStripMidiPanController",
-//           MusECore::CTRL_PANPOT
-//         );
-//         _lowerRack->newComponent(&panControllerDesc);
-//       }
-//
-//
-// // Keep this if dynamic layout (flip to right side) is desired.
-//        _lowerRack->addStretch();
-/*
-      updateRackSizes(false, true);*/
-      
       addGridWidget(_lowerRack, _postScrollAreaPos_A);
       
       _upperRack->setEnabled(!t->off());
@@ -2376,8 +2273,6 @@ void MidiStrip::oRoutePressed()
 
 void MidiStrip::resizeEvent(QResizeEvent* ev)
 {
-  //fprintf(stderr, "MidiStrip::resizeEvent\n");  
-  
   ev->ignore();
   Strip::resizeEvent(ev);
 }  
@@ -2387,9 +2282,18 @@ void MidiStrip::incVolume(int v)
   if (isSelected())
     slider->incValue(v);
 }
-void MidiStrip::pan(int)
+void MidiStrip::incPan(int val)
 {
-
+  if(!isSelected())
+    return;
+  // Be sure to search all racks. Even if pan is in multiple racks, only one hit is
+  //  needed since after the value is set, the other pan controls will be updated too.
+  if(ComponentWidget* cw = _upperRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::CTRL_PANPOT))
+    _upperRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _infoRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::CTRL_PANPOT))
+    _infoRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _lowerRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::CTRL_PANPOT))
+    _lowerRack->incComponentValue(*cw, val, false);
 }
 
 } // namespace MusEGui

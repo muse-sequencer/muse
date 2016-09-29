@@ -3197,10 +3197,6 @@ void MusE::showMixer1(bool on)
       if (on && mixer1 == 0) {
             mixer1 = new MusEGui::AudioMixerApp(NULL, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
-
-            connect(_arranger->getTrackList(), SIGNAL(selectionChanged(MusECore::Track*)), mixer1, SLOT(selectTrackStrip(MusECore::Track*)));
-            connect(mixer1, SIGNAL(selectionChanged(MusECore::Track*, bool)), _arranger->getTrackList(),SLOT(selectTrack(MusECore::Track*, bool)));
-
             mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
             mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
             }

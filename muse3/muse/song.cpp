@@ -213,7 +213,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
           MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
           if (SynthI::visible()) {
-            deselectTracks();
+            selectAllTracks(false);
             si->setSelected(true);
             update();
           }
@@ -221,7 +221,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         }
       }
       if (SynthI::visible()) {
-        deselectTracks();
+        selectAllTracks(false);
         si->setSelected(true);
         update(SC_TRACK_SELECTION);
       }
@@ -237,7 +237,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       
       Track* t = addTrack((Track::TrackType)n, insertAt);
       if (t->isVisible()) {
-        deselectTracks();
+        selectAllTracks(false);
         t->setSelected(true);
         update(SC_TRACK_SELECTION);
       }
@@ -508,7 +508,7 @@ void Song::duplicateTracks()
           QString tempName;
           while(true) {
             tempName = track_name.left(numberIndex+1) + QString::number(++counter);
-            Track* track = MusEGlobal::song->findTrack(tempName);
+            Track* track = findTrack(tempName);
             if(track == 0)
             {
               new_track->setName(tempName);
@@ -526,21 +526,6 @@ void Song::duplicateTracks()
   MusEGlobal::song->applyOperationGroup(operations);
 }          
       
-
-
-
-//---------------------------------------------------------
-//   deselectTracks
-//---------------------------------------------------------
-
-void Song::deselectTracks()
-      {
-      for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t)
-            (*t)->setSelected(false);
-      // Static.
-      Track::clearSelectionOrderCounter();
-      }
-
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
   Event ev(event);
@@ -925,10 +910,10 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 //   findTrack
 //---------------------------------------------------------
 
-MidiTrack* Song::findTrack(const Part* part) const
+Track* Song::findTrack(const Part* part) const
       {
       for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*t);
+            Track* track = *t;
             if (track == 0)
                   continue;
             PartList* pl = track->parts();

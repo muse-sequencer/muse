@@ -145,6 +145,7 @@ class ComponentWidgetList : public std::list<ComponentWidget>
             return i;
         }
       }
+      return end();
     }
     
     iterator find(const ComponentWidget& cw)
@@ -298,6 +299,11 @@ class ComponentRack : public QFrame
     
     int id() const { return _id; }
     ComponentWidgetList* components() { return &_components; }
+    ComponentWidget* findComponent(
+      ComponentWidget::ComponentType componentType,
+      int componentWidgetType = -1,
+      int index = -1,
+      QWidget* widget = 0);
     
     // Destroys all components and clears the component list.
     void clearDelete();
@@ -309,15 +315,17 @@ class ComponentRack : public QFrame
     virtual void addStretch() { _layout->addStretch(); }
     // Add spacing to the layout.
     virtual void addSpacing(int spc) { _layout->addSpacing(spc); }
-    virtual void setComponentRange(const ComponentWidget&, double min, double max, double step = 0.0, int pageSize = 1, 
+    virtual void setComponentRange(const ComponentWidget&, double min, double max, bool updateOnly = true,
+                                   double step = 0.0, int pageSize = 1,
                                    DoubleRange::ConversionMode mode = DoubleRange::ConvertDefault);
-    virtual void setComponentMinValue(const ComponentWidget&, double min);
-    virtual void setComponentMaxValue(const ComponentWidget&, double max);
+    virtual void setComponentMinValue(const ComponentWidget&, double min, bool updateOnly = true);
+    virtual void setComponentMaxValue(const ComponentWidget&, double max, bool updateOnly = true);
     virtual double componentValue(const ComponentWidget&) const;
-    virtual void setComponentValue(const ComponentWidget&, double val);
-    virtual void setComponentText(const ComponentWidget&, const QString& text);
-    virtual void setComponentEnabled(const ComponentWidget&, bool enable);
-    virtual void setComponentShowValue(const ComponentWidget&, bool show);
+    virtual void setComponentValue(const ComponentWidget&, double val, bool updateOnly = true);
+    virtual void incComponentValue(const ComponentWidget&, int steps, bool updateOnly = true);
+    virtual void setComponentText(const ComponentWidget&, const QString& text, bool updateOnly = true);
+    virtual void setComponentEnabled(const ComponentWidget&, bool enable, bool updateOnly = true);
+    virtual void setComponentShowValue(const ComponentWidget&, bool show, bool updateOnly = true);
 };
 
 //---------------------------------------------
@@ -679,6 +687,8 @@ class Strip : public QFrame {
       Q_OBJECT
 
    private:
+      // Embedded strips cannot be selected, moved, or hidden. For example arranger and pianoroll.
+      bool _isEmbedded;
       QPoint mouseWidgetOffset;
       bool dragOn;
       bool _visible;
@@ -708,7 +718,6 @@ class Strip : public QFrame {
       virtual void mousePressEvent(QMouseEvent *);
       virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
-      virtual void keyPressEvent(QKeyEvent*);
       virtual void paintEvent(QPaintEvent *);
 
       virtual void updateRouteButtons();
@@ -729,13 +738,15 @@ class Strip : public QFrame {
       virtual void changeUserWidth(int delta);
 
       virtual void incVolume(int v) = 0;
-      virtual void pan(int v) = 0;
+      virtual void incPan(int v) = 0;
+
    signals:
       void clearStripSelection();
       void trackSelected(MusECore::Track*, bool);
+      void moveStrip(Strip *s);
 
    public:
-      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false);
+      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true);
       ~Strip();
 
       // Destroy and rebuild strip components.
@@ -761,6 +772,9 @@ class Strip : public QFrame {
       virtual QSize sizeHint() const;
       bool isSelected() { return _selected; }
       void setSelected(bool s);
+
+      bool isEmbedded() const { return _isEmbedded; }
+      void setEmbedded(bool embed) { _isEmbedded = embed; }
       };
 
 } // namespace MusEGui

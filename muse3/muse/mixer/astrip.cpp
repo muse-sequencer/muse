@@ -671,7 +671,7 @@ void AudioComponentRack::configChanged()
       // Special for Aux controls.
       case aStripAuxComponent:
         // Adjust aux minimum value.
-        setComponentRange(cw, MusEGlobal::config.minSlider, AudioStrip::auxSliderMax, AudioStrip::auxSliderStep);
+        setComponentRange(cw, MusEGlobal::config.minSlider, AudioStrip::auxSliderMax, true, AudioStrip::auxSliderStep);
       break;
     }
   }
@@ -1265,8 +1265,8 @@ AudioStrip::~AudioStrip()
 //    create mixer strip
 //---------------------------------------------------------
 
-AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle)
-   : Strip(parent, at, hasHandle)
+AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle, bool isEmbedded)
+   : Strip(parent, at, hasHandle, isEmbedded)
       {
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
 
@@ -1285,44 +1285,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
       channel       = at->channels();
-      
-
-//       _effectRackPos       = GridPosStruct(_curGridRow,     0, 1, 3);
-//
-//
-//       _stereoToolPos       = GridPosStruct(_curGridRow + 1, 0, 1, 1);
-//       _preToolPos          = GridPosStruct(_curGridRow + 1, 1, 1, 1);
-//
-//       _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 2, 0, 1, 3);
-//
-//
-//       _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 3, 2, 1, 1);
-//       _sliderPos           = GridPosStruct(_curGridRow + 3, 0, 4, 2);
-//
-//
-//       _infoSpacerTop       = GridPosStruct(_curGridRow + 4, 2, 1, 1);
-//
-//       _propertyRackPos     = GridPosStruct(_curGridRow + 5, 2, 1, 1);
-//
-//       _infoSpacerBottom    = GridPosStruct(_curGridRow + 6, 2, 1, 1);
-//
-//       _sliderLabelPos      = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-//       _postScrollAreaPos_B = GridPosStruct(_curGridRow + 7, 2, 1, 1);
-//
-//       _postScrollAreaPos_A = GridPosStruct(_curGridRow + 8, 0, 1, 3);
-//
-//       _offPos              = GridPosStruct(_curGridRow + 9, 0, 1, 1);
-//       _recPos              = GridPosStruct(_curGridRow + 9, 1, 1, 1);
-//
-//       _mutePos             = GridPosStruct(_curGridRow + 10, 0, 1, 1);
-//       _soloPos             = GridPosStruct(_curGridRow + 10, 1, 1, 1);
-//
-//       _inRoutesPos         = GridPosStruct(_curGridRow + 11, 0, 1, 1);
-//       _outRoutesPos        = GridPosStruct(_curGridRow + 11, 1, 1, 1);
-//
-//       _automationPos       = GridPosStruct(_curGridRow + 12, 0, 1, 2);
-//
-//       _rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
 
       _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
       _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
@@ -1420,11 +1382,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       rack = new EffectRack(this, at);
       rack->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-      // Keep this if dynamic layout (flip to right side) is desired.
-      _upperRack->addStretch();
-      
-      updateRackSizes(true, false);
-
       addGridWidget(rack, _effectRackPos);
       addGridWidget(_upperRack, _preScrollAreaPos_A);
       
@@ -1463,67 +1420,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       addGridWidget(stereo, _stereoToolPos);
       addGridWidget(pre, _preToolPos);
-
-//       //---------------------------------------------------
-//       //    Gain
-//       //---------------------------------------------------
-//
-//       if(MusEGlobal::config.preferKnobsVsSliders)
-//       {
-//         CompactKnobComponentDescriptor gain_desc
-//         (
-//           ComponentRack::propertyComponent,
-//           "MixerStripAudioGain",
-//           AudioComponentRack::aStripGainProperty
-//         );
-//         _upperRack->newComponent(&gain_desc);
-//       }
-//       else
-//       {
-//         CompactSliderComponentDescriptor gain_desc
-//         (
-//           ComponentRack::propertyComponent,
-//           "MixerStripAudioGain",
-//           AudioComponentRack::aStripGainProperty
-//         );
-//         _upperRack->newComponent(&gain_desc);
-//       }
-//
-//       //---------------------------------------------------
-//       //    aux send
-//       //---------------------------------------------------
-//
-//       int auxsSize = MusEGlobal::song->auxs()->size();
-//       if (at->hasAuxSend()) {
-//             for (int idx = 0; idx < auxsSize; ++idx) {
-//                   if(MusEGlobal::config.preferKnobsVsSliders)
-//                   {
-//                     CompactKnobComponentDescriptor aux_desc
-//                     (
-//                       AudioComponentRack::aStripAuxComponent,
-//                       "MixerStripAudioAux",
-//                       idx
-//                     );
-//                     _upperRack->newComponent(&aux_desc);
-//                   }
-//                   else
-//                   {
-//                     CompactSliderComponentDescriptor aux_desc
-//                     (
-//                       AudioComponentRack::aStripAuxComponent,
-//                       "MixerStripAudioAux",
-//                       idx
-//                     );
-//                     _upperRack->newComponent(&aux_desc);
-//                   }
-//                   }
-//             }
-//       else {
-//             ///if (auxsSize)
-//                   //layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
-//                   ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
-//             }
-
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -1625,32 +1521,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
       _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
-
-//       if(MusEGlobal::config.preferKnobsVsSliders)
-//       {
-//         CompactKnobComponentDescriptor pan_desc
-//         (
-//           ComponentRack::controllerComponent,
-//           "MixerStripAudioPan",
-//           MusECore::AC_PAN
-//         );
-//         _lowerRack->newComponent(&pan_desc);
-//       }
-//       else
-//       {
-//         CompactSliderComponentDescriptor pan_desc
-//         (
-//           ComponentRack::controllerComponent,
-//           "MixerStripAudioPan",
-//           MusECore::AC_PAN
-//         );
-//         _lowerRack->newComponent(&pan_desc);
-//       }
-//
-//       // Keep this if dynamic layout (flip to right side) is desired.
-//        _lowerRack->addStretch();
-//
-//      updateRackSizes(false, true);
 
       addGridWidget(_lowerRack, _postScrollAreaPos_A);
       
@@ -1898,7 +1768,10 @@ void AudioStrip::buildStrip()
           ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
   }
 
-  //updateRackSizes(true, false);
+  // Keep this if dynamic layout (flip to right side) is desired.
+  _upperRack->addStretch();
+
+  updateRackSizes(true, false);
 
   //---------------------------------------------------
   //    Lower rack
@@ -1976,13 +1849,21 @@ void AudioStrip::oRoutePressed()
 
 void AudioStrip::incVolume(int v)
 {
-  //printf("astrip inc volume\n");
   if (isSelected())
     slider->incValue(v);
 }
-void AudioStrip::pan(int)
+void AudioStrip::incPan(int val)
 {
-
+  if(!isSelected())
+    return;
+  // Be sure to search all racks. Even if pan is in multiple racks, only one hit is
+  //  needed since after the value is set, the other pan controls will be updated too.
+  if(ComponentWidget* cw = _upperRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _upperRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _infoRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _infoRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _lowerRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _lowerRack->incComponentValue(*cw, val, false);
 }
 
 } // namespace MusEGui

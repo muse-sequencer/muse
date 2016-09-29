@@ -268,9 +268,9 @@ class MidiStrip : public Strip {
       virtual void songChanged(MusECore::SongChangedFlags_t);
       virtual void configChanged();
       void incVolume(int v);
-      void pan(int v);
+      void incPan(int v);
    public:
-      MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false);
+      MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false, bool isEmbedded = true);
       
       static const int xMarginHorSlider;
       static const int yMarginHorSlider;

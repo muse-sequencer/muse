@@ -134,10 +134,10 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS
+         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
-            redraw();
+            update();
       if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
             adjustScrollbar();
       }
@@ -1469,7 +1469,7 @@ void TList::moveSelection(int n)
                 }
             }
       if(selTrack)
-        emit selectionChanged(selTrack);
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
       }
 
 MusECore::TrackList TList::getRecEnabledTracks()
@@ -1743,11 +1743,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
                     if(t && t->isVisible())
                     {
-                      MusEGlobal::song->deselectTracks();
+                      MusEGlobal::song->selectAllTracks(false);
                       t->setSelected(true);
-
-                      ///emit selectionChanged();
-                      emit selectionChanged(t);
+                      MusEGlobal::song->update(SC_TRACK_SELECTION);
                       adjustScrollbar();
                     }  
                   }
@@ -1759,7 +1757,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             /*else if (button == Qt::LeftButton) { DELETETHIS
               if (!ctrl) 
               {
-                MusEGlobal::song->deselectTracks();
+                MusEGlobal::song->selectAllTracks(false);
                 emit selectionChanged(0);
               }  
             }*/
@@ -2027,7 +2025,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   mode = START_DRAG;
                   if (button == Qt::LeftButton) {
                         if (!ctrl) {
-                              MusEGlobal::song->deselectTracks();
+                              MusEGlobal::song->selectAllTracks(false);
                               t->setSelected(true);
 
                               // rec enable track if expected
@@ -2041,22 +2039,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               t->setSelected(!t->selected());
                         if (editTrack && editTrack != t)
                               returnPressed();
-                        emit selectionChanged(t->selected() ? t : 0);
-                        }
+                        MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    }
                   else if (button == Qt::RightButton) {
                         mode = NORMAL;
                         QMenu* p = new QMenu;
                         // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
-                        MusECore::TrackList* tl = MusEGlobal::song->tracks();
-                        int selCnt = 0;
-                        for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it)
-                        {
-                          MusECore::Track* tr = *it;
-                          if (tr->selected())
-                          {
-                            selCnt++;
-                          }
-                        }
+                        int selCnt = MusEGlobal::song->countSelectedTracks();
                         p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(1001);
                         if(selCnt > 1){
                            p->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"))->setData(1003);
@@ -2159,9 +2148,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                 //fprintf(stderr, "   addNewTrack: track:%p\n", t);
                                 if(t)
                                 {
-                                  MusEGlobal::song->deselectTracks();
+                                  MusEGlobal::song->selectAllTracks(false);
                                   t->setSelected(true);
-                                  emit selectionChanged(t);
+                                  MusEGlobal::song->update(SC_TRACK_SELECTION);
                                   adjustScrollbar();
                                 }  
                               }
@@ -2449,13 +2438,12 @@ void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool full)
 //---------------------------------------------------------
 //   selectTrack
 //---------------------------------------------------------
-void TList::selectTrack(MusECore::Track* tr, bool deselect)
+void TList::selectTrack(MusECore::Track* tr, bool /*deselect*/)
 {
-    MusEGlobal::song->deselectTracks();
+    MusEGlobal::song->selectAllTracks(false);
 
     if (tr) {
         tr->setSelected(true);
-
 
         // rec enable track if expected
         MusECore::TrackList recd = getRecEnabledTracks();
@@ -2465,9 +2453,9 @@ void TList::selectTrack(MusECore::Track* tr, bool deselect)
         }
     }
 
-    redraw();
-    if (deselect)
-      emit selectionChanged(tr);
+    // SC_TRACK_SELECTION will cause update anyway, no harm ...
+    update();
+    MusEGlobal::song->update(SC_TRACK_SELECTION);
 }
 
 //---------------------------------------------------------

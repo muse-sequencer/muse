@@ -537,9 +537,21 @@ void MidiTrackInfo::configChanged()
 
 void MidiTrackInfo::songChanged(MusECore::SongChangedFlags_t type)
 {
+  if(type & SC_TRACK_SELECTION)
+  {
+    MusECore::Track* t = MusEGlobal::song->selectedTrack();
+    if(!t)
+      selected = 0;
+    else if(t->isMidiTrack())
+    {
+      selected = t;
+      trackNameLabel->setObjectName(selected->cname());
+    }
+  }
+
   if(type == SC_SELECTION || type == SC_PART_SELECTION || type == SC_TRACK_SELECTION)
     return;
-  if(!isVisible())  
+  if(!isVisible())
     return;
   updateTrackInfo(type);
 }      

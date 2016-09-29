@@ -94,7 +94,7 @@ class Track {
       
       // Every time a track is selected, the track's _selectionOrder is set to this value,
       //  and then this value is incremented. The value is reset to zero occasionally, 
-      //  for example whenever Song::deselectTracks() is called.
+      //  for example whenever Song::selectAllTracks(false) is called.
       static int _selectionOrderCounter;
       
       RouteList _inRoutes;
@@ -153,7 +153,7 @@ class Track {
       // The selected track with the highest selected order is the most recent selected.
       int selectionOrder() const       { return _selectionOrder; }
       // Resets the static selection counter. Optional. (Range is huge, unlikely would have to call). 
-      // Called for example whenever Song::deselectTracks() is called.
+      // Called for example whenever Song::selectAllTracks(false) is called.
       static void clearSelectionOrderCounter(){ _selectionOrderCounter = 0; }
 
       bool locked() const             { return _locked; }
@@ -867,6 +867,12 @@ template<class T> class tracklist : public std::vector<Track*> {
                         }
                   }
             return cur;
+            }
+      // Selects or unselects all tracks in this list.
+      void selectAll(bool select) {
+            for (vlist::iterator i = begin(); i != end(); ++i) {
+                  (*i)->setSelected(select);
+                  }
             }
       };
 
