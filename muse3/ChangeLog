@@ -1,38 +1,38 @@
 29.09.2016:
-  - Bug #526 by jphaenlin: Crash on cut with scissors while master open. (Tim)
-    Seems old: In class MidiEditor: _pl (parts list) can be NULL, so protect the rest of the code.
+         *** MusE 3.0.0pre2 ***
+           Second prerelease of MusE 3.0.0
+
+         - Bug #526 by jphaenlin: Crash on cut with scissors while master open. (Tim)
+           Seems old: In class MidiEditor: _pl (parts list) can be NULL, so protect the rest of the code.
 28.09.2016:
-  - Completed Robert's mixer strip selection + keyboard navigation features. (Tim)
-    Now works in BOTH mixers A and B. Tested OK all functions.
-    Use the arrow keys and ctrl and shift to navigate strips and adjust volume and pan.
+         - Completed Robert's mixer strip selection + keyboard navigation features. (Tim)
+           Now works in BOTH mixers A and B. Tested OK all functions.
+           Use the arrow keys and ctrl and shift to navigate strips and adjust volume and pan.
 25.09.2016:
-  - Midi ports/synths configuration dialog: Allow multiple selections in device list. (Tim)
+         - Midi ports/synths configuration dialog: Allow multiple selections in device list. (Tim)
 24.09.2016:
-  - Anti-alias the small routing channel circles. (Tim)
+         - Anti-alias the small routing channel circles. (Tim)
 23.09.2016:
-  * Revenge of the knobs!:
-  - Complete re-design of mixer strips, reinstating knobs but much smaller and compact. (Tim)
-  - Switchable between knobs and sliders, via Global Settings or via right clicking any mixer strip. (Tim)
-  - Also switchable value display, to minimize clutter.
-  - Replaced clumsy three-slider midi patch editor with single-line custom LCD editor. (Tim)
-
+         * Revenge of the knobs!:
+         - Complete re-design of mixer strips, reinstating knobs but much smaller and compact. (Tim)
+         - Switchable between knobs and sliders, via Global Settings or via right clicking any mixer strip. (Tim)
+         - Also switchable value display, to minimize clutter.
+         - Replaced clumsy three-slider midi patch editor with single-line custom LCD editor. (Tim)
 17.08.2016:
-  - Bug by Martin Drautzburg: ALSA Midi controllers not working. (Tim)
-  - Bugs by Michael Oswald: Change 3 delete to delete[]. In LV2Synth ctor, free _nPname later. (Tim)
-  
+         - Bug by Martin Drautzburg: ALSA Midi controllers not working. (Tim)
+         - Bugs by Michael Oswald: Change 3 delete to delete[]. In LV2Synth ctor, free _nPname later. (Tim)
 03.08.2016:
-  - Merged fix for bug where configuration storage had stopped working, from AndreeeCZ (rj)
-  - Updated templates to 3.0 (rj)
-  - Fixed color-theme switching no longer working (rj)
-  - Added another idf from Dennis Schulmeister, for Yamaha Motif XS (rj) 
-
+         - Merged fix for bug where configuration storage had stopped working, from AndreeeCZ (rj)
+         - Updated templates to 3.0 (rj)
+         - Fixed color-theme switching no longer working (rj)
+         - Added another idf from Dennis Schulmeister, for Yamaha Motif XS (rj) 
 27.06.2016:
-  - Added instrument definition files from Dennis Schulmeister for:
-    * Korg Krome (Bank Map KORG).idf
-    * Korg Krome (Bank Map GM2).idf
-    * Roland-MT32.idf
-    * Lexicon-MX200.idf
-    * Yamaha-Rex50.idf
+         - Added instrument definition files from Dennis Schulmeister for:
+            * Korg Krome (Bank Map KORG).idf
+            * Korg Krome (Bank Map GM2).idf
+            * Roland-MT32.idf
+            * Lexicon-MX200.idf
+            * Yamaha-Rex50.idf
 20.06.2016:
          - Added connection between arranger and mixer so selecting a track carries over to the
            mixer. Mostly a visual queue but some keyboard navigation and editing is possible (rj) 
