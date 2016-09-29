@@ -1,3 +1,6 @@
+29.09.2016:
+  - Bug #526 by jphaenlin: Crash on cut with scissors while master open. (Tim)
+    Seems old: In class MidiEditor: _pl (parts list) can be NULL, so protect the rest of the code.
 28.09.2016:
   - Completed Robert's mixer strip selection + keyboard navigation features. (Tim)
     Now works in BOTH mixers A and B. Tested OK all functions.
