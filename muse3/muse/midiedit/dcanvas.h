@@ -95,32 +95,6 @@ struct InstrumentCurTrackParams
   bool hasChanged();
 };
 
-class InstrumentCurTrackParamsList : public QVector< InstrumentCurTrackParams >
-{
-  public:
-    iterator find(MusECore::MidiTrack* track)
-    {
-      for(iterator i = begin(); i != end(); ++i)
-      {
-        if(i->_track == track)
-          return i;
-      }
-      return end();
-    }
-
-    bool hasChanged()
-    {
-      bool ret = false;
-      // Make sure all items are iterated.
-      for(iterator i = begin(); i != end(); ++i)
-      {
-        if(i->hasChanged())
-          ret = true;
-      }
-      return ret;
-    }
-};
-
 //---------------------------------------------------------
 //   DrumCanvas
 //---------------------------------------------------------
@@ -132,7 +106,6 @@ class DrumCanvas : public EventCanvas {
       MusECore::DrumMap* ourDrumMap;
       bool must_delete_our_drum_map; //FINDMICH really delete it!
       QVector<instrument_number_mapping_t> instrument_map;
-      InstrumentCurTrackParamsList _instrumentCurTrackParams;
       
       DrumEdit* drumEditor;
       
@@ -214,7 +187,6 @@ class DrumCanvas : public EventCanvas {
       MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; }
       int getOurDrumMapSize() { return instrument_map.size(); }
       QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; }
-      bool instrCurTrackParamsHaveChanged() { return _instrumentCurTrackParams.hasChanged(); }
       void propagate_drummap_change(int instrument, bool update_druminmap);
       void rebuildOurDrumMap();
       DrumEdit* drumEdit() { return drumEditor; }

@@ -1736,7 +1736,6 @@ void DrumCanvas::rebuildOurDrumMap()
     QVector<instrument_number_mapping_t> old_instrument_map = instrument_map;
     
     instrument_map.clear();
-    _instrumentCurTrackParams.clear();
 
     for (ciTrack track = tl->begin(); track!=tl->end(); track++)
     {
@@ -1843,15 +1842,7 @@ void DrumCanvas::rebuildOurDrumMap()
         }
         
         for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-        {
-          MidiTrack* mt = dynamic_cast<MidiTrack*>(*track);
-          ignore_order_entries.append(std::pair<MidiTrack*,int>(mt, pitch));
-          if(_instrumentCurTrackParams.find(mt) == _instrumentCurTrackParams.end())
-          {
-            fprintf(stderr, "DrumCanvas::rebuildOurDrumMap appending:%p\n", mt); // REMOVE Tim. newdrums. Added.
-            _instrumentCurTrackParams.append(InstrumentCurTrackParams(mt));
-          }
-        }
+          ignore_order_entries.append(std::pair<MidiTrack*,int>(dynamic_cast<MidiTrack*>(*track), pitch));
       }
       // else ignore it
     }
