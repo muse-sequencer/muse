@@ -1241,6 +1241,11 @@ const DrumMap* MidiInstrument::drummap_for_patch(int patch) const
 {
   using std::list;
 
+  // REMOVE Tim. newdrums. Added.
+  // Special value unknown.
+  if(patch == CTRL_VAL_UNKNOWN)
+    return iNewDrumMap;
+
   int program = (patch & 0x0000FF);
   int lbank =   (patch & 0x00FF00) >> 8;
   int hbank =   (patch & 0xFF0000) >> 16;

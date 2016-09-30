@@ -64,6 +64,50 @@ using MusECore::MidiTrack;
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   InstrumentCurTrackParams
+//---------------------------------------------------------
+
+InstrumentCurTrackParams::InstrumentCurTrackParams(MusECore::MidiTrack* t)
+{
+  _track = t;
+  _curPort = -1;
+  _curChan = 0;
+  _curPatch = MusECore::CTRL_VAL_UNKNOWN;
+  if(_track)
+  {
+    _curPort = _track->outPort();
+    _curChan = _track->outChannel();
+    if(_curPort >= 0 && _curPort < MIDI_PORTS)
+    {
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[_curPort];
+      _curPatch = mp->hwCtrlState(_curChan, MusECore::CTRL_PROGRAM);
+    }
+  }
+}
+
+bool InstrumentCurTrackParams::hasChanged()
+{
+  if(!_track)
+    return false;
+  int curPort = _track->outPort();
+  int curChan = _track->outChannel();
+  int curPatch;
+  if(curPort >= 0 && curPort < MIDI_PORTS)
+  {
+    MusECore::MidiPort* mp = &MusEGlobal::midiPorts[curPort];
+    curPatch = mp->hwCtrlState(curChan, MusECore::CTRL_PROGRAM);
+  }
+  else
+    curPatch = MusECore::CTRL_VAL_UNKNOWN;
+
+  bool ret = _curPort != curPort || _curChan != curChan || _curPatch != curPatch;
+  _curPort = curPort;
+  _curChan = curChan;
+  _curPatch = curPatch;
+  return ret;
+}
+
+//---------------------------------------------------------
 //   DEvent
 //---------------------------------------------------------
 
@@ -1684,6 +1728,7 @@ void DrumCanvas::rebuildOurDrumMap()
   
   if (!old_style_drummap_mode)
   {
+    fprintf(stderr, "DrumCanvas::rebuildOurDrumMap\n");  // REMOVE Tim. newdrums. Added.
     bool need_update = false;
     
     TrackList* tl=MusEGlobal::song->tracks();
@@ -1691,6 +1736,7 @@ void DrumCanvas::rebuildOurDrumMap()
     QVector<instrument_number_mapping_t> old_instrument_map = instrument_map;
     
     instrument_map.clear();
+    _instrumentCurTrackParams.clear();
 
     for (ciTrack track = tl->begin(); track!=tl->end(); track++)
     {
@@ -1797,7 +1843,15 @@ void DrumCanvas::rebuildOurDrumMap()
         }
         
         for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-          ignore_order_entries.append(std::pair<MidiTrack*,int>(dynamic_cast<MidiTrack*>(*track), pitch));
+        {
+          MidiTrack* mt = dynamic_cast<MidiTrack*>(*track);
+          ignore_order_entries.append(std::pair<MidiTrack*,int>(mt, pitch));
+          if(_instrumentCurTrackParams.find(mt) == _instrumentCurTrackParams.end())
+          {
+            fprintf(stderr, "DrumCanvas::rebuildOurDrumMap appending:%p\n", mt); // REMOVE Tim. newdrums. Added.
+            _instrumentCurTrackParams.append(InstrumentCurTrackParams(mt));
+          }
+        }
       }
       // else ignore it
     }

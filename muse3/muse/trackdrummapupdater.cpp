@@ -25,6 +25,8 @@
 #include "song.h"
 #include "globals.h"
 
+#include <QTimer>
+
 namespace MusECore {
 
 using MusEGlobal::song;
@@ -32,6 +34,12 @@ using MusEGlobal::song;
 TrackDrummapUpdater::TrackDrummapUpdater(QObject* parent) : QObject(parent)
 {
   connect(song,SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+}
+
+void TrackDrummapUpdater::heartBeat()
+{
+  songChanged(-1);
 }
 
 void TrackDrummapUpdater::songChanged(MusECore::SongChangedFlags_t flags)
@@ -41,13 +49,20 @@ void TrackDrummapUpdater::songChanged(MusECore::SongChangedFlags_t flags)
                SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ) )
   {
     bool changed=false;
-    for (iTrack t=song->tracks()->begin(); t!=song->tracks()->end(); t++)
+// REMOVE Tim. newdrums. Changed.
+//     for (iTrack t=song->tracks()->begin(); t!=song->tracks()->end(); t++)
+//     {
+//       MidiTrack* track=dynamic_cast<MidiTrack*>(*t);
+//       if (track && track->auto_update_drummap())
+//         changed=true;
+//     }
+    for (iMidiTrack t=song->midis()->begin(); t!=song->midis()->end(); ++t)
     {
-      MidiTrack* track=dynamic_cast<MidiTrack*>(*t);
+      MidiTrack* track = *t;
       if (track && track->auto_update_drummap())
         changed=true;
     }
-    
+
     if (changed)
     {
       // allow recursion. there will be no more recursion, because this

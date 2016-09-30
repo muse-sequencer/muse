@@ -1,3 +1,12 @@
+30.09.2016:
+         * A fix for 'New drum' tracks!:
+         - Drum maps were not being updated according to track's current port and channel,
+            and current state of program controller. So a hook into the global heartbeat timer
+            was added and all drum maps are updated if necessary. Tested OK so far with
+            multiple parts open in Drum Editor, and changing various ports, channels, and patches.
+           NOTE: This means the Drum List can, and will, CHANGE DYNAMICALLY for example
+            with more than one program change in a part, or simply dialing in a new port, channel
+            or patch numer! TODO: Test + fix/improve/optimize more, and remove debugging messages. (Tim)
 29.09.2016:
          *** MusE 3.0.0pre2 ***
            Second prerelease of MusE 3.0.0

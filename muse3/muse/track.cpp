@@ -1479,11 +1479,18 @@ bool MidiTrack::auto_update_drummap()
 {
   if (_drummap_tied_to_patch)
   {
-    int patch = getFirstControllerValue(CTRL_PROGRAM,0);
-    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].instrument()->drummap_for_patch(patch);
-    
+// REMOVE Tim. newdrums. Changed.
+//     int patch = getFirstControllerValue(CTRL_PROGRAM,0);
+//     const DrumMap* new_drummap = mp->instrument()->drummap_for_patch(patch);
+    if(_outPort < 0 || _outPort >= MIDI_PORTS)
+      return false;
+    MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
+    const int patch = mp->hwCtrlState(_outChannel, CTRL_PROGRAM);
+    const DrumMap* new_drummap = mp->instrument()->drummap_for_patch(patch);
+
     if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
     {
+      fprintf(stderr, "MidiTrack::auto_update_drummap: maps not equal\n"); // REMOVE Tim. newdrums. Added.
       for (int i=0;i<128;i++)
       {
         bool temp_mute=_drummap[i].mute;

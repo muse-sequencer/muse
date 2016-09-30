@@ -38,6 +38,7 @@ class TrackDrummapUpdater : public QObject
     
   private slots:
     void songChanged(MusECore::SongChangedFlags_t flags);
+    void heartBeat();
 };
 
 } //namespace MusECore

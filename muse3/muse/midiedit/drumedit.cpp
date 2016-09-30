@@ -672,7 +672,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       if(canvas->track())
         toolbar->setSolo(canvas->track()->solo());
       
-      
       initTopwinState();
       finalizeInit();
       }
