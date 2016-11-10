@@ -1,3 +1,14 @@
+09.11.2016
+         - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
+           Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).
+           Was interfering with DrumGizmo's use of semaphores.
+           TODO: Remove further old rtcaps code such as main.cpp:getCapabilities().
+           Tested OK so far, with self- or externally- started Jack, or dummy audio driver,
+            and as root user as well, and with Jack running non-realtime.
+           Note: This may also prevent things like our RTC timer code from accessing the RTC
+            as non-root, but RTC is old and should be replaced anyway, and it usually required
+            'poking' it beforehand in a terminal anyway - unless MusE is run as root which still
+            works as always.
 30.09.2016:
          * A fix for 'New drum' tracks!:
          - Drum maps were not being updated according to track's current port and channel,
