@@ -812,7 +812,13 @@ int main(int argc, char* argv[])
       MusECore::initMidiInstruments();  
       MusECore::initMidiPorts();
       MusECore::initMidiSequencer();   
-      MusEGlobal::midiSeq->checkAndReportTimingResolution();  
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: initMidiSequencer() done...\n");
+
+      MusEGlobal::midiSeq->checkAndReportTimingResolution();
+
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution() done...\n");
 
       if (MusEGlobal::loadPlugins)
             MusECore::initPlugins();

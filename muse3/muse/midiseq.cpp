@@ -169,8 +169,13 @@ MidiSeq::MidiSeq(const char* name)
       
       MusEGlobal::doSetuid();
       timerFd=selectTimer();
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: Timer selected...\n");
+
       MusEGlobal::undoSetuid();
 
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: End of MidiSeq ctor...\n");
       }
 
 //---------------------------------------------------------
@@ -192,14 +197,16 @@ signed int MidiSeq::selectTimer()
     {
     int tmrFd;
     
-    printf("Trying RTC timer...\n");
-    timer = new RtcTimer();
-    tmrFd = timer->initTimer();
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
-    }
-    delete timer;
+    // REMOVE Tim. stack smashing. Added.
+    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: SKIPPING RTC timer test...\n");
+//     printf("Trying RTC timer...\n");
+//     timer = new RtcTimer();
+//     tmrFd = timer->initTimer();
+//     if (tmrFd != -1) { // ok!
+//         printf("got timer = %d\n", tmrFd);
+//         return tmrFd;
+//     }
+//     delete timer;
     
     printf("Trying ALSA timer...\n");
     timer = new AlsaTimer();
@@ -365,8 +372,11 @@ void MidiSeq::start(int priority, void *)
 //---------------------------------------------------------
 void MidiSeq::checkAndReportTimingResolution()
 {
+    // REMOVE Tim. stack smashing. Added.
+    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution(): Calling timer->getTimerFreq()...\n");
+
     int freq = timer->getTimerFreq();
-    printf("Aquired timer frequency: %d\n", freq);
+    fprintf(stderr, "Aquired timer frequency: %d\n", freq);
     if (freq < 500) {
         if(MusEGlobal::config.warnIfBadTiming)
         {
