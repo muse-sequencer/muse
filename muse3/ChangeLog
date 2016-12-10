@@ -1,3 +1,5 @@
+10.12.2016
+         - Fixed lingering Arranger bug not restoring size properly on project reload. (Tim)
 09.11.2016
          - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
            Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).

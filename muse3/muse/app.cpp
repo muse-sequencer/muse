@@ -1297,9 +1297,12 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
           mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
       }
 
-// Removed. Already taken care of by settings.
-//       resize(MusEGlobal::config.geometryMain.size());
-//       move(MusEGlobal::config.geometryMain.topLeft());
+// REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
+//  not restoring on project reload. Didn't want to have to reenable this, IIRC there
+//  was a problem with using this (interference with other similar competing settings),
+//  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
+      resize(MusEGlobal::config.geometryMain.size());
+      move(MusEGlobal::config.geometryMain.topLeft());
 
       if (MusEGlobal::config.transportVisible)
             transport->show();
