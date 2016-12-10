@@ -866,7 +866,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
           act->setData(SetDefaultItemID);
           act->setToolTip(tr("Promotes a row to the default patch"));
 
-          act = popup->addAction(tr("Promote column to the default patch"));
+          act = popup->addAction(tr("Promote column to default patch"));
           act->setData(SetDefaultColumnID);
           act->setToolTip(tr("Promotes a column to the default patch"));
 
