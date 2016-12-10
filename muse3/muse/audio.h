@@ -213,6 +213,7 @@ class Audio {
       bool isRecording() const  { return state == PLAY && recording; }
       void setRunning(bool val) { _running = val; }
       bool isRunning() const    { return _running; }
+      bool isIdle() const { return idle; }
 
       //-----------------------------------------
       //   message interface

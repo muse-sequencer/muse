@@ -218,7 +218,8 @@ LCDPatchEdit::LCDPatchEdit(QWidget* parent,
 
   setMouseTracking(true);
   setEnabled(true);
-  setFocusPolicy(Qt::WheelFocus);
+//   setFocusPolicy(Qt::WheelFocus);
+  setFocusPolicy(Qt::NoFocus);
 
 //   setAutoFillBackground(false);
 //   setAttribute(Qt::WA_NoSystemBackground);
@@ -554,23 +555,23 @@ bool LCDPatchEdit::autoAdjustFontSize()
 // //     setFont(fnt);
 //     _curFont = fnt;
 //     //painter->drawText(r,flags,stitle);
-    update();
+//     update();
 //   }
 
   // Force minimum height. Use the expected height for the highest given point size.
   // This way the mixer strips aren't all different label heights, but can be larger if necessary.
   // Only if ignoreHeight is set (therefore the height is adjustable).
-  if(_fontIgnoreHeight)
-  {
-// FIXME Disabled for now, as per above.
-//     fnt.setPointSize(max);
-//     const QFontMetrics fm(fnt);
-    const QFontMetrics fm(font());
-
-    // Set the label's minimum height equal to the height of the font.
-    setMinimumHeight(fm.height() + 2 * frameWidth());
-  }
-
+//   if(_fontIgnoreHeight)
+//   {
+// // FIXME Disabled for now, as per above.
+// //     fnt.setPointSize(max);
+// //     const QFontMetrics fm(fnt);
+//     const QFontMetrics fm(font());
+//
+//     // Set the label's minimum height equal to the height of the font.
+//     setMinimumHeight(fm.height() + 2 * frameWidth());
+//   }
+//
   return true;
 }
 
@@ -644,6 +645,7 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
 
 void LCDPatchEdit::mouseMoveEvent(QMouseEvent *e)
 {
+  //fprintf(stderr, "LCDPatchEdit::mouseMoveEvent\n");
   e->ignore();
   QFrame::mouseMoveEvent(e);
 
@@ -689,8 +691,40 @@ void LCDPatchEdit::mouseReleaseEvent(QMouseEvent* e)
   emit released(e->pos(), _id, e->buttons(), e->modifiers());
 }
 
+void LCDPatchEdit::enterEvent(QEvent *e)
+{
+  //fprintf(stderr, "LCDPatchEdit::enterEvent\n");
+  QPoint p = mapFromGlobal(cursor().pos());
+
+  bool doupd = false;
+
+  if(_HBankRect.contains(p) != _HBankHovered)
+  {
+    _HBankHovered = !_HBankHovered;
+    doupd = true;
+  }
+
+  if(_LBankRect.contains(p) != _LBankHovered)
+  {
+    _LBankHovered = !_LBankHovered;
+    doupd = true;
+  }
+
+  if(_ProgRect.contains(p) != _ProgHovered)
+  {
+    _ProgHovered = !_ProgHovered;
+    doupd = true;
+  }
+
+  e->ignore();
+  QFrame::enterEvent(e);
+  if(doupd)
+    update();
+}
+
 void LCDPatchEdit::leaveEvent(QEvent *e)
 {
+  //fprintf(stderr, "LCDPatchEdit::leaveEvent\n");
   bool doupd = false;
 
   if(_HBankHovered)
@@ -882,6 +916,31 @@ bool LCDPatchEdit::event(QEvent* e)
 
 void LCDPatchEdit::wheelEvent(QWheelEvent* e)
 {
+  QPoint p = e->pos();
+
+  bool doupd = false;
+
+  if(_HBankRect.contains(p) != _HBankHovered)
+  {
+    _HBankHovered = !_HBankHovered;
+    doupd = true;
+  }
+
+  if(_LBankRect.contains(p) != _LBankHovered)
+  {
+    _LBankHovered = !_LBankHovered;
+    doupd = true;
+  }
+
+  if(_ProgRect.contains(p) != _ProgHovered)
+  {
+    _ProgHovered = !_ProgHovered;
+    doupd = true;
+  }
+
+  if(doupd)
+    update();
+
   int hb = (_currentPatch >> 16) & 0xff;
   int lb = (_currentPatch >> 8) & 0xff;
   int pr = _currentPatch & 0xff;
@@ -1026,6 +1085,7 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
       showValueToolTip(e->globalPos(), section);
     emit valueChanged(value(), _id);
   }
+  //fprintf(stderr, "LCDPatchEdit::wheelEvent _HBankHovered:%d _LBankHovered:%d _ProgHovered:%d\n", _HBankHovered, _LBankHovered, _ProgHovered);
 }
 
 void LCDPatchEdit::mouseDoubleClickEvent(QMouseEvent* e)

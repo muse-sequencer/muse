@@ -141,7 +141,7 @@ void MidiSyncConfig::addDevice(QTreeWidgetItem *item, QTreeWidget *tree)
 void MidiSyncLViewItem::setPort(int port)
 { 
   _port = port; 
-  if(_port < 0 || port > MIDI_PORTS)
+  if(_port < 0 || port >= MIDI_PORTS)
     return;
     
   copyFromSyncInfo(MusEGlobal::midiPorts[port].syncInfo());

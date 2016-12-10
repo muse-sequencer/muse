@@ -255,18 +255,19 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
           if(defch & (1 << ch))
           { 
+            MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
             MusEGlobal::audio->msgIdle(true);
             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
             {
               // Leave drum track channel at current setting.
               if((*it)->type() == MusECore::Track::DRUM)
-                (*it)->setOutPortAndUpdate(no);
+                changed |= (*it)->setOutPortAndUpdate(no, false);
               else
-                (*it)->setOutPortAndChannelAndUpdate(no, ch);
-            }  
+                changed |= (*it)->setOutPortAndChannelAndUpdate(no, ch, false);
+            }
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::audio->msgUpdateSoloStates();
-            MusEGlobal::song->update(SC_ROUTE);
+            MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
 
             // Stop at the first output channel found.
             break;
@@ -932,7 +933,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                      != MusECore::midiInstruments.end(); ++i) {
                         if ((*i)->iname() == s) {
                               MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
-                              port->setInstrument(*i);
+                              port->changeInstrument(*i);
                               MusEGlobal::audio->msgIdle(false);
                               break;
                               }

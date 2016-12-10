@@ -523,7 +523,7 @@ bool parse_range(const QString& str, int* from, int* to)
 }
 
 void write_new_style_drummap(int level, Xml& xml, const char* tagname,
-                             DrumMap* drummap, bool* drummap_hidden, bool full)
+                             DrumMap* drummap, bool full)
 {
   xml.tag(level++, tagname);
   
@@ -537,7 +537,9 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
          (dm->lv1 != idm->lv1) || (dm->lv2 != idm->lv2) ||
          (dm->lv3 != idm->lv3) || (dm->lv4 != idm->lv4) ||
          (dm->enote != idm->enote) || (dm->mute != idm->mute) ||
-         (drummap_hidden && drummap_hidden[i]) || full)
+         (dm->port != idm->port) || (dm->channel != idm->channel) ||
+         (dm->anote != idm->anote) ||
+         (dm->hide != idm->hide) || full)
     {
       xml.tag(level++, "entry pitch=\"%d\"", i);
       
@@ -547,21 +549,17 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
       if (full || dm->vol != idm->vol)     xml.intTag(level, "vol", dm->vol);
       if (full || dm->quant != idm->quant) xml.intTag(level, "quant", dm->quant);
       if (full || dm->len != idm->len)     xml.intTag(level, "len", dm->len);
+      if (full || dm->channel != idm->channel) xml.intTag(level, "channel", dm->channel);
+      if (full || dm->port != idm->port)   xml.intTag(level, "port", dm->port);
       if (full || dm->lv1 != idm->lv1)     xml.intTag(level, "lv1", dm->lv1);
       if (full || dm->lv2 != idm->lv2)     xml.intTag(level, "lv2", dm->lv2);
       if (full || dm->lv3 != idm->lv3)     xml.intTag(level, "lv3", dm->lv3);
       if (full || dm->lv4 != idm->lv4)     xml.intTag(level, "lv4", dm->lv4);
       if (full || dm->enote != idm->enote) xml.intTag(level, "enote", dm->enote);
+      if (full || dm->anote != idm->anote) xml.intTag(level, "anote", dm->anote);
       if (full || dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
-      if (drummap_hidden && 
-             (full || drummap_hidden[i]))  xml.intTag(level, "hide", drummap_hidden[i]);
-      
-      // anote is ignored anyway, as dm->anote == i, and this is
-      // already stored in the begin tag (pitch=...)
-      
-      // channel and port are ignored as well, as they're not used
-      // in new-style-drum-mode
-      
+      if (full || dm->hide != idm->hide)   xml.intTag(level, "hide", dm->hide);
+
       xml.tag(--level, "/entry");
     }
   }
@@ -570,7 +568,7 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
 }
 
 void read_new_style_drummap(Xml& xml, const char* tagname,
-                            DrumMap* drummap, bool* drummap_hidden, bool compatibility)
+                            DrumMap* drummap, bool compatibility)
 {
 	for (;;)
 	{
@@ -585,7 +583,6 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
         {
           DrumMap* dm=NULL;
           DrumMap temporaryMap;
-          bool* hidden=NULL;
           for (;;) // nested loop
           {
             Xml::Token token = xml.parse();
@@ -595,7 +592,7 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
               case Xml::Error:
               case Xml::End:
                 goto end_of_nested_for;
-              
+
               case Xml::Attribut:
                 if (tag == "pitch")
                 {
@@ -605,11 +602,10 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                   else
                   {
                     dm = &drummap[pitch];
-                    hidden = drummap_hidden ? &drummap_hidden[pitch] : NULL;
                   }
                 }
                 break;
-              
+
               case Xml::TagStart:
                 if (dm==NULL && compatibility == false)
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
@@ -625,6 +621,10 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                   dm->quant = xml.parseInt();
                 else if (tag == "len")
                   dm->len = xml.parseInt();
+                else if (tag == "channel")
+                  dm->channel = xml.parseInt();
+                else if (tag == "port")
+                  dm->port = xml.parseInt();
                 else if (tag == "lv1")
                   dm->lv1 = xml.parseInt();
                 else if (tag == "lv2")
@@ -639,24 +639,23 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                       int pitch = temporaryMap.enote;
                       drummap[pitch] = temporaryMap;
                       dm = &drummap[pitch];
-                      hidden = drummap_hidden ? &drummap_hidden[pitch] : NULL;
                       dm->anote = pitch;
                   }
                 }
+                else if (tag == "anote")
+                  dm->anote = xml.parseInt();
                 else if (tag == "mute")
                   dm->mute = xml.parseInt();
                 else if (tag == "hide")
-                {
-                  if (hidden) *hidden = xml.parseInt();
-                }
+                  dm->hide = xml.parseInt();
                 else
                   xml.unknown("read_new_style_drummap");
                 break;
-              
+
               case Xml::TagEnd:
                 if (tag == "entry")
                   goto end_of_nested_for;
-              
+
               default:
                 break;
             }
@@ -674,7 +673,7 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 			default:
 				break;
 		}
-	}  
+	}
 }
 
 void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt)
@@ -770,7 +769,7 @@ QMenu* populateAddSynth(QWidget* parent)
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnoreDrumPreference)
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgnoreDrumPreference*/)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
       if (MusEGlobal::config.addHiddenTracks)
@@ -782,37 +781,10 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
         midi->setData(MusECore::Track::MIDI);
         grp->addAction(midi);
 
-
-        if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_OLD))
-        {
-          QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-          drum->setData(MusECore::Track::DRUM);
-          grp->addAction(drum);
-        }
-
-        if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_NEW))
-        {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
-                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-          newdrum->setData(MusECore::Track::NEW_DRUM);
-          grp->addAction(newdrum);
-        }
-        
-        if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW)
-        {
-          QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Old Style Drum Track")));
-          drum->setData(MusECore::Track::DRUM);
-          grp->addAction(drum);
-        }
-        if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD)
-        {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
-                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track")));
-          newdrum->setData(MusECore::Track::NEW_DRUM);
-          grp->addAction(newdrum);
-        }
+        QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
+        newdrum->setData(MusECore::Track::NEW_DRUM);
+        grp->addAction(newdrum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
         QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
@@ -1036,12 +1008,18 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                   // Only show controller for current pitch:
                   if (isDrum)
                   {
-                    if ((curDrumPitch == -1) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+                    if ((curDrumPitch < 0) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
                           continue;
                   }
-                  else if (isNewDrum || isMidi)
+                  else if (isNewDrum)
                   {
-                    if ((curDrumPitch == -1) || ((num & 0xff) != curDrumPitch)) // FINDMICH does this work?
+                    if ((curDrumPitch < 0) || ((num & 0xff) != track->drummap()[curDrumPitch].anote))
+                          continue;
+
+                  }
+                  else if (isMidi)
+                  {
+                    if ((curDrumPitch < 0) || ((num & 0xff) != curDrumPitch)) // FINDMICH does this work?
                           continue;
                   }
                   else
@@ -1136,11 +1114,13 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           int num = cnum;
           if(ci->second->isPerNoteController())
           {
-            if (isDrum && curDrumPitch!=-1)
+            if (isDrum && curDrumPitch >= 0)
               num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
-            else if ((isNewDrum || isMidi) && curDrumPitch!=-1)
-              num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work? 
-            else 
+            else if (isNewDrum && curDrumPitch >= 0)
+              num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
+            else if (isMidi && curDrumPitch >= 0)
+              num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work?
+            else
               continue;
           }
 
@@ -1188,7 +1168,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       if(fmw > est_width)
         est_width = fmw;
       PopupMenu* ccSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
-      for(int num = 0; num < 127; ++num)
+      for(int num = 0; num < 128; ++num)
         // If it's not already in the parent menu...
         if(already_added_nums.find(num) == already_added_nums.end())
           ccSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);

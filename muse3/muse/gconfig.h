@@ -230,7 +230,9 @@ struct GlobalConfigValues {
       bool exportPortDeviceSMF0;  // Export a port and/or device meta even for SMF0.
       int exportModeInstr;        // Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString importMidiDefaultInstr;  // Default to this instrument not Generic, if no match found
-      
+      bool exportDrumMapOverrides; // Apply Port, Channel, and ANote drum map overrides to export
+      bool exportChannelOverridesToNewTrack; // Drum map Channel overrides go to a separate track
+
       int startMode;          // 0 - start with last song
                               // 1 - start with default template
                               // 2 - start with song

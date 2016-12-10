@@ -4,7 +4,7 @@
 //  $Id: editinstrument.cpp,v 1.2.2.6 2009/05/31 05:12:12 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -56,6 +56,8 @@
 #include "drummap.h"
 #include "header.h"
 #include "editevent.h"
+#include "operations.h"
+#include "audio.h"
 
 namespace MusECore {
 extern int string2sysex(const QString& s, unsigned char** data);
@@ -66,7 +68,7 @@ namespace MusEGui {
 
 enum {
       COL_CNAME = 0, COL_TYPE,
-      COL_HNUM, COL_LNUM, COL_MIN, COL_MAX, COL_DEF, COL_SHOW_MIDI, COL_SHOW_DRUM
+      COL_HNUM, COL_LNUM, COL_MIN, COL_MAX, COL_DEF, COL_DRUM_DEF, COL_SHOW_MIDI, COL_SHOW_DRUM
       };
 
 //---------------------------------------------------------
@@ -242,21 +244,24 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
 
       dlist_header = new Header(dlistContainer, "header");
       dlist_header->setFixedHeight(31);
+      dlist_header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      dlist_header->setColumnLabel(tr("M"), COL_MUTE, 20);
       dlist_header->setColumnLabel(tr("Name"), COL_NAME, 120);
       dlist_header->setColumnLabel(tr("Vol"), COL_VOLUME);
-      dlist_header->setColumnLabel(tr("Quant"), COL_QUANT, 30);
+      dlist_header->setColumnLabel(tr("Quant"), COL_QUANT, 40);
       dlist_header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
-      dlist_header->setColumnLabel(tr("Len"), COL_NOTELENGTH);
+      dlist_header->setColumnLabel(tr("Len"), COL_NOTELENGTH, 40);
       dlist_header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
+      dlist_header->setColumnLabel(tr("Ch"), COL_OUTCHANNEL);
+      dlist_header->setColumnLabel(tr("Port"), COL_OUTPORT, 70);
       dlist_header->setColumnLabel(tr("LV1"), COL_LEVEL1);
       dlist_header->setColumnLabel(tr("LV2"), COL_LEVEL2);
       dlist_header->setColumnLabel(tr("LV3"), COL_LEVEL3);
       dlist_header->setColumnLabel(tr("LV4"), COL_LEVEL4);
-      dlist_header->hideSection(COL_OUTPORT);
-      dlist_header->hideSection(COL_OUTCHANNEL);
-      dlist_header->hideSection(COL_HIDE);
-      dlist_header->hideSection(COL_MUTE);
       dlist_header->hide();
+
+      setHeaderToolTips();
+      setHeaderWhatsThis();
 
       QFontMetrics fm(initEventList->font());
       int n = fm.width('9');
@@ -281,14 +286,8 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       ctrlValidLabel->setPixmap(*greendotIcon);
 
       connect(patchFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
-      connect(patchToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
       connect(lbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
-      connect(lbankToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
       connect(hbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
-      connect(hbankToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
-      connect(patchCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
-      connect(lbankCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
-      connect(hbankCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
 
       connect(addCollBtn, SIGNAL(clicked()), this, SLOT(addPatchCollection()));
       connect(rmCollBtn, SIGNAL(clicked()), this, SLOT(delPatchCollection()));
@@ -334,9 +333,18 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(patchNewGroup, SIGNAL(clicked()), SLOT(newGroupClicked()));
 
       connect(patchButton, SIGNAL(clicked()), SLOT(patchButtonClicked()));
+      connect(spinBoxDefault, SIGNAL(valueChanged(int)), SLOT(ctrlDefaultChanged(int)));
       connect(defPatchH, SIGNAL(valueChanged(int)), SLOT(defPatchChanged(int)));
       connect(defPatchL, SIGNAL(valueChanged(int)), SLOT(defPatchChanged(int)));
       connect(defPatchProg, SIGNAL(valueChanged(int)), SLOT(defPatchChanged(int)));
+
+      connect(drumPatchButton, SIGNAL(clicked()), SLOT(drumPatchButtonClicked()));
+      connect(spinBoxDrumDefault, SIGNAL(valueChanged(int)), SLOT(ctrlDrumDefaultChanged(int)));
+      connect(defDrumPatchH, SIGNAL(valueChanged(int)), SLOT(defDrumPatchChanged(int)));
+      connect(defDrumPatchL, SIGNAL(valueChanged(int)), SLOT(defDrumPatchChanged(int)));
+      connect(defDrumPatchProg, SIGNAL(valueChanged(int)), SLOT(defDrumPatchChanged(int)));
+      connect(drummapsPatchNames, SIGNAL(clicked()), SLOT(drummapCollectionPatchButtonClicked()));
+
       connect(deleteController, SIGNAL(clicked()), SLOT(deleteControllerClicked()));
       connect(newController, SIGNAL(clicked()), SLOT(newControllerClicked()));
       connect(addController, SIGNAL(clicked()), SLOT(addControllerClicked()));
@@ -348,7 +356,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(spinBoxLCtrlNo, SIGNAL(valueChanged(int)), SLOT(ctrlNumChanged()));
       connect(spinBoxMin, SIGNAL(valueChanged(int)), SLOT(ctrlMinChanged(int)));
       connect(spinBoxMax, SIGNAL(valueChanged(int)), SLOT(ctrlMaxChanged(int)));
-      connect(spinBoxDefault, SIGNAL(valueChanged(int)), SLOT(ctrlDefaultChanged(int)));
       connect(ctrlShowInMidi,SIGNAL(stateChanged(int)), SLOT(ctrlShowInMidiChanged(int)));
       connect(ctrlShowInDrum,SIGNAL(stateChanged(int)), SLOT(ctrlShowInDrumChanged(int)));
 
@@ -363,6 +370,50 @@ EditInstrument::~EditInstrument()
 {
   delete workingInstrument;
 }
+
+//---------------------------------------------------------
+//   setHeaderWhatsThis
+//---------------------------------------------------------
+
+void EditInstrument::setHeaderWhatsThis()
+      {
+      dlist_header->setWhatsThis(COL_HIDE, tr("hide instrument"));
+      dlist_header->setWhatsThis(COL_MUTE, tr("mute instrument"));
+      dlist_header->setWhatsThis(COL_NAME, tr("sound name"));
+      dlist_header->setWhatsThis(COL_VOLUME, tr("volume percent"));
+      dlist_header->setWhatsThis(COL_QUANT, tr("quantisation"));
+      dlist_header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
+      dlist_header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
+      dlist_header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
+      dlist_header->setWhatsThis(COL_OUTCHANNEL, tr("override track output channel (hold ctl to affect all rows)"));
+      dlist_header->setWhatsThis(COL_OUTPORT, tr("override track output port (hold ctl to affect all rows)"));
+      dlist_header->setWhatsThis(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
+      dlist_header->setWhatsThis(COL_LEVEL2, tr("meta key: draw velocity level 2"));
+      dlist_header->setWhatsThis(COL_LEVEL3, tr("draw default velocity level 3"));
+      dlist_header->setWhatsThis(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      }
+
+//---------------------------------------------------------
+//   setHeaderToolTips
+//---------------------------------------------------------
+
+void EditInstrument::setHeaderToolTips()
+      {
+      dlist_header->setToolTip(COL_HIDE, tr("hide instrument"));
+      dlist_header->setToolTip(COL_MUTE, tr("mute instrument"));
+      dlist_header->setToolTip(COL_NAME, tr("sound name"));
+      dlist_header->setToolTip(COL_VOLUME, tr("volume percent"));
+      dlist_header->setToolTip(COL_QUANT, tr("quantisation"));
+      dlist_header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
+      dlist_header->setToolTip(COL_NOTELENGTH, tr("note length"));
+      dlist_header->setToolTip(COL_NOTE, tr("this is the note which is played"));
+      dlist_header->setToolTip(COL_OUTCHANNEL, tr("override track output channel (ctl: affect all rows)"));
+      dlist_header->setToolTip(COL_OUTPORT, tr("override track output port (ctl: affect all rows)"));
+      dlist_header->setToolTip(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
+      dlist_header->setToolTip(COL_LEVEL2, tr("meta key: draw velocity level 2"));
+      dlist_header->setToolTip(COL_LEVEL3, tr("draw default velocity level 3"));
+      dlist_header->setToolTip(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
+      }
 
 void EditInstrument::findInstrument(const QString& find_instrument)
 {
@@ -383,66 +434,37 @@ void EditInstrument::showTab(EditInstrumentTabType n)
 
 void EditInstrument::patchCollectionSpinboxChanged(int)
 {
-  if (patchFromBox->value() > patchToBox->value())
-    patchToBox->setValue(patchFromBox->value());
-
-  if (lbankFromBox->value() > lbankToBox->value())
-    lbankToBox->setValue(lbankFromBox->value());
-
-  if (hbankFromBox->value() > hbankToBox->value())
-    hbankToBox->setValue(hbankFromBox->value());
-
   storePatchCollection();
-}
-
-void EditInstrument::patchCollectionCheckboxChanged(bool)
-{
-  storePatchCollection();
+  drummapsPatchNames->setText(workingInstrument->getPatchName(0, getDrummapCollectionPatchNumber(), true, false));
 }
 
 void EditInstrument::storePatchCollection()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
-  std::list<patch_drummap_mapping_t>* pdm = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
   if (idx>=0 && (unsigned)idx<pdm->size())
   {
-    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx);
 
-    if (patchCheckbox->isChecked())
-    {
-      it->affected_patches.first_program=patchFromBox->value()-1;
-      it->affected_patches.last_program=patchToBox->value()-1;
-    }
+    if (patchFromBox->value() == 0)
+      it->setProg(0xff);
     else
-    {
-      it->affected_patches.first_program=0;
-      it->affected_patches.last_program=127;
-    }
+      it->setProg(patchFromBox->value() - 1);
 
-    if (lbankCheckbox->isChecked())
-    {
-      it->affected_patches.first_lbank=lbankFromBox->value()-1;
-      it->affected_patches.last_lbank=lbankToBox->value()-1;
-    }
+    if (lbankFromBox->value() == 0)
+      it->setLBank(0xff);
     else
-    {
-      it->affected_patches.first_lbank=0;
-      it->affected_patches.last_lbank=127;
-    }
+      it->setLBank(lbankFromBox->value() - 1);
 
-    if (hbankCheckbox->isChecked())
-    {
-      it->affected_patches.first_hbank=hbankFromBox->value()-1;
-      it->affected_patches.last_hbank=hbankToBox->value()-1;
-    }
+    if (hbankFromBox->value() == 0)
+      it->setHBank(0xff);
     else
-    {
-      it->affected_patches.first_hbank=0;
-      it->affected_patches.last_hbank=127;
-    }
+      it->setHBank(hbankFromBox->value() - 1);
 
     workingInstrument->setDirty(true);
     repopulatePatchCollections();
@@ -452,54 +474,55 @@ void EditInstrument::storePatchCollection()
 void EditInstrument::fetchPatchCollection()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
-  std::list<patch_drummap_mapping_t>* pdm = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
   if (idx>=0 && (unsigned)idx<pdm->size())
   {
-    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx);
 
     patchFromBox->blockSignals(true);
-    patchToBox->blockSignals(true);
     lbankFromBox->blockSignals(true);
-    lbankToBox->blockSignals(true);
     hbankFromBox->blockSignals(true);
-    hbankToBox->blockSignals(true);
 
-    patchFromBox->setValue(it->affected_patches.first_program+1);
-    patchToBox->setValue(it->affected_patches.last_program+1);
+    if(it->programDontCare())
+      patchFromBox->setValue(0);
+    else
+      patchFromBox->setValue(it->prog() + 1);
 
-    lbankFromBox->setValue(it->affected_patches.first_lbank+1);
-    lbankToBox->setValue(it->affected_patches.last_lbank+1);
+    if(it->lbankDontCare())
+      lbankFromBox->setValue(0);
+    else
+      lbankFromBox->setValue(it->lbank() + 1);
 
-    hbankFromBox->setValue(it->affected_patches.first_hbank+1);
-    hbankToBox->setValue(it->affected_patches.last_hbank+1);
+    if(it->hbankDontCare())
+      hbankFromBox->setValue(0);
+    else
+      hbankFromBox->setValue(it->hbank() + 1);
 
     patchFromBox->blockSignals(false);
-    patchToBox->blockSignals(false);
     lbankFromBox->blockSignals(false);
-    lbankToBox->blockSignals(false);
     hbankFromBox->blockSignals(false);
-    hbankToBox->blockSignals(false);
 
-
-    patchCheckbox->setChecked(it->affected_patches.first_program>0 || it->affected_patches.last_program < 127);
-    lbankCheckbox->setChecked(it->affected_patches.first_lbank>0 || it->affected_patches.last_lbank < 127);
-    hbankCheckbox->setChecked(it->affected_patches.first_hbank>0 || it->affected_patches.last_hbank < 127);
+    drummapsPatchNames->setText(workingInstrument->getPatchName(0, it->_patch, true, false));
   }
 }
 
 void EditInstrument::patchActivated(const QModelIndex& idx)
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   if (idx.row()>=0)
   {
     using MusECore::DrumMap;
 
-    std::list<patch_drummap_mapping_t>* tmp = workingInstrument->get_patch_drummap_mapping();
-    std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+    iPatchDrummapMapping_t it=tmp->begin();
     if ((unsigned)idx.row()>=tmp->size())
       printf("THIS SHOULD NEVER HAPPEN: idx.row()>=tmp->size() in EditInstrument::patchActivated()\n");
 
@@ -539,11 +562,13 @@ void EditInstrument::patchActivated(const QModelIndex& idx)
 void EditInstrument::addPatchCollection()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
 
-  std::list<patch_drummap_mapping_t>* tmp = workingInstrument->get_patch_drummap_mapping();
-  std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+  iPatchDrummapMapping_t it=tmp->begin();
   advance(it,idx+1);
   tmp->insert(it,patch_drummap_mapping_t());
 
@@ -557,6 +582,8 @@ void EditInstrument::addPatchCollection()
 void EditInstrument::delPatchCollection()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
   if (idx>=0)
@@ -577,8 +604,8 @@ void EditInstrument::delPatchCollection()
     collUpBtn->setEnabled(false);
     collDownBtn->setEnabled(false);
 
-    std::list<patch_drummap_mapping_t>* tmp = workingInstrument->get_patch_drummap_mapping();
-    std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+    iPatchDrummapMapping_t it=tmp->begin();
     advance(it,idx);
     tmp->erase(it);
 
@@ -592,11 +619,13 @@ void EditInstrument::delPatchCollection()
 void EditInstrument::copyPatchCollection()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
 
-  std::list<patch_drummap_mapping_t>* tmp = workingInstrument->get_patch_drummap_mapping();
-  std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+  iPatchDrummapMapping_t it=tmp->begin();
   advance(it,idx);
   patch_drummap_mapping_t tmp2(*it);
   it++;
@@ -612,15 +641,17 @@ void EditInstrument::copyPatchCollection()
 void EditInstrument::patchCollectionUp()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
-  std::list<patch_drummap_mapping_t>* pdm = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
   int idx=patchCollections->currentIndex().row();
 
   if (idx>=1)
   {
-    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx-1);
-    std::list<patch_drummap_mapping_t>::iterator it2=it;
+    iPatchDrummapMapping_t it2=it;
     it2++;
 
     //it2 is the element to move, it is the element to put before.
@@ -640,15 +671,17 @@ void EditInstrument::patchCollectionUp()
 void EditInstrument::patchCollectionDown()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
-  std::list<patch_drummap_mapping_t>* pdm = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
   int idx=patchCollections->currentIndex().row();
 
   if ((unsigned)idx<pdm->size()-1)
   {
-    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx);
-    std::list<patch_drummap_mapping_t>::iterator it2=it;
+    iPatchDrummapMapping_t it2=it;
     it2++; it2++;
 
     //it is the element to move, it2 is the element to put before (might be end())
@@ -668,13 +701,19 @@ void EditInstrument::patchCollectionDown()
 void EditInstrument::repopulatePatchCollections()
 {
   using MusECore::patch_drummap_mapping_t;
+  using MusECore::patch_drummap_mapping_list_t;
+  using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
   QStringList strlist;
 
-  std::list<patch_drummap_mapping_t>* pdm = workingInstrument->get_patch_drummap_mapping();
-  for (std::list<patch_drummap_mapping_t>::iterator it=pdm->begin(); it!=pdm->end(); it++)
-    strlist << it->affected_patches.to_string();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
+  for (iPatchDrummapMapping_t it=pdm->begin(); it!=pdm->end(); it++)
+  {
+    patch_drummap_mapping_t& pd = *it;
+    // Patch name: Get drum, and no default - we want an exact match.
+    strlist << (it->to_string() + QString(" (") + workingInstrument->getPatchName(0, pd._patch, true, false) + QString(")"));
+  }
 
   patch_coll_model->setStringList(strlist);
   patchCollections->setCurrentIndex(patch_coll_model->index(idx));
@@ -699,6 +738,8 @@ void EditInstrument::fileNew()
       instrumentNameReturn();
       patchNameReturn();
       ctrlNameReturn();
+
+      MusECore::PendingOperationList operations;
 
       for (int i = 1;; ++i) {
             QString s = QString("Instrument-%1").arg(i);
@@ -730,7 +771,10 @@ void EditInstrument::fileNew()
                         workingInstrument->setDirty(false);
 
                   MusECore::MidiInstrument* ni = new MusECore::MidiInstrument(s);
-                  MusECore::midiInstruments.push_back(ni);
+
+                  operations.add(MusECore::PendingOperationItem(&MusECore::midiInstruments, ni, MusECore::PendingOperationItem::AddMidiInstrument));
+                  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
                   QListWidgetItem* item = new QListWidgetItem(ni->iname());
 
                   workingInstrument->assign( *ni );
@@ -835,10 +879,41 @@ bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QStrin
         MusECore::MidiInstrument* oi = (MusECore::MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
         if(oi)
         {
-          oi->assign(*workingInstrument);
-
+          //oi->assign(*workingInstrument);
           // Now signal the rest of the app so stuff can change...
-          MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
+          //MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
+
+          MusECore::iMidiInstrument imi = MusECore::midiInstruments.find(oi);
+          if(imi != MusECore::midiInstruments.end())
+          {
+            // Create a new instrument to be switched to.
+            MusECore::MidiInstrument* ni = new MusECore::MidiInstrument();
+            // Assign existing values to the new instrument.
+            ni->assign(*workingInstrument);
+
+            MusECore::PendingOperationList operations;
+            // Operation to erase and delete the existing instrument, and add the new instrument.
+            operations.add(MusECore::PendingOperationItem(&MusECore::midiInstruments, imi, ni, MusECore::PendingOperationItem::ReplaceMidiInstrument));
+            // Execute the operations.
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
+            workingInstrument->assign( *ni ); // ?? Remove, not required?
+
+            // Set the tree item's data pointer to the new instrument.
+            oldMidiInstrument->setData(Qt::UserRole, QVariant::fromValue((void*)(ni)));
+
+            changeInstrument(); // ?? Remove, not required?
+
+            // We have our new instrument! So set dirty to true.
+            //workingInstrument->setDirty(true);
+          }
+          else
+          {
+            // Error: The instrument was not found. Might as well assign to whatever the thing is.
+            oi->assign(*workingInstrument);
+            // Now signal the rest of the app so stuff can change...
+            MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
+          }
         }
       }
 
@@ -1070,7 +1145,11 @@ void EditInstrument::fileSaveAs()
           ni->assign(*workingInstrument);
           ni->setIName(so);
           ni->setFilePath(QString());
-          MusECore::midiInstruments.push_back(ni);
+
+          MusECore::PendingOperationList operations;
+          operations.add(MusECore::PendingOperationItem(&MusECore::midiInstruments, ni, MusECore::PendingOperationItem::AddMidiInstrument));
+          MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
           QListWidgetItem* item = new QListWidgetItem(so);
 
           workingInstrument->assign( *ni );
@@ -1418,7 +1497,13 @@ void EditInstrument::deleteInstrument(QListWidgetItem* item)
     return;
 
   // Remove the instrument from the list.
-  MusECore::midiInstruments.remove(ins);
+  MusECore::iMidiInstrument imi = MusECore::midiInstruments.find(ins);
+  if(imi != MusECore::midiInstruments.end())
+  {
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(&MusECore::midiInstruments, imi, MusECore::PendingOperationItem::DeleteMidiInstrument));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  }
 
   // Delete the instrument.
   delete ins;
@@ -1593,7 +1678,7 @@ void EditInstrument::patchChanged()
 
         int hb = ((p->hbank + 1) & 0xff);
         int lb = ((p->lbank + 1) & 0xff);
-        int pr = ((p->prog + 1) & 0xff);
+        int pr = ((p->program + 1) & 0xff);
         spinBoxHBank->setValue(hb);
         spinBoxLBank->setValue(lb);
         spinBoxProgram->setValue(pr);
@@ -1636,75 +1721,53 @@ void EditInstrument::defPatchChanged(int)
 }
 
 //---------------------------------------------------------
+//   defDrumPatchChanged
+//---------------------------------------------------------
+
+void EditInstrument::defDrumPatchChanged(int)
+{
+      QTreeWidgetItem* item = viewController->currentItem();
+
+      if (!item)
+            return;
+
+      MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
+
+      int val = getDefaultDrumPatchNumber();
+
+      c->setDrumInitVal(val);
+
+      setDefaultDrumPatchName(val);
+
+      item->setText(COL_DRUM_DEF, getPatchItemText(val));
+      workingInstrument->setDirty(true);
+}
+
+//---------------------------------------------------------
 //   patchButtonClicked
 //---------------------------------------------------------
 
 void EditInstrument::patchButtonClicked()
 {
-      QMenu* patchpopup = new QMenu;
+  popupControllerDefaultPatchList(false);
+}
 
-      MusECore::PatchGroupList* pg = workingInstrument->groups();
+//---------------------------------------------------------
+//   drumPatchButtonClicked
+//---------------------------------------------------------
 
-      if (pg->size() > 1) {
-            for (MusECore::ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
-                  MusECore::PatchGroup* pgp = *i;
-                  QMenu* pm = patchpopup->addMenu(pgp->name);
-                  //pm->setCheckable(false);//Qt4 doc says this is unnecessary
-                  pm->setFont(MusEGlobal::config.fonts[0]);
-                  const MusECore::PatchList& pl = pgp->patches;
-                  for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                        const MusECore::Patch* mp = *ipl;
-                              int id = ((mp->hbank & 0xff) << 16)
-                                         + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                              QAction *ac1 = pm->addAction(mp->name);
-                              ac1->setData(id);
-                        }
-                  }
-            }
-      else if (pg->size() == 1 ){
-            // no groups
-            const MusECore::PatchList& pl = pg->front()->patches;
-            for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                  const MusECore::Patch* mp = *ipl;
-                        int id = ((mp->hbank & 0xff) << 16)
-                                 + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                        QAction *ac2 = patchpopup->addAction(mp->name);
-                        ac2->setData(id);
-                  }
-            }
+void EditInstrument::drumPatchButtonClicked()
+{
+  popupControllerDefaultPatchList(true);
+}
 
-      if(patchpopup->actions().count() == 0)
-      {
-        delete patchpopup;
-        return;
-      }
+//---------------------------------------------------------
+//   drummapCollectionPatchButtonClicked
+//---------------------------------------------------------
 
-      QAction* act = patchpopup->exec(patchButton->mapToGlobal(QPoint(10,5)));
-      if(!act)
-      {
-        delete patchpopup;
-        return;
-      }
-
-      int rv = act->data().toInt();
-      delete patchpopup;
-
-      if (rv != -1)
-      {
-        setDefaultPatchControls(rv);
-
-        QTreeWidgetItem* item = viewController->currentItem();
-
-        if(item)
-        {
-          MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
-          c->setInitVal(rv);
-
-          item->setText(COL_DEF, getPatchItemText(rv));
-        }
-        workingInstrument->setDirty(true);
-      }
-
+void EditInstrument::drummapCollectionPatchButtonClicked()
+{
+  popupDrummapPatchList();
 }
 
 //---------------------------------------------------------
@@ -1718,7 +1781,9 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
       QString min;
       QString max;
       QString def;
+      QString drumdef;
       int defval = mctrl->initVal();
+      int drumdefval = mctrl->drumInitVal();
       int n = mctrl->num();
       int h = (n >> 8) & 0x7f;
       int l = n & 0x7f;
@@ -1740,6 +1805,11 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
                   def = "---";
                 else
                   def.setNum(defval);
+
+                if(drumdefval == MusECore::CTRL_VAL_UNKNOWN)
+                  drumdef = "---";
+                else
+                  drumdef.setNum(drumdefval);
                 break;
           case MusECore::MidiController::RPN:
           case MusECore::MidiController::NRPN:
@@ -1757,6 +1827,11 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
                   def = "---";
                 else
                   def.setNum(defval);
+
+                if(drumdefval == MusECore::CTRL_VAL_UNKNOWN)
+                  drumdef = "---";
+                else
+                  drumdef.setNum(drumdefval);
                 break;
           case MusECore::MidiController::Pitch:
           case MusECore::MidiController::PolyAftertouch:
@@ -1769,6 +1844,11 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
                   def = "---";
                 else
                   def.setNum(defval);
+
+                if(drumdefval == MusECore::CTRL_VAL_UNKNOWN)
+                  drumdef = "---";
+                else
+                  drumdef.setNum(drumdefval);
                 break;
           case MusECore::MidiController::Program:
                 hnum = "---";
@@ -1776,6 +1856,7 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
                 min = "---";
                 max = "---";
                 def = getPatchItemText(defval);
+                drumdef = getPatchItemText(defval);
                 break;
 
           default:
@@ -1784,6 +1865,7 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
                 min = "---";
                 max = "---";
                 def = "---";
+                drumdef = "---";
                 break;
       }
 
@@ -1793,10 +1875,10 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
       if(mctrl->showInTracks() & MusECore::MidiController::ShowInDrum)
         show_drum = "X";
       QTreeWidgetItem* ci =  new QTreeWidgetItem(viewController,
-          QStringList() <<  mctrl->name() << int2ctrlType(t) << hnum << lnum << min << max << def << show_midi << show_drum);
+          QStringList() <<  mctrl->name() << int2ctrlType(t) << hnum << lnum << min << max << def << drumdef << show_midi << show_drum);
       ci->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
       ci->setTextAlignment(1, Qt::AlignLeft | Qt::AlignVCenter);
-      for(int i = 2; i < 9; ++i)
+      for(int i = 2; i < 10; ++i)
         ci->setTextAlignment(i, Qt::AlignRight | Qt::AlignVCenter);
       ci->setData(0, Qt::UserRole, QVariant::fromValue((void*)(mctrl)));
 
@@ -1847,6 +1929,7 @@ void EditInstrument::controllerChanged()
       spinBoxMin->blockSignals(true);
       spinBoxMax->blockSignals(true);
       spinBoxDefault->blockSignals(true);
+      spinBoxDrumDefault->blockSignals(true);
 
       switch (type) {
             case MusECore::MidiController::Controller7:
@@ -1945,6 +2028,10 @@ void EditInstrument::controllerChanged()
         spinBoxDefault->setRange(0, 0);
         spinBoxDefault->setValue(0);
         setDefaultPatchControls(c->initVal());
+
+        spinBoxDrumDefault->setRange(0, 0);
+        spinBoxDrumDefault->setValue(0);
+        setDefaultDrumPatchControls(c->drumInitVal());
       }
       else
       {
@@ -1953,6 +2040,12 @@ void EditInstrument::controllerChanged()
           spinBoxDefault->setValue(spinBoxDefault->minimum());
         else
           spinBoxDefault->setValue(c->initVal());
+
+        spinBoxDrumDefault->setRange(c->minVal() - 1, c->maxVal());
+        if(c->drumInitVal() == MusECore::CTRL_VAL_UNKNOWN)
+          spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
+        else
+          spinBoxDrumDefault->setValue(c->drumInitVal());
       }
 
       spinBoxHCtrlNo->blockSignals(false);
@@ -1960,6 +2053,7 @@ void EditInstrument::controllerChanged()
       spinBoxMin->blockSignals(false);
       spinBoxMax->blockSignals(false);
       spinBoxDefault->blockSignals(false);
+      spinBoxDrumDefault->blockSignals(false);
 
       ctrlValidLabel->setPixmap(*greendotIcon);
       enableNonCtrlControls(true);
@@ -2099,6 +2193,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
       spinBoxMin->blockSignals(true);
       spinBoxMax->blockSignals(true);
       spinBoxDefault->blockSignals(true);
+      spinBoxDrumDefault->blockSignals(true);
 
       switch (t) {
             case MusECore::MidiController::Controller7:
@@ -2108,6 +2203,8 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(127);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   spinBoxDefault->setValue(spinBoxDefault->minimum());
+                  spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+                  spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
                   if(lnum == -1)
                     item->setText(COL_LNUM, QString("*"));
                   else
@@ -2116,6 +2213,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   item->setText(COL_MIN, QString().setNum(spinBoxMin->value()));
                   item->setText(COL_MAX, QString().setNum(spinBoxMax->value()));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             case MusECore::MidiController::RPN:
             case MusECore::MidiController::NRPN:
@@ -2125,6 +2223,8 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(127);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   spinBoxDefault->setValue(spinBoxDefault->minimum());
+                  spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+                  spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
                   if(lnum == -1)
                     item->setText(COL_LNUM, QString("*"));
                   else
@@ -2133,6 +2233,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   item->setText(COL_MIN, QString().setNum(spinBoxMin->value()));
                   item->setText(COL_MAX, QString().setNum(spinBoxMax->value()));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             case MusECore::MidiController::Controller14:
             case MusECore::MidiController::RPN14:
@@ -2143,6 +2244,8 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(16383);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   spinBoxDefault->setValue(spinBoxDefault->minimum());
+                  spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+                  spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
                   if(lnum == -1)
                     item->setText(COL_LNUM, QString("*"));
                   else
@@ -2151,6 +2254,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   item->setText(COL_MIN, QString().setNum(spinBoxMin->value()));
                   item->setText(COL_MAX, QString().setNum(spinBoxMax->value()));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             case MusECore::MidiController::Pitch:
                   spinBoxMin->setRange(-8192, 8191);
@@ -2159,11 +2263,14 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(8191);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   spinBoxDefault->setValue(spinBoxDefault->minimum());
+                  spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+                  spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
                   item->setText(COL_LNUM, QString("---"));
                   item->setText(COL_HNUM, QString("---"));
                   item->setText(COL_MIN, QString().setNum(spinBoxMin->value()));
                   item->setText(COL_MAX, QString().setNum(spinBoxMax->value()));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             case MusECore::MidiController::PolyAftertouch:
             case MusECore::MidiController::Aftertouch:
@@ -2173,11 +2280,14 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(127);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   spinBoxDefault->setValue(spinBoxDefault->minimum());
+                  spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+                  spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
                   item->setText(COL_LNUM, QString("---"));
                   item->setText(COL_HNUM, QString("---"));
                   item->setText(COL_MIN, QString().setNum(spinBoxMin->value()));
                   item->setText(COL_MAX, QString().setNum(spinBoxMax->value()));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             case MusECore::MidiController::Program:
                   spinBoxMin->setRange(0, 0);
@@ -2186,11 +2296,14 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(0);
                   spinBoxDefault->setRange(0, 0);
                   spinBoxDefault->setValue(0);
+                  spinBoxDrumDefault->setRange(0, 0);
+                  spinBoxDrumDefault->setValue(0);
                   item->setText(COL_LNUM, QString("---"));
                   item->setText(COL_HNUM, QString("---"));
                   item->setText(COL_MIN, QString("---"));
                   item->setText(COL_MAX, QString("---"));
                   item->setText(COL_DEF, QString("---"));
+                  item->setText(COL_DRUM_DEF, QString("---"));
                   break;
             // Shouldn't happen...
             default:
@@ -2201,14 +2314,18 @@ void EditInstrument::ctrlTypeChanged(int idx)
       spinBoxMin->blockSignals(false);
       spinBoxMax->blockSignals(false);
       spinBoxDefault->blockSignals(false);
+      spinBoxDrumDefault->blockSignals(false);
 
 
       setDefaultPatchControls(0xffffff);
+      setDefaultDrumPatchControls(0xffffff);
+
       if(t == MusECore::MidiController::Program)
       {
         c->setMinVal(0);
         c->setMaxVal(0xffffff);
         c->setInitVal(0xffffff);
+        c->setDrumInitVal(0xffffff);
       }
       else
       {
@@ -2218,6 +2335,11 @@ void EditInstrument::ctrlTypeChanged(int idx)
           c->setInitVal(MusECore::CTRL_VAL_UNKNOWN);
         else
           c->setInitVal(spinBoxDefault->value());
+
+        if(spinBoxDrumDefault->value() == spinBoxDrumDefault->minimum())
+          c->setDrumInitVal(MusECore::CTRL_VAL_UNKNOWN);
+        else
+          c->setDrumInitVal(spinBoxDrumDefault->value());
       }
 
       workingInstrument->setDirty(true);
@@ -2420,8 +2542,10 @@ void EditInstrument::ctrlMinChanged(int val)
       }
 
       spinBoxDefault->blockSignals(true);
+      spinBoxDrumDefault->blockSignals(true);
 
       spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
+      spinBoxDrumDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
 
       int inval = c->initVal();
       if(inval == MusECore::CTRL_VAL_UNKNOWN)
@@ -2441,7 +2565,26 @@ void EditInstrument::ctrlMinChanged(int val)
         }
       }
 
+      inval = c->drumInitVal();
+      if(inval == MusECore::CTRL_VAL_UNKNOWN)
+        spinBoxDrumDefault->setValue(spinBoxDrumDefault->minimum());
+      else
+      {
+        if(inval < c->minVal())
+        {
+          c->setDrumInitVal(c->minVal());
+          spinBoxDrumDefault->setValue(c->minVal());
+        }
+        else
+        if(inval > c->maxVal())
+        {
+          c->setDrumInitVal(c->maxVal());
+          spinBoxDrumDefault->setValue(c->maxVal());
+        }
+      }
+
       spinBoxDefault->blockSignals(false);
+      spinBoxDrumDefault->blockSignals(false);
 
       workingInstrument->setDirty(true);
 }
@@ -2554,6 +2697,32 @@ void EditInstrument::ctrlDefaultChanged(int val)
       {
         c->setInitVal(val);
         item->setText(COL_DEF, QString().setNum(val));
+      }
+      workingInstrument->setDirty(true);
+}
+
+//---------------------------------------------------------
+//   ctrlDrumDefaultChanged
+//---------------------------------------------------------
+
+void EditInstrument::ctrlDrumDefaultChanged(int val)
+{
+      QTreeWidgetItem* item = viewController->currentItem();
+
+      if (item == 0)
+            return;
+
+      MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
+
+      if(val == c->minVal() - 1)
+      {
+        c->setDrumInitVal(MusECore::CTRL_VAL_UNKNOWN);
+        item->setText(COL_DRUM_DEF, QString("---"));
+      }
+      else
+      {
+        c->setDrumInitVal(val);
+        item->setText(COL_DRUM_DEF, QString().setNum(val));
       }
       workingInstrument->setDirty(true);
 }
@@ -2807,7 +2976,7 @@ void EditInstrument::newPatchClicked()
       int prg = 0;
       patch->hbank = hb;
       patch->lbank = lb;
-      patch->prog = prg;
+      patch->program = prg;
       //patch->typ = -1;
       patch->drum = false;
 
@@ -2815,7 +2984,7 @@ void EditInstrument::newPatchClicked()
       {
         hb  = selpatch->hbank;
         lb  = selpatch->lbank;
-        prg = selpatch->prog;
+        prg = selpatch->program;
         //patch->typ = selpatch->typ;
         patch->drum = selpatch->drum;
       }
@@ -2838,7 +3007,7 @@ void EditInstrument::newPatchClicked()
               for(MusECore::iPatch ip = pgp->patches.begin(); ip != pgp->patches.end(); ++ip)
               {
                 MusECore::Patch* p = *ip;
-                if((p->prog  == ((prg + i) & 0x7f)) &&
+                if((p->program  == ((prg + i) & 0x7f)) &&
                    ((p->lbank == -1 && lb == -1) || (p->lbank == ((lb + j) & 0x7f))) &&
                    ((p->hbank == -1 && hb == -1) || (p->hbank == ((hb + k) & 0x7f))))
                 {
@@ -2852,7 +3021,7 @@ void EditInstrument::newPatchClicked()
 
             if(!found)
             {
-              patch->prog  = (prg + i) & 0x7f;
+              patch->program  = (prg + i) & 0x7f;
               if(lb == -1)
                 patch->lbank = -1;
               else
@@ -3024,6 +3193,7 @@ void EditInstrument::newControllerClicked()
       ctrl->setMinVal(0);
       ctrl->setMaxVal(127);
       ctrl->setInitVal(MusECore::CTRL_VAL_UNKNOWN);
+      ctrl->setDrumInitVal(MusECore::CTRL_VAL_UNKNOWN);
 
       QTreeWidgetItem* ci = viewController->currentItem();
 
@@ -3145,7 +3315,7 @@ void EditInstrument::addControllerClicked()
   // Add Common Controls not already found in instrument:
   PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent.
   MusECore::MidiControllerList* cl = workingInstrument->controller();
-  for(int num = 0; num < 127; ++num)
+  for(int num = 0; num < 128; ++num)
   {
     // If it's not already in the parent menu...
     if(cl->find(num) == cl->end())
@@ -3174,6 +3344,7 @@ void EditInstrument::ctrlPopupTriggered(QAction* act)
     ctrl->setMinVal(0);
     ctrl->setMaxVal(127);
     ctrl->setInitVal(MusECore::CTRL_VAL_UNKNOWN);
+    ctrl->setDrumInitVal(MusECore::CTRL_VAL_UNKNOWN);
     ctrl->setName(MusECore::midiCtrlName(num, false));
 
     workingInstrument->controller()->add(ctrl);
@@ -3232,8 +3403,8 @@ void EditInstrument::updatePatch(MusECore::MidiInstrument* instrument, MusECore:
             }
 
       signed char pr = (spinBoxProgram->value() - 1) & 0xff;
-      if (p->prog != pr) {
-            p->prog = pr;
+      if (p->program != pr) {
+            p->program = pr;
 
             instrument->setDirty(true);
             }
@@ -3355,6 +3526,18 @@ void EditInstrument::enableDefaultControls(bool enVal, bool enPatch)
   defPatchH->setEnabled(enPatch);
   defPatchL->setEnabled(enPatch);
   defPatchProg->setEnabled(enPatch);
+
+  spinBoxDrumDefault->setEnabled(enVal);
+  drumPatchButton->setEnabled(enPatch);
+  if(!enPatch)
+  {
+    drumPatchButton->blockSignals(true);
+    drumPatchButton->setText("---");
+    drumPatchButton->blockSignals(false);
+  }
+  defDrumPatchH->setEnabled(enPatch);
+  defDrumPatchL->setEnabled(enPatch);
+  defDrumPatchProg->setEnabled(enPatch);
 }
 
 //---------------------------------------------------------
@@ -3422,6 +3605,12 @@ void EditInstrument::enableNonCtrlControls(bool v)
     defPatchL->setEnabled(false);
     defPatchProg->setEnabled(false);
 
+    spinBoxDrumDefault->setEnabled(false);
+    drumPatchButton->setEnabled(false);
+    defDrumPatchH->setEnabled(false);
+    defDrumPatchL->setEnabled(false);
+    defDrumPatchProg->setEnabled(false);
+
     spinBoxMin->setEnabled(false);
     spinBoxMax->setEnabled(false);
   }
@@ -3439,8 +3628,19 @@ void EditInstrument::enableNonCtrlControls(bool v)
 void EditInstrument::setDefaultPatchName(int val)
 {
   patchButton->blockSignals(true);
-  patchButton->setText(getPatchName(val));
+  patchButton->setText(getPatchName(val, false)); // false = non-drums.
   patchButton->blockSignals(false);
+}
+
+//---------------------------------------------------------
+//    setDefaultPatchName
+//---------------------------------------------------------
+
+void EditInstrument::setDefaultDrumPatchName(int val)
+{
+  drumPatchButton->blockSignals(true);
+  drumPatchButton->setText(getPatchName(val, true)); // true = drums.
+  drumPatchButton->blockSignals(false);
 }
 
 //---------------------------------------------------------
@@ -3452,6 +3652,44 @@ int EditInstrument::getDefaultPatchNumber()
   int hval = defPatchH->value() - 1;
   int lval = defPatchL->value() - 1;
   int prog = defPatchProg->value() - 1;
+  if(hval == -1)
+    hval = 0xff;
+  if(lval == -1)
+    lval = 0xff;
+  if(prog == -1)
+    prog = 0xff;
+
+  return ((hval & 0xff) << 16) + ((lval & 0xff) << 8) + (prog & 0xff);
+}
+
+//---------------------------------------------------------
+//    getDefaultDrumPatchNumber
+//---------------------------------------------------------
+
+int EditInstrument::getDefaultDrumPatchNumber()
+{
+  int hval = defDrumPatchH->value() - 1;
+  int lval = defDrumPatchL->value() - 1;
+  int prog = defDrumPatchProg->value() - 1;
+  if(hval == -1)
+    hval = 0xff;
+  if(lval == -1)
+    lval = 0xff;
+  if(prog == -1)
+    prog = 0xff;
+
+  return ((hval & 0xff) << 16) + ((lval & 0xff) << 8) + (prog & 0xff);
+}
+
+//---------------------------------------------------------
+//    getDrummapCollectionPatchNumber
+//---------------------------------------------------------
+
+int EditInstrument::getDrummapCollectionPatchNumber()
+{
+  int hval = hbankFromBox->value() - 1;
+  int lval = lbankFromBox->value() - 1;
+  int prog = patchFromBox->value() - 1;
   if(hval == -1)
     hval = 0xff;
   if(lval == -1)
@@ -3499,6 +3737,42 @@ void EditInstrument::setDefaultPatchNumbers(int val)
 }
 
 //---------------------------------------------------------
+//    setDefaultDrumPatchNumbers
+//---------------------------------------------------------
+
+void EditInstrument::setDefaultDrumPatchNumbers(int val)
+{
+  int hb;
+  int lb;
+  int pr;
+
+  if(val == MusECore::CTRL_VAL_UNKNOWN)
+    hb = lb = pr = 0;
+  else
+  {
+    hb = ((val >> 16) & 0xff) + 1;
+    if (hb == 0x100)
+      hb = 0;
+    lb = ((val >> 8) & 0xff) + 1;
+    if (lb == 0x100)
+      lb = 0;
+    pr = (val & 0xff) + 1;
+    if (pr == 0x100)
+      pr = 0;
+  }
+
+  defDrumPatchH->blockSignals(true);
+  defDrumPatchL->blockSignals(true);
+  defDrumPatchProg->blockSignals(true);
+  defDrumPatchH->setValue(hb);
+  defDrumPatchL->setValue(lb);
+  defDrumPatchProg->setValue(pr);
+  defDrumPatchH->blockSignals(false);
+  defDrumPatchL->blockSignals(false);
+  defDrumPatchProg->blockSignals(false);
+}
+
+//---------------------------------------------------------
 //    setDefaultPatchControls
 //---------------------------------------------------------
 
@@ -3509,37 +3783,168 @@ void EditInstrument::setDefaultPatchControls(int val)
 }
 
 //---------------------------------------------------------
+//    setDefaultDrumPatchControls
+//---------------------------------------------------------
+
+void EditInstrument::setDefaultDrumPatchControls(int val)
+{
+  setDefaultDrumPatchNumbers(val);
+  setDefaultDrumPatchName(val);
+}
+
+//---------------------------------------------------------
 //   getPatchName
 //---------------------------------------------------------
 
-QString EditInstrument::getPatchName(int prog)
+QString EditInstrument::getPatchName(int prog, bool drum, bool includeDefault)
 {
-      int pr = prog & 0xff;
-      if(prog == MusECore::CTRL_VAL_UNKNOWN || pr == 0xff)
-            return "---";
+  if(MusECore::Patch* p = workingInstrument->groups()->findPatch(prog, drum, includeDefault))
+    return p->name;
+  return "---";
+}
 
-      int hbank = (prog >> 16) & 0xff;
-      int lbank = (prog >> 8) & 0xff;
+QMenu* EditInstrument::createPopupPatchList(bool drum)
+{
+  QMenu* patchpopup = new QMenu;
 
-      MusECore::PatchGroupList* pg = workingInstrument->groups();
+  MusECore::PatchGroupList* pg = workingInstrument->groups();
 
-      for(MusECore::ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
-            const MusECore::PatchList& pl = (*i)->patches;
-            for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                  const MusECore::Patch* mp = *ipl;
-                  if (//(mp->typ & tmask) && DELETETHIS
-                    (pr == mp->prog)
-                    //&& ((drum && mode != MT_GM) ||  DELETETHIS
-                    //   (mp->drum == drumchan))
+  if (pg->size() > 1) {
+        for (MusECore::ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
+              MusECore::PatchGroup* pgp = *i;
+              QMenu* pm = 0;
+              const MusECore::PatchList& pl = pgp->patches;
+              for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                          const MusECore::Patch* mp = *ipl;
+                          if(mp->drum != drum)
+                            continue;
+                          if(!pm) {
+                            pm = new QMenu(pgp->name, patchpopup);
+                            patchpopup->addMenu(pm);
+                            pm->setFont(MusEGlobal::config.fonts[0]);
+                          }
+                          int id = ((mp->hbank & 0xff) << 16)
+                                      + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);
+                          QAction *ac1 = pm->addAction(mp->name);
+                          ac1->setData(id);
+                    }
+              }
+        }
+  else if (pg->size() == 1 ){
+        // no groups
+        const MusECore::PatchList& pl = pg->front()->patches;
+        for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                    const MusECore::Patch* mp = *ipl;
+                    if(mp->drum != drum)
+                      continue;
+                    int id = ((mp->hbank & 0xff) << 16)
+                              + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);
+                    QAction *ac2 = patchpopup->addAction(mp->name);
+                    ac2->setData(id);
+              }
+        }
 
-                    //&& (hbank == mp->hbank || !hb || mp->hbank == -1)
-                    //&& (lbank == mp->lbank || !lb || mp->lbank == -1))
-                    && (hbank == mp->hbank || mp->hbank == -1)
-                    && (lbank == mp->lbank || mp->lbank == -1))
-                        return mp->name;
-                  }
-            }
-      return "---";
+  if(patchpopup->actions().count() == 0)
+  {
+    delete patchpopup;
+    return NULL;
+  }
+
+  return patchpopup;
+}
+
+void EditInstrument::popupDrummapPatchList()
+{
+  QMenu* patchpopup = createPopupPatchList(true);
+  if(!patchpopup)
+    return;
+
+  QAction* act = patchpopup->exec(drummapsPatchNames->mapToGlobal(QPoint(10,5)));
+  if(!act)
+  {
+    delete patchpopup;
+    return;
+  }
+
+  bool ok;
+  int rv = act->data().toInt(&ok);
+  delete patchpopup;
+
+  if(!ok || rv == -1)
+    return;
+
+  int hb = (rv >> 16) & 0xff;
+  int lb = (rv >> 8) & 0xff;
+  int pr = rv & 0xff;
+
+  patchFromBox->blockSignals(true);
+  lbankFromBox->blockSignals(true);
+  hbankFromBox->blockSignals(true);
+
+  if(hb == 0xff)
+    hbankFromBox->setValue(0);
+  else
+    hbankFromBox->setValue(hb + 1);
+
+  if(lb == 0xff)
+    lbankFromBox->setValue(0);
+  else
+    lbankFromBox->setValue(lb + 1);
+
+  if(pr == 0xff)
+    patchFromBox->setValue(0);
+  else
+    patchFromBox->setValue(pr + 1);
+
+  patchFromBox->blockSignals(false);
+  lbankFromBox->blockSignals(false);
+  hbankFromBox->blockSignals(false);
+
+  storePatchCollection();
+}
+
+void EditInstrument::popupControllerDefaultPatchList(bool drum)
+{
+  QMenu* patchpopup = createPopupPatchList(drum);
+  if(!patchpopup)
+    return;
+
+  QAction* act = patchpopup->exec((drum ? drumPatchButton : patchButton)->mapToGlobal(QPoint(10,5)));
+  if(!act)
+  {
+    delete patchpopup;
+    return;
+  }
+
+  bool ok;
+  int rv = act->data().toInt(&ok);
+  delete patchpopup;
+
+  if(!ok || rv == -1)
+    return;
+
+  if(drum)
+    setDefaultDrumPatchControls(rv);
+  else
+    setDefaultPatchControls(rv);
+
+  QTreeWidgetItem* item = viewController->currentItem();
+
+  if(item)
+  {
+    MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
+    if(drum)
+    {
+      c->setDrumInitVal(rv);
+      item->setText(COL_DRUM_DEF, getPatchItemText(rv));
+    }
+    else
+    {
+      c->setInitVal(rv);
+      item->setText(COL_DEF, getPatchItemText(rv));
+    }
+  }
+  workingInstrument->setDirty(true);
 }
 
 //---------------------------------------------------------

@@ -128,6 +128,7 @@ class LCDPatchEdit : public QFrame
     virtual void resizeEvent(QResizeEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void enterEvent(QEvent*);
     virtual void leaveEvent(QEvent*);
     virtual void keyPressEvent(QKeyEvent*);
     virtual bool event(QEvent*);

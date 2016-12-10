@@ -4,7 +4,7 @@
 //  $Id: editinstrument.h,v 1.1.1.1.2.4 2009/05/31 05:12:12 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -68,8 +68,8 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       QGridLayout* dlist_grid;
       QStringListModel* patch_coll_model;
 
-
-
+      void setHeaderToolTips();
+      void setHeaderWhatsThis();
       void closeEvent(QCloseEvent*);
       int checkDirty(MusECore::MidiInstrument*, bool isClose = false);
       bool fileSave(MusECore::MidiInstrument*, const QString&);
@@ -85,12 +85,20 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void enableDefaultControls(bool, bool);
       void enableNonCtrlControls(bool);
       void setDefaultPatchName(int);
+      void setDefaultDrumPatchName(int);
       int getDefaultPatchNumber();
+      int getDefaultDrumPatchNumber();
+      int getDrummapCollectionPatchNumber();
       void setDefaultPatchNumbers(int);
+      void setDefaultDrumPatchNumbers(int);
       void setDefaultPatchControls(int);
-      QString getPatchName(int);
+      void setDefaultDrumPatchControls(int);
+      QString getPatchName(int prog, bool drum = false, bool includeDefault = true);
+      QMenu* createPopupPatchList(bool drum = false);
+      void popupDrummapPatchList();
+      void popupControllerDefaultPatchList(bool drum = false);
       void deleteInstrument(QListWidgetItem*);
-      
+
    private slots:
       virtual void fileNew();
       virtual void fileOpen();
@@ -109,7 +117,10 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newPatchClicked();
       void newGroupClicked();
       void patchButtonClicked();
+      void drumPatchButtonClicked();
+      void drummapCollectionPatchButtonClicked();
       void defPatchChanged(int);
+      void defDrumPatchChanged(int);
       void deleteControllerClicked();
       void newControllerClicked();
       void addControllerClicked();
@@ -120,6 +131,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void ctrlMinChanged(int);
       void ctrlMaxChanged(int);
       void ctrlDefaultChanged(int);
+      void ctrlDrumDefaultChanged(int);
       void ctrlShowInMidiChanged(int);
       void ctrlShowInDrumChanged(int);
       void sysexChanged(QListWidgetItem*, QListWidgetItem*);
@@ -131,7 +143,6 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void initListChangeClicked();
       
       void patchCollectionSpinboxChanged(int);
-      void patchCollectionCheckboxChanged(bool);
       void patchActivated(const QModelIndex&);
       void addPatchCollection();
       void delPatchCollection();

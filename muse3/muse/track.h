@@ -4,7 +4,7 @@
 //  $Id: track.h,v 1.39.2.17 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013, 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -53,6 +53,9 @@ struct ControlEvent;
 struct Port;
 class PendingOperationList;
 class Undo;
+class WorkingDrumMapList;
+class WorkingDrumMapPatchList;
+struct MidiCtrlValRemapOperation;
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -260,23 +263,22 @@ class MidiTrack : public Track {
       static bool _isVisible;
       clefTypes clefType;
 
-      
       DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
-      bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
-      bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
+
+      // A list of user-altered drum map items.
+      WorkingDrumMapPatchList* _workingDrumMapPatchList;
+
       bool _drummap_ordering_tied_to_patch; //if true, changing patch also changes drummap-ordering
       int drum_in_map[128];
+      int _curDrumPatchNumber; // Can be CTRL_VAL_UNKNOWN.
       
       void init();
       void internal_assign(const Track&, int flags);
       void init_drummap(bool write_ordering); // function without argument in public
       void remove_ourselves_from_drum_ordering();
-      void init_drum_ordering();
       
       void writeOurDrumSettings(int level, Xml& xml) const;
       void readOurDrumSettings(Xml& xml);
-      //void writeOurDrumMap(int level, Xml& xml, bool full) const; //below in public:
-      //void readOurDrumMap(Xml& xml, bool dont_init=false); //below in public:
 
    public:
       EventList events;           // tmp Events during midi import
@@ -289,6 +291,7 @@ class MidiTrack : public Track {
       virtual ~MidiTrack();
 
       virtual void assign(const Track&, int flags);
+      virtual void convertToType(TrackType trackType);
 
       virtual AutomationType automationType() const;
       virtual void setAutomationType(AutomationType);
@@ -315,13 +318,22 @@ class MidiTrack : public Track {
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
       
-      void setOutChannel(int i)       { _outChannel = i; }
-      void setOutPort(int i)          { _outPort = i; }
-      // These will transfer controller data to the new selected port and/or channel.
-      void setOutChanAndUpdate(int chan);
-      void setOutPortAndUpdate(int port);
-      // Combines both port and channel operations.
-      void setOutPortAndChannelAndUpdate(int port, int chan);
+      // This enum describes what has changed in the following port/channel methods.
+      enum ChangedType { NothingChanged = 0x0, PortChanged = 0x1, ChannelChanged = 0x2, DrumMapChanged = 0x4 };
+      // OR'd ChangedType flags.
+      typedef int ChangedType_t;
+      // Sets the output port, and for a drum track updates any drum map. Returns true if anything changed.
+      // If doSignal is true, automatically emits SC_DRUM_MAP or sends audio message if audio is running and not idle.
+      ChangedType_t setOutPort(int i, bool doSignal = false);
+      // Sets the output channel, and for a drum track updates any drum map. Returns true if anything changed.
+      // If doSignal is true, automatically emits SC_DRUM_MAP or sends audio message if audio is running and not idle.
+      ChangedType_t setOutChannel(int i, bool doSignal = false);
+      // Same as setOutPort, but also transfers controller data to the new selected port.
+      ChangedType_t setOutPortAndUpdate(int port, bool doSignal = false);
+      // Same as setOutChannel, but also transfers controller data to the new selected channel.
+      ChangedType_t setOutChanAndUpdate(int chan, bool doSignal = false);
+      // Combines both setOutChannel and setOutPort operations, and transfers controller data to the new selected port/channel.
+      ChangedType_t setOutPortAndChannelAndUpdate(int port, int chan, bool doSignal = false);
       
       // Backward compatibility: For reading old songs.
       void setInPortAndChannelMask(unsigned int portmask, int chanmask); 
@@ -359,22 +371,49 @@ class MidiTrack : public Track {
       clefTypes getClef() { return clefType; }
       
       DrumMap* drummap() { return _drummap; }
-      bool* drummap_hidden() { return _drummap_hidden; }
       int map_drum_in(int enote) { return drum_in_map[enote]; }
       void update_drum_in_map();
+      void init_drum_ordering();
 
       void init_drummap() { init_drummap(false); } // function with argument in private
       
-      bool auto_update_drummap();
-      void set_drummap_tied_to_patch(bool);
-      bool drummap_tied_to_patch() { return _drummap_tied_to_patch; }
+      // For drum tracks, updates the drum map and returns true if anything changed.
+      // If doSignal is true, automatically emits SC_DRUM_MAP or sends audio message if audio is running and not idle.
+      bool updateDrummap(int doSignal);
+      //void workingDrumMapOperation(int index, bool updateDruminmap, const WorkingDrumMapEntry& item, PendingOperationList& ops);
+      WorkingDrumMapPatchList* workingDrumMap() const { return _workingDrumMapPatchList; }
+      void setWorkingDrumMap(WorkingDrumMapPatchList* list, bool isInstrumentMod);
+      void modifyWorkingDrumMap(WorkingDrumMapList& list, bool isReset, bool includeDefault, bool isInstrumentMod, bool doWholeMap);
+      //void modifyWorkingDrumMap(WorkingDrumMapPatchList& list, bool clear, bool isReset, bool isInstrumentMod);
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType track or instrument overrides.
+      void getMapItem(int patch, int index, DrumMap& dest_map, int overrideType) const;
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType track or instrument overrides.
+      // Same as getMapItem(), but determines patch at supplied tick.
+      void getMapItemAt(int tick, int index, DrumMap& dest_map, int overrideType) const;
+      // Returns OR'd WorkingDrumMapEntry::OverrideType flags indicating whether a map item's members,
+      //  given by 'fields' (OR'd WorkingDrumMapEntry::Fields), are either the original or working map item.
+      // Here in MidiTrack the flags can be NoOverride, InstrumentOverride, and TrackOverride. See corresponding
+      //  function in MidiInstrument. If patch is -1 it uses the track's current patch (midi controller hwCtrlVal).
+      int isWorkingMapItem(int index, int fields, int patch = -1) const;
+
+      // Ensures there are NO duplicate enote fields in the final drum map array.
+      // Returns true if anything changed.
+      bool normalizeDrumMap();
+      // Ensures there are NO duplicate enote fields in the final drum map array for the given patch.
+      // Returns true if anything changed.
+      bool normalizeDrumMap(int patch);
+
       void set_drummap_ordering_tied_to_patch(bool);
       bool drummap_ordering_tied_to_patch() { return _drummap_ordering_tied_to_patch; }
 
-      //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
-      //void readOurDrumSettings(Xml& xml); // above in private:
-      void writeOurDrumMap(int level, Xml& xml, bool full) const;
-      void readOurDrumMap(Xml& xml, QString tag, bool dont_init=false, bool compatibility=false);
+      void MidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop);
+
+      // Prints a handy debug table of drum map values and overrides etc.
+      void dumpMap();
       };
 
 //---------------------------------------------------------

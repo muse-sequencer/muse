@@ -680,14 +680,14 @@ void ArrangerView::populateAddTrack()
       QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
-      trackMidiAction = grp->actions()[0];
-      trackDrumAction = grp->actions()[1];
-      trackNewStyleDrumAction = grp->actions()[2];
-      trackWaveAction = grp->actions()[3];
-      trackAOutputAction = grp->actions()[4];
-      trackAGroupAction = grp->actions()[5];
-      trackAInputAction = grp->actions()[6];
-      trackAAuxAction = grp->actions()[7];
+      int idx = 0;
+      trackMidiAction = grp->actions()[idx++];
+      trackDrumAction = grp->actions()[idx++];
+      trackWaveAction = grp->actions()[idx++];
+      trackAOutputAction = grp->actions()[idx++];
+      trackAGroupAction = grp->actions()[idx++];
+      trackAInputAction = grp->actions()[idx++];
+      trackAAuxAction = grp->actions()[idx++];
 }
 
 void ArrangerView::addNewTrack(QAction* action)
@@ -713,7 +713,6 @@ void ArrangerView::updateShortcuts()
       
       trackMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
       trackDrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
-      trackNewStyleDrumAction->setShortcut(shortcuts[SHRT_ADD_NEW_STYLE_DRUM_TRACK].key);
       trackWaveAction->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key);
       trackAOutputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
       trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);

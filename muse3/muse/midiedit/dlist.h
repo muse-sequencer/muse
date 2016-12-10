@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: dlist.h,v 1.5.2.3 2009/10/16 21:50:16 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,6 +26,7 @@
 
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QSpinBox>
 
 #include "type_defs.h"
 #include "awl/pitchedit.h"
@@ -32,12 +34,16 @@
 
 #define TH  18                // normal Track-hight
 
+// REMOVE Tim. newdrums. Added.
+// Adds the ability to override at instrument level.
+// But it just makes things too complex for the user.
+// And in a way is unneccesary and overkill, since we
+//  already allow modifying an instrument.
+//#define _USE_INSTRUMENT_OVERRIDES_
+
 class QHeaderView;
-class QLineEdit;
 class QMouseEvent;
 class QPainter;
-class Device;
-class QLineEdit;
 
 namespace MusECore {
 struct DrumMap;
@@ -47,7 +53,6 @@ namespace MusEGui {
 
 class ScrollScale;
 class DrumCanvas;
-
 
 enum DrumColumn {
   COL_HIDE = 0,
@@ -71,40 +76,57 @@ enum DrumColumn {
 //---------------------------------------------------------
 //   DLineEdit
 //---------------------------------------------------------
+
 class DLineEdit: public QLineEdit
 {
-    public:
-      DLineEdit(QWidget* parent) : QLineEdit(parent) {}
-      virtual ~DLineEdit() {};
-      
-      virtual void keyPressEvent(QKeyEvent* keyItem) {
-            if(keyItem->key() == Qt::Key_Escape) {
-                parentWidget()->setFocus();
-                hide();
-                }
-            else
-               QLineEdit::keyPressEvent(keyItem);
+  Q_OBJECT
 
-            }
+  protected:
+    virtual bool event(QEvent*);
+
+  signals:
+    void returnPressed();
+    void escapePressed();
+
+  public:
+    DLineEdit(QWidget* parent);
+};
+
+//---------------------------------------------------------
+//   DrumListSpinBox
+//---------------------------------------------------------
+
+class DrumListSpinBox : public QSpinBox {
+  Q_OBJECT
+
+  protected:
+    virtual bool event(QEvent*);
+
+  signals:
+    void returnPressed();
+    void escapePressed();
+
+  public:
+    DrumListSpinBox(QWidget* parent=0);
 };
 
 //---------------------------------------------------------
 //   DPitchEdit
 //---------------------------------------------------------
+
 class DPitchEdit: public Awl::PitchEdit
 {
-    public:
-      DPitchEdit(QWidget* parent) : PitchEdit(parent) {}
-      virtual ~DPitchEdit() {};
-      
-      virtual void keyPressEvent(QKeyEvent* keyItem) {
-            if ((keyItem->key() == Qt::Key_Escape) || (keyItem->key() == Qt::Key_Return)) {
-                parentWidget()->setFocus();
-                hide();
-                }
-            else
-               PitchEdit::keyPressEvent(keyItem);
-            }
+  Q_OBJECT
+
+  protected:
+    virtual bool event(QEvent*);
+
+  //signals:
+    //void returnPressed();
+    //void escapePressed();
+
+  public:
+    DPitchEdit(QWidget* parent);
 };
 
 //---------------------------------------------------------
@@ -121,6 +143,7 @@ class DList : public View {
       
       QHeaderView* header;
       QLineEdit* editor;
+      DrumListSpinBox* val_editor;
       DPitchEdit* pitch_editor;
       MusECore::DrumMap* editEntry;
       MusECore::DrumMap* currentlySelected;
@@ -140,13 +163,19 @@ class DList : public View {
       virtual void wheelEvent(QWheelEvent* e);
 
       int x2col(int x) const;
-      void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
-      
+      // Returns -1 if invalid.
+      int col2Field(int col) const;
+      // Returns -1 if invalid.
+      int field2Col(int field) const;
+      bool devicesPopupMenu(MusECore::DrumMap* t, int x, int y);
+
       void init(QHeaderView*, QWidget*);
 
    private slots:
       void sizeChange(int, int, int);
+      void escapePressed();
       void returnPressed();
+      void valEdited();
       void pitchEdited();
       void moved(int, int, int);
 
@@ -165,11 +194,12 @@ class DList : public View {
    
    public:
       void lineEdit(int line, int section);
+      void valEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
       DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
       DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize=128);
-      ~DList();
+      virtual ~DList();
       int getSelectedInstrument();
 
       };

@@ -4,7 +4,7 @@
 //  $Id: track.cpp,v 1.34.2.11 2009/11/30 05:05:49 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011, 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -108,7 +108,7 @@ void addPortCtrlEvents(MidiTrack* t)
             cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
-        
+
         mp->setControllerVal(ch, tick, cntrl, val, part);
       }
     }
@@ -165,7 +165,7 @@ void removePortCtrlEvents(MidiTrack* t)
             cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
-        
+
         mp->deleteController(ch, tick, cntrl, part);
       }
     }
@@ -547,8 +547,8 @@ MidiTrack::MidiTrack()
       clefType=trebleClef;
       
       _drummap=new DrumMap[128];
-      _drummap_hidden=new bool[128];
-      
+      _workingDrumMapPatchList = new WorkingDrumMapPatchList();
+
       init_drummap(true /* write drummap ordering information as well */);
       }
 
@@ -556,8 +556,8 @@ MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
   : Track(mt, flags)
 {
       _drummap=new DrumMap[128];
-      _drummap_hidden=new bool[128];
-      
+      _workingDrumMapPatchList = new WorkingDrumMapPatchList();
+
       init_drummap(true /* write drummap ordering information as well */);
 
       internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
@@ -673,11 +673,12 @@ void MidiTrack::internal_assign(const Track& t, int flags)
       {
         for (int i=0;i<128;i++) // no memcpy allowed here. dunno exactly why,
           _drummap[i]=mt._drummap[i]; // seems QString-related.
-        memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(bool));
         update_drum_in_map();
-        _drummap_tied_to_patch=mt._drummap_tied_to_patch;
         _drummap_ordering_tied_to_patch=mt._drummap_ordering_tied_to_patch;
         // TODO FINDMICH "assign" ordering as well
+
+        if(mt._workingDrumMapPatchList)
+          *_workingDrumMapPatchList = *mt._workingDrumMapPatchList;
       }
 
       const bool dup = flags & ASSIGN_DUPLICATE_PARTS;
@@ -710,11 +711,86 @@ void MidiTrack::assign(const Track& t, int flags)
 
 MidiTrack::~MidiTrack()
       {
+      if(_workingDrumMapPatchList)
+        delete _workingDrumMapPatchList;
       delete [] _drummap;
-      delete [] _drummap_hidden;
-      
       remove_ourselves_from_drum_ordering();
       }
+
+
+void MidiTrack::convertToType(TrackType trackType)
+{
+  if(trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM)
+  {
+    //
+    //    Drum -> Midi
+    //
+    MusECore::PartList* pl = parts();
+    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
+        MusECore::Event ev = ie->second;
+        if(ev.type() == MusECore::Note)
+        {
+          int pitch = ev.pitch();
+          pitch = MusEGlobal::drumMap[pitch].enote;
+          ev.setPitch(pitch);
+        }
+        else
+          if(ev.type() == MusECore::Controller)
+          {
+            int ctl = ev.dataA();
+            // Is it a drum controller event, according to the track port's instrument?
+            MusECore::MidiController *mc = MusEGlobal::midiPorts[outPort()].drumController(ctl);
+            if(mc)
+              // Change the controller event's index into the drum map to an instrument note.
+              ev.setA((ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].enote);
+          }
+      }
+    }
+    setType(trackType);
+  }
+  else if(trackType == MusECore::Track::DRUM)
+  {
+    //
+    //    Midi -> Drum
+    //
+
+    // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
+
+    // Delete all port controller events.
+    MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+
+    MusECore::PartList* pl = parts();
+    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
+        MusECore::Event ev = ie->second;
+        if (ev.type() == MusECore::Note)
+        {
+          int pitch = ev.pitch();
+          pitch = MusEGlobal::drumInmap[pitch];
+          ev.setPitch(pitch);
+        }
+        else
+        {
+          if(ev.type() == MusECore::Controller)
+          {
+            int ctl = ev.dataA();
+            // Is it a drum controller event, according to the track port's instrument?
+            MusECore::MidiController *mc = MusEGlobal::midiPorts[outPort()].drumController(ctl);
+            if(mc)
+              // Change the controller event's instrument note to an index into the drum map.
+              ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
+          }
+        }
+      }
+    }
+
+    setType(MusECore::Track::DRUM);
+
+    // Add all port controller events.
+    MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+  }
+}
 
 void MidiTrack::remove_ourselves_from_drum_ordering()
 {
@@ -746,6 +822,8 @@ void MidiTrack::init()
       }
 
       _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
+
+      _curDrumPatchNumber = CTRL_VAL_UNKNOWN;
 
       transposition  = 0;
       velocity       = 0;
@@ -779,18 +857,14 @@ void MidiTrack::init_drummap(bool write_ordering)
     init_drum_ordering();
   
   update_drum_in_map();
-  
-  for (int i=0;i<128;i++)
-    _drummap_hidden[i]=false;
 
-  _drummap_tied_to_patch=true;
   _drummap_ordering_tied_to_patch=true;
 }
 
 void MidiTrack::update_drum_in_map()
 {
-  for (int i=0;i<127;i++)
-    drum_in_map[(int)_drummap[i].enote]=i;
+  for (int i = 0; i < 128; ++i)
+    drum_in_map[(int)_drummap[i].enote] = i;
 }
 
 //---------------------------------------------------------
@@ -836,48 +910,89 @@ bool MidiTrack::noOutRoute() const
   ;
 }
 
+//---------------------------------------------------------
+//   setOutChannel
+//---------------------------------------------------------
+
+MidiTrack::ChangedType_t MidiTrack::setOutChannel(int i, bool doSignal)
+{
+  if(_outChannel == i)
+    return NothingChanged;
+  _outChannel = i;
+  ChangedType_t res = ChannelChanged;
+  if(updateDrummap(doSignal))
+    res |= DrumMapChanged;
+  return res;
+}
+
+//---------------------------------------------------------
+//   setOutPort
+//---------------------------------------------------------
+
+MidiTrack::ChangedType_t MidiTrack::setOutPort(int i, bool doSignal)
+{
+  if(_outPort == i)
+    return NothingChanged;
+  _outPort = i;
+  ChangedType_t res = PortChanged;
+  if(updateDrummap(doSignal))
+    res |= DrumMapChanged;
+  return res;
+}
 
 //---------------------------------------------------------
 //   setOutChanAndUpdate
 //---------------------------------------------------------
 
-void MidiTrack::setOutChanAndUpdate(int i)       
+MidiTrack::ChangedType_t MidiTrack::setOutChanAndUpdate(int i, bool doSignal)
 { 
   if(_outChannel == i)
-    return;
+    return NothingChanged;
     
   removePortCtrlEvents(this);
   _outChannel = i; 
+  ChangedType_t res = ChannelChanged;
+  if(updateDrummap(doSignal))
+    res |= DrumMapChanged;
   addPortCtrlEvents(this);
+  return res;
 }
 
 //---------------------------------------------------------
 //   setOutPortAndUpdate
 //---------------------------------------------------------
 
-void MidiTrack::setOutPortAndUpdate(int i)
+MidiTrack::ChangedType_t MidiTrack::setOutPortAndUpdate(int i, bool doSignal)
 {
   if(_outPort == i)
-    return;
+    return NothingChanged;
   
   removePortCtrlEvents(this);
   _outPort = i; 
+  ChangedType_t res = PortChanged;
+  if(updateDrummap(doSignal))
+    res |= DrumMapChanged;
   addPortCtrlEvents(this);
+  return res;
 }
 
 //---------------------------------------------------------
 //   setOutPortAndChannelAndUpdate
 //---------------------------------------------------------
 
-void MidiTrack::setOutPortAndChannelAndUpdate(int port, int ch)
+MidiTrack::ChangedType_t MidiTrack::setOutPortAndChannelAndUpdate(int port, int ch, bool doSignal)
 {
   if(_outPort == port && _outChannel == ch)
-    return;
+    return NothingChanged;
   
   removePortCtrlEvents(this);
   _outPort = port; 
   _outChannel = ch;
+  ChangedType_t res = PortChanged | ChannelChanged;
+  if(updateDrummap(doSignal))
+    res |= DrumMapChanged;
   addPortCtrlEvents(this);
+  return res;
 }
 
 //---------------------------------------------------------
@@ -1067,19 +1182,213 @@ void MidiTrack::write(int level, Xml& xml) const
 void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
 {
   xml.tag(level++, "our_drum_settings");
-  
-  writeOurDrumMap(level, xml, false);
-  
-  xml.intTag(level, "tied", _drummap_tied_to_patch);
+  _workingDrumMapPatchList->write(level, xml);
   xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
-  
   xml.etag(level, "our_drum_settings");
 }
 
-void MidiTrack::writeOurDrumMap(int level, Xml& xml, bool full) const
+void MidiTrack::MidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop)
 {
-  write_new_style_drummap(level, xml, "our_drummap", _drummap, _drummap_hidden, full);
+  if(type() != Track::NEW_DRUM || _outPort < 0 || _outPort >= MIDI_PORTS)
+    return;
+
+  // Default to track port if -1 and track channel if -1.
+  if(newPort == -1)
+    newPort = _outPort;
+
+  if(newChan == -1)
+    newChan = _outChannel;
+
+  MidiPort* trackmp = &MusEGlobal::midiPorts[_outPort];
+
+  int dm_ch = _drummap[index].channel;
+  if(dm_ch == -1)
+    dm_ch = _outChannel;
+  int dm_port = _drummap[index].port;
+  if(dm_port == -1)
+    dm_port = _outPort;
+  MidiPort* dm_mp = &MusEGlobal::midiPorts[dm_port];
+
+  MidiCtrlValListList* dm_mcvll = dm_mp->controller();
+  MidiCtrlValList* v_mcvl;
+  int v_ch, v_ctrl, v_idx;
+  for(iMidiCtrlValList idm_mcvl = dm_mcvll->begin(); idm_mcvl != dm_mcvll->end(); ++idm_mcvl)
+  {
+    v_ch = idm_mcvl->first >> 24;
+    if(v_ch != dm_ch)
+      continue;
+    v_mcvl = idm_mcvl->second;
+    v_ctrl = v_mcvl->num();
+
+    // Is it a drum controller, according to the track port's instrument?
+    if(!trackmp->drumController(v_ctrl))
+      continue;
+
+    v_idx = v_ctrl & 0xff;
+    if(v_idx != _drummap[index].anote)
+      continue;
+
+    // Does this midi control value list need to be changed (values moved etc)?
+    iMidiCtrlVal imcv = v_mcvl->begin();
+    for( ; imcv != v_mcvl->end(); ++imcv)
+    {
+      const MidiCtrlVal& mcv = imcv->second;
+      if(mcv.part && mcv.part->track() == this)
+        break;
+    }
+    if(imcv != v_mcvl->end())
+    {
+      // A contribution from a part on this track was found.
+      // We must compose a new list, or get an existing one and schedule the existing
+      //  one for iterator erasure and pointer deletion.
+      // Add the erase iterator. Add will ignore if the erase iterator already exists.
+      rmop->_midiCtrlValLists2bErased.add(dm_port, idm_mcvl);
+      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
+      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl);
+
+      MidiCtrlValListList* op_mcvll;
+      iMidiCtrlValLists2bAdded_t imcvla = rmop->_midiCtrlValLists2bAdded.find(dm_port);
+      if(imcvla == rmop->_midiCtrlValLists2bAdded.end())
+      {
+        op_mcvll = new MidiCtrlValListList();
+        rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(dm_port, op_mcvll));
+      }
+      else
+        op_mcvll = imcvla->second;
+
+      MidiCtrlValList* op_mcvl;
+      iMidiCtrlValList imcvl = op_mcvll->find(dm_ch, v_ctrl);
+      if(imcvl == op_mcvll->end())
+      {
+        op_mcvl = new MidiCtrlValList(v_ctrl);
+        op_mcvll->add(dm_ch, op_mcvl);
+        // Assign the contents of the original list to the new list.
+        *op_mcvl = *v_mcvl;
+      }
+      else
+        op_mcvl = imcvl->second;
+
+      // Remove from the list any contributions from this track.
+      iMidiCtrlVal iopmcv = op_mcvl->begin();
+      for( ; iopmcv != op_mcvl->end(); )
+      {
+        const MidiCtrlVal& mcv = iopmcv->second;
+        if(mcv.part && mcv.part->track() == this)
+        {
+          iMidiCtrlVal iopmcv_save = iopmcv;
+          ++iopmcv_save;
+          op_mcvl->erase(iopmcv);
+          iopmcv = iopmcv_save;
+        }
+        else
+          ++iopmcv;
+      }
+    }
+
+    // We will be making changes to the list pointed to by the new settings.
+    // We must schedule the existing one for iterator erasure and pointer deletion.
+    MidiPort* dm_mp_new = &MusEGlobal::midiPorts[newPort];
+    MidiCtrlValListList* dm_mcvll_new = dm_mp_new->controller();
+    MidiCtrlValList* v_mcvl_new = 0;
+    const int v_ctrl_new = (v_ctrl & ~0xff) | newNote;
+    iMidiCtrlValList idm_mcvl_new = dm_mcvll_new->find(newChan, v_ctrl_new);
+    if(idm_mcvl_new != dm_mcvll_new->end())
+    {
+      v_mcvl_new = idm_mcvl_new->second;
+      // Add the erase iterator. Add will ignore if the erase iterator already exists.
+      rmop->_midiCtrlValLists2bErased.add(newPort, idm_mcvl_new);
+      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
+      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl_new);
+    }
+
+    // Create a new list of lists, or get an existing one.
+    MidiCtrlValListList* op_mcvll_new;
+    iMidiCtrlValLists2bAdded_t imcvla_new = rmop->_midiCtrlValLists2bAdded.find(newPort);
+    if(imcvla_new == rmop->_midiCtrlValLists2bAdded.end())
+    {
+      op_mcvll_new = new MidiCtrlValListList();
+      rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(newPort, op_mcvll_new));
+    }
+    else
+      op_mcvll_new = imcvla_new->second;
+
+    // Compose a new list for replacement, or get an existing one.
+    MidiCtrlValList* op_mcvl_new;
+    iMidiCtrlValList imcvl_new = op_mcvll_new->find(newChan, v_ctrl_new);
+    if(imcvl_new == op_mcvll_new->end())
+    {
+      op_mcvl_new = new MidiCtrlValList(v_ctrl_new);
+      op_mcvll_new->add(newChan, op_mcvl_new);
+      // Assign the contents of the original list to the new list.
+      if(v_mcvl_new)
+        *op_mcvl_new = *v_mcvl_new;
+    }
+    else
+      op_mcvl_new = imcvl_new->second;
+
+    // Add to the list any contributions from this track.
+    for(ciMidiCtrlVal imcv_new = v_mcvl->begin(); imcv_new != v_mcvl->end(); ++imcv_new)
+    {
+      const MidiCtrlVal& mcv = imcv_new->second;
+      if(mcv.part && mcv.part->track() == this)
+      {
+        op_mcvl_new->addMCtlVal(imcv_new->first, mcv.val, mcv.part);
+      }
+    }
+  }
 }
+
+void MidiTrack::dumpMap()
+{
+  if(type() != NEW_DRUM)
+    return;
+  const int port = outPort();
+  if(port < 0 || port >= MIDI_PORTS)
+    return;
+  MidiPort* mp = &MusEGlobal::midiPorts[port];
+  const int chan = outChannel();
+  const int patch = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
+
+  fprintf(stderr, "Drum map for patch:%d\n\n", patch);
+
+  fprintf(stderr, "name\t\tvol\tqnt\tlen\tchn\tprt\tlv1\tlv2\tlv3\tlv4\tenote\t\tanote\\ttmute\thide\n");
+
+  DrumMap all_dm,
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+    instr_dm, instrdef_dm,
+#endif
+    track_dm, trackdef_dm;
+
+  for(int index = 0; index < 128; ++index)
+  {
+    getMapItem(patch, index, all_dm, WorkingDrumMapEntry::AllOverrides);
+    getMapItem(patch, index, track_dm, WorkingDrumMapEntry::TrackOverride);
+    getMapItem(patch, index, trackdef_dm, WorkingDrumMapEntry::TrackDefaultOverride);
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+    getMapItem(patch, index, instr_dm, WorkingDrumMapEntry::InstrumentOverride);
+    getMapItem(patch, index, instrdef_dm, WorkingDrumMapEntry::InstrumentDefaultOverride);
+#endif
+
+    fprintf(stderr, "Index:%d ", index);
+    fprintf(stderr, "All overrides:\n");
+    all_dm.dump();
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+    fprintf(stderr, "Instrument override:\n");
+    instr_dm.dump();
+    fprintf(stderr, "Instrument default override:\n");
+    instrdef_dm.dump();
+#endif
+
+    fprintf(stderr, "Track override:\n");
+    track_dm.dump();
+    fprintf(stderr, "Track default override:\n");
+    trackdef_dm.dump();
+
+    fprintf(stderr, "\n");
+  }
+}
+
 
 //---------------------------------------------------------
 //   MidiTrack::read
@@ -1196,46 +1505,53 @@ out_of_MidiTrackRead_forloop:
 
 void MidiTrack::readOurDrumSettings(Xml& xml)
 {
-	for (;;)
-	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
-			break;
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case Xml::TagStart:
-				if (tag == "tied") 
-					_drummap_tied_to_patch = xml.parseInt();
-				else if (tag == "ordering_tied") 
-					_drummap_ordering_tied_to_patch = xml.parseInt();
-				else if (tag == "our_drummap")
-                    readOurDrumMap(xml, tag);
-                else if (tag == "drummap")
-                    readOurDrumMap(xml, tag, false);
-                else
-					xml.unknown("MidiTrack::readOurDrumSettings");
-				break;
+  bool doUpdateDrummap = false;
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    if (token == Xml::Error || token == Xml::End)
+      break;
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::TagStart:
+        if (tag == "tied")
+          xml.parseInt(); // Obsolete.
+        else if (tag == "ordering_tied")
+          _drummap_ordering_tied_to_patch = xml.parseInt();
 
-			case Xml::TagEnd:
-				if (tag == "our_drum_settings")
-					return;
+        else if (tag == "our_drummap" ||  // OBSOLETE. Support old files.
+                 tag == "drummap" ||      // OBSOLETE. Support old files.
+                 tag == "drumMapPatch")
+        {
+          // false = Do not fill in unused items.
+          _workingDrumMapPatchList->read(xml, false);
+          doUpdateDrummap = true;
+        }
 
-			default:
-				break;
-		}
-	}
+        else
+          xml.unknown("our_drum_settings");
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "our_drum_settings")
+        {
+          if(doUpdateDrummap)
+          {
+            // We must ensure that there are NO duplicate enote fields,
+            //  since the instrument map may have changed by now.
+            //normalizeWorkingDrumMapPatchList();
+
+            updateDrummap(false);
+          }
+          return;
+        }
+
+      default:
+        break;
+    }
+  }
 }
-
-void MidiTrack::readOurDrumMap(Xml& xml, QString tag, bool dont_init, bool compatibility)
-{
-  if (!dont_init) init_drummap(false);
-  _drummap_tied_to_patch=false;
-  _drummap_ordering_tied_to_patch=false;
-  read_new_style_drummap(xml, tag.toLatin1().data(), _drummap, _drummap_hidden, compatibility);
-  update_drum_in_map();
-}
-
 
 //---------------------------------------------------------
 //   addPart
@@ -1361,7 +1677,7 @@ void Track::writeRouting(int level, Xml& xml) const
       const RouteList* rl = &_outRoutes;
       for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
       {
-        // p4.0.14 Ignore Audio Output to Audio Input routes. 
+        // Ignore Audio Output to Audio Input routes.
         // They are taken care of by Audio Input in the section above.
         if(r->type == Route::TRACK_ROUTE && r->track && r->track->type() == Track::AUDIO_INPUT) 
           continue;
@@ -1474,50 +1790,711 @@ unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl)
   return result;
 }
 
-// returns true if the autoupdate changed something
-bool MidiTrack::auto_update_drummap()
+//---------------------------------------------------------
+//   updateDrummap
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
+//   Returns true if map was changed.
+//---------------------------------------------------------
+
+bool MidiTrack::updateDrummap(int doSignal)
 {
-  if (_drummap_tied_to_patch)
+  if(type() != Track::NEW_DRUM || _outPort < 0 || _outPort >= MIDI_PORTS)
+    return false;
+  MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
+  const int patch = mp->hwCtrlState(_outChannel, CTRL_PROGRAM);
+  bool map_changed;
+  DrumMap ndm;
+
+  map_changed = false;
+  for(int i = 0; i < 128; i++)
   {
-// REMOVE Tim. newdrums. Changed.
-//     int patch = getFirstControllerValue(CTRL_PROGRAM,0);
-//     const DrumMap* new_drummap = mp->instrument()->drummap_for_patch(patch);
-    if(_outPort < 0 || _outPort >= MIDI_PORTS)
-      return false;
-    MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
-    const int patch = mp->hwCtrlState(_outChannel, CTRL_PROGRAM);
-    const DrumMap* new_drummap = mp->instrument()->drummap_for_patch(patch);
-
-    if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
+    getMapItem(patch, i, ndm, WorkingDrumMapEntry::AllOverrides);
+    DrumMap& tdm = _drummap[i];
+    if(ndm != tdm)
     {
-      fprintf(stderr, "MidiTrack::auto_update_drummap: maps not equal\n"); // REMOVE Tim. newdrums. Added.
-      for (int i=0;i<128;i++)
-      {
-        bool temp_mute=_drummap[i].mute;
-        _drummap[i]=new_drummap[i];
-        _drummap[i].mute=temp_mute;
-      }
-      
-      if (_drummap_ordering_tied_to_patch)
-        init_drum_ordering();
-      
-      return true;
+      tdm = ndm;
+      map_changed = true;
     }
+    // Be sure to update the drum input note map. Probably wise (and easy) to do it always.
+    drum_in_map[(int)tdm.enote] = i;
   }
-  
-  return false;
-}
 
-void MidiTrack::set_drummap_tied_to_patch(bool val)
-{
-  _drummap_tied_to_patch=val;
-  if (val) auto_update_drummap();
+  // Ensure there are NO duplicate enote fields. Returns true if somethng was changed.
+  if(normalizeDrumMap(patch))
+    map_changed = true;
+
+  if(map_changed)
+  {
+    // Update the drum in (enote) map.
+    update_drum_in_map();
+
+    // TODO Move this to gui thread where it's safe to do so - this is only gui stuff.
+    if(drummap_ordering_tied_to_patch())
+      init_drum_ordering();  // TODO This is not exactly rt friendly since it may de/allocate.
+  }
+
+  // TODO Do this outside since we may be called as part of multiple tracks operations.
+  if(map_changed && doSignal)
+  {
+    // It is possible we are being called from gui thread already, in audio idle mode.
+    // Will this still work, and not conflict with audio sending the same message?
+    // Are we are not supposed to write to an fd from different threads?
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      // Directly emit SC_DRUMMAP song changed signal.
+      MusEGlobal::song->update(SC_DRUMMAP);
+    else
+      // Tell the gui to emit SC_DRUMMAP song changed signal.
+      MusEGlobal::audio->sendMsgToGui('D'); // Drum map changed.
+
+    return true;
+  }
+
+  return map_changed;
 }
 
 void MidiTrack::set_drummap_ordering_tied_to_patch(bool val)
 {
   _drummap_ordering_tied_to_patch=val;
-  if (val && _drummap_tied_to_patch) init_drum_ordering();
+  if (val) init_drum_ordering();
+}
+
+void MidiTrack::modifyWorkingDrumMap(WorkingDrumMapList& list, bool isReset, bool includeDefault, bool
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+isInstrumentMod
+#endif
+, bool doWholeMap)
+{
+  //if(!isDrumTrack())
+  if(type() != NEW_DRUM)
+    return;
+  const int port = outPort();
+  if(port < 0 || port >= MIDI_PORTS)
+    return;
+  MidiPort* mp = &MusEGlobal::midiPorts[port];
+  const int chan = outChannel();
+  const int patch = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
+
+  int index;
+  int idx_end;
+  int other_index;
+  int fields;
+  int cur_enote;
+  int new_enote;
+//   DrumMap orig_dm;
+  DrumMap other_dm;
+  WorkingDrumMapEntry other_wdme;
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  MidiInstrument* instr = mp->instrument();
+#endif
+  for(iWorkingDrumMapPatch_t iwdp = list.begin(); iwdp != list.end(); ++iwdp)
+  {
+    index = doWholeMap ? 0 : iwdp->first;
+    idx_end = doWholeMap ? 128 : index + 1;
+    for( ; index < idx_end; ++index)
+    {
+      DrumMap& dm = _drummap[index];
+      WorkingDrumMapEntry& wdme = iwdp->second;
+
+      fields = wdme._fields;
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+      if(isInstrumentMod)
+      {
+        if(instr)
+          instr->setWorkingDrumMapItem(patch, index, wdme, isReset);
+      }
+      else
+#endif
+
+      // FIXME Possible non realtime-friendly allocation. There will be adding new list and copying of 'name' QString here.
+      if(isReset)
+      {
+//         cur_enote = dm.enote;
+        _workingDrumMapPatchList->remove(patch, index, wdme._fields, includeDefault);
+        getMapItem(patch, index, dm, WorkingDrumMapEntry::AllOverrides);
+// REMOVE Tim. newdrums. Removed.
+//         new_enote = dm.enote;
+//         other_index = drum_in_map[new_enote];
+//
+//         if(fields & WorkingDrumMapEntry::ENoteField && other_index != index)
+//         {
+//           // In doWholeMap mode, a previous index iteration may have already cleared the other ENote field.
+//           // So do this only if there is a track override on the ENote field.
+//           if(//doWholeMap &&
+//             (isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) &
+//               (WorkingDrumMapEntry::TrackOverride | WorkingDrumMapEntry::TrackDefaultOverride)))
+//           {
+//             // Here we need to see the original map item value /before/ any overrides, so that we can
+//             //  tell whether this other_index brute-force 'reset' value is still technically an
+//             //  override, and either remove or add (modify) the list appropriately.
+//             getMapItem(patch, other_index, other_dm, WorkingDrumMapEntry::NoOverride);
+//             if(other_dm.enote == cur_enote)
+//             {
+//               // The values are equal. This is technically no longer a track override and we may remove it.
+//               _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, includeDefault);
+//             }
+//             else
+//             {
+//               // The values are not equal. This is technically still a track override, so add (modify) it.
+//               other_dm.enote = cur_enote;
+//               WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
+//               _workingDrumMapPatchList->add(patch, other_index, other_wdme);
+//             }
+//
+//             _drummap[other_index].enote = cur_enote;
+//             drum_in_map[cur_enote] = other_index;
+//           }
+//           drum_in_map[new_enote] = index;
+//         }
+      }
+      else
+      {
+        cur_enote = dm.enote;
+
+        if(includeDefault && doWholeMap)
+        {
+          // We are in the middle of 'promoting' the entire list to default patch list...
+          other_wdme._fields = fields;
+          other_wdme._mapItem = dm;
+          // Add the item to the default patch drum list.
+          _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, index, other_wdme);
+          // Now remove the item from the non-default patch drum list.
+          if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+            _workingDrumMapPatchList->remove(patch, index, WorkingDrumMapEntry::AllFields, false); // Do not include defaults.
+        }
+        else
+        {
+          if(includeDefault)
+          {
+            // We are 'promoting' the fields to default patch list...
+            other_wdme._fields = fields;
+            other_wdme._mapItem = dm;
+            _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, index, other_wdme);
+            // Now remove the item from the non-default patch drum list.
+            if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+              _workingDrumMapPatchList->remove(patch, index, WorkingDrumMapEntry::AllFields, false); // Do not include defaults.
+          }
+          else
+          {
+            _workingDrumMapPatchList->add(patch, index, wdme);
+            getMapItem(patch, index, dm, WorkingDrumMapEntry::AllOverrides);
+          }
+
+          if(fields & WorkingDrumMapEntry::ENoteField)
+          {
+            new_enote = dm.enote;
+            other_index = drum_in_map[new_enote];
+            // If there is already another track override on the other index we must change it.
+            if(isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) != WorkingDrumMapEntry::NoOverride)
+            {
+              other_dm.enote = cur_enote;
+              //WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
+              other_wdme._mapItem = other_dm;
+              other_wdme._fields = WorkingDrumMapEntry::ENoteField;
+              if(includeDefault)
+              {
+                _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, other_index, other_wdme);
+                // Now remove the item from the non-default patch drum list.
+                if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+                  _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, false); // Do not include defaults.
+              }
+              else
+                _workingDrumMapPatchList->add(patch, other_index, other_wdme);
+
+              //_drummap[other_index].enote = cur_enote;
+              //drum_in_map[cur_enote] = other_index;
+              //drum_in_map[new_enote] = index;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Ensure there are NO duplicate enote fields.
+  //if(normalizeDrumMap(patch))
+    // If anything changed, update the drum in map.
+  //  update_drum_in_map();
+  updateDrummap(false); // No signal.
+}
+
+void MidiTrack::setWorkingDrumMap(WorkingDrumMapPatchList* list, bool
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+isInstrumentMod
+#endif
+)
+{
+  //if(!isDrumTrack())
+  if(type() != NEW_DRUM)
+    return;
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  if(isInstrumentMod)
+  {
+// TODO
+//     const int port = outPort();
+//     if(port < 0 || port >= MIDI_PORTS)
+//       return;
+//     MidiPort* mp = &MusEGlobal::midiPorts[port];
+//     MidiInstrument* instr = mp->instrument();
+//     instr->setWorkingDrumMap();
+    return;
+  }
+#endif
+
+  _workingDrumMapPatchList = list;
+
+  // We must ensure that there are NO duplicate enote fields,
+  //  since the instrument map may have changed by now.
+  //normalizeWorkingDrumMapPatchList();
+
+  updateDrummap(false); // No signal.
+  update_drum_in_map();
+}
+
+void MidiTrack::getMapItemAt(int tick, int index, DrumMap& dest_map, int overrideType) const
+{
+  //if(!isDrumTrack())
+  if(type() != NEW_DRUM)
+  {
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+  const int port = outPort();
+  if(port < 0 || port >= MIDI_PORTS)
+  {
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+  const MidiPort* mp = &MusEGlobal::midiPorts[port];
+  const int track_chan = outChannel();
+
+  // Get the patch number at tick, contributed by any part,
+  //  ignoring values outside of their parts. We must include
+  //  muted or off parts or tracks in the search since this is an
+  //  operation that must not be affected by mute or off.
+  const int track_patch = mp->getVisibleCtrl(track_chan, tick, MusECore::CTRL_PROGRAM, true, true, true);
+
+  // Get the instrument's map item, and include any requested overrides.
+  getMapItem(track_patch, index, dest_map, overrideType);
+}
+
+void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int overrideType) const
+{
+  //if(!isDrumTrack())
+  if(type() != NEW_DRUM)
+  {
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+  const int port = outPort();
+  if(port < 0 || port >= MIDI_PORTS)
+  {
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+  const MidiPort* mp = &MusEGlobal::midiPorts[port];
+  const MidiInstrument* midi_instr = mp->instrument();
+  if(!midi_instr)
+  {
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+
+  // Get the instrument's map item, and include any requested overrides.
+  midi_instr->getMapItem(patch, index, dest_map, overrideType);
+
+  // Did we request to include any track default patch overrides?
+  if(overrideType & WorkingDrumMapEntry::TrackDefaultOverride)
+  {
+    // Get any track default patch overrides.
+    const WorkingDrumMapEntry* def_wdm = _workingDrumMapPatchList->find(CTRL_PROGRAM_VAL_DONT_CARE, index, false); // No default.
+    if(def_wdm)
+    {
+      if(def_wdm->_fields & WorkingDrumMapEntry::NameField)
+        dest_map.name = def_wdm->_mapItem.name;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::VolField)
+        dest_map.vol = def_wdm->_mapItem.vol;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::QuantField)
+        dest_map.quant = def_wdm->_mapItem.quant;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::LenField)
+        dest_map.len = def_wdm->_mapItem.len;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::ChanField)
+        dest_map.channel = def_wdm->_mapItem.channel;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::PortField)
+        dest_map.port = def_wdm->_mapItem.port;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::Lv1Field)
+        dest_map.lv1 = def_wdm->_mapItem.lv1;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::Lv2Field)
+        dest_map.lv2 = def_wdm->_mapItem.lv2;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::Lv3Field)
+        dest_map.lv3 = def_wdm->_mapItem.lv3;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::Lv4Field)
+        dest_map.lv4 = def_wdm->_mapItem.lv4;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::ENoteField)
+        dest_map.enote = def_wdm->_mapItem.enote;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::ANoteField)
+        dest_map.anote = def_wdm->_mapItem.anote;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::MuteField)
+        dest_map.mute = def_wdm->_mapItem.mute;
+
+      if(def_wdm->_fields & WorkingDrumMapEntry::HideField)
+        dest_map.hide = def_wdm->_mapItem.hide;
+    }
+  }
+
+  // Did we request to include any track overrides?
+  if(!(overrideType & WorkingDrumMapEntry::TrackOverride))
+    return;
+
+  // Get any track overrides.
+  const WorkingDrumMapEntry* wdm = _workingDrumMapPatchList->find(patch, index, false); // No default.
+  if(!wdm)
+    return;
+
+  if(wdm->_fields & WorkingDrumMapEntry::NameField)
+    dest_map.name = wdm->_mapItem.name;
+
+  if(wdm->_fields & WorkingDrumMapEntry::VolField)
+    dest_map.vol = wdm->_mapItem.vol;
+
+  if(wdm->_fields & WorkingDrumMapEntry::QuantField)
+    dest_map.quant = wdm->_mapItem.quant;
+
+  if(wdm->_fields & WorkingDrumMapEntry::LenField)
+    dest_map.len = wdm->_mapItem.len;
+
+  if(wdm->_fields & WorkingDrumMapEntry::ChanField)
+    dest_map.channel = wdm->_mapItem.channel;
+
+  if(wdm->_fields & WorkingDrumMapEntry::PortField)
+    dest_map.port = wdm->_mapItem.port;
+
+  if(wdm->_fields & WorkingDrumMapEntry::Lv1Field)
+    dest_map.lv1 = wdm->_mapItem.lv1;
+
+  if(wdm->_fields & WorkingDrumMapEntry::Lv2Field)
+    dest_map.lv2 = wdm->_mapItem.lv2;
+
+  if(wdm->_fields & WorkingDrumMapEntry::Lv3Field)
+    dest_map.lv3 = wdm->_mapItem.lv3;
+
+  if(wdm->_fields & WorkingDrumMapEntry::Lv4Field)
+    dest_map.lv4 = wdm->_mapItem.lv4;
+
+  if(wdm->_fields & WorkingDrumMapEntry::ENoteField)
+    dest_map.enote = wdm->_mapItem.enote;
+
+  if(wdm->_fields & WorkingDrumMapEntry::ANoteField)
+    dest_map.anote = wdm->_mapItem.anote;
+
+  if(wdm->_fields & WorkingDrumMapEntry::MuteField)
+    dest_map.mute = wdm->_mapItem.mute;
+
+  if(wdm->_fields & WorkingDrumMapEntry::HideField)
+    dest_map.hide = wdm->_mapItem.hide;
+}
+
+int MidiTrack::isWorkingMapItem(int index, int fields, int patch) const
+{
+  int ret = WorkingDrumMapEntry::NoOverride;
+  if(type() != NEW_DRUM)
+    return ret;
+
+  // Is there an instrument override for this drum map item?
+  const int port = outPort();
+  if(port >= 0 && port < MIDI_PORTS)
+  {
+    const MidiPort* mp = &MusEGlobal::midiPorts[port];
+    // Grab the patch number while we are here, if we asked for it.
+    if(patch == -1)
+    {
+      const int chan = outChannel();
+      patch = mp->hwCtrlState(chan, CTRL_PROGRAM);
+    }
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+    const MidiInstrument* midi_instr = mp->instrument();
+    if(midi_instr)
+      ret |= midi_instr->isWorkingMapItem(patch, index, fields);
+#endif
+  }
+
+  // Is there a local track default patch override for this drum map item?
+  const WorkingDrumMapEntry* def_wdm = _workingDrumMapPatchList->find(CTRL_PROGRAM_VAL_DONT_CARE, index, false); // No default.
+  if(def_wdm && (def_wdm->_fields & fields))
+    ret |= WorkingDrumMapEntry::TrackDefaultOverride;
+
+  if(patch != -1)
+  {
+    // Is there a local track override for this drum map item?
+    const WorkingDrumMapEntry* wdm = _workingDrumMapPatchList->find(patch, index, false); // No default.
+    if(wdm && (wdm->_fields & fields))
+      ret |= WorkingDrumMapEntry::TrackOverride;
+  }
+
+  return ret;
+}
+
+bool MidiTrack::normalizeDrumMap(int patch)
+{
+  if(type() != NEW_DRUM)
+    return false;
+  //WorkingDrumMapList* wdml = _workingDrumMapPatchList->find(patch, true);
+  WorkingDrumMapList* wdml = _workingDrumMapPatchList->find(patch, false);
+  WorkingDrumMapList* def_wdml = 0;
+  if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+    def_wdml = _workingDrumMapPatchList->find(CTRL_PROGRAM_VAL_DONT_CARE, false);
+
+  int index = 0;
+  DrumMap dm;
+  char enote;
+  bool changed = false;
+
+  bool used_index[128];
+  int used_enotes[128];
+  for(int i = 0; i < 128; ++i)
+  {
+    used_index[i] = false;
+    used_enotes[i] = 0;
+  }
+  char unused_enotes[128];
+  int unused_enotes_sz = 0;
+  char unused_index[128];
+  int unused_index_sz = 0;
+  int unused_enotes_cnt = 0;
+
+  // Find all the used enote fields and their indexes in the working list.
+  if(wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = wdml->begin(); iwdml != wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        used_index[iwdml->first] = true;
+        //++used_enotes[(unsigned char)wdme._mapItem.enote];
+      }
+    }
+  }
+
+  // Add all the used enote fields and their indexes in the default patch working list.
+  if(def_wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = def_wdml->begin(); iwdml != def_wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        used_index[iwdml->first] = true;
+        //++used_enotes[(unsigned char)wdme._mapItem.enote];
+      }
+    }
+  }
+
+  // Find all the used enote fields and their indexes in the working list.
+  if(wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = wdml->begin(); iwdml != wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        //used_index[iwdml->first] = true;
+        ++used_enotes[(unsigned char)wdme._mapItem.enote];
+      }
+    }
+  }
+
+  // Find all the unused indexes and enotes so far in the working list.
+  unused_index_sz = 0;
+  unused_enotes_sz = 0;
+  for(int i = 0; i < 128; ++i)
+  {
+    if(!used_index[i])
+      unused_index[unused_index_sz++] = i;
+    if(used_enotes[i] == 0)
+      unused_enotes[unused_enotes_sz++] = i;
+  }
+
+  // Ensure there are NO duplicate enotes in the existing working list items so far.
+  unused_enotes_cnt = 0;
+  if(wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = wdml->begin(); iwdml != wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        // More than 1 (this) usage?
+        if(used_enotes[(unsigned char)wdme._mapItem.enote] > 1)
+        {
+          fprintf(stderr, "MidiTrack::normalizeWorkingDrumMap: Warning: Duplicate enote:%d found. Overriding it.\n",
+                  wdme._mapItem.enote);
+          if(unused_enotes_cnt >= unused_enotes_sz)
+          {
+            fprintf(stderr, "MidiTrack::normalizeWorkingDrumMap: Error: unused_enotes_cnt >= unused_enotes_sz:%d\n",
+                    unused_enotes_sz);
+            break;
+          }
+          --used_enotes[(unsigned char)wdme._mapItem.enote];
+          //wdme._mapItem.enote = unused_enotes[unused_enotes_cnt++];
+          // Get the instrument item.
+          index = iwdml->first;
+          // Modify the enote field.
+          enote = unused_enotes[unused_enotes_cnt++];
+          _drummap[index].enote = enote;
+          ++used_enotes[(unsigned char)enote];
+          changed = true;
+        }
+      }
+    }
+  }
+
+  // Find all the used enote fields and their indexes in the default patch working list.
+  if(def_wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = def_wdml->begin(); iwdml != def_wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        //used_index[iwdml->first] = true;
+        // If there is already a non-default patch enote override for this index,
+        //  do not increment used_notes, the non-default one takes priority over this default one.
+        if(wdml)
+        {
+          ciWorkingDrumMapPatch_t def_iwdml = wdml->find(iwdml->first);
+          if(def_iwdml != wdml->end())
+          {
+            const WorkingDrumMapEntry& def_wdme = def_iwdml->second;
+            if(def_wdme._fields & WorkingDrumMapEntry::ENoteField)
+              continue;
+          }
+        }
+        ++used_enotes[(unsigned char)wdme._mapItem.enote];
+      }
+    }
+  }
+
+  // Find all the unused indexes and enotes so far in the working list.
+  unused_enotes_sz = 0;
+  for(int i = 0; i < 128; ++i)
+  {
+    if(used_enotes[i] == 0)
+      unused_enotes[unused_enotes_sz++] = i;
+  }
+
+  // Ensure there are NO duplicate enotes in the existing default patch working list items so far.
+  unused_enotes_cnt = 0;
+  if(def_wdml)
+  {
+    for(iWorkingDrumMapPatch_t iwdml = def_wdml->begin(); iwdml != def_wdml->end(); ++iwdml)
+    {
+      WorkingDrumMapEntry& wdme = iwdml->second;
+      if(wdme._fields & WorkingDrumMapEntry::ENoteField)
+      {
+        // If there is already a non-default patch enote override for this index,
+        //  skip this one, the non-default one takes priority over this default one.
+        if(wdml)
+        {
+          ciWorkingDrumMapPatch_t def_iwdml = wdml->find(iwdml->first);
+          if(def_iwdml != wdml->end())
+          {
+            const WorkingDrumMapEntry& def_wdme = def_iwdml->second;
+            if(def_wdme._fields & WorkingDrumMapEntry::ENoteField)
+              continue;
+          }
+        }
+
+        // More than 1 (this) usage?
+        if(used_enotes[(unsigned char)wdme._mapItem.enote] > 1)
+        {
+          fprintf(stderr, "MidiTrack::normalizeWorkingDrumMap: Warning: Duplicate default enote:%d found. Overriding it.\n",
+                  wdme._mapItem.enote);
+          if(unused_enotes_cnt >= unused_enotes_sz)
+          {
+            fprintf(stderr, "MidiTrack::normalizeWorkingDrumMap: Error: Default unused_enotes_cnt >= unused_enotes_sz:%d\n",
+                    unused_enotes_sz);
+            break;
+          }
+          --used_enotes[(unsigned char)wdme._mapItem.enote];
+          //wdme._mapItem.enote = unused_enotes[unused_enotes_cnt++];
+          // Get the instrument item.
+          index = iwdml->first;
+          // Modify the enote field.
+          enote = unused_enotes[unused_enotes_cnt++];
+          _drummap[index].enote = enote;
+          ++used_enotes[(unsigned char)enote];
+          changed = true;
+        }
+      }
+    }
+  }
+
+  // Add all used enotes in the unused enote indexes (the instrument fields).
+  for(int i = 0; i < unused_index_sz; ++i)
+    ++used_enotes[(unsigned char)_drummap[(unsigned char)unused_index[i]].enote];
+
+  // Find all the unused enotes.
+  unused_enotes_sz = 0;
+  for(int i = 0; i < 128; ++i)
+  {
+    if(used_enotes[i] == 0)
+      unused_enotes[unused_enotes_sz++] = i;
+  }
+
+  // Ensure there are NO duplicate enotes in the unused enote map fields (the instrument fields).
+  unused_enotes_cnt = 0;
+  for(int i = 0; i < unused_index_sz; ++i)
+  {
+    // Get the instrument item.
+    index = unused_index[i];
+    enote = _drummap[index].enote;
+
+    // More than 1 (this) usage?
+    if(used_enotes[(unsigned char)enote] > 1)
+    {
+      if(unused_enotes_cnt >= unused_enotes_sz)
+      {
+        fprintf(stderr, "MidiTrack::normalizeWorkingDrumMap: Error filling background items: unused_enotes_cnt >= unused_enotes_sz:%d\n",
+                unused_enotes_sz);
+        break;
+      }
+
+      --used_enotes[(unsigned char)enote];
+
+      // Modify the enote field.
+      _drummap[index].enote = unused_enotes[unused_enotes_cnt++];
+      ++used_enotes[(unsigned char)_drummap[index].enote];
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
+bool MidiTrack::normalizeDrumMap()
+{
+  if(type() != NEW_DRUM)
+    return false;
+  const int port = outPort();
+  if(port < 0 || port >= MIDI_PORTS)
+    return false;
+  const int chan = outChannel();
+  const int patch = MusEGlobal::midiPorts[port].hwCtrlState(chan, MusECore::CTRL_PROGRAM);
+  return normalizeDrumMap(patch);
 }
 
 } // namespace MusECore

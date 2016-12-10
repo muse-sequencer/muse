@@ -29,12 +29,13 @@
 #include "xml.h"
 #include "globals.h"
 
-// REMOVE Tim. If necessary.
 #include "audio.h"
 #include "midi.h"
 #include "mpevent.h"
 #include "midiport.h"
 #include "minstrument.h"
+
+#include "track.h"
 
 namespace MusECore {
 
@@ -90,17 +91,16 @@ MidiControllerList defaultMidiController;
 //
 // some global controller which are always available:
 //
-// REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-// MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       0,      127,      0);
-MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       1,      127,      0);
-MidiController pitchCtrl("PitchBend",             CTRL_PITCH,      -8192,    +8191,      0);
-MidiController programCtrl("Program",             CTRL_PROGRAM,        0, 0xffffff,      0);
-MidiController mastervolCtrl("MasterVolume",      CTRL_MASTER_VOLUME,  0,   0x3fff, 0x3000);
-MidiController volumeCtrl("MainVolume",           CTRL_VOLUME,         0,      127,    100);
-MidiController panCtrl("Pan",                     CTRL_PANPOT,       -64,       63,      0);
-MidiController reverbSendCtrl("ReverbSend",       CTRL_REVERB_SEND,    0,      127,      0);
-MidiController chorusSendCtrl("ChorusSend",       CTRL_CHORUS_SEND,    0,      127,      0);
-MidiController variationSendCtrl("VariationSend", CTRL_VARIATION_SEND, 0,      127,      0);
+// Zero note on vel is not allowed now.
+MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       1,      127,      0,      0);
+MidiController pitchCtrl("PitchBend",             CTRL_PITCH,      -8192,    +8191,      0,      0);
+MidiController programCtrl("Program",             CTRL_PROGRAM,        0, 0xffffff,      0,      0);
+MidiController mastervolCtrl("MasterVolume",      CTRL_MASTER_VOLUME,  0,   0x3fff, 0x3000, 0x3000);
+MidiController volumeCtrl("MainVolume",           CTRL_VOLUME,         0,      127,    100,    100);
+MidiController panCtrl("Pan",                     CTRL_PANPOT,       -64,       63,      0,      0);
+MidiController reverbSendCtrl("ReverbSend",       CTRL_REVERB_SEND,    0,      127,      0,      0);
+MidiController chorusSendCtrl("ChorusSend",       CTRL_CHORUS_SEND,    0,      127,      0,      0);
+MidiController variationSendCtrl("VariationSend", CTRL_VARIATION_SEND, 0,      127,      0,      0);
 
 //---------------------------------------------------------
 //   ctrlType2Int
@@ -258,18 +258,22 @@ MidiController::MidiController()
    : _name(QString("Velocity"))
       {
       _num     = CTRL_VELOCITY;
-      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//       _minVal  = 0;
+      // Zero note on vel is not allowed now.
       _minVal  = 1;
       _maxVal  = 127;
-      _initVal = 0;
+      _initVal = _drumInitVal = 0;
       _showInTracks = ShowInDrum | ShowInMidi;
       updateBias();
       }
 
-MidiController::MidiController(const QString& s, int n, int min, int max, int init, int show_in_track)
+MidiController::MidiController(const QString& s, int n, int min, int max, int init, int drumInit, int show_in_track)
    : _name(s), _num(n), _minVal(min), _maxVal(max), _initVal(init), _showInTracks(show_in_track)
       {
+      // If drumInit was given, use it otherwise set it to the normal init val.
+      if(drumInit != -1)
+        _drumInitVal = drumInit;
+      else
+        _drumInitVal = _initVal;
       updateBias();
       }
 
@@ -284,12 +288,13 @@ MidiController::MidiController(const MidiController& mc)
 
 void MidiController::copy(const MidiController &mc)
 {
-      _name    = mc._name;
-      _num     = mc._num;
-      _minVal  = mc._minVal;
-      _maxVal  = mc._maxVal;
-      _initVal = mc._initVal;
-      _bias    = mc._bias;
+      _name         = mc._name;
+      _num          = mc._num;
+      _minVal       = mc._minVal;
+      _maxVal       = mc._maxVal;
+      _initVal      = mc._initVal;
+      _drumInitVal  = mc._drumInitVal;
+      _bias         = mc._bias;
       _showInTracks = mc._showInTracks;
 }
 
@@ -508,6 +513,8 @@ void MidiController::write(int level, Xml& xml) const
       {
         if(_initVal != CTRL_VAL_UNKNOWN && _initVal != 0xffffff)
           xml.nput(" init=\"0x%x\"", _initVal);
+        if(_drumInitVal != CTRL_VAL_UNKNOWN && _drumInitVal != 0xffffff)
+          xml.nput(" drumInit=\"0x%x\"", _drumInitVal);
       }
       else
       {
@@ -518,6 +525,8 @@ void MidiController::write(int level, Xml& xml) const
         
         if(_initVal != CTRL_VAL_UNKNOWN)     
           xml.nput(" init=\"%d\"", _initVal);
+        if(_drumInitVal != CTRL_VAL_UNKNOWN)
+          xml.nput(" drumInit=\"%d\"", _drumInitVal);
       }
 
       if(_showInTracks != (ShowInDrum | ShowInMidi))
@@ -534,6 +543,7 @@ void MidiController::read(Xml& xml)
       {
       ControllerType t = Controller7;
       _initVal = CTRL_VAL_UNKNOWN;
+      int drum_init = -1; //  -1 = Not set yet.
       static const int NOT_SET = 0x100000;
       _minVal  = NOT_SET;
       _maxVal  = NOT_SET;
@@ -548,6 +558,7 @@ void MidiController::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
+                        _drumInitVal = _initVal;
                         return;
                   case Xml::Attribut:
                         {
@@ -573,6 +584,8 @@ void MidiController::read(Xml& xml)
                               _maxVal = xml.s2().toInt(&ok, base);
                         else if (tag == "init")
                               _initVal = xml.s2().toInt(&ok, base);
+                        else if (tag == "drumInit")
+                              drum_init = xml.s2().toInt(&ok, base);
                         else if (tag == "showType")
                               _showInTracks = xml.s2().toInt(&ok, base);
                         }
@@ -644,6 +657,11 @@ void MidiController::read(Xml& xml)
                                     }
                               if (_minVal == NOT_SET)
                                     _minVal = 0;
+                              // No drum init val given? Use normal init val.
+                              if(drum_init == -1)
+                                _drumInitVal = _initVal;
+                              else
+                                _drumInitVal = drum_init;
                               updateBias();
                               return;
                               }
@@ -651,6 +669,7 @@ void MidiController::read(Xml& xml)
                         break;
                   }
             }
+      _drumInitVal = _initVal;
       }
 
 //---------------------------------------------------------
@@ -1141,6 +1160,81 @@ int MidiCtrlValList::value(int tick, Part* part) const
       return i->second.val;
   }
   // No previous values were found belonging to the specified part. 
+  return CTRL_VAL_UNKNOWN;
+}
+
+int MidiCtrlValList::visibleValue(unsigned int tick, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+{
+  // Determine value at tick, using values stored by ANY part,
+  //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks...
+
+  // Get the first value found with with a tick equal or greater than specified tick.
+  ciMidiCtrlVal i = lower_bound(tick);
+  // Since values from different parts can have the same tick, scan for part in all values at that tick.
+  for(ciMidiCtrlVal j = i; j != end() && (unsigned int)j->first == tick; ++j)
+  {
+    const Part* part = j->second.part;
+    // Ignore values that are outside of the part.
+    if(tick < part->tick() || tick >= (part->tick() + part->lenTick()))
+      continue;
+    // Ignore if part or track is muted or off.
+    if(!inclMutedParts && part->mute())
+      continue;
+    const Track* track = part->track();
+    if(track && ((!inclMutedTracks && track->isMute()) || (!inclOffTracks && track->off())))
+      continue;
+    return j->second.val;
+  }
+  // Scan for part in all previous values, regardless of tick.
+  while(i != begin())
+  {
+    --i;
+    const Part* part = i->second.part;
+    // Ignore values that are outside of the part.
+    if(tick < part->tick() || tick >= (part->tick() + part->lenTick()))
+      continue;
+    // Ignore if part or track is muted or off.
+    if(!inclMutedParts && part->mute())
+      continue;
+    const Track* track = part->track();
+    if(track && ((!inclMutedTracks && track->isMute()) || (!inclOffTracks && track->off())))
+      continue;
+    return i->second.val;
+  }
+  // No previous values were found belonging to the specified part.
+  return CTRL_VAL_UNKNOWN;
+}
+
+int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+{
+  // Determine value at tick, using values stored by the SPECIFIC part,
+  //  ignoring values that are OUTSIDE of the part, or muted or off part or track...
+
+  if((!inclMutedParts && part->mute()) || (part->track() && ((!inclMutedTracks && part->track()->isMute()) || (!inclOffTracks && part->track()->off()))))
+    return CTRL_VAL_UNKNOWN;
+
+  // Get the first value found with with a tick equal or greater than specified tick.
+  ciMidiCtrlVal i = lower_bound(tick);
+  // Ignore if part or track is muted or off.
+  // Since values from different parts can have the same tick, scan for part in all values at that tick.
+  for(ciMidiCtrlVal j = i; j != end() && (unsigned int)j->first == tick; ++j)
+  {
+    if(j->second.part == part)
+    {
+      // Ignore values that are outside of the part.
+      if(tick < part->tick() || tick >= (part->tick() + part->lenTick()))
+        continue;
+      return j->second.val;
+    }
+  }
+  // Scan for part in all previous values, regardless of tick.
+  while(i != begin())
+  {
+    --i;
+    if(i->second.part == part)
+      return i->second.val;
+  }
+  // No previous values were found belonging to the specified part.
   return CTRL_VAL_UNKNOWN;
 }
 

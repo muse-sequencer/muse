@@ -4,6 +4,7 @@
 //  $Id: minstrument.h,v 1.3.2.3 2009/03/09 02:05:18 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -27,7 +28,16 @@
 #include "globaldefs.h"
 #include <list>
 #include <vector>
+#include <string>
 #include <QString>
+#include "midiedit/drummap.h"
+
+// REMOVE Tim. newdrums. Added.
+// Adds the ability to override at instrument level.
+// But it just makes things too complex for the user.
+// And in a way is unneccesary and overkill, since we
+//  already allow modifying an instrument.
+//#define _USE_INSTRUMENT_OVERRIDES_
 
 namespace MusEGui {
 class PopupMenu;
@@ -39,7 +49,6 @@ class MidiControllerList;
 class MidiPort;
 class MidiPlayEvent;
 class Xml;
-struct DrumMap;
 
 
 //---------------------------------------------------------
@@ -47,14 +56,26 @@ struct DrumMap;
 //---------------------------------------------------------
 
 struct Patch {
-      signed char hbank, lbank, prog;
+      signed char hbank, lbank, program;
       QString name;
       bool drum;
+
+      inline int patch() const { return (((unsigned int)hbank & 0xff) << 16) | (((unsigned int)lbank & 0xff) << 8) | ((unsigned int)program & 0xff); }
+      inline bool dontCare()        const { return hbankDontCare() && lbankDontCare() && programDontCare(); }
+      inline bool hbankDontCare()   const { return hbank < 0; }
+      inline bool lbankDontCare()   const { return lbank < 0; }
+      inline bool programDontCare() const { return program < 0; }
+
       void read(Xml&);
       void write(int level, Xml&);
       };
 
-typedef std::list<Patch*> PatchList;
+class PatchList : public std::list<Patch*> {
+  public:
+    iterator find(int patch, bool drum, bool includeDefault);
+    const_iterator find(int patch, bool drum, bool includeDefault) const;
+};
+
 typedef PatchList::iterator iPatch;
 typedef PatchList::const_iterator ciPatch;
 
@@ -68,7 +89,12 @@ struct PatchGroup {
       void read(Xml&);
       };
 
-typedef std::vector<PatchGroup*> PatchGroupList;
+class PatchGroupList : public std::vector<PatchGroup*> {
+  public:
+    Patch* findPatch(int patch, bool drum, bool includeDefault);
+    Patch* findPatch(int patch, bool drum, bool includeDefault) const;
+};
+
 typedef PatchGroupList::iterator iPatchGroup;
 typedef PatchGroupList::const_iterator ciPatchGroup;
 
@@ -84,46 +110,6 @@ struct SysEx {
       SysEx(const SysEx& src);
       ~SysEx();
       };
-
-struct patch_collection_t
-{
-  int first_program;
-  int last_program;
-  int first_hbank;
-  int last_hbank;
-  int first_lbank;
-  int last_lbank;
-  
-  patch_collection_t(int p1=0, int p2=127, int l1=0, int l2=127, int h1=0, int h2=127)
-  {
-    first_program=p1;
-    last_program=p2;
-    first_lbank=l1;
-    last_lbank=l2;
-    first_hbank=h1;
-    last_hbank=h2;
-  }
-  
-  QString to_string();
-};
-
-struct patch_drummap_mapping_t
-{
-  patch_collection_t affected_patches;
-  DrumMap* drummap;
-  
-  patch_drummap_mapping_t(const patch_collection_t& a, DrumMap* d)
-  {
-    affected_patches=a;
-    drummap=d;
-  }
-  
-  patch_drummap_mapping_t(const patch_drummap_mapping_t& that);
-  patch_drummap_mapping_t();
-  ~patch_drummap_mapping_t();
-  
-  patch_drummap_mapping_t& operator=(const patch_drummap_mapping_t& that);
-};
 
 struct dumb_patchlist_entry_t
 {
@@ -163,6 +149,163 @@ struct dumb_patchlist_entry_t
   }
 };
 
+struct WorkingDrumMapEntry {
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  enum OverrideType { NoOverride = 0x0, TrackDefaultOverride = 0x1, TrackOverride = 0x2, InstrumentDefaultOverride = 0x4, InstrumentOverride = 0x8,
+                      AllOverrides = InstrumentDefaultOverride | InstrumentOverride | TrackDefaultOverride | TrackOverride };
+#else
+  enum OverrideType { NoOverride = 0x0, TrackDefaultOverride = 0x1, TrackOverride = 0x2,
+                      AllOverrides = TrackDefaultOverride | TrackOverride };
+#endif
+
+  enum Field { NoField = 0x0, NameField = 0x1, VolField = 0x2, QuantField = 0x4, LenField = 0x8, ChanField = 0x10, PortField = 0x20,
+               Lv1Field = 0x40, Lv2Field = 0x80, Lv3Field = 0x100, Lv4Field = 0x200, ENoteField = 0x400, ANoteField = 0x800,
+               MuteField = 0x1000, HideField = 0x2000,
+               AllFields = NameField | VolField | QuantField | LenField | ChanField | PortField | Lv1Field | Lv2Field | Lv3Field | Lv4Field |
+                           ENoteField | ANoteField | MuteField | HideField};
+  // OR'd Fields.
+  typedef int override_t;
+  typedef int fields_t;
+
+  DrumMap _mapItem;
+  fields_t _fields;
+
+  // Starts with null _mapItem.
+  WorkingDrumMapEntry();
+  // Allocates _mapItem and copies dm to it.
+  WorkingDrumMapEntry(const DrumMap& dm, fields_t fields);
+  // Copy ctor.
+  WorkingDrumMapEntry(const WorkingDrumMapEntry&);
+  WorkingDrumMapEntry& operator=(const WorkingDrumMapEntry&);
+};
+
+typedef std::map < int /*index*/, WorkingDrumMapEntry, std::less<int> > WorkingDrumMapList_t;
+typedef WorkingDrumMapList_t::iterator iWorkingDrumMapPatch_t;
+typedef WorkingDrumMapList_t::const_iterator ciWorkingDrumMapPatch_t;
+typedef std::pair<iWorkingDrumMapPatch_t, bool> WorkingDrumMapPatchInsertResult_t;
+typedef std::pair<int, WorkingDrumMapEntry> WorkingDrumMapPatchInsertPair_t;
+typedef std::pair<iWorkingDrumMapPatch_t, iWorkingDrumMapPatch_t> WorkingDrumMapPatchRangePair_t;
+
+class WorkingDrumMapList : public WorkingDrumMapList_t {
+
+  public:
+    void add(int index,const WorkingDrumMapEntry& item);
+    // Returns the requested fields that were NOT removed.
+    int remove(int index, const WorkingDrumMapEntry& item);
+    // Returns the requested fields that were NOT removed.
+    int remove(int index, int fields);
+    // If fillUnused is true it will fill any unused fields.
+    void read(Xml&, bool fillUnused, int defaultIndex = -1);
+    void write(int level, Xml&) const;
+};
+
+
+typedef std::map < int /*patch*/, WorkingDrumMapList, std::less<int> > WorkingDrumMapPatchList_t;
+typedef WorkingDrumMapPatchList_t::iterator iWorkingDrumMapPatchList_t;
+typedef WorkingDrumMapPatchList_t::const_iterator ciWorkingDrumMapPatchList_t;
+typedef std::pair<iWorkingDrumMapPatchList_t, bool> WorkingDrumMapPatchListInsertResult_t;
+typedef std::pair<int, WorkingDrumMapList> WorkingDrumMapPatchListInsertPair_t;
+
+class WorkingDrumMapPatchList : public WorkingDrumMapPatchList_t {
+
+  public:
+    void add(const WorkingDrumMapPatchList& other);
+    void add(int patch, const WorkingDrumMapList& list);
+    void add(int patch, int index, const WorkingDrumMapEntry& item);
+    void remove(int patch, int index, const WorkingDrumMapEntry& item, bool includeDefault);
+    void remove(int patch, int index, int fields, bool includeDefault);
+    void remove(int patch, bool includeDefault);
+    WorkingDrumMapList* find(int patch, bool includeDefault);
+    const WorkingDrumMapList* find(int patch, bool includeDefault) const;
+    WorkingDrumMapEntry* find(int patch, int index, bool includeDefault);
+    const WorkingDrumMapEntry* find(int patch, int index, bool includeDefault) const;
+
+    // If fillUnused is true it will fill any unused items to ensure that all 128 items are filled.
+    void read(Xml&, bool fillUnused);
+    void write(int level, Xml&) const;
+};
+
+
+typedef std::map < std::string /*instrument name*/, WorkingDrumMapPatchList > WorkingDrumMapInstrumentList_t;
+typedef WorkingDrumMapInstrumentList_t::iterator iWorkingDrumMapInstrumentList_t;
+typedef WorkingDrumMapInstrumentList_t::const_iterator ciWorkingDrumMapInstrumentList_t;
+typedef std::pair<iWorkingDrumMapInstrumentList_t, bool> WorkingDrumMapInstrumentListInsertResult_t;
+typedef std::pair<std::string, WorkingDrumMapPatchList> WorkingDrumMapInstrumentListInsertPair_t;
+
+
+class WorkingDrumMapInstrumentList : public WorkingDrumMapInstrumentList_t {
+  public:
+    void read(Xml&);
+};
+
+struct patch_drummap_mapping_t
+{
+  int _patch;
+  DrumMap* drummap;
+  int drum_in_map[128];
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  // A list of user-altered drum map items.
+  WorkingDrumMapList _workingDrumMapList;
+#endif
+
+  // A NULL drummap is allowed, it means invalid (ie. invalid() returns true).
+  patch_drummap_mapping_t(DrumMap* d, int patch = 0xffffff)
+  {
+    drummap = d;
+    _patch = patch;
+    update_drum_in_map();
+  }
+
+  patch_drummap_mapping_t(const patch_drummap_mapping_t& that);
+  patch_drummap_mapping_t();
+  ~patch_drummap_mapping_t();
+
+  patch_drummap_mapping_t& operator=(const patch_drummap_mapping_t& that);
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  void addWorkingDrumMapEntry(int index,const WorkingDrumMapEntry& item);
+  void removeWorkingDrumMapEntry(int index, const WorkingDrumMapEntry& item);
+  void removeWorkingDrumMapEntry(int index, int fields);
+#endif
+
+  int map_drum_in(int enote) { return drum_in_map[enote]; }
+  void update_drum_in_map();
+
+  inline int hbank() const { return (_patch >> 16) & 0xff; }
+  inline int lbank() const { return (_patch >> 8)  & 0xff; }
+  inline int prog()  const { return  _patch & 0xff; }
+  inline void setHBank(int v) { _patch = (_patch & 0x00ffff) | ((v & 0xff) << 16); }
+  inline void setLBank(int v) { _patch = (_patch & 0xff00ff) | ((v & 0xff) << 8); }
+  inline void setProg(int v)  { _patch = (_patch & 0xffff00) | (v & 0xff); }
+  inline bool dontCare()        const { return hbankDontCare() && lbankDontCare() && programDontCare(); }
+  inline bool hbankDontCare()   const { const int hb = hbank(); return hb < 0 || hb > 127; }
+  inline bool lbankDontCare()   const { const int lb = lbank(); return lb < 0 || lb > 127; }
+  inline bool programDontCare() const { const int pr = prog();  return pr < 0 || pr > 127; }
+
+  bool isPatchInRange(int patch, bool includeDefault) const;
+
+  bool isValid() const;
+
+  QString to_string();
+};
+
+class patch_drummap_mapping_list_t : public std::list<patch_drummap_mapping_t>
+{
+  public:
+    iterator find(int patch, bool includeDefault);
+    const_iterator find(int patch, bool includeDefault) const;
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+    void writeDrummapOverrides(int level, Xml& xml) const;
+#endif
+};
+
+typedef patch_drummap_mapping_list_t::iterator iPatchDrummapMapping_t;
+typedef patch_drummap_mapping_list_t::const_iterator ciPatchDrummapMapping_t;
+
+
+
+
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -178,7 +321,7 @@ class MidiInstrument {
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
-      std::list<patch_drummap_mapping_t> patch_drummap_mapping;
+      patch_drummap_mapping_list_t patch_drummap_mapping;
       bool _dirty;
       bool _waitForLSB; // Whether 14-bit controllers wait for LSB, or MSB and LSB are separate.
       NoteOffMode _noteOffMode;
@@ -199,7 +342,7 @@ class MidiInstrument {
       void writeDrummaps(int level, Xml& xml) const;
       void readDrummaps(Xml& xml);
       patch_drummap_mapping_t readDrummapsEntry(Xml& xml);
-      patch_collection_t readDrummapsEntryPatchCollection(Xml& xml);
+      int readDrummapsEntryPatchCollection(Xml& xml);
 
    public:
       MidiInstrument();
@@ -225,7 +368,20 @@ class MidiInstrument {
       QList<dumb_patchlist_entry_t> getPatches(int channel, bool drum);
       unsigned getNextPatch(int channel, unsigned patch, bool drum);
       unsigned getPrevPatch(int channel, unsigned patch, bool drum);
-      
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+      bool setWorkingDrumMapItem(int patch, int index, const WorkingDrumMapEntry&, bool isReset);
+      // Returns OR'd WorkingDrumMapEntry::OverrideType flags indicating whether a map item's members,
+      //  given by 'fields' (OR'd WorkingDrumMapEntry::Fields), are either the original or working map item.
+      // Here in MidiInstrument the flags can be NoOverride and InstrumentOverride. See corresponding function
+      //  in MidiTrack for additional TrackOverride flag use.
+      int isWorkingMapItem(int patch, int index, int fields) const;
+      void clearDrumMapOverrides();
+#endif
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType instrument overrides.
+      void getMapItem(int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const;
+
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
       EventList* midiState() const           { return _midiState; }
@@ -241,14 +397,17 @@ class MidiInstrument {
 
       void readMidiState(Xml& xml);
       virtual void reset(int); 
-      virtual QString getPatchName(int,int,bool) const;
+      virtual QString getPatchName(int channel, int prog, bool drum, bool includeDefault) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       static void populateInstrPopup(MusEGui::PopupMenu*, MidiInstrument* current = 0, bool show_synths = false);  // Static
       void read(Xml&);
       void write(int level, Xml&);
-      
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+      void writeDrummapOverrides(int level, Xml&) const;
+#endif
+
       PatchGroupList* groups()        { return &pg; }
-      std::list<patch_drummap_mapping_t>* get_patch_drummap_mapping() { return &patch_drummap_mapping; }
+      patch_drummap_mapping_list_t* get_patch_drummap_mapping() { return &patch_drummap_mapping; }
       };
 
 //---------------------------------------------------------
@@ -260,9 +419,13 @@ class MidiInstrumentList : public std::list<MidiInstrument*> {
    public:
       MidiInstrumentList() {}
       iterator find(const MidiInstrument* instr);
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+      void writeDrummapOverrides(int level, Xml&) const;
+#endif
       };
 
 typedef MidiInstrumentList::iterator iMidiInstrument;
+typedef MidiInstrumentList::const_iterator ciMidiInstrument;
 
 extern MidiInstrumentList midiInstruments;
 extern MidiInstrument* genericMidiInstrument;
@@ -272,6 +435,12 @@ extern void removeMidiInstrument(const QString& name);
 extern void removeMidiInstrument(const MidiInstrument* instr);
 
 } // namespace MusECore
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+namespace MusEGlobal {
+  extern MusECore::WorkingDrumMapInstrumentList workingDrumMapInstrumentList;
+}
+#endif
 
 #endif
 

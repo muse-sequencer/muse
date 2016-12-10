@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: dcanvas.cpp,v 1.16.2.10 2009/10/15 22:45:50 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -52,6 +53,7 @@
 #include "icons.h"
 #include "functions.h"
 #include "helper.h"
+#include "operations.h"
 
 #define CARET   10
 #define CARET2   5
@@ -62,50 +64,6 @@ using MusECore::Track;
 using MusECore::MidiTrack;
 
 namespace MusEGui {
-
-//---------------------------------------------------------
-//   InstrumentCurTrackParams
-//---------------------------------------------------------
-
-InstrumentCurTrackParams::InstrumentCurTrackParams(MusECore::MidiTrack* t)
-{
-  _track = t;
-  _curPort = -1;
-  _curChan = 0;
-  _curPatch = MusECore::CTRL_VAL_UNKNOWN;
-  if(_track)
-  {
-    _curPort = _track->outPort();
-    _curChan = _track->outChannel();
-    if(_curPort >= 0 && _curPort < MIDI_PORTS)
-    {
-      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[_curPort];
-      _curPatch = mp->hwCtrlState(_curChan, MusECore::CTRL_PROGRAM);
-    }
-  }
-}
-
-bool InstrumentCurTrackParams::hasChanged()
-{
-  if(!_track)
-    return false;
-  int curPort = _track->outPort();
-  int curChan = _track->outChannel();
-  int curPatch;
-  if(curPort >= 0 && curPort < MIDI_PORTS)
-  {
-    MusECore::MidiPort* mp = &MusEGlobal::midiPorts[curPort];
-    curPatch = mp->hwCtrlState(curChan, MusECore::CTRL_PROGRAM);
-  }
-  else
-    curPatch = MusECore::CTRL_VAL_UNKNOWN;
-
-  bool ret = _curPort != curPort || _curChan != curChan || _curPatch != curPatch;
-  _curPort = curPort;
-  _curChan = curChan;
-  _curPatch = curPatch;
-  return ret;
-}
 
 //---------------------------------------------------------
 //   DEvent
@@ -206,8 +164,59 @@ DrumCanvas::~DrumCanvas()
   delete steprec;
 }
 
+// //---------------------------------------------------------
+// //   moveCanvasItems
+// //   Return false if invalid index
+// //---------------------------------------------------------
+//
+// bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
+// {
+//       if ((index<0) || (index>=getOurDrumMapSize()))
+//         return false;
+//
+//       int mport, ch;
+//       if(old_style_drummap_mode)
+//       {
+//         // Default to track port if -1 and track channel if -1.
+//         mport = ourDrumMap[index].port;
+//         if(mport == -1)
+//         {
+//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+//             return false;
+//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+//           mport = mt->outPort();
+//         }
+//         ch = ourDrumMap[index].channel;
+//         if(ch == -1)
+//         {
+//           if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+//             return false;
+//           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+//           ch = mt->outChannel();
+//         }
+//       }
+//       else
+//       {
+//         MusECore::Track* track = *instrument_map[index].tracks.begin();
+//         if(!track->isMidiTrack())
+//           return false;
+//         MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
+//         mport = mt->outPort();
+//         ch = mt->outChannel();
+//       }
+//
+//       if(port)
+//         *port = mport;
+//       if(channel)
+//         *channel = ch;
+//       if(note)
+//         *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+//
+//       return true;
+// }
+
 //---------------------------------------------------------
-//   moveCanvasItems
+//   index2Note
 //   Return false if invalid index
 //---------------------------------------------------------
 
@@ -239,24 +248,46 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
       }
       else
       {
-        MusECore::Track* track = *instrument_map[index].tracks.begin();
-        if(!track->isMidiTrack())
-          return false;
-        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
-        mport = mt->outPort();
-        ch = mt->outChannel();
+        // Default to track port if -1 and track channel if -1.
+        MusECore::Track* track = 0;
+        MusECore::MidiTrack* mt = 0;
+        if(ourDrumMap[index].port == -1)
+        {
+          track = *instrument_map[index].tracks.begin();
+          if(!track->isMidiTrack())
+            return false;
+          mt = static_cast<MusECore::MidiTrack*>(track);
+          mport = mt->outPort();
+        }
+        else
+          mport = ourDrumMap[index].port;
+
+        if(ourDrumMap[index].channel == -1)
+        {
+          if(!track)
+          {
+            track = *instrument_map[index].tracks.begin();
+            if(!track->isMidiTrack())
+              return false;
+            mt = static_cast<MusECore::MidiTrack*>(track);
+          }
+          ch = mt->outChannel();
+        }
+        else
+          ch = ourDrumMap[index].channel;
       }
-      
+
       if(port)
         *port = mport;
       if(channel)
         *channel = ch;
       if(note)
-        *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+        //*note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+        *note = ourDrumMap[index].anote;
 
       return true;
 }
-      
+
 //---------------------------------------------------------
 //   moveCanvasItems
 //---------------------------------------------------------
@@ -1695,23 +1726,111 @@ int DrumCanvas::pitch_and_track_to_instrument(int pitch, MusECore::Track* track)
   return -1;
 }
 
-void DrumCanvas::propagate_drummap_change(int instr, bool update_druminmap)
+void DrumCanvas::propagate_drummap_change(int instrument, int fields, bool isReset, bool includeDefault, bool isInstrumentMod, bool doWholeMap)
+{
+  //fprintf(stderr, "DrumCanvas::propagate_track_drummap_change instrument:%d fields:%x isReset:%d isInstrumentMod:%d\n",
+  //        instrument, fields, isReset, isInstrumentMod);
+  const QSet<MusECore::Track*>& tracks=instrument_map[instrument].tracks;
+  int index=instrument_map[instrument].pitch;
+
+  MusECore::DrumMapTrackOperation* dmop = new MusECore::DrumMapTrackOperation;
+  dmop->_isReset = isReset;
+  dmop->_includeDefault = includeDefault;
+  dmop->_doWholeMap = doWholeMap;
+  dmop->_isInstrumentMod = isInstrumentMod;
+
+  MusECore::PendingOperationList operations;
+  MusECore::Track* t;
+  for(QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
+  {
+    t = *it;
+    if(!t->isDrumTrack())
+      continue;
+    MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+    dmop->_tracks.push_back(mt);
+  }
+
+  if(isReset)
+    dmop->_workingItemList.add(index, MusECore::WorkingDrumMapEntry(MusECore::DrumMap(), fields)); // Fixme: Dummy map. Should just be fields.
+  else
+    dmop->_workingItemList.add(index, MusECore::WorkingDrumMapEntry(ourDrumMap[instrument], fields));
+
+  operations.add(MusECore::PendingOperationItem(dmop, MusECore::PendingOperationItem::ModifyTrackDrumMapItem));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+int DrumCanvas::isWorkingMapInstrument(int instr, int fields) const
 {
   const QSet<MusECore::Track*>& tracks=instrument_map[instr].tracks;
   int index=instrument_map[instr].pitch;
-  
+
+  MusECore::Track* t;
+  MusECore::MidiTrack* mt;
+  int ret = MusECore::WorkingDrumMapEntry::NoOverride;
   for (QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
   {
-    MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(*it);
-    // if we're not only changing "mute" state...
-    if (!mt->drummap()[index].almost_equals(ourDrumMap[instr]))
-      mt->set_drummap_tied_to_patch(false);
-    mt->drummap()[index] = ourDrumMap[instr];
-    if (update_druminmap)
-      mt->update_drum_in_map();
+    t = *it;
+    if(!t->isDrumTrack())
+      continue;
+    mt = static_cast<MusECore::MidiTrack*>(t);
+    // Don't pass a patch - ask it to take care of patch number for us.
+    ret |= mt->isWorkingMapItem(index, fields);
   }
+  return ret;
 }
 
+bool DrumCanvas::hasOverrides(int instr) const
+{
+  const QSet<MusECore::Track*>& tracks=instrument_map[instr].tracks;
+  MusECore::Track* t;
+  MusECore::MidiTrack* mt;
+  for (QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
+  {
+    t = *it;
+    if(!t->isDrumTrack())
+      continue;
+    mt = static_cast<MusECore::MidiTrack*>(t);
+    if(!mt->workingDrumMap()->empty())
+      return true;
+  }
+  return false;
+}
+
+void DrumCanvas::resetOverridesForAllPatches(int instr)
+{
+  if(QMessageBox::warning(this, tr("Drum map"),
+     tr("Reset the track's drum map with instrument defaults?"),
+     QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
+  {
+    MusECore::PendingOperationList operations;
+    const QSet<MusECore::Track*>& tracks=instrument_map[instr].tracks;
+    MusECore::Track* t;
+    MusECore::MidiTrack* mt;
+    MusECore::WorkingDrumMapPatchList* new_wdmpl;
+    MusECore::DrumMapTrackPatchReplaceOperation* dmop;
+    for (QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
+    {
+      t = *it;
+      if(!t->isDrumTrack())
+        continue;
+      mt = static_cast<MusECore::MidiTrack*>(t);
+      if(!mt->workingDrumMap()->empty())
+      {
+        // Completely blank replacement list.
+        new_wdmpl = new MusECore::WorkingDrumMapPatchList();
+        // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
+        //  original lists will be deleted, in the operation following.
+        dmop = new MusECore::DrumMapTrackPatchReplaceOperation;
+        dmop->_isInstrumentMod = false; // Not instrument operation.
+        dmop->_workingItemPatchList = new_wdmpl;
+        dmop->_track = static_cast<MusECore::MidiTrack*>(t);
+        operations.add(MusECore::PendingOperationItem(dmop, MusECore::PendingOperationItem::ReplaceTrackDrumMapPatchList));
+      }
+    }
+    if(!operations.empty())
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  }
+}
 
 void DrumCanvas::rebuildOurDrumMap()
 {
@@ -1728,7 +1847,7 @@ void DrumCanvas::rebuildOurDrumMap()
   
   if (!old_style_drummap_mode)
   {
-    fprintf(stderr, "DrumCanvas::rebuildOurDrumMap\n");  // REMOVE Tim. newdrums. Added.
+    //fprintf(stderr, "DrumCanvas::rebuildOurDrumMap\n");
     bool need_update = false;
     
     TrackList* tl=MusEGlobal::song->tracks();
@@ -1818,8 +1937,7 @@ void DrumCanvas::rebuildOurDrumMap()
         {
           if (dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute == false)
             mute=false;
-          
-          if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] == false)
+          if (dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].hide == false)
             hidden=false;
         }
 
@@ -1834,10 +1952,6 @@ void DrumCanvas::rebuildOurDrumMap()
               need_update = true;
             }
           }
-          
-          if (dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote != pitch)
-            printf("THIS SHOULD NEVER HAPPEN: track's_drummap[pitch].anote (%i)!= pitch (%i) !!!\n",dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote,pitch);
-          
           instrument_map.append(instrument_number_mapping_t(*group, pitch));
         }
         
@@ -1857,8 +1971,18 @@ void DrumCanvas::rebuildOurDrumMap()
     ourDrumMap=new DrumMap[size];
     must_delete_our_drum_map=true;
 
+    Track* t;
+    MidiTrack* mt;
+    int index;
     for (int i=0;i<size;i++)
-      ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].pitch];  
+    {
+      t = *instrument_map[i].tracks.begin();
+      if(!t->isMidiTrack())
+        continue;
+      mt = static_cast<MidiTrack*>(t);
+      index = instrument_map[i].pitch;
+      ourDrumMap[i] = mt->drummap()[index];
+    }
     
     if (instrument_map!=old_instrument_map)
     {

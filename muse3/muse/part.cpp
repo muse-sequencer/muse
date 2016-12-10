@@ -220,7 +220,7 @@ void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsign
         cntrl |= MusEGlobal::drumMap[note].anote;
       }
     }
-    
+
     MidiCtrlValListList* mcvll = mp->controller();
     MidiCtrlValList* mcvl = NULL;
     iMidiCtrlValList imcvll = mcvll->find(ch, cntrl);
@@ -299,7 +299,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
               cntrl |= MusEGlobal::drumMap[note].anote;
             }
           }
-          
+
           mp->setControllerVal(ch, tck, cntrl, val, p);
         }
       }
@@ -452,7 +452,6 @@ void removePortCtrlEvents(Part* part, bool doClones)
               cntrl |= MusEGlobal::drumMap[note].anote;
             }
           }
-          
           mp->deleteController(ch, tck, cntrl, p);
         }
       }
@@ -561,6 +560,21 @@ void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part
         if(MusEGlobal::drumMap[note].port != -1)
           mp_add = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
         cntrl_add |= MusEGlobal::drumMap[note].anote;
+      }
+    }
+    else if(mt->type() == Track::NEW_DRUM)
+    {
+      MidiController* mc_add = mp_add->drumController(cntrl_add);
+      if(mc_add)
+      {
+        int note = cntrl_add & 0x7f;
+        cntrl_add &= ~0xff;
+        // Default to track port if -1 and track channel if -1.
+        if(mt->drummap()[note].channel != -1)
+          ch = mt->drummap()[note].channel;
+        if(mt->drummap()[note].port != -1)
+          mp_add = &MusEGlobal::midiPorts[mt->drummap()[note].port];
+        cntrl_add |= mt->drummap()[note].anote;
       }
     }
 

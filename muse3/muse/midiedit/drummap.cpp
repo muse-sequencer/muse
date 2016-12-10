@@ -4,6 +4,7 @@
 //  $Id: drummap.cpp,v 1.3.2.6 2009/10/29 02:14:37 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -26,6 +27,8 @@
 #include "xml.h"
 #include "song.h"
 
+#include "helper.h"
+
 #include <QSet>
 
 namespace MusEGlobal {
@@ -42,7 +45,7 @@ namespace MusECore {
 //---------------------------------------------------------
 
 // Default to track port if -1 and track channel if -1.  (These used to say 9, 0 for chan, port).
-const DrumMap blankdm = { QString(""), 100, 16, 32, -1, -1, 70, 90, 110, 127, 127, 127, false };
+const DrumMap blankdm = { QString(""), 100, 16, 32, -1, -1, 70, 90, 110, 127, 127, 127, false, false };
 
 // this map should have 128 entries, as it's used for initalising iNewDrumMap as well.
 // iNewDrumMap only has 128 entries. also, the every "out-note" ("anote") should be
@@ -52,141 +55,141 @@ const DrumMap blankdm = { QString(""), 100, 16, 32, -1, -1, 70, 90, 110, 127, 12
 //         iNewDrumMap[ idrumMap[i].anote ] = idrumMap[i]
 // if you ever want to change this, you will need to fix the initNewDrumMap() function.
 const DrumMap idrumMap[DRUM_MAPSIZE] = {
-      { QString("Acoustic Bass Drum"), 100, 16, 32, -1, -1, 70, 90, 110, 127, 35, 35, false },
-      { QString("Bass Drum 1"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 36, 36, false },
-      { QString("Side Stick"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 37, 37, false },
-      { QString("Acoustic Snare"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 38, 38, false },
-      { QString("Hand Clap"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 39, 39, false },
-      { QString("Electric Snare"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 40, 40, false },
-      { QString("Low Floor Tom"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 41, 41, false },
-      { QString("Closed Hi-Hat"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 42, 42, false },
-      { QString("High Floor Tom"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 43, 43, false },
-      { QString("Pedal Hi-Hat"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 44, 44, false },
-      { QString("Low Tom"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 45, 45, false },
-      { QString("Open Hi-Hat"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 46, 46, false },
-      { QString("Low-Mid Tom"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 47, 47, false },
-      { QString("Hi-Mid Tom"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 48, 48, false },
-      { QString("Crash Cymbal 1"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 49, 49, false },
-      { QString("High Tom"),           100, 16, 32, -1, -1, 70, 90, 110, 127, 50, 50, false },
+      { QString("Acoustic Bass Drum"), 100, 16, 32, -1, -1, 70, 90, 110, 127, 35, 35, false, false },
+      { QString("Bass Drum 1"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 36, 36, false, false },
+      { QString("Side Stick"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 37, 37, false, false },
+      { QString("Acoustic Snare"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 38, 38, false, false },
+      { QString("Hand Clap"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 39, 39, false, false },
+      { QString("Electric Snare"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 40, 40, false, false },
+      { QString("Low Floor Tom"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 41, 41, false, false },
+      { QString("Closed Hi-Hat"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 42, 42, false, false },
+      { QString("High Floor Tom"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 43, 43, false, false },
+      { QString("Pedal Hi-Hat"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 44, 44, false, false },
+      { QString("Low Tom"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 45, 45, false, false },
+      { QString("Open Hi-Hat"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 46, 46, false, false },
+      { QString("Low-Mid Tom"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 47, 47, false, false },
+      { QString("Hi-Mid Tom"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 48, 48, false, false },
+      { QString("Crash Cymbal 1"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 49, 49, false, false },
+      { QString("High Tom"),           100, 16, 32, -1, -1, 70, 90, 110, 127, 50, 50, false, false },
 
-      { QString("Ride Cymbal 1"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 51, 51, false },
-      { QString("Chinese Cymbal"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 52, 52, false },
-      { QString("Ride Bell"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 53, 53, false },
-      { QString("Tambourine"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 54, 54, false },
-      { QString("Splash Cymbal"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 55, 55, false },
-      { QString("Cowbell"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 56, 56, false },
-      { QString("Crash Cymbal 2"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 57, 57, false },
-      { QString("Vibraslap"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 58, 58, false },
-      { QString("Ride Cymbal 2"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 59, 59, false },
-      { QString("Hi Bongo"),           100, 16, 32, -1, -1, 70, 90, 110, 127, 60, 60, false },
-      { QString("Low Bongo"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 61, 61, false },
-      { QString("Mute Hi Conga"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 62, 62, false },
-      { QString("Open Hi Conga"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 63, 63, false },
-      { QString("Low Conga"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 64, 64, false },
-      { QString("High Timbale"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 65, 65, false },
-      { QString("Low Timbale"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 66, 66, false },
+      { QString("Ride Cymbal 1"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 51, 51, false, false },
+      { QString("Chinese Cymbal"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 52, 52, false, false },
+      { QString("Ride Bell"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 53, 53, false, false },
+      { QString("Tambourine"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 54, 54, false, false },
+      { QString("Splash Cymbal"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 55, 55, false, false },
+      { QString("Cowbell"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 56, 56, false, false },
+      { QString("Crash Cymbal 2"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 57, 57, false, false },
+      { QString("Vibraslap"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 58, 58, false, false },
+      { QString("Ride Cymbal 2"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 59, 59, false, false },
+      { QString("Hi Bongo"),           100, 16, 32, -1, -1, 70, 90, 110, 127, 60, 60, false, false },
+      { QString("Low Bongo"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 61, 61, false, false },
+      { QString("Mute Hi Conga"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 62, 62, false, false },
+      { QString("Open Hi Conga"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 63, 63, false, false },
+      { QString("Low Conga"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 64, 64, false, false },
+      { QString("High Timbale"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 65, 65, false, false },
+      { QString("Low Timbale"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 66, 66, false, false },
 
-      { QString("High Agogo"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 67, 67, false },
-      { QString("Low Agogo"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 68, 68, false },
-      { QString("Cabasa"),             100, 16, 32, -1, -1, 70, 90, 110, 127, 69, 69, false },
-      { QString("Maracas"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 70, 70, false },
-      { QString("Short Whistle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 71, 71, false },
-      { QString("Long Whistle"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 72, 72, false },
-      { QString("Short Guiro"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 73, 73, false },
-      { QString("Long Guiro"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 74, 74, false },
-      { QString("Claves"),             100, 16, 32, -1, -1, 70, 90, 110, 127, 75, 75, false },
-      { QString("Hi Wood Block"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 76, 76, false },
-      { QString("Low Wood Block"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 77, 77, false },
-      { QString("Mute Cuica"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 78, 78, false },
-      { QString("Open Cuica"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 79, 79, false },
-      { QString("Mute Triangle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 80, 80, false },
-      { QString("Open Triangle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 81, 81, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 82, 82, false },
+      { QString("High Agogo"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 67, 67, false, false },
+      { QString("Low Agogo"),          100, 16, 32, -1, -1, 70, 90, 110, 127, 68, 68, false, false },
+      { QString("Cabasa"),             100, 16, 32, -1, -1, 70, 90, 110, 127, 69, 69, false, false },
+      { QString("Maracas"),            100, 16, 32, -1, -1, 70, 90, 110, 127, 70, 70, false, false },
+      { QString("Short Whistle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 71, 71, false, false },
+      { QString("Long Whistle"),       100, 16, 32, -1, -1, 70, 90, 110, 127, 72, 72, false, false },
+      { QString("Short Guiro"),        100, 16, 32, -1, -1, 70, 90, 110, 127, 73, 73, false, false },
+      { QString("Long Guiro"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 74, 74, false, false },
+      { QString("Claves"),             100, 16, 32, -1, -1, 70, 90, 110, 127, 75, 75, false, false },
+      { QString("Hi Wood Block"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 76, 76, false, false },
+      { QString("Low Wood Block"),     100, 16, 32, -1, -1, 70, 90, 110, 127, 77, 77, false, false },
+      { QString("Mute Cuica"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 78, 78, false, false },
+      { QString("Open Cuica"),         100, 16, 32, -1, -1, 70, 90, 110, 127, 79, 79, false, false },
+      { QString("Mute Triangle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 80, 80, false, false },
+      { QString("Open Triangle"),      100, 16, 32, -1, -1, 70, 90, 110, 127, 81, 81, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 82, 82, false, false },
 
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 83, 83, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 84, 84, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 85, 85, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 86, 86, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 87, 87, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 88, 88, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 89, 89, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 90, 90, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 91, 91, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 92, 92, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 93, 93, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 94, 94, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 95, 95, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 96, 96, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 97, 97, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 98, 98, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 83, 83, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 84, 84, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 85, 85, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 86, 86, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 87, 87, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 88, 88, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 89, 89, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 90, 90, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 91, 91, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 92, 92, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 93, 93, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 94, 94, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 95, 95, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 96, 96, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 97, 97, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 98, 98, false, false },
 
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 99, 99, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 100, 100, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 101, 101, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 102, 102, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 103, 103, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 104, 104, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 105, 105, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 106, 106, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 107, 107, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 108, 108, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 109, 109, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 110, 110, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 111, 111, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 112, 112, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 113, 113, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 114, 114, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 99, 99, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 100, 100, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 101, 101, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 102, 102, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 103, 103, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 104, 104, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 105, 105, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 106, 106, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 107, 107, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 108, 108, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 109, 109, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 110, 110, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 111, 111, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 112, 112, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 113, 113, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 114, 114, false, false },
 
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 115, 115, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 116, 116, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 117, 117, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 118, 118, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 119, 119, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 120, 120, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 121, 121, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 122, 122, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 123, 123, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 124, 124, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 125, 125, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 126, 126, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 127, 127, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 0, 0, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 1, 1, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 2, 2, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 115, 115, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 116, 116, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 117, 117, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 118, 118, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 119, 119, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 120, 120, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 121, 121, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 122, 122, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 123, 123, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 124, 124, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 125, 125, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 126, 126, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 127, 127, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 0, 0, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 1, 1, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 2, 2, false, false },
 
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 3, 3, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 4, 4, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 5, 5, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 6, 6, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 7, 7, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 8, 8, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 9, 9, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 10, 10, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 11, 11, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 12, 12, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 13, 13, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 14, 14, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 15, 15, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 16, 16, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 17, 17, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 18, 18, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 3, 3, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 4, 4, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 5, 5, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 6, 6, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 7, 7, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 8, 8, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 9, 9, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 10, 10, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 11, 11, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 12, 12, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 13, 13, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 14, 14, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 15, 15, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 16, 16, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 17, 17, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 18, 18, false, false },
 
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 19, 19, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 20, 20, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 21, 21, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 22, 22, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 23, 23, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 24, 24, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 25, 25, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 26, 26, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 27, 27, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 28, 28, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 29, 29, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 30, 30, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 31, 31, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 32, 32, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 33, 33, false },
-      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 34, 34, false }
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 19, 19, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 20, 20, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 21, 21, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 22, 22, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 23, 23, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 24, 24, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 25, 25, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 26, 26, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 27, 27, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 28, 28, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 29, 29, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 30, 30, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 31, 31, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 32, 32, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 33, 33, false, false },
+      { QString(""),                   100, 16, 32, -1, -1, 70, 90, 110, 127, 34, 34, false, false }
       };
       
 DrumMap iNewDrumMap[128];
@@ -234,6 +237,8 @@ void initNewDrumMap()
       iNewDrumMap[i].lv4=110;
       iNewDrumMap[i].enote=i;
       iNewDrumMap[i].anote=i;
+      iNewDrumMap[i].mute=false;
+      iNewDrumMap[i].hide=false;
     }
   }
 }
@@ -247,7 +252,8 @@ void clearDrumMap()
       {
       for (int i = 0; i < DRUM_MAPSIZE; ++i) {
             DrumMap& d = MusEGlobal::drumMap[i];
-            d.vol = d.len = d.channel = d.port = d.lv1 = d.lv2 = d.lv3 = d.lv4 = d.enote = d.anote = d.mute = 0;
+            d.vol = d.len = d.channel = d.port = d.lv1 = d.lv2 = d.lv3 = d.lv4 = d.enote = d.anote = 0;
+            d.mute = d.hide = false;
          }
       }
 //---------------------------------------------------------
@@ -261,7 +267,7 @@ void initDrumMap()
             DrumMap& d = MusEGlobal::drumMap[i];
             //Make sure we're not overwriting any values loaded
             //On init, all these values are zero. If so, just set the drummap entry to the initial drummap entry.
-            if (!(d.vol || d.len || d.channel || d.port || d.lv1 || d.lv2 || d.lv3 || d.lv4 || d.enote || d.anote || d.mute))
+            if (!(d.vol || d.len || d.channel || d.port || d.lv1 || d.lv2 || d.lv3 || d.lv4 || d.enote || d.anote || d.mute || d.hide))
                   MusEGlobal::drumMap[i] = idrumMap[i];
          }
       //Finally, setup the inMap, outMap-values
@@ -301,6 +307,15 @@ void resetGMDrumMap()
 
 bool DrumMap::operator==(const DrumMap& map) const
       {
+        // Everything equal, including mute and hide settings?
+        return almost_equals(map) &&
+               mute == map.mute &&
+               hide == map.hide;
+      }
+
+bool DrumMap::almost_equals(const DrumMap& map) const
+{
+      // Disregarding mute and hide settings.
       return
          name == map.name
          && vol == map.vol
@@ -313,17 +328,24 @@ bool DrumMap::operator==(const DrumMap& map) const
          && lv3 == map.lv3
          && lv4 == map.lv4
          && enote == map.enote
-         && anote == map.anote
-         && mute == map.mute;
-      }
-
-bool DrumMap::almost_equals(const DrumMap& map) const
-{
-  DrumMap tmp=map;
-  tmp.mute=this->mute;
-  return tmp==*this;
+         && anote == map.anote;
 }
 
+void DrumMap::dump()
+{
+  fprintf(stderr, "%s\t\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d(%s)\t\t%d(%s)\t\t%d\t%d\t\n",
+      name.toLatin1().constData(),
+      vol,
+      quant,
+      len,
+      channel,
+      port,
+      lv1, lv2, lv3, lv4,
+      enote, pitch2string(enote).toLatin1().constData(),
+      anote, pitch2string(anote).toLatin1().constData(),
+      mute,
+      hide);
+}
 
 //---------------------------------------------------------
 //   writeDrumMap
@@ -350,6 +372,7 @@ void writeDrumMap(int level, Xml& xml, bool external)
                   xml.intTag(level, "lv4", dm->lv4);
                   xml.intTag(level, "enote", dm->enote);
                   xml.intTag(level, "anote", dm->anote);
+                  xml.intTag(level, "hide", dm->hide);
                   }
             else {
                   // write only, if entry is different from initial entry
@@ -382,6 +405,8 @@ void writeDrumMap(int level, Xml& xml, bool external)
                         xml.intTag(level, "anote", dm->anote);
                   if (dm->mute != idm->mute)
                         xml.intTag(level, "mute", dm->mute);
+                  if (dm->hide != idm->hide)
+                        xml.intTag(level, "hide", dm->hide);
                   }
             xml.tag(level--, "/entry");
             }
@@ -429,11 +454,13 @@ static void readDrummapEntry(Xml& xml, DrumMap* dm)
                               dm->anote = xml.parseInt();
                         else if (tag == "mute")
                               dm->mute = xml.parseInt();
+                        else if (tag == "hide")
+                              dm->hide = xml.parseInt();
                         else if (tag == "selected")
                               //; // dm->selected = xml.parseInt();
                               xml.skip(tag);
                         else
-                              xml.unknown("DrumMapEntry");
+                              xml.unknown("entry");
                         break;
                   case Xml::Attribut:
                         if (tag == "idx") {
@@ -652,5 +679,5 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
   
   return entry;
 }
-  
+
 } // namespace MusEGlobal

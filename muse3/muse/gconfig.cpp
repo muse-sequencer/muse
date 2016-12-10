@@ -218,6 +218,8 @@ GlobalConfigValues config = {
       true,                         // exportPortDeviceSMF0 Export a port and/or device meta even for SMF0.
       MusEGlobal::MODE_SYSEX | MusEGlobal::INSTRUMENT_NAME_META, // exportModeInstr. Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString("GM"),                // importMidiDefaultInstr Default to this instrument not Generic, if no match found
+      true,                         // exportDrumMapOverrides Apply drum map overrides to export
+      true,                         // exportChannelOverridesToNewTrack Drum map Channel overrides go to a separate track
       1,                            // startMode
       QString(""),                  // start song path
       false,                        // startSongLoadConfig

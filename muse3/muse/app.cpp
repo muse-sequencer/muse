@@ -98,7 +98,6 @@
 #include "tools.h"
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
-#include "trackdrummapupdater.h"
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
 #include "cpu_toolbar.h"
@@ -342,7 +341,6 @@ MusE::MusE() : QMainWindow()
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
-      new MusECore::TrackDrummapUpdater(this); // no need for keeping the reference, the thing autoconnects on its own.
 
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));

@@ -31,6 +31,7 @@
 #include "midiport.h"
 #include "midictrl.h"
 #include "midi.h"
+#include "midiseq.h"
 #include "minstrument.h"
 #include "xml.h"
 #include "gconfig.h"
@@ -78,7 +79,7 @@ void initMidiPorts()
             //
             port->addDefaultControllers();
             
-            port->setInstrument(registerMidiInstrument("GM")); 
+            port->changeInstrument(registerMidiInstrument("GM"));
             port->syncInfo().setPort(i);
             // p4.0.17 Set the first channel on the first port to auto-connect to midi track outputs.
             if(i == 0)
@@ -187,7 +188,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                   MidiPort* mp = &MusEGlobal::midiPorts[i];
                   if (mp->device() == dev) {
                         if(dev->isSynti())
-                          mp->setInstrument(genericMidiInstrument);
+                          mp->changeInstrument(genericMidiInstrument);
                         // move device
                         _state = mp->state();
                         mp->clearDevice();
@@ -299,6 +300,25 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
         }
       }
     }
+    else if((*imt)->type() == MusECore::Track::NEW_DRUM)
+    {
+      for(int i = 0; i < DRUM_MAPSIZE; ++i)
+      {
+        // Default to track port if -1 and track channel if -1.
+        int mport = (*imt)->drummap()[i].port;
+        if(mport == -1)
+          mport = (*imt)->outPort();
+        int mchan = (*imt)->drummap()[i].channel;
+        if(mchan == -1)
+          mchan = (*imt)->outChannel();
+        if(mport != port || usedChans[mchan])
+          continue;
+        usedChans[mchan] = true;
+        ++usedChanCount;
+        if(usedChanCount >= MIDI_CHANNELS)
+          break;  // All are used, done searching.
+      }
+    }
     else
     {
       if((*imt)->outPort() != port || usedChans[(*imt)->outChannel()])
@@ -375,13 +395,17 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 }
       
 //---------------------------------------------------------
-//   setInstrument
+//   changeInstrument
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
 //---------------------------------------------------------
 
-void MidiPort::setInstrument(MidiInstrument* i)
+void MidiPort::changeInstrument(MidiInstrument* i)
 {
+  if(_instrument == i)
+    return;
   _instrument = i;
   _initializationsSent = false;
+  updateDrumMaps();
 }
 
 //---------------------------------------------------------
@@ -1017,19 +1041,26 @@ int MidiPort::hwCtrlState(int ch, int ctrl) const
 
 //---------------------------------------------------------
 //   setHwCtrlState
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
 //   Returns false if value is already equal, true if value is set.
 //---------------------------------------------------------
 
 bool MidiPort::setHwCtrlState(int ch, int ctrl, int val)
       {
-      // By T356. This will create a new value list if necessary, otherwise it returns the existing list. 
+      // This will create a new value list if necessary, otherwise it returns the existing list.
       MidiCtrlValList* vl = addManagedController(ch, ctrl);
 
-      return vl->setHwVal(val);
+      bool res = vl->setHwVal(val);
+      // If program controller be sure to update drum maps (and inform the gui).
+      if(res && ctrl == CTRL_PROGRAM)
+        updateDrumMaps(ch, val);
+
+      return res;
       }
 
 //---------------------------------------------------------
 //   setHwCtrlStates
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
 //   Sets current and last HW values.
 //   Handy for forcing labels to show 'off' and knobs to show specific values 
 //    without having to send two messages.
@@ -1041,7 +1072,13 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, int val, int lastval)
       // This will create a new value list if necessary, otherwise it returns the existing list. 
       MidiCtrlValList* vl = addManagedController(ch, ctrl);
 
-      return vl->setHwVals(val, lastval);
+      // This is not perfectly ideal, drum maps should not have to (check) change if last hw val changed.
+      bool res = vl->setHwVals(val, lastval);
+      // If program controller be sure to update drum maps (and inform the gui).
+      if(res && ctrl == CTRL_PROGRAM)
+        updateDrumMaps(ch, val);
+
+      return res;
       }
 
 
@@ -1068,6 +1105,92 @@ bool MidiPort::setControllerVal(int ch, int tick, int ctrl, int val, Part* part)
 }
 
 //---------------------------------------------------------
+//   updateDrumMaps
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
+//   Returns true if maps were changed.
+//---------------------------------------------------------
+
+bool MidiPort::updateDrumMaps(int chan, int patch)
+{
+  int port;
+  int tpatch;
+  int tchan;
+  bool map_changed = false;
+  MidiTrack* mt;
+  for(iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
+  {
+    mt = *t;
+    if(mt->type() != Track::NEW_DRUM)
+      continue;
+    port = mt->outPort();
+    if(port < 0 || port >= MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
+      continue;
+    tchan = mt->outChannel();
+    if(tchan != chan)
+      continue;
+    tpatch = hwCtrlState(tchan, CTRL_PROGRAM);
+    if(tpatch != patch)
+      continue;
+    if(mt->updateDrummap(false)) // false = don't signal gui thread, we'll do that here.
+      map_changed = true;
+  }
+
+  if(map_changed)
+  {
+    // It is possible we are being called from gui thread already, in audio idle mode.
+    // Will this still work, and not conflict with audio sending the same message?
+    // Are we are not supposed to write to an fd from different threads?
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      // Directly emit SC_DRUMMAP song changed signal.
+      MusEGlobal::song->update(SC_DRUMMAP);
+    else
+      // Tell the gui to emit SC_DRUMMAP song changed signal.
+      MusEGlobal::audio->sendMsgToGui('D'); // Drum map changed.
+
+    return true;
+  }
+
+  return false;
+}
+
+bool MidiPort::updateDrumMaps()
+{
+  int port;
+  bool map_changed;
+  MidiTrack* mt;
+  for(iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
+  {
+    mt = *t;
+    if(mt->type() != Track::NEW_DRUM)
+      continue;
+    port = mt->outPort();
+    if(port < 0 || port >= MIDI_PORTS || &MusEGlobal::midiPorts[port] != this)
+      continue;
+    if(mt->updateDrummap(false)) // false = don't signal gui thread, we'll do that here.
+      map_changed = true;
+  }
+
+  if(map_changed)
+  {
+    // It is possible we are being called from gui thread already, in audio idle mode.
+    // Will this still work, and not conflict with audio sending the same message?
+    // Are we are not supposed to write to an fd from different threads?
+    //if(MusEGlobal::audio && MusEGlobal::audio->isIdle() && MusEGlobal::midiSeq && MusEGlobal::midiSeq->isIdle())
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      // Directly emit SC_DRUMMAP song changed signal.
+      //MusEGlobal::song->update(SC_DRUMMAP, true);
+      MusEGlobal::song->update(SC_DRUMMAP);
+    else
+      // Tell the gui to emit SC_DRUMMAP song changed signal.
+      MusEGlobal::audio->sendMsgToGui('D'); // Drum map changed.
+
+    return true;
+  }
+
+  return false;
+}
+
+//---------------------------------------------------------
 //   getCtrl
 //---------------------------------------------------------
 
@@ -1088,6 +1211,25 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
 
       return cl->second->value(tick, part);
       }
+
+int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+      {
+      iMidiCtrlValList cl = _controller->find(ch, ctrl);
+      if (cl == _controller->end())
+            return CTRL_VAL_UNKNOWN;
+
+      return cl->second->visibleValue(tick, inclMutedParts, inclMutedTracks, inclOffTracks);
+      }
+
+int MidiPort::getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const
+      {
+      iMidiCtrlValList cl = _controller->find(ch, ctrl);
+      if (cl == _controller->end())
+            return CTRL_VAL_UNKNOWN;
+
+      return cl->second->visibleValue(tick, part, inclMutedParts, inclMutedTracks, inclOffTracks);
+      }
+
 //---------------------------------------------------------
 //   deleteController
 //---------------------------------------------------------
@@ -1163,7 +1305,7 @@ MidiController* MidiPort::midiController(int num, bool createIfNotFound) const
             case MidiController::Velo:        // cannot happen
                   break;
             }
-      MidiController* c = new MidiController(name, num, min, max, 0);
+      MidiController* c = new MidiController(name, num, min, max, 0, 0);
       defaultMidiController.add(c);
       return c;
       }

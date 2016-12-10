@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: dlist.cpp,v 1.9.2.7 2009/10/16 21:50:16 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -43,8 +44,210 @@
 #include "dlist.h"
 #include "song.h"
 #include "dcanvas.h"
+#include "minstrument.h"
 
 namespace MusEGui {
+
+//---------------------------------------------------------
+//   DLineEdit
+//---------------------------------------------------------
+
+DLineEdit::DLineEdit(QWidget* parent) : QLineEdit(parent)
+{
+  // Reset these since our parent will typically turn them on for speed.
+  setAutoFillBackground(true);
+  setAttribute(Qt::WA_NoSystemBackground, false);
+  setAttribute(Qt::WA_StaticContents, false);
+  setAttribute(Qt::WA_OpaquePaintEvent, false);
+
+  setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  setContentsMargins(0, 0, 0, 0);
+}
+
+bool DLineEdit::event(QEvent* e)
+{
+  switch(e->type())
+  {
+    case QEvent::KeyPress:
+    {
+      QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+      switch(ke->key())
+      {
+        // For return, we want to close the editor but don't want the
+        //  parent to receive the event which will just open the box again.
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+          e->accept();
+          emit returnPressed();
+          return true;
+        break;
+
+        case Qt::Key_Escape:
+        {
+          e->accept();
+          emit escapePressed();
+          return true;
+        }
+        break;
+
+        default:
+        break;
+      }
+    }
+    break;
+
+    case QEvent::NonClientAreaMouseButtonPress:
+      // FIXME: Doesn't work.
+      //fprintf(stderr, "DLineEdit::event NonClientAreaMouseButtonPress\n");
+    case QEvent::FocusOut:
+      e->accept();
+      emit returnPressed();
+      return true;
+    break;
+
+    default:
+    break;
+  }
+
+  // Do not pass ANY events on to the parent.
+  QLineEdit::event(e);
+  e->accept();
+  return true;
+}
+
+//---------------------------------------------------------
+//   DrumListSpinBox
+//---------------------------------------------------------
+
+DrumListSpinBox::DrumListSpinBox(QWidget* parent) : QSpinBox(parent)
+{
+  // Reset these since our parent will typically turn them on for speed.
+  setAutoFillBackground(true);
+  setAttribute(Qt::WA_NoSystemBackground, false);
+  setAttribute(Qt::WA_StaticContents, false);
+  setAttribute(Qt::WA_OpaquePaintEvent, false);
+
+  setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  setContentsMargins(0, 0, 0, 0);
+}
+
+bool DrumListSpinBox::event(QEvent* e)
+{
+  switch(e->type())
+  {
+    case QEvent::KeyPress:
+    {
+      QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+      switch(ke->key())
+      {
+        // For return, we want to close the editor but don't want the
+        //  parent to receive the event which will just open the box again.
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+          e->accept();
+          emit returnPressed();
+          return true;
+        break;
+
+        case Qt::Key_Escape:
+        {
+          e->accept();
+          emit escapePressed();
+          return true;
+        }
+        break;
+
+        default:
+        break;
+      }
+    }
+    break;
+
+    case QEvent::NonClientAreaMouseButtonPress:
+      // FIXME: Doesn't work.
+      //fprintf(stderr, "DLineEdit::event NonClientAreaMouseButtonPress\n");
+    case QEvent::FocusOut:
+      e->accept();
+      emit returnPressed();
+      return true;
+    break;
+
+    default:
+    break;
+  }
+
+  // Do not pass ANY events on to the parent.
+  QSpinBox::event(e);
+  e->accept();
+  return true;
+}
+
+//---------------------------------------------------------
+//   DPitchEdit
+//---------------------------------------------------------
+
+DPitchEdit::DPitchEdit(QWidget* parent) : PitchEdit(parent)
+{
+  // Reset these since our parent will typically turn them on for speed.
+  setAutoFillBackground(true);
+  setAttribute(Qt::WA_NoSystemBackground, false);
+  setAttribute(Qt::WA_StaticContents, false);
+  setAttribute(Qt::WA_OpaquePaintEvent, false);
+
+  setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  setContentsMargins(0, 0, 0, 0);
+}
+
+bool DPitchEdit::event(QEvent* e)
+{
+  switch(e->type())
+  {
+    case QEvent::KeyPress:
+    {
+      QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+      switch(ke->key())
+      {
+        // For return, we want to close the editor but don't want the
+        //  parent to receive the event which will just open the box again.
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+          e->accept();
+          emit returnPressed();
+          return true;
+        break;
+
+        case Qt::Key_Escape:
+        {
+          e->accept();
+          emit escapePressed();
+          return true;
+        }
+        break;
+
+        default:
+        break;
+      }
+    }
+    break;
+
+    case QEvent::NonClientAreaMouseButtonPress:
+      // FIXME: Doesn't work.
+      //fprintf(stderr, "DPitchEdit::event NonClientAreaMouseButtonPress\n");
+    case QEvent::FocusOut:
+      e->accept();
+      emit returnPressed();
+      return true;
+    break;
+
+    default:
+    break;
+  }
+
+  // Do not pass ANY events on to the parent.
+  Awl::PitchEdit::event(e);
+  e->accept();
+  return true;
+}
 
 //---------------------------------------------------------
 //   draw
@@ -52,6 +255,8 @@ namespace MusEGui {
 
 void DList::draw(QPainter& p, const QRect& rect)
       {
+      using MusECore::WorkingDrumMapEntry;
+
       int x = rect.x();
       int y = rect.y();
       int w = rect.width();
@@ -62,6 +267,10 @@ void DList::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       p.setPen(Qt::black);
+      QColor override_col(Qt::gray);
+      override_col.setAlpha(64);
+
+      QFont fnt(p.font());
 
       for (int instrument = 0; instrument < ourDrumMapSize; ++instrument) {
             int yy = instrument * TH;
@@ -80,8 +289,9 @@ void DList::draw(QPainter& p, const QRect& rect)
             for (int k = 0; k < h->count(); ++k) {
                   if (h->isSectionHidden(k))
                       continue;
-                  
-                  
+
+                  int isWorkingItem = MusECore::WorkingDrumMapEntry::NoOverride;
+
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
                   //QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));  // Gives inconsistent positions. Source shows wrong operation for our needs.
@@ -89,74 +299,119 @@ void DList::draw(QPainter& p, const QRect& rect)
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
+                  bool doOverrideFill = true;
+
                   switch (k) {
                         case COL_VOLUME:
                               s.setNum(dm->vol);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::VolField);
                               break;
                         case COL_QUANT:
                               s.setNum(dm->quant);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::QuantField);
                               break;
                         case COL_NOTELENGTH:
                               s.setNum(dm->len);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::LenField);
                               break;
                         case COL_NOTE:
                               s =  MusECore::pitch2string(dm->anote);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::ANoteField);
                               break;
                         case COL_INPUTTRIGGER:
                               s =  MusECore::pitch2string(dm->enote);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::ENoteField);
                               break;
                         case COL_LEVEL1:
                               s.setNum(dm->lv1);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::Lv1Field);
                               break;
                         case COL_LEVEL2:
                               s.setNum(dm->lv2);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::Lv2Field);
                               break;
                         case COL_LEVEL3:
                               s.setNum(dm->lv3);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::Lv3Field);
                               break;
                         case COL_LEVEL4:
                               s.setNum(dm->lv4);
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::Lv4Field);
                               break;
                         case COL_HIDE:
                         {
-                              bool hidden=false;
-                              bool shown=false;
-                              QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
-                              int pitch = dcanvas->get_instrument_map()[instrument].pitch;
-                              
-                              for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
-                                if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch])
-                                  hidden=true;
-                                else
-                                  shown=true;
-                              
-                              if (!hidden && !shown)
-                                printf("THIS SHOULD NEVER HAPPEN: in DList::draw(): instrument %i's track group is empty. strange...\n", instrument);
-                              
-                              const QPixmap* pm = NULL;
-                              
-                              if (shown && !hidden)
-                                    pm = eyeIcon;
-                              else if (!shown && hidden)
-                                    pm = eyeCrossedIcon;
-                              else if (shown && hidden)
-                                    pm = eyeGrayIcon;
-                              else //if (!shown && !hidden)
-                                    pm = NULL;
-                              
-                              if (pm)
+                              //  isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, VolField);
+                              doOverrideFill = false;
+                              if(dcanvas)
                               {
-                               // p.setPen(Qt::red);
+                                bool hidden=false;
+                                bool shown=false;
+                                QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                                int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+
+                                for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
+  //                                 if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch])
+                                  if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap()[pitch].hide)
+                                    hidden=true;
+                                  else
+                                    shown=true;
+
+                                if (!hidden && !shown)
+                                  printf("THIS SHOULD NEVER HAPPEN: in DList::draw(): instrument %i's track group is empty. strange...\n", instrument);
+
+                                const QPixmap* pm = NULL;
+
+                                if (shown && !hidden)
+                                      pm = eyeIcon;
+                                else if (!shown && hidden)
+                                      pm = eyeCrossedIcon;
+                                else if (shown && hidden)
+                                      pm = eyeGrayIcon;
+                                else //if (!shown && !hidden)
+                                      pm = NULL;
+
+                                if (pm)
+                                {
+                                // p.setPen(Qt::red);
+                                  p.drawPixmap(
+                                    r.x() + r.width()/2 - pm->width()/2,
+                                    r.y() + r.height()/2 - pm->height()/2,
+                                    *pm);
+                                // p.setPen(Qt::black);
+                                }
+                              }
+                              else
+                              {
+                                const QPixmap* pm = dm->hide ? eyeCrossedIcon : eyeIcon;
+                                if (dm->hide)
+                                  pm = eyeCrossedIcon;
+                                else
+                                  pm = eyeIcon;
+                                // p.setPen(Qt::red);
                                 p.drawPixmap(
-                                   r.x() + r.width()/2 - pm->width()/2,
-                                   r.y() + r.height()/2 - pm->height()/2,
-                                   *pm);
-                               // p.setPen(Qt::black);
+                                  r.x() + r.width()/2 - pm->width()/2,
+                                  r.y() + r.height()/2 - pm->height()/2,
+                                  *pm);
+                                // p.setPen(Qt::black);
                               }
                                     
                               break;
                         }
                         case COL_MUTE:
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::MuteField);
+                              doOverrideFill = false;
+                              if(isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
+                                p.fillRect(r, override_col);
                               if (dm->mute) {
                                     p.setPen(Qt::red);
                                     const QPixmap& pm = *muteIcon;
@@ -169,6 +424,11 @@ void DList::draw(QPainter& p, const QRect& rect)
                               break;
                         case COL_NAME:
                               {
+                                if(dcanvas)
+                                  isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::NameField);
+                                doOverrideFill = false;
+                                if(isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
+                                  p.fillRect(r, override_col);
                                 if(dcanvas && dcanvas->part())
                                 {
                                   MusECore::Part* cur_part = dcanvas->part();
@@ -355,23 +615,73 @@ void DList::draw(QPainter& p, const QRect& rect)
                                 }
                                 QString str = dm->name;
                                 align = Qt::AlignVCenter | Qt::AlignLeft;
+                                fnt.setItalic(false);
+                                fnt.setBold(false);
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+                                if(isWorkingItem &
+                                  (MusECore::WorkingDrumMapEntry::TrackOverride | MusECore::WorkingDrumMapEntry::TrackDefaultOverride))
+                                  fnt.setBold(true);
+                                else if(isWorkingItem &
+                                  (MusECore::WorkingDrumMapEntry::InstrumentOverride | MusECore::WorkingDrumMapEntry::InstrumentDefaultOverride))
+                                  fnt.setItalic(true);
+#else
+                                if(isWorkingItem & (MusECore::WorkingDrumMapEntry::TrackOverride |
+                                                    MusECore::WorkingDrumMapEntry::TrackDefaultOverride))
+                                  fnt.setBold(true);
+                                if( (isWorkingItem & MusECore::WorkingDrumMapEntry::TrackDefaultOverride) &&
+                                   !(isWorkingItem & MusECore::WorkingDrumMapEntry::TrackOverride))
+                                  fnt.setItalic(true);
+#endif
+
+                                p.setFont(fnt);
                                 p.drawText(r.x() + 8, r.y(), r.width() - 8, r.height(), align, str);
                               }
                               break;
                               
                         // Default to track port if -1 and track channel if -1.
                         case COL_OUTCHANNEL:
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::ChanField);
                               if(dm->channel != -1)
                                 s.setNum(dm->channel+1);
                               break;
                         case COL_OUTPORT:
+                              if(dcanvas)
+                                isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::PortField);
                               if(dm->port != -1)
                                 s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }
+
+                  if(doOverrideFill && isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
+                    p.fillRect(r, override_col);
+
                   if (!s.isEmpty())
+                  {
+                        fnt.setItalic(false);
+                        fnt.setBold(false);
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+                        if(isWorkingItem &
+                           (MusECore::WorkingDrumMapEntry::TrackOverride | MusECore::WorkingDrumMapEntry::TrackDefaultOverride))
+                          fnt.setBold(true);
+                        else if(isWorkingItem &
+                           (MusECore::WorkingDrumMapEntry::InstrumentOverride | MusECore::WorkingDrumMapEntry::InstrumentDefaultOverride))
+                          fnt.setItalic(true);
+#else
+                        if(isWorkingItem & (MusECore::WorkingDrumMapEntry::TrackOverride |
+                                            MusECore::WorkingDrumMapEntry::TrackDefaultOverride))
+                          fnt.setBold(true);
+                        if( (isWorkingItem & MusECore::WorkingDrumMapEntry::TrackDefaultOverride) &&
+                           !(isWorkingItem & MusECore::WorkingDrumMapEntry::TrackOverride))
+                          fnt.setItalic(true);
+#endif
+
+                        p.setFont(fnt);
                         p.drawText(r, align, s);
+                  }
                   }
             p.restore();
             }
@@ -414,23 +724,16 @@ void DList::draw(QPainter& p, const QRect& rect)
 //   devicesPopupMenu
 //---------------------------------------------------------
 
-void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
+bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       {
-      if (!old_style_drummap_mode)
-      {
-        printf("THIS SHOULD NEVER HAPPEN: devicesPopupMenu() called in new style mode!\n");
-        return;
-      }
-      
       QMenu* p = MusECore::midiPortsPopup(0, t->port, true);  // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
-      bool doemit = false;
       if(!act)
       {
         delete p;
-        return;
-      }  
-      
+        return false;
+      }
+
       int n = act->data().toInt();
       delete p;
 
@@ -438,60 +741,24 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
       const int defaultId    = MIDI_PORTS + 1;
 
       if(n < 0 || n > defaultId)     // Invalid item.
-        return;
+        return false;
 
       if(n == openConfigId)    // Show port config dialog.
       {
         MusEGlobal::muse->configMidiPorts();
-        return;
+        return false;
       }
 
       if(n == defaultId)   // Means the <default> -1
         n = -1;
-      
-      if (!changeAll)
-      {
-          if(n != t->port)
-          {
-            int mport = n;
-            // Default to track port if -1 and track channel if -1.
-            if(mport == -1)
-            {
-              if(!dcanvas || !dcanvas->part())
-                return;
-              MusECore::Part* cur_part = dcanvas->part();
-              if(!cur_part->track() || !cur_part->track()->isMidiTrack())
-                return;
-              MusECore::MidiTrack* cur_track = static_cast<MusECore::MidiTrack*>(cur_part->track());
-              mport = cur_track->outPort();
-            }
-            MusEGlobal::audio->msgIdle(true);
-            MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, mport);
-            MusEGlobal::audio->msgIdle(false);
-            t->port = n;      // -1 is allowed
-            doemit = true;
-          }  
-      }      
-      else {
-            MusEGlobal::audio->msgIdle(true);
-            // Delete all port controller events.
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-            
-            for (int i = 0; i < ourDrumMapSize; i++)
-                  ourDrumMap[i].port = n;
-            // Add all port controller events.
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-            
-            MusEGlobal::audio->msgIdle(false);
-            doemit = true;
-            }
 
-      if(doemit)
+      bool changed = false;
+      if(n != t->port)
       {
-        int instr = getSelectedInstrument();
-        if(instr != -1)
-          MusEGlobal::song->update(SC_DRUMMAP);
-      }            
+        t->port = n;      // -1 is allowed
+        changed = true;
+      }
+      return changed;
     }
 
 //---------------------------------------------------------
@@ -500,6 +767,8 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
 
 void DList::viewMousePressEvent(QMouseEvent* ev)
       {
+      ev->accept();
+
       int x      = ev->x();
       int y      = ev->y();
       int button = ev->button();
@@ -519,285 +788,306 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
       DrumColumn col = DrumColumn(x2col(x));
 
-      int val;
-      int incVal = 0;
-      if (button == Qt::RightButton)
-            incVal = 1;
-      else if (button == Qt::MidButton)
-            incVal = -1;
+      if(button == Qt::RightButton)
+      {
+        if(dcanvas && !old_style_drummap_mode)
+        {
+          enum MapPopupIDs { HideInstrumentID = 0, ShowInstrumentID,
+                            ResetFieldID, ResetItemID, ResetMapID,
+                            SetColumnID, SetDefaultColumnID, ResetColumnID,
+                            SetDefaultFieldID, SetDefaultItemID, SetDefaultMapID,
+                            ResetAllPatchMaps,
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+                            ResetInstrumentFieldID, ResetInstrumentItemID, ResetInstrumentMapID,
+                            SetInstrumentFieldID, SetInstrumentItemID, SetInstrumentMapID
+#endif
+          };
 
-      // Check if we're already editing anything and have pressed the mouse
-      // elsewhere
-      // In that case, treat it as if a return was pressed
+          const int field = col2Field(col);
+          const int overrides = dcanvas->isWorkingMapInstrument(instrument, field);
+          const bool has_overrides = dcanvas->hasOverrides(instrument);
 
-      if (button == Qt::LeftButton) {
-            if (editEntry && (editEntry != dm  || col != selectedColumn)) {
-                  returnPressed();
-                  }
-            }
+          const bool track_override = overrides & MusECore::WorkingDrumMapEntry::TrackOverride;
+          const bool track_def_override = overrides & MusECore::WorkingDrumMapEntry::TrackDefaultOverride;
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+          const bool instr_override = overrides & MusECore::WorkingDrumMapEntry::InstrumentOverride;
+          const bool instr_def_override = overrides & MusECore::WorkingDrumMapEntry::InstrumentDefaultOverride;
+#endif
 
+          const int all_fields_overrides = dcanvas->isWorkingMapInstrument(instrument, MusECore::WorkingDrumMapEntry::AllFields);
+          const bool all_fields_track_override = all_fields_overrides & MusECore::WorkingDrumMapEntry::TrackOverride;
+          const bool all_fields_track_def_override = all_fields_overrides & MusECore::WorkingDrumMapEntry::TrackDefaultOverride;
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+          const bool all_fields_instr_override = all_fields_overrides & MusECore::WorkingDrumMapEntry::InstrumentOverride;
+          const bool all_fields_instr_def_override = all_fields_overrides & MusECore::WorkingDrumMapEntry::InstrumentDefaultOverride;
+#endif
+
+          bool hidden=false;
+          bool shown=false;
+          QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+          int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+
+          for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
+            if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap()[pitch].hide)
+              hidden=true;
+            else
+              shown=true;
+
+          QMenu* popup = new QMenu(NULL /* intendedly not "this" */);
+
+          popup->setToolTipsVisible(true);
+
+          QAction* act = popup->addAction(tr("Hide this instrument"));
+          if(!shown)
+            act->setEnabled(false);
+          act->setData(HideInstrumentID);
+          act->setToolTip(tr("This turns a blue eye into a crossed eye"));
+
+          act = popup->addAction(tr("Show this instrument"));
+          if(!hidden)
+            act->setEnabled(false);
+          act->setData(ShowInstrumentID);
+          act->setToolTip(tr("This turns a crossed eye into a blue eye"));
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Set column"));
+          act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
+          act->setData(SetColumnID);
+          act->setToolTip(tr("Sets a whole column to the field"));
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Promote field to default patch"));
+          act->setData(SetDefaultFieldID);
+          act->setToolTip(tr("Promotes a field in a row to the default patch"));
+
+          act = popup->addAction(tr("Promote row to default patch"));
+          act->setData(SetDefaultItemID);
+          act->setToolTip(tr("Promotes a row to the default patch"));
+
+          act = popup->addAction(tr("Promote column to the default patch"));
+          act->setData(SetDefaultColumnID);
+          act->setToolTip(tr("Promotes a column to the default patch"));
+
+          act = popup->addAction(tr("Promote list to default patch"));
+          act->setData(SetDefaultMapID);
+          act->setToolTip(tr("Promotes the whole list to the default patch"));
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Reset field"));
+          act->setEnabled(track_override || track_def_override);
+          act->setData(ResetFieldID);
+          act->setToolTip(tr("Resets a field in a row to default patch or instrument value"));
+
+          act = popup->addAction(tr("Reset row"));
+          act->setEnabled(all_fields_track_override || all_fields_track_def_override);
+          act->setData(ResetItemID);
+          act->setToolTip(tr("Resets a row to the instrument values"));
+
+          act = popup->addAction(tr("Reset column"));
+          //act->setEnabled(!all_fields_track_def_override);
+          act->setData(ResetColumnID);
+          act->setToolTip(tr("Resets a whole column to the the instrument values"));
+
+          act = popup->addAction(tr("Reset list"));
+          act->setEnabled(has_overrides);
+          act->setData(ResetMapID);
+          act->setToolTip(tr("Resets the whole list to the instrument values"));
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Reset track's drum list"));
+          act->setEnabled(dcanvas->hasOverrides(instrument));
+          act->setData(ResetAllPatchMaps);
+          act->setToolTip(tr("Resets all lists on all patches to the instrument values"));
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Reset instrument field"));
+          act->setEnabled(instr_override || instr_def_override);
+          act->setData(ResetInstrumentFieldID);
+
+          act = popup->addAction(tr("Reset instrument row"));
+          act->setEnabled(all_fields_instr_override || all_fields_instr_def_override);
+          act->setData(ResetInstrumentItemID);
+
+          act = popup->addAction(tr("Reset instrument list"));
+          act->setEnabled(all_fields_instr_override || all_fields_instr_def_override);
+          act->setData(ResetInstrumentMapID);
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Set instrument field"));
+          act->setEnabled(track_override);
+          act->setData(SetInstrumentFieldID);
+
+          act = popup->addAction(tr("Set instrument row"));
+          act->setEnabled(track_override);
+          act->setData(SetInstrumentItemID);
+
+          act = popup->addAction(tr("Set instrument list"));
+          act->setEnabled(track_override);
+          act->setData(SetInstrumentMapID);
+#endif
+
+          int id = -1;
+          QAction* result = popup->exec(ev->globalPos());
+          if(result)
+            id = result->data().toInt();
+
+          delete popup;
+
+          switch(id)
+          {
+            case HideInstrumentID:
+              dm->hide = true;
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::HideField, false, false, false, false);
+            break;
+
+            case ShowInstrumentID:
+              dm->hide = false;
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::HideField, false, false, false, false);
+            break;
+
+            case ResetFieldID:
+              // If there is a track override do not include defaults. This way a track override will be removed
+              //  first, then if reset field is clicked again any track default override will removed.
+              dcanvas->propagate_drummap_change(instrument, field, true, !track_override, false, false);
+              //update();
+            break;
+
+            case ResetItemID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, true, true, false, false);
+              //update();
+            break;
+
+            case ResetMapID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, true, true, false, true);
+            break;
+
+            case SetDefaultFieldID:
+              dcanvas->propagate_drummap_change(instrument, field, false, true, false, false);
+            break;
+
+            case SetDefaultItemID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, true, false, false);
+            break;
+
+            case SetDefaultMapID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, true, false, true);
+            break;
+
+            case SetColumnID:
+              dcanvas->propagate_drummap_change(instrument, field, false, false, false, true);
+            break;
+
+            case SetDefaultColumnID:
+              dcanvas->propagate_drummap_change(instrument, field, false, true, false, true);
+            break;
+
+            case ResetColumnID:
+              dcanvas->propagate_drummap_change(instrument, field, true, true, false, true);
+            break;
+
+            case ResetAllPatchMaps:
+              dcanvas->resetOverridesForAllPatches(instrument);
+            break;
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+            case ResetInstrumentFieldID:
+              // If there is an instrument override do not include defaults. This way an instrument override will be removed
+              //  first, then if reset instrument field is clicked again any instrument default override will removed.
+              dcanvas->propagate_drummap_change(instrument, field, true, false, true, false);
+              //update();
+            break;
+
+            case ResetInstrumentItemID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, true, true, true, false);
+              //update();
+            break;
+
+            case ResetInstrumentMapID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, true, true, true, true);
+            break;
+
+            case SetInstrumentFieldID:
+              dcanvas->propagate_drummap_change(instrument, field, false, false, true, false);
+              //update();
+            break;
+
+            case SetInstrumentItemID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, false, true, false);
+              //update();
+            break;
+
+            case SetInstrumentMapID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, false, true, true);
+            break;
+#endif
+
+            default:
+            return;
+          }
+          return;
+        }
+      }
+
+      int field = MusECore::WorkingDrumMapEntry::NoField;
       switch (col) {
             case COL_NONE:
+            case COL_VOLUME:
+            case COL_QUANT:
+            case COL_INPUTTRIGGER:
+            case COL_NOTELENGTH:
+            case COL_NOTE:
+            case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
+            case COL_LEVEL1:
+            case COL_LEVEL2:
+            case COL_LEVEL3:
+            case COL_LEVEL4:
                   break;
             case COL_HIDE:
                   if (button == Qt::LeftButton)
                   {
-                    bool hidden=true;
-                    QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
-                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
-                    
-                    for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                      if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] == false)
-                      {
-                        hidden=false;
-                        break;
-                      }
-                    
-                    for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                      dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] = !hidden;
+                    field = MusECore::WorkingDrumMapEntry::HideField;
+                    dm->hide = !dm->hide;
                   }
                   break;
             case COL_MUTE:
+                  field = MusECore::WorkingDrumMapEntry::MuteField;
                   if (button == Qt::LeftButton)
                         dm->mute = !dm->mute;
                   break;
             case COL_OUTPORT: // this column isn't visible in new style drum mode
+                  field = MusECore::WorkingDrumMapEntry::PortField;
                   if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
-                        bool changeAll = ev->modifiers() & Qt::ControlModifier;
-                        devicesPopupMenu(dm, mapx(x), mapy(instrument * TH), changeAll);
+                        devicesPopupMenu(dm, mapx(x), mapy(instrument * TH));
                         }
-                  break;
-            case COL_VOLUME:
-                  val = dm->vol + incVal;
-                  if (val < 0)
-                        val = 0;
-                  else if (val > 999) //changed from 200 to 999 by flo93
-                        val = 999;
-                  dm->vol = (unsigned char)val;      
-                  break;
-            case COL_QUANT:
-                  dm->quant += incVal;
-                  // ?? range
-                  break;
-            case COL_INPUTTRIGGER:
-                  val = dm->enote + incVal;
-                  if (val < 0)
-                        val = 0;
-                  else if (val > 127)
-                        val = 127;
-                  
-                  if (old_style_drummap_mode)
-                  {
-                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
-                      //If so, switch the inmap between the instruments
-                      for (int i=0; i<ourDrumMapSize; i++) {
-                            if (ourDrumMap[i].enote == val && &ourDrumMap[i] != dm) {
-                                  MusEGlobal::drumInmap[int(dm->enote)] = i;
-                                  ourDrumMap[i].enote = dm->enote;
-                                  break;
-                                  }
-                            }
-                      //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
-                      MusEGlobal::drumInmap[val] = instrument;
-                  }
-                  else
-                  {
-                    if (dcanvas)
-                    {
-                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
-                      //If so, switch the inmap between the instruments
-                      for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
-                      {
-                        MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
-                        mt->drummap()[mt->map_drum_in(val)].enote=dm->enote;
-                        mt->set_drummap_tied_to_patch(false);
-                      }
-                      // propagating this is unneccessary as it's already done.
-                      // updating the drumInmap is unneccessary, as the propagate call below
-                      // does this for us.
-                      // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
-                      // does this for us.
-                    }
-                    else
-                    {
-                      for (int i=0;i<128;i++)
-                        if (ourDrumMap[i].enote==val)
-                        {
-                          ourDrumMap[i].enote=dm->enote;
-                          break;
-                        }
-                    }
-                  }
-                  
-                  dm->enote = val;
-                  break;
-                  
-            case COL_NOTELENGTH:
-                  val = dm->len + incVal;
-                  if (val < 0)
-                        val = 0;
-                  dm->len = val;
-                  break;
-            case COL_NOTE:
-                  if (old_style_drummap_mode) //only allow changing in old style mode
-                  {
-                    val = dm->anote + incVal;
-                    if (val < 0)
-                          val = 0;
-                    else if (val > 127)
-                          val = 127;
-                    if(val != dm->anote)
-                    {
-                      MusEGlobal::audio->msgIdle(true);
-                      MusEGlobal::song->remapPortDrumCtrlEvents(instrument, val, -1, -1);
-                      MusEGlobal::audio->msgIdle(false);
-                      dm->anote = val;
-                      MusEGlobal::song->update(SC_DRUMMAP);
-                    }
-                  }
-                  
-                  emit keyPressed(instrument, 100);
-                  break;
-            case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
-                  val = dm->channel + incVal;
-                  // Default to track port if -1 and track channel if -1.
-                  if (val < -1)
-                        val = -1;
-                  else if (val > 127)
-                        val = 127;
-                  
-                  if (ev->modifiers() & Qt::ControlModifier) {
-                        MusEGlobal::audio->msgIdle(true);
-                        // Delete all port controller events.
-                        MusEGlobal::song->changeAllPortDrumCtrlEvents(false, true);
-                        
-                        for (int i = 0; i < ourDrumMapSize; i++)
-                              ourDrumMap[i].channel = val;
-                        // Add all port controller events.
-                        MusEGlobal::song->changeAllPortDrumCtrlEvents(true, true);
-                        MusEGlobal::audio->msgIdle(false);
-                        MusEGlobal::song->update(SC_DRUMMAP);
-                        }
-                  else
-                  {
-                      if(val != dm->channel)
-                      {
-                        MusEGlobal::audio->msgIdle(true);
-                        int mchan = val;
-                        if(mchan == -1 && dcanvas && dcanvas->part() && dcanvas->part()->track() && dcanvas->part()->track()->isMidiTrack())
-                          mchan = static_cast<MusECore::MidiTrack*>(dcanvas->part()->track())->outChannel();
-                        if(val != -1)
-                          MusEGlobal::song->remapPortDrumCtrlEvents(instrument, -1, val, -1);
-                        MusEGlobal::audio->msgIdle(false);
-                        dm->channel = val;
-                        MusEGlobal::song->update(SC_DRUMMAP);
-                      }  
-                  }      
-                  break;
-            case COL_LEVEL1:
-                  val = dm->lv1 + incVal;
-                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                   if (val < 0)
-//                         val = 0;
-                  if (val <= 0)
-                        val = 1;
-                  else if (val > 127)
-                        val = 127;
-                  dm->lv1 = val;
-                  break;
-            case COL_LEVEL2:
-                  val = dm->lv2 + incVal;
-                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                   if (val < 0)
-//                         val = 0;
-                  if (val <= 0)
-                        val = 1;
-                  else if (val > 127)
-                        val = 127;
-                  dm->lv2 = val;
-                  break;
-            case COL_LEVEL3:
-                  val = dm->lv3 + incVal;
-                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                   if (val < 0)
-//                         val = 0;
-                  if (val <= 0)
-                        val = 1;
-                  else if (val > 127)
-                        val = 127;
-                  dm->lv3 = val;
-                  break;
-            case COL_LEVEL4:
-                  val = dm->lv4 + incVal;
-                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                   if (val < 0)
-//                         val = 0;
-                  if (val <= 0)
-                        val = 1;
-                  else if (val > 127)
-                        val = 127;
-                  dm->lv4 = val;
                   break;
             case COL_NAME:
+                  field = MusECore::WorkingDrumMapEntry::NameField;
                   if (button == Qt::LeftButton)
                   {
                       int velo = 127 * (ev->x() - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
-                      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                       if (velo < 0) velo = 0;
                       if (velo <= 0) velo = 1;  // Zero note on vel is not allowed.
                       else if (velo > 127 ) velo = 127;
                       emit keyPressed(instrument, velo); //Mapping done on other side, send index
                   }
                   else if (button == Qt::MidButton && dcanvas) // hide that instrument
                   {
-                    QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
-                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
-                    for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                      dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] = true;                    
-                  }
-                  else if (button == Qt::RightButton && dcanvas)
-                  {
-                    bool hidden=false;
-                    bool shown=false;
-                    QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
-                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
-                    
-                    for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
-                      if (dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch])
-                        hidden=true;
-                      else
-                        shown=true;
-
-                    QMenu* popup = new QMenu(NULL /* intendedly not "this" */); 
-                    QAction* hideAction = popup->addAction(tr("hide this instrument"));
-                    QAction* showAction = popup->addAction(tr("show this instrument"));
-                    showAction->setToolTip(tr("this turns a grayed out eye into a blue eye"));
-                    
-                    if (!hidden)
-                      showAction->setEnabled(false);
-                    if (!shown)
-                      hideAction->setEnabled(false);
-                    
-                    QAction* result = popup->exec(ev->globalPos());
-                    if (result==hideAction)
-                      for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                        dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] = true;                    
-                    else if (result==showAction)
-                      for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                        dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] = false;       
-                    
-                    delete popup;
+                    dm->hide = true;
                   }
                   break;
             default:
                   break;
             }
-      
+
+      update();
       if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
-        dcanvas->propagate_drummap_change(instrument, (dm_old.enote != dm->enote));
-      
-      MusEGlobal::song->update(SC_DRUMMAP);
-      //redraw(); //this is done by the songChanged slot
+        dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
       }
 
 //---------------------------------------------------------
@@ -812,13 +1102,17 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 
       int section = header->logicalIndexAt(x);
 
-      if ((section == COL_NAME || section == COL_VOLUME || section == COL_NOTELENGTH || section == COL_LEVEL1 ||
-         section == COL_LEVEL2 || section == COL_LEVEL3 || section == COL_LEVEL4 || section == COL_QUANT ||
-         (section == COL_OUTCHANNEL && old_style_drummap_mode) ) && (ev->button() == Qt::LeftButton))
+      if (section == COL_NAME && (ev->button() == Qt::LeftButton))
          {
            lineEdit(instrument, section);
          }
-      else if (((section == COL_NOTE && old_style_drummap_mode) || section == COL_INPUTTRIGGER) && (ev->button() == Qt::LeftButton))
+      else if ((section == COL_VOLUME || section == COL_NOTELENGTH || section == COL_LEVEL1 ||
+         section == COL_LEVEL2 || section == COL_LEVEL3 || section == COL_LEVEL4 || section == COL_QUANT ||
+         section == COL_OUTCHANNEL ) && (ev->button() == Qt::LeftButton))
+         {
+           valEdit(instrument, section);
+         }
+      else if ((section == COL_NOTE || section == COL_INPUTTRIGGER) && (ev->button() == Qt::LeftButton))
         pitchEdit(instrument, section);
       else
             viewMousePressEvent(ev);
@@ -841,6 +1135,8 @@ void DList::lineEdit(int line, int section)
                   editor = new DLineEdit(this);
                   connect(editor, SIGNAL(returnPressed()),
                      SLOT(returnPressed()));
+                  connect(editor, SIGNAL(escapePressed()),
+                     SLOT(escapePressed()));
                   editor->setFrame(true);
                   }
             int colx = mapx(header->sectionPosition(section));
@@ -852,52 +1148,87 @@ void DList::lineEdit(int line, int section)
                   case COL_NAME:
                   editor->setText(dm->name);
                   break;
-
-                  case COL_VOLUME: {
-                  editor->setText(QString::number(dm->vol));
-                  break;
-                  }
-                  
-                  case COL_NOTELENGTH: {
-                  editor->setText(QString::number(dm->len));
-                  break;
-                  }
-
-                  case COL_LEVEL1:
-                  editor->setText(QString::number(dm->lv1));
-                  break;
-
-                  case COL_LEVEL2:
-                  editor->setText(QString::number(dm->lv2));
-                  break;
-
-                  case COL_LEVEL3:
-                  editor->setText(QString::number(dm->lv3));
-                  break;
-
-                  case COL_LEVEL4:
-                  editor->setText(QString::number(dm->lv4));
-                  break;
-
-                  case COL_QUANT:
-                  editor->setText(QString::number(dm->quant));
-                  break;
-
-                  case COL_OUTCHANNEL:
-                  // Default to track port if -1 and track channel if -1.
-                  if(dm->channel != -1)  
-                    editor->setText(QString::number(dm->channel+1));
-                  break;
             }
 
             editor->end(false);
             editor->setGeometry(colx, coly, colw, colh);
-            // In all cases but the column name, select all text:
-            if (section != COL_NAME)
-                  editor->selectAll();
             editor->show();
             editor->setFocus();
+     }
 
+//---------------------------------------------------------
+//   valEdit
+//---------------------------------------------------------
+void DList::valEdit(int line, int section)
+      {
+            if (line >= ourDrumMapSize) line=ourDrumMapSize-1;
+            if (line < 0) line=0;
+            if (ourDrumMapSize==0) return;
+
+            MusECore::DrumMap* dm = &ourDrumMap[line];
+            editEntry = dm;
+            if (val_editor == 0) {
+                  val_editor = new DrumListSpinBox(this);
+                  connect(val_editor, SIGNAL(returnPressed()),
+                     SLOT(valEdited()));
+                  connect(val_editor, SIGNAL(escapePressed()),
+                     SLOT(escapePressed()));
+                  val_editor->setFrame(true);
+                  }
+            int colx = mapx(header->sectionPosition(section));
+            int colw = rmapx(header->sectionSize(section));
+            int coly = mapy(line * TH);
+            int colh = rmapy(TH);
+            selectedColumn = section; //Store selected column to have an idea of which one was selected when return is pressed
+            switch (section) {
+                  case COL_VOLUME:
+                  val_editor->setRange(0, 250);
+                  val_editor->setValue(dm->vol);
+                  break;
+
+                  case COL_NOTELENGTH:
+                  val_editor->setRange(1, 1000000);
+                  val_editor->setValue(dm->len);
+                  break;
+
+                  case COL_LEVEL1:
+                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+                  val_editor->setRange(1, 127);
+                  val_editor->setValue(dm->lv1);
+                  break;
+
+                  case COL_LEVEL2:
+                  val_editor->setRange(1, 127);
+                  val_editor->setValue(dm->lv2);
+                  break;
+
+                  case COL_LEVEL3:
+                  val_editor->setRange(1, 127);
+                  val_editor->setValue(dm->lv3);
+                  break;
+
+                  case COL_LEVEL4:
+                  val_editor->setRange(1, 127);
+                  val_editor->setValue(dm->lv4);
+                  break;
+
+                  case COL_QUANT:
+                  val_editor->setRange(0, 1000000);
+                  val_editor->setValue(dm->quant);
+                  break;
+
+                  case COL_OUTCHANNEL:
+                  val_editor->setRange(0, MIDI_CHANNELS);
+                  // Default to track port if -1 and track channel if -1.
+                  if(dm->channel != -1)
+                    val_editor->setValue(dm->channel+1);
+                  break;
+            }
+
+            val_editor->setGeometry(colx, coly, colw, colh);
+            val_editor->selectAll();
+            val_editor->show();
+            val_editor->setFocus();
      }
 
 //---------------------------------------------------------
@@ -913,8 +1244,10 @@ void DList::pitchEdit(int line, int section)
             editEntry = dm;
             if (pitch_editor == 0) {
                   pitch_editor = new DPitchEdit(this);
-                  connect(pitch_editor, SIGNAL(editingFinished()),
+                  connect(pitch_editor, SIGNAL(returnPressed()),
                      SLOT(pitchEdited()));
+                  connect(pitch_editor, SIGNAL(escapePressed()),
+                     SLOT(escapePressed()));
                   pitch_editor->setFrame(true);
                   }
             int colx = mapx(header->sectionPosition(section));
@@ -957,6 +1290,83 @@ int DList::x2col(int x) const
       return header->logicalIndex(col);
       }
 
+int DList::col2Field(int col) const
+{
+  switch(col)
+  {
+    case COL_NONE:
+      return MusECore::WorkingDrumMapEntry::NoField;
+    case COL_HIDE:
+      return MusECore::WorkingDrumMapEntry::HideField;
+    case COL_MUTE:
+      return MusECore::WorkingDrumMapEntry::MuteField;
+    case COL_NAME:
+      return MusECore::WorkingDrumMapEntry::NameField;
+    case COL_VOLUME:
+      return MusECore::WorkingDrumMapEntry::VolField;
+    case COL_QUANT:
+      return MusECore::WorkingDrumMapEntry::QuantField;
+    case COL_INPUTTRIGGER:
+      return MusECore::WorkingDrumMapEntry::ENoteField;
+    case COL_NOTELENGTH:
+      return MusECore::WorkingDrumMapEntry::LenField;
+    case COL_NOTE:
+      return MusECore::WorkingDrumMapEntry::ANoteField;
+    case COL_OUTCHANNEL:
+      return MusECore::WorkingDrumMapEntry::ChanField;
+    case COL_OUTPORT:
+      return MusECore::WorkingDrumMapEntry::PortField;
+    case COL_LEVEL1:
+      return MusECore::WorkingDrumMapEntry::Lv1Field;
+    case COL_LEVEL2:
+      return MusECore::WorkingDrumMapEntry::Lv2Field;
+    case COL_LEVEL3:
+      return MusECore::WorkingDrumMapEntry::Lv3Field;
+    case COL_LEVEL4:
+      return MusECore::WorkingDrumMapEntry::Lv4Field;
+  }
+  return MusECore::WorkingDrumMapEntry::NoField;
+}
+
+int DList::field2Col(int field) const
+{
+  switch(field)
+  {
+    case MusECore::WorkingDrumMapEntry::NoField:
+      return COL_NONE;
+    case MusECore::WorkingDrumMapEntry::HideField:
+      return COL_HIDE;
+    case MusECore::WorkingDrumMapEntry::MuteField:
+      return COL_MUTE;
+    case MusECore::WorkingDrumMapEntry::NameField:
+      return COL_NAME;
+    case MusECore::WorkingDrumMapEntry::VolField:
+      return COL_VOLUME;
+    case MusECore::WorkingDrumMapEntry::QuantField:
+      return COL_QUANT;
+    case MusECore::WorkingDrumMapEntry::ENoteField:
+      return COL_INPUTTRIGGER;
+    case MusECore::WorkingDrumMapEntry::LenField:
+      return COL_NOTELENGTH;
+    case MusECore::WorkingDrumMapEntry::ANoteField:
+      return COL_NOTE;
+    case MusECore::WorkingDrumMapEntry::ChanField:
+      return COL_OUTCHANNEL;
+    case MusECore::WorkingDrumMapEntry::PortField:
+      return COL_OUTPORT;
+    case MusECore::WorkingDrumMapEntry::Lv1Field:
+      return COL_LEVEL1;
+    case MusECore::WorkingDrumMapEntry::Lv2Field:
+      return COL_LEVEL2;
+    case MusECore::WorkingDrumMapEntry::Lv3Field:
+      return COL_LEVEL3;
+    case MusECore::WorkingDrumMapEntry::Lv4Field:
+      return COL_LEVEL4;
+  }
+  return COL_NONE;
+}
+
+
 //---------------------------------------------------------
 //   setCurDrumInstrument
 //---------------------------------------------------------
@@ -978,10 +1388,59 @@ void DList::setCurDrumInstrument(int instr)
 //   sizeChange
 //---------------------------------------------------------
 
-void DList::sizeChange(int, int, int)
-      {
-      redraw();
-      }
+void DList::sizeChange(int section, int, int)
+{
+  redraw();
+
+  if(editEntry==NULL)
+    return;
+
+  const int line = (editEntry-ourDrumMap);
+
+  int colx = mapx(header->sectionPosition(section));
+  int colw = rmapx(header->sectionSize(section));
+  int coly = mapy(line * TH);
+  int colh = rmapy(TH);
+
+  if(editor && editor->isVisible())
+    editor->setGeometry(colx, coly, colw, colh);
+
+  if(val_editor && val_editor->isVisible())
+    val_editor->setGeometry(colx, coly, colw, colh);
+
+  if(pitch_editor && pitch_editor->isVisible())
+    pitch_editor->setGeometry(colx, coly, colw, colh);
+}
+
+//---------------------------------------------------------
+//   pitchValueChanged
+//---------------------------------------------------------
+
+void DList::escapePressed()
+{
+  selectedColumn = -1;
+  if(editor)
+  {
+    editor->blockSignals(true);
+    editor->hide();
+    editor->blockSignals(false);
+  }
+  if(val_editor)
+  {
+    val_editor->blockSignals(true);
+    val_editor->hide();
+    val_editor->blockSignals(false);
+  }
+  if(pitch_editor)
+  {
+    pitch_editor->blockSignals(true);
+    pitch_editor->hide();
+    pitch_editor->blockSignals(false);
+  }
+  editEntry = 0;
+  setFocus();
+  update();
+}
 
 //---------------------------------------------------------
 //   returnPressed
@@ -989,141 +1448,215 @@ void DList::sizeChange(int, int, int)
 
 void DList::returnPressed()
       {
+      if (editor==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: editor is NULL in DList::returnPressed()!\n");
+        return;
+      }
+
       if (editEntry==NULL)
       {
         printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::returnPressed()!\n");
+        selectedColumn = -1;
+        editor->blockSignals(true);
+        editor->hide();
+        editor->blockSignals(false);
+        setFocus();
+        update();
         return;
       }
-      
-      int val = -1;
-      if (selectedColumn != COL_NAME) 
-      {
-            val = atoi(editor->text().toLatin1().constData());
-            
-            switch (selectedColumn)
-            {
-              case COL_VOLUME:
-                  if (val > 999) //changed from 200 to 999 by flo93
-                  val = 999;
-                  if (val < 0)
-                  val = 0;
-                  break;
-                  
-              case COL_LEVEL1:
-              case COL_LEVEL2:
-              case COL_LEVEL3:
-              case COL_LEVEL4:
-                  if (val > 127) //Check bounds for lv1-lv4 values
-                  val = 127;
-                  // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                   if (val < 0)
-//                   val = 0;
-                  else if (val <= 0)
-                    val = 1;
-                  break;
-                  
-              case COL_OUTCHANNEL:
-                  // Default to track port if -1 and track channel if -1.
-                  if(val <= 0)
-                    val = -1;
-                  else
-                    val--;
-                  if (val >= MIDI_CHANNELS)
-                    val = MIDI_CHANNELS - 1;
-                  break;
-                  
-              default: break;
-            }  
-      }     
-      
+
+      const int instrument = (editEntry-ourDrumMap);
+
+      int field = MusECore::WorkingDrumMapEntry::NoField;
       MusECore::DrumMap editEntryOld = *editEntry;
       switch(selectedColumn) {
             case COL_NAME:
                   editEntry->name = editor->text();
-                  break;
-
-            case COL_NOTELENGTH:
-                  editEntry->len = atoi(editor->text().toLatin1().constData());
-                  break;
-
-            case COL_VOLUME:
-                  editEntry->vol = val;
-                  break;
-
-            case COL_LEVEL1:
-                  editEntry->lv1 = val;
-                  break;
-
-            case COL_LEVEL2:
-                  editEntry->lv2 = val;
-                  break;
-
-            case COL_LEVEL3:
-                  editEntry->lv3 = val;
-                  break;
-
-            case COL_LEVEL4:
-                  editEntry->lv4 = val;
-                  break;
-
-            case COL_QUANT:
-                  editEntry->quant = val;
-                  break;
-
-            case COL_OUTCHANNEL:
-                    editEntry->channel = val;
+                  field = MusECore::WorkingDrumMapEntry::NameField;
                   break;
 
             default:
                   printf("Return pressed in unknown column\n");
                   break;
             }
-      
-      if (editEntryOld != *editEntry && dcanvas)
-        dcanvas->propagate_drummap_change(editEntry-ourDrumMap, false);
-      
+
+      const bool do_prop = (editEntryOld != *editEntry && dcanvas);
+
+      // Clear these before the operations.
       selectedColumn = -1;
+      editor->blockSignals(true);
       editor->hide();
+      editor->blockSignals(false);
       editEntry = 0;
       setFocus();
-      MusEGlobal::song->update(SC_DRUMMAP);
-      //redraw(); //this is done by the songChanged slot
+      update();
+
+      if(do_prop)
+        dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
       }
 
 //---------------------------------------------------------
-//   pitchValueChanged
+//   valEdited
+//---------------------------------------------------------
+
+void DList::valEdited()
+      {
+      if (val_editor==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: val_editor is NULL in DList::returnPressed()!\n");
+        return;
+      }
+
+      if (editEntry==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::returnPressed()!\n");
+        selectedColumn = -1;
+        val_editor->blockSignals(true);
+        val_editor->hide();
+        val_editor->blockSignals(false);
+        setFocus();
+        update();
+        return;
+      }
+
+      const int instrument = (editEntry-ourDrumMap);
+      int val = val_editor->value();
+
+      switch (selectedColumn)
+      {
+        case COL_VOLUME:
+            if (val > 250)
+            val = 250;
+            if (val < 0)
+            val = 0;
+            break;
+
+        case COL_LEVEL1:
+        case COL_LEVEL2:
+        case COL_LEVEL3:
+        case COL_LEVEL4:
+            if (val > 127) //Check bounds for lv1-lv4 values
+            val = 127;
+            // Zero note on vel is not allowed now.
+            else if (val <= 0)
+              val = 1;
+            break;
+
+        case COL_OUTCHANNEL:
+            // Default to track port if -1 and track channel if -1.
+            if(val <= 0)
+              val = -1;
+            else
+              val--;
+            if (val >= MIDI_CHANNELS)
+              val = MIDI_CHANNELS - 1;
+            break;
+
+        default: break;
+      }
+
+      int field = MusECore::WorkingDrumMapEntry::NoField;
+      MusECore::DrumMap editEntryOld = *editEntry;
+      switch(selectedColumn) {
+            case COL_NOTELENGTH:
+                  editEntry->len = val;
+                  field = MusECore::WorkingDrumMapEntry::LenField;
+                  break;
+
+            case COL_VOLUME:
+                  editEntry->vol = val;
+                  field = MusECore::WorkingDrumMapEntry::VolField;
+                  break;
+
+            case COL_LEVEL1:
+                  editEntry->lv1 = val;
+                  field = MusECore::WorkingDrumMapEntry::Lv1Field;
+                  break;
+
+            case COL_LEVEL2:
+                  editEntry->lv2 = val;
+                  field = MusECore::WorkingDrumMapEntry::Lv2Field;
+                  break;
+
+            case COL_LEVEL3:
+                  editEntry->lv3 = val;
+                  field = MusECore::WorkingDrumMapEntry::Lv3Field;
+                  break;
+
+            case COL_LEVEL4:
+                  editEntry->lv4 = val;
+                  field = MusECore::WorkingDrumMapEntry::Lv4Field;
+                  break;
+
+            case COL_QUANT:
+                  editEntry->quant = val;
+                  field = MusECore::WorkingDrumMapEntry::QuantField;
+                  break;
+
+            case COL_OUTCHANNEL:
+                  editEntry->channel = val;
+                  field = MusECore::WorkingDrumMapEntry::ChanField;
+                  break;
+
+            default:
+                  printf("Value edited in unknown column\n");
+                  break;
+            }
+
+      const bool do_prop = (editEntryOld != *editEntry && dcanvas);
+
+      // Clear these before the operations.
+      selectedColumn = -1;
+      val_editor->blockSignals(true);
+      val_editor->hide();
+      val_editor->blockSignals(false);
+      editEntry = 0;
+      setFocus();
+      update();
+
+      if(do_prop)
+        dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
+      }
+
+//---------------------------------------------------------
+//   pitchEdited
 //---------------------------------------------------------
 
 void DList::pitchEdited()
 {
-      if (editEntry==NULL)
+      if (pitch_editor==NULL)
       {
-        printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::pitchEdited()!\n");
+        printf("THIS SHOULD NEVER HAPPEN: pitch_editor is NULL in DList::pitchEdited()!\n");
         return;
       }
 
-      int val=pitch_editor->value();
-      int instrument=(editEntry-ourDrumMap);
-      
+      if (editEntry==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::pitchEdited()!\n");
+        selectedColumn = -1;
+        pitch_editor->blockSignals(true);
+        pitch_editor->hide();
+        pitch_editor->blockSignals(false);
+        setFocus();
+        update();
+        return;
+      }
+
+      const int val=pitch_editor->value();
+      const int instrument=(editEntry-ourDrumMap);
+
+      int field = MusECore::WorkingDrumMapEntry::NoField;
       MusECore::DrumMap editEntryOld=*editEntry;
       switch(selectedColumn) {
             case COL_NOTE:
-               if (old_style_drummap_mode) //should actually be always true, but to be sure...
-               {
-                    if(val != editEntry->anote)
-                    {
-                      MusEGlobal::audio->msgIdle(true);
-                      MusEGlobal::song->remapPortDrumCtrlEvents(instrument, val, -1, -1);
-                      MusEGlobal::audio->msgIdle(false);
-                      editEntry->anote = val;
-                      MusEGlobal::song->update(SC_DRUMMAP);
-                    }
-               }
-               else
-                  printf("ERROR: THIS SHOULD NEVER HAPPEN: pitch edited of anote in new style mode!\n");
+               field = MusECore::WorkingDrumMapEntry::ANoteField;
+               if(val != editEntry->anote)
+                 editEntry->anote = val;
                break;
 
             case COL_INPUTTRIGGER:
+               field = MusECore::WorkingDrumMapEntry::ENoteField;
                if (old_style_drummap_mode)
                {
                   //Check if there is any other MusEGlobal::drumMap with the same inmap value (there should be one (and only one):-)
@@ -1142,19 +1675,23 @@ void DList::pitchEdited()
                {
                   if (dcanvas)
                   {
-                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
-                      //If so, switch the inmap between the instruments
-                      for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
+                      // Clear these before the operations.
+                      selectedColumn = -1;
+                      pitch_editor->blockSignals(true);
+                      pitch_editor->hide();
+                      pitch_editor->blockSignals(false);
+                      setFocus();
+                      update();
+
+                      if(editEntry->enote != val)
                       {
-                        MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
-                        mt->drummap()[mt->map_drum_in(val)].enote=editEntry->enote;
-                        mt->set_drummap_tied_to_patch(false);
+                        editEntry->enote = val;
+                        editEntry = 0;
+                        dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
                       }
-                      // propagating this is unneccessary as it's already done.
-                      // updating the drumInmap is unneccessary, as the propagate call below
-                      // does this for us.
-                      // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
-                      // does this for us.
+                      else
+                        editEntry = 0;
+                      return;
                   }
                   else
                   {
@@ -1165,7 +1702,7 @@ void DList::pitchEdited()
                           break;
                         }
                   }
-               } 
+               }
                editEntry->enote = val;
                break;
 
@@ -1173,26 +1710,51 @@ void DList::pitchEdited()
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: Value changed in unknown column\n");
                   break;
             }
-      
-      if (editEntryOld != *editEntry && dcanvas)
-        dcanvas->propagate_drummap_change(editEntry-ourDrumMap, (editEntryOld.enote!=editEntry->enote));
-      
+
+
+      const bool do_prop = (editEntryOld != *editEntry && dcanvas);
+
+      // Clear these before the operations.
       selectedColumn = -1;
+      pitch_editor->blockSignals(true);
       pitch_editor->hide();
+      pitch_editor->blockSignals(false);
       editEntry = 0;
       setFocus();
-      MusEGlobal::song->update(SC_DRUMMAP);
-      //redraw(); //this is done by the songChanged slot
+      update();
+
+      if(do_prop)
+        dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
       }
+
 
 //---------------------------------------------------------
 //   moved
 //---------------------------------------------------------
 
-void DList::moved(int, int, int)
-      {
-      redraw();
-      }
+void DList::moved(int section, int, int)
+{
+  redraw();
+
+  if(editEntry==NULL)
+    return;
+
+  const int line = (editEntry-ourDrumMap);
+
+  int colx = mapx(header->sectionPosition(section));
+  int colw = rmapx(header->sectionSize(section));
+  int coly = mapy(line * TH);
+  int colh = rmapy(TH);
+
+  if(editor && editor->isVisible())
+    editor->setGeometry(colx, coly, colw, colh);
+
+  if(val_editor && val_editor->isVisible())
+    val_editor->setGeometry(colx, coly, colw, colh);
+
+  if(pitch_editor && pitch_editor->isVisible())
+    pitch_editor->setGeometry(colx, coly, colw, colh);
+}
 
 //---------------------------------------------------------
 //   tracklistChanged
@@ -1224,13 +1786,13 @@ void DList::init(QHeaderView* h, QWidget* parent)
         h = new QHeaderView(Qt::Horizontal, parent);
 
       header = h;
-      //ORCAN- CHECK if really needed: header->setTracking(true); DELETETHIS seems like it's unneeded ;)
       connect(header, SIGNAL(sectionResized(int,int,int)),
          SLOT(sizeChange(int,int,int)));
       connect(header, SIGNAL(sectionMoved(int, int,int)), SLOT(moved(int,int,int)));
       setFocusPolicy(Qt::StrongFocus);
       drag = NORMAL;
       editor = 0;
+      val_editor = 0;
       pitch_editor = 0;
       editEntry = 0;
 
@@ -1337,9 +1899,6 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             emit mapChanged(sInstrument, (unsigned)dInstrument); //Track instrument change done in canvas
             }
       drag = NORMAL;
-//??      redraw();          //commented out NOT by flo93; was already commented out. DELETETHIS? not the below, only this single line!
-//      if (editEntry)            //removed by flo93; seems to work without it
-//            editor->setFocus(); //and causes segfaults after adding the pitchedits
       int x = ev->x();
       int y = ev->y();
       bool shift = ev->modifiers() & Qt::ShiftModifier;
@@ -1364,9 +1923,253 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 
 void DList::wheelEvent(QWheelEvent* ev)
-      {
-            emit redirectWheelEvent(ev);
-      }
+{
+  ev->accept();
+
+  Qt::MouseButtons buttons = ev->buttons();
+  int keyState = ev->modifiers();
+  //bool shift = keyState & Qt::ShiftModifier;
+  bool ctrl = keyState & Qt::ControlModifier;
+  int x = ev->x();
+  int y = ev->y();
+
+  DrumColumn col = DrumColumn(x2col(x));
+
+  if(buttons != Qt::LeftButton || ourDrumMapSize == 0 || col == COL_NONE)
+  {
+    //ev->ignore();
+    //View::wheelEvent(ev);
+    //ev->accept();
+    emit redirectWheelEvent(ev);
+    return;
+  }
+
+  int instrument = y / TH;
+  if (instrument >= ourDrumMapSize)
+    instrument = ourDrumMapSize-1;
+  if (instrument < 0)
+    instrument = 0;
+
+//   setCurDrumInstrument(instrument);
+
+  MusECore::DrumMap* dm = &ourDrumMap[instrument];
+  MusECore::DrumMap dm_old = *dm;
+
+  //startY = y;
+  //sInstrument = instrument;
+  //drag   = START_DRAG;
+
+  int val;
+//   int incVal = 0;
+//   if (button == Qt::RightButton)
+//         incVal = 1;
+//   else if (button == Qt::MidButton)
+//         incVal = -1;
+
+
+  const QPoint pixelDelta = ev->pixelDelta();
+  const QPoint angleDegrees = ev->angleDelta() / 8;
+  int delta = 0;
+  if(!pixelDelta.isNull())
+    delta = pixelDelta.y();
+  else if(!angleDegrees.isNull())
+    delta = angleDegrees.y() / 15;
+
+
+
+  int field = MusECore::WorkingDrumMapEntry::NoField;
+  switch (col)
+  {
+    case COL_NONE:
+    case COL_HIDE:
+    case COL_MUTE:
+    case COL_NAME:
+          break;
+
+    case COL_OUTPORT: // this column isn't visible in new style drum mode
+// TODO
+//           field = MusECore::WorkingDrumMapEntry::PortField;
+//           if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
+//                 bool changeAll = ev->modifiers() & Qt::ControlModifier;
+//                 devicesPopupMenu(dm, mapx(x), mapy(instrument * TH), changeAll);
+//                 }
+          break;
+    case COL_VOLUME:
+          field = MusECore::WorkingDrumMapEntry::VolField;
+          val = dm->vol + delta;
+          if (val < 0)
+                val = 0;
+          else if (val > 250)
+                val = 250;
+          dm->vol = (unsigned char)val;
+          break;
+    case COL_QUANT:
+          field = MusECore::WorkingDrumMapEntry::QuantField;
+          dm->quant += delta;
+          // ?? range
+          break;
+    case COL_INPUTTRIGGER:
+          field = MusECore::WorkingDrumMapEntry::ENoteField;
+          val = dm->enote + delta;
+          if (val < 0)
+                val = 0;
+          else if (val > 127)
+                val = 127;
+
+          if (old_style_drummap_mode)
+          {
+              //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+              //If so, switch the inmap between the instruments
+              for (int i=0; i<ourDrumMapSize; i++) {
+                    if (ourDrumMap[i].enote == val && &ourDrumMap[i] != dm) {
+                          MusEGlobal::drumInmap[int(dm->enote)] = i;
+                          ourDrumMap[i].enote = dm->enote;
+                          break;
+                          }
+                    }
+              //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
+              MusEGlobal::drumInmap[val] = instrument;
+          }
+          else
+          {
+            if (dcanvas)
+            {
+              if(dm->enote != val)
+              {
+                dm->enote = val;
+                update();
+                dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
+              }
+              return;
+
+            }
+            else
+            {
+              for (int i=0;i<128;i++)
+                if (ourDrumMap[i].enote==val)
+                {
+                  ourDrumMap[i].enote=dm->enote;
+                  break;
+                }
+            }
+          }
+
+          dm->enote = val;
+          break;
+
+    case COL_NOTELENGTH:
+          field = MusECore::WorkingDrumMapEntry::LenField;
+          val = dm->len + delta;
+          if (val < 0)
+                val = 0;
+          dm->len = val;
+          break;
+    case COL_NOTE:
+          field = MusECore::WorkingDrumMapEntry::ANoteField;
+          if (old_style_drummap_mode) //only allow changing in old style mode
+          {
+            val = dm->anote + delta;
+            if (val < 0)
+                  val = 0;
+            else if (val > 127)
+                  val = 127;
+            if(val != dm->anote)
+            {
+              MusEGlobal::audio->msgIdle(true);
+              MusEGlobal::song->remapPortDrumCtrlEvents(instrument, val, -1, -1);
+              MusEGlobal::audio->msgIdle(false);
+              dm->anote = val;
+              MusEGlobal::song->update(SC_DRUMMAP);
+            }
+          }
+
+          emit keyPressed(instrument, 100);
+          break;
+    case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
+          field = MusECore::WorkingDrumMapEntry::ChanField;
+          val = dm->channel + delta;
+          // Default to track port if -1 and track channel if -1.
+          if (val < -1)
+                val = -1;
+          else if (val > 127)
+                val = 127;
+
+          if (ctrl) {
+                MusEGlobal::audio->msgIdle(true);
+                // Delete all port controller events.
+                MusEGlobal::song->changeAllPortDrumCtrlEvents(false, true);
+
+                for (int i = 0; i < ourDrumMapSize; i++)
+                      ourDrumMap[i].channel = val;
+                // Add all port controller events.
+                MusEGlobal::song->changeAllPortDrumCtrlEvents(true, true);
+                MusEGlobal::audio->msgIdle(false);
+                MusEGlobal::song->update(SC_DRUMMAP);
+                }
+          else
+          {
+              if(val != dm->channel)
+              {
+                MusEGlobal::audio->msgIdle(true);
+                int mchan = val;
+                if(mchan == -1 && dcanvas && dcanvas->part() && dcanvas->part()->track() && dcanvas->part()->track()->isMidiTrack())
+                  mchan = static_cast<MusECore::MidiTrack*>(dcanvas->part()->track())->outChannel();
+                if(val != -1)
+                  MusEGlobal::song->remapPortDrumCtrlEvents(instrument, -1, val, -1);
+                MusEGlobal::audio->msgIdle(false);
+                dm->channel = val;
+                MusEGlobal::song->update(SC_DRUMMAP);
+              }
+          }
+          break;
+    case COL_LEVEL1:
+          field = MusECore::WorkingDrumMapEntry::Lv1Field;
+          val = dm->lv1 + delta;
+          // Zero note on vel is not allowed now.
+          if (val <= 0)
+                val = 1;
+          else if (val > 127)
+                val = 127;
+          dm->lv1 = val;
+          break;
+    case COL_LEVEL2:
+          field = MusECore::WorkingDrumMapEntry::Lv2Field;
+          val = dm->lv2 + delta;
+          // Zero note on vel is not allowed now.
+          if (val <= 0)
+                val = 1;
+          else if (val > 127)
+                val = 127;
+          dm->lv2 = val;
+          break;
+    case COL_LEVEL3:
+          field = MusECore::WorkingDrumMapEntry::Lv3Field;
+          val = dm->lv3 + delta;
+          // Zero note on vel is not allowed now.
+          if (val <= 0)
+                val = 1;
+          else if (val > 127)
+                val = 127;
+          dm->lv3 = val;
+          break;
+    case COL_LEVEL4:
+          field = MusECore::WorkingDrumMapEntry::Lv4Field;
+          val = dm->lv4 + delta;
+          // Zero note on vel is not allowed now.
+          if (val <= 0)
+                val = 1;
+          else if (val > 127)
+                val = 127;
+          dm->lv4 = val;
+          break;
+    default:
+          break;
+  }
+
+  update();
+  if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
+    dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
+}
       
 //---------------------------------------------------------
 //   getSelectedInstrument

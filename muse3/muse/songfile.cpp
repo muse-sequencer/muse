@@ -581,10 +581,11 @@ void Song::read(Xml& xml, bool isTemplate)
                               track->read(xml);
                               insertTrack0(track, -1);
                               }
-                        else if (tag == "drumtrack") {
+                        else if (tag == "drumtrack") { // Old drumtrack is obsolete.
                               MidiTrack* track = new MidiTrack();
-                              track->setType(Track::DRUM);
+                              track->setType(Track::NEW_DRUM);
                               track->read(xml);
+                              track->convertToType(Track::NEW_DRUM); // Convert the notes and controllers.
                               insertTrack0(track, -1);
                               }
                         else if (tag == "newdrumtrack") {

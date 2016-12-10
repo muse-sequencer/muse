@@ -4,7 +4,7 @@
 //  $Id: mididev.h,v 1.3.2.4 2009/04/04 01:49:50 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License

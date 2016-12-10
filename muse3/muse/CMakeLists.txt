@@ -74,7 +74,6 @@ QT5_WRAP_CPP ( muse_moc_headers
       plugin.h
       song.h
       transport.h
-      trackdrummapupdater.h
       value.h
       steprec.h
       lv2host.h
@@ -147,7 +146,6 @@ file (GLOB core_source_files
       thread.cpp
       ticksynth.cpp
       track.cpp
-      trackdrummapupdater.cpp
       transport.cpp
       undo.cpp
       value.cpp

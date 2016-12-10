@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //    operations.h 
-//  (C) Copyright 2014 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2014, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 
 #include <list> 
 #include <map> 
+#include <set>
 
 #include "type_defs.h"
 #include "event.h"
@@ -35,6 +36,7 @@
 #include "keyevent.h"
 #include "part.h"
 #include "track.h"
+#include "midiedit/drummap.h"
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
@@ -43,19 +45,164 @@
 namespace MusECore {
 
 
+typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
+typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
+typedef MidiCtrlValListIterators_t::const_iterator ciMidiCtrlValListIterators_t;
+class MidiCtrlValListIterators : public MidiCtrlValListIterators_t
+{
+   public:
+     iterator findList(const MidiCtrlValList* valList)
+     {
+       for(iterator i = begin(); i != end(); ++i)
+         if((*i)->second == valList)
+           return i;
+       return end();
+     }
+
+     const_iterator findList(const MidiCtrlValList* valList) const
+     {
+       for(const_iterator i = begin(); i != end(); ++i)
+         if((*i)->second == valList)
+           return i;
+       return end();
+     }
+};
+
+typedef std::map < int /*port*/, MidiCtrlValListIterators, std::less<int> > MidiCtrlValLists2bErased_t;
+typedef MidiCtrlValLists2bErased_t::iterator iMidiCtrlValLists2bErased_t;
+typedef MidiCtrlValLists2bErased_t::const_iterator ciMidiCtrlValLists2bErased_t;
+typedef std::pair<iMidiCtrlValLists2bErased_t, bool> MidiCtrlValLists2bErasedInsertResult_t;
+typedef std::pair<int, MidiCtrlValListIterators> MidiCtrlValLists2bErasedInsertPair_t;
+typedef std::pair<iMidiCtrlValLists2bErased_t, iMidiCtrlValLists2bErased_t> MidiCtrlValLists2bErasedRangePair_t;
+
+class MidiCtrlValLists2bErased : public MidiCtrlValLists2bErased_t
+{
+   public:
+     void add(int port, const iMidiCtrlValList& item)
+     {
+       iterator i = find(port);
+       if(i == end())
+       {
+         MidiCtrlValListIterators mcvli;
+         mcvli.push_back(item);
+         insert(MidiCtrlValLists2bErasedInsertPair_t(port, mcvli));
+         return;
+       }
+       MidiCtrlValListIterators& mcvli = i->second;
+       for(iMidiCtrlValListIterators_t imcvli = mcvli.begin(); imcvli != mcvli.end(); ++imcvli)
+       {
+         iMidiCtrlValList imcvl = *imcvli;
+         // Compare list pointers.
+         if(imcvl->second == item->second)
+           return; // Already exists.
+       }
+       mcvli.push_back(item);
+     }
+
+     iterator findList(int port, const MidiCtrlValList* valList)
+     {
+       iterator i = find(port);
+       if(i == end())
+         return end();
+       if(i->second.findList(valList) != i->second.end())
+         return i;
+       return end();
+     }
+
+     const_iterator findList(int port, const MidiCtrlValList* valList) const
+     {
+       const_iterator i = find(port);
+       if(i == end())
+         return end();
+       if(i->second.findList(valList) != i->second.end())
+         return i;
+       return end();
+     }
+};
+
+
+typedef std::set < MidiCtrlValList* > MidiCtrlValLists2bDeleted_t;
+typedef MidiCtrlValLists2bDeleted_t::iterator iMidiCtrlValLists2bDeleted_t;
+typedef MidiCtrlValLists2bDeleted_t::const_iterator ciMidiCtrlValLists2bDeleted_t;
+class MidiCtrlValLists2bDeleted : public MidiCtrlValLists2bDeleted_t
+{
+  
+};
+
+
+typedef std::map < int /*port*/, MidiCtrlValListList*, std::less<int> > MidiCtrlValLists2bAdded_t;
+typedef MidiCtrlValLists2bAdded_t::iterator iMidiCtrlValLists2bAdded_t;
+typedef MidiCtrlValLists2bAdded_t::const_iterator ciMidiCtrlValLists2bAdded_t;
+typedef std::pair<iMidiCtrlValLists2bAdded_t, bool> MidiCtrlValLists2bAddedInsertResult_t;
+typedef std::pair<int, MidiCtrlValListList*> MidiCtrlValLists2bAddedInsertPair_t;
+typedef std::pair<iMidiCtrlValLists2bAdded_t, iMidiCtrlValLists2bAdded_t> MidiCtrlValLists2bAddedRangePair_t;
+
+class MidiCtrlValLists2bAdded : public MidiCtrlValLists2bAdded_t
+{
+//   public:
+//     void add(int port, const MidiCtrlValListList* item);
+//     void remove(int port, const MidiCtrlValListList* item);
+};
+
+
+struct MidiCtrlValRemapOperation
+{
+  // Iterators to be erased in realtime stage.
+  MidiCtrlValLists2bErased _midiCtrlValLists2bErased;
+  // New items to be added in realtime stage.
+  MidiCtrlValLists2bAdded _midiCtrlValLists2bAdded;
+  // Orphaned pointers after the iterators have been erased, deleted in post non-realtime stage.
+  // Automatically filled by constructor.
+  MidiCtrlValLists2bDeleted_t _midiCtrlValLists2bDeleted;
+};
+
+struct DrumMapTrackOperation
+{
+  // Whether this is a setting operation or a reset to defaults.
+  bool _isReset;
+  bool _isInstrumentMod;
+  bool _doWholeMap;
+  bool _includeDefault;
+  WorkingDrumMapList _workingItemList;
+  // List of tracks to apply to.
+  MidiTrackList _tracks;
+};
+
+struct DrumMapTrackPatchOperation
+{
+  // Whether to clear the list of overrides.
+  bool _clear;
+  // Whether this is a setting operation or a reset to defaults.
+  bool _isReset;
+  bool _isInstrumentMod;
+  WorkingDrumMapPatchList _workingItemPatchList;
+  // List of tracks to apply to.
+  MidiTrackList _tracks;
+};
+
+struct DrumMapTrackPatchReplaceOperation
+{
+  bool _isInstrumentMod;
+  WorkingDrumMapPatchList* _workingItemPatchList;
+  // Track to apply to.
+  MidiTrack* _track;
+};
+
 // New items created in GUI thread awaiting addition in audio thread.
 struct PendingOperationItem
 {
   enum PendingOperationType { Uninitialized = 0,
                               ModifySongLength,
-                              AddMidiInstrument, DeleteMidiInstrument,
+                              AddMidiInstrument, DeleteMidiInstrument, ReplaceMidiInstrument,
                               AddMidiDevice,     DeleteMidiDevice,       
-                              ModifyMidiDeviceAddress,        ModifyMidiDeviceFlags,        ModifyMidiDeviceName,
-                              AddTrack,          DeleteTrack, MoveTrack,                    ModifyTrackName,
+                              ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
+                              AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
                               SetTrackRecord,    SetTrackMute, SetTrackSolo,
-                              AddPart,           DeletePart,  MovePart, ModifyPartLength,   ModifyPartName,
+                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,
+                              AddPart,           DeletePart,   MovePart, ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
+                              RemapDrumControllers,
                               AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
                               AddTempo,          DeleteTempo,           ModifyTempo,        SetGlobalTempo, 
                               AddSig,            DeleteSig,             ModifySig,
@@ -125,6 +272,11 @@ struct PendingOperationItem
     int _address_client;
     int _rw_flags;
     int _frame;
+    //DrumMapOperation* _drum_map_operation;
+    DrumMapTrackOperation* _drum_map_track_operation;
+    DrumMapTrackPatchOperation* _drum_map_track_patch_operation;
+    DrumMapTrackPatchReplaceOperation* _drum_map_track_patch_replace_operation;
+    MidiCtrlValRemapOperation* _midi_ctrl_val_remap_operation;
   };
   
   union {
@@ -140,6 +292,21 @@ struct PendingOperationItem
     int _ctl_val;
     double _ctl_dbl_val;
   };
+
+  // The operation is constructed and allocated in non-realtime before the call, then the controllers modified in realtime stage,
+  //  then operation is deleted in non-realtime stage.
+  PendingOperationItem(MidiCtrlValRemapOperation* operation, PendingOperationType type = RemapDrumControllers)
+    { _type = type; _midi_ctrl_val_remap_operation = operation; }
+
+  // The operation is constructed and allocated in non-realtime before the call, then the track's map is modified in realtime stage,
+  //  then operation is deleted in non-realtime stage.
+  PendingOperationItem(DrumMapTrackOperation* operation, PendingOperationType type = ModifyTrackDrumMapItem)
+    { _type = type; _drum_map_track_operation = operation; }
+
+  // The operation is constructed and allocated in non-realtime before the call, then the track's map is modified in realtime stage,
+  //  then operation is deleted in non-realtime stage.
+  PendingOperationItem(DrumMapTrackPatchReplaceOperation* operation, PendingOperationType type = ReplaceTrackDrumMapPatchList)
+    { _type = type; _drum_map_track_patch_replace_operation = operation; }
 
   PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
     { _type = type; _track_list = tl; }
@@ -165,6 +332,10 @@ struct PendingOperationItem
     
   PendingOperationItem(MidiInstrumentList* mil, const iMidiInstrument& imi, PendingOperationType type = DeleteMidiInstrument)
     { _type = type; _midi_instrument_list = mil; _iMidiInstrument = imi; }
+
+  PendingOperationItem(MidiInstrumentList* mil, const iMidiInstrument& imi, MidiInstrument* new_instrument,
+                       PendingOperationType type = ReplaceMidiInstrument)
+    { _type = type; _midi_instrument_list = mil; _iMidiInstrument = imi; _midi_instrument = new_instrument; }
 
   PendingOperationItem(MidiDeviceList* mdl, MidiDevice* midi_device, PendingOperationType type = AddMidiDevice)
     { _type = type; _midi_device_list = mdl; _midi_device = midi_device; }

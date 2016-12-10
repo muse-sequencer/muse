@@ -71,6 +71,7 @@
 #include "midi_audio_control.h"
 #include "ctrl.h"
 #include "plugin.h"
+#include "operations.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -472,7 +473,7 @@ void TList::paint(const QRect& r)
                                     MusECore::MidiInstrument* instr = mp->instrument();
                                     QString name;
                                     if (val!=MusECore::CTRL_VAL_UNKNOWN)
-                                      name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack());
+                                      name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack(), true); // Include default.
                                     else
                                       name = tr("<unknown>");
                                       
@@ -1152,12 +1153,13 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                     MusEGlobal::song->update();
                   }
 
+                  MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                   MusEGlobal::audio->msgIdle(true);
                   
                   if(!allClassPorts && !t->selected())
                   {
                     if(n != track->outPort())
-                      track->setOutPortAndUpdate(n);
+                      changed |= track->setOutPortAndUpdate(n, false);
                   }
                   else
                   {
@@ -1166,13 +1168,13 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
                     {
                       MusECore::MidiTrack* mt = *myt;
                       if(n != mt->outPort() && (allClassPorts || mt->selected()))
-                        mt->setOutPortAndUpdate(n);
+                        changed |= mt->setOutPortAndUpdate(n, false);
                     }
                   }
                   
                   MusEGlobal::audio->msgIdle(false);
                   MusEGlobal::audio->msgUpdateSoloStates();
-                  MusEGlobal::song->update(SC_ROUTE);
+                  MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
                   
                   // Prompt and send init sequences.
                   MusEGlobal::audio->msgInitMidiDevices(false);
@@ -2056,17 +2058,20 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         if (t->type()==MusECore::Track::NEW_DRUM)
                         {
                           QAction* tmp;
-                          p->addAction(tr("Save track's drumlist"))->setData(1010);
-                          p->addAction(tr("Save track's drumlist differences to initial state"))->setData(1011);
-                          p->addAction(tr("Load track's drumlist"))->setData(1012);
+                          tmp=p->addAction(tr("Save track's drumlist"));
+                          tmp->setData(1010);
+                          tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
+                          tmp=p->addAction(tr("Load track's drumlist"));
+                          tmp->setData(1012);
                           tmp=p->addAction(tr("Reset track's drumlist"));
                           tmp->setData(1013);
-                          tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_tied_to_patch());
+                          tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
                           tmp=p->addAction(tr("Reset track's drumlist-ordering"));
                           tmp->setData(1016);
                           tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
-                          p->addAction(tr("Copy track's drumlist to all selected tracks"))->setData(1014);
-                          p->addAction(tr("Copy track's drumlist's differences to all selected tracks"))->setData(1015);
+                          tmp=p->addAction(tr("Copy track's drumlist to all selected tracks"));
+                          tmp->setData(1014);
+                          tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
                           // 1016 is occupied.
                           p->addSeparator();
                         }
@@ -2101,10 +2106,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                       saveTrackDrummap((MusECore::MidiTrack*)t, true);
                                       break;
                                       
-                                    case 1011:
-                                      saveTrackDrummap((MusECore::MidiTrack*)t, false);
-                                      break;
-                                      
                                     case 1012:
                                       loadTrackDrummap((MusECore::MidiTrack*)t);
                                       break;
@@ -2114,8 +2115,17 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           tr("Reset the track's drum map with instrument defaults?"),
                                           QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
                                       {
-                                        ((MusECore::MidiTrack*)t)->set_drummap_tied_to_patch(true);
-                                        MusEGlobal::song->update(SC_DRUMMAP);
+                                        // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
+                                        //  original lists will be deleted, in the operation following.
+                                        MusECore::PendingOperationList operations;
+                                        // Completely blank replacement list.
+                                        MusECore::WorkingDrumMapPatchList* new_wdmpl = new MusECore::WorkingDrumMapPatchList();
+                                        MusECore::DrumMapTrackPatchReplaceOperation* dmop = new MusECore::DrumMapTrackPatchReplaceOperation;
+                                        dmop->_isInstrumentMod = false; // Not instrument operation.
+                                        dmop->_workingItemPatchList = new_wdmpl;
+                                        dmop->_track = static_cast<MusECore::MidiTrack*>(t);
+                                        operations.add(MusECore::PendingOperationItem(dmop, MusECore::PendingOperationItem::ReplaceTrackDrumMapPatchList));
+                                        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                                       }
                                       break;
                                     
@@ -2131,10 +2141,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                     
                                     case 1014:
                                       copyTrackDrummap((MusECore::MidiTrack*)t, true);
-                                      break;
-                                    
-                                    case 1015:
-                                      copyTrackDrummap((MusECore::MidiTrack*)t, false);
                                       break;
                                     
                                     default:
@@ -2344,43 +2350,63 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
 
 void TList::loadTrackDrummapFromXML(MusECore::MidiTrack *t, MusECore::Xml &xml)
 {
-   int mode = 0;
-   for (;;) {
-         MusECore::Xml::Token token = xml.parse();
-         const QString& tag = xml.s1();
-         switch (token) {
-               case MusECore::Xml::Error:
-               case MusECore::Xml::End:
-                     return;
-               case MusECore::Xml::TagStart:
-                     if (mode == 0 && tag == "muse")
-                           mode = 1;
-                     else if (mode == 1 && tag == "our_drummap") {
-                           t->readOurDrumMap(xml, tag, true);
-                           mode = 0;
-                           }
-                     else if (mode == 1 && tag == "drummap") { // compatibility mode, read old drummaps
-                           QMessageBox::information(this, tr("Drummap"), tr("This drummap was created with a previous version of MusE,\nit is being read but the format has changed slightly so some\nadjustments may be necessary."));
-                           t->readOurDrumMap(xml, tag, true, true);
-                           mode = 0;
-                           }
-                         else
-                           xml.unknown("TList::loadTrackDrummap");
-                     break;
-               case MusECore::Xml::Attribut:
-                     break;
-               case MusECore::Xml::TagEnd:
-                     if (!mode && tag == "muse")
-                           goto ende;
-               default:
-                     break;
-               }
-         }
-   ende:
-   return;
+  MusECore::PendingOperationList operations;
+  MusECore::WorkingDrumMapPatchList* wdmpl = 0;
+
+  for (;;) {
+        MusECore::Xml::Token token = xml.parse();
+        const QString& tag = xml.s1();
+        switch (token) {
+              case MusECore::Xml::Error:
+              case MusECore::Xml::End:
+                    if(wdmpl)
+                      delete wdmpl;
+                    return;
+              case MusECore::Xml::TagStart:
+                    if (tag == "muse")
+                    {
+                    }
+                    else if (tag == "our_drummap" ||  // OBSOLETE. Support old files.
+                             tag == "drummap" ||      // OBSOLETE. Support old files.
+                             tag == "drumMapPatch")
+                    {
+                      if(!wdmpl)
+                        wdmpl = new MusECore::WorkingDrumMapPatchList();
+                      // false = Do not fill in unused items.
+                      wdmpl->read(xml, false);
+                    }
+
+                    else
+                          xml.unknown("TList::loadTrackDrummap");
+                    break;
+              case MusECore::Xml::Attribut:
+                    break;
+              case MusECore::Xml::TagEnd:
+                    if (tag == "muse")
+                    {
+                      if(wdmpl)
+                      {
+                        // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
+                        //  original lists will be deleted, in the operation following.
+                        MusECore::DrumMapTrackPatchReplaceOperation* dmop = new MusECore::DrumMapTrackPatchReplaceOperation;
+                        dmop->_isInstrumentMod = false; // Not instrument operation.
+                        dmop->_workingItemPatchList = wdmpl;
+                        dmop->_track = t;
+
+                        operations.add(MusECore::PendingOperationItem(dmop, MusECore::PendingOperationItem::ReplaceTrackDrumMapPatchList));
+                        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                      }
+                      goto ende;
+                    }
+              default:
+                    break;
+              }
+        }
+  ende:
+  return;
 }
 
-void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
+void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
 {
   QString fn;
   if (fn_==NULL)
@@ -2400,7 +2426,9 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
   MusECore::Xml xml(f);
   xml.header();
   xml.tag(0, "muse version=\"1.0\"");
-  t->writeOurDrumMap(1, xml, full);
+
+  t->workingDrumMap()->write(1, xml);
+
   xml.tag(0, "/muse");
 
   if (popenFlag)
@@ -2409,30 +2437,32 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
     fclose(f);
 }
 
-void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool full)
+void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool /*full*/)
 {
-   //Andrew: new implementation without tmpnam()
-   FILE *f = tmpfile();
-   MusECore::Xml xml(f);
-   xml.header();
-   xml.tag(0, "muse version=\"1.0\"");
-   t->writeOurDrumMap(1, xml, full);
-   xml.tag(0, "/muse");
+  MusECore::PendingOperationList operations;
+  MusECore::WorkingDrumMapPatchList* new_wdmpl;
 
-   for (MusECore::iTrack it = MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
-   {
-      if ((*it)->selected() && (*it)->type()==MusECore::Track::NEW_DRUM)
-      {
-         if (MusEGlobal::debugMsg)
-            printf("  processing track...\n");
+  MusECore::WorkingDrumMapPatchList* wdmpl = t->workingDrumMap();
+  MusECore::MidiTrack* mt;
+  for(MusECore::iMidiTrack it = MusEGlobal::song->midis()->begin(); it != MusEGlobal::song->midis()->end(); ++it)
+  {
+    mt = *it;
+    if(mt == t || !mt->selected() || mt->type() != MusECore::Track::NEW_DRUM)
+      continue;
 
-         rewind(f);
-         MusECore::Xml newXml(f);
+    // The allocated WorkingDrumMapPatchList wdmpl will become the new list and the
+    //  original lists will be deleted, in the operation following.
+    new_wdmpl = new MusECore::WorkingDrumMapPatchList();
+    *new_wdmpl = *wdmpl;
+    MusECore::DrumMapTrackPatchReplaceOperation* dmop = new MusECore::DrumMapTrackPatchReplaceOperation;
+    dmop->_isInstrumentMod = false; // Not instrument operation.
+    dmop->_workingItemPatchList = new_wdmpl;
+    dmop->_track = mt;
+    operations.add(MusECore::PendingOperationItem(dmop, MusECore::PendingOperationItem::ReplaceTrackDrumMapPatchList));
+  }
 
-         loadTrackDrummapFromXML((MusECore::MidiTrack*)(*it), newXml);
-      }
-   }
-   fclose(f);
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -2663,9 +2693,8 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
   QMenu p;
   p.clear();
   p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
-  p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
-  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
-  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);  
+  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::NEW_DRUM);
+  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
   if (!act)
     return;
@@ -2695,30 +2724,7 @@ void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType tra
     //    Drum -> Midi
     //
     MusEGlobal::audio->msgIdle(true);
-    MusECore::PartList* pl = t->parts();
-    MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
-    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
-        MusECore::Event ev = ie->second;
-        if(ev.type() == MusECore::Note)
-        {
-          int pitch = ev.pitch();
-          pitch = MusEGlobal::drumMap[pitch].enote;
-          ev.setPitch(pitch);
-        }
-        else
-          if(ev.type() == MusECore::Controller)
-          {
-            int ctl = ev.dataA();
-            // Is it a drum controller event, according to the track port's instrument?
-            MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
-            if(mc)
-              // Change the controller event's index into the drum map to an instrument note.
-              ev.setA((ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].enote);
-          }
-      }
-    }
-    t->setType(trackType);
+    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
     MusEGlobal::audio->msgIdle(false);
     MusEGlobal::song->update(SC_EVENT_MODIFIED);
   }
@@ -2727,45 +2733,8 @@ void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType tra
     //
     //    Midi -> Drum
     //
-
-    // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
-
     MusEGlobal::audio->msgIdle(true);
-
-    // Delete all port controller events.
-    MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-
-    MusECore::PartList* pl = t->parts();
-    MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
-    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
-        MusECore::Event ev = ie->second;
-        if (ev.type() == MusECore::Note)
-        {
-          int pitch = ev.pitch();
-          pitch = MusEGlobal::drumInmap[pitch];
-          ev.setPitch(pitch);
-        }
-        else
-        {
-          if(ev.type() == MusECore::Controller)
-          {
-            int ctl = ev.dataA();
-            // Is it a drum controller event, according to the track port's instrument?
-            MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
-            if(mc)
-              // Change the controller event's instrument note to an index into the drum map.
-              ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
-          }
-        }
-      }
-    }
-
-    t->setType(MusECore::Track::DRUM);
-
-    // Add all port controller events.
-    MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-
+    static_cast<MusECore::MidiTrack*>(t)->convertToType(trackType);
     MusEGlobal::audio->msgIdle(false);
     MusEGlobal::song->update(SC_EVENT_MODIFIED);
   }

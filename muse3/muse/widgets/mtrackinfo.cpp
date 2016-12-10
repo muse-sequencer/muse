@@ -358,7 +358,7 @@ void MidiTrackInfo::heartBeat()
         else
         {
           MusECore::MidiInstrument* instr = mp->instrument();
-          const QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
+          const QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack(), true); // Include default.
           if(name.isEmpty())
           {
             const QString n("???");
@@ -392,7 +392,7 @@ void MidiTrackInfo::heartBeat()
               program = nprogram;
   
               MusECore::MidiInstrument* instr = mp->instrument();
-              const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
+              const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack(), true); // Include default.
               if(iPatch->text() != name)
                 iPatch->setText(name);
 
@@ -615,12 +615,12 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       if (channel != track->outChannel()) {
             ++_blockHeartbeatCount;
-            MusEGlobal::audio->msgIdle(true);
-            track->setOutChanAndUpdate(channel);
+            MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
+            changed |= track->setOutChanAndUpdate(channel, false);
             MusEGlobal::audio->msgIdle(false);
             
             MusEGlobal::audio->msgUpdateSoloStates();
-            MusEGlobal::song->update(SC_ROUTE);
+            MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
             --_blockHeartbeatCount;
             }
       }
@@ -640,12 +640,13 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       if (port_num == track->outPort())
             return;
       ++_blockHeartbeatCount;
+      MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
       MusEGlobal::audio->msgIdle(true);
-      track->setOutPortAndUpdate(port_num);
+      changed |= track->setOutPortAndUpdate(port_num, false);
       MusEGlobal::audio->msgIdle(false);
       
       MusEGlobal::audio->msgUpdateSoloStates();
-      MusEGlobal::song->update(SC_ROUTE);
+      MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
       --_blockHeartbeatCount;
       }
 
@@ -760,7 +761,7 @@ void MidiTrackInfo::iProgHBankChanged()
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       
       MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
+      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack(), true)); // Include default.
 //      updateTrackInfo();
       
       --_blockHeartbeatCount;
@@ -843,7 +844,7 @@ void MidiTrackInfo::iProgLBankChanged()
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       
       MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
+      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack(), true)); // Include default.
 //      updateTrackInfo();
       
       --_blockHeartbeatCount;
@@ -926,7 +927,7 @@ void MidiTrackInfo::iProgramChanged()
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
         
         MusECore::MidiInstrument* instr = mp->instrument();
-        iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
+        iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack(), true)); // Include default.
         
         --_blockHeartbeatCount;
       }
@@ -1065,10 +1066,16 @@ void MidiTrackInfo::patchPopupActivated(QAction* act)
     MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
     if(act->data().type() == QVariant::Int)
     {
-      int rv = act->data().toInt();
-      if(rv != -1)
+      bool ok;
+      int rv = act->data().toInt(&ok);
+      if(ok && rv != -1)
       {
           ++_blockHeartbeatCount;
+          // If the chosen patch's number is don't care (0xffffff),
+          //  then by golly since we "don't care" let's just set it to '-/-/1'.
+          // 0xffffff cannot be a valid patch number... yet...
+          if(rv == MusECore::CTRL_PROGRAM_VAL_DONT_CARE)
+            rv = 0xffff00;
           MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
           MusEGlobal::audio->msgPlayMidiEvent(&ev);
           updateTrackInfo(-1);
@@ -1131,7 +1138,7 @@ void MidiTrackInfo::instrPopup()
           if((*i)->iname() == s) 
           {
             MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
-            MusEGlobal::midiPorts[port].setInstrument(*i);
+            MusEGlobal::midiPorts[port].changeInstrument(*i);
             MusEGlobal::audio->msgIdle(false);
             // Make sure device initializations are sent if necessary.
             MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
@@ -1600,14 +1607,14 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         else
         {
           if(instr)
-            iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
+            iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack(), true)); // Include default.
         }         
       }
       else
       {
             program = nprogram;
 
-            iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack()));
+            iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack(), true)); // Include default.
 
             int hb = ((program >> 16) & 0xff) + 1;
             if (hb == 0x100)

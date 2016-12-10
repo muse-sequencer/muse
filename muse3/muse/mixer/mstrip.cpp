@@ -610,7 +610,7 @@ void MidiComponentRack::updateComponents()
                     {
                       control->setPatchNameOff(false);
                       MusECore::MidiInstrument* instr = mp->instrument();
-                      QString patchName(instr->getPatchName(channel, hwVal, _track->isDrumTrack()));
+                      QString patchName(instr->getPatchName(channel, hwVal, _track->isDrumTrack(), true)); // Include default.
                       if(patchName.isEmpty())
                         patchName = QString("???");
                       if(control->patchName() != patchName)
@@ -876,7 +876,7 @@ void MidiComponentRack::instrPopup(QPoint p)
       if((*i)->iname() == s) 
       {
         MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
-        MusEGlobal::midiPorts[port].setInstrument(*i);
+        MusEGlobal::midiPorts[port].changeInstrument(*i);
         MusEGlobal::audio->msgIdle(false);
         // Make sure device initializations are sent if necessary.
         MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
@@ -936,14 +936,18 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   
   if(act->data().type() == QVariant::Int)
   {
-    int rv = act->data().toInt();
-    if(rv != -1)
+    bool ok;
+    int rv = act->data().toInt(&ok);
+    if(ok && rv != -1)
     {
-        //++_blockHeartbeatCount;
+        // If the chosen patch's number is don't care (0xffffff),
+        //  then by golly since we "don't care" let's just set it to '-/-/1'.
+        // 0xffffff cannot be a valid patch number... yet...
+        if(rv == MusECore::CTRL_PROGRAM_VAL_DONT_CARE)
+          rv = 0xffff00;
         MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
         //updateTrackInfo(-1);
-        //--_blockHeartbeatCount;
     }
   }
   else if(instr->isSynti() && act->data().canConvert<void *>())

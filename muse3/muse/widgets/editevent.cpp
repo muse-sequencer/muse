@@ -503,6 +503,7 @@ MusECore::Event EditCtrlDialog::getEvent()
       bool isDrum                 = track->type() == MusECore::Track::DRUM;
       MusECore::MidiPort* port    = &MusEGlobal::midiPorts[track->outPort()];
       int channel                 = track->outChannel();
+      bool isNewDrum              = track->type() == MusECore::Track::NEW_DRUM;
 
       int evnum = cnum;
       int num = cnum;
@@ -513,6 +514,16 @@ MusECore::Event EditCtrlDialog::getEvent()
         if(isDrum)
         {
           MusECore::DrumMap* dm = &MusEGlobal::drumMap[noteSpinBox->value() & 0x7f];
+          num     = (cnum & ~0xff) | dm->anote;
+          // Default to track port if -1 and track channel if -1.
+          if(dm->port != -1)
+            port    = &MusEGlobal::midiPorts[dm->port];
+          if(dm->channel != -1)
+            channel = dm->channel;
+        }
+        else if(isNewDrum)
+        {
+          MusECore::DrumMap* dm = &track->drummap()[noteSpinBox->value() & 0x7f];
           num     = (cnum & ~0xff) | dm->anote;
           // Default to track port if -1 and track channel if -1.
           if(dm->port != -1)
@@ -607,6 +618,9 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
               ev_cnum |= 0xff;
               if(isDrum)
                 num = (ev_num & ~0xff) | MusEGlobal::drumMap[ev_num & 0xff].anote;
+              else if(isNewDrum)
+                num = (ev_num & ~0xff) | track->drummap()[ev_num & 0xff].anote;
+
               ev_note = ev_num & 0xff;
             }
           }
@@ -888,7 +902,7 @@ void EditCtrlDialog::updatePatch(int val)
       int port              = track->outPort();
       int channel           = track->outChannel();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-      patchName->setText(instr->getPatchName(channel, val, track->isDrumTrack()));
+      patchName->setText(instr->getPatchName(channel, val, track->isDrumTrack(), true)); // Include default.
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)

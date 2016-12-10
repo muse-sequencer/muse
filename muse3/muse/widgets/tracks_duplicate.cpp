@@ -33,7 +33,7 @@ DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*d
   pluginsCheckBox->setVisible(audio);
   pluginCtrlsCheckBox->setVisible(audio);
   copyDrumlistCheckBox->setVisible(newdrum);
-  
+
 
   connect(okPushButton, SIGNAL(clicked()), this, SLOT(accept()));
   connect(cancelPushButton, SIGNAL(clicked()), this, SLOT(reject()));

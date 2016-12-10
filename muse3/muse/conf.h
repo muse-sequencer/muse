@@ -26,6 +26,13 @@
 
 #include "ui_configmidifilebase.h"
 
+// REMOVE Tim. newdrums. Added.
+// Adds the ability to override at instrument level.
+// But it just makes things too complex for the user.
+// And in a way is unneccesary and overkill, since we
+//  already allow modifying an instrument.
+//#define _USE_INSTRUMENT_OVERRIDES_
+
 class QDialog;
 class QLineEdit;
 

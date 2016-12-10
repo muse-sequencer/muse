@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: dcanvas.h,v 1.8.2.2 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -81,18 +82,6 @@ struct instrument_number_mapping_t //FINDMICH TODO move into a suitable namespac
   {
     return !operator==(that);
   }
-};
-
-struct InstrumentCurTrackParams
-{
-  MusECore::MidiTrack* _track;
-  int _curPort;
-  int _curChan;
-  int _curPatch;
-
-  InstrumentCurTrackParams() : _track(0), _curPort(-1), _curChan(0), _curPatch(0) { }
-  InstrumentCurTrackParams(MusECore::MidiTrack* t);
-  bool hasChanged();
 };
 
 //---------------------------------------------------------
@@ -184,10 +173,19 @@ class DrumCanvas : public EventCanvas {
 
       int pitch_and_track_to_instrument(int pitch, MusECore::Track* track);
 
+      // Returns OR'd WorkingDrumMapEntry::OverrideType flags indicating whether a map item's members,
+      //  given by 'fields' (OR'd WorkingDrumMapEntry::Fields), are either the original or working map item.
+      // Here in DrumCanvas the flags can be NoOverride, TrackOverride, and InstrumentOverride.
+      int isWorkingMapInstrument(int instr, int fields) const;
+      // Returns true if any of the instrument's group tracks have non-empty working lists.
+      bool hasOverrides(int instr) const;
+      // Resets all overrides in all patches (clears all override lists), in the instrument's group tracks.
+      void resetOverridesForAllPatches(int instr);
+
       MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; }
       int getOurDrumMapSize() { return instrument_map.size(); }
       QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; }
-      void propagate_drummap_change(int instrument, bool update_druminmap);
+      void propagate_drummap_change(int instrument, int fields, bool isReset, bool includeDefault, bool isInstrumentMod, bool doWholeMap);
       void rebuildOurDrumMap();
       DrumEdit* drumEdit() { return drumEditor; }
       };

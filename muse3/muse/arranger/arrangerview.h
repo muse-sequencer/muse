@@ -92,7 +92,8 @@ class ArrangerView : public TopWin
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
-    QAction *trackMidiAction, *trackDrumAction, *trackNewStyleDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+    QAction *trackMidiAction, *trackDrumAction,
+    *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
 		QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;

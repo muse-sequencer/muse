@@ -100,6 +100,7 @@ const int CTRL_AFTERTOUCH = CTRL_INTERNAL_OFFSET    + 0x04;
 const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 0x1FF;  // 100 to 1FF !
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
+const int CTRL_PROGRAM_VAL_DONT_CARE = 0xffffff; // High-bank, low-bank, and program are all 0xff don't care.
 
 const int CTRL_7_OFFSET      = 0x00000;
 const int CTRL_14_OFFSET     = 0x10000;
@@ -143,13 +144,16 @@ class MidiController {
       int _minVal;            // controller value range (used in gui)
       int _maxVal;
       int _initVal;
+      // Special for drum mode, for controllers such as program.
+      int _drumInitVal;
       int _bias;
       int _showInTracks;
       void updateBias();
 
    public:
       MidiController();
-      MidiController(const QString& n, int num, int min, int max, int init, int show_in_track = (ShowInDrum | ShowInMidi));
+      // If drumInit = -1, it means don't care - use the init val.
+      MidiController(const QString& n, int num, int min, int max, int init, int drumInit, int show_in_track = (ShowInDrum | ShowInMidi));
       MidiController(const MidiController& mc);
       void copy(const MidiController &mc);
       MidiController& operator= (const MidiController &mc);
@@ -164,6 +168,8 @@ class MidiController {
       int maxVal() const                  { return _maxVal; }
       int initVal() const                 { return _initVal; }
       void setInitVal(int val)            { _initVal = val; }
+      int drumInitVal() const             { return _drumInitVal; }
+      void setDrumInitVal(int val)        { _drumInitVal = val; }
       void setMinVal(int val)             { _minVal = val; updateBias(); }
       void setMaxVal(int val)             { _maxVal = val; updateBias(); }
       int bias() const                    { return _bias; }
@@ -218,9 +224,18 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       
       Part* partAtTick(int tick) const;
       
+      // Determine value at tick, using values stored by ANY part.
       iMidiCtrlVal iValue(int tick);
+      // Determine value at tick, using values stored by ANY part.
       int value(int tick) const;
+      // Determine value at tick, using values stored by the SPECIFIC part.
       int value(int tick, Part* part) const;
+      // Determine value at tick, using values stored by ANY part,
+      //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks.
+      int visibleValue(unsigned int tick, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      // Determine value at tick, using values stored by the SPECIFIC part,
+      //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
+      int visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       bool addMCtlVal(int tick, int value, Part* part);
       void delMCtlVal(int tick, Part* part);
       

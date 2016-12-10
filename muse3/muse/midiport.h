@@ -68,6 +68,10 @@ class MidiPort {
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
+      // Update drum maps when patch is known.
+      bool updateDrumMaps(int chan, int patch);
+      // Update drum maps when patch is not known.
+      bool updateDrumMaps();
 
    public:
       MidiPort();
@@ -77,8 +81,16 @@ class MidiPort {
       // manipulate active midi controller
       //
       MidiCtrlValListList* controller() { return _controller; }
+      // Determine controller value at tick on channel, using values stored by ANY part.
       int getCtrl(int ch, int tick, int ctrl) const;
+      // Determine controller value at tick on channel, using values stored by the SPECIFIC part.
       int getCtrl(int ch, int tick, int ctrl, Part* part) const;
+      // Determine controller value at tick on channel, using values stored by ANY part,
+      //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks.
+      int getVisibleCtrl(int ch, int tick, int ctrl, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      // Determine controller value at tick on channel, using values stored by the SPECIFIC part,
+      //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
+      int getVisibleCtrl(int ch, int tick, int ctrl, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
@@ -105,7 +117,8 @@ class MidiPort {
       void setMidiDevice(MidiDevice* dev);
       const QString& portname() const;
       MidiInstrument* instrument() const   { return _instrument; }
-      void setInstrument(MidiInstrument* i);
+      void setInstrument(MidiInstrument* i) { _instrument = i; }
+      void changeInstrument(MidiInstrument* i);
       MidiController* midiController(int num, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);

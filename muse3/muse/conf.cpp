@@ -51,6 +51,7 @@
 #include "pitchedit.h"
 #include "midiport.h"
 #include "mididev.h"
+#include "instruments/minstrument.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
@@ -411,7 +412,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
 
                               mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
 
-                              mp->setInstrument(registerMidiInstrument(instrument));  
+                              mp->changeInstrument(registerMidiInstrument(instrument));
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -993,6 +994,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.exportPortsDevices = xml.parseInt();
                         else if (tag == "exportPortDeviceSMF0")
                               MusEGlobal::config.exportPortDeviceSMF0 = xml.parseInt();
+                        else if (tag == "exportDrumMapOverrides")
+                              MusEGlobal::config.exportDrumMapOverrides = xml.parseInt();
+                        else if (tag == "exportChannelOverridesToNewTrack")
+                              MusEGlobal::config.exportChannelOverridesToNewTrack = xml.parseInt();
                         else if (tag == "exportModeInstr")
                               MusEGlobal::config.exportModeInstr = xml.parseInt();
                         else if (tag == "importMidiDefaultInstr")
@@ -1166,6 +1171,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.addHiddenTracks = xml.parseInt();
                         else if (tag == "drumTrackPreference")
                               MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+                        else if (tag == "drummapOverrides")
+                              MusEGlobal::workingDrumMapInstrumentList.read(xml);
+#endif
+
                         else if (tag == "unhideTracks")
                               MusEGlobal::config.unhideTracks = xml.parseInt();
                         else if (tag == "smartFocus")
@@ -1696,6 +1707,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "importInstrNameMetas", MusEGlobal::config.importInstrNameMetas);
       xml.intTag(level, "exportPortsDevices", MusEGlobal::config.exportPortsDevices);
       xml.intTag(level, "exportPortDeviceSMF0", MusEGlobal::config.exportPortDeviceSMF0);
+      xml.intTag(level, "exportDrumMapOverrides", MusEGlobal::config.exportDrumMapOverrides);
+      xml.intTag(level, "exportChannelOverridesToNewTrack", MusEGlobal::config.exportChannelOverridesToNewTrack);
       xml.intTag(level, "exportModeInstr", MusEGlobal::config.exportModeInstr);
       xml.strTag(level, "importMidiDefaultInstr", MusEGlobal::config.importMidiDefaultInstr);
       xml.intTag(level, "startMode", MusEGlobal::config.startMode);
@@ -1734,6 +1747,10 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
       xml.intTag(level, "drumTrackPreference", MusEGlobal::config.drumTrackPreference);
+
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+      MusECore::midiInstruments.writeDrummapOverrides(level, xml);
+#endif
 
       xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
       xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());
@@ -1975,6 +1992,8 @@ void MidiFileConfig::updateValues()
       importDevNameMetas->setChecked(MusEGlobal::config.importDevNameMetas);
       importInstrNameMetas->setChecked(MusEGlobal::config.importInstrNameMetas);
       exportPortDeviceSMF0->setChecked(MusEGlobal::config.exportPortDeviceSMF0);
+      drumMapOverrides->setChecked(MusEGlobal::config.exportDrumMapOverrides);
+      channelOverridesToNewTrack->setChecked(MusEGlobal::config.exportChannelOverridesToNewTrack);
       exportPortMetas->setChecked(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META);
       exportDeviceNameMetas->setChecked(MusEGlobal::config.exportPortsDevices & MusEGlobal::DEVICE_NAME_META);
       exportModeSysexes->setChecked(MusEGlobal::config.exportModeInstr & MusEGlobal::MODE_SYSEX);
@@ -2009,7 +2028,9 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.importDevNameMetas = importDevNameMetas->isChecked();
       MusEGlobal::config.importInstrNameMetas = importInstrNameMetas->isChecked();
       MusEGlobal::config.exportPortDeviceSMF0 = exportPortDeviceSMF0->isChecked();  
-      
+      MusEGlobal::config.exportDrumMapOverrides = drumMapOverrides->isChecked();
+      MusEGlobal::config.exportChannelOverridesToNewTrack = channelOverridesToNewTrack->isChecked();
+
       MusEGlobal::config.exportPortsDevices = 0;
       if(exportPortMetas->isChecked())
         MusEGlobal::config.exportPortsDevices |= MusEGlobal::PORT_NUM_META;
