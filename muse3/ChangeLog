@@ -1,5 +1,23 @@
 10.12.2016
          - Fixed lingering Arranger bug not restoring size properly on project reload. (Tim)
+09.12.2016
+         * More 'New drum' track fixes. 'Old drums' invisible now, going soon: (Tim)
+         - Midi Instrument Editor: A default Patch Number is allowed now
+            (HBank = LBank = Prg = don't care). See GM instr for ex.
+           ALL drum map items are editable now including Hide, Mute, Channel, Port, Anote.
+           When 'Save' is clicked, song is updated immediately with changes to the instrument.
+         - Drum Tracks: Added Track Drum Map overrides. Right-click any map item to see options.
+           Channel, Port and ANote can be edited now.
+         - Added a standard GM drum map to our GM instrument, on the default patch (see above).
+         - Old midi export bug: Some controllers not exported! My typo: Changed 0x1000 to 0x10000
+            in exportmidi.cpp:addController().
+         - Midi Import/Export Dialog: Added two options for how drum controllers should be exported,
+            see their tooltips/whatsthis for more detailed info:
+              Apply drum map Port, Channel and ANote overrides
+              Drum map channel overrides go to a separate track
+         - Automatic conversion of loaded projects to use new drum tracks instead of old.
+           Warning: The project will be SAVED with NEW drum tracks!
+         - Old drum tracks hidden now. Will be removed later since they are no longer needed.
 09.11.2016
          - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
            Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).
