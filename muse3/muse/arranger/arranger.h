@@ -136,7 +136,6 @@ class Arranger : public QWidget {
       
    signals:
       void editPart(MusECore::Track*);
-      void selectionChanged(); // NOTE: This is emitted upon EITHER a part or track selection change.
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void startEditor(MusECore::PartList*, int);
@@ -205,6 +204,8 @@ class Arranger : public QWidget {
       ArrangerView* parentWin() const { return _parentWin; }
 
       bool setRasterVal(int);
+
+      TList *getTrackList() { return list; }
       };
 
 } // namespace MusEGui

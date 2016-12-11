@@ -175,6 +175,7 @@ struct GlobalConfigValues {
       QColor partMidiDarkEventColor;
       QColor partMidiLightEventColor;
 
+      QColor sliderBarDefaultColor;
       QColor sliderDefaultColor;
       QColor panSliderColor;
       QColor gainSliderColor;
@@ -185,11 +186,13 @@ struct GlobalConfigValues {
       QColor audioPropertySliderDefaultColor;
       QColor midiControllerSliderDefaultColor;
       QColor midiPropertySliderDefaultColor;
-      QColor midiPatchSliderColor;
+      QColor midiPatchReadoutColor;
 
       QColor audioMeterPrimaryColor;
       QColor midiMeterPrimaryColor;
       
+      QColor rackItemBackgroundColor;
+
       WaveDrawing waveDrawing;
       
       // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
@@ -227,7 +230,9 @@ struct GlobalConfigValues {
       bool exportPortDeviceSMF0;  // Export a port and/or device meta even for SMF0.
       int exportModeInstr;        // Or'd ExportModeInstr_t flags. Export mode sysexes and/or instrument name metas.
       QString importMidiDefaultInstr;  // Default to this instrument not Generic, if no match found
-      
+      bool exportDrumMapOverrides; // Apply Port, Channel, and ANote drum map overrides to export
+      bool exportChannelOverridesToNewTrack; // Drum map Channel overrides go to a separate track
+
       int startMode;          // 0 - start with last song
                               // 1 - start with default template
                               // 2 - start with song
@@ -285,7 +290,9 @@ struct GlobalConfigValues {
       bool liveWaveUpdate;   //live update wave tracks while recording
       bool warnOnFileVersions; // Warn if file version different than current
       CONF_LV2_UI_BEHAVIOR lv2UiBehavior;
-      
+      bool preferKnobsVsSliders; // Whether to prefer the use of knobs over sliders, esp in mixer.
+      bool showControlValues; // Whether to show the value along with label in small controls, esp in mixer.
+
       QString measSample;
       QString beatSample;
       QString accent1Sample;

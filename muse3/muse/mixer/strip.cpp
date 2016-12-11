@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include <QString>
+#include <QPainter>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -44,8 +45,10 @@
 #include "icons.h"
 #include "undo.h"
 #include "amixer.h"
+#include "compact_knob.h"
 #include "compact_slider.h"
 #include "elided_label.h"
+#include "menutitleitem.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -66,7 +69,30 @@ ComponentRack::ComponentRack(int id, QWidget* parent, Qt::WindowFlags f)
   _layout->setSpacing(0);
   _layout->setContentsMargins(0, 0, 0, 0);
 }
-  
+
+ComponentWidget* ComponentRack::findComponent(
+      ComponentWidget::ComponentType componentType,
+      int componentWidgetType,
+      int index,
+      QWidget* widget)
+{
+  iComponentWidget icw = _components.find(componentType, componentWidgetType, index, widget);
+  if(icw != _components.end())
+    return &(*icw);
+  return 0;
+}
+
+void ComponentRack::clearDelete()
+{
+  for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    ComponentWidget& cw = *ic;
+    if(cw._widget)
+      delete cw._widget;
+  }
+  _components.clear();
+}
+
 void ComponentRack::addComponentWidget( const ComponentWidget& cw, const ComponentWidget& before )
 {
   if(cw._widget)
@@ -114,6 +140,92 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
   ComponentWidget cw;
   switch(desc->_widgetType)
   {
+    case CompactKnobComponentWidget:
+    {
+      CompactKnobComponentDescriptor* d = static_cast<CompactKnobComponentDescriptor*>(desc);
+      if(!d->_compactKnob)
+      {
+        CompactKnob* control = new CompactKnob(0,
+                                               d->_objName,
+                                               CompactKnob::Right,
+                                               d->_label);
+        d->_compactKnob = control;
+        control->setId(d->_index);
+        control->setRange(d->_min, d->_max, d->_step);
+        control->setValueDecimals(d->_precision);
+        control->setSpecialValueText(d->_specialValueText);
+        control->setHasOffMode(d->_hasOffMode);
+        control->setValueState(d->_initVal, d->_isOff);
+        control->setValPrefix(d->_prefix);
+        control->setValSuffix(d->_suffix);
+        control->setShowValue(d->_showValue);
+        // Do not set. Compact knob needs to manage it's own tooltips.
+        //control->setToolTip(d->_toolTipText);
+        control->setEnabled(d->_enabled);
+        control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+        control->setContentsMargins(0, 0, 0, 0);
+        if(d->_color.isValid())
+          control->setFaceColor(d->_color);
+        //if(d->_rimColor.isValid())
+        //  control->setRimColor(d->_rimColor);
+        if(d->_faceColor.isValid())
+          control->setFaceColor(d->_faceColor);
+        if(d->_shinyColor.isValid())
+          control->setShinyColor(d->_shinyColor);
+
+        //control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+
+        if(d->_changedSlot)
+          connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), d->_changedSlot);
+        if(d->_movedSlot)
+          connect(control, SIGNAL(sliderMoved(double,int,bool)), d->_movedSlot);
+        if(d->_pressedSlot)
+          connect(control, SIGNAL(sliderPressed(int)), d->_pressedSlot);
+        if(d->_releasedSlot)
+          connect(control, SIGNAL(sliderReleased(int)), d->_releasedSlot);
+        if(d->_rightClickedSlot)
+          connect(control, SIGNAL(sliderRightClicked(QPoint,int)), d->_rightClickedSlot);
+
+        switch(d->_componentType)
+        {
+          case controllerComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(controllerChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(controllerMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(controllerPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(controllerReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
+          break;
+
+          case propertyComponent:
+            if(!d->_changedSlot)
+              connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(propertyChanged(double,bool,int,int)));
+            if(!d->_movedSlot)
+              connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(propertyMoved(double,int,bool)));
+            if(!d->_pressedSlot)
+              connect(control, SIGNAL(sliderPressed(int)), SLOT(propertyPressed(int)));
+            if(!d->_releasedSlot)
+              connect(control, SIGNAL(sliderReleased(int)), SLOT(propertyReleased(int)));
+            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
+          break;
+        }
+      }
+
+      cw = ComponentWidget(
+                            d->_compactKnob,
+                            d->_widgetType,
+                            d->_componentType,
+                            d->_index
+                          );
+
+    }
+    break;
+
     case CompactSliderComponentWidget:
     {
       CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
@@ -129,6 +241,8 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
         control->setValueState(d->_initVal, d->_isOff);
         control->setValPrefix(d->_prefix);
         control->setValSuffix(d->_suffix);
+        control->setShowValue(d->_showValue);
+        control->setActiveBorders(d->_activeBorders);
         control->setToolTip(d->_toolTipText);
         control->setEnabled(d->_enabled);
         control->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -278,7 +392,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
     addComponentWidget(cw, before);
 }
   
-void ComponentRack::setComponentMinValue(const ComponentWidget& cw, double min)
+void ComponentRack::setComponentMinValue(const ComponentWidget& cw, double min, bool updateOnly)
 {
   if(!cw._widget)
     return;
@@ -290,16 +404,32 @@ void ComponentRack::setComponentMinValue(const ComponentWidget& cw, double min)
       CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
       if(min != w->minValue())
       {
-        w->blockSignals(true);
+        if(updateOnly)
+          w->blockSignals(true);
         w->setMinValue(min);
-        w->blockSignals(false);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(min != w->minValue())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setMinValue(min);
+        if(updateOnly)
+          w->blockSignals(false);
       }
     }
     break;
   }
 }
 
-void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max)
+void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max, bool updateOnly)
 {
   if(!cw._widget)
     return;
@@ -311,16 +441,32 @@ void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max)
       CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
       if(max != w->maxValue())
       {
-        w->blockSignals(true);
+        if(updateOnly)
+          w->blockSignals(true);
         w->setMaxValue(max);
-        w->blockSignals(false);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(max != w->maxValue())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setMaxValue(max);
+        if(updateOnly)
+          w->blockSignals(false);
       }
     }
     break;
   }
 }
 
-void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, double max, 
+void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, double max, bool updateOnly,
                                       double step, int pageSize, 
                                       DoubleRange::ConversionMode mode)
 {
@@ -334,14 +480,35 @@ void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, dou
       CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
       if(min != w->minValue() || max != w->maxValue())
       {
-        w->blockSignals(true);
+        if(updateOnly)
+          w->blockSignals(true);
         if(min != w->minValue() && max != w->maxValue())
           w->setRange(min, max, step, pageSize, mode);
         else if(min != w->minValue())
           w->setMinValue(max);
         else
           w->setMaxValue(max);
-        w->blockSignals(false);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(min != w->minValue() || max != w->maxValue())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        if(min != w->minValue() && max != w->maxValue())
+          w->setRange(min, max, step, pageSize, mode);
+        else if(min != w->minValue())
+          w->setMinValue(max);
+        else
+          w->setMaxValue(max);
+        if(updateOnly)
+          w->blockSignals(false);
       }
     }
     break;
@@ -357,13 +524,17 @@ double ComponentRack::componentValue(const ComponentWidget& cw) const
       case CompactSliderComponentWidget:
         return static_cast<CompactSlider*>(cw._widget)->value();
       break;
+
+      case CompactKnobComponentWidget:
+        return static_cast<CompactKnob*>(cw._widget)->value();
+      break;
     }
   }
   
   return 0.0;
 }
 
-void ComponentRack::setComponentValue(const ComponentWidget& cw, double val)
+void ComponentRack::setComponentValue(const ComponentWidget& cw, double val, bool updateOnly)
 {
   if(!cw._widget)
     return;
@@ -376,9 +547,27 @@ void ComponentRack::setComponentValue(const ComponentWidget& cw, double val)
       //if(val != cw->_currentValue) // TODO ?
       if(val != w->value())
       {
-        w->blockSignals(true);
+        if(updateOnly)
+          w->blockSignals(true);
         w->setValue(val);
-        w->blockSignals(false);
+        if(updateOnly)
+          w->blockSignals(false);
+        //cw->_currentValue = val;  // TODO ?
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      //if(val != cw->_currentValue) // TODO ?
+      if(val != w->value())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setValue(val);
+        if(updateOnly)
+          w->blockSignals(false);
         //cw->_currentValue = val;  // TODO ?
       }
     }
@@ -386,7 +575,38 @@ void ComponentRack::setComponentValue(const ComponentWidget& cw, double val)
   }
 }
 
-void ComponentRack::setComponentText(const ComponentWidget& cw, const QString& text)
+void ComponentRack::incComponentValue(const ComponentWidget& cw, int steps, bool updateOnly)
+{
+  if(!cw._widget)
+    return;
+
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(updateOnly)
+        w->blockSignals(true);
+      w->incValue(steps);
+      if(updateOnly)
+        w->blockSignals(false);
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(updateOnly)
+        w->blockSignals(true);
+      w->incValue(steps);
+      if(updateOnly)
+        w->blockSignals(false);
+    }
+    break;
+  }
+}
+
+void ComponentRack::setComponentText(const ComponentWidget& cw, const QString& text, bool updateOnly)
 {
   if(!cw._widget)
     return;
@@ -398,22 +618,89 @@ void ComponentRack::setComponentText(const ComponentWidget& cw, const QString& t
       ElidedLabel* w = static_cast<ElidedLabel*>(cw._widget);
       if(text != w->text())
       {
-        w->blockSignals(true);
+        if(updateOnly)
+          w->blockSignals(true);
         w->setText(text);
-        w->blockSignals(false);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(text != w->labelText())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setLabelText(text);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(text != w->labelText())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setLabelText(text);
+        if(updateOnly)
+          w->blockSignals(false);
       }
     }
     break;
   }
 }
 
-void ComponentRack::setComponentEnabled(const ComponentWidget& cw, bool enable)
+void ComponentRack::setComponentEnabled(const ComponentWidget& cw, bool enable, bool /*updateOnly*/)
 {
   if(!cw._widget)
     return;
 
   // Nothing special for now. Just operate on the widget itself.
   cw._widget->setEnabled(enable);
+}
+
+void ComponentRack::setComponentShowValue(const ComponentWidget& cw, bool show, bool updateOnly)
+{
+  if(!cw._widget)
+    return;
+
+  switch(cw._widgetType)
+  {
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      if(show != w->showValue())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setShowValue(show);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      if(show != w->showValue())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->setShowValue(show);
+        if(updateOnly)
+          w->blockSignals(false);
+      }
+    }
+    break;
+  }
 }
 
 //---------------------------------------------------------
@@ -431,6 +718,13 @@ void ComponentRack::configChanged()
     
     switch(cw._widgetType)
     {
+      case CompactKnobComponentWidget:
+      {
+        //CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+        //w->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+      }
+      break;
+
       case CompactSliderComponentWidget:
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
@@ -514,6 +808,16 @@ void Strip::setLabelFont()
   label->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[6]));
   // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
   MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
+}
+
+void Strip::paintEvent(QPaintEvent * /*ev*/)
+{
+  QPainter p(this);
+  if (_highlight) {
+    p.setPen(Qt::darkYellow);
+    p.drawRect(0,0,width()-1,height()-1);
+    p.drawRect(1,1,width()-2,height()-2);
+  }
 }
 
 //---------------------------------------------------------
@@ -603,11 +907,14 @@ void Strip::soloToggled(bool val)
 //    create mixer strip
 //---------------------------------------------------------
 
-Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
+Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedded)
    : QFrame(parent)
       {
       setMouseTracking(true);
-      
+      _isEmbedded = isEmbedded;
+      _selected = false;
+      _highlight = false;
+
       _curGridRow = 0;
       _userWidth = 0;
       autoType = 0;
@@ -650,9 +957,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle)
       //    label
       //---------------------------------------------
 
-      //label = new QLabel(this);
-      // NOTE: This was required, otherwise the strip labels have no colour in the mixer only - track info OK !
-      // Not sure why...
       label = new QLabel(this);
       label->setObjectName(track->cname());
       label->setTextFormat(Qt::PlainText);
@@ -703,17 +1007,18 @@ void Strip::addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment al
 
 void Strip::setAutomationType(int t)
 {
-  // If going to OFF mode, need to update current 'manual' values from the automation values at this time...   
-  if(t == AUTO_OFF && track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
-  {
-    // May have a lot to do in updateCurValues, so try using idle.
-    MusEGlobal::audio->msgIdle(true);
-    track->setAutomationType(AutomationType(t));
-    if(!track->isMidiTrack())
-      (static_cast<MusECore::AudioTrack*>(track))->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
-    MusEGlobal::audio->msgIdle(false);
-  }
-  else
+// REMOVE Tim. mixer. Removed. TESTING...
+//   // If going to OFF mode, need to update current 'manual' values from the automation values at this time...
+//   if(t == AUTO_OFF && track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+//   {
+//     // May have a lot to do in updateCurValues, so try using idle.
+//     MusEGlobal::audio->msgIdle(true);
+//     track->setAutomationType(AutomationType(t));
+//     if(!track->isMidiTrack())
+//       (static_cast<MusECore::AudioTrack*>(track))->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
+//     MusEGlobal::audio->msgIdle(false);
+//   }
+//   else
     // Try it within one message.
     MusEGlobal::audio->msgSetTrackAutomationType(track, t);   
   
@@ -734,7 +1039,7 @@ void Strip::updateRouteButtons()
   {
       if (track->noInRoute())
       {
-        iR->setStyleSheet("background-color:red;");
+        iR->setStyleSheet("background-color:rgb(200, 84, 84);");
         iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
       }
       else
@@ -748,7 +1053,7 @@ void Strip::updateRouteButtons()
   {
     if (track->noOutRoute())
     {
-      oR->setStyleSheet("background-color:red;");
+      oR->setStyleSheet("background-color:rgb(200, 84, 84);");
       oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
     }
     else
@@ -766,57 +1071,110 @@ void Strip::mousePressEvent(QMouseEvent* ev)
   // Only one button at a time.
   if(ev->buttons() ^ ev->button())
   {
-    //_resizeMode = ResizeModeNone;
-    //unsetCursor();
     ev->accept();
     return;
   }
-  
-  //if(_resizeMode == ResizeModeHovering)
-  //{
-    // Switch to dragging mode.
-    //_resizeMode = ResizeModeDragging;
-    //ev->ignore();
-    //return;
-  //}
-  
-  //  printf("strip mouse press event! %d\n",(int)ev->button());
+
   QPoint mousePos = QCursor::pos();
   mouseWidgetOffset = pos() - mousePos;
 
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
-    QAction *act = menu->addAction(tr("Remove track"));
-    act->setData(int(0));
-    menu->addSeparator();
-    act = menu->addAction(tr("Hide strip"));
-    act->setData(int(1));
+
+    menu->addAction(new MenuTitleItem(tr("Configuration:"), menu));
+
+    QAction* act = menu->addAction(tr("Prefer knobs, not sliders"));
+    act->setData(int(2));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.preferKnobsVsSliders);
+
+    act = menu->addAction(tr("Show values in controls"));
+    act->setData(int(3));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.showControlValues);
+
+    if(!_isEmbedded)
+    {
+      menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
+
+//      act = menu->addAction(tr("Remove track"));
+//      act->setData(int(0));
+//      menu->addSeparator();
+      act = menu->addAction(tr("Hide strip"));
+      act->setData(int(1));
+    }
+
     QPoint pt = QCursor::pos();
     act = menu->exec(pt, 0);
     if (!act)
     {
       delete menu;
+      ev->ignore();
       QFrame::mousePressEvent(ev);
       return;
     }
 
     DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
 
-    if (act->data().toInt() == 0)
+    const int sel = act->data().toInt();
+    const bool checked = act->isChecked();
+    delete menu;
+
+    switch(sel)
     {
-      DEBUG_STRIP(stderr, "Strip:: delete track\n");
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+      case 0:
+        //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
+        //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+      break;
+
+      case 1:
+        DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
+        setStripVisible(false);
+        setVisible(false);
+        MusEGlobal::song->update();
+      break;
+
+      case 2:
+        if(MusEGlobal::config.preferKnobsVsSliders != checked)
+        {
+          MusEGlobal::config.preferKnobsVsSliders = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
+
+      case 3:
+        if(MusEGlobal::config.showControlValues != checked)
+        {
+          MusEGlobal::config.showControlValues = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
     }
-    else if (act->data().toInt() == 1)
-    {
-      DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
-      setStripVisible(false);
-      setVisible(false);
-      MusEGlobal::song->update();
-    }
+
     ev->accept();
     return;
   }
+  else if (ev->button() == Qt::LeftButton)
+  {
+    if(!_isEmbedded)
+    {
+      if (ev->modifiers() & Qt::ControlModifier)
+      {
+        setSelected(!isSelected());
+        track->setSelected(isSelected());
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+      }
+      else
+      {
+        emit clearStripSelection();
+        MusEGlobal::song->selectAllTracks(false);
+        setSelected(true);
+        track->setSelected(true);
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+      }
+    }
+  }
+  ev->ignore();
   QFrame::mousePressEvent(ev);
 }
  
@@ -1008,41 +1366,57 @@ QSize ExpanderHandle::sizeHint() const
 
 void Strip::mouseReleaseEvent(QMouseEvent* ev)
 {
-  //printf("strip mouse release event! %d\n",(int)ev->button());
-  if (dragOn) {
-    ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->moveStrip(this);
+  if (!_isEmbedded && dragOn) {
+    emit moveStrip(this);
   }
   dragOn=false;
   QFrame::mouseReleaseEvent(ev);
 
 }
 
-void Strip::mouseMoveEvent(QMouseEvent*)
+void Strip::mouseMoveEvent(QMouseEvent* e)
 {
-  bool isMoveStarted = false;
-
-  //if (dragOn)
-  //  printf("mouseMoveEvent and dragOn set!\n");
-  
-  if (MusEGlobal::muse->mixer1Window()) {
-   isMoveStarted = ((AudioMixerApp*)MusEGlobal::muse->mixer1Window())->isMixerClicked();
-  }
-  if (isMoveStarted)
+  if(e->buttons() == Qt::LeftButton)
   {
-    //printf("mouseMoveEvent isMoveStarted is set!\n");
-
-    // we are located in the mixer and will try to move strip
-    QPoint mousePos = QCursor::pos();
-    move(mousePos + mouseWidgetOffset);
-    dragOn = true;
-    this->raise();
-  }
-  else {
-    //printf("NO MOVE\n");
+    if(!_isEmbedded)
+    {
+      if(dragOn)
+      {
+        QPoint mousePos = QCursor::pos();
+        move(mousePos + mouseWidgetOffset);
+      }
+      else
+      {
+        raise();
+        dragOn = true;
+      }
+    }
   }
   //QFrame::mouseMoveEvent(ev);
 }
 
+void Strip::setSelected(bool v)
+{
+  if(_isEmbedded)
+  {
+    _selected = false;
+    return;
+  }
+  if (v) {
+    label->setFrameStyle(Raised | StyledPanel);
+    setHighLight(true);
+  }
+  else {
+    label->setFrameStyle(Sunken | StyledPanel);
+    setHighLight(false);
+  }
+  _selected=v;
+}
 
+void Strip::setHighLight(bool highlight)
+{
+  _highlight = highlight;
+  update();
+}
 
 } // namespace MusEGui

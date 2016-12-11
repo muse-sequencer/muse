@@ -42,18 +42,29 @@ namespace MusEGui {
 class ElidedLabel : public QFrame
 {
   Q_OBJECT
-  Q_PROPERTY(QString text READ text WRITE setText)
-  Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
+  // FIXME: Found some problems here: If this was enabled, text() was
+  //        intermittently including accelerator key characters, causing
+  //        for example midi controller stream text rapid flickering
+  //        between normal and accelerator key text.
+  //       Maybe it should be const QString& ?
+  //Q_PROPERTY(QString text READ text WRITE setText)
+
+  //Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
 
   private:
     int _id;
+    bool _hasOffMode;
+    bool _off;
     Qt::TextElideMode _elideMode;
+    Qt::Alignment _alignment;
     int _fontPointMin;
     bool _fontIgnoreHeight;
     bool _fontIgnoreWidth;
     QString _text;
     QFont _curFont;
-    
+    // Whether the mouse is over the entire control.
+    bool _hovered;
+
     bool autoAdjustFontSize();
     
   protected:
@@ -61,6 +72,8 @@ class ElidedLabel : public QFrame
     virtual void resizeEvent(QResizeEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
+    virtual void leaveEvent(QEvent*);
 
   signals:
     void pressed(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
@@ -69,19 +82,33 @@ class ElidedLabel : public QFrame
   public:
     explicit ElidedLabel(QWidget* parent = 0, 
                          Qt::TextElideMode elideMode = Qt::ElideNone, 
-                         //int maxFontPoint = 10, 
+                         Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter,
+                         //int maxFontPoint = 10,
                          int minFontPoint = 5,
                          bool ignoreHeight = true, bool ignoreWidth = false,
                          const QString& text = QString(), 
                          Qt::WindowFlags flags = 0);
   
+    virtual QSize sizeHint() const;
+    
     int id() const             { return _id; }
     void setId(int i)          { _id = i; }
     
     Qt::TextElideMode elideMode() const { return _elideMode; }
     void setElideMode(Qt::TextElideMode mode) { _elideMode = mode; update(); }
 
-    const QString& text() const { return _text; }
+    bool hasOffMode() const { return _hasOffMode; }
+    void setHasOffMode(bool v);
+    bool isOff() const { return _off; }
+    // Sets the off state and emits valueStateChanged signal if required.
+    void setOff(bool v);
+    // Both value and off state changed combined into one setter.
+    // By default it is assumed that setting a value naturally implies resetting the 'off' state to false.
+    // Emits valueChanged and valueStateChanged signals if required.
+    // Note setOff and SliderBase::setValue are also available.
+    //void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
+
+    QString text() const { return _text; }
     void setText(const QString& txt);
     
     int fontPointMin() const { return _fontPointMin; }

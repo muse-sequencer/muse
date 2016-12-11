@@ -1111,6 +1111,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             //painter->setPen(ch_struct._selected ? option.palette.highlightedText().color() : option.palette.text().color());
             //painter->setPen(ch_struct._routeSelected ? Qt::yellow : option.palette.text().color());
             painter->setPen(option.palette.text().color());
+            painter->setRenderHint(QPainter::Antialiasing, true);
             painter->drawPath(path);
 
             //const int ch_num = (i + 1) % 10;
@@ -1149,6 +1150,9 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
   //             painter->setPen(ch_struct._selected ? option.palette.highlight().color() : option.palette.text().color());
 //               painter->setPen(color);
 
+              // Need sharp lines here.
+              painter->setRenderHint(QPainter::Antialiasing, false);
+              
               const int line_x = x_offset + ch_rect.x() + RouteDialog::channelDotDiameter / 2;
               const int line_y = option.rect.y() + ch_struct._lineY;
               if(_isInput)
@@ -4798,6 +4802,7 @@ void RouteDialog::connectClicked()
   const int srcSelSz = srcList.size();
   const int dstSelSz = dstList.size();
   bool upd_trk_props = false;
+  MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
 
   for(int srcIdx = 0; srcIdx < srcSelSz; ++srcIdx)
   {
@@ -4825,7 +4830,7 @@ void RouteDialog::connectClicked()
                 if(src.channel >= 0 && src.channel < MIDI_CHANNELS && (mt->outPort() != dst.midiPort || mt->outChannel() != src.channel))
                 {
                   MusEGlobal::audio->msgIdle(true);
-                  mt->setOutPortAndChannelAndUpdate(dst.midiPort, src.channel);
+                  changed |= mt->setOutPortAndChannelAndUpdate(dst.midiPort, src.channel, false);
                   MusEGlobal::audio->msgIdle(false);
                   //MusEGlobal::audio->msgUpdateSoloStates();
                   //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
@@ -4853,13 +4858,14 @@ void RouteDialog::connectClicked()
   if(!operations.empty())
   {
     operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
-    MusEGlobal::audio->msgExecutePendingOperations(operations, true, upd_trk_props ? SC_ROUTE : 0);
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true,
+      upd_trk_props ? (SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0)) : 0);
 //     MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));
     //MusEGlobal::song->update(SC_SOLO);
     //routingChanged();
   }
   else if(upd_trk_props)
-    MusEGlobal::song->update(SC_ROUTE);
+    MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
     
 }  
 //   if(srcItem->data(ROUTE_NAME_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>() && dstItem->data(ROUTE_NAME_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>())

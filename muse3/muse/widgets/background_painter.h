@@ -1,9 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: trackdrummapupdater.h,v 1.59.2.52 2011/12/27 20:25:58 flo93 Exp $
 //
-//  (C) Copyright 2011 Florian Jung (florian.a.jung (at) web.de)
+//  background_painter.h
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,24 +21,38 @@
 //
 //=========================================================
 
-#ifndef __TRACKDRUMMAPUPDATER_H__
-#define __TRACKDRUMMAPUPDATER_H__
+#ifndef __BACKGROUND_PAINTER_H__
+#define __BACKGROUND_PAINTER_H__
 
-#include <QObject>
-#include "type_defs.h"
+#include <QRect>
+#include <QColor>
 
-namespace MusECore {
+class QPainter;
+class QPalette;
+class QColor;
+class QRect;
+class QString;
 
-class TrackDrummapUpdater : public QObject
+namespace MusEGui {
+
+//---------------------------------------------------------
+//   ItemBackgroundPainter
+//---------------------------------------------------------
+
+class ItemBackgroundPainter
 {
-  Q_OBJECT
-
   public:
-    TrackDrummapUpdater(QObject* parent = 0);
-    
-  private slots:
-    void songChanged(MusECore::SongChangedFlags_t flags);
+    ItemBackgroundPainter();
+
+   void drawBackground(QPainter* painter,
+                       const QRect& rect,
+                       const QPalette& pal,
+                       int xMargin = 1,
+                       int yMargin = 1,
+                       const QRect& onRect = QRect(),
+                       const QColor& activeColor = QColor());
 };
 
-} //namespace MusECore
+} // namespace MusEGui
+
 #endif

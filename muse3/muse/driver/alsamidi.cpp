@@ -814,8 +814,8 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                   }
             else {
                   fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
+                  return true;
                   }
-            return false;
 #endif
         }
         break;  // ME_CONTROLLER

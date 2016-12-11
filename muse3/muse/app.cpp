@@ -92,13 +92,13 @@
 #include "songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
+#include "tlist.h"
 #include "waveedit.h"
 #include "widgets/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
 #include "tools.h"
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
-#include "trackdrummapupdater.h"
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
 #include "cpu_toolbar.h"
@@ -344,7 +344,6 @@ MusE::MusE() : QMainWindow()
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
-      new MusECore::TrackDrummapUpdater(this); // no need for keeping the reference, the thing autoconnects on its own.
 
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
@@ -1301,9 +1300,12 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
           mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
       }
 
-// Removed. Already taken care of by settings.
-//       resize(MusEGlobal::config.geometryMain.size());
-//       move(MusEGlobal::config.geometryMain.topLeft());
+// REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
+//  not restoring on project reload. Didn't want to have to reenable this, IIRC there
+//  was a problem with using this (interference with other similar competing settings),
+//  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
+      resize(MusEGlobal::config.geometryMain.size());
+      move(MusEGlobal::config.geometryMain.topLeft());
 
       if (MusEGlobal::config.transportVisible)
             transport->show();

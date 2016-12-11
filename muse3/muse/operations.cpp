@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //    operations.cpp 
-//  (C) Copyright 2014 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2014, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -35,6 +35,10 @@
 
 namespace MusECore {
 
+//-----------------------------------
+//  PendingOperationItem
+//-----------------------------------
+
 bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
 {
   switch(op._type)
@@ -47,7 +51,7 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
     
     case AddTempo:
       // A is tick.
-      if(_type == AddTempo && _tempo_list == op._tempo_list && _intA == op._intA) 
+      if(_type == AddTempo && _tempo_list == op._tempo_list && _intA == op._intA)
         return true;
     break;
       
@@ -65,7 +69,7 @@ bool PendingOperationItem::isAllocationOp(const PendingOperationItem& op) const
       
     // In the case of type AddMidiDevice, this searches for the name only.
     case AddMidiDevice:
-      if(_type == AddMidiDevice && _midi_device_list == op._midi_device_list && 
+      if(_type == AddMidiDevice && _midi_device_list == op._midi_device_list &&
          _midi_device->name() == op._midi_device->name())
         return true;
     break;
@@ -85,6 +89,7 @@ int PendingOperationItem::getIndex() const
     case AddAuxSendValue:
     case AddMidiInstrument:
     case DeleteMidiInstrument:
+    case ReplaceMidiInstrument:
     case AddMidiDevice:
     case DeleteMidiDevice:
     case ModifyMidiDeviceAddress:
@@ -94,6 +99,9 @@ int PendingOperationItem::getIndex() const
     case DeleteTrack:
     case MoveTrack:
     case ModifyTrackName:
+    case ModifyTrackDrumMapItem:
+    case ReplaceTrackDrumMapPatchList:
+    case RemapDrumControllers:
     case SetTrackRecord:
     case SetTrackMute:
     case SetTrackSolo:
@@ -282,6 +290,119 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     }
     break;
       
+    case ModifyTrackDrumMapItem:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTrackDrumMapItem drummap operation:%p\n",
+              _drum_map_track_operation);
+#endif
+
+      MidiTrack* mt;
+      MidiTrackList& mtl = _drum_map_track_operation->_tracks;
+      for(iMidiTrack imt = mtl.begin(); imt != mtl.end(); ++imt)
+      {
+        mt = *imt;
+        // FIXME Possible non realtime-friendly allocation.
+        mt->modifyWorkingDrumMap(_drum_map_track_operation->_workingItemList,
+                                 _drum_map_track_operation->_isReset,
+                                 _drum_map_track_operation->_includeDefault,
+                                 _drum_map_track_operation->_isInstrumentMod,
+                                 _drum_map_track_operation->_doWholeMap);
+        flags |= (SC_DRUMMAP);
+      }
+
+      // If this is an instrument modification we must now do a
+      //  general update of all drum track drum maps.
+      // Ideally we would like to update only the required ones,
+      //  but it is too difficult to tell which maps need updating
+      //  from inside the above loop (or inside modifyWorkingDrumMap).
+      if(_drum_map_track_operation->_isInstrumentMod)
+      {
+        MidiTrackList* mtlp = MusEGlobal::song->midis();
+        for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
+        {
+          mt = *imt;
+          if(mt->type() != Track::NEW_DRUM)
+            continue;
+          if(mt->updateDrummap(false))
+            flags |= (SC_DRUMMAP);
+        }
+      }
+      flags |= (SC_DRUMMAP);
+    }
+    break;
+
+    case ReplaceTrackDrumMapPatchList:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ReplaceTrackDrumMapPatchList drummap operation:%p\n",
+              _drum_map_track_patch_replace_operation);
+#endif
+
+      MidiTrack* mt = _drum_map_track_patch_replace_operation->_track;
+      WorkingDrumMapPatchList* orig_wdmpl = mt->workingDrumMap();
+      // Simply switch pointers. Be sure to delete the original pointers later in the non-realtime stage.
+      // After the list pointers have been switched, swap with the replacement so that it can be deleted later.
+      mt->setWorkingDrumMap(_drum_map_track_patch_replace_operation->_workingItemPatchList,
+                            _drum_map_track_patch_replace_operation->_isInstrumentMod);
+      _drum_map_track_patch_replace_operation->_workingItemPatchList = orig_wdmpl;
+
+      // If this is an instrument modification we must now do a
+      //  general update of all drum track drum maps.
+      // Ideally we would like to update only the required ones,
+      //  but it is too difficult to tell which maps need updating
+      //  from inside the above loop (or inside modifyWorkingDrumMap).
+      if(_drum_map_track_patch_replace_operation->_isInstrumentMod)
+      {
+        MidiTrackList* mtlp = MusEGlobal::song->midis();
+        for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
+        {
+          mt = *imt;
+          if(mt->type() != Track::NEW_DRUM)
+            continue;
+          if(mt->updateDrummap(false))
+            flags |= (SC_DRUMMAP);
+        }
+      }
+      flags |= (SC_DRUMMAP);
+    }
+    break;
+
+    case RemapDrumControllers:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage RemapDrumControllers remap operation:%p\n",
+              _midi_ctrl_val_remap_operation);
+#endif
+
+      for(iMidiCtrlValLists2bErased_t imcvle = _midi_ctrl_val_remap_operation->_midiCtrlValLists2bErased.begin();
+          imcvle != _midi_ctrl_val_remap_operation->_midiCtrlValLists2bErased.end(); ++imcvle)
+      {
+        const int port = imcvle->first;
+        MidiCtrlValListIterators& mcvli = imcvle->second;
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MidiCtrlValListList* mcvll = mp->controller();
+        for(iMidiCtrlValListIterators_t imcvli = mcvli.begin(); imcvli != mcvli.end(); ++imcvli)
+          mcvll->del(*imcvli);
+      }
+
+      for(iMidiCtrlValLists2bAdded_t imcvla = _midi_ctrl_val_remap_operation->_midiCtrlValLists2bAdded.begin();
+          imcvla != _midi_ctrl_val_remap_operation->_midiCtrlValLists2bAdded.end(); ++imcvla)
+      {
+        const int port = imcvla->first;
+        MidiCtrlValListList* mcvll_a = imcvla->second;
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MidiCtrlValListList* mcvll = mp->controller();
+        for(iMidiCtrlValList imcvl = mcvll_a->begin(); imcvl != mcvll_a->end(); ++imcvl)
+          mcvll->add(imcvl->first >> 24, imcvl->second);
+      }
+
+      // TODO: What to use here? We don't have anything SC_* related... yet.
+      //flags |= (SC_MIDI_CONTROLLER_ADD);
+      flags |= (SC_EVERYTHING);
+    }
+    break;
+
     case UpdateSoloStates:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
       // TODO Use the track_list, or simply keep as dummy parameter to identify UpdateSoloStates?
@@ -348,15 +469,77 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     case AddMidiInstrument:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, _midi_instrument);
       _midi_instrument_list->push_back(_midi_instrument);
-      flags |= SC_CONFIG;
+      flags |= SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD;
     break;
     
     case DeleteMidiInstrument:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiInstrument instrument_list:%p instrument:%p\n", _midi_instrument_list, *_iMidiInstrument);
       _midi_instrument_list->erase(_iMidiInstrument);
-      flags |= SC_CONFIG;
+      flags |= SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD;
     break;
     
+    case ReplaceMidiInstrument:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ReplaceMidiInstrument instrument_list:%p instrument:%p new_ instrument:%p\n",
+              _midi_instrument_list, *_iMidiInstrument, _midi_instrument);
+#endif
+      // Grab the existing pointer to be deleted.
+      MidiInstrument* orig = *_iMidiInstrument;
+      // Erase from the list.
+      _midi_instrument_list->erase(_iMidiInstrument);
+      // Add the new instrument.
+      _midi_instrument_list->push_back(_midi_instrument);
+
+      // Change all ports which used the original instrument.
+      for(int port = 0; port < MIDI_PORTS; ++port)
+      {
+        MidiPort* mp = &MusEGlobal::midiPorts[port];
+        if(mp->instrument() != orig)
+          continue;
+        // Set the new instrument and nothing more (ie. don't use MidiPort::changeInstrument()).
+        // Here we will flag the initializations, and normalize and update the drum maps.
+        mp->setInstrument(_midi_instrument);
+        // Flag the port to send initializations next time it bothers to check.
+        // TODO: Optimize: We only need this if the user changed the initialization
+        //        lists or sysex list. Find a way to pass that info here.
+        mp->clearInitSent();
+      }
+
+      // Since this is an instrument modification we must now do a
+      //  general update of all drum track drum maps using this instrument.
+      // Ideally we would like to update only the required ones,
+      //  but it is too difficult to tell which maps need updating
+      //  from inside the above loop (or inside modifyWorkingDrumMap).
+      MidiTrack* mt;
+      int mt_port;
+      MidiPort* mt_mp;
+      MidiTrackList* mtlp = MusEGlobal::song->midis();
+      for(iMidiTrack imt = mtlp->begin(); imt != mtlp->end(); ++imt)
+      {
+        mt = *imt;
+        if(mt->type() != Track::NEW_DRUM)
+          continue;
+        mt_port = mt->outPort();
+        if(mt_port < 0 || mt_port >= MIDI_PORTS)
+          continue;
+        mt_mp = &MusEGlobal::midiPorts[mt_port];
+        // We are looking for tracks which are now using the new instrument.
+        if(mt_mp->instrument() != _midi_instrument)
+          continue;
+        // Ensure there are NO duplicate enote fields.
+        //mt->normalizeWorkingDrumMapPatchList();
+        // Finally, update the track's drum map (and drum in map).
+        mt->updateDrummap(false);
+      }
+
+      // Transfer the original pointer back to _midi_instrument so it can be deleted in the non-RT stage.
+      _midi_instrument = orig;
+
+      flags |= SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD;
+    }
+    break;
+
     case AddMidiDevice:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiDevice devicelist:%p device:%p\n", _midi_device_list, _midi_device);
       _midi_device_list->push_back(_midi_device);
@@ -1231,12 +1414,48 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
         delete _audio_converter_settings;
     break;
     
+    case ReplaceMidiInstrument:
+      // At this point _midi_instrument is the original instrument that was replaced. Delete it now.
+      if(_midi_instrument)
+        delete _midi_instrument;
+    break;
+
     case ModifyAudioCtrlValList:
       // At this point _aud_ctrl_list is the original list that was replaced. Delete it now.
       if(_aud_ctrl_list)
         delete _aud_ctrl_list;
     break;
-    
+
+    case ModifyTrackDrumMapItem:
+      // Discard the operation, it has already completed.
+      if(_drum_map_track_operation)
+        delete _drum_map_track_operation;
+    break;
+
+    case ReplaceTrackDrumMapPatchList:
+      // Discard the operation, it has already completed.
+      if(_drum_map_track_patch_operation)
+      {
+        // At this point _workingItemPatchList is the original list that was replaced. Delete it now.
+        if(_drum_map_track_patch_replace_operation->_workingItemPatchList)
+          delete _drum_map_track_patch_replace_operation->_workingItemPatchList;
+
+        delete _drum_map_track_patch_replace_operation;
+      }
+    break;
+
+    case RemapDrumControllers:
+      // Discard the operation, it has already completed.
+      if(_midi_ctrl_val_remap_operation)
+      {
+        // At this point _midiCtrlValLists2bDeleted contains the original lists that were replaced. Delete them now.
+        for(iMidiCtrlValLists2bDeleted_t imvld = _midi_ctrl_val_remap_operation->_midiCtrlValLists2bDeleted.begin();
+            imvld != _midi_ctrl_val_remap_operation->_midiCtrlValLists2bDeleted.end(); ++imvld)
+          delete *imvld;
+
+        delete _midi_ctrl_val_remap_operation;
+      }
+
     default:
     break;
   }
@@ -1352,6 +1571,33 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
     
+      case PendingOperationItem::ModifyTrackDrumMapItem:
+        if(poi._type == PendingOperationItem::ModifyTrackDrumMapItem &&
+           poi._drum_map_track_operation == op._drum_map_track_operation)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyTrackDrumMapItem. Ignoring.\n");
+          return false;
+        }
+      break;
+
+      case PendingOperationItem::ReplaceTrackDrumMapPatchList:
+        if(poi._type == PendingOperationItem::ReplaceTrackDrumMapPatchList &&
+           poi._drum_map_track_patch_replace_operation == op._drum_map_track_patch_replace_operation)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ReplaceTrackDrumMapPatchList. Ignoring.\n");
+          return false;
+        }
+      break;
+
+      case PendingOperationItem::RemapDrumControllers:
+        if(poi._type == PendingOperationItem::RemapDrumControllers &&
+           poi._midi_ctrl_val_remap_operation == op._midi_ctrl_val_remap_operation)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double RemapDrumControllers. Ignoring.\n");
+          return false;
+        }
+      break;
+
       case PendingOperationItem::UpdateSoloStates:
         if(poi._type == PendingOperationItem::UpdateSoloStates && poi._track_list == op._track_list)
         {
@@ -1426,6 +1672,15 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
         
+      case PendingOperationItem::ReplaceMidiInstrument:
+        if(poi._type == PendingOperationItem::ReplaceMidiInstrument && poi._midi_instrument_list == op._midi_instrument_list &&
+           (poi._midi_instrument == op._midi_instrument || poi._iMidiInstrument == op._iMidiInstrument))
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ReplaceMidiInstrument. Ignoring.\n");
+          return false;
+        }
+      break;
+
       case PendingOperationItem::AddMidiDevice:
         if(poi._type == PendingOperationItem::AddMidiDevice && poi._midi_device_list == op._midi_device_list && poi._midi_device == op._midi_device)  
         {

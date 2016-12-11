@@ -77,6 +77,9 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
 
 void MidiEditor::genPartlist()
       {
+      if(!_pl)
+        return;
+
       _pl->clear();
       for (std::set<int>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
             MusECore::TrackList* tl = MusEGlobal::song->tracks();
@@ -122,6 +125,8 @@ void MidiEditor::movePlayPointerToSelectedEvent()
 
 void MidiEditor::addPart(MusECore::Part* p)
 {
+  if(!_pl || !p)
+    return;
   _pl->add(p);
   _parts.insert(p->sn());
 }
@@ -178,6 +183,8 @@ void MidiEditor::readStatus(MusECore::Xml& xml)
 
 void MidiEditor::writePartList(int level, MusECore::Xml& xml) const
       {
+      if(!_pl)
+        return;
       for (MusECore::ciPart p = _pl->begin(); p != _pl->end(); ++p) {
             MusECore::Part* part   = p->second;
             MusECore::Track* track = part->track();
@@ -275,6 +282,9 @@ void MidiEditor::setCurCanvasPart(MusECore::Part* part)
 
 void MidiEditor::addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >& param)
 {
+  if(!_pl)
+    return;
+  
   using std::map;
   using std::set;
   

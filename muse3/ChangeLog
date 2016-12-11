@@ -1,3 +1,74 @@
+10.12.2016
+         - Fixed lingering Arranger bug not restoring size properly on project reload. (Tim)
+09.11.2016
+         - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
+           Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).
+           Was interfering with DrumGizmo's use of semaphores.
+           TODO: Remove further old rtcaps code such as main.cpp:getCapabilities().
+           Tested OK so far, with self- or externally- started Jack, or dummy audio driver,
+            and as root user as well, and with Jack running non-realtime.
+           Note: This may also prevent things like our RTC timer code from accessing the RTC
+            as non-root, but RTC is old and should be replaced anyway, and it usually required
+            'poking' it beforehand in a terminal anyway - unless MusE is run as root which still
+            works as always.
+30.09.2016:
+         * A fix for 'New drum' tracks!:
+         - Drum maps were not being updated according to track's current port and channel,
+            and current state of program controller. So a hook into the global heartbeat timer
+            was added and all drum maps are updated if necessary. Tested OK so far with
+            multiple parts open in Drum Editor, and changing various ports, channels, and patches.
+           NOTE: This means the Drum List can, and will, CHANGE DYNAMICALLY for example
+            with more than one program change in a part, or simply dialing in a new port, channel
+            or patch numer! TODO: Test + fix/improve/optimize more, and remove debugging messages. (Tim)
+29.09.2016:
+         *** MusE 3.0.0pre2 ***
+           Second prerelease of MusE 3.0.0
+
+         - Bug #526 by jphaenlin: Crash on cut with scissors while master open. (Tim)
+           Seems old: In class MidiEditor: _pl (parts list) can be NULL, so protect the rest of the code.
+28.09.2016:
+         - Completed Robert's mixer strip selection + keyboard navigation features. (Tim)
+           Now works in BOTH mixers A and B. Tested OK all functions.
+           Use the arrow keys and ctrl and shift to navigate strips and adjust volume and pan.
+25.09.2016:
+         - Midi ports/synths configuration dialog: Allow multiple selections in device list. (Tim)
+24.09.2016:
+         - Anti-alias the small routing channel circles. (Tim)
+23.09.2016:
+         * Revenge of the knobs!:
+         - Complete re-design of mixer strips, reinstating knobs but much smaller and compact. (Tim)
+         - Switchable between knobs and sliders, via Global Settings or via right clicking any mixer strip. (Tim)
+         - Also switchable value display, to minimize clutter.
+         - Replaced clumsy three-slider midi patch editor with single-line custom LCD editor. (Tim)
+17.08.2016:
+         - Bug by Martin Drautzburg: ALSA Midi controllers not working. (Tim)
+         - Bugs by Michael Oswald: Change 3 delete to delete[]. In LV2Synth ctor, free _nPname later. (Tim)
+03.08.2016:
+         - Merged fix for bug where configuration storage had stopped working, from AndreeeCZ (rj)
+         - Updated templates to 3.0 (rj)
+         - Fixed color-theme switching no longer working (rj)
+         - Added another idf from Dennis Schulmeister, for Yamaha Motif XS (rj) 
+27.06.2016:
+         - Added instrument definition files from Dennis Schulmeister for:
+            * Korg Krome (Bank Map KORG).idf
+            * Korg Krome (Bank Map GM2).idf
+            * Roland-MT32.idf
+            * Lexicon-MX200.idf
+            * Yamaha-Rex50.idf
+20.06.2016:
+         - Added connection between arranger and mixer so selecting a track carries over to the
+           mixer. Mostly a visual queue but some keyboard navigation and editing is possible (rj) 
+19.06.2016:
+         - Removed XML printout that warned of malformed xml, mostly due to the parser being
+           incomplete, still prints the warning when debug is enabled and when we are reasonably
+           sure it's wrong. (rj)
+         - Added keyboard navigation between strips in mixer. Ctrl+left/right to move between
+           strips. Up/Down to change volume slider (TODO add pan left/right) (rj)
+         - Strips can also be selected with clicking and ctrl+clicking to select more than
+           one. (TODO select strips from arranger too and allow to move all selected strips)(rj)
+16.06.2016:
+         - Removed the ability to delete strips from the mixer, atleast temporarily, as it was
+           crashing (rj)
 02.06.2016:
          - Rolled back transport icons to previous version (the new version looked bad with some themes)
            and made a new rec icon (rj)

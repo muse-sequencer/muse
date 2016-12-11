@@ -230,7 +230,7 @@ bool MusE::importMidi(const QString name, bool merge)
         {
           // this overwrites any instrument set for this port:
           if(mp->instrument() != instr)
-            mp->setInstrument(instr);
+            mp->changeInstrument(instr);
         }
       }
       

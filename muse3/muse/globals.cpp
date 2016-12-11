@@ -230,6 +230,12 @@ const char* audio_file_pattern[] = {
       0
 };
 
+const char* colors_config_file_pattern[] = {
+      QT_TRANSLATE_NOOP("file_patterns", "Color configuration files (*.cfc)"),
+      QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
+      0
+};
+
 Qt::KeyboardModifiers globalKeyState;
 
 // Midi Filter Parameter
@@ -330,17 +336,21 @@ unsigned convertFrame4ProjectSampleRate(unsigned frame)
 
 void doSetuid()
       {
-#ifndef RTCAP
-      int status;
-#ifdef _POSIX_SAVED_IDS
-      status = seteuid (euid);
-#else
-      status = setreuid (ruid, euid);
-#endif
-      if (status < 0) {
-            perror("doSetuid: Couldn't set uid");
-            }
-#endif
+// BUG REMOVE Tim. setuid. Removed. Ancient stuff no longer required?
+//     Tests OK under several scenarios: Jack started externally,
+//      Jack started by MusE, Jack started as root, dummy driver etc.
+//     Was causing crash with new DrumGizmo 0.9.11
+// #ifndef RTCAP
+//       int status;
+// #ifdef _POSIX_SAVED_IDS
+//       status = seteuid (euid);
+// #else
+//       status = setreuid (ruid, euid);
+// #endif
+//       if (status < 0) {
+//             perror("doSetuid: Couldn't set uid");
+//             }
+// #endif
       }
 
 //---------------------------------------------------------
@@ -350,20 +360,24 @@ void doSetuid()
 
 void undoSetuid()
       {
-#ifndef RTCAP
-      int status;
-
-#ifdef _POSIX_SAVED_IDS
-      status = seteuid (ruid);
-#else
-      status = setreuid (euid, ruid);
-#endif
-      if (status < 0) {
-            fprintf(stderr, "undoSetuid: Couldn't set uid (eff:%d,real:%d): %s\n",
-               euid, ruid, strerror(errno));
-            exit (status);
-            }
-#endif
+// BUG REMOVE Tim. setuid. Removed. Ancient stuff no longer required?
+//     Tests OK under several scenarios: Jack started externally,
+//      Jack started by MusE, Jack started as root, dummy driver etc.
+//     Was causing crash with new DrumGizmo 0.9.11
+// #ifndef RTCAP
+//       int status;
+//
+// #ifdef _POSIX_SAVED_IDS
+//       status = seteuid (ruid);
+// #else
+//       status = setreuid (euid, ruid);
+// #endif
+//       if (status < 0) {
+//             fprintf(stderr, "undoSetuid: Couldn't set uid (eff:%d,real:%d): %s\n",
+//                euid, ruid, strerror(errno));
+//             exit (status);
+//             }
+// #endif
       }
 
 //---------------------------------------------------------

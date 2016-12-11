@@ -1379,7 +1379,7 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>528</width>
+            <width>546</width>
             <height>510</height>
            </rect>
           </property>
@@ -1792,11 +1792,34 @@ Certain operations will also force them to be resent,
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>508</width>
-               <height>414</height>
+               <width>526</width>
+               <height>462</height>
               </rect>
              </property>
-             <layout class="QGridLayout" name="gridLayout_10">
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="3" column="0">
+               <widget class="QLabel" name="textLabel1_4_3">
+                <property name="text">
+                 <string>Use project save dialog</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QCheckBox" name="projectSaveCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="0">
                <widget class="QLabel" name="TextLabel1">
                 <property name="text">
@@ -1858,29 +1881,6 @@ Certain operations will also force them to be resent,
               </item>
               <item row="2" column="2">
                <widget class="QCheckBox" name="moveArmedCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="textLabel1_4_3">
-                <property name="text">
-                 <string>Use project save dialog</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QCheckBox" name="projectSaveCheckBox">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -2121,14 +2121,14 @@ Disable to use an alternate standard
                 </property>
                </widget>
               </item>
-              <item row="15" column="0">
+              <item row="19" column="0">
                <widget class="QLabel" name="label_11">
                 <property name="text">
                  <string>LV2 UI Open behavior</string>
                 </property>
                </widget>
               </item>
-              <item row="15" column="1" colspan="2">
+              <item row="19" column="1" colspan="2">
                <widget class="QComboBox" name="lv2UiBehaviorComboBox">
                 <item>
                  <property name="text">
@@ -2145,6 +2145,41 @@ Disable to use an alternate standard
                   <string>Ask always</string>
                  </property>
                 </item>
+               </widget>
+              </item>
+              <item row="15" column="0">
+               <widget class="QLabel" name="label_14">
+                <property name="text">
+                 <string>Prefer knobs instead of sliders</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="2">
+               <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
+                <property name="toolTip">
+                 <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Show knob and slider values</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="2">
+               <widget class="QCheckBox" name="showControlValuesCheckBox">
+                <property name="toolTip">
+                 <string>Whether to show knob and slider values in certain places, for example mixer strips.
+Turn off to reduce clutter.</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
                </widget>
               </item>
              </layout>
@@ -2249,8 +2284,8 @@ Disable to use an alternate standard
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>522</width>
-               <height>349</height>
+               <width>540</width>
+               <height>292</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

@@ -382,15 +382,28 @@ public:
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
       
-      MidiTrack* findTrack(const Part* part) const;
+      Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      //void setChannelMute(int channel, bool flag);  // REMOVE Tim.
+      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.end(); }
+
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*, int idx);
       void insertTrack3(Track*, int idx);
-      void deselectTracks();
+
+      // The currently selected track (in a multi-selection the last one selected), or null.
+      Track* selectedTrack() const { return _tracks.currentSelection(); }
+      // Total number of selected tracks.
+      int countSelectedTracks() const { return _tracks.countSelected(); }
+      // Selects or deselects all tracks.
+      void selectAllTracks(bool select)
+      {
+        _tracks.selectAll(select);
+        if(!select) // Not essential, but if unselecting ALL tracks, clear the static counter.
+          Track::clearSelectionOrderCounter();
+      }
+
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
       // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.

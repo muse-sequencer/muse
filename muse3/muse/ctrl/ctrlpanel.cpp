@@ -184,24 +184,33 @@ void CtrlPanel::heartBeat()
   {
     if(_dnum != MusECore::CTRL_VELOCITY)
     {
-      int outport;
-      int chan;
+      int outport = _track->outPort();
+      int chan = _track->outChannel();
       int cdp = ctrlcanvas->getCurDrumPitch();
-      if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
+      if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-        // Default to track port if -1 and track channel if -1.
-        outport = MusEGlobal::drumMap[cdp].port;
-        if(outport == -1)
-          outport = _track->outPort();
-        chan = MusEGlobal::drumMap[cdp].channel;
-        if(chan == -1)
-          chan = _track->outChannel();
-      }  
-      else  
-      {
-        outport = _track->outPort();
-        chan = _track->outChannel();
+        if(_track->type() == MusECore::Track::DRUM)
+        {
+          // Default to track port if -1 and track channel if -1.
+          outport = MusEGlobal::drumMap[cdp].port;
+          if(outport == -1)
+            outport = _track->outPort();
+          chan = MusEGlobal::drumMap[cdp].channel;
+          if(chan == -1)
+            chan = _track->outChannel();
+        }
+        else if(_track->type() == MusECore::Track::NEW_DRUM)
+        {
+          // Default to track port if -1 and track channel if -1.
+          outport = _track->drummap()[cdp].port;
+          if(outport == -1)
+            outport = _track->outPort();
+          chan = _track->drummap()[cdp].channel;
+          if(chan == -1)
+            chan = _track->outChannel();
+        }
       }
+
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
       
       int v = mp->hwCtrlState(chan, _dnum);
@@ -275,25 +284,34 @@ void CtrlPanel::labelDoubleClicked()
   if(!_track || !_ctrl || _dnum == -1)
       return;
   
-  int outport;
-  int chan;
+  int outport = _track->outPort();
+  int chan = _track->outChannel();
   int cdp = ctrlcanvas->getCurDrumPitch();
-  if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
+  if(_ctrl->isPerNoteController() && cdp >= 0)
   {
-    // Default to track port if -1 and track channel if -1.
-    outport = MusEGlobal::drumMap[cdp].port;
-    if(outport == -1)
-      outport = _track->outPort();
-    chan = MusEGlobal::drumMap[cdp].channel;
-    if(chan == -1)
-      chan = _track->outChannel();
-  }  
-  else  
-  {
-    outport = _track->outPort();
-    chan = _track->outChannel();
+    if(_track->type() == MusECore::Track::DRUM)
+    {
+      // Default to track port if -1 and track channel if -1.
+      outport = MusEGlobal::drumMap[cdp].port;
+      if(outport == -1)
+        outport = _track->outPort();
+      chan = MusEGlobal::drumMap[cdp].channel;
+      if(chan == -1)
+        chan = _track->outChannel();
+    }
+    else if(_track->type() == MusECore::Track::NEW_DRUM)
+    {
+      // Default to track port if -1 and track channel if -1.
+      outport = _track->drummap()[cdp].port;
+      if(outport == -1)
+        outport = _track->outPort();
+      chan = _track->drummap()[cdp].channel;
+      if(chan == -1)
+        chan = _track->outChannel();
+    }
   }
-  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
+
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
   int lastv = mp->lastValidHWCtrlState(chan, _dnum);
   
   int curv = mp->hwCtrlState(chan, _dnum);
@@ -383,25 +401,33 @@ void CtrlPanel::ctrlChanged(double val)
           return;
       
       int ival = lrint(val);
-      
-      int outport;
-      int chan;
+      int outport = _track->outPort();
+      int chan = _track->outChannel();
       int cdp = ctrlcanvas->getCurDrumPitch();
-      if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
+      if(_ctrl->isPerNoteController() && cdp >= 0)
       {
-        // Default to track port if -1 and track channel if -1.
-        outport = MusEGlobal::drumMap[cdp].port;
-        if(outport == -1)
-          outport = _track->outPort();
-        chan = MusEGlobal::drumMap[cdp].channel;
-        if(chan == -1)
-          chan = _track->outChannel();
-      }  
-      else  
-      {
-        outport = _track->outPort();
-        chan = _track->outChannel();
+        if(_track->type() == MusECore::Track::DRUM)
+        {
+          // Default to track port if -1 and track channel if -1.
+          outport = MusEGlobal::drumMap[cdp].port;
+          if(outport == -1)
+            outport = _track->outPort();
+          chan = MusEGlobal::drumMap[cdp].channel;
+          if(chan == -1)
+            chan = _track->outChannel();
+        }
+        else if(_track->type() == MusECore::Track::NEW_DRUM)
+        {
+          // Default to track port if -1 and track channel if -1.
+          outport = _track->drummap()[cdp].port;
+          if(outport == -1)
+            outport = _track->outPort();
+          chan = _track->drummap()[cdp].channel;
+          if(chan == -1)
+            chan = _track->outChannel();
+        }
       }
+
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
       int curval = mp->hwCtrlState(chan, _dnum);
       
@@ -462,34 +488,42 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
     return;
   }
   
-  MusECore::MidiPort* mp;
-  int ch;
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[_track->outPort()];
+  int ch = _track->outChannel();
   int cdp = ctrlcanvas->getCurDrumPitch();
   _dnum = _ctrl->num();
-  if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
+  if(_ctrl->isPerNoteController() && cdp >= 0)
   {
-    _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdp].anote;
-    int mport = MusEGlobal::drumMap[cdp].port;
-    // Default to track port if -1 and track channel if -1.
-    if(mport == -1)   
-      mport = _track->outPort();
-    mp = &MusEGlobal::midiPorts[mport];
-    ch = MusEGlobal::drumMap[cdp].channel;
-    if(ch == -1)
-      ch = _track->outChannel();
-  }  
-  else if((_track->type() == MusECore::Track::NEW_DRUM || _track->type() == MusECore::Track::MIDI) && _ctrl->isPerNoteController() && cdp != -1)
-  {
-    _dnum = (_dnum & ~0xff) | cdp; //FINDMICHJETZT does that work?
-    mp = &MusEGlobal::midiPorts[_track->outPort()];
-    ch = _track->outChannel();
-  }  
-  else  
-  {
-    mp = &MusEGlobal::midiPorts[_track->outPort()];
-    ch = _track->outChannel();
+    if(_track->type() == MusECore::Track::DRUM)
+    {
+      _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdp].anote;
+      int mport = MusEGlobal::drumMap[cdp].port;
+      // Default to track port if -1 and track channel if -1.
+      if(mport == -1)
+        mport = _track->outPort();
+      mp = &MusEGlobal::midiPorts[mport];
+      ch = MusEGlobal::drumMap[cdp].channel;
+      if(ch == -1)
+        ch = _track->outChannel();
+    }
+    else if(_track->type() == MusECore::Track::NEW_DRUM)
+    {
+      _dnum = (_dnum & ~0xff) | _track->drummap()[cdp].anote;
+      int mport = _track->drummap()[cdp].port;
+      // Default to track port if -1 and track channel if -1.
+      if(mport == -1)
+        mport = _track->outPort();
+      mp = &MusEGlobal::midiPorts[mport];
+      ch = _track->drummap()[cdp].channel;
+      if(ch == -1)
+        ch = _track->outChannel();
+    }
+    else if(_track->type() == MusECore::Track::MIDI)
+    {
+      _dnum = (_dnum & ~0xff) | cdp; //FINDMICHJETZT does that work?
+    }
   }
-  
+
   if(_dnum == MusECore::CTRL_VELOCITY)
   {
     _knob->setEnabled(false);
@@ -668,7 +702,8 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
     
   int cdp = ctrlcanvas->getCurDrumPitch();
   int ctlnum = _ctrl->num();
-  if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
+  if((_track->type() == MusECore::Track::DRUM || _track->type() == MusECore::Track::NEW_DRUM) &&
+     _ctrl->isPerNoteController() && cdp >= 0)
     //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdp].enote; DELETETHIS or which of them is correct?
     ctlnum = (ctlnum & ~0xff) | cdp;
   

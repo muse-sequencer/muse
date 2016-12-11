@@ -169,8 +169,13 @@ MidiSeq::MidiSeq(const char* name)
       
       MusEGlobal::doSetuid();
       timerFd=selectTimer();
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: Timer selected...\n");
+
       MusEGlobal::undoSetuid();
 
+      // REMOVE Tim. stack smashing. Added.
+      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: End of MidiSeq ctor...\n");
       }
 
 //---------------------------------------------------------
@@ -180,7 +185,7 @@ MidiSeq::MidiSeq(const char* name)
 MidiSeq::~MidiSeq()
     {
     delete timer;
-    delete _clockAveragerStages;
+    delete[] _clockAveragerStages;
     }
 
 //---------------------------------------------------------
@@ -365,8 +370,11 @@ void MidiSeq::start(int priority, void *)
 //---------------------------------------------------------
 void MidiSeq::checkAndReportTimingResolution()
 {
+    // REMOVE Tim. stack smashing. Added.
+    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution(): Calling timer->getTimerFreq()...\n");
+
     int freq = timer->getTimerFreq();
-    printf("Aquired timer frequency: %d\n", freq);
+    fprintf(stderr, "Aquired timer frequency: %d\n", freq);
     if (freq < 500) {
         if(MusEGlobal::config.warnIfBadTiming)
         {

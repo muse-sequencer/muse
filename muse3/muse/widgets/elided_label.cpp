@@ -27,13 +27,16 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QFontMetrics>
+#include <QSize>
 
+#include "background_painter.h"
 #include "elided_label.h"
 
 namespace MusEGui {
 
 ElidedLabel::ElidedLabel(QWidget* parent, 
-                         Qt::TextElideMode elideMode, 
+                         Qt::TextElideMode elideMode,
+                         Qt::Alignment alignment,
                          //int maxFontPoint, 
                          int minFontPoint,
                          bool ignoreHeight, bool ignoreWidth,
@@ -47,24 +50,115 @@ ElidedLabel::ElidedLabel(QWidget* parent,
     _fontIgnoreWidth(ignoreWidth),
     _text(text) 
 {
+  setMouseTracking(true);
+  setEnabled(true);
+  setFocusPolicy(Qt::WheelFocus);
+
+  //setAutoFillBackground(false);
+  //setAttribute(Qt::WA_NoSystemBackground);
+  //setAttribute(Qt::WA_StaticContents);
+  // This is absolutely required for speed! Otherwise painfully slow because of full background
+  //  filling, even when requesting small udpdates! Background is drawn by us.
+  //setAttribute(Qt::WA_OpaquePaintEvent);
+
   _id = -1;
+  _hasOffMode = false;
+  _off = false;
+  _hovered = false;
+
+  _alignment = alignment;
+
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 //   updateSizeHint();
   _curFont = font();
   autoAdjustFontSize();
 }
-  
+
+void ElidedLabel::setOff(bool v)
+{
+  if(v && !_hasOffMode)
+    _hasOffMode = true;
+  if(_off == v)
+    return;
+  _off = v;
+  update();
+  //emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
+}
+
+void ElidedLabel::setHasOffMode(bool v)
+{
+  _hasOffMode = v;
+  setOff(false);
+}
+
+// void ElidedLabel::setValueState(double v, bool off, ConversionMode mode)
+// {
+//   // Do not allow setting value from the external while mouse is pressed.
+//   if(_pressed)
+//     return;
+//
+//   bool do_off_upd = false;
+//   bool do_val_upd = false;
+//   // Both setOff and setValue emit valueStateChanged and setValue emits valueChanged.
+//   // We will block them and emit our own here. Respect the current block state.
+//   const bool blocked = signalsBlocked();
+//   if(!blocked)
+//     blockSignals(true);
+//   if(isOff() != off)
+//   {
+//     do_off_upd = true;
+//     setOff(off);
+//   }
+// //   if(value() != v)
+//   if(value(mode) != v)
+//   {
+//     do_val_upd = true;
+// //     setValue(v);
+//     setValue(v, mode);
+//   }
+//   if(!blocked)
+//     blockSignals(false);
+//
+//   if(do_off_upd || do_val_upd)
+//     update();
+//   if(do_val_upd)
+//     emit valueChanged(value(), id());
+//   if(do_off_upd || do_val_upd)
+//     emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
+// }
+
 void ElidedLabel::paintEvent(QPaintEvent* e)
 {
   QFrame::paintEvent(e);
   if(rect().width() <= 0 || rect().height() <= 0)
     return;
   QPainter painter(this);
+
+  const QRect r = rect();
+  const QRect ar = r.adjusted(1, 1, -1, -1);
+
+  ItemBackgroundPainter ibp;
+  ibp.drawBackground(&painter, r, palette(), 1, 1, !hasOffMode() || !isOff() ? r : QRect());
+
+  if (hasFocus())
+        {
+        if (_hovered)
+              painter.setPen(QPen(QColor(239,239,239)));
+        else
+              painter.setPen(QPen(Qt::white));
+        }
+  else if (_hovered)
+        painter.setPen(QPen(QColor(48,48,48)));
+  else
+        painter.setPen(QPen(Qt::black));
+
+  painter.setRenderHint(QPainter::Antialiasing);
   painter.setFont(_curFont);
   QFontMetrics fm = painter.fontMetrics();
-  QString elidedText = fm.elidedText(_text, _elideMode, width());
+  QString elidedText = fm.elidedText(_text, _elideMode, r.width());
 //   painter.drawText(QPoint(0, fm.ascent()), elidedText);
-  painter.drawText(rect(), Qt::AlignLeft | Qt::AlignVCenter, elidedText);
+
+  painter.drawText(ar, _alignment, elidedText);
 }
   
 //---------------------------------------------------------
@@ -186,6 +280,28 @@ void ElidedLabel::mouseReleaseEvent(QMouseEvent* e)
   emit released(e->pos(), _id, e->buttons(), e->modifiers());
 }
 
+void ElidedLabel::leaveEvent(QEvent *e)
+{
+  if(_hovered)
+  {
+    _hovered = false;
+    update();
+  }
+  e->ignore();
+  QFrame::leaveEvent(e);
+}
+
+void ElidedLabel::mouseMoveEvent(QMouseEvent *e)
+{
+  e->ignore();
+  QFrame::mouseMoveEvent(e);
+  if(!_hovered)
+  {
+    _hovered = true;
+    update();
+  }
+}
+
 void ElidedLabel::setFontIgnoreDimensions(bool ignoreHeight, bool ignoreWidth)
 {
   _fontIgnoreWidth = ignoreWidth;
@@ -198,5 +314,12 @@ void ElidedLabel::setFontPointMin(int point)
   _fontPointMin = point;
   autoAdjustFontSize();
 }
+
+QSize ElidedLabel::sizeHint() const
+{
+  QSize sz(1, fontMetrics().height() + 4);
+  return sz;
+}
+
 
 } // namespace MusEGui

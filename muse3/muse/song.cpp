@@ -249,7 +249,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
           MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
           if (SynthI::visible()) {
-            deselectTracks();
+            selectAllTracks(false);
             si->setSelected(true);
             update();
           }
@@ -257,7 +257,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         }
       }
       if (SynthI::visible()) {
-        deselectTracks();
+        selectAllTracks(false);
         si->setSelected(true);
         update(SC_TRACK_SELECTION);
       }
@@ -273,7 +273,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       
       Track* t = addTrack((Track::TrackType)n, insertAt);
       if (t->isVisible()) {
-        deselectTracks();
+        selectAllTracks(false);
         t->setSelected(true);
         update(SC_TRACK_SELECTION);
       }
@@ -474,9 +474,8 @@ void Song::duplicateTracks()
   if(audio_found == 0 && midi_found == 0 && drum_found == 0 && new_drum_found==0)
     return;
   
-  
   MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found, new_drum_found);
-  
+
   int rv = dlg->exec();
   if(rv == QDialog::Rejected)
   {
@@ -544,7 +543,7 @@ void Song::duplicateTracks()
           QString tempName;
           while(true) {
             tempName = track_name.left(numberIndex+1) + QString::number(++counter);
-            Track* track = MusEGlobal::song->findTrack(tempName);
+            Track* track = findTrack(tempName);
             if(track == 0)
             {
               new_track->setName(tempName);
@@ -562,21 +561,6 @@ void Song::duplicateTracks()
   MusEGlobal::song->applyOperationGroup(operations);
 }          
       
-
-
-
-//---------------------------------------------------------
-//   deselectTracks
-//---------------------------------------------------------
-
-void Song::deselectTracks()
-      {
-      for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t)
-            (*t)->setSelected(false);
-      // Static.
-      Track::clearSelectionOrderCounter();
-      }
-
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
   Event ev(event);
@@ -733,30 +717,31 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
         if(note == mapidx)
         {
           int tick = ev.tick() + part->tick();
-          // Default to track port if -1 and track channel if -1.
-          int ch = MusEGlobal::drumMap[note].channel;
-          if(ch == -1)
-            ch = mt->outChannel();
-          int port = MusEGlobal::drumMap[note].port;
-          if(port == -1)
-            port = mt->outPort();
-          MidiPort* mp = &MusEGlobal::midiPorts[port];
-          cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
-          
-          // Remove the port controller value.
-          mp->deleteController(ch, tick, cntrl, part);
-          
-          if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
-            cntrl = (cntrl & ~0xff) | newnote;
-          if(newchan != -1 && newchan != ch)
-            ch = newchan;
-          if(newport != -1 && newport != port)
-            port = newport;
-            
-          mp = &MusEGlobal::midiPorts[port];
-          
-          // Add the port controller value.
-          mp->setControllerVal(ch, tick, cntrl, ev.dataB(), part);
+
+          if(mt->type() == Track::DRUM)
+          {
+            // Default to track port if -1 and track channel if -1.
+            int ch = MusEGlobal::drumMap[note].channel;
+            if(ch == -1)
+              ch = mt->outChannel();
+            int port = MusEGlobal::drumMap[note].port;
+            if(port == -1)
+              port = mt->outPort();
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
+            cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+            // Remove the port controller value.
+            mp->deleteController(ch, tick, cntrl, part);
+
+            if(newnote != -1 && newnote != MusEGlobal::drumMap[note].anote)
+              cntrl = (cntrl & ~0xff) | newnote;
+            if(newchan != -1 && newchan != ch)
+              ch = newchan;
+            if(newport != -1 && newport != port)
+              port = newport;
+            mp = &MusEGlobal::midiPorts[port];
+            // Add the port controller value.
+            mp->setControllerVal(ch, tick, cntrl, ev.dataB(), part);
+          }
         }
       }
     }  
@@ -799,13 +784,16 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
         // Is it a drum controller event, according to the track port's instrument?
         if(trackmp->drumController(cntrl))
         {
-          int note = cntrl & 0x7f;
-          // Default to track port if -1 and track channel if -1.
-          if(MusEGlobal::drumMap[note].channel != -1)
-            ch = MusEGlobal::drumMap[note].channel;
-          if(MusEGlobal::drumMap[note].port != -1)
-            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-          cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+          if(mt->type() == Track::DRUM)
+          {
+            int note = cntrl & 0x7f;
+            // Default to track port if -1 and track channel if -1.
+            if(MusEGlobal::drumMap[note].channel != -1)
+              ch = MusEGlobal::drumMap[note].channel;
+            if(MusEGlobal::drumMap[note].port != -1)
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
+          }
         }
         else
         {  
@@ -961,10 +949,10 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 //   findTrack
 //---------------------------------------------------------
 
-MidiTrack* Song::findTrack(const Part* part) const
+Track* Song::findTrack(const Part* part) const
       {
       for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*t);
+            Track* track = *t;
             if (track == 0)
                   continue;
             PartList* pl = track->parts();
@@ -1375,24 +1363,6 @@ void Song::updatePos()
       emit posChanged(1, pos[1].tick(), false);
       emit posChanged(2, pos[2].tick(), false);
       }
-
-// REMOVE Tim.
-// //---------------------------------------------------------
-// //   setChannelMute
-// //    mute all midi tracks associated with channel
-// //---------------------------------------------------------
-// 
-// void Song::setChannelMute(int channel, bool val)
-//       {
-//       for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-//             MidiTrack* track = dynamic_cast<MidiTrack*>(*i);
-//             if (track == 0)
-//                   continue;
-//             if (track->outChannel() == channel)
-//                   track->setMute(val);
-//             }
-//       emit songChanged(SC_MUTE);
-//       }
 
 //---------------------------------------------------------
 //   len
@@ -2300,7 +2270,7 @@ void Song::seqSignal(int fd)
 
                   case 'J': // Port connections changed
                         if (MusEGlobal::audioDevice)
-                            MusEGlobal::audioDevice->registrationChanged();
+                            MusEGlobal::audioDevice->connectionsChanged();
                         break;
 
 //                   case 'U': // Send song changed signal
@@ -2318,6 +2288,10 @@ void Song::seqSignal(int fd)
 //                         }
 //                         break;
                         
+                  case 'D': // Drum map changed
+                        update(SC_DRUMMAP);
+                        break;
+
                   default:
                         fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
                         break;
@@ -2601,9 +2575,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   if(!track && !part)
     return -1;
     
-  enum { ADD_EVENT, CLEAR_EVENT };
-  QMenu* menu = new QMenu;
-
+  enum { BYPASS_CONTROLLER, ADD_EVENT, CLEAR_EVENT };
   bool isEvent = false;
   
   MidiTrack* mt;
@@ -2617,8 +2589,8 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   
   int dctl = ctlnum;
   // Is it a drum controller, according to the track port's instrument?
-  MidiController *mc = mp->drumController(ctlnum);
-  if(mc)
+  MidiController *dmc = mp->drumController(ctlnum);
+  if(dmc)
   {
     // Change the controller event's index into the drum map to an instrument note.
     int note = ctlnum & 0x7f;
@@ -2681,6 +2653,38 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     }  
   }
   
+  int initval = 0;
+  MidiController* mc = mp->midiController(ctlnum, false);
+  if(mc)
+  {
+    const int bias = mc->bias();
+    initval = mc->initVal();
+    if(initval == CTRL_VAL_UNKNOWN)
+    {
+      if(ctlnum == CTRL_PROGRAM)
+        // Special for program controller: Set HBank and LBank off (0xff), and program to 0.
+        initval = 0xffff00;
+      else
+       // Otherwise start with the bias.
+       initval = bias;
+    }
+    else
+     // Auto bias.
+     initval += bias;
+  }
+  const int cur_val = mp->hwCtrlState(channel, dctl);
+
+  QMenu* menu = new QMenu;
+
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Controller:"), menu));
+  QAction* bypassEvent = new QAction(menu);
+  menu->addAction(bypassEvent);
+  bypassEvent->setText(tr("bypass"));
+  bypassEvent->setData(BYPASS_CONTROLLER);
+  bypassEvent->setEnabled(true);
+  bypassEvent->setCheckable(true);
+  bypassEvent->setChecked(cur_val == CTRL_VAL_UNKNOWN);
+
   menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
   
   QAction* addEvent = new QAction(menu);
@@ -2703,23 +2707,42 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     return -1;
   }
   
-  int sel = act->data().toInt();
+  const int sel = act->data().toInt();
+  const bool checked = act->isChecked();
   delete menu;
   
   switch(sel)
   {
+    case BYPASS_CONTROLLER:
+    {
+      if(checked)
+        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, dctl, MusECore::CTRL_VAL_UNKNOWN);
+      else
+      {
+        int v = mp->lastValidHWCtrlState(channel, dctl);
+        if(v == MusECore::CTRL_VAL_UNKNOWN)
+          v = initval;
+        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, dctl, v);
+      }
+    }
+    break;
+
     case ADD_EVENT:
     {
-          int val = mp->hwCtrlState(channel, dctl);
-          if(val == CTRL_VAL_UNKNOWN) 
-            return -1;
+          int v = cur_val;
+          if(v == CTRL_VAL_UNKNOWN)
+          {
+            v = mp->lastValidHWCtrlState(channel, dctl);
+            if(v == MusECore::CTRL_VAL_UNKNOWN)
+              v = initval;
+          }
           Event e(Controller);
           e.setA(ctlnum);
-          e.setB(val);
+          e.setB(v);
           // Do we replace an old event?
           if(isEvent)
           {
-            if(ev.dataB() == val) // Don't bother if already set.
+            if(ev.dataB() == v) // Don't bother if already set.
               return -1;
               
             e.setTick(tick - part->tick());

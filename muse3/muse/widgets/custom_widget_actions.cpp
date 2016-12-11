@@ -419,6 +419,7 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
   const QColor clr1(255, 160, 60);
   const QColor clr2 = clr1.darker(150);
   
+  p.setRenderHint(QPainter::Antialiasing, true);
   for(int col = 0; col < cols; ++col)
   {
     const QRect r = _action->array()->rect(col);

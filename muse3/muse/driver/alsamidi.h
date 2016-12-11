@@ -64,8 +64,11 @@ class MidiAlsaDevice : public MidiDevice {
       virtual QString open();
       virtual void close();
       
-      virtual void* inClientPort() { return (void*)&adr; }     // For ALSA midi, in/out client ports are the same.
-      virtual void* outClientPort() { return (void*)&adr; }    // That is, ALSA midi client ports can be both r/w.
+      // The meaning of the returned pointer depends on the driver.
+      // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
+      // For ALSA midi, in/out client ports are the same. That is, ALSA midi client ports can be both r/w.
+      virtual void* inClientPort() { return (void*)&adr; }
+      virtual void* outClientPort() { return (void*)&adr; }
       
       virtual void writeRouting(int, Xml&) const;
       virtual inline MidiDeviceType deviceType() const { return ALSA_MIDI; } 
@@ -81,6 +84,8 @@ class MidiAlsaDevice : public MidiDevice {
 
       virtual void setAddressClient(int client) { adr.client = client; }
       virtual void setAddressPort(int port) { adr.port = port; }
+      // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to mean 'unavailable' - if BOTH client and port equal it.
+      virtual bool isAddressUnknown() const { return adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN; }
       };
 
 extern bool initMidiAlsa();

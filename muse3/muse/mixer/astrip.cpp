@@ -48,6 +48,7 @@
 #include "audio.h"
 #include "song.h"
 #include "slider.h"
+#include "compact_knob.h"
 #include "compact_slider.h"
 #include "combobox.h"
 #include "meter.h"
@@ -90,6 +91,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
   double val = 0.0;
   int prec = 0.0;
   double step = 0.0;
+  bool showval = MusEGlobal::config.showControlValues;;
   
   switch(desc->_componentType)
   {
@@ -233,6 +235,46 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
 
   switch(desc->_widgetType)
   {
+    case CompactKnobComponentWidget:
+    {
+      CompactKnobComponentDescriptor* d = static_cast<CompactKnobComponentDescriptor*>(desc);
+      d->_min = min;
+      d->_max = max;
+      d->_precision = prec;
+      d->_step = step;
+      d->_initVal = val;
+      d->_showValue = showval;
+      if(!d->_color.isValid())
+        d->_color = MusEGlobal::config.sliderDefaultColor;
+
+      // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
+      // Connects known widget types' signals to slots.
+      newComponentWidget(d, before);
+
+      // Handle special slots for audio strip.
+      switch(desc->_componentType)
+      {
+        case aStripAuxComponent:
+        {
+          if(d->_compactKnob->specialValueText().isEmpty())
+            d->_compactKnob->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character
+
+          if(!d->_changedSlot)
+            connect(d->_compactKnob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
+          if(!d->_movedSlot)
+            connect(d->_compactKnob, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
+          if(!d->_pressedSlot)
+            connect(d->_compactKnob, SIGNAL(sliderPressed(int)), SLOT(auxPressed(int)));
+          if(!d->_releasedSlot)
+            connect(d->_compactKnob, SIGNAL(sliderReleased(int)), SLOT(auxReleased(int)));
+          if(!d->_rightClickedSlot)
+            connect(d->_compactKnob, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
+        }
+        break;
+      }
+    }
+    break;
+
     case CompactSliderComponentWidget:
     {
       CompactSliderComponentDescriptor* d = static_cast<CompactSliderComponentDescriptor*>(desc);
@@ -241,12 +283,14 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       d->_precision = prec;
       d->_step = step;
       d->_initVal = val;
+      d->_showValue = showval;
       if(!d->_color.isValid())
         d->_color = MusEGlobal::config.sliderDefaultColor;
       // Set the bar color the same.
       if(!d->_barColor.isValid())
-        d->_barColor = d->_color;
-      
+        //d->_barColor = d->_color;
+        d->_barColor = MusEGlobal::config.sliderBarDefaultColor;
+
       // Adds a component. Creates a new component using the given desc values if the desc widget is not given.
       // Connects known widget types' signals to slots.
       newComponentWidget(d, before);
@@ -274,7 +318,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       }  
     }
     break;
-  }  
+  }
 }
 
 void AudioComponentRack::scanControllerComponents()
@@ -357,15 +401,28 @@ void AudioComponentRack::scanAuxComponents()
         // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
 //         const bool enable = _track->auxRefCount() == 0;
         
-        CompactSliderComponentDescriptor aux_desc
-        (
-          aStripAuxComponent, 
-          "MixerStripAudioAux", 
-          idx
-        );
-        
-        DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: adding aux component index:%d\n", idx);
-        newComponent(&aux_desc);
+        if(MusEGlobal::config.preferKnobsVsSliders)
+        {
+          CompactKnobComponentDescriptor aux_desc
+          (
+            aStripAuxComponent,
+            "MixerStripAudioAux",
+            idx
+          );
+          DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: adding aux component index:%d\n", idx);
+          newComponent(&aux_desc);
+        }
+        else
+        {
+          CompactSliderComponentDescriptor aux_desc
+          (
+            aStripAuxComponent,
+            "MixerStripAudioAux",
+            idx
+          );
+          DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::scanAuxComponents: adding aux component index:%d\n", idx);
+          newComponent(&aux_desc);
+        }
       }
     }
   }
@@ -605,11 +662,16 @@ void AudioComponentRack::configChanged()
   for(iComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
     ComponentWidget& cw = *ic;
+
+    // Whether to show values along with labels for certain controls.
+    setComponentShowValue(cw, MusEGlobal::config.showControlValues);
+
     switch(cw._componentType)
     {
+      // Special for Aux controls.
       case aStripAuxComponent:
         // Adjust aux minimum value.
-        setComponentRange(cw, MusEGlobal::config.minSlider, AudioStrip::auxSliderMax, AudioStrip::auxSliderStep);
+        setComponentRange(cw, MusEGlobal::config.minSlider, AudioStrip::auxSliderMax, true, AudioStrip::auxSliderStep);
       break;
     }
   }
@@ -668,11 +730,19 @@ void AudioComponentRack::setComponentColors()
 
     switch(cw._widgetType)
     {
+      case CompactKnobComponentWidget:
+      {
+        CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+        w->setFaceColor(color);
+      }
+      break;
+
       case CompactSliderComponentWidget:
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
-        w->setBarColor(color);
+        //w->setBarColor(color);
+        w->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
       }
       break;
     }  
@@ -781,6 +851,13 @@ void AudioStrip::updateRackSizes(bool upper, bool lower)
 
 void AudioStrip::configChanged()    
 { 
+  // Detect when knobs are preferred and rebuild.
+  if(_preferKnobs != MusEGlobal::config.preferKnobsVsSliders)
+  {
+    _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+    buildStrip();
+  }
+
   // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
   {
@@ -1188,9 +1265,11 @@ AudioStrip::~AudioStrip()
 //    create mixer strip
 //---------------------------------------------------------
 
-AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle)
-   : Strip(parent, at, hasHandle)
+AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle, bool isEmbedded)
+   : Strip(parent, at, hasHandle, isEmbedded)
       {
+      _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+
       volume        = -1.0;
       _volPressed   = false;
       
@@ -1206,43 +1285,42 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
 
       channel       = at->channels();
-      
 
-      _effectRackPos       = GridPosStruct(_curGridRow,     0, 1, 3);
-      
+      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
+      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
 
-      _stereoToolPos       = GridPosStruct(_curGridRow + 1, 0, 1, 1);
-      _preToolPos          = GridPosStruct(_curGridRow + 1, 1, 1, 1);
-      
-      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 2, 0, 1, 3);
-      
-      
-      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 3, 2, 1, 1);
-      _sliderPos           = GridPosStruct(_curGridRow + 3, 0, 4, 2);
-      
-      
-      _infoSpacerTop       = GridPosStruct(_curGridRow + 4, 2, 1, 1);
-      
-      _propertyRackPos     = GridPosStruct(_curGridRow + 5, 2, 1, 1);
-      
-      _infoSpacerBottom    = GridPosStruct(_curGridRow + 6, 2, 1, 1);
-      
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 7, 2, 1, 1);
-      
-      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 8, 0, 1, 3);
-      
-      _offPos              = GridPosStruct(_curGridRow + 9, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 9, 1, 1, 1);
-      
-      _mutePos             = GridPosStruct(_curGridRow + 10, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 10, 1, 1, 1);
-      
-      _inRoutesPos         = GridPosStruct(_curGridRow + 11, 0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow + 11, 1, 1, 1);
-      
+      _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+
+
+      _stereoToolPos       = GridPosStruct(_curGridRow + 2, 0, 1, 1);
+      _preToolPos          = GridPosStruct(_curGridRow + 2, 1, 1, 1);
+
+      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+
+
+      _preScrollAreaPos_B  = GridPosStruct(_curGridRow + 4, 2, 1, 1);
+      _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 4, 2);
+
+
+      _infoSpacerTop       = GridPosStruct(_curGridRow + 5, 2, 1, 1);
+
+      _propertyRackPos     = GridPosStruct(_curGridRow + 6, 2, 1, 1);
+
+      _infoSpacerBottom    = GridPosStruct(_curGridRow + 7, 2, 1, 1);
+
+      _sliderLabelPos      = GridPosStruct(_curGridRow + 8, 0, 1, 2);
+      _postScrollAreaPos_B = GridPosStruct(_curGridRow + 8, 2, 1, 1);
+
+      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 9, 0, 1, 3);
+
+      _offPos              = GridPosStruct(_curGridRow + 10, 0, 1, 1);
+      _recPos              = GridPosStruct(_curGridRow + 10, 1, 1, 1);
+
+      _mutePos             = GridPosStruct(_curGridRow + 11, 0, 1, 1);
+      _soloPos             = GridPosStruct(_curGridRow + 11, 1, 1, 1);
+
       _automationPos       = GridPosStruct(_curGridRow + 12, 0, 1, 2);
-      
+
       _rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
 
 
@@ -1259,19 +1337,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-// REMOVE. Just a test.
-//       CompactSliderComponentDescriptor test_desc
-//       (
-//         ComponentRack::controllerComponent, 
-//         "MixerStripAudioTest", 
-//         MusECore::AC_VOLUME,
-//         tr("Test"), 
-//         tr("Test"), 
-//         Qt::green
-//       );
-//       _infoRack->newComponent(&test_desc);
-
-      
       _infoRack->addStretch();
       addGridWidget(_infoRack, _propertyRackPos);
                   
@@ -1317,11 +1382,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       rack = new EffectRack(this, at);
       rack->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-      // Keep this if dynamic layout (flip to right side) is desired.
-      _upperRack->addStretch();
-      
-      updateRackSizes(true, false);
-
       addGridWidget(rack, _effectRackPos);
       addGridWidget(_upperRack, _preScrollAreaPos_A);
       
@@ -1360,40 +1420,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       addGridWidget(stereo, _stereoToolPos);
       addGridWidget(pre, _preToolPos);
-
-      //---------------------------------------------------
-      //    Gain
-      //---------------------------------------------------
-
-      CompactSliderComponentDescriptor gain_desc
-      (
-        ComponentRack::propertyComponent, 
-        "MixerStripAudioGain", 
-        AudioComponentRack::aStripGainProperty 
-      );
-      _upperRack->newComponent(&gain_desc);
-      
-      //---------------------------------------------------
-      //    aux send
-      //---------------------------------------------------
-
-      int auxsSize = MusEGlobal::song->auxs()->size();
-      if (at->hasAuxSend()) {
-            for (int idx = 0; idx < auxsSize; ++idx) {
-                  CompactSliderComponentDescriptor aux_desc
-                  (
-                    AudioComponentRack::aStripAuxComponent, 
-                    "MixerStripAudioAux", 
-                    idx
-                  );
-                  _upperRack->newComponent(&aux_desc);
-                  }
-            }
-      else {
-            ///if (auxsSize)
-                  //layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
-                  ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
-            }
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -1496,18 +1522,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
-      CompactSliderComponentDescriptor pan_desc
-      (
-        ComponentRack::controllerComponent, 
-        "MixerStripAudioPan", 
-        MusECore::AC_PAN
-      );
-      _lowerRack->newComponent(&pan_desc);
-      
-      // Keep this if dynamic layout (flip to right side) is desired.
-       _lowerRack->addStretch();
-      
-      updateRackSizes(false, true);
       addGridWidget(_lowerRack, _postScrollAreaPos_A);
       
       _upperRack->setEnabled(!at->off());
@@ -1670,11 +1684,126 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             updateOffState();   // init state
             off->blockSignals(false);
             }
+
+      // Now build the strip components.
+      buildStrip();
+
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 
       updateRouteButtons();
+}
 
+//---------------------------------------------------
+//  buildStrip
+//    Destroy and rebuild strip components.
+//---------------------------------------------------
+
+void AudioStrip::buildStrip()
+{
+  // Destroys all components and clears the component list.
+  _infoRack->clearDelete();
+  _upperRack->clearDelete();
+  _lowerRack->clearDelete();
+
+  MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
+
+  //---------------------------------------------------
+  //    Upper rack
+  //---------------------------------------------------
+
+  // Gain...
+  if(_preferKnobs)
+  {
+    CompactKnobComponentDescriptor gain_desc
+    (
+      ComponentRack::propertyComponent,
+      "MixerStripAudioGain",
+      AudioComponentRack::aStripGainProperty
+    );
+    _upperRack->newComponent(&gain_desc);
+  }
+  else
+  {
+    CompactSliderComponentDescriptor gain_desc
+    (
+      ComponentRack::propertyComponent,
+      "MixerStripAudioGain",
+      AudioComponentRack::aStripGainProperty
+    );
+    _upperRack->newComponent(&gain_desc);
+  }
+
+  // Aux sends...
+  int auxsSize = MusEGlobal::song->auxs()->size();
+  if(at->hasAuxSend())
+  {
+    for (int idx = 0; idx < auxsSize; ++idx)
+    {
+      if(_preferKnobs)
+      {
+        CompactKnobComponentDescriptor aux_desc
+        (
+          AudioComponentRack::aStripAuxComponent,
+          "MixerStripAudioAux",
+          idx
+        );
+        _upperRack->newComponent(&aux_desc);
       }
+      else
+      {
+        CompactSliderComponentDescriptor aux_desc
+        (
+          AudioComponentRack::aStripAuxComponent,
+          "MixerStripAudioAux",
+          idx
+        );
+        _upperRack->newComponent(&aux_desc);
+      }
+    }
+  }
+  else
+  {
+    ///if (auxsSize)
+          //layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
+          ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
+  }
+
+  // Keep this if dynamic layout (flip to right side) is desired.
+  _upperRack->addStretch();
+
+  updateRackSizes(true, false);
+
+  //---------------------------------------------------
+  //    Lower rack
+  //---------------------------------------------------
+
+  // Pan...
+  if(_preferKnobs)
+  {
+    CompactKnobComponentDescriptor pan_desc
+    (
+      ComponentRack::controllerComponent,
+      "MixerStripAudioPan",
+      MusECore::AC_PAN
+    );
+    _lowerRack->newComponent(&pan_desc);
+  }
+  else
+  {
+    CompactSliderComponentDescriptor pan_desc
+    (
+      ComponentRack::controllerComponent,
+      "MixerStripAudioPan",
+      MusECore::AC_PAN
+    );
+    _lowerRack->newComponent(&pan_desc);
+  }
+
+  // Keep this if dynamic layout (flip to right side) is desired.
+  _lowerRack->addStretch();
+
+  updateRackSizes(false, true);
+}
 
 void AudioStrip::setClipperTooltip(int ch)
 {
@@ -1716,6 +1845,25 @@ void AudioStrip::oRoutePressed()
       pup->exec(QCursor::pos(), track, true);
       delete pup;
       oR->setDown(false);     
+}
+
+void AudioStrip::incVolume(int v)
+{
+  if (isSelected())
+    slider->incValue(v);
+}
+void AudioStrip::incPan(int val)
+{
+  if(!isSelected())
+    return;
+  // Be sure to search all racks. Even if pan is in multiple racks, only one hit is
+  //  needed since after the value is set, the other pan controls will be updated too.
+  if(ComponentWidget* cw = _upperRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _upperRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _infoRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _infoRack->incComponentValue(*cw, val, false);
+  else if(ComponentWidget* cw = _lowerRack->findComponent(ComponentRack::controllerComponent, -1, MusECore::AC_PAN))
+    _lowerRack->incComponentValue(*cw, val, false);
 }
 
 } // namespace MusEGui

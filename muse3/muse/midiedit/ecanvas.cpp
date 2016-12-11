@@ -527,7 +527,11 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       if(!track())
         return;
       
-      playedPitch        = note + track()->transposition;
+      playedPitch        = note;
+      // Apply track transposition, but only for midi tracks, not drum tracks.
+      if(track()->isMidiTrack() && !track()->isDrumTrack())
+        playedPitch        += track()->transposition;
+
       playedVelocity     = velocity;
       playedPitchPort    = port;
       playedPitchChannel = channel;

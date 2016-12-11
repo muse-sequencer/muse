@@ -2845,16 +2845,17 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
                   const bool c_changed = col != mt->outChannel();
                   if(p_changed || c_changed) 
                   {
+                    MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                     MusEGlobal::audio->msgIdle(true);
                     if(p_changed && c_changed)
-                      mt->setOutPortAndChannelAndUpdate(rem_route.midiPort, col);
+                      changed |= mt->setOutPortAndChannelAndUpdate(rem_route.midiPort, col, false);
                     else if(p_changed)
-                      mt->setOutPortAndUpdate(rem_route.midiPort);
+                      changed |= mt->setOutPortAndUpdate(rem_route.midiPort, false);
                     else if(c_changed)
-                      mt->setOutChanAndUpdate(col);
+                      changed |= mt->setOutChanAndUpdate(col, false);
                     MusEGlobal::audio->msgIdle(false);
                     MusEGlobal::audio->msgUpdateSoloStates();
-                    MusEGlobal::song->update(SC_ROUTE);
+                    MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
                   }
                   break;
                 }

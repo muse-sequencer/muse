@@ -139,6 +139,7 @@ class AudioMixerApp : public QMainWindow {
       void updateStripList();
       void fillStripListTraditional();
       Strip* findStripForTrack(StripList &s, MusECore::Track *t);
+      void updateSelectedStrips();
 
       enum UpdateAction {
             NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
@@ -146,11 +147,16 @@ class AudioMixerApp : public QMainWindow {
       void initMixer();
       void addStripsTraditionalLayout();
       void addStripToLayoutIfVisible(Strip *s);
+      void selectNextStrip(bool isRight, bool clearAll = true);
+
+
+      bool eventFilter(QObject *obj,QEvent *event);
 
 
    signals:
       void closed();
-      //void layoutRequest();
+      void incVolume(int v);
+      void incPan(int v);
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);
@@ -172,13 +178,14 @@ class AudioMixerApp : public QMainWindow {
       void showSyntiTracksChanged(bool);
       void stripsMenu();
       void handleMenu(QAction *);
+      void clearStripSelection();
+      void moveStrip(Strip *s);
 
    protected:
    //   virtual bool event(QEvent* event);
       virtual void closeEvent(QCloseEvent*);
-   
-      void mousePressEvent(QMouseEvent* ev);
-      void mouseReleaseEvent(QMouseEvent* ev);
+      virtual void keyPressEvent(QKeyEvent*);
+
 
    public:
       //AudioMixerApp(QWidget* parent);
@@ -187,8 +194,6 @@ class AudioMixerApp : public QMainWindow {
       //void write(int level, Xml& xml, const char* name);
       void write(int level, MusECore::Xml& xml);
       void clearAndDelete();
-      void moveStrip(Strip *s);
-      bool isMixerClicked() { return mixerClicked; }
       };
 
 } // namespace MusEGui

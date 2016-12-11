@@ -172,7 +172,9 @@ void GlobalSettingsConfig::updateSettings()
       autoSaveCheckBox->setChecked(MusEGlobal::config.autoSave);
       scrollableSubmenusCheckbox->setChecked(MusEGlobal::config.scrollableSubMenus);
       liveWaveUpdateCheckBox->setChecked(MusEGlobal::config.liveWaveUpdate);
-      warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);      
+      preferKnobsVsSlidersCheckBox->setChecked(MusEGlobal::config.preferKnobsVsSliders);
+      showControlValuesCheckBox->setChecked(MusEGlobal::config.showControlValues);
+      warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);
       warnOnFileVersionsCheckBox->setChecked(MusEGlobal::config.warnOnFileVersions);
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
@@ -377,6 +379,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();
+      MusEGlobal::config.preferKnobsVsSliders = preferKnobsVsSlidersCheckBox->isChecked();
+      MusEGlobal::config.showControlValues = showControlValuesCheckBox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();

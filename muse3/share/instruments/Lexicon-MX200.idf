@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+    <MidiInstrument name="Lexicon MX200" nullparam="32639">
+        <PatchGroup name="Built-In Effects">
+            <Patch name="Big Pop Vocal: Studio Delay, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="0"/>
+            <Patch name="Pop Vocals: Tape Delay, Studio Reverb, Routing 3" hbank="0" lbank="0" prog="1"/>
+            <Patch name="Retroverb: Tape Delay, Vocal Plate, Routing 2" hbank="0" lbank="0" prog="2"/>
+            <Patch name="Chorus + Plate: Chorus, Plate, Routing 4" hbank="0" lbank="0" prog="3"/>
+            <Patch name="Vocal Hall+Plate: Vocal Hall, Vocal Plate, Routing 4" hbank="0" lbank="0" prog="4"/>
+            <Patch name="Extra Roomy: Room, Small Hall, Routing 2" hbank="0" lbank="0" prog="5"/>
+            <Patch name="Tuned Room: Detune, Room, Routing 2" hbank="0" lbank="0" prog="6"/>
+            <Patch name="Echoverb: Digital Delay, Small Hall, Routing 2" hbank="0" lbank="0" prog="7"/>
+            <Patch name="Quickie: Small Hall, Digital Delay, Routing 2" hbank="0" lbank="0" prog="8"/>
+            <Patch name="Acoustic Chamber: Tape Delay, Chamber, Routing 2" hbank="0" lbank="0" prog="9"/>
+            <Patch name="Ambient Chamber: Ambience, Chamber, Routing 4" hbank="0" lbank="0" prog="10"/>
+            <Patch name="Acoustic Bliss: Detune, Large Hall, Routing 4" hbank="0" lbank="0" prog="11"/>
+            <Patch name="Guitar World: Chorus, Modulated Delay, Routing 2" hbank="0" lbank="0" prog="12"/>
+            <Patch name="Springtime: Tremolo/Pan, Spring, Routing 2" hbank="0" lbank="0" prog="13"/>
+            <Patch name="Giant Snare: Studio Delay, Drum Hall, Routing 2" hbank="0" lbank="0" prog="14"/>
+            <Patch name="Smooth Drum Plate: Compressor, Drum Plate, Routing 2" hbank="0" lbank="0" prog="15"/>
+            <Patch name="Rich Drum Hall: Compressor, Drum Hall, Routing 2" hbank="0" lbank="0" prog="16"/>
+            <Patch name="Big Time: Digital Delay, Large Hall, Routing 4" hbank="0" lbank="0" prog="17"/>
+            <Patch name="Voice Of Evil: Pith Shifter, Reverse Reverb, Routing 2" hbank="0" lbank="0" prog="18"/>
+            <Patch name="Wayback Machine: Reverse Delay, Reverse Reverb, Routing 2" hbank="0" lbank="0" prog="19"/>
+            <Patch name="Big Vocal Verb: Large Plate, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="20"/>
+            <Patch name="Two Rooms: Small Hall, Vocal Hall, Routing 1" hbank="0" lbank="0" prog="21"/>
+            <Patch name="Big Easy: Chorus, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="22"/>
+            <Patch name="Nashville: Vocal Plate, Room, Routing 4" hbank="0" lbank="0" prog="23"/>
+            <Patch name="La-La Land: Compressor, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="24"/>
+            <Patch name="Smooth vocals: Compressor, Small Hall, Routing 2" hbank="0" lbank="0" prog="25"/>
+            <Patch name="Compressed Vox: Compressor, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="26"/>
+            <Patch name="No 'S' Vocals: De-Esser, Vocal Plate, Routing 2" hbank="0" lbank="0" prog="27"/>
+            <Patch name="De-Esser+Compr: De-Esser, Compressor, Routing 2" hbank="0" lbank="0" prog="28"/>
+            <Patch name="Compressor: Compressor, Compressor, Routing 4" hbank="0" lbank="0" prog="29"/>
+            <Patch name="De-Esser: De-Esser, De-Esser, Routing 4" hbank="0" lbank="0" prog="30"/>
+            <Patch name="Studio Delay: Studio Delay, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="31"/>
+            <Patch name="60's Delay: Tape Delay, Spring, Routing 2" hbank="0" lbank="0" prog="32"/>
+            <Patch name="Slapback: Detune, Tape Delay, Routing 2" hbank="0" lbank="0" prog="33"/>
+            <Patch name="Delay + Verb: Studio Delay, Vocal Hall, Routing 1" hbank="0" lbank="0" prog="34"/>
+            <Patch name="Vocal Chorus: Chorus, Vocal Hall, Routing 2" hbank="0" lbank="0" prog="35"/>
+            <Patch name="Choral Hall: Chorus, Large Hall, Routing 2" hbank="0" lbank="0" prog="36"/>
+            <Patch name="Tape Chorus: Tape Delay, Chorus, Routing 2" hbank="0" lbank="0" prog="37"/>
+            <Patch name="Core Us: Chorus, Chorus, Routing 1" hbank="0" lbank="0" prog="38"/>
+            <Patch name="Double Tracks: Detune, Chorus, Routing 2" hbank="0" lbank="0" prog="39"/>
+            <Patch name="Shifted Room: Pitch Shifter, Room Reverb, Routing 3" hbank="0" lbank="0" prog="40"/>
+            <Patch name="Like That!: Pitch Shifter, Vocal Hall, Routing 4" hbank="0" lbank="0" prog="41"/>
+            <Patch name="Plate + Hall: Vocal Plate, Small Hall, Routing 1" hbank="0" lbank="0" prog="42"/>
+            <Patch name="Vocal + Inst 1: Vocal Hall, Studio Delay, Routing 4" hbank="0" lbank="0" prog="43"/>
+            <Patch name="Vocal + Inst 2: Vocal Plate, Detune, Routing 4" hbank="0" lbank="0" prog="44"/>
+            <Patch name="Vocal + Inst 3: Vocal Hall, Small Hall, Routing 4" hbank="0" lbank="0" prog="45"/>
+            <Patch name="Get Small: Small Hall, Small Plate, Routing 4" hbank="0" lbank="0" prog="46"/>
+            <Patch name="Alive n' Kicking: Small Hall, Studio Delay, Routing 4" hbank="0" lbank="0" prog="47"/>
+            <Patch name="Muy Grande: Drum Hall, Digital Delay, Routing 4" hbank="0" lbank="0" prog="48"/>
+            <Patch name="Bigger Band: Chorus, Studio Delay, Routing 2" hbank="0" lbank="0" prog="49"/>
+            <Patch name="Taps: Chorus, Tape Delay, Routing 2" hbank="0" lbank="0" prog="50"/>
+            <Patch name="Tap Chamber: Pong Delay, Chamber, Routing 2" hbank="0" lbank="0" prog="51"/>
+            <Patch name="Spaced Out: Large Plate, Modulated Delay, Routing 2" hbank="0" lbank="0" prog="52"/>
+            <Patch name="Dual Halls: Large Hall, Small Hall, Routing 1" hbank="0" lbank="0" prog="53"/>
+            <Patch name="Triend and True: Studio Delay, Small Hall, Routing 4" hbank="0" lbank="0" prog="54"/>
+            <Patch name="More &amp; More: Large Plate, Arena, Routing 4" hbank="0" lbank="0" prog="55"/>
+            <Patch name="Spring Studio: Spring, Studio Delay, Routing 4" hbank="0" lbank="0" prog="56"/>
+            <Patch name="Hit Me: Tape Delay, Studio Delay, Routing 2" hbank="0" lbank="0" prog="57"/>
+            <Patch name="Precision Delay: Digital Delay, Small Hall, Routing 2" hbank="0" lbank="0" prog="58"/>
+            <Patch name="Modulated Delay: Chorus, Modulated Delay, Routing 2" hbank="0" lbank="0" prog="59"/>
+            <Patch name="Rock Lead: Tape Delay, Small Plate, Routing 4" hbank="0" lbank="0" prog="60"/>
+            <Patch name="Pong Verb: Small Plate, Pong Delay, Routing 2" hbank="0" lbank="0" prog="61"/>
+            <Patch name="Mod-U-Verb: Vocal Plate, Chorus, Routing 2" hbank="0" lbank="0" prog="62"/>
+            <Patch name="Roto-Verb: Drum Hall, Rotary Speaker, Routing 2" hbank="0" lbank="0" prog="63"/>
+            <Patch name="Rotary: Rotary Speaker, Small Room, Routing 4" hbank="0" lbank="0" prog="64"/>
+            <Patch name="Ham'n Eggs: Tape Delay, Rotary Speaker, Routing 2" hbank="0" lbank="0" prog="65"/>
+            <Patch name="Vibrolux: Rotary Speaker, Spring, Routing 1" hbank="0" lbank="0" prog="66"/>
+            <Patch name="Side By Side: Tremolo, Panner, Routing 4" hbank="0" lbank="0" prog="67"/>
+            <Patch name="Wobblers: Chorus, Small Plate, Routing 4" hbank="0" lbank="0" prog="68"/>
+            <Patch name="Rhodes Panner: Phaser, Tremolo/Panner, Routing 4" hbank="0" lbank="0" prog="69"/>
+            <Patch name="Brewed Awakening: Flanger, Tape Delay, Routing 1" hbank="0" lbank="0" prog="70"/>
+            <Patch name="Jet Flange: Flanger, Arenay, Routing 2" hbank="0" lbank="0" prog="71"/>
+            <Patch name="Phase Gate: Gated, Phaser, Routing 4" hbank="0" lbank="0" prog="72"/>
+            <Patch name="Phased Plate: Phase, Small Plate, Routing 2" hbank="0" lbank="0" prog="73"/>
+            <Patch name="Phame: Phaser, Large Plate, Routing 1" hbank="0" lbank="0" prog="74"/>
+            <Patch name="Phaser Taser: Phaser, Digital Delay, Routing 2" hbank="0" lbank="0" prog="75"/>
+            <Patch name="Dualing Guitars: Pitch Shifter, Pitch Shifter, Routing 4" hbank="0" lbank="0" prog="76"/>
+            <Patch name="The Low Down: Pitch Shifter, Modulated Delay, Routing 1" hbank="0" lbank="0" prog="77"/>
+            <Patch name="And Then Some: Reverse Delay, Tremolo, Routing 2" hbank="0" lbank="0" prog="78"/>
+            <Patch name="Squished Kick: Compressor, Drum Hall, Routing 2" hbank="0" lbank="0" prog="79"/>
+            <Patch name="Gated Snare: Gated Reverb, Gated Reverb, Routing 3" hbank="0" lbank="0" prog="80"/>
+            <Patch name="Snare Delay: Studio Delay, Drum Plate, Routing 2" hbank="0" lbank="0" prog="81"/>
+            <Patch name="Drum Delay: Tape Delay, Drum Hall, Routing 2" hbank="0" lbank="0" prog="82"/>
+            <Patch name="Drum Echo: Tape Delay, Small Hall, Routing 2" hbank="0" lbank="0" prog="83"/>
+            <Patch name="Tempo Gate: Studio Delay, Gated, Routing 2" hbank="0" lbank="0" prog="84"/>
+            <Patch name="Flange Drums: Studio Delay, Flanger, Routing 2" hbank="0" lbank="0" prog="85"/>
+            <Patch name="Tom-Tom: Studio Delay, Drum Hall, Routing 4" hbank="0" lbank="0" prog="86"/>
+            <Patch name="Snare + Toms: Drum Hall, Room, Routing 4" hbank="0" lbank="0" prog="87"/>
+            <Patch name="Drum Plate/Hall: Drum Plate, Drum Hall, Routing 4" hbank="0" lbank="0" prog="88"/>
+            <Patch name="Vibrato: Vibrato, Vibrato, Routing 4" hbank="0" lbank="0" prog="89"/>
+            <Patch name="Vibra-Slap: Vibrato, Digital Delay, Routing 1" hbank="0" lbank="0" prog="90"/>
+            <Patch name="Spin Cycle: Rotary Speaker, Tremolo/Panner, Routing 2" hbank="0" lbank="0" prog="91"/>
+            <Patch name="Role Reversal: Tremolo/Panner, Reverse, Routing 2" hbank="0" lbank="0" prog="92"/>
+            <Patch name="Get Some: Flanger, Reverse Delay, Routing 3" hbank="0" lbank="0" prog="93"/>
+            <Patch name="Rewind: Chamber, Reverse, Routing 2" hbank="0" lbank="0" prog="94"/>
+            <Patch name="Back At Ya: Reverse Delay, Reverse, Routing 4" hbank="0" lbank="0" prog="95"/>
+            <Patch name="Delay Wars: Pong Delay, Modulated Delay, Routing 4" hbank="0" lbank="0" prog="96"/>
+            <Patch name="Pitch Out: Pitch Shifter, Pong Delay, Routing 2" hbank="0" lbank="0" prog="97"/>
+            <Patch name="Huh?: Pitch Shifter, Vocal Plate, Routing 2" hbank="0" lbank="0" prog="98"/>
+        </PatchGroup>
+
+        <PatchGroup name="User Effects">
+            <Patch name="User Effect 1" hbank="0" lbank="1" prog="0"/>
+            <Patch name="User Effect 2" hbank="0" lbank="1" prog="1"/>
+            <Patch name="User Effect 3" hbank="0" lbank="1" prog="2"/>
+            <Patch name="User Effect 4" hbank="0" lbank="1" prog="3"/>
+            <Patch name="User Effect 5" hbank="0" lbank="1" prog="4"/>
+            <Patch name="User Effect 6" hbank="0" lbank="1" prog="5"/>
+            <Patch name="User Effect 7" hbank="0" lbank="1" prog="6"/>
+            <Patch name="User Effect 8" hbank="0" lbank="1" prog="7"/>
+            <Patch name="User Effect 9" hbank="0" lbank="1" prog="8"/>
+            <Patch name="User Effect 10" hbank="0" lbank="1" prog="9"/>
+            <Patch name="User Effect 11" hbank="0" lbank="1" prog="10"/>
+            <Patch name="User Effect 12" hbank="0" lbank="1" prog="11"/>
+            <Patch name="User Effect 13" hbank="0" lbank="1" prog="12"/>
+            <Patch name="User Effect 14" hbank="0" lbank="1" prog="13"/>
+            <Patch name="User Effect 15" hbank="0" lbank="1" prog="14"/>
+            <Patch name="User Effect 16" hbank="0" lbank="1" prog="15"/>
+            <Patch name="User Effect 17" hbank="0" lbank="1" prog="16"/>
+            <Patch name="User Effect 18" hbank="0" lbank="1" prog="17"/>
+            <Patch name="User Effect 19" hbank="0" lbank="1" prog="18"/>
+            <Patch name="User Effect 20" hbank="0" lbank="1" prog="19"/>
+            <Patch name="User Effect 21" hbank="0" lbank="1" prog="20"/>
+            <Patch name="User Effect 22" hbank="0" lbank="1" prog="21"/>
+            <Patch name="User Effect 23" hbank="0" lbank="1" prog="22"/>
+            <Patch name="User Effect 24" hbank="0" lbank="1" prog="23"/>
+            <Patch name="User Effect 25" hbank="0" lbank="1" prog="24"/>
+            <Patch name="User Effect 26" hbank="0" lbank="1" prog="25"/>
+            <Patch name="User Effect 27" hbank="0" lbank="1" prog="26"/>
+            <Patch name="User Effect 28" hbank="0" lbank="1" prog="27"/>
+            <Patch name="User Effect 29" hbank="0" lbank="1" prog="28"/>
+            <Patch name="User Effect 30" hbank="0" lbank="1" prog="29"/>
+            <Patch name="User Effect 31" hbank="0" lbank="1" prog="30"/>
+            <Patch name="User Effect 32" hbank="0" lbank="1" prog="31"/>
+            <Patch name="User Effect 33" hbank="0" lbank="1" prog="32"/>
+            <Patch name="User Effect 34" hbank="0" lbank="1" prog="33"/>
+            <Patch name="User Effect 35" hbank="0" lbank="1" prog="34"/>
+            <Patch name="User Effect 36" hbank="0" lbank="1" prog="35"/>
+            <Patch name="User Effect 37" hbank="0" lbank="1" prog="36"/>
+            <Patch name="User Effect 38" hbank="0" lbank="1" prog="37"/>
+            <Patch name="User Effect 39" hbank="0" lbank="1" prog="38"/>
+            <Patch name="User Effect 40" hbank="0" lbank="1" prog="39"/>
+            <Patch name="User Effect 41" hbank="0" lbank="1" prog="40"/>
+            <Patch name="User Effect 42" hbank="0" lbank="1" prog="41"/>
+            <Patch name="User Effect 43" hbank="0" lbank="1" prog="42"/>
+            <Patch name="User Effect 44" hbank="0" lbank="1" prog="43"/>
+            <Patch name="User Effect 45" hbank="0" lbank="1" prog="44"/>
+            <Patch name="User Effect 46" hbank="0" lbank="1" prog="45"/>
+            <Patch name="User Effect 47" hbank="0" lbank="1" prog="46"/>
+            <Patch name="User Effect 48" hbank="0" lbank="1" prog="47"/>
+            <Patch name="User Effect 49" hbank="0" lbank="1" prog="48"/>
+            <Patch name="User Effect 50" hbank="0" lbank="1" prog="49"/>
+            <Patch name="User Effect 51" hbank="0" lbank="1" prog="50"/>
+            <Patch name="User Effect 52" hbank="0" lbank="1" prog="51"/>
+            <Patch name="User Effect 53" hbank="0" lbank="1" prog="52"/>
+            <Patch name="User Effect 54" hbank="0" lbank="1" prog="53"/>
+            <Patch name="User Effect 55" hbank="0" lbank="1" prog="54"/>
+            <Patch name="User Effect 56" hbank="0" lbank="1" prog="55"/>
+            <Patch name="User Effect 57" hbank="0" lbank="1" prog="56"/>
+            <Patch name="User Effect 58" hbank="0" lbank="1" prog="57"/>
+            <Patch name="User Effect 59" hbank="0" lbank="1" prog="58"/>
+            <Patch name="User Effect 60" hbank="0" lbank="1" prog="59"/>
+            <Patch name="User Effect 61" hbank="0" lbank="1" prog="60"/>
+            <Patch name="User Effect 62" hbank="0" lbank="1" prog="61"/>
+            <Patch name="User Effect 63" hbank="0" lbank="1" prog="62"/>
+            <Patch name="User Effect 64" hbank="0" lbank="1" prog="63"/>
+            <Patch name="User Effect 65" hbank="0" lbank="1" prog="64"/>
+            <Patch name="User Effect 66" hbank="0" lbank="1" prog="65"/>
+            <Patch name="User Effect 67" hbank="0" lbank="1" prog="66"/>
+            <Patch name="User Effect 68" hbank="0" lbank="1" prog="67"/>
+            <Patch name="User Effect 69" hbank="0" lbank="1" prog="68"/>
+            <Patch name="User Effect 70" hbank="0" lbank="1" prog="69"/>
+            <Patch name="User Effect 71" hbank="0" lbank="1" prog="70"/>
+            <Patch name="User Effect 72" hbank="0" lbank="1" prog="71"/>
+            <Patch name="User Effect 73" hbank="0" lbank="1" prog="72"/>
+            <Patch name="User Effect 74" hbank="0" lbank="1" prog="73"/>
+            <Patch name="User Effect 75" hbank="0" lbank="1" prog="74"/>
+            <Patch name="User Effect 76" hbank="0" lbank="1" prog="75"/>
+            <Patch name="User Effect 77" hbank="0" lbank="1" prog="76"/>
+            <Patch name="User Effect 78" hbank="0" lbank="1" prog="77"/>
+            <Patch name="User Effect 79" hbank="0" lbank="1" prog="78"/>
+            <Patch name="User Effect 80" hbank="0" lbank="1" prog="79"/>
+            <Patch name="User Effect 81" hbank="0" lbank="1" prog="80"/>
+            <Patch name="User Effect 82" hbank="0" lbank="1" prog="81"/>
+            <Patch name="User Effect 83" hbank="0" lbank="1" prog="82"/>
+            <Patch name="User Effect 84" hbank="0" lbank="1" prog="83"/>
+            <Patch name="User Effect 85" hbank="0" lbank="1" prog="84"/>
+            <Patch name="User Effect 86" hbank="0" lbank="1" prog="85"/>
+            <Patch name="User Effect 87" hbank="0" lbank="1" prog="86"/>
+            <Patch name="User Effect 88" hbank="0" lbank="1" prog="87"/>
+            <Patch name="User Effect 89" hbank="0" lbank="1" prog="88"/>
+            <Patch name="User Effect 90" hbank="0" lbank="1" prog="89"/>
+            <Patch name="User Effect 91" hbank="0" lbank="1" prog="90"/>
+            <Patch name="User Effect 92" hbank="0" lbank="1" prog="91"/>
+            <Patch name="User Effect 93" hbank="0" lbank="1" prog="92"/>
+            <Patch name="User Effect 94" hbank="0" lbank="1" prog="93"/>
+            <Patch name="User Effect 95" hbank="0" lbank="1" prog="94"/>
+            <Patch name="User Effect 96" hbank="0" lbank="1" prog="95"/>
+            <Patch name="User Effect 97" hbank="0" lbank="1" prog="96"/>
+            <Patch name="User Effect 98" hbank="0" lbank="1" prog="97"/>
+            <Patch name="User Effect 99" hbank="0" lbank="1" prog="98"/>
+        </PatchGroup>
+
+        <Controller name="Effect 1 Type" l="12"/>
+        <Controller name="Effect 1 Bypass" l="13"/>
+        <Controller name="Effect 1 Pre Delay Knob" l="14"/>
+        <Controller name="Effect 1 Decay Knob" l="15"/>
+        <Controller name="Effect 1 Liveness Knob" l="16"/>
+        <Controller name="Effect 1 Tempo" l="17"/>
+        <Controller name="Effect 1 Effect Mix" l="26"/>
+
+        <Controller name="Effect 2 Type" l="19"/>
+        <Controller name="Effect 2 Bypass" l="20"/>
+        <Controller name="Effect 2 Pre Delay Knob" l="21"/>
+        <Controller name="Effect 2 Decay Knob" l="22"/>
+        <Controller name="Effect 2 Liveness Knob" l="23"/>
+        <Controller name="Effect 2 Tempo" l="24"/>
+        <Controller name="Effect 2 Effect Mix" l="27"/>
+
+        <Controller name="Effect Routing" l="28"/>
+    </MidiInstrument>
+</muse>

@@ -2099,7 +2099,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
         highest_pitch=127;
 
         if (isdrum)
-          for (int cnt=0;cnt<127;cnt++)
+          for (int cnt=0;cnt<128;cnt++)
             y_mapper[cnt]=cnt;
 
         if (MusEGlobal::heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");

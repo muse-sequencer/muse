@@ -117,6 +117,7 @@ extern const char* preset_file_save_pattern[];
 extern const char* drum_map_file_pattern[];
 extern const char* drum_map_file_save_pattern[];
 extern const char* audio_file_pattern[];
+extern const char* colors_config_file_pattern[];
 
 extern Qt::KeyboardModifiers globalKeyState;
 

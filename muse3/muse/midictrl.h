@@ -100,6 +100,7 @@ const int CTRL_AFTERTOUCH = CTRL_INTERNAL_OFFSET    + 0x04;
 const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 0x1FF;  // 100 to 1FF !
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
+const int CTRL_PROGRAM_VAL_DONT_CARE = 0xffffff; // High-bank, low-bank, and program are all 0xff don't care.
 
 const int CTRL_7_OFFSET      = 0x00000;
 const int CTRL_14_OFFSET     = 0x10000;
@@ -143,13 +144,16 @@ class MidiController {
       int _minVal;            // controller value range (used in gui)
       int _maxVal;
       int _initVal;
+      // Special for drum mode, for controllers such as program.
+      int _drumInitVal;
       int _bias;
       int _showInTracks;
       void updateBias();
 
    public:
       MidiController();
-      MidiController(const QString& n, int num, int min, int max, int init, int show_in_track = (ShowInDrum | ShowInMidi));
+      // If drumInit = -1, it means don't care - use the init val.
+      MidiController(const QString& n, int num, int min, int max, int init, int drumInit, int show_in_track = (ShowInDrum | ShowInMidi));
       MidiController(const MidiController& mc);
       void copy(const MidiController &mc);
       MidiController& operator= (const MidiController &mc);
@@ -164,6 +168,8 @@ class MidiController {
       int maxVal() const                  { return _maxVal; }
       int initVal() const                 { return _initVal; }
       void setInitVal(int val)            { _initVal = val; }
+      int drumInitVal() const             { return _drumInitVal; }
+      void setDrumInitVal(int val)        { _drumInitVal = val; }
       void setMinVal(int val)             { _minVal = val; updateBias(); }
       void setMaxVal(int val)             { _maxVal = val; updateBias(); }
       int bias() const                    { return _bias; }
@@ -195,11 +201,20 @@ typedef std::multimap<int, MidiCtrlVal, std::less<int> >::const_iterator ciMidiC
 typedef std::pair <iMidiCtrlVal, iMidiCtrlVal> MidiCtrlValRange;
 class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > {
       
+      // The controller number.
       int ctrlNum;
+      // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
+      int _hwVal;
+      // The last value that was not CTRL_VAL_UNKNOWN. Can still be CTRL_VAL_UNKNOWN (typically at startup).
+      // Note that in the case of PROGRAM for example, HBank/LBank bytes can still be 0xff (OFF).
       int _lastValidHWVal;
-      int _hwVal;       // current set value in midi hardware
-                        // can be CTRL_VAL_UNKNOWN
-      
+      // The last byte values that were not CTRL_VAL_UNKNOWN or 0xff (Off).
+      // Can never be 0xff (OFF), but can still be CTRL_VAL_UNKNOWN (typically at startup).
+      // Special for example PROGRAM controller, has 3 separate values: HBank, LBank and Program.
+      int _lastValidByte2;
+      int _lastValidByte1;
+      int _lastValidByte0;
+
       // Hide built-in finds.
       iMidiCtrlVal find(const int&) { return end(); };
       ciMidiCtrlVal find(const int&) const { return end(); };
@@ -209,19 +224,43 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       
       Part* partAtTick(int tick) const;
       
+      // Determine value at tick, using values stored by ANY part.
       iMidiCtrlVal iValue(int tick);
+      // Determine value at tick, using values stored by ANY part.
       int value(int tick) const;
+      // Determine value at tick, using values stored by the SPECIFIC part.
       int value(int tick, Part* part) const;
+      // Determine value at tick, using values stored by ANY part,
+      //  ignoring values that are OUTSIDE of their parts, or muted or off parts or tracks.
+      int visibleValue(unsigned int tick, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
+      // Determine value at tick, using values stored by the SPECIFIC part,
+      //  ignoring values that are OUTSIDE of the part, or muted or off part or track.
+      int visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       bool addMCtlVal(int tick, int value, Part* part);
       void delMCtlVal(int tick, Part* part);
       
       iMidiCtrlVal findMCtlVal(int tick, Part* part);
       
+      // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
       int hwVal() const       { return _hwVal;   }
+      // Set current value in midi hardware. Can be CTRL_VAL_UNKNOWN.
       bool setHwVal(const int v);
+      //   Sets current and last HW values.
+      //   Handy for forcing labels to show 'off' and knobs to show specific values
+      //    without having to send two messages.
+      //   Returns false if both values are already set, true if either value is changed.
       bool setHwVals(const int v, const int lastv);
+      // The controller number.
       int num() const         { return ctrlNum;  }
+      // The last value that was not CTRL_VAL_UNKNOWN. Can still be CTRL_VAL_UNKNOWN (typically at startup).
+      // Note that in the case of PROGRAM for example, HBank/LBank bytes can still be 0xff (OFF).
       int lastValidHWVal() const          { return _lastValidHWVal; }
+      // The last byte values that were not CTRL_VAL_UNKNOWN or 0xff (Off).
+      // Can never be 0xff (OFF), but can still be CTRL_VAL_UNKNOWN (typically at startup).
+      // Special for example PROGRAM controller, has 3 separate values: HBank, LBank and Program.
+      int lastValidByte2() const          { return _lastValidByte2; }
+      int lastValidByte1() const          { return _lastValidByte1; }
+      int lastValidByte0() const          { return _lastValidByte0; }
       };
 
 //---------------------------------------------------------

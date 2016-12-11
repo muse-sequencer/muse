@@ -1798,11 +1798,12 @@ void Song::readRoute(Xml& xml)
                                 if(!midi_track_out_set)
                                 {
                                   midi_track_out_set = true;
+                                  MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                                   MusEGlobal::audio->msgIdle(true);
-                                  mt->setOutPortAndChannelAndUpdate(port, ch);
+                                  changed |= mt->setOutPortAndChannelAndUpdate(port, ch, false);
                                   MusEGlobal::audio->msgIdle(false);
                                   MusEGlobal::audio->msgUpdateSoloStates();
-                                  MusEGlobal::song->update(SC_ROUTE);
+                                  MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
                                 }
 #else
                                 droute.midiPort = droute.device->midiPort();

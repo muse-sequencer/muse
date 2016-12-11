@@ -4,7 +4,7 @@
 //  $Id: mididev.cpp,v 1.10.2.6 2009/11/05 03:14:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -790,9 +790,39 @@ void MidiDevice::handleSeek()
 
     if(found_value)
     {
+      int fin_port = _port;
+      MidiPort* fin_mp = mp;
+      int fin_chan = chan;
+      int fin_ctlnum = ctlnum;
+      // Is it a drum controller event, according to the track port's instrument?
+      if(mp->drumController(ctlnum))
+      {
+        if(const Part* p = imcv->second.part)
+        {
+          if(Track* t = p->track())
+          {
+            if(t->type() == MusECore::Track::NEW_DRUM)
+            {
+              MidiTrack* mt = static_cast<MidiTrack*>(t);
+              int v_idx = ctlnum & 0x7f;
+              fin_ctlnum = (ctlnum & ~0xff) | mt->drummap()[v_idx].anote;
+              int map_port = mt->drummap()[v_idx].port;
+              if(map_port != -1)
+              {
+                fin_port = map_port;
+                fin_mp = &MusEGlobal::midiPorts[fin_port];
+              }
+              int map_chan = mt->drummap()[v_idx].channel;
+              if(map_chan != -1)
+                fin_chan = map_chan;
+            }
+          }
+        }
+      }
+
       // Don't bother sending any sustain values if not playing. Just set the hw state.
-      if(ctlnum == CTRL_SUSTAIN && !MusEGlobal::audio->isPlaying())
-        mp->setHwCtrlState(chan, CTRL_SUSTAIN, imcv->second.val);
+      if(fin_ctlnum == CTRL_SUSTAIN && !MusEGlobal::audio->isPlaying())
+        fin_mp->setHwCtrlState(fin_chan, CTRL_SUSTAIN, imcv->second.val);
       else
       {
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
@@ -800,7 +830,7 @@ void MidiDevice::handleSeek()
         // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
         //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
         //fprintf(stderr, "MidiDevice::handleSeek: found_value: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, imcv->second.val);
-        mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), false); //, imcv->first == pos);
+        fin_mp->sendEvent(MidiPlayEvent(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val), false); //, imcv->first == pos);
         //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
       }
     }

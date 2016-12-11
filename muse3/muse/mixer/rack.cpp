@@ -48,6 +48,7 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
+#include "background_painter.h"
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
@@ -101,28 +102,21 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       const QRect rr = option.rect;
       QRect cr = QRect(rr.x()+itemXMargin, rr.y()+itemYMargin, 
                        rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
-      painter->fillRect(rr, option.palette.dark().color().darker(130));
 
-      QColor mask_edge = QColor(110, 110, 110, 55);
-      QColor mask_center = QColor(220, 220, 220, 55);
-      QLinearGradient mask;
-      mask.setColorAt(0, mask_edge);
-      mask.setColorAt(0.5, mask_center);
-      mask.setColorAt(1, mask_edge);
-      mask.setStart(QPointF(0, cr.y()));
-      mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
-
-      painter->setBrush(tr->efxPipe()->isOn(index.row()) ?
-                        er->getActiveColor() :
-                        option.palette.dark());
-      painter->setPen(Qt::NoPen);
-      painter->drawRoundedRect(cr, 2, 2);
-      painter->setBrush(mask);
-      painter->drawRoundedRect(cr, 2, 2);
+      const QRect onrect = tr->efxPipe()->isOn(index.row()) ? rr : QRect();
+      ItemBackgroundPainter* ibp = er->getBkgPainter();
+      ibp->drawBackground(painter,
+                          rr,
+                          option.palette,
+                          itemXMargin,
+                          itemYMargin,
+                          onrect); //,
+                          // No, let the background painter handle the on colour.
+                          //tr->efxPipe()->isOn(index.row()) ? er->getActiveColor() : option.palette.dark();
 
       QString name = tr->efxPipe()->name(index.row());
-      if (name.length() > 11)
-            name = name.left(9) + "...";
+      //if (name.length() > 11)
+      //      name = name.left(9) + "...";
   
       if (option.state & QStyle::State_Selected)
             {
@@ -186,10 +180,13 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       {
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
+
+     _bkgPainter = new ItemBackgroundPainter();
+
       track = t;
       itemheight = 19;
       //setFont(MusEGlobal::config.fonts[1]);
-      activeColor = QColor(74, 165, 49);
+      //activeColor = QColor(74, 165, 49);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -217,9 +214,14 @@ void EffectRack::updateContents()
       for (int i = 0; i < PipelineDepth; ++i) {
             QString name = track->efxPipe()->name(i);
             item(i)->setText(name);
-            item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
-            }	
+            //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
+            if(viewport())
+            {
+              QRect r(visualItemRect(item(i)));
+              viewport()->update(r);
+            }
+      }
       }
 
 //---------------------------------------------------------
@@ -228,6 +230,8 @@ void EffectRack::updateContents()
 
 EffectRack::~EffectRack()
       {
+      if(_bkgPainter)
+        delete _bkgPainter;
       }
 
 //---------------------------------------------------------

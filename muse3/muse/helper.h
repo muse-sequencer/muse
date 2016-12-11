@@ -52,10 +52,10 @@ bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int drummap_s
 
 // drummap_hidden may be NULL.
 void write_new_style_drummap(int level, Xml& xml, const char* tagname,
-                             DrumMap* drummap, bool* drummap_hidden=NULL, bool full=false);
+                             DrumMap* drummap, bool full=false);
 void read_new_style_drummap(Xml& xml, const char* tagname,
-                            DrumMap* drummap, bool* drummap_hidden=NULL, bool compatibility=false);
-                            
+                            DrumMap* drummap, bool compatibility=false);
+
 
 QSet<Part*> parts_at_tick(unsigned tick);
 QSet<Part*> parts_at_tick(unsigned tick, const Track* track);

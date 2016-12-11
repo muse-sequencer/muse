@@ -162,6 +162,8 @@ class AudioStrip : public Strip {
       
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
+      // Current local state of knobs versus sliders preference global setting.
+      bool _preferKnobs;
       
       QToolButton* stereo;
       QToolButton* pre;
@@ -179,7 +181,7 @@ class AudioStrip : public Strip {
       void updateVolume();
       void updateChannels();
       void updateRackSizes(bool upper, bool lower);
-      
+
    private slots:
       void stereoToggled(bool);
       void preToggled(bool);
@@ -200,9 +202,11 @@ class AudioStrip : public Strip {
    public slots:
       virtual void configChanged();
       virtual void songChanged(MusECore::SongChangedFlags_t);
+      void incVolume(int v);
+      void incPan(int v);
 
    public:
-      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false);
+      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false, bool isEmbedded = true);
       virtual ~AudioStrip();
       
       static const double volSliderStep;
@@ -217,6 +221,9 @@ class AudioStrip : public Strip {
       static const double gainSliderMin;
       static const double gainSliderMax;
       static const int    gainSliderPrec;
+
+      // Destroy and rebuild strip components.
+      virtual void buildStrip();
       };
 
 } // namespace MusEGui

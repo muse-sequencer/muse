@@ -49,6 +49,7 @@ class Track;
 namespace MusEGui {
 class CompactComboBox;
 class Meter;
+class CompactKnob;
 class CompactSlider;
 class ElidedLabel;
 
@@ -144,6 +145,7 @@ class ComponentWidgetList : public std::list<ComponentWidget>
             return i;
         }
       }
+      return end();
     }
     
     iterator find(const ComponentWidget& cw)
@@ -256,7 +258,11 @@ class ComponentRack : public QFrame
     // Possible component properties.
     enum ComponentProperties { userComponentProperty = 1000 };
     // Possible widget types.
-    enum ComponentWidgetTypes { ExternalComponentWidget = 0, CompactSliderComponentWidget = 1, ElidedLabelComponentWidget = 2, userComponentWidget = 1000 };
+    enum ComponentWidgetTypes { ExternalComponentWidget = 0,
+                                CompactKnobComponentWidget = 1,
+                                CompactSliderComponentWidget = 2,
+                                ElidedLabelComponentWidget = 3,
+                                userComponentWidget = 1000 };
     
   protected:
     int _id;
@@ -293,22 +299,33 @@ class ComponentRack : public QFrame
     
     int id() const { return _id; }
     ComponentWidgetList* components() { return &_components; }
+    ComponentWidget* findComponent(
+      ComponentWidget::ComponentType componentType,
+      int componentWidgetType = -1,
+      int index = -1,
+      QWidget* widget = 0);
     
-    // Adds a component to the layout and the list. Creates a new component using 
+    // Destroys all components and clears the component list.
+    void clearDelete();
+
+    // Adds a component to the layout and the list. Creates a new component using
     //  the given desc values if the desc widget is not given.
     virtual void newComponent( ComponentDescriptor*, const ComponentWidget& /*before*/ = ComponentWidget() ) = 0;
     // Add a stretch to the layout.
     virtual void addStretch() { _layout->addStretch(); }
     // Add spacing to the layout.
     virtual void addSpacing(int spc) { _layout->addSpacing(spc); }
-    virtual void setComponentRange(const ComponentWidget&, double min, double max, double step = 0.0, int pageSize = 1, 
+    virtual void setComponentRange(const ComponentWidget&, double min, double max, bool updateOnly = true,
+                                   double step = 0.0, int pageSize = 1,
                                    DoubleRange::ConversionMode mode = DoubleRange::ConvertDefault);
-    virtual void setComponentMinValue(const ComponentWidget&, double min);
-    virtual void setComponentMaxValue(const ComponentWidget&, double max);
+    virtual void setComponentMinValue(const ComponentWidget&, double min, bool updateOnly = true);
+    virtual void setComponentMaxValue(const ComponentWidget&, double max, bool updateOnly = true);
     virtual double componentValue(const ComponentWidget&) const;
-    virtual void setComponentValue(const ComponentWidget&, double val);
-    virtual void setComponentText(const ComponentWidget&, const QString& text);
-    virtual void setComponentEnabled(const ComponentWidget&, bool enable);
+    virtual void setComponentValue(const ComponentWidget&, double val, bool updateOnly = true);
+    virtual void incComponentValue(const ComponentWidget&, int steps, bool updateOnly = true);
+    virtual void setComponentText(const ComponentWidget&, const QString& text, bool updateOnly = true);
+    virtual void setComponentEnabled(const ComponentWidget&, bool enable, bool updateOnly = true);
+    virtual void setComponentShowValue(const ComponentWidget&, bool show, bool updateOnly = true);
 };
 
 //---------------------------------------------
@@ -365,6 +382,103 @@ class WidgetComponentDescriptor : public ComponentDescriptor
 
 
 //---------------------------------------------
+// CompactKnobComponentDescriptor
+//  Class defining a CompactKnob to be added to a rack layout.
+//---------------------------------------------
+
+class CompactKnobComponentDescriptor : public ComponentDescriptor
+{
+  public:
+    // Return value pointer created by the function, corresponding to a ComponentWidgetType:
+    CompactKnob* _compactKnob;
+
+    double _min;
+    double _max;
+    int _precision;
+    double _step;
+    double _initVal;
+    bool _hasOffMode;
+    bool _isOff;
+    bool _showValue;
+
+    QColor _rimColor;
+    QColor _faceColor;
+    QColor _shinyColor;
+    QColor _markerColor;
+
+    QString _prefix;
+    QString _suffix;
+    QString _specialValueText;
+
+  public:
+    CompactKnobComponentDescriptor() :
+      ComponentDescriptor(ComponentRack::CompactKnobComponentWidget,
+                          ComponentRack::propertyComponent),
+      _compactKnob(0),
+      _min(0.0), _max(0.0), _precision(0), _step(1.0), _initVal(0.0), _hasOffMode(false), _isOff(false), _showValue(true) { }
+
+    CompactKnobComponentDescriptor(
+      ComponentWidget::ComponentType componentType,
+      const char* objName = 0,
+      int index = 0,
+      const QString& toolTipText = QString(),
+      const QString& label = QString(),
+      const QColor& borderColour = QColor(),
+      const QColor& rimColour = QColor(),
+      const QColor& faceColour = QColor(),
+      const QColor& shinyColour = QColor(),
+      const QColor& markerColour = QColor(),
+      const QString& prefix = QString(),
+      const QString& suffix = QString(),
+      const QString& specialValueText = QString(),
+      bool enabled = true,
+      double min = 0.0,
+      double max = 100.0,
+      int precision = 0,
+      double step = 1.0,
+      double initVal = 0.0,
+      bool hasOffMode = false,
+      bool isOff = false,
+      bool showValue = true,
+      const char* changedSlot = 0,
+      const char* movedSlot = 0,
+      const char* pressedSlot = 0,
+      const char* releasedSlot = 0,
+      const char* rightClickedSlot = 0
+    )
+    : ComponentDescriptor(ComponentRack::CompactKnobComponentWidget,
+                          componentType,
+                          objName,
+                          index,
+                          toolTipText,
+                          label,
+                          borderColour,
+                          enabled,
+                          changedSlot,
+                          movedSlot,
+                          pressedSlot,
+                          releasedSlot,
+                          rightClickedSlot
+                         ),
+      _compactKnob(0),
+      _min(min),
+      _max(max),
+      _precision(precision),
+      _step(step),
+      _initVal(initVal),
+      _hasOffMode(hasOffMode),
+      _isOff(isOff),
+      _showValue(showValue),
+      _rimColor(rimColour),
+      _faceColor(faceColour),
+      _shinyColor(shinyColour),
+      _markerColor(markerColour),
+      _prefix(prefix),
+      _suffix(suffix),
+      _specialValueText(specialValueText) { }
+};
+
+//---------------------------------------------
 // CompactSliderComponentDescriptor
 //  Class defining a CompactSlider to be added to a rack layout.
 //---------------------------------------------
@@ -375,6 +489,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
     // Return value pointer created by the function, corresponding to a ComponentWidgetType:
     CompactSlider* _compactSlider;
     
+    int _activeBorders;
     double _min;
     double _max; 
     int _precision;
@@ -382,6 +497,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
     double _initVal;
     bool _hasOffMode;
     bool _isOff;
+    bool _showValue;
 
     QColor _barColor;
     QColor _slotColor;
@@ -395,12 +511,14 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
       ComponentDescriptor(ComponentRack::CompactSliderComponentWidget,
                           ComponentRack::propertyComponent),
       _compactSlider(0),
-      _min(0.0), _max(0.0), _precision(0), _step(1.0), _initVal(0.0), _hasOffMode(false), _isOff(false) { }
+      _activeBorders(0xf), // All borders.
+      _min(0.0), _max(0.0), _precision(0), _step(1.0), _initVal(0.0), _hasOffMode(false), _isOff(false), _showValue(true) { }
                             
     CompactSliderComponentDescriptor(
       ComponentWidget::ComponentType componentType,
       const char* objName = 0,
       int index = 0,
+      int activeBorders = 0xf, // All four borders.
       const QString& toolTipText = QString(),
       const QString& label = QString(),
       const QColor& borderColour = QColor(),
@@ -418,6 +536,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
       double initVal = 0.0,
       bool hasOffMode = false,
       bool isOff = false,
+      bool showValue = true,
       const char* changedSlot = 0,
       const char* movedSlot = 0,
       const char* pressedSlot = 0,
@@ -439,6 +558,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
                           rightClickedSlot
                          ),
       _compactSlider(0),
+      _activeBorders(activeBorders),
       _min(min), 
       _max(max), 
       _precision(precision), 
@@ -446,6 +566,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
       _initVal(initVal),
       _hasOffMode(hasOffMode),
       _isOff(isOff),
+      _showValue(showValue),
       _barColor(barColour),
       _slotColor(slotColour),
       _thumbColor(thumbColour),
@@ -566,10 +687,14 @@ class Strip : public QFrame {
       Q_OBJECT
 
    private:
+      // Embedded strips cannot be selected, moved, or hidden. For example arranger and pianoroll.
+      bool _isEmbedded;
       QPoint mouseWidgetOffset;
       bool dragOn;
       bool _visible;
-   
+      bool _selected;
+      bool _highlight;
+
    protected:
       
       MusECore::Track* track;
@@ -593,6 +718,7 @@ class Strip : public QFrame {
       virtual void mousePressEvent(QMouseEvent *);
       virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
+      virtual void paintEvent(QPaintEvent *);
 
       virtual void updateRouteButtons();
 
@@ -611,9 +737,20 @@ class Strip : public QFrame {
       virtual void configChanged() = 0;
       virtual void changeUserWidth(int delta);
 
+      virtual void incVolume(int v) = 0;
+      virtual void incPan(int v) = 0;
+
+   signals:
+      void clearStripSelection();
+      void trackSelected(MusECore::Track*, bool);
+      void moveStrip(Strip *s);
+
    public:
-      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false);
+      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true);
       ~Strip();
+
+      // Destroy and rebuild strip components.
+      virtual void buildStrip() { }
 
       bool getStripVisible() { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
@@ -623,6 +760,7 @@ class Strip : public QFrame {
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
       void setLabelFont();
+      void setHighLight(bool highlight);
       QString getLabelText() { return label->text(); }
       
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
@@ -632,6 +770,11 @@ class Strip : public QFrame {
       void setUserWidth(int w);
       
       virtual QSize sizeHint() const;
+      bool isSelected() { return _selected; }
+      void setSelected(bool s);
+
+      bool isEmbedded() const { return _isEmbedded; }
+      void setEmbedded(bool embed) { _isEmbedded = embed; }
       };
 
 } // namespace MusEGui

@@ -4,7 +4,7 @@
 //  $Id: exportmidi.cpp,v 1.9.2.1 2009/04/01 01:37:10 terminator356 Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -49,10 +49,10 @@ namespace MusECore {
 
 static void addController(MPEventList* l, int tick, int port, int channel, int a, int b)
       {
-      if (a >= CTRL_7_OFFSET && a < 128) {          // 7 Bit Controller
+      if (a >= CTRL_7_OFFSET && a < (CTRL_7_OFFSET + 0x10000)) {          // 7 Bit Controller
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, a, b));
             }
-      else if (a >= CTRL_14_OFFSET && a < (CTRL_14_OFFSET + 0x1000)) {     // 14 Bit Controller
+      else if (a >= CTRL_14_OFFSET && a < (CTRL_14_OFFSET + 0x10000)) {     // 14 Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
@@ -60,14 +60,14 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, ctrlH, dataH));
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, ctrlL, dataL));
             }
-      else if (a >= CTRL_RPN_OFFSET && a < (CTRL_RPN_OFFSET + 0x1000)) {     // RPN 7-Bit Controller
+      else if (a >= CTRL_RPN_OFFSET && a < (CTRL_RPN_OFFSET + 0x10000)) {     // RPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
-      else if (a >= CTRL_NRPN_OFFSET && a < (CTRL_NRPN_OFFSET + 0x1000)) {     // NRPN 7-Bit Controller
+      else if (a >= CTRL_NRPN_OFFSET && a < (CTRL_NRPN_OFFSET + 0x10000)) {     // NRPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
@@ -113,7 +113,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
       }
       else if (a >= CTRL_INTERNAL_OFFSET && a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
             return;
-      else if (a >= CTRL_RPN14_OFFSET && a < (CTRL_RPN14_OFFSET + 0x1000)) {     // RPN14 Controller
+      else if (a >= CTRL_RPN14_OFFSET && a < (CTRL_RPN14_OFFSET + 0x10000)) {     // RPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
@@ -123,7 +123,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
             l->add(MidiPlayEvent(tick+3, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
-      else if (a >= CTRL_NRPN14_OFFSET && a < (CTRL_NRPN14_OFFSET + 0x1000)) {     // NRPN14 Controller
+      else if (a >= CTRL_NRPN14_OFFSET && a < (CTRL_NRPN14_OFFSET + 0x10000)) {     // NRPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
@@ -143,6 +143,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
 
 static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventList* mpevlist, MusECore::MidiTrack* track, MusECore::Part* part, int port, int channel)
 {      
+  DrumMap dm;
   for (MusECore::ciEvent i = evlist.begin(); i != evlist.end(); ++i) 
   {
     const MusECore::Event& ev = i->second;
@@ -157,14 +158,44 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                       printf("Warning: midi note has velocity 0, (ignored)\n");
                       continue;
                       }
-                int pitch;
-                if (track && track->type() == MusECore::Track::DRUM) {
-                      // Map drum-notes to the drum-map values
-                      int instr = ev.pitch();
-                      pitch = MusEGlobal::drumMap[instr].anote;
-                      }
-                else
-                      pitch = ev.pitch();
+                int pitch = ev.pitch();
+                int fin_pitch = pitch;
+                int fin_port = port;
+                int fin_chan = channel;
+
+                if(MusEGlobal::config.exportDrumMapOverrides)
+                {
+                  if (track && track->type() == MusECore::Track::DRUM) {
+                        // Map drum-notes to the drum-map values
+                        fin_pitch = MusEGlobal::drumMap[pitch].anote;
+                        // Default to track port if -1 and track channel if -1.
+                        // Port is only allowed to change in format 1.
+                        if(MusEGlobal::drumMap[pitch].port != -1 && MusEGlobal::config.smfFormat != 0)
+                          fin_port = MusEGlobal::drumMap[pitch].port;
+                        if(MusEGlobal::drumMap[pitch].channel != -1)
+                          fin_chan = MusEGlobal::drumMap[pitch].channel;
+                        }
+                  else if (track && track->type() == MusECore::Track::NEW_DRUM) {
+                        // Map drum-notes to the drum-map values
+                        // We must look at what the drum map WOULD say at the note's tick,
+                        //  not what it says now at the current cursor.
+                        track->getMapItemAt(tick, pitch, dm, WorkingDrumMapEntry::AllOverrides);
+                        fin_pitch = dm.anote;
+                        // Default to track port if -1 and track channel if -1.
+                        // Port is only allowed to change in format 1.
+                        if(dm.port != -1 && MusEGlobal::config.smfFormat != 0)
+                          fin_port = dm.port;
+                        if(dm.channel != -1)
+                          fin_chan = dm.channel;
+                        }
+                }
+
+                // If the port or channel is overriden by a drum map, DO NOT add the event here
+                //  because it requires its own track. That is taken care of in exportMidi().
+                if(fin_port != port ||
+                  // Channel is allowed to be different but can only cause a new track in format 1.
+                  (fin_chan != channel && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
+                  continue;
 
                 int velo  = ev.velo();
                 int veloOff  = ev.veloOff();
@@ -174,15 +205,17 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                 //   apply trackinfo values
                 //---------------------------------------
 
-                if (track && (track->transposition
+                if (track && ((!track->isDrumTrack() && track->transposition)
                     || track->velocity
                     || track->compression != 100
                     || track->len != 100)) {
-                      pitch += track->transposition;
-                      if (pitch > 127)
-                            pitch = 127;
-                      if (pitch < 0)
-                            pitch = 0;
+                      // Transpose only midi not drum tracks.
+                      if(!track->isDrumTrack())
+                        fin_pitch += track->transposition;
+                      if (fin_pitch > 127)
+                            fin_pitch = 127;
+                      if (fin_pitch < 0)
+                            fin_pitch = 0;
 
                       velo += track->velocity;
                       velo = (velo * track->compression) / 100;
@@ -200,17 +233,60 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                       }
                 if (len <= 0)
                       len = 1;
-                mpevlist->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
-                
+
+                mpevlist->add(MusECore::MidiPlayEvent(tick, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, velo));
                 if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
-                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEON, pitch, 0));
-                else  
-                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff));
+                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, 0));
+                else
+                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEOFF, fin_pitch, veloOff));
                 }
                 break;
 
           case MusECore::Controller:
-                addController(mpevlist, tick, port, channel, ev.dataA(), ev.dataB());
+          {
+                int ctlnum = ev.dataA();
+                int fin_ctlnum = ctlnum;
+                int fin_port = port;
+                int fin_chan = channel;
+
+                if(MusEGlobal::config.exportDrumMapOverrides)
+                {
+                  // Is it a drum controller event, according to the track port's instrument?
+                  if(MusEGlobal::midiPorts[port].drumController(ctlnum))
+                  {
+                    if (track && track->type() == MusECore::Track::DRUM) {
+                      int v_idx = ctlnum & 0x7f;
+                      fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
+                      // Default to track port if -1 and track channel if -1.
+                      // Port is only allowed to change in format 1.
+                      if(MusEGlobal::drumMap[v_idx].port != -1 && MusEGlobal::config.smfFormat != 0)
+                        fin_port = MusEGlobal::drumMap[v_idx].port;
+                      if(MusEGlobal::drumMap[v_idx].channel != -1)
+                        fin_chan = MusEGlobal::drumMap[v_idx].channel;
+                      }
+                    else if (track && track->type() == MusECore::Track::NEW_DRUM) {
+                      int v_idx = ctlnum & 0x7f;
+                      track->getMapItemAt(tick, v_idx, dm, WorkingDrumMapEntry::AllOverrides);
+                      fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
+                      // Default to track port if -1 and track channel if -1.
+                      // Port is only allowed to change in format 1.
+                      if(dm.port != -1 && MusEGlobal::config.smfFormat != 0)
+                        fin_port = dm.port;
+                      if(dm.channel != -1)
+                        fin_chan = dm.channel;
+                    }
+                  }
+                }
+
+                // If the port or channel is overriden by a drum map, DO NOT add the event here
+                //  because it requires its own track. That is taken care of in exportMidi().
+                if(fin_port != port ||
+                  // Channel is allowed to be different but can only cause a new track in format 1.
+                  (fin_chan != channel && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
+                  continue;
+
+                addController(mpevlist, tick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
+          }
                 break;
 
           case MusECore::Sysex:
@@ -234,8 +310,87 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
           }
     }
 }
-      
-      
+
+static void writeDeviceOrPortMeta(int port, MPEventList* mpel)
+{
+  if(port >= 0 && port < MIDI_PORTS)
+  {
+    if(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META)
+    {
+      unsigned char port_char = (unsigned char)port;
+      MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, &port_char, 1);
+      ev.setA(MusECore::ME_META_PORT_CHANGE);    // Meta port change
+      //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
+      mpel->add(ev);
+    }
+
+    if(MusEGlobal::config.exportPortsDevices & MusEGlobal::DEVICE_NAME_META)
+    {
+      MusECore::MidiDevice* dev = MusEGlobal::midiPorts[port].device();
+      const char* str;
+      int len;
+      QByteArray ba;
+      if(dev && !dev->name().isEmpty())
+        ba = dev->name().toLatin1();
+      else
+        ba = QString::number(port).toLatin1();
+      str = ba.constData();
+      len = ba.length();
+      MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)str, len);
+      ev.setA(MusECore::ME_META_TEXT_9_DEVICE_NAME);    // Meta Device Name
+      //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
+      mpel->add(ev);
+    }
+  }
+}
+
+static void writeInitSeqOrInstrNameMeta(int port, int channel, MPEventList* mpel)
+{
+  if(MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument())
+  {
+    //--------------------------
+    // Port midi init sequence
+    //--------------------------
+    if(MusEGlobal::config.exportModeInstr & MusEGlobal::MODE_SYSEX)
+    {
+      EventList* el = instr->midiInit();
+      if(!el->empty())
+        addEventList(*el, mpel, NULL, NULL, port, channel); // No track or part passed for init sequences
+    }
+
+    //--------------------------
+    // Instrument Name meta
+    //--------------------------
+    if(!instr->iname().isEmpty() &&
+      (MusEGlobal::config.exportModeInstr & MusEGlobal::INSTRUMENT_NAME_META))
+    {
+      const char* str;
+      int len;
+      QByteArray ba = instr->iname().toLatin1();
+      str = ba.constData();
+      len = ba.length();
+      MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)str, len);
+      ev.setA(ME_META_TEXT_4_INSTRUMENT_NAME);    // Meta Instrument Name
+      //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
+      mpel->add(ev);
+    }
+  }
+}
+
+static void writeTrackNameMeta(int port, Track* track, MPEventList* mpel)
+{
+  if (!track->name().isEmpty())
+  {
+    QByteArray ba = track->name().toLatin1();
+    const char* name = ba.constData();
+    int len = ba.length();
+    MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)name, len);
+    ev.setA(ME_META_TEXT_3_TRACK_NAME);    // Meta Sequence/Track Name
+    //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
+    mpel->add(ev);
+  }
+}
+
 } // namespace MusECore
 
 namespace MusEGui {
@@ -285,9 +440,10 @@ void MusE::exportMidi()
       MusECore::TrackList* tl = MusEGlobal::song->tracks();       // Changed to full track list so user can rearrange tracks.
       MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;
 
+      MusECore::DrumMap dm;
       std::set<int> used_ports;
       
-      int i = 0;
+      int track_count = 0;
       MusECore::MidiFileTrack* mft = 0;
       for (MusECore::ciTrack im = tl->begin(); im != tl->end(); ++im) {
         
@@ -296,7 +452,7 @@ void MusE::exportMidi()
               
             MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
 
-            if (i == 0 || MusEGlobal::config.smfFormat != 0)    // Changed to single track. Tim
+            if (track_count == 0 || MusEGlobal::config.smfFormat != 0)    // Changed to single track. Tim
             {  
               mft = new MusECore::MidiFileTrack;
               mtl->push_back(mft);
@@ -314,7 +470,7 @@ void MusE::exportMidi()
             //          - tempo map
             //---------------------------------------------------
 
-            if (i == 0) {
+            if (track_count == 0) {
                   //---------------------------------------------------
                   //    Write Track Marker
                   //
@@ -415,18 +571,8 @@ void MusE::exportMidi()
             //   track name
             //-----------------------------------
 
-            if (i == 0 || MusEGlobal::config.smfFormat != 0)
-            {
-              if (!track->name().isEmpty()) {
-                    QByteArray ba = track->name().toLatin1();
-                    const char* name = ba.constData();
-                    int len = ba.length();
-                    MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)name, len);
-                    ev.setA(MusECore::ME_META_TEXT_3_TRACK_NAME);    // Meta Sequence/Track Name
-                    //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
-                    l->add(ev);
-                    }
-            }
+            if (track_count == 0 || MusEGlobal::config.smfFormat != 0)
+              MusECore::writeTrackNameMeta(port, track, l);
             
             //-----------------------------------
             //   track comment
@@ -449,38 +595,8 @@ void MusE::exportMidi()
             //    Write device name or port change meta
             //-----------------------------------------
             
-            if((i == 0 && MusEGlobal::config.exportPortDeviceSMF0) || (MusEGlobal::config.smfFormat != 0))  
-            {
-              if(port >= 0 && port < MIDI_PORTS)
-              {
-                if(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META)
-                {
-                  unsigned char port_char = (unsigned char)port;
-                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, &port_char, 1);
-                  ev.setA(MusECore::ME_META_PORT_CHANGE);    // Meta port change
-                  //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
-                  l->add(ev);
-                }
-                
-                if(MusEGlobal::config.exportPortsDevices & MusEGlobal::DEVICE_NAME_META)
-                {
-                  MusECore::MidiDevice* dev = MusEGlobal::midiPorts[port].device();
-                  const char* str;
-                  int len;
-                  QByteArray ba;
-                  if(dev && !dev->name().isEmpty())
-                    ba = dev->name().toLatin1();
-                  else
-                    ba = QString::number(port).toLatin1();
-                  str = ba.constData();
-                  len = ba.length();
-                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)str, len);
-                  ev.setA(MusECore::ME_META_TEXT_9_DEVICE_NAME);    // Meta Device Name
-                  //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
-                  l->add(ev);
-                }
-              }
-            }
+            if((track_count == 0 && MusEGlobal::config.exportPortDeviceSMF0) || (MusEGlobal::config.smfFormat != 0))
+              MusECore::writeDeviceOrPortMeta(port, l);
             
             //---------------------------------------------------
             //    Write midi port init sequence: GM/GS/XG etc. 
@@ -492,55 +608,283 @@ void MusE::exportMidi()
             {
               if(port >= 0 && port < MIDI_PORTS)
               {
-                MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-                if(instr)
-                {
-                  if(i == 0 || MusEGlobal::config.smfFormat != 0)
-                  {
-                    //--------------------------
-                    // Port midi init sequence
-                    //--------------------------
-                    if(MusEGlobal::config.exportModeInstr & MusEGlobal::MODE_SYSEX)
-                    {
-                      MusECore::EventList* el = instr->midiInit();
-                      if(!el->empty())
-                        MusECore::addEventList(*el, l, NULL, NULL, port, channel); // No track or part passed for init sequences
-                    }
-                    
-                    //--------------------------
-                    // Instrument Name meta
-                    //--------------------------
-                    if(!instr->iname().isEmpty() && 
-                      (MusEGlobal::config.exportModeInstr & MusEGlobal::INSTRUMENT_NAME_META))
-                    {
-                      const char* str;
-                      int len;
-                      QByteArray ba = instr->iname().toLatin1();
-                      str = ba.constData();
-                      len = ba.length();
-                      MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)str, len);
-                      ev.setA(MusECore::ME_META_TEXT_4_INSTRUMENT_NAME);    // Meta Instrument Name
-                      //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
-                      l->add(ev);
-                    }
-                  }
-                }
+                if(track_count == 0 || MusEGlobal::config.smfFormat != 0)
+                  MusECore::writeInitSeqOrInstrNameMeta(port, channel, l);
                 used_ports.insert(port);
               }
             }
             
+            //---------------------------------------------------
+            //    Write all track events.
+            //---------------------------------------------------
+
             MusECore::PartList* parts = track->parts();
             for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
                   MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
                   MusECore::addEventList(part->events(), l, track, part, port, channel); 
                   }
                   
-            ++i;  
+            ++track_count;
             }
-            
+
+      // For drum tracks with drum map port overrides, we may need to add extra tracks.
+      // But we can can only do that if multi-track format is chosen.
+      if(MusEGlobal::config.exportDrumMapOverrides && MusEGlobal::config.smfFormat != 0)
+      {
+        MusECore::MidiFileTrackList aux_mtl;
+        for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+        {
+          if(!(*it)->isDrumTrack())
+            continue;
+
+          MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(*it);
+
+          int port         = track->outPort();
+          int channel      = track->outChannel();
+
+          MusECore::PartList* parts = track->parts();
+          for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip)
+          {
+            MusECore::MidiPart* part = (MusECore::MidiPart*) (ip->second);
+            const MusECore::EventList& evlist = part->events();
+            for (MusECore::ciEvent iev = evlist.begin(); iev != evlist.end(); ++iev)
+            {
+              const MusECore::Event& ev = iev->second;
+              int tick = ev.tick() + part->tick();
+              switch (ev.type())
+              {
+                    case MusECore::Note:
+                    {
+                          if (ev.velo() == 0) {
+                                fprintf(stderr, "Warning: midi note has velocity 0, (ignored)\n");
+                                continue;
+                                }
+                          int pitch;
+                          int fin_port = port;
+                          int fin_chan = channel;
+
+                          if (track->type() == MusECore::Track::DRUM) {
+                                // Map drum-notes to the drum-map values
+                                int instr = ev.pitch();
+                                pitch = MusEGlobal::drumMap[instr].anote;
+                                // Default to track port if -1 and track channel if -1.
+                                if(MusEGlobal::drumMap[instr].port != -1)
+                                  fin_port = MusEGlobal::drumMap[instr].port;
+                                if(MusEGlobal::drumMap[instr].channel != -1)
+                                  fin_chan = MusEGlobal::drumMap[instr].channel;
+                                }
+                          else if (track->type() == MusECore::Track::NEW_DRUM) {
+                                // Map drum-notes to the drum-map values
+                                // We must look at what the drum map WOULD say at the note's tick,
+                                //  not what it says now at the current cursor.
+                                int instr = ev.pitch();
+                                track->getMapItemAt(tick, instr, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
+                                pitch = dm.anote;
+                                // Default to track port if -1 and track channel if -1.
+                                if(dm.port != -1)
+                                  fin_port = dm.port;
+                                if(dm.channel != -1)
+                                  fin_chan = dm.channel;
+                                }
+
+                          // We are only looking for port or channel overrides. They require a separate track.
+                          if(fin_port == port &&
+                             (fin_chan == channel || !MusEGlobal::config.exportChannelOverridesToNewTrack))
+                            continue;
+
+                          // Is there already a MidiFileTrack for the port?
+                          MusECore::MidiFileTrack* aux_mft = 0;
+                          for(MusECore::iMidiFileTrack imft = aux_mtl.begin(); imft != aux_mtl.end(); ++imft)
+                          {
+                            MusECore::MidiFileTrack* t = *imft;
+                            // Take the first event's port (in this case they are all the same).
+                            const MusECore::MidiPlayEvent& mpe = *t->events.begin();
+                            if(mpe.port() == fin_port)
+                            {
+                              aux_mft = t;
+                              break;
+                            }
+                          }
+                          // If not, create a new MidiFileTrack.
+                          if(!aux_mft)
+                          {
+                            aux_mft = new MusECore::MidiFileTrack;
+                            aux_mft->_isDrumTrack = true;
+
+                            //-----------------------------------
+                            //   track name
+                            //-----------------------------------
+                            // TODO: Maybe append some text here?
+                            MusECore::writeTrackNameMeta(fin_port, track, &aux_mft->events);
+
+                            //-----------------------------------------
+                            //    Write device name or port change meta
+                            //-----------------------------------------
+                            MusECore::writeDeviceOrPortMeta(fin_port, &aux_mft->events);
+
+                            //---------------------------------------------------
+                            //    Write midi port init sequence: GM/GS/XG etc.
+                            //     and Instrument Name meta.
+                            //---------------------------------------------------
+                            std::set<int>::iterator iup = used_ports.find(fin_port);
+                            if(iup == used_ports.end())
+                            {
+                              MusECore::writeInitSeqOrInstrNameMeta(fin_port, fin_chan, &aux_mft->events);
+                              used_ports.insert(fin_port);
+                            }
+
+                            aux_mtl.push_back(aux_mft);
+                            mtl->push_back(aux_mft);
+
+                            // Increment the track count.
+                            ++track_count;
+                          }
+
+                          int velo  = ev.velo();
+                          int veloOff  = ev.veloOff();
+                          int len   = ev.lenTick();
+
+                          //---------------------------------------
+                          //   apply trackinfo values
+                          //---------------------------------------
+
+                          if (track && (track->velocity
+                              || track->compression != 100
+                              || track->len != 100)) {
+                                if (pitch > 127)
+                                      pitch = 127;
+                                if (pitch < 0)
+                                      pitch = 0;
+
+                                velo += track->velocity;
+                                velo = (velo * track->compression) / 100;
+                                if (velo > 127)
+                                      velo = 127;
+                                if (velo < 1)           // no off event
+                                      velo = 1;
+                                      // REMOVE Tim. Noteoff. Added. Zero means zero. Should mean no note at all?
+                                      // Although we might not actually play such an event in the midi.cpp engine,
+                                      //  I don't like the idea of discarding the event during export.
+                                      // Keeping the notes is more important than the velocities, I'd say.
+                                      //break;
+
+                                len = (len *  track->len) / 100;
+                                }
+                          if (len <= 0)
+                                len = 1;
+
+                          aux_mft->events.add(MusECore::MidiPlayEvent(tick, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, velo));
+                          if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
+                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, 0));
+                          else
+                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEOFF, pitch, veloOff));
+                          }
+                          break;
+
+                    case MusECore::Controller:
+                    {
+                          int fin_port = port;
+                          int fin_chan = channel;
+                          int ctlnum = ev.dataA();
+                          int fin_ctlnum = ctlnum;
+
+                          // Is it a drum controller event, according to the track port's instrument?
+                          if(MusEGlobal::midiPorts[port].drumController(ctlnum))
+                          {
+                            if (track->type() == MusECore::Track::DRUM) {
+                              int v_idx = ctlnum & 0x7f;
+                              fin_ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[v_idx].anote;
+                              // Default to track port if -1 and track channel if -1.
+                              if(MusEGlobal::drumMap[v_idx].port != -1)
+                                fin_port = MusEGlobal::drumMap[v_idx].port;
+                              if(MusEGlobal::drumMap[v_idx].channel != -1)
+                                fin_chan = MusEGlobal::drumMap[v_idx].channel;
+                              }
+                            else if (track->type() == MusECore::Track::NEW_DRUM) {
+                              int v_idx = ctlnum & 0x7f;
+                              track->getMapItemAt(tick, v_idx, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
+                              fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
+                              if(dm.port != -1)
+                                fin_port = dm.port;
+                              if(dm.channel != -1)
+                                fin_chan = dm.channel;
+                            }
+                          }
+
+                          // We are only looking for port or channel overrides. They require a separate track.
+                          if(fin_port == port &&
+                             (fin_chan == channel || !MusEGlobal::config.exportChannelOverridesToNewTrack))
+                            continue;
+
+                          // Is there already a MidiFileTrack for the port?
+                          MusECore::MidiFileTrack* aux_mft = 0;
+                          for(MusECore::iMidiFileTrack imft = aux_mtl.begin(); imft != aux_mtl.end(); ++imft)
+                          {
+                            MusECore::MidiFileTrack* t = *imft;
+                            // Take the first event's port (in this case they are all the same).
+                            const MusECore::MidiPlayEvent& mpe = *t->events.begin();
+                            if(mpe.port() == fin_port)
+                            {
+                              aux_mft = t;
+                              break;
+                            }
+                          }
+                          // If not, create a new MidiFileTrack.
+                          if(!aux_mft)
+                          {
+                            aux_mft = new MusECore::MidiFileTrack;
+                            aux_mft->_isDrumTrack = true;
+
+                            //-----------------------------------
+                            //   track name
+                            //-----------------------------------
+                            // TODO: Maybe append some text here?
+                            MusECore::writeTrackNameMeta(fin_port, track, &aux_mft->events);
+
+                            //-----------------------------------------
+                            //    Write device name or port change meta
+                            //-----------------------------------------
+                            MusECore::writeDeviceOrPortMeta(fin_port, &aux_mft->events);
+
+                            //---------------------------------------------------
+                            //    Write midi port init sequence: GM/GS/XG etc.
+                            //     and Instrument Name meta.
+                            //---------------------------------------------------
+                            std::set<int>::iterator iup = used_ports.find(fin_port);
+                            if(iup == used_ports.end())
+                            {
+                              MusECore::writeInitSeqOrInstrNameMeta(fin_port, fin_chan, &aux_mft->events);
+                              used_ports.insert(fin_port);
+                            }
+
+                            aux_mtl.push_back(aux_mft);
+                            mtl->push_back(aux_mft);
+
+                            // Increment the track count.
+                            ++track_count;
+                          }
+
+                          MusECore::addController(&aux_mft->events, tick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
+                    }
+                          break;
+
+                    case MusECore::Sysex:
+                    case MusECore::Meta:
+                    case MusECore::Wave:
+                          break;
+                    }
+              }
+          }
+        }
+      }
+
+
+
+
+
       mf.setDivision(MusEGlobal::config.midiDivision);
       // Takes ownership of mtl and its contents.
-      mf.setTrackList(mtl, i);
+      mf.setTrackList(mtl, track_count);
       mf.write();
 
       }

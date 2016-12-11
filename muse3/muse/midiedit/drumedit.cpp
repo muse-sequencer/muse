@@ -162,8 +162,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tickValue     = 0;
       lenValue      = 0;
       pitchValue    = 0;
-      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//       veloOnValue   = 0;
+      // Zero note on vel is not allowed now.
       veloOnValue   = 1;
       veloOffValue  = 0;
       firstValueSet = false;
@@ -564,9 +563,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);
       header->setColumnLabel(tr("Vol"), COL_VOLUME);
-      header->setColumnLabel(tr("QNT"), COL_QUANT, 30);
+      header->setColumnLabel(tr("QNT"), COL_QUANT, 40);
       header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
-      header->setColumnLabel(tr("Len"), COL_NOTELENGTH);
+      header->setColumnLabel(tr("Len"), COL_NOTELENGTH, 40);
       header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
       header->setColumnLabel(tr("Ch"), COL_OUTCHANNEL);
       header->setColumnLabel(tr("Port"), COL_OUTPORT, 70);
@@ -578,12 +577,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       setHeaderToolTips();
       setHeaderWhatsThis();
 
-      if (!old_style_drummap_mode())
-      {
-        header->hideSection(COL_OUTPORT);
-        header->hideSection(COL_OUTCHANNEL);
-      }
-      
       if (!old_style_drummap_mode() && _ignore_hide)
         header->showSection(COL_HIDE);
       else
@@ -672,7 +665,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       if(canvas->track())
         toolbar->setSolo(canvas->track()->solo());
       
-      
       initTopwinState();
       finalizeInit();
       }
@@ -690,7 +682,6 @@ void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
         {
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
-            //return; ???  // REMOVE Tim. Trackinfo. Why return?
         }      
         if ( !old_style_drummap_mode() && 
              ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
@@ -869,7 +860,7 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part*, bool 
         lenValue     = e.lenTick();
         pitchValue   = e.pitch();
         veloOnValue  = e.velo();
-        // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+        // Zero note on vel is not allowed now.
         if(veloOnValue == 0)
         {
           veloOnValue = 1;
@@ -888,15 +879,13 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part*, bool 
             }
       else {
             info->setEnabled(false);
-            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//             info->setValues(0, 0, 0, 0, 0);
+            // Zero note on vel is not allowed now.
             info->setValues(0, 0, 0, deltaMode ? 0 : 1, 0);
             firstValueSet = false;
             tickValue     = 0;
             lenValue      = 0;
             pitchValue    = 0;
-            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//             veloOnValue   = 0;
+            // Zero note on vel is not allowed now.
             veloOnValue   = 1;
             veloOffValue  = 0;
             tickOffset    = 0;
@@ -1874,7 +1863,7 @@ void DrumEdit::showAllInstruments()
     MidiTrack* track=*it;
     
     for (int i=0;i<128;i++)
-      track->drummap_hidden()[i]=false;
+      track->drummap()[i].hide=false;
   }
   
   MusEGlobal::song->update(SC_DRUMMAP);
@@ -1893,7 +1882,7 @@ void DrumEdit::hideAllInstruments()
     MidiTrack* track=*it;
     
     for (int i=0;i<128;i++)
-      track->drummap_hidden()[i]=true;
+      track->drummap()[i].hide=true;
   }
   
   MusEGlobal::song->update(SC_DRUMMAP);
@@ -1926,7 +1915,7 @@ void DrumEdit::hideUnusedInstruments()
       }
     
     for (int i=0;i<128;i++)
-      track->drummap_hidden()[i]=hide[i];
+      track->drummap()[i].hide=hide[i];
   }
   
   MusEGlobal::song->update(SC_DRUMMAP);
@@ -1959,7 +1948,7 @@ void DrumEdit::hideEmptyInstruments()
       }
     
     for (int i=0;i<128;i++)
-      track->drummap_hidden()[i]=hide[i];
+      track->drummap()[i].hide=hide[i];
   }
   
   MusEGlobal::song->update(SC_DRUMMAP);

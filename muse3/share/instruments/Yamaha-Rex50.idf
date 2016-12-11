@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+    <MidiInstrument name="Yamaha Rex50" nullparam="32639">
+        <PatchGroup name="Built-In Effects">
+            <Patch name="Rev 1 Hall" hbank="0" lbank="0" prog="0"/>
+            <Patch name="Rev 2 Room" hbank="0" lbank="0" prog="1"/>
+            <Patch name="Rev 3 Vocal" hbank="0" lbank="0" prog="2"/>
+            <Patch name="Rev 4 Plate" hbank="0" lbank="0" prog="3"/>
+            <Patch name="Early Ref 1" hbank="0" lbank="0" prog="4"/>
+            <Patch name="Gate Reverb" hbank="0" lbank="0" prog="5"/>
+            <Patch name="Delay L,R" hbank="0" lbank="0" prog="6"/>
+            <Patch name="Stereo Echo" hbank="0" lbank="0" prog="7"/>
+            <Patch name="Steroe Flange" hbank="0" lbank="0" prog="8"/>
+            <Patch name="Chorus" hbank="0" lbank="0" prog="9"/>
+            <Patch name="Steroe Phasing" hbank="0" lbank="0" prog="10"/>
+            <Patch name="Symphonic" hbank="0" lbank="0" prog="11"/>
+            <Patch name="Reverse Gate" hbank="0" lbank="0" prog="12"/>
+            <Patch name="ADR-Noise Gate" hbank="0" lbank="0" prog="13"/>
+            <Patch name="Compressor" hbank="0" lbank="0" prog="14"/>
+            <Patch name="Reverb &amp; Gate" hbank="0" lbank="0" prog="15"/>
+            <Patch name="Pitch Change A" hbank="0" lbank="0" prog="16"/>
+            <Patch name="Pitch Change B" hbank="0" lbank="0" prog="17"/>
+            <Patch name="Pitch Change C" hbank="0" lbank="0" prog="18"/>
+            <Patch name="Pan" hbank="0" lbank="0" prog="19"/>
+            <Patch name="Distortion" hbank="0" lbank="0" prog="20"/>
+            <Patch name="Dist. + Rev Hall" hbank="0" lbank="0" prog="21"/>
+            <Patch name="Dist. + Rev Plate" hbank="0" lbank="0" prog="22"/>
+            <Patch name="Dist. + Gate Rev" hbank="0" lbank="0" prog="23"/>
+            <Patch name="Dist. + Reverse Gate" hbank="0" lbank="0" prog="24"/>
+            <Patch name="Dist. + Delay" hbank="0" lbank="0" prog="25"/>
+            <Patch name="Dist. + Echo" hbank="0" lbank="0" prog="26"/>
+            <Patch name="Dist. + Flange" hbank="0" lbank="0" prog="27"/>
+            <Patch name="Dist. + Chorus" hbank="0" lbank="0" prog="28"/>
+            <Patch name="Dist. + Symphonic" hbank="0" lbank="0" prog="29"/>
+        </PatchGroup>
+
+        <PatchGroup name="User Effects">
+            <Patch name="User Effect 1" hbank="0" lbank="0" prog="30"/>
+            <Patch name="User Effect 2" hbank="0" lbank="0" prog="31"/>
+            <Patch name="User Effect 3" hbank="0" lbank="0" prog="32"/>
+            <Patch name="User Effect 4" hbank="0" lbank="0" prog="33"/>
+            <Patch name="User Effect 5" hbank="0" lbank="0" prog="34"/>
+            <Patch name="User Effect 6" hbank="0" lbank="0" prog="35"/>
+            <Patch name="User Effect 7" hbank="0" lbank="0" prog="36"/>
+            <Patch name="User Effect 8" hbank="0" lbank="0" prog="37"/>
+            <Patch name="User Effect 9" hbank="0" lbank="0" prog="38"/>
+            <Patch name="User Effect 10" hbank="0" lbank="0" prog="39"/>
+            <Patch name="User Effect 11" hbank="0" lbank="0" prog="41"/>
+            <Patch name="User Effect 12" hbank="0" lbank="0" prog="42"/>
+            <Patch name="User Effect 13" hbank="0" lbank="0" prog="43"/>
+            <Patch name="User Effect 14" hbank="0" lbank="0" prog="44"/>
+            <Patch name="User Effect 15" hbank="0" lbank="0" prog="45"/>
+            <Patch name="User Effect 16" hbank="0" lbank="0" prog="46"/>
+            <Patch name="User Effect 17" hbank="0" lbank="0" prog="47"/>
+            <Patch name="User Effect 18" hbank="0" lbank="0" prog="48"/>
+            <Patch name="User Effect 19" hbank="0" lbank="0" prog="49"/>
+            <Patch name="User Effect 20" hbank="0" lbank="0" prog="50"/>
+            <Patch name="User Effect 21" hbank="0" lbank="0" prog="51"/>
+            <Patch name="User Effect 22" hbank="0" lbank="0" prog="52"/>
+            <Patch name="User Effect 23" hbank="0" lbank="0" prog="53"/>
+            <Patch name="User Effect 24" hbank="0" lbank="0" prog="54"/>
+            <Patch name="User Effect 25" hbank="0" lbank="0" prog="55"/>
+            <Patch name="User Effect 26" hbank="0" lbank="0" prog="56"/>
+            <Patch name="User Effect 27" hbank="0" lbank="0" prog="57"/>
+            <Patch name="User Effect 28" hbank="0" lbank="0" prog="58"/>
+            <Patch name="User Effect 29" hbank="0" lbank="0" prog="59"/>
+            <Patch name="User Effect 30" hbank="0" lbank="0" prog="60"/>
+            <Patch name="User Effect 31" hbank="0" lbank="0" prog="61"/>
+            <Patch name="User Effect 32" hbank="0" lbank="0" prog="62"/>
+            <Patch name="User Effect 33" hbank="0" lbank="0" prog="63"/>
+            <Patch name="User Effect 34" hbank="0" lbank="0" prog="64"/>
+            <Patch name="User Effect 35" hbank="0" lbank="0" prog="65"/>
+            <Patch name="User Effect 36" hbank="0" lbank="0" prog="66"/>
+            <Patch name="User Effect 37" hbank="0" lbank="0" prog="67"/>
+            <Patch name="User Effect 38" hbank="0" lbank="0" prog="68"/>
+            <Patch name="User Effect 39" hbank="0" lbank="0" prog="69"/>
+            <Patch name="User Effect 40" hbank="0" lbank="0" prog="70"/>
+            <Patch name="User Effect 41" hbank="0" lbank="0" prog="71"/>
+            <Patch name="User Effect 42" hbank="0" lbank="0" prog="72"/>
+            <Patch name="User Effect 43" hbank="0" lbank="0" prog="73"/>
+            <Patch name="User Effect 44" hbank="0" lbank="0" prog="74"/>
+            <Patch name="User Effect 45" hbank="0" lbank="0" prog="75"/>
+            <Patch name="User Effect 46" hbank="0" lbank="0" prog="76"/>
+            <Patch name="User Effect 47" hbank="0" lbank="0" prog="77"/>
+            <Patch name="User Effect 48" hbank="0" lbank="0" prog="78"/>
+            <Patch name="User Effect 49" hbank="0" lbank="0" prog="79"/>
+            <Patch name="User Effect 50" hbank="0" lbank="0" prog="80"/>
+            <Patch name="User Effect 51" hbank="0" lbank="0" prog="81"/>
+            <Patch name="User Effect 52" hbank="0" lbank="0" prog="82"/>
+            <Patch name="User Effect 53" hbank="0" lbank="0" prog="83"/>
+            <Patch name="User Effect 54" hbank="0" lbank="0" prog="84"/>
+            <Patch name="User Effect 55" hbank="0" lbank="0" prog="85"/>
+            <Patch name="User Effect 56" hbank="0" lbank="0" prog="86"/>
+            <Patch name="User Effect 57" hbank="0" lbank="0" prog="87"/>
+            <Patch name="User Effect 58" hbank="0" lbank="0" prog="88"/>
+            <Patch name="User Effect 59" hbank="0" lbank="0" prog="89"/>
+            <Patch name="User Effect 60" hbank="0" lbank="0" prog="90"/>
+        </PatchGroup>
+    </MidiInstrument>
+</muse>

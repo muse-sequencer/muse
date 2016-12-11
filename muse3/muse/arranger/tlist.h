@@ -139,7 +139,6 @@ class TList : public QWidget {
       void copyTrackDrummap(MusECore::MidiTrack*, bool full);
 
    signals:
-      void selectionChanged(MusECore::Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
       void verticalScrollSetYpos(int ypos);
@@ -148,7 +147,7 @@ class TList : public QWidget {
       void tracklistChanged();
       void setYPos(int);
       void redraw();
-      void selectTrack(MusECore::Track*);
+      void selectTrack(MusECore::Track*, bool deselect=true);
       void selectTrackAbove();
       void selectTrackBelow();
       void editTrackNameSlot();

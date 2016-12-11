@@ -518,7 +518,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
               }
             }
 
-            MidiController* c = new MidiController(name, ctrl, min, max, initval);
+            MidiController* c = new MidiController(name, ctrl, min, max, initval, initval);
             cl->add(c);
           }
 

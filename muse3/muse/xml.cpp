@@ -32,11 +32,12 @@
 #include <QRect>
 
 #include "xml.h"
+#include "globals.h"
 
 namespace MusECore {
 
-const int Xml::_latestMajorVersion = 2;   // Latest known songfile major version (as of this release)
-const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version (as of this release)
+const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
+const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version (as of this release)
   
 //---------------------------------------------------------
 //  Note:
@@ -222,8 +223,9 @@ Xml::Token Xml::parse()
       bool endFlag = false;
       nextc();
       if (c == EOF) {
-            printf("unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
-               level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
+            if (level > 0 || MusEGlobal::debugMsg)
+              printf("WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
+                level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
             return level == 0 ? End : Error;
             }
 

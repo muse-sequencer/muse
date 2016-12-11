@@ -33,6 +33,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCursor>
+#include <QToolTip>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SLIDER_BASE(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -132,6 +133,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
       d_mouseOffset = 0.0;
       d_valAccum = 0.0;
       d_enableValueToolTips = false;
+      d_showValueToolTipsOnHover = false;
       d_valueAtPress = 0.0;
       d_scrollMode  = ScrNone;
       setRange(0.0, 1.0, 0.1);
@@ -407,6 +409,10 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                     emit sliderPressed(_id);
                   }
                   
+                  // Show a handy tooltip value box.
+                  if(d_enableValueToolTips)
+                    showValueToolTip(e->globalPos());
+
                   // If direct mode, now set the mode to a regular mouse mode.
                   if(d_scrollMode == ScrDirect)
                     d_scrollMode = ScrMouse;
@@ -700,17 +706,27 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
         d_speed = (exactValue(ConvertNone) - exactPrevValue(ConvertNone)) / ms;
         d_time.start();
     }
-    //if (valueHasChangedAtRelease())
-    if(value(ConvertNone) != prevValue)
+
+    //const bool valch = (valueHasChangedAtRelease());
+    const bool valch = value(ConvertNone) != prevValue;
+
+    // Show a handy tooltip value box.
+    if(d_enableValueToolTips && valch)
+      //showValueToolTip(mapToGlobal(pos()));
+      showValueToolTip(e->globalPos());
+
+    if(valch)
     {
-      // Show a handy tooltip value box.
-      if(d_enableValueToolTips)
-        //showValueToolTip(mapToGlobal(pos()));
-        showValueToolTip(e->globalPos());
-      
       emit sliderMoved(value(), _id);
       emit sliderMoved(value(), _id, shift);
     }
+  }
+  else if(d_scrollMode == ScrNone)
+  {
+    // Show a handy tooltip value box.
+    if(d_enableValueToolTips && d_showValueToolTipsOnHover)
+      //showValueToolTip(mapToGlobal(pos()));
+      showValueToolTip(e->globalPos());
   }
 }
 

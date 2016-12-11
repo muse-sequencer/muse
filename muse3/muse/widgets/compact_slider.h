@@ -25,8 +25,7 @@
 #ifndef __COMPACT_SLIDER_H__
 #define __COMPACT_SLIDER_H__
 
-#include <QDoubleSpinBox>
-#include <QPixmap>
+//#include <QPixmap>
 
 #include "sclif.h"
 #include "sliderbase.h"
@@ -37,27 +36,9 @@ class QEvent;
 
 namespace MusEGui {
 
-//---------------------------------------------------------
-//   PopupDoubleSpinBox
-//---------------------------------------------------------
+class PopupDoubleSpinBox;
+//class LCDPainter;
 
-class PopupDoubleSpinBox : public QDoubleSpinBox {
-  Q_OBJECT
-
-  private:
-    bool _closePending;
-    
-  protected:
-    virtual bool event(QEvent*);
-    
-  signals:
-    void returnPressed();
-    void escapePressed();
-
-  public:
-    PopupDoubleSpinBox(QWidget* parent=0);
-};
-  
 //---------------------------------------------------------
 //   CompactSlider
 //---------------------------------------------------------
@@ -68,7 +49,23 @@ class CompactSlider : public SliderBase, public ScaleIf
 
   public:
       enum ScalePos { None, Left, Right, Top, Bottom, Embedded };
-      enum TextHighlightModes { //TextHighlightNone, 
+
+      // Can be OR'd together.
+      enum ActiveBorders { NoBorders = 0,
+                           LeftBorder = 1,
+                           RightBorder = 2,
+                           TopBorder = 4,
+                           BottomBorder = 8,
+                           AllBorders = LeftBorder | RightBorder | TopBorder | BottomBorder,
+                           AllBordersExceptTop = LeftBorder | RightBorder | BottomBorder,
+                           AllBordersExceptBottom = LeftBorder | RightBorder | TopBorder,
+                           AllBordersExceptLeft = RightBorder | TopBorder | BottomBorder,
+                           AllBordersExceptRight = LeftBorder | TopBorder | BottomBorder,
+                         };
+      typedef int ActiveBorders_t;
+
+      // Can be OR'd together.
+      enum TextHighlightModes { //TextHighlightNone,
                                //TextHighlightAlways, 
                                TextHighlightOn = 1, 
                                TextHighlightSplit = 2,
@@ -78,7 +75,7 @@ class CompactSlider : public SliderBase, public ScaleIf
                                TextHighlightFocus = 16
                                //TextHighlightHoverOrFocus
                               };
-      typedef int TextHighlightMode;
+      typedef int TextHighlightMode_t;
 
   private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
@@ -116,6 +113,11 @@ class CompactSlider : public SliderBase, public ScaleIf
     int d_xMargin;
     int d_yMargin;
     int d_mMargin;
+    // Which of the coloured borders are active.
+    // This allows them to be stacked or placed side by side
+    //  without the border colours being too bright or annoying
+    //  since the joining edges are twice as thick.
+    ActiveBorders_t _activeBorders;
 
     QColor d_borderColor;
     QColor d_barColor;
@@ -127,13 +129,15 @@ class CompactSlider : public SliderBase, public ScaleIf
     QString d_valSuffix;
     QString d_specialValueText;
     QString d_offText;
-    TextHighlightMode _textHighlightMode;
+    TextHighlightMode_t _textHighlightMode;
     int _valueDecimals;
     bool _off;
-    
+    // Whether to display the value, along with the text.
+    bool _showValue;
+
     PopupDoubleSpinBox* _editor;
     bool _editMode;
-
+    //LCDPainter* _LCDPainter;
     
     bool _entered; // Set on enter and leave.
     bool d_resized;
@@ -151,7 +155,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     int d_valuePixelWidth;
 
     //void updatePainterPaths();
-    
+
   private slots:
     void editorReturnPressed();
     void editorEscapePressed();
@@ -175,6 +179,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     void getMouseOverThumb(QPoint &p);
     
     void showEditor();
+
     virtual void resizeEvent(QResizeEvent*);
     virtual void paintEvent (QPaintEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
@@ -183,6 +188,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     virtual void leaveEvent(QEvent*);
     virtual void enterEvent(QEvent*);
     virtual bool event(QEvent*);
+
     void valueChange();
     void rangeChange();
     void scaleChange();
@@ -194,6 +200,15 @@ class CompactSlider : public SliderBase, public ScaleIf
     // Show a handy tooltip value box.
     virtual void showValueToolTip(QPoint);
     
+  signals:
+    // Both value and off state changed combined into one signal.
+    // In typical automation use, this signal should be ignored in ScrDirect scroll mode.
+    // ScrDirect mode happens only once upon press with a modifier.
+    // In ScrDirect mode the slider sends both pressed AND changed signals
+    //  since the position jumps to the pressed location.
+    // Note the SliderBase::valueChanged signal is also available.
+    void valueStateChanged(double value, bool off, int id, int scrollMode);
+
   public:
     CompactSlider(QWidget *parent = 0, const char *name = 0,
           Qt::Orientation orient = Qt::Horizontal,
@@ -202,10 +217,10 @@ class CompactSlider : public SliderBase, public ScaleIf
           const QString& valPrefix = QString(),
           const QString& valSuffix = QString(),
           const QString& specialValueText = QString(),
-          QColor borderColor = QColor(),
-          QColor barColor = QColor(228,203,36),
-          QColor slotColor = QColor(),
-          QColor thumbColor = QColor());
+          const QColor& borderColor = QColor(),
+          const QColor& barColor = QColor(228,203,36),
+          const QColor& slotColor = QColor(),
+          const QColor& thumbColor = QColor());
     
     virtual ~CompactSlider();
     
@@ -214,7 +229,14 @@ class CompactSlider : public SliderBase, public ScaleIf
                                     ScalePos scalePos = None,
                                     int xMargin = 0, 
                                     int yMargin = 0);
-    
+
+    // Which of the coloured borders are active.
+    // This allows them to be stacked or placed side by side
+    //  without the border colours being too bright or annoying
+    //  since the joining edges are twice as thick.
+    ActiveBorders_t activeBorders() const { return _activeBorders; }
+    void setActiveBorders(ActiveBorders_t borders);
+
     void setThumbLength(int l);
     void setThumbWidth(int w);
 
@@ -256,13 +278,16 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setSpecialValueText(const QString& t) { d_specialValueText = t; update(); }
     QString offText() const { return d_offText; };
     void setOffText(const QString& t) { d_offText = t; update(); }
-    TextHighlightMode textHighlightMode() const { return _textHighlightMode; }
-    void setTextHighlightMode(TextHighlightMode mode) { _textHighlightMode = mode; update(); }
+    TextHighlightMode_t textHighlightMode() const { return _textHighlightMode; }
+    void setTextHighlightMode(TextHighlightMode_t mode) { _textHighlightMode = mode; update(); }
     int valueDecimals() const { return _valueDecimals; }
     void setValueDecimals(int d) { if(d < 0) return; _valueDecimals = d; update(); }
 
     QString toolTipValueText(bool inclLabel, bool inclVal) const;
     
+    bool showValue() const { return _showValue; }
+    void setShowValue(bool show);
+
     bool hasOffMode() const { return _hasOffMode; }
     void setHasOffMode(bool v);
     bool isOff() const { return _off; }
@@ -284,15 +309,6 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setAutoHideThumb(bool v) {_autoHideThumb = v; }
     
     virtual QSize sizeHint() const;
-    
-  signals:
-    // Both value and off state changed combined into one signal.
-    // In typical automation use, this signal should be ignored in ScrDirect scroll mode.
-    // ScrDirect mode happens only once upon press with a modifier.
-    // In ScrDirect mode the slider sends both pressed AND changed signals 
-    //  since the position jumps to the pressed location. 
-    // Note the SliderBase::valueChanged signal is also available.
-    void valueStateChanged(double value, bool off, int id, int scrollMode);
 };
 
 } // namespace MusEGui

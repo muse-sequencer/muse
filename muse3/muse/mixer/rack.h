@@ -39,6 +39,7 @@ class Xml;
 }
 
 namespace MusEGui {
+class ItemBackgroundPainter;
 
 //---------------------------------------------------------
 //   EffectRack
@@ -50,7 +51,8 @@ class EffectRack : public QListWidget {
     
       MusECore::AudioTrack* track;
       int itemheight;
-      QColor activeColor;      
+      //QColor activeColor;
+      ItemBackgroundPainter* _bkgPainter;
 
       virtual QSize minimumSizeHint() const;
       virtual QSize sizeHint() const;
@@ -82,7 +84,8 @@ class EffectRack : public QListWidget {
       
       MusECore::AudioTrack* getTrack() { return track; } 
       QPoint getDragPos() { return dragPos; }
-      QColor getActiveColor() { return activeColor; }
+      //QColor getActiveColor() { return activeColor; }
+      ItemBackgroundPainter* getBkgPainter() const { return _bkgPainter; }
 
       };
 

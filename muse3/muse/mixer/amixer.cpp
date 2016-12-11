@@ -51,7 +51,8 @@
 
 #define __WIDTH_COMPENSATION 4
 
-#define DEBUG_MIXER 0
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_MIXER(dev, format, args...) // fprintf(dev, format, ##args);
 
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
@@ -175,7 +176,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));   // TESTING Tim
       setWindowTitle(cfg->name);
       setWindowIcon(*museIcon);
-      mixerClicked=false;
 
       //cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
 
@@ -256,6 +256,11 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       initMixer();
       redrawMixer();
+
+      central->installEventFilter(this);
+      mixerLayout->installEventFilter(this);
+      view ->installEventFilter(this);
+
 }
 
 void AudioMixerApp::stripsMenu()
@@ -305,8 +310,7 @@ void AudioMixerApp::stripsMenu()
 
 void AudioMixerApp::handleMenu(QAction *act)
 {
-  if (DEBUG_MIXER)
-    printf("handleMenu %d\n", act->data().toInt());
+  DEBUG_MIXER(stderr, "handleMenu %d\n", act->data().toInt());
   int operation = act->data().toInt();
   if (operation >= 0) {
     stripList.at(act->data().toInt())->setStripVisible(true);
@@ -369,8 +373,7 @@ bool AudioMixerApp::stripIsVisible(Strip* s)
 
 void AudioMixerApp::redrawMixer()
 {
-  if (DEBUG_MIXER)
-    printf("redrawMixer type %d, mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
+  DEBUG_MIXER(stderr, "redrawMixer type %d, mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
   // empty layout
   while (mixerLayout->count() > 0) {
     mixerLayout->removeItem(mixerLayout->itemAt(0));
@@ -379,13 +382,11 @@ void AudioMixerApp::redrawMixer()
   switch (cfg->displayOrder) {
     case MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW:
       {
-      if (DEBUG_MIXER)
-          printf("Draw strips with arranger view\n");
+        DEBUG_MIXER(stderr, "Draw strips with arranger view\n");
         MusECore::TrackList *tl = MusEGlobal::song->tracks();
         MusECore::TrackList::iterator tli = tl->begin();
         for (; tli != tl->end(); tli++) {
-          if (DEBUG_MIXER)
-            printf("Adding strip %s\n", (*tli)->name().toLatin1().data());
+          DEBUG_MIXER(stderr, "Adding strip %s\n", (*tli)->name().toLatin1().data());
           StripList::iterator si = stripList.begin();
           for (; si != stripList.end(); si++) {
             if((*si)->getTrack() == *tli) {
@@ -397,27 +398,27 @@ void AudioMixerApp::redrawMixer()
       break;
     case MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW:
       {
-        if (DEBUG_MIXER)
-          printf("Draw strips with edited view\n");
+        DEBUG_MIXER(stderr, "Draw strips with edited view\n");
         // add them back in the selected order
         StripList::iterator si = stripList.begin();
         for (; si != stripList.end(); ++si) {
-            if (DEBUG_MIXER)
-              printf("Adding strip %s\n", (*si)->getTrack()->name().toLatin1().data());
+            DEBUG_MIXER(stderr, "Adding strip %s\n", (*si)->getTrack()->name().toLatin1().data());
             addStripToLayoutIfVisible(*si);
         }
-        if (DEBUG_MIXER)
-          printf("mixerLayout count is now %d\n", mixerLayout->count());
+        DEBUG_MIXER(stderr, "mixerLayout count is now %d\n", mixerLayout->count());
       }
       break;
     case MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW:
       {
-        if (DEBUG_MIXER)
-          printf("TRADITIONAL VIEW mixerLayout count is now %d\n", mixerLayout->count());
+        DEBUG_MIXER(stderr, "TRADITIONAL VIEW mixerLayout count is now %d\n", mixerLayout->count());
         addStripsTraditionalLayout();
       }
 
       break;
+  }
+
+  foreach (Strip *s, stripList) {
+    s->setFocus();
   }
 
   update();
@@ -430,8 +431,7 @@ Strip* AudioMixerApp::findStripForTrack(StripList &sl, MusECore::Track *t)
     if ((*si)->getTrack() == t)
       return *si;
   }
-  if (DEBUG_MIXER)
-    printf("AudioMixerApp::findStripForTrack - ERROR: there was no strip for this track!\n");
+  DEBUG_MIXER(stderr, "AudioMixerApp::findStripForTrack - ERROR: there was no strip for this track!\n");
   return NULL;
 }
 
@@ -496,9 +496,7 @@ void AudioMixerApp::fillStripListTraditional()
 
 void AudioMixerApp::moveStrip(Strip *s)
 {
-  mixerClicked = false;
-  if (DEBUG_MIXER)
-    printf("Recreate stripList\n");
+  DEBUG_MIXER(stderr, "Recreate stripList\n");
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
 
     for (int i=0; i< stripList.size(); i++)
@@ -506,8 +504,7 @@ void AudioMixerApp::moveStrip(Strip *s)
       Strip *s2 = stripList.at(i);
       if (s2 == s) continue;
 
-      if (DEBUG_MIXER)
-        printf("loop loop %d %d width %d\n", s->pos().x(),s2->pos().x(), s2->width());
+      DEBUG_MIXER(stderr, "loop loop %d %d width %d\n", s->pos().x(),s2->pos().x(), s2->width());
       if (s->pos().x()+s->width()/2 < s2->pos().x()+s2->width() // upper limit
           && s->pos().x()+s->width()/2 > s2->pos().x() ) // lower limit
       {
@@ -523,27 +520,26 @@ void AudioMixerApp::moveStrip(Strip *s)
     fillStripListTraditional();
     cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   }
-  if (DEBUG_MIXER)
-    printf("moveStrip %s! stripList.size = %d\n", s->getLabelText().toLatin1().data(), stripList.size());
+  DEBUG_MIXER(stderr, "moveStrip %s! stripList.size = %d\n", s->getLabelText().toLatin1().data(), stripList.size());
 
   for (int i=0; i< stripList.size(); i++)
   {
     Strip *s2 = stripList.at(i);
     if (s2 == s) continue;
 
-    if (DEBUG_MIXER)
-      printf("loop loop %d %d width %d\n", s->pos().x(),s2->pos().x(), s2->width());
+    DEBUG_MIXER(stderr, "loop loop %d %d width %d\n", s->pos().x(),s2->pos().x(), s2->width());
     if (s->pos().x()+s->width()/2 < s2->pos().x()+s2->width() // upper limit
         && s->pos().x()+s->width()/2 > s2->pos().x() ) // lower limit
     {
-      if (DEBUG_MIXER)
-        printf("got new pos: %d\n", i);
+      DEBUG_MIXER(stderr, "got new pos: %d\n", i);
+#if DEBUG_MIXER
       bool isSuccess = stripList.removeOne(s);
-      if (DEBUG_MIXER)
-        printf("Removed strip %d", isSuccess);
+      DEBUG_MIXER(stderr, "Removed strip %d", isSuccess);
+#else
+      stripList.removeOne(s);
+#endif
       stripList.insert(i,s);
-      if (DEBUG_MIXER)
-        printf("Inserted strip at %d", i);
+      DEBUG_MIXER(stderr, "Inserted strip at %d", i);
       break;
     }
   }
@@ -619,7 +615,7 @@ void AudioMixerApp::addStripsTraditionalLayout()
 /*
 bool AudioMixerApp::event(QEvent* event)
 {
-  printf("AudioMixerApp::event type:%d\n", event->type());   
+  DEBUG_MIXER(stderr, "AudioMixerApp::event type:%d\n", event->type());
   
   // Let it do the layout now, before we emit.
   QMainWindow::event(event);
@@ -666,16 +662,22 @@ void AudioMixerApp::setSizing()
 
 void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
 {
-    if (DEBUG_MIXER)
-      printf("addStrip\n");
+    DEBUG_MIXER(stderr, "addStrip\n");
     Strip* strip;
-    if (t->isMidiTrack())
-          strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true);
-    else
-          strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true);
 
-    if (DEBUG_MIXER)
-      printf ("putting new strip [%s] at end\n", t->name().toLatin1().data());
+    // Make them non-embedded: Moveable, hideable, and with an expander handle.
+    if (t->isMidiTrack())
+          strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true, false);
+    else
+          strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false);
+
+    connect(this, SIGNAL(incVolume(int)), strip, SLOT(incVolume(int)));
+    connect(this, SIGNAL(incPan(int)), strip, SLOT(incPan(int)));
+
+    connect(strip, SIGNAL(clearStripSelection()),this,SLOT(clearStripSelection()));
+    connect(strip, SIGNAL(moveStrip(Strip*)),this,SLOT(moveStrip(Strip*)));
+
+    DEBUG_MIXER(stderr, "putting new strip [%s] at end\n", t->name().toLatin1().data());
     stripList.append(strip);
     strip->setVisible(visible);
     strip->setStripVisible(visible);
@@ -687,8 +689,7 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
 
 void AudioMixerApp::clearAndDelete()
 {
-  if (DEBUG_MIXER)
-    printf("clearAndDelete\n");
+  DEBUG_MIXER(stderr, "clearAndDelete\n");
   StripList::iterator si = stripList.begin();
   for (; si != stripList.end(); ++si)
   {
@@ -708,8 +709,7 @@ void AudioMixerApp::clearAndDelete()
 
 void AudioMixerApp::initMixer()
 {
-  if (DEBUG_MIXER)
-    printf("initMixer %d\n", cfg->stripOrder.size());
+  DEBUG_MIXER(stderr, "initMixer %d\n", cfg->stripOrder.size());
   setWindowTitle(cfg->name);
   //clearAndDelete();
 
@@ -731,8 +731,7 @@ void AudioMixerApp::initMixer()
   if (cfg->stripOrder.size() > 0) {
     for (int i=0; i < cfg->stripOrder.size(); i++) {
       MusECore::TrackList::iterator tli = tl->begin();
-      if (DEBUG_MIXER)
-        printf ("processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLatin1().data(), cfg->stripVisibility.at(i));
+      DEBUG_MIXER(stderr, "processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLatin1().data(), cfg->stripVisibility.at(i));
       for (;tli != tl->end(); tli++) {
         if ((*tli)->name() == cfg->stripOrder.at(i)) {
           addStrip(*tli, cfg->stripVisibility.at(i));
@@ -765,8 +764,7 @@ void AudioMixerApp::configChanged()
 
 void AudioMixerApp::updateStripList()
 {
-  if (DEBUG_MIXER)
-    printf("updateStripList stripList %d tracks %zd\n", stripList.size(), MusEGlobal::song->tracks()->size());
+  DEBUG_MIXER(stderr, "updateStripList stripList %d tracks %zd\n", stripList.size(), MusEGlobal::song->tracks()->size());
   
   if (stripList.size() == 0 && cfg->stripOrder.size() > 0) {
       return initMixer();
@@ -784,8 +782,7 @@ void AudioMixerApp::updateStripList()
       }
     }
     if (!found) {
-      if (DEBUG_MIXER)
-        printf("Did not find track for strip %s - Removing\n", (*si)->getLabelText().toLatin1().data());
+      DEBUG_MIXER(stderr, "Did not find track for strip %s - Removing\n", (*si)->getLabelText().toLatin1().data());
       //(*si)->deleteLater();
       delete (*si);
       si = stripList.erase(si);
@@ -806,10 +803,18 @@ void AudioMixerApp::updateStripList()
       }
     }
     if (!found) {
-      if (DEBUG_MIXER)
-        printf("Did not find strip for track %s - Adding\n", (*tli)->name().toLatin1().data());
+      DEBUG_MIXER(stderr, "Did not find strip for track %s - Adding\n", (*tli)->name().toLatin1().data());
       addStrip((*tli)); // TODO: be intelligent about where strip is inserted
     }
+  }
+}
+
+void AudioMixerApp::updateSelectedStrips()
+{
+  foreach(Strip *s, stripList)
+  {
+    if(MusECore::Track* t = s->getTrack())
+      s->setSelected(t->selected());
   }
 }
 
@@ -819,16 +824,14 @@ void AudioMixerApp::updateStripList()
 
 void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
 {
-  if (DEBUG_MIXER)
-    printf("AudioMixerApp::songChanged %llX\n", (long long)flags);
+  DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags);
   if (flags & SC_TRACK_REMOVED) {
         updateStripList();
   }
   else if (flags & SC_TRACK_INSERTED) {
         updateStripList();
   }
-  if (DEBUG_MIXER)
-    printf("songChanged action = %ld\n", (long int)flags);
+  DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags);
     
   
   // FIXME TODO: The is costly to do every time. Try to filter it according to required flags.
@@ -838,6 +841,9 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
   for (; si != stripList.end(); ++si) {
         (*si)->songChanged(flags);
         }
+
+  if(flags & SC_TRACK_SELECTION)
+    updateSelectedStrips();
 }
 
 //---------------------------------------------------------
@@ -935,33 +941,12 @@ void AudioMixerApp::showSyntiTracksChanged(bool v)
 }
 
 //---------------------------------------------------------
-//   mouse events
-//---------------------------------------------------------
-
-void AudioMixerApp::mousePressEvent(QMouseEvent* ev)
-{
-  if (DEBUG_MIXER)
-    printf("mixer mouse press event! %d\n", (int)ev->button());
-  mixerClicked = true;
-  QMainWindow::mousePressEvent(ev);
-}
-void AudioMixerApp::mouseReleaseEvent(QMouseEvent* ev)
-{
-  if (DEBUG_MIXER)
-    printf("mixer mouse release event! %d\n",(int)ev->button());
-  mixerClicked = false;
-  QMainWindow::mouseReleaseEvent(ev);
-}
-
-
-//---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
 void AudioMixerApp::write(int level, MusECore::Xml& xml)
 {
-  if (DEBUG_MIXER)
-    printf("AudioMixerApp:;write\n");
+  DEBUG_MIXER(stderr, "AudioMixerApp:;write\n");
   xml.tag(level++, "Mixer");
 
   xml.strTag(level, "name", cfg->name);
@@ -989,5 +974,140 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
 
   xml.etag(level, "Mixer");
   }
+
+void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
+{
+  int val = 5;
+  bool moveEnabled=false;
+  bool shift = ev->modifiers() & Qt::ShiftModifier;
+  if (shift) {
+    val = 1;
+  }
+  if (ev->modifiers() & Qt::ControlModifier) {
+    moveEnabled=true;
+  }
+
+  switch (ev->key()) {
+    case Qt::Key_Up:
+      emit incVolume(val);
+      break;
+    case Qt::Key_Down:
+      emit incVolume(-val);
+      break;
+    case Qt::Key_Left:
+      if (moveEnabled)
+        selectNextStrip(false, !shift);
+      else
+        emit incPan(-val);
+      break;
+    case Qt::Key_Right:
+      if (moveEnabled)
+        selectNextStrip(true, !shift);
+      else
+        emit incPan(val);
+      break;
+    default:
+      ev->ignore();
+      QMainWindow::keyPressEvent(ev);
+      break;
+  }
+  ev->accept();
+}
+
+void AudioMixerApp::clearStripSelection()
+{
+  foreach (Strip *s, stripList)
+    s->setSelected(false);
+}
+
+void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
+{
+  Strip *prev = NULL;
+
+  for (int i = 0; i < mixerLayout->count(); i++)
+  {
+    QWidget *w = mixerLayout->itemAt(i)->widget();
+    if (w)
+    {
+      if (prev && !prev->isEmbedded() && prev->isSelected() && isRight) // got it
+      {
+        Strip* st = static_cast<Strip*>(w);
+        //if(clearAll)  // TODO
+        {
+          MusEGlobal::song->selectAllTracks(false);
+          clearStripSelection();
+        }
+        st->setSelected(true);
+        if(st->getTrack())
+          st->getTrack()->setSelected(true);
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+        return;
+      }
+      else if( !static_cast<Strip*>(w)->isEmbedded() && static_cast<Strip*>(w)->isSelected() && prev && !prev->isEmbedded() && !isRight)
+      {
+        //if(clearAll) // TODO
+        {
+          MusEGlobal::song->selectAllTracks(false);
+          clearStripSelection();
+        }
+        prev->setSelected(true);
+        if(prev->getTrack())
+          prev->getTrack()->setSelected(true);
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+        return;
+      }
+      else {
+        prev = static_cast<Strip*>(w);
+      }
+    }
+  }
+
+  QWidget *w;
+  if (isRight)
+    w = mixerLayout->itemAt(0)->widget();
+  else
+    w = mixerLayout->itemAt(mixerLayout->count()-1)->widget();
+  Strip* st = static_cast<Strip*>(w);
+  if(st && !st->isEmbedded())
+  {
+    //if(clearAll) // TODO
+    {
+      MusEGlobal::song->selectAllTracks(false);
+      clearStripSelection();
+    }
+    st->setSelected(true);
+    if(st->getTrack())
+      st->getTrack()->setSelected(true);
+    MusEGlobal::song->update(SC_TRACK_SELECTION);
+  }
+}
+
+bool AudioMixerApp::eventFilter(QObject *obj,
+                             QEvent *event)
+{
+    QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
+    bool result = false;//return true to consume the keystroke
+
+    if (event->type() == QEvent::KeyPress)
+    {
+         keyEvent = dynamic_cast<QKeyEvent*>(event);
+         this->keyPressEvent(keyEvent);
+         result = true;
+    }//if type()
+
+    else if (event->type() == QEvent::KeyRelease)
+    {
+        keyEvent = dynamic_cast<QKeyEvent*>(event);
+        this->keyReleaseEvent(keyEvent);
+        result = true;
+    }//else if type()
+
+    //### Standard event processing ###
+    else
+        result = QObject::eventFilter(obj, event);
+
+    return result;
+}//eventFilter
+
 
 } // namespace MusEGui

@@ -1875,11 +1875,12 @@ void Song::revertOperationGroup1(Undo& operations)
                           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_oldPropValue != mt->outChannel()) 
                           {
+                                MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                                 MusEGlobal::audio->msgIdle(true);
-                                mt->setOutChanAndUpdate(i->_oldPropValue);
+                                changed |= mt->setOutChanAndUpdate(i->_oldPropValue, false);
                                 MusEGlobal::audio->msgIdle(false);
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                updateFlags |= SC_ROUTE;
+                                updateFlags |= (SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
                           }
                         }
                         else
@@ -2564,11 +2565,12 @@ void Song::executeOperationGroup1(Undo& operations)
                           MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (i->_newPropValue != mt->outChannel()) 
                           {
+                                MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                                 MusEGlobal::audio->msgIdle(true);
-                                mt->setOutChanAndUpdate(i->_newPropValue);
+                                changed |= mt->setOutChanAndUpdate(i->_newPropValue, false);
                                 MusEGlobal::audio->msgIdle(false);
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                updateFlags |= SC_ROUTE;               
+                                updateFlags |= (SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
                           }
                         }
                         else

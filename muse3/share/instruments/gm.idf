@@ -171,7 +171,7 @@
       <Patch name="Gunshot" prog="127" />
     </PatchGroup>
     <PatchGroup name="Drums">
-      <Patch name="Drums" prog="0" drum="1" />
+      <Patch name="Drums" drum="1" />
     </PatchGroup>
     <Controller name="Modulation" l="1" />
     <Controller name="PortamentoTime" l="5" />
@@ -203,5 +203,58 @@
     <Controller name="Program" type="Program" />
     <Controller name="PolyAftertouch" type="PolyAftertouch" />
     <Controller name="Aftertouch" type="Aftertouch" />
+    <Drummaps>
+      <entry>
+        <drummap>
+          <entry pitch="35"> <name>Acoustic Bass Drum</name> </entry>
+          <entry pitch="36"> <name>Bass Drum 1</name> </entry>
+          <entry pitch="37"> <name>Side Stick</name> </entry>
+          <entry pitch="38"> <name>Acoustic Snare</name> </entry>
+          <entry pitch="39"> <name>Hand Clap</name> </entry>
+          <entry pitch="40"> <name>Electric Snare</name> </entry>
+          <entry pitch="41"> <name>Low Floor Tom</name> </entry>
+          <entry pitch="42"> <name>Closed Hi-Hat</name> </entry>
+          <entry pitch="43"> <name>High Floor Tom</name> </entry>
+          <entry pitch="44"> <name>Pedal Hi-Hat</name> </entry>
+          <entry pitch="45"> <name>Low Tom</name> </entry>
+          <entry pitch="46"> <name>Open Hi-Hat</name> </entry>
+          <entry pitch="47"> <name>Low-Mid Tom</name> </entry>
+          <entry pitch="48"> <name>Hi-Mid Tom</name> </entry>
+          <entry pitch="49"> <name>Crash Cymbal 1</name> </entry>
+          <entry pitch="50"> <name>High Tom</name> </entry>
+          <entry pitch="51"> <name>Ride Cymbal 1</name> </entry>
+          <entry pitch="52"> <name>Chinese Cymbal</name> </entry>
+          <entry pitch="53"> <name>Ride Bell</name> </entry>
+          <entry pitch="54"> <name>Tambourine</name> </entry>
+          <entry pitch="55"> <name>Splash Cymbal</name> </entry>
+          <entry pitch="56"> <name>Cowbell</name> </entry>
+          <entry pitch="57"> <name>Crash Cymbal 2</name> </entry>
+          <entry pitch="58"> <name>Vibraslap</name> </entry>
+          <entry pitch="59"> <name>Ride Cymbal 2</name> </entry>
+          <entry pitch="60"> <name>Hi Bongo</name> </entry>
+          <entry pitch="61"> <name>Low Bongo</name> </entry>
+          <entry pitch="62"> <name>Mute Hi Conga</name> </entry>
+          <entry pitch="63"> <name>Open Hi Conga</name> </entry>
+          <entry pitch="64"> <name>Low Conga</name> </entry>
+          <entry pitch="65"> <name>High Timbale</name> </entry>
+          <entry pitch="66"> <name>Low Timbale</name> </entry>
+          <entry pitch="67"> <name>High Agogo</name> </entry>
+          <entry pitch="68"> <name>Low Agogo</name> </entry>
+          <entry pitch="69"> <name>Cabasa</name> </entry>
+          <entry pitch="70"> <name>Maracas</name> </entry>
+          <entry pitch="71"> <name>Short Whistle</name> </entry>
+          <entry pitch="72"> <name>Long Whistle</name> </entry>
+          <entry pitch="73"> <name>Short Guiro</name> </entry>
+          <entry pitch="74"> <name>Long Guiro</name> </entry>
+          <entry pitch="75"> <name>Claves</name> </entry>
+          <entry pitch="76"> <name>Hi Wood Block</name> </entry>
+          <entry pitch="77"> <name>Low Wood Block</name> </entry>
+          <entry pitch="78"> <name>Mute Cuica</name> </entry>
+          <entry pitch="79"> <name>Open Cuica</name> </entry>
+          <entry pitch="80"> <name>Mute Triangle</name> </entry>
+          <entry pitch="81"> <name>Open Triangle</name> </entry>
+        </drummap>
+      </entry>
+    </Drummaps>
   </MidiInstrument>
 </muse>

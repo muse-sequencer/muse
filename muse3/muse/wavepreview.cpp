@@ -25,8 +25,8 @@ WavePreview::WavePreview():
 WavePreview::~WavePreview()
 {
    stop();
-   delete tmpbuffer;
-   delete srcbuffer;
+   delete[] tmpbuffer;
+   delete[] srcbuffer;
 }
 
 long WavePreview::static_srcCallback (void *cb_data, float **data)
