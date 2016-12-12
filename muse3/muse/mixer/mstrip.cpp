@@ -934,7 +934,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   if(!instr)
     return;
   
-  if(act->data().type() == QVariant::UInt)
+  if(act->data().type() == QVariant::Int || act->data().type() == QVariant::UInt)
   {
     bool ok;
     int rv = act->data().toInt(&ok);
