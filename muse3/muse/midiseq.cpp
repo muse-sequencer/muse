@@ -197,14 +197,16 @@ signed int MidiSeq::selectTimer()
     {
     int tmrFd;
     
-    printf("Trying RTC timer...\n");
-    timer = new RtcTimer();
-    tmrFd = timer->initTimer();
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
-    }
-    delete timer;
+    // REMOVE Tim. stack smashing. Added.
+    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: SKIPPING rtc timer check...\n");
+//     printf("Trying RTC timer...\n");
+//     timer = new RtcTimer();
+//     tmrFd = timer->initTimer();
+//     if (tmrFd != -1) { // ok!
+//         printf("got timer = %d\n", tmrFd);
+//         return tmrFd;
+//     }
+//     delete timer;
     
     printf("Trying ALSA timer...\n");
     timer = new AlsaTimer();
