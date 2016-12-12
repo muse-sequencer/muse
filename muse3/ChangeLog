@@ -1,3 +1,6 @@
+11.12.2016
+         - LV2 Synth Tracks: Fixed patch not changing when patch list popped up. (Tim)
+           Was simple change to QVariant::UInt in *::patchPopupActivated().
 10.12.2016
          - Fixed lingering Arranger bug not restoring size properly on project reload. (Tim)
 09.12.2016

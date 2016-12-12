@@ -1064,7 +1064,7 @@ void MidiTrackInfo::patchPopupActivated(QAction* act)
     const int channel = track->outChannel();
     const int port    = track->outPort();
     MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-    if(act->data().type() == QVariant::Int)
+    if(act->data().type() == QVariant::UInt)
     {
       bool ok;
       int rv = act->data().toInt(&ok);
