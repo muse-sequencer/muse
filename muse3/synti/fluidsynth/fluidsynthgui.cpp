@@ -511,7 +511,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             QMenu* popup = new QMenu(this);
             QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
             QTableWidget* listView = item->tableWidget();
-            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt += QPoint(40, listView->horizontalHeader()->height());
             ppt = listView->mapToGlobal(ppt);
 
             int i = 0;
@@ -569,7 +569,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             QMenu* popup = new QMenu(this);
             QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
             QTableWidget* listView = item->tableWidget();
-            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt += QPoint(40, listView->horizontalHeader()->height());
             ppt = listView->mapToGlobal(ppt);
 	    QAction * yes = popup->addAction("Yes");
 	    yes->setData(1);
