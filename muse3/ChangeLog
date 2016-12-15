@@ -1,3 +1,16 @@
+14.12.2016
+         * New - Fluidsynth MESS synth plugin automatically shows correct drum note names: (Tim)
+         - No more manually loading a drum map file ;-)
+         - Load up some SoundFont(s) in the plugin, and try it out. Works with multiple
+            SoundFonts in different channels (be sure to mark 'drum' column).
+         - Automatically looks for libinstpatch-1.0 (from Swami) and uses if found.
+         - Door is open for our Instrument Editor to allow PER-CHANNEL drum maps,since
+            the system supports it now. You could add it manually to .idf files for now.
+         - TODO: Remove (L) (R) etc. from name strings. ie. find a better way to make
+            reasonable names out of multi-sample notes.
+           Does not update maps yet when fonts removed. Please toggle the track channel
+            or some other way force a map update manually for now.
+         - Thanks to Swami author 'Element Green' for help.
 11.12.2016
          - LV2 Synth Tracks: Fixed patch not changing when patch list popped up. (Tim)
            Was simple change to include QVariant::UInt in *::patchPopupActivated().

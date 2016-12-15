@@ -55,6 +55,7 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
                              DrumMap* drummap, bool full=false);
 void read_new_style_drummap(Xml& xml, const char* tagname,
                             DrumMap* drummap, bool compatibility=false);
+int readDrummapsEntryPatchCollection(Xml& xml);
 
 
 QSet<Part*> parts_at_tick(unsigned tick);

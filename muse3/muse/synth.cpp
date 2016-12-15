@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: synth.cpp,v 1.43.2.23 2009/12/15 03:39:58 terminator356 Exp $
 //  (C) Copyright 2000-2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -75,6 +76,40 @@ Synth::Type string2SynthType(const QString& type)
       return (Synth::Type)i;
   }
   return Synth::SYNTH_TYPE_END;
+}
+
+//--------------------------------
+//  SynthIF
+//--------------------------------
+
+void SynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  overrideType
+#endif
+) const
+{
+  // Not found? Search the global mapping list.
+  const patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, true); // Include default.
+  if(def_pdml)
+  {
+    ciPatchDrummapMapping_t ipdm = def_pdml->find(patch, true); // Include default.
+    if(ipdm == def_pdml->end())
+    {
+      // Not found? Is there a default patch mapping?
+  #ifdef _USE_INSTRUMENT_OVERRIDES_
+      if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
+  #endif
+        ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, true); // Include default.
+
+      if(ipdm != def_pdml->end())
+      {
+        dest_map = (*ipdm).drummap[index];
+        return;
+      }
+    }
+  }
+
+  dest_map = iNewDrumMap[index];;
 }
 
 //--------------------------------
@@ -581,6 +616,57 @@ int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
       {
       return _mess->getControllerInfo(id, name, ctrl, min, max, initval);
       }
+
+void MessSynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
+#ifdef _USE_INSTRUMENT_OVERRIDES_
+  overrideType
+#endif
+) const
+{
+  // Could just call the ancestor, but we can save the double string copy by optimizing below...
+  // SynthIF::getMapItem(channel, patch, index, dest_map);
+
+  DrumMap* dm = NULL;
+  // Not found? Search the global mapping list.
+  patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, true); // Include default.
+  if(def_pdml)
+  {
+    ciPatchDrummapMapping_t ipdm = def_pdml->find(patch, true); // Include default.
+    if(ipdm == def_pdml->end())
+    {
+      // Not found? Is there a default patch mapping?
+      #ifdef _USE_INSTRUMENT_OVERRIDES_
+      if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
+      #endif
+        ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, true); // Include default.
+
+      if(ipdm != def_pdml->end())
+        dm = &(*ipdm).drummap[index];
+    }
+  }
+  if(!dm)
+    dm = &iNewDrumMap[index];
+  DrumMap& base_dm = *dm;
+  dest_map.vol = base_dm.vol;
+  dest_map.quant = base_dm.quant;
+  dest_map.len = base_dm.len;
+  dest_map.anote = base_dm.anote;
+  dest_map.enote = base_dm.enote;
+  dest_map.channel = base_dm.channel;
+  dest_map.port = base_dm.port;
+  dest_map.lv1 = base_dm.lv1;
+  dest_map.lv2 = base_dm.lv2;
+  dest_map.lv3 = base_dm.lv3;
+  dest_map.lv4 = base_dm.lv4;
+  dest_map.hide = base_dm.hide;
+  dest_map.mute = base_dm.mute;
+
+  QString str;
+  if(_mess->getNoteSampleName(channel, patch, index, &str))
+    dest_map.name = str;
+  else
+    dest_map.name = base_dm.name;
+}
 
 //---------------------------------------------------------
 //   SynthI::deactivate

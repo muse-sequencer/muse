@@ -26,6 +26,7 @@
 #define __MINSTRUMENT_H__
 
 #include "globaldefs.h"
+#include <map>
 #include <list>
 #include <vector>
 #include <string>
@@ -293,8 +294,12 @@ struct patch_drummap_mapping_t
 class patch_drummap_mapping_list_t : public std::list<patch_drummap_mapping_t>
 {
   public:
+    void add(const patch_drummap_mapping_list_t& other);
+    void add(const patch_drummap_mapping_t& pdm);
     iterator find(int patch, bool includeDefault);
     const_iterator find(int patch, bool includeDefault) const;
+    void read(Xml& xml);
+    void write(int level, Xml&) const;
 #ifdef _USE_INSTRUMENT_OVERRIDES_
     void writeDrummapOverrides(int level, Xml& xml) const;
 #endif
@@ -303,6 +308,33 @@ class patch_drummap_mapping_list_t : public std::list<patch_drummap_mapping_t>
 typedef patch_drummap_mapping_list_t::iterator iPatchDrummapMapping_t;
 typedef patch_drummap_mapping_list_t::const_iterator ciPatchDrummapMapping_t;
 
+
+// NOTE: Channel == -1 (default) is legal.
+typedef std::map < int /*channel*/, patch_drummap_mapping_list_t, std::less<int> > ChannelDrumMappingList_t;
+typedef ChannelDrumMappingList_t::iterator iChannelDrumMappingList_t;
+typedef ChannelDrumMappingList_t::const_iterator ciChannelDrumMappingList_t;
+typedef std::pair<iChannelDrumMappingList_t, bool> ChannelDrumMappingListInsertResult_t;
+typedef std::pair<int, patch_drummap_mapping_list_t> ChannelDrumMappingListInsertPair_t;
+
+class ChannelDrumMappingList : public ChannelDrumMappingList_t {
+  public:
+    ChannelDrumMappingList();
+
+    void add(const ChannelDrumMappingList& other);
+    void add(int channel, const patch_drummap_mapping_list_t& list);
+    //void add(int patch, int index, const WorkingDrumMapEntry& item);
+    //void remove(int patch, int index, const WorkingDrumMapEntry& item, bool includeDefault);
+    //void remove(int patch, int index, int fields, bool includeDefault);
+    //void remove(int patch, bool includeDefault);
+    patch_drummap_mapping_list_t* find(int channel, bool includeDefault);
+    const patch_drummap_mapping_list_t* find(int channel, bool includeDefault) const;
+    //WorkingDrumMapEntry* find(int patch, int index, bool includeDefault);
+    //const WorkingDrumMapEntry* find(int patch, int index, bool includeDefault) const;
+
+    // If fillUnused is true it will fill any unused items to ensure that all 128 items are filled.
+    void read(Xml&);
+    void write(int level, Xml&) const;
+};
 
 
 
@@ -321,7 +353,7 @@ class MidiInstrument {
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
-      patch_drummap_mapping_list_t patch_drummap_mapping;
+      ChannelDrumMappingList _channelDrumMapping;
       bool _dirty;
       bool _waitForLSB; // Whether 14-bit controllers wait for LSB, or MSB and LSB are separate.
       NoteOffMode _noteOffMode;
@@ -341,8 +373,6 @@ class MidiInstrument {
       
       void writeDrummaps(int level, Xml& xml) const;
       void readDrummaps(Xml& xml);
-      patch_drummap_mapping_t readDrummapsEntry(Xml& xml);
-      int readDrummapsEntryPatchCollection(Xml& xml);
 
    public:
       MidiInstrument();
@@ -363,8 +393,8 @@ class MidiInstrument {
       const QList<SysEx*>& sysex() const     { return _sysex; }
       void removeSysex(SysEx* sysex)         { _sysex.removeAll(sysex); }
       void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
-      
-      const DrumMap* drummap_for_patch(int patch) const;
+
+
       QList<dumb_patchlist_entry_t> getPatches(int channel, bool drum);
       unsigned getNextPatch(int channel, unsigned patch, bool drum);
       unsigned getPrevPatch(int channel, unsigned patch, bool drum);
@@ -379,8 +409,8 @@ class MidiInstrument {
 #endif
       // Returns a map item with members filled from either the original or working map item,
       //  depending on which Field flags are set. The returned map includes any requested
-      //  WorkingDrumMapEntry::OverrideType instrument overrides.
-      void getMapItem(int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const;
+      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
+      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const;
 
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
@@ -407,7 +437,8 @@ class MidiInstrument {
 #endif
 
       PatchGroupList* groups()        { return &pg; }
-      patch_drummap_mapping_list_t* get_patch_drummap_mapping() { return &patch_drummap_mapping; }
+      patch_drummap_mapping_list_t* get_patch_drummap_mapping(int channel, bool includeDefault);
+      ChannelDrumMappingList* getChannelDrumMapping() { return &_channelDrumMapping; }
       };
 
 //---------------------------------------------------------

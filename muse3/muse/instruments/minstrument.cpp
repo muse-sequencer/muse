@@ -257,9 +257,10 @@ void initMidiInstruments()
       genericMidiInstrument = new MidiInstrument(QWidget::tr("generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
 
-      // Initialize with a default drum map. Patch is default 0xffffff. GM-1 does not specify a drum patch number.
-      patch_drummap_mapping_list_t* pdml = genericMidiInstrument->get_patch_drummap_mapping();
-      pdml->push_back(patch_drummap_mapping_t());
+      // Initialize with a default drum map on default channel. Patch is default 0xffffff. GM-1 does not specify a drum patch number.
+      ChannelDrumMappingList* cdml = genericMidiInstrument->getChannelDrumMapping();
+      cdml->add(-1, patch_drummap_mapping_list_t());
+
 #ifdef _USE_INSTRUMENT_OVERRIDES_
       // Add in the drum map overrides that were found in config.
       // They can only be added now that the instrument has been created.
@@ -454,7 +455,7 @@ MidiInstrument::~MidiInstrument()
           delete _sysex.at(i);
       }
 
-      patch_drummap_mapping.clear();
+      _channelDrumMapping.clear();
       }
 
 //---------------------------------------------------------
@@ -537,7 +538,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _name = ins._name;
   _filePath = ins._filePath;
 
-  patch_drummap_mapping=ins.patch_drummap_mapping;
+  _channelDrumMapping = ins._channelDrumMapping;
 
   // Hmm, dirty, yes? But init sets it to false... DELETETHIS
   //_dirty = ins._dirty;
@@ -890,8 +891,8 @@ void MidiInstrument::readMidiState(Xml& xml)
 
 void MidiInstrument::readDrummaps(Xml& xml)
 {
-  patch_drummap_mapping.clear();
-
+  //_channelDrumMapping.clear(); // ???
+  const QString start_tag = xml.s1();
   for (;;)
   {
     Xml::Token token = xml.parse();
@@ -903,18 +904,21 @@ void MidiInstrument::readDrummaps(Xml& xml)
         return;
 
       case Xml::TagStart:
-        if (tag == "entry")
+        if (tag == "drumMapChannel")
+          _channelDrumMapping.read(xml);
+        else if (tag == "entry")
         {
-          const patch_drummap_mapping_t pdm = readDrummapsEntry(xml);
-          if(pdm.isValid())
-            patch_drummap_mapping.push_back(pdm);
+          patch_drummap_mapping_list_t pdml;
+          pdml.read(xml);
+          if(!pdml.empty())
+            _channelDrumMapping.add(-1, pdml); // Add to the default channel.
         }
         else
           xml.unknown("MidiInstrument::readDrummaps");
         break;
 
       case Xml::TagEnd:
-        if (tag == "Drummaps")
+        if (tag == start_tag)
           return;
 
       default:
@@ -925,128 +929,11 @@ void MidiInstrument::readDrummaps(Xml& xml)
          "                           not returning anything. expect undefined behaviour or even crashes.\n");
 }
 
-patch_drummap_mapping_t MidiInstrument::readDrummapsEntry(Xml& xml)
-{
-  using std::list;
-
-  int patch = CTRL_PROGRAM_VAL_DONT_CARE;
-  DrumMap* drummap=new DrumMap[128];
-  for (int i=0;i<128;i++)
-    drummap[i]=iNewDrumMap[i];
-
-  for (;;)
-  {
-    Xml::Token token = xml.parse();
-    const QString& tag = xml.s1();
-    switch (token)
-    {
-      case Xml::Error:
-      case Xml::End:
-        delete drummap;
-        // Return an invalid mapping.
-        return patch_drummap_mapping_t(NULL, patch);
-
-      case Xml::TagStart:
-        if (tag == "patch_collection")
-          patch = readDrummapsEntryPatchCollection(xml);
-        else if (tag == "drummap")
-          read_new_style_drummap(xml, "drummap", drummap);
-        else
-          xml.unknown("MidiInstrument::readDrummapsEntry");
-        break;
-
-      case Xml::TagEnd:
-        if (tag == "entry")
-          return patch_drummap_mapping_t(drummap, patch);
-
-      default:
-        break;
-    }
-  }
-  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummapsEntry()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
-  delete drummap;
-  // Return an invalid mapping.
-  return patch_drummap_mapping_t(NULL, patch);
-}
-
-int MidiInstrument::readDrummapsEntryPatchCollection(Xml& xml)
-{
-  int hbank = (CTRL_PROGRAM_VAL_DONT_CARE >> 16) & 0xff;
-  int lbank = (CTRL_PROGRAM_VAL_DONT_CARE >> 8) & 0xff;
-  int prog  = CTRL_PROGRAM_VAL_DONT_CARE & 0xff;
-  int last_prog, last_hbank, last_lbank; // OBSOLETE. Not used.
-
-  for (;;)
-  {
-    Xml::Token token = xml.parse();
-    const QString& tag = xml.s1();
-    switch (token)
-    {
-      case Xml::Error:
-      case Xml::End:
-        return CTRL_VAL_UNKNOWN; // an invalid collection
-
-      case Xml::TagStart:
-        xml.unknown("MidiInstrument::readDrummapsEntryPatchCollection");
-        break;
-
-      case Xml::Attribut:
-        // last_prog, last_hbank, last_lbank are OBSOLETE. Not used.
-        if (tag == "prog")
-          parse_range(xml.s2(), &prog, &last_prog);
-        else if (tag == "lbank")
-          parse_range(xml.s2(), &lbank, &last_lbank);
-        else if (tag == "hbank")
-          parse_range(xml.s2(), &hbank, &last_hbank);
-        break;
-
-      case Xml::TagEnd:
-        if (tag == "patch_collection")
-          return ((hbank & 0xff) << 16) | ((lbank & 0xff) << 8) | (prog & 0xff);
-
-      default:
-        break;
-    }
-  }
-
-  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummapsEntryPatchCollection()!\n"
-         "                           not returning anything. expect undefined behaviour or even crashes.\n");
-  return CTRL_VAL_UNKNOWN; // an invalid collection
-}
-
 void MidiInstrument::writeDrummaps(int level, Xml& xml) const
 {
   xml.tag(level++, "Drummaps");
 
-  for (ciPatchDrummapMapping_t it=patch_drummap_mapping.begin();
-       it!=patch_drummap_mapping.end(); it++)
-  {
-    xml.tag(level++, "entry");
-
-    const patch_drummap_mapping_t& pdm = *it;
-
-    if(!pdm.dontCare())
-    {
-      QString tmp="<patch_collection ";
-
-      if(!pdm.programDontCare())
-        tmp += "prog=\"" + QString::number(pdm.prog()) + QString("\" ");
-      if(!pdm.lbankDontCare())
-        tmp += "lbank=\"" + QString::number(pdm.lbank()) + QString("\" ");
-      if(!pdm.hbankDontCare())
-        tmp += "hbank=\"" + QString::number(pdm.hbank()) + QString("\" ");
-
-      tmp+="/>\n";
-
-      xml.nput(level, tmp.toLatin1().data());
-    }
-
-    write_new_style_drummap(level, xml, "drummap", it->drummap);
-    //write_new_style_drummap(level, xml, "drummap", it->drummap, true); // true = Need to save all entries.
-
-    xml.etag(--level, "entry");
-  }
+  _channelDrumMapping.write(level, xml);
 
   xml.etag(--level, "Drummaps");
 }
@@ -1216,6 +1103,16 @@ void MidiInstrument::writeDrummapOverrides(int level, Xml& xml) const
 }
 #endif
 
+patch_drummap_mapping_list_t* MidiInstrument::get_patch_drummap_mapping(int channel, bool includeDefault)
+{
+  patch_drummap_mapping_list_t* pdml = _channelDrumMapping.find(channel, includeDefault);
+  if(!pdml)
+    // Not found? Search the global mapping list.
+    return genericMidiInstrument->getChannelDrumMapping()->find(channel, includeDefault);
+  return pdml;
+}
+
+
 //---------------------------------------------------------
 //   populateInstrPopup  (static)
 //---------------------------------------------------------
@@ -1282,35 +1179,50 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
 
     }
 
-void MidiInstrument::getMapItem(int patch, int index, DrumMap& dest_map, int
+void MidiInstrument::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
 #ifdef _USE_INSTRUMENT_OVERRIDES_
 overrideType
 #endif
 ) const
 {
+  const patch_drummap_mapping_list_t* pdml = _channelDrumMapping.find(channel, true); // Include default.
+  if(!pdml)
+  {
+    fprintf(stderr, "MidiInstrument::getMapItem Error: No channel:%d mapping or default found. Using iNewDrumMap.\n", channel);
+    dest_map = iNewDrumMap[index];
+    return;
+  }
+
   // Always search this instrument's mapping first.
-  ciPatchDrummapMapping_t ipdm = patch_drummap_mapping.find(patch, false); // Don't include defaults here.
-  if(ipdm == patch_drummap_mapping.end())
+  ciPatchDrummapMapping_t ipdm = pdml->find(patch, false); // Don't include defaults here.
+  if(ipdm == pdml->end())
   {
     // Not found? Is there a default patch mapping?
 #ifdef _USE_INSTRUMENT_OVERRIDES_
     if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
 #endif
-      ipdm = patch_drummap_mapping.find(CTRL_PROGRAM_VAL_DONT_CARE, false); // Don't include defaults here.
+      ipdm = pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, false); // Don't include defaults here.
 
-    if(ipdm == patch_drummap_mapping.end())
+    if(ipdm == pdml->end())
     {
       // Not found? Search the global mapping list.
-      ipdm = genericMidiInstrument->get_patch_drummap_mapping()->find(patch, false); // Don't include defaults here.
-      if(ipdm == genericMidiInstrument->get_patch_drummap_mapping()->end())
+      patch_drummap_mapping_list_t* def_pdml = genericMidiInstrument->get_patch_drummap_mapping(channel, false);
+      if(!def_pdml)
+      {
+        //fprintf(stderr, "MidiInstrument::getMapItem Error: No default patch mapping found in genericMidiInstrument. Using iNewDrumMap.\n");
+        dest_map = iNewDrumMap[index];
+        return;
+      }
+      ipdm = def_pdml->find(patch, false); // Don't include defaults here.
+      if(ipdm == def_pdml->end())
       {
         // Not found? Is there a default patch mapping?
 #ifdef _USE_INSTRUMENT_OVERRIDES_
         if(overrideType & WorkingDrumMapEntry::InstrumentDefaultOverride)
 #endif
-          ipdm = genericMidiInstrument->get_patch_drummap_mapping()->find(CTRL_PROGRAM_VAL_DONT_CARE, false); // Don't include defaults here.
+          ipdm = def_pdml->find(CTRL_PROGRAM_VAL_DONT_CARE, false); // Don't include defaults here.
 
-        if(ipdm == genericMidiInstrument->get_patch_drummap_mapping()->end())
+        if(ipdm == def_pdml->end())
         {
           // Not found? Use the global drum map.
           // Update: This shouldn't really happen now, since we have added a default patch drum map to the genericMidiInstrument.
@@ -1627,27 +1539,9 @@ QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int /*channel*/, bool d
       }
 
 
-const DrumMap* MidiInstrument::drummap_for_patch(int patch) const
-{
-  // Special value unknown.
-  //if(patch == CTRL_VAL_UNKNOWN)
-  //  return iNewDrumMap;
-
-  ciPatchDrummapMapping_t it;
-
-  // Always search this instrument's mapping first.
-  it = patch_drummap_mapping.find(patch, true); // Include default.
-  if(it != patch_drummap_mapping.end())
-    return it->drummap;
-
-  // Now search the global mapping list.
-  it = MusECore::genericMidiInstrument->get_patch_drummap_mapping()->find(patch, true); // Include default.
-  if(it != MusECore::genericMidiInstrument->get_patch_drummap_mapping()->end())
-    return it->drummap;
-
-  // if nothing was found
-  return iNewDrumMap;
-}
+//---------------------------------------------------------
+//   patch_drummap_mapping_t
+//---------------------------------------------------------
 
 patch_drummap_mapping_t::patch_drummap_mapping_t()
 {
@@ -1802,6 +1696,29 @@ QString patch_drummap_mapping_t::to_string()
   return tmp;
 }
 
+//---------------------------------------------------------
+//   patch_drummap_mapping_t
+//---------------------------------------------------------
+
+void patch_drummap_mapping_list_t::add(const patch_drummap_mapping_list_t& other)
+{
+  for(ciPatchDrummapMapping_t ipdm = other.begin(); ipdm != other.end(); ++ipdm)
+  {
+    const patch_drummap_mapping_t& pdm = *ipdm;
+    add(pdm);
+  }
+}
+
+void patch_drummap_mapping_list_t::add(const patch_drummap_mapping_t& pdm)
+{
+  // No duplicates: If a mapping item by that patch already exists, replace it.
+  iPatchDrummapMapping_t ipdm = find(pdm._patch, false); // No default.
+  if(ipdm == end())
+    push_back(pdm);
+  else
+    *ipdm = pdm;
+}
+
 iPatchDrummapMapping_t patch_drummap_mapping_list_t::find(int patch, bool includeDefault)
 {
   iPatchDrummapMapping_t ipdm_default = end();
@@ -1830,6 +1747,82 @@ ciPatchDrummapMapping_t patch_drummap_mapping_list_t::find(int patch, bool inclu
       ipdm_default = ipdm;
   }
   return ipdm_default;
+}
+
+void patch_drummap_mapping_list_t::read(Xml& xml)
+{
+  int patch = CTRL_PROGRAM_VAL_DONT_CARE;
+  DrumMap* drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=iNewDrumMap[i];
+
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        delete drummap;
+        return;
+
+      case Xml::TagStart:
+        if (tag == "patch_collection")
+          patch = readDrummapsEntryPatchCollection(xml);
+        else if (tag == "drummap")
+          read_new_style_drummap(xml, "drummap", drummap);
+        else
+          xml.unknown("patch_drummap_mapping_list_t::read");
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "entry")
+        {
+          push_back(patch_drummap_mapping_t(drummap, patch));
+          return;
+        }
+
+      default:
+        break;
+    }
+  }
+  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in patch_drummap_mapping_list_t::read()!\n"
+         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+  delete drummap;
+  return;
+}
+
+void patch_drummap_mapping_list_t::write(int level, Xml& xml) const
+{
+  for (ciPatchDrummapMapping_t it = begin();
+       it != end(); it++)
+  {
+    xml.tag(level++, "entry");
+
+    const patch_drummap_mapping_t& pdm = *it;
+
+    if(!pdm.dontCare())
+    {
+      QString tmp="<patch_collection ";
+
+      if(!pdm.programDontCare())
+        tmp += "prog=\"" + QString::number(pdm.prog()) + QString("\" ");
+      if(!pdm.lbankDontCare())
+        tmp += "lbank=\"" + QString::number(pdm.lbank()) + QString("\" ");
+      if(!pdm.hbankDontCare())
+        tmp += "hbank=\"" + QString::number(pdm.hbank()) + QString("\" ");
+
+      tmp+="/>\n";
+
+      xml.nput(level, tmp.toLatin1().data());
+    }
+
+    write_new_style_drummap(level, xml, "drummap", it->drummap);
+    //write_new_style_drummap(level, xml, "drummap", it->drummap, true); // true = Need to save all entries.
+
+    xml.etag(--level, "entry");
+  }
 }
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
@@ -2482,6 +2475,150 @@ void WorkingDrumMapPatchList::write(int level, Xml& xml) const
     xml.tag(level++, "drumMapPatch patch=\"%d\"", patch);
     wdml.write(level, xml);
     xml.etag(--level, "drumMapPatch");
+  }
+}
+
+
+//---------------------------------------------------------
+//    ChannelDrumMappingList
+//---------------------------------------------------------
+
+ChannelDrumMappingList::ChannelDrumMappingList()
+{
+  // Ensure there is always a default channel.
+  // Initialize with a default drum map on default channel. Patch is default 0xffffff. GM-1 does not specify a drum patch number.
+  add(-1, patch_drummap_mapping_list_t());
+}
+
+void ChannelDrumMappingList::add(const ChannelDrumMappingList& other)
+{
+  int channel;
+
+  for(ciChannelDrumMappingList_t icdml = other.begin(); icdml != other.end(); ++icdml)
+  {
+    channel = icdml->first;
+    const patch_drummap_mapping_list_t& pdml = icdml->second;
+    add(channel, pdml);
+  }
+}
+
+void ChannelDrumMappingList::add(int channel, const patch_drummap_mapping_list_t& list)
+{
+  ChannelDrumMappingListInsertResult_t res = insert(ChannelDrumMappingListInsertPair_t(channel, list));
+  if(res.second == false)
+  {
+    iChannelDrumMappingList_t res_icdml = res.first;
+    patch_drummap_mapping_list_t& res_pdml = res_icdml->second;
+    res_pdml.add(list);
+  }
+}
+
+patch_drummap_mapping_list_t* ChannelDrumMappingList::find(int channel, bool includeDefault)
+{
+  // Look for an exact match above all else. The given channel must be valid.
+  iChannelDrumMappingList_t icdml = ChannelDrumMappingList_t::find(channel);
+  // If no exact match is found we'll take a default if found.
+  if(icdml == end())
+  {
+    if(!includeDefault)
+      return NULL;
+    icdml = ChannelDrumMappingList_t::find(-1);
+    if(icdml == end())
+      return NULL;
+  }
+  return &icdml->second;
+}
+
+const patch_drummap_mapping_list_t* ChannelDrumMappingList::find(int channel, bool includeDefault) const
+{
+  // Look for an exact match above all else. The given channel must be valid.
+  ciChannelDrumMappingList_t icdml = ChannelDrumMappingList_t::find(channel);
+  // If no exact match is found we'll take a default if found.
+  if(icdml == end())
+  {
+    if(!includeDefault)
+      return NULL;
+    icdml = ChannelDrumMappingList_t::find(-1);
+    if(icdml == end())
+      return NULL;
+  }
+  return &icdml->second;
+}
+
+void ChannelDrumMappingList::read(Xml& xml)
+{
+  const QString start_tag = xml.s1();
+  // Default "don't care" channel number, in case no channel number found.
+  int channel = -1; // Default.
+  int channel_read;
+  bool ok;
+
+  for (;;) {
+        Xml::Token token = xml.parse();
+        const QString& tag = xml.s1();
+        switch (token) {
+              case Xml::Error:
+              case Xml::End:
+                    return;
+              case Xml::TagStart:
+                    if (tag == "entry")
+                    {
+                      patch_drummap_mapping_list_t pdml;
+                      pdml.read(xml);
+                      if(!pdml.empty())
+                        add(channel, pdml);
+                    }
+                    else if (tag == "comment")
+                      xml.parse();
+                    else
+                      xml.unknown(start_tag.toLatin1().constData());
+                    break;
+              case Xml::Attribut:
+                    if (tag == "channel")
+                    {
+                      channel_read = xml.s2().toInt(&ok);
+                      if(ok)
+                        channel = channel_read;
+                    }
+                    break;
+              case Xml::TagEnd:
+                    if (tag == start_tag)
+                      return;
+              default:
+                    break;
+              }
+        }
+}
+
+void ChannelDrumMappingList::write(int level, Xml& xml) const
+{
+  int channel;
+
+  // Count the items used.
+  int sz = 0;
+  for(ciChannelDrumMappingList_t icdml = begin(); icdml != end(); ++icdml)
+  {
+    const patch_drummap_mapping_list_t& pdml = icdml->second;
+    if(pdml.empty())
+      continue;
+    ++sz;
+  }
+
+  for(ciChannelDrumMappingList_t icdml = begin(); icdml != end(); ++icdml)
+  {
+    const patch_drummap_mapping_list_t& pdml = icdml->second;
+    if(pdml.empty())
+      continue;
+    channel = icdml->first;
+
+    // Don't bother with the drumMapChannel tag if not required.
+    if(sz >= 2 || channel != -1) // -1 is default.
+      xml.tag(level++, "drumMapChannel channel=\"%d\"", channel);
+
+    pdml.write(level, xml);
+
+    if(sz >= 2 || channel != -1) // -1 is default.
+      xml.etag(--level, "drumMapChannel");
   }
 }
 

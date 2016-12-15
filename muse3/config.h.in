@@ -24,6 +24,7 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
+#cmakedefine HAVE_INSTPATCH
 #cmakedefine HAVE_GTK2
 #cmakedefine VST_SUPPORT
 #cmakedefine VST_NATIVE_SUPPORT

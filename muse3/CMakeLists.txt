@@ -483,6 +483,13 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
+PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+if (INSTPATCH_FOUND)
+      message(" INSTPATCH include dirs: " ${INSTPATCH_INCLUDE_DIRS} )
+      include_directories(${INSTPATCH_INCLUDE_DIRS})
+      set(HAVE_INSTPATCH ON)
+endif (INSTPATCH_FOUND)
+
 ##
 ##   End OPTIONAL packages.
 ##
@@ -655,6 +662,11 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
+if (NOT INSTPATCH_FOUND)
+        message("** WARNING: libinstpatch (>= 1.0) development files were not found.")
+        message("*  Automatic drum lists for fluidsynth will not be available.")
+endif (NOT INSTPATCH_FOUND)
+
 if (ENABLE_LV2)
     if(NOT GTK2_FOUND)
         message("** WARNING: LV2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
@@ -681,6 +693,7 @@ endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
+summary_add("Instpatch support" HAVE_INSTPATCH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 

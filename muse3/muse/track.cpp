@@ -2102,7 +2102,8 @@ void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int override
   }
 
   // Get the instrument's map item, and include any requested overrides.
-  midi_instr->getMapItem(patch, index, dest_map, overrideType);
+  const int channel = outChannel();
+  midi_instr->getMapItem(channel, patch, index, dest_map, overrideType);
 
   // Did we request to include any track default patch overrides?
   if(overrideType & WorkingDrumMapEntry::TrackDefaultOverride)

@@ -676,6 +676,51 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 	}
 }
 
+int readDrummapsEntryPatchCollection(Xml& xml)
+{
+  int hbank = (CTRL_PROGRAM_VAL_DONT_CARE >> 16) & 0xff;
+  int lbank = (CTRL_PROGRAM_VAL_DONT_CARE >> 8) & 0xff;
+  int prog  = CTRL_PROGRAM_VAL_DONT_CARE & 0xff;
+  int last_prog, last_hbank, last_lbank; // OBSOLETE. Not used.
+
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        return CTRL_VAL_UNKNOWN; // an invalid collection
+
+      case Xml::TagStart:
+        xml.unknown("readDrummapsEntryPatchCollection");
+        break;
+
+      case Xml::Attribut:
+        // last_prog, last_hbank, last_lbank are OBSOLETE. Not used.
+        if (tag == "prog")
+          parse_range(xml.s2(), &prog, &last_prog);
+        else if (tag == "lbank")
+          parse_range(xml.s2(), &lbank, &last_lbank);
+        else if (tag == "hbank")
+          parse_range(xml.s2(), &hbank, &last_hbank);
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "patch_collection")
+          return ((hbank & 0xff) << 16) | ((lbank & 0xff) << 8) | (prog & 0xff);
+
+      default:
+        break;
+    }
+  }
+
+  fprintf(stderr, "ERROR: THIS CANNOT HAPPEN: exited infinite loop in readDrummapsEntryPatchCollection()!\n"
+         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+  return CTRL_VAL_UNKNOWN; // an invalid collection
+}
+
 void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt)
 {
 	MusECore::Event a(MusECore::Controller);
