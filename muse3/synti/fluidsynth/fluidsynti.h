@@ -148,7 +148,7 @@ public:
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
       #ifdef HAVE_INSTPATCH
       // True if it found a name.
-      virtual bool getNoteSampleName(int channel, int patch, int note, QString* name) const;
+      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const;
       #endif
 
       //virtual bool hasGui() const { return true; }

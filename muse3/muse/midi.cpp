@@ -942,15 +942,13 @@ void Audio::processMidi()
       const bool no_mute_midi_input = false;
 
       const bool extsync = MusEGlobal::extSyncFlag.value();
-      //
-      // TODO: syntis should directly write into recordEventList
-      //
+
+      // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs)...
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* md = *id;
         int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
 
-        // klumsy hack for MESS synti devices:
         if(md->isSynti())
         {
           SynthI* s = (SynthI*)md;
@@ -968,10 +966,38 @@ void Audio::processMidi()
             //md->recordEvent(ev);
             //
             // For now, instead of recording, here is the minimum that we must do:
-            //
+
+            // Intercept any special MusE system sysex messages. (This IS the system right here.)
+            bool intercepted = false;
+            const int type = ev.type();
+            switch(type)
+            {
+              case ME_SYSEX:
+              {
+                const unsigned char* p = ev.data();
+                int n = ev.len();
+                if(n >= 3)
+                {
+                  if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
+                  {
+                    if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID)
+                    {
+                      intercepted = true;
+                      if(port >= 0 && port < MIDI_PORTS)
+                        MusEGlobal::midiPorts[port].updateDrumMaps();
+                    }
+                  }
+                }
+              }
+              break;
+
+              default:
+              break;
+            }
+
             // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
             // Same code as in MidiPort::sendEvent()
-            if(port != -1)
+            if(!intercepted && port != -1)
               MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
           }
         }

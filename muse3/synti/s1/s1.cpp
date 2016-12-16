@@ -36,7 +36,8 @@
 #include "libsynti/mono.h"
 
 #define RESOLUTION   16384
-// Make sure this number is unique among all the MESS synths.
+// Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 #define S1_UNIQUE_ID      6
 
 

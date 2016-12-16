@@ -322,7 +322,7 @@ class PluginIBase
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
-      
+
       virtual float latency() = 0;
       
       virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}

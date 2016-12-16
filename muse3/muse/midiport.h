@@ -68,10 +68,6 @@ class MidiPort {
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
-      // Update drum maps when patch is known.
-      bool updateDrumMaps(int chan, int patch);
-      // Update drum maps when patch is not known.
-      bool updateDrumMaps();
 
    public:
       MidiPort();
@@ -125,6 +121,14 @@ class MidiPort {
       int limitValToInstrCtlRange(int ctl, int val);
       int limitValToInstrCtlRange(MidiController* mc, int val);
       MidiController* drumController(int ctl);
+      // Update drum maps when patch is known.
+      // If audio is running (and not idle) this should only be called by the rt audio thread.
+      // Returns true if maps were changed.
+      bool updateDrumMaps(int chan, int patch);
+      // Update drum maps when patch is not known.
+      // If audio is running (and not idle) this should only be called by the rt audio thread.
+      // Returns true if maps were changed.
+      bool updateDrumMaps();
 
       int defaultInChannels() const { return _defaultInChannels; }
       int defaultOutChannels() const { return _defaultOutChannels; }

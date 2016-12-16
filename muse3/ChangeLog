@@ -1,3 +1,8 @@
+15.12.2016
+         - Update: Fluidsynth MESS plugin GUI updates the song's maps when
+            soundfonts are removed or the channel or drum column is changed. (Tim)
+         - Besides drum patches, note sample names are now cached for ALL melodic
+            patches as well, they can be obtained although nothing uses them yet. (Tim)
 14.12.2016
          * New - Fluidsynth MESS synth plugin automatically shows correct drum note names: (Tim)
          - No more manually loading a drum map file ;-)

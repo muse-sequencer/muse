@@ -662,7 +662,8 @@ void MessSynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_ma
   dest_map.mute = base_dm.mute;
 
   QString str;
-  if(_mess->getNoteSampleName(channel, patch, index, &str))
+  // true = Want percussion names, not melodic.
+  if(_mess->getNoteSampleName(true, channel, patch, index, &str))
     dest_map.name = str;
   else
     dest_map.name = base_dm.name;

@@ -689,12 +689,10 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
                   NULL);
 
 
-    if(bank != 128)
-      continue;
-
     //fprintf(stderr, "psetName:%s bank:%d program:%d\n", psetName, bank, program);
 
-    patch = (0xff << 16) | (0xff << 8) | (program & 0x7f);
+    // Compose a patch numer. Drums are on special bank 128.
+    patch = (bank << 16) | (0xff << 8) | (program & 0x7f);
     PatchNoteSampleNameListResult_t res_pnsnl = font._noteSampleNameList.insert(PatchNoteSampleNameInsertPair_t(patch, NoteSampleNameList()));
     iPatchNoteSampleNameList_t res_ipnsnl = res_pnsnl.first;
     NoteSampleNameList& nsl = res_ipnsnl->second;
@@ -1284,11 +1282,21 @@ int FluidSynth::getControllerInfo(int id, QString* name, int* controller, int* m
       }
 
 #ifdef HAVE_INSTPATCH
-bool FluidSynth::getNoteSampleName(int channel, int patch, int note, QString* name) const
+bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const
 {
   if(!name || channel < 0 || channel >= FS_MAX_NR_OF_CHANNELS)
     return false;
   const FluidChannel& fc = channels[channel];
+  if(fc.drumchannel != drum)
+    return false;
+  // Force the low bank to don't care, we don't use it in fluidsynth MESS).
+  patch |= 0xff00;
+  if(drum)
+  {
+    patch &= 0xffff;    // Remove the high bank.
+    patch |= 0x800000;  // Set high bank to 128 (special soundfont bank number meaning drums), and low bank to don't care.
+  }
+
   for(std::list<FluidSoundFont>::const_iterator it = stack.begin(); it != stack.end(); it++)
   {
     const FluidSoundFont& fsf = *it;

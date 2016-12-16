@@ -28,7 +28,9 @@
 #include "gconfig.h"
 #include "wave.h"
 
-// If sysex support is ever added, make sure this number is unique among all the MESS synths.
+// If sysex support is ever added, make sure this number is unique among all the
+//  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 //#define METRONOME_UNIQUE_ID      7
 
 //#define METRONOME_DEBUG

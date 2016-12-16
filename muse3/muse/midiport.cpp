@@ -1153,6 +1153,12 @@ bool MidiPort::updateDrumMaps(int chan, int patch)
   return false;
 }
 
+//---------------------------------------------------------
+//   updateDrumMaps
+//   If audio is running (and not idle) this should only be called by the rt audio thread.
+//   Returns true if maps were changed.
+//---------------------------------------------------------
+
 bool MidiPort::updateDrumMaps()
 {
   int port;

@@ -26,7 +26,8 @@
 
 #include "config.h"
 
-// Make sure this number is unique among all the MESS synths and DSSI host synth.
+// Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 #define DSSI_SYNTH_UNIQUE_ID 8
 // Midistate sysex initialization command.
 #define DSSI_INIT_DATA_CMD 1
