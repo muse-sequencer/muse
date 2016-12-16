@@ -170,12 +170,12 @@ MidiSeq::MidiSeq(const char* name)
       MusEGlobal::doSetuid();
       timerFd=selectTimer();
       // REMOVE Tim. stack smashing. Added.
-      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: Timer selected...\n");
+      //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: Timer selected...\n");
 
       MusEGlobal::undoSetuid();
 
       // REMOVE Tim. stack smashing. Added.
-      fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: End of MidiSeq ctor...\n");
+      //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: End of MidiSeq ctor...\n");
       }
 
 //---------------------------------------------------------
@@ -198,7 +198,9 @@ signed int MidiSeq::selectTimer()
     int tmrFd;
     
     // REMOVE Tim. stack smashing. Added.
-    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: SKIPPING rtc timer check...\n");
+    //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: SKIPPING rtc timer check...\n");
+
+// REMOVE Tim. stack smashing. Removed. Moved below.
 //     printf("Trying RTC timer...\n");
 //     timer = new RtcTimer();
 //     tmrFd = timer->initTimer();
@@ -208,20 +210,30 @@ signed int MidiSeq::selectTimer()
 //     }
 //     delete timer;
     
-    printf("Trying ALSA timer...\n");
+    fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
     tmrFd = timer->initTimer();
     if ( tmrFd!= -1) { // ok!
+        fprintf(stderr, "got timer = %d\n", tmrFd);
+        return tmrFd;
+    }
+    delete timer;
+
+    printf("Trying RTC timer...\n");
+    timer = new RtcTimer();
+    tmrFd = timer->initTimer();
+    if (tmrFd != -1) { // ok!
         printf("got timer = %d\n", tmrFd);
         return tmrFd;
     }
     delete timer;
+
     timer=NULL;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
               /*tr*/(QString("No functional timer was available.\n"
                          "RTC timer not available, check if /dev/rtc is available and readable by current user\n"
                          "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
-    printf("No functional timer available!!!\n");
+    fprintf(stderr, "No functional timer available!!!\n");
     exit(1);
     }
 
@@ -346,8 +358,11 @@ int MidiSeq::setRtcTicks()
       {
       int gotTicks = timer->setTimerFreq(MusEGlobal::config.rtcTicks);
       if (MusEGlobal::config.rtcTicks-24 > gotTicks) {
-          printf("INFO: Could not get the wanted frequency %d, got %d, still it should suffice.\n", MusEGlobal::config.rtcTicks, gotTicks);
+          fprintf(stderr, "INFO: Could not get the wanted frequency %d, got %d, still it should suffice.\n", MusEGlobal::config.rtcTicks, gotTicks);
       }
+      else
+        fprintf(stderr, "INFO: Requested timer frequency:%d actual:%d\n", MusEGlobal::config.rtcTicks, gotTicks);
+
       timer->startTimer();
       return gotTicks;
       }
@@ -373,7 +388,7 @@ void MidiSeq::start(int priority, void *)
 void MidiSeq::checkAndReportTimingResolution()
 {
     // REMOVE Tim. stack smashing. Added.
-    fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution(): Calling timer->getTimerFreq()...\n");
+    //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution(): Calling timer->getTimerFreq()...\n");
 
     int freq = timer->getTimerFreq();
     fprintf(stderr, "Aquired timer frequency: %d\n", freq);

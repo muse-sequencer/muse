@@ -1,3 +1,10 @@
+16.12.2016
+         - Bug #520 by asbaklm: "Muse fails to start, produces stack smashing error": (Tim)
+           Further to Bug #548 fix 09.11.2016:
+           (Very old RTC timer was still causing it to crash upon the resolution request ioctl.)
+           Did looong overdue ALSA timer code rewrite. Picks best timer such as 1,000,000,000Hz HR Timer.
+         - ALSA Timer is now checked and chosen first over the RTC timer. RTC could still be chosen
+            as a LAST resort. Apparently RTC works OK for some users (not using DrumGizmo?).
 15.12.2016
          - Update: Fluidsynth MESS plugin GUI updates the song's maps when
             soundfonts are removed or the channel or drum column is changed. (Tim)
