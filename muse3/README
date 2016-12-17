@@ -31,6 +31,7 @@ details.
          - JACK - The Jack Audio Connection Kit can be used for audio and midi
          - ALSA midi output
          - Plugin formats: LV2, DSSI, VST, LinuxVST, MESS
+         - Support Inst(rument) Patch Library for enhanced fluidsynth features.
          - FLAM plugin guis.
          - Built on Qt5
 
@@ -85,6 +86,9 @@ details.
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
           http://sourceforge.net/apps/trac/fluidsynth/
+
+      - libinstpatch >= 1.0    Instrument Patch Library (development files)
+          http://www.swamiproject.org/
 
       - liblo    Lightweight OSC (Open Sound Control) (development files)   
           http://liblo.sourceforge.net/
@@ -214,9 +218,10 @@ details.
         MusE is a realtime program which requires special rights to work properly.
 
       - Check if you are running a sufficiently new linux kernel > 2.6.x
-        A modern, standard destop kernel might suit your needs.
-        However, for the best performance a so-called 'low latency' or 'realtime' 
-         kernel may be required. Check your distro's packages for availability. 
+        A modern, standard destop kernel should suit virtually all needs.
+        For even stricter realtime performance a so-called 'low latency'
+         or 'realtime' kernel may be available. Check your distro's packages
+         for availability.
 
       - create an "audio" group if it does not already exists
         and put yourself into this group
@@ -229,18 +234,7 @@ details.
            @audio   -  rtprio     95
            @audio   -  memlock    unlimited
 
-      - make sure you can acces the realtime clock (RTC)
-            chmod 660 /dev/rtc
-            chgrp audio /dev/rtc
-
-      - make sure MusE can set the rtc clock:
-            echo 8192 > /proc/sys/dev/rtc/max-user-freq
-            inspect with:
-            cat /proc/sys/dev/rtc/max-user-freq
-
-      - some distros do not load the alsa sequencer module by default.
-        if necessary, load the alsa sequencer module with:
-            /sbin/modprobe snd-seq
+        Some distros have a graphical menu or tool which does this for you.
 
       - Start jack, typically by using the qjackctl application.
         MusE can also be run without Jack. MusE will use a dummy audio 
@@ -275,6 +269,23 @@ details.
 
       (JACK and all its clients (qjackctl & MusE) must run with the
       same user id)
+
+
+      Startup troubleshooting tips:
+      -----------------------------
+
+      - some distros do not load the alsa sequencer module by default.
+        if necessary, load the alsa sequencer module with:
+            /sbin/modprobe snd-seq
+
+      If MusE falls back to the old RTC timer but fails, try this:
+      - make sure you can acces the realtime clock (RTC)
+            chmod 660 /dev/rtc
+            chgrp audio /dev/rtc
+      - make sure MusE can set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq
+            inspect with:
+            cat /proc/sys/dev/rtc/max-user-freq
 
 
   =============================
