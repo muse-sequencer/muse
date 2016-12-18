@@ -280,7 +280,8 @@ class Audio {
       void msgSetSendMetronome(AudioTrack*, bool);
       void msgStartMidiLearn();
       void msgPlayMidiEvent(const MidiPlayEvent* event);
-      
+      void msgSetMidiDevice(MidiPort* port, MidiDevice* device);
+
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }

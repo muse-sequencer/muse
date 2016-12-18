@@ -83,7 +83,8 @@ extern void deinitLV2();
 extern void readConfiguration();
 
 extern void initMidiSequencer();   
-extern void initAudio();           
+extern void exitMidiSequencer();
+extern void initAudio();
 extern void initAudioPrefetch();   
 extern void initMidiSynth();
 
@@ -801,6 +802,7 @@ int main(int argc, char* argv[])
 
       // WARNING Must do it this way. Call registerClient long AFTER Jack client is created and MusE ALSA client is 
       // created (in initMidiDevices), otherwise random crashes can occur within Jack <= 1.9.8. Fixed in Jack 1.9.9.  Tim.
+      // This initMidiDevices will automatically initialize the midiSeq sequencer thread, but not start it - that's a bit later on.
       MusECore::initMidiDevices();    
       // Wait until things have settled. One second seems OK so far.
       for(int t = 0; t < 100; ++t)   
@@ -811,14 +813,10 @@ int main(int argc, char* argv[])
       MusECore::initMidiController();
       MusECore::initMidiInstruments();  
       MusECore::initMidiPorts();
-      MusECore::initMidiSequencer();   
-      // REMOVE Tim. stack smashing. Added.
-      //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: initMidiSequencer() done...\n");
 
-      MusEGlobal::midiSeq->checkAndReportTimingResolution();
-
-      // REMOVE Tim. stack smashing. Added.
-      //fprintf(stderr, "SPECIAL STACK SMASHING ERROR DEBUG MODE, REMOVE THIS LATER: checkAndReportTimingResolution() done...\n");
+      // If the sequencer object was created, report timing.
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
       if (MusEGlobal::loadPlugins)
             MusECore::initPlugins();
@@ -908,6 +906,9 @@ int main(int argc, char* argv[])
       if(MusEGlobal::loadLV2)
             MusECore::deinitLV2();
 #endif
+
+      // In case the sequencer object is still alive, make sure to destroy it now.
+      MusECore::exitMidiSequencer();
 
       delete MusEGlobal::muse;
       

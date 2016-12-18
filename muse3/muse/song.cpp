@@ -210,7 +210,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         MidiDevice* dev = port->device();
         if (dev==0) 
         {
-          MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
+          MusEGlobal::audio->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
           if (SynthI::visible()) {
             selectAllTracks(false);
@@ -3413,9 +3413,11 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
                     ops.add(PendingOperationItem(&MusEGlobal::midiDevices, imd, PendingOperationItem::DeleteMidiDevice));
                   
                   if(s->midiPort() != -1)
+                  {
                     // synthi is attached
                     // Oops, hey this was wrong before, should have been zero.
-                    MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], 0);
+                    MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], 0);
+                  }
                   
                   sec_track_list = &_synthIs;
             }

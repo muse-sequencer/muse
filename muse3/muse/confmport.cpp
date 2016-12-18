@@ -494,7 +494,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         return;
                   openFlags ^= 0x2;
                   dev->setOpenFlags(openFlags);
-                  MusEGlobal::midiSeq->msgSetMidiDevice(port, dev);       // reopen device
+                  MusEGlobal::audio->msgSetMidiDevice(port, dev);       // reopen device
                   item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
                   if(dev->deviceType() == MusECore::MidiDevice::JACK_MIDI)
@@ -518,7 +518,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         return;
                   openFlags ^= 0x1;
                   dev->setOpenFlags(openFlags);
-                  MusEGlobal::midiSeq->msgSetMidiDevice(port, dev);       // reopen device
+                  MusEGlobal::audio->msgSetMidiDevice(port, dev);       // reopen device
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
                   if(dev->deviceType() == MusECore::MidiDevice::JACK_MIDI)
@@ -849,7 +849,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }
                     }
                     
-                    MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
+                    MusEGlobal::audio->msgSetMidiDevice(port, sdev);
                     MusEGlobal::muse->changeConfig(true);     // save configuration file
                     
                     // Add all track routes to/from this port...
@@ -1160,7 +1160,9 @@ MPConfig::MPConfig(QWidget* parent)
                   << tr("State")
 #endif                  
       ;
-                  
+
+      addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+
       instanceList->setColumnCount(columnnames.size());
       instanceList->setHorizontalHeaderLabels(columnnames);
       for (int i = 0; i < columnnames.size(); ++i) {
@@ -1262,10 +1264,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
         return;
     
       addALSADevice->blockSignals(true);
-      addALSADevice->setChecked(MusEGlobal::config.enableAlsaMidiDriver ||      // User setting
-                                MusEGlobal::useAlsaWithJack ||                  // Command line override
-                                MusEGlobal::audioDevice->deviceType() != 
-                                         MusECore::AudioDevice::JACK_AUDIO);    // Jack not running
+      addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
       addALSADevice->blockSignals(false);
 
 
@@ -1603,7 +1602,7 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
-                  MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
+                  MusEGlobal::audio->msgSetMidiDevice(port, si);
                   MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();
                   break;
@@ -1831,21 +1830,52 @@ void MPConfig::addAlsaDeviceClicked(bool v)
 
   MusEGlobal::config.enableAlsaMidiDriver = v;
   //MusEGlobal::muse->changeConfig(true);    // Save settings? No, wait till close.
-  
+
   if(v)
   {
+    // Initialize the ALSA driver. This will automatically initialize the sequencer thread if necessary.
     MusECore::initMidiAlsa();
-    MusEGlobal::midiSeq->msgUpdatePollFd();
+
+    if(MusEGlobal::midiSeq)
+    {
+      // Now start the sequencer if necessary. Prio unused, set in start.
+      MusEGlobal::midiSeq->start(0);
+      // Update the timer poll file descriptors.
+      MusEGlobal::midiSeq->msgUpdatePollFd();
+    }
+
+    MusEGlobal::audio->msgIdle(false);
+
+    // Scan for any changes in ALSA. FIXME: Note there's another another idle here !
+    MusECore::alsaScanMidiPorts();
+
+    // Inform the rest of the app's gui.
+    MusEGlobal::song->update(SC_CONFIG);
   }
   else
   {
+    // Exit ALSA midi.
     MusECore::exitMidiAlsa();
-    MusEGlobal::midiSeq->msgUpdatePollFd();
+    MusEGlobal::audio->msgIdle(false);
+
+    // Scan for any changes in ALSA. FIXME: Note there's another another idle here !
+    MusECore::alsaScanMidiPorts();
+
+    if(MusEGlobal::midiSeq)
+    {
+      MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
+
+      MusEGlobal::midiSeq->msgUpdatePollFd();
+      MusEGlobal::midiSeq->stop(true);
+
+      MusECore::exitMidiSequencer();
+
+      MusEGlobal::audio->msgIdle(false);
+    }
+
+    // Inform the rest of the app's gui.
+    MusEGlobal::song->update(SC_CONFIG);
   }
-  
-  MusEGlobal::audio->msgIdle(false);
-  MusECore::alsaScanMidiPorts();       // FIXME: Note there's another another idle here !
-  MusEGlobal::song->update(SC_CONFIG);
 }
       
 //---------------------------------------------------------

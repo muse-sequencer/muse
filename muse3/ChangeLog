@@ -1,3 +1,7 @@
+17.12.2016
+         * Eliminated midi sequencer thread when ALSA midi driver is not enabled: (Tim)
+           When 'ALSA' button is not clicked in midi config dialog, MusE is running PURE Jack,
+            ie no sequencer thread (midiSeq), and no timer. Pure Jack.
 16.12.2016
          - Bug #520 by asbaklm: "Muse fails to start, produces stack smashing error": (Tim)
            Further to Bug #548 fix 09.11.2016:

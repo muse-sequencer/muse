@@ -419,7 +419,8 @@ void GlobalSettingsConfig::apply()
       }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
-      MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
       if (onlyNewDrumBtn->isChecked())
         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;

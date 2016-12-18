@@ -4,6 +4,7 @@
 //  $Id: sync.h,v 1.1.1.1.2.2 2009/04/01 01:37:11 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -140,6 +141,59 @@ class MidiSyncInfo
     void write(int level, Xml& xml);
 };
 
+
+//---------------------------------------------------------
+//   MidiSyncContainer
+//---------------------------------------------------------
+
+class MidiSyncContainer {
+      int _midiClock;
+
+/* Testing */
+      bool playStateExt;       // used for keeping play state in sync functions
+      int recTick;            // ext sync tick position
+      double mclock1, mclock2;
+      double songtick1, songtick2;
+      int recTick1, recTick2;
+      int lastTempo;
+      double timediff[16][48];
+      int storedtimediffs;
+      int    _avgClkDiffCounter[16];
+      double _lastRealTempo;
+      bool _averagerFull[16];
+      int _clockAveragerPoles;
+      int* _clockAveragerStages;
+      bool _preDetect;
+      double _tempoQuantizeAmount;
+      MidiSyncInfo::SyncRecFilterPresetType _syncRecFilterPreset;
+
+      void setSyncRecFilterPresetArrays();
+      void alignAllTicks(int frameOverride = 0);
+/* Testing */
+
+      void mtcSyncMsg(const MTC&, int, bool);
+
+   public:
+      MidiSyncContainer();
+      virtual ~MidiSyncContainer();
+
+      int midiClock() const { return _midiClock; }
+      void setMidiClock(int val) { _midiClock = val; }
+      bool externalPlayState() const { return playStateExt; }
+      void setExternalPlayState(bool v) { playStateExt = v; }
+      void realtimeSystemInput(int port, int type, double time = 0.0);
+      void mtcInputQuarter(int, unsigned char);
+      void setSongPosition(int, int);
+      void mmcInput(int, const unsigned char*, int);
+      void mtcInputFull(int, const unsigned char*, int);
+      void nonRealtimeSystemSysex(int, const unsigned char*, int);
+
+      MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset() const { return _syncRecFilterPreset; }
+      void setSyncRecFilterPreset(MidiSyncInfo::SyncRecFilterPresetType type);
+      double recTempoValQuant() const { return _tempoQuantizeAmount; }
+      void setRecTempoValQuant(double q) { _tempoQuantizeAmount = q; }
+};
+
 } // namespace MusECore
 
 namespace MusEGlobal {
@@ -156,6 +210,8 @@ extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 extern unsigned int volatile lastExtMidiSyncTick;
 extern MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset;
 extern double syncRecTempoValQuant;
+
+extern MusECore::MidiSyncContainer midiSyncContainer;
 
 } // namespace MusEGlobal
 

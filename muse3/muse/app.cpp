@@ -40,6 +40,7 @@
 #include <QTextStream>
 #include <QToolButton>
 
+#include <errno.h>
 #include <iostream>
 #include <algorithm>
 
@@ -149,85 +150,78 @@ void microSleep(long msleep)
 
 bool MusE::seqStart()
       {
-      if (MusEGlobal::audio->isRunning()) {
-            printf("seqStart(): already running\n");
-            return true;
+      if(MusEGlobal::audio)
+      {
+        if(!MusEGlobal::audio->isRunning())
+        {
+          // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
+          if(MusEGlobal::audio->start())
+          {
+            //
+            // wait for jack callback
+            //
+            for(int i = 0; i < 60; ++i)
+            {
+              if(MusEGlobal::audio->isRunning())
+                break;
+              sleep(1);
             }
-
-      // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
-      if (!MusEGlobal::audio->start()) {
-          QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-              tr("Was not able to start audio, check if jack is running.\n"));
-          return false;
+            if(!MusEGlobal::audio->isRunning())
+            {
+              QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
+                  tr("Timeout waiting for audio to run. Check if jack is running.\n"));
+            }
           }
-
-      //
-      // wait for jack callback
-      //
-      for(int i = 0; i < 60; ++i)
-      {
-        if(MusEGlobal::audio->isRunning())
-          break;
-        sleep(1);
+          else
+          {
+            QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
+                tr("Was not able to start audio, check if jack is running.\n"));
+          }
+        }
       }
-      if(!MusEGlobal::audio->isRunning())
-      {
-        QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-            tr("Timeout waiting for audio to run. Check if jack is running.\n"));
-      }
-      //
-      // now its safe to ask the driver for realtime
-      // priority
+      else
+        fprintf(stderr, "seqStart(): audio is NULL\n");
 
-      MusEGlobal::realTimePriority = MusEGlobal::audioDevice->realtimePriority();
-      if(MusEGlobal::debugMsg)
-        printf("MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
+
+      // Now it is safe to ask the driver for realtime priority
 
       int pfprio = 0;
-      int midiprio = 0;
-
-      // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
-      //  while the determined MusEGlobal::realTimePriority can be 0.
-      // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread
-      //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
-      if(MusEGlobal::realTimeScheduling)
+      // TODO: Hm why is prefetch priority so high again? Was it to overcome some race problems? Should it be lowest - disk thread?
+      if(MusEGlobal::audioDevice)
       {
-        if(MusEGlobal::realTimePriority - 5 >= 0)
-          pfprio = MusEGlobal::realTimePriority - 5;
-        if(MusEGlobal::realTimePriority - 1 >= 0)
-          midiprio = MusEGlobal::realTimePriority - 1;
-      }
-
-      if(MusEGlobal::midiRTPrioOverride > 0)
-        midiprio = MusEGlobal::midiRTPrioOverride;
-
-      // FIXME FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
-
-      MusEGlobal::audioPrefetch->start(pfprio);
-
-      // In case prefetch is not filled, do it now.
-      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
-
-      MusEGlobal::midiSeq->start(midiprio);
-
-      int counter=0;
-      while (++counter) {
-        if (counter > 1000) {
-            fprintf(stderr,"midi sequencer thread does not start!? Exiting...\n");
-            exit(33);
-        }
-        MusEGlobal::midiSeqRunning = MusEGlobal::midiSeq->isRunning();
-        if (MusEGlobal::midiSeqRunning)
-          break;
-        usleep(1000);
+        MusEGlobal::realTimePriority = MusEGlobal::audioDevice->realtimePriority();
         if(MusEGlobal::debugMsg)
-          printf("looping waiting for sequencer thread to start\n");
+          fprintf(stderr, "MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
+
+        // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
+        //  while the determined MusEGlobal::realTimePriority can be 0.
+        // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread
+        //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
+        if(MusEGlobal::realTimeScheduling)
+        {
+          if(MusEGlobal::realTimePriority - 5 >= 0)
+            pfprio = MusEGlobal::realTimePriority - 5;
+        }
+        // FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
       }
-      if(!MusEGlobal::midiSeqRunning)
+      else
+        fprintf(stderr, "seqStart(): audioDevice is NULL\n");
+
+      if(MusEGlobal::audioPrefetch)
       {
-        fprintf(stderr, "midiSeq is not running! Exiting...\n");
-        exit(33);
+        if(!MusEGlobal::audioPrefetch->isRunning())
+        {
+          MusEGlobal::audioPrefetch->start(pfprio);
+          // In case prefetch is not filled, do it now.
+          MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
+        }
       }
+      else
+        fprintf(stderr, "seqStart(): audioPrefetch is NULL\n");
+
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->start(0); // Prio unused, set in start.
+
       return true;
       }
 
@@ -242,7 +236,8 @@ void MusE::seqStop()
 
       MusEGlobal::song->setStop(true);
       MusEGlobal::song->setStopPlay(false);
-      MusEGlobal::midiSeq->stop(true);
+      if(MusEGlobal::midiSeq)
+         MusEGlobal::midiSeq->stop(true);
       MusEGlobal::audio->stop(true);
       MusEGlobal::audioPrefetch->stop(true);
       if (MusEGlobal::realTimeScheduling && watchdogThread)
@@ -1586,7 +1581,10 @@ void MusE::closeEvent(QCloseEvent* event)
 
       delete MusEGlobal::audioPrefetch;
       delete MusEGlobal::audio;
-      delete MusEGlobal::midiSeq;
+
+      // Destroy the sequencer object if it exists.
+      MusECore::exitMidiSequencer();
+
       delete MusEGlobal::song;
 
       if(MusEGlobal::debugMsg)

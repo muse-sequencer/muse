@@ -4,7 +4,7 @@
 //  $Id: midi.cpp,v 1.43.2.22 2009/11/09 20:28:28 terminator356 Exp $
 //
 //  (C) Copyright 1999/2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -1696,12 +1696,21 @@ void Audio::processMidi()
       //
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
+        MidiDevice* pl_md = *id;
         // We are done with the 'frozen' recording fifos, remove the events.
-        (*id)->afterProcess();
-
+        pl_md->afterProcess();
         // ALSA devices handled by another thread.
-        if((*id)->deviceType() != MidiDevice::ALSA_MIDI)
-          (*id)->processMidi();
+        const MidiDevice::MidiDeviceType typ = pl_md->deviceType();
+        switch(typ)
+        {
+          case MidiDevice::ALSA_MIDI:
+          break;
+
+          case MidiDevice::JACK_MIDI:
+          case MidiDevice::SYNTH_MIDI:
+            pl_md->processMidi();
+          break;
+        }
       }
       MusEGlobal::midiBusy=false;
       }

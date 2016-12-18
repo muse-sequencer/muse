@@ -1272,6 +1272,10 @@ void MidiAlsaDevice::handleSeek()
 
 bool initMidiAlsa()
       {
+      // The sequencer is required for ALSA midi. Initialize it if not already done.
+      // But do not start the sequencer thread yet... the caller may want to do that a bit later.
+      MusECore::initMidiSequencer();
+
       if(alsaSeq)
       {
         DEBUG_PRST_ROUTES(stderr, "initMidiAlsa: alsaSeq already initialized, ignoring\n");
@@ -2114,24 +2118,24 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CLOCK, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CLOCK, curTime());
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_START, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, curTime());
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CONTINUE, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, curTime());
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_STOP, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, curTime());
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_TICK, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, curTime());
                         //mdev->syncInfo().trigTickDetect();
                         break;
 
@@ -2155,12 +2159,12 @@ void alsaProcessMidiInput()
                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:  // write port is released
                         break;
                   case SND_SEQ_EVENT_SONGPOS:
-                        MusEGlobal::midiSeq->setSongPosition(curPort, ev->data.control.value);
+                        MusEGlobal::midiSyncContainer.setSongPosition(curPort, ev->data.control.value);
                         break;
                   case SND_SEQ_EVENT_SENSING:
                         break;
                   case SND_SEQ_EVENT_QFRAME:
-                        MusEGlobal::midiSeq->mtcInputQuarter(curPort, ev->data.control.value);
+                        MusEGlobal::midiSyncContainer.mtcInputQuarter(curPort, ev->data.control.value);
                         break;
                   // case SND_SEQ_EVENT_CLIENT_START:
                   // case SND_SEQ_EVENT_CLIENT_EXIT:

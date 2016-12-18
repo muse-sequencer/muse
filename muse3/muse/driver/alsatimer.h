@@ -46,7 +46,6 @@ class AlsaTimer : public Timer{
     char timername[64];
     signed int count;
     //unsigned int ticks;
-    bool findBest;
 
     public:
        AlsaTimer();
@@ -61,8 +60,6 @@ class AlsaTimer : public Timer{
        virtual bool startTimer();
        virtual bool stopTimer();
        virtual unsigned int getTimerTicks(bool printTicks=false);
-       
-       void setFindBestTimer(bool b) { findBest = b; }
 };
 
 } // namespace MusECore

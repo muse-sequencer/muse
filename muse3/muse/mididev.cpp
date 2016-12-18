@@ -282,20 +282,20 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
                     if ((p[0] == 0x7f)
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
-                                MusEGlobal::midiSeq->mmcInput(_port, p, n);
+                                MusEGlobal::midiSyncContainer.mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
-                                MusEGlobal::midiSeq->mtcInputFull(_port, p, n);
+                                MusEGlobal::midiSyncContainer.mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
-                          MusEGlobal::midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          MusEGlobal::midiSyncContainer.nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
                     }
-              }
+          }
           else    
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
             MusEGlobal::midiPorts[_port].syncInfo().trigActDetect(event.channel());

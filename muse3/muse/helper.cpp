@@ -380,7 +380,7 @@ void populateMidiPorts()
       if(dev)
       {
         ++jack_midis_found;
-        MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
+        MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         if(++port_num == MIDI_PORTS)
           return;
       }  
@@ -399,8 +399,8 @@ void populateMidiPorts()
       if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
         continue;
       dev = *i;
-      MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
-        
+      MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
+
       if(++port_num == MIDI_PORTS)
         return;
     }

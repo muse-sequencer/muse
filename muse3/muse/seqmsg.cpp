@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include "song.h"
+#include "midiseq.h"
 #include "midiport.h"
 #include "minstrument.h"
 #include "app.h"
@@ -1038,5 +1039,28 @@ void Audio::msgAudioWait()
       msg.id     = AUDIO_WAIT;
       sendMsg(&msg);
       }
+
+//---------------------------------------------------------
+//   msgSetMidiDevice
+//    to avoid timeouts in the RT-thread, setMidiDevice
+//    is done in GUI context after setting the audio and midi threads
+//    into idle mode
+//---------------------------------------------------------
+
+void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
+{
+  MusECore::AudioMsg msg;
+  msg.id = MusECore::SEQM_IDLE;
+  msg.a  = true;
+  //MusEGlobal::midiSeq->sendMsg(&msg);
+  sendMsg(&msg); // Idle both audio and midi.
+
+  port->setMidiDevice(device);
+
+  msg.id = MusECore::SEQM_IDLE;
+  msg.a  = false;
+  //MusEGlobal::midiSeq->sendMsg(&msg);
+  sendMsg(&msg); // Idle both audio and midi.
+}
 
 } // namespace MusECore

@@ -406,7 +406,10 @@ class MusE : public QMainWindow
       void changeConfig(bool writeFlag, bool simple = false);
       
       void seqStop();
-      bool seqStart();  
+      bool seqStart();
+      // Starts the ALSA midi portion of the sequencer. audioDevice must be valid.
+      // Returns true if successful or already running.
+//       bool seqStartMidi();
       void setHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }

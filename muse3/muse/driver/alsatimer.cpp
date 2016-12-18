@@ -41,7 +41,6 @@ namespace MusECore {
      id = NULL;
      info = NULL;
      params = NULL;
-     findBest = true;
      }
      
   AlsaTimer::~AlsaTimer()
@@ -79,58 +78,55 @@ signed int AlsaTimer::initTimer()
   long best_res = LONG_MAX;
   int err;
 
-  if(findBest)
+  snd_timer_query_t *timer_query = NULL;
+  if(snd_timer_query_open(&timer_query, "hw", 0) >= 0)
   {
-    snd_timer_query_t *timer_query = NULL;
-    if(snd_timer_query_open(&timer_query, "hw", 0) >= 0)
-    {
-      int is_slave;
-      int device = SND_TIMER_GLOBAL_SYSTEM;
-      int devclass = SND_TIMER_CLASS_GLOBAL;
-      int sclass = SND_TIMER_CLASS_NONE;
-      int card = 0;
-      int subdevice = 0;
+    int is_slave;
+    int device = SND_TIMER_GLOBAL_SYSTEM;
+    int devclass = SND_TIMER_CLASS_GLOBAL;
+    int sclass = SND_TIMER_CLASS_NONE;
+    int card = 0;
+    int subdevice = 0;
 
-      while(snd_timer_query_next_device(timer_query, id) >= 0)
+    while(snd_timer_query_next_device(timer_query, id) >= 0)
+    {
+      devclass = snd_timer_id_get_class(id);
+      if(devclass < 0)
+        break;
+      sclass = snd_timer_id_get_sclass(id);
+      if(sclass < 0)
+        sclass = 0;
+      card = snd_timer_id_get_card(id);
+      if(card < 0)
+        card = 0;
+      device = snd_timer_id_get_device(id);
+      if(device < 0)
+        device = 0;
+      subdevice = snd_timer_id_get_subdevice(id);
+      if(subdevice < 0)
+        subdevice = 0;
+      snprintf(timername, sizeof(timername) - 1, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
+      if(snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK) >= 0)
       {
-        devclass = snd_timer_id_get_class(id);
-        if(devclass < 0)
-          break;
-        sclass = snd_timer_id_get_sclass(id);
-        if(sclass < 0)
-          sclass = 0;
-        card = snd_timer_id_get_card(id);
-        if(card < 0)
-          card = 0;
-        device = snd_timer_id_get_device(id);
-        if(device < 0)
-          device = 0;
-        subdevice = snd_timer_id_get_subdevice(id);
-        if(subdevice < 0)
-          subdevice = 0;
-        snprintf(timername, sizeof(timername) - 1, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
-        if(snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK) >= 0)
+        if(snd_timer_info(handle, info) >= 0)
         {
-          if(snd_timer_info(handle, info) >= 0)
+          // Select a non slave timer with the lowest resolution value
+          is_slave = snd_timer_info_is_slave(info);
+          long res = snd_timer_info_get_resolution(info);
+          if((is_slave == 0) && (best_res > res))
           {
-            // Select a non slave timer with the lowest resolution value
-            is_slave = snd_timer_info_is_slave(info);
-            long res = snd_timer_info_get_resolution(info);
-            if((is_slave == 0) && (best_res > res))
-            {
-              best_res = res;
-              best_dev = device;
-              best_devclass = devclass;
-              best_sclass = sclass;
-              best_card = card;
-              best_subdevice = subdevice;
-            }
+            best_res = res;
+            best_dev = device;
+            best_devclass = devclass;
+            best_sclass = sclass;
+            best_card = card;
+            best_subdevice = subdevice;
           }
-          snd_timer_close(handle);
         }
+        snd_timer_close(handle);
       }
-      snd_timer_query_close(timer_query);
     }
+    snd_timer_query_close(timer_query);
   }
 
   sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", best_devclass, best_sclass, best_card, best_dev, best_subdevice);

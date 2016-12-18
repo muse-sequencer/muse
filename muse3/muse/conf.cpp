@@ -430,7 +430,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if (dev) {
                                     if(pre_mididevice_ver_found)
                                       dev->setOpenFlags(openFlags);
-                                    MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
+                                    MusEGlobal::audio->msgSetMidiDevice(mp, dev);
                                     }
                               return;
                               }
@@ -681,16 +681,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(p >= 0 && p < MidiSyncInfo::TYPE_END)
                               {
                                 MusEGlobal::syncRecFilterPreset = MidiSyncInfo::SyncRecFilterPresetType(p);
-                                if(MusEGlobal::midiSeq)
-                                  MusEGlobal::midiSeq->setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+                                MusEGlobal::midiSyncContainer.setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
                               }
                               }
                         else if (tag == "syncRecTempoValQuant")
                               {
                                 double qv = xml.parseDouble();
                                 MusEGlobal::syncRecTempoValQuant = qv;
-                                if(MusEGlobal::midiSeq)
-                                  MusEGlobal::midiSeq->setRecTempoValQuant(qv);
+                                MusEGlobal::midiSyncContainer.setRecTempoValQuant(qv);
                               }
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());

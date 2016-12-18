@@ -1147,7 +1147,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
 
                     MusECore::MidiDevice* sdev = MusEGlobal::midiDevices.find(acttext, typ);
 
-                    MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[potential_new_port_no], sdev);
+                    MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[potential_new_port_no], sdev);
                     n=potential_new_port_no;
                     
                     MusEGlobal::song->update();
