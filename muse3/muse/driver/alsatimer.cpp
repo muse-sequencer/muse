@@ -25,7 +25,11 @@
 //
 //=========================================================
         
+
 #include "alsatimer.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <climits>
 #include <stdio.h>
 
@@ -268,3 +272,5 @@ unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
     }
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT

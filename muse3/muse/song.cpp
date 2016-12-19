@@ -1957,6 +1957,7 @@ void Song::clear(bool signal, bool clear_all)
               break;
             }  
           }  
+#ifdef ALSA_SUPPORT
           else if(dynamic_cast< MidiAlsaDevice* >(*imd))
           {
             // With alsa devices, we must not delete them (they're always in the list). But we must 
@@ -1964,6 +1965,7 @@ void Song::clear(bool signal, bool clear_all)
             (*imd)->inRoutes()->clear();
             (*imd)->outRoutes()->clear();
           }
+#endif
         }
       }  
       while (loop);

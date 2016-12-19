@@ -42,13 +42,17 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/mman.h>
+
+#include "config.h"
+
+#ifdef ALSA_SUPPORT
 #include <alsa/asoundlib.h>
+#endif
 
 #include "al/dsp.h"
 #include "app.h"
 #include "audio.h"
 #include "audiodev.h"
-#include "config.h"
 #include "gconfig.h"
 #include "globals.h"
 #include "helper.h"
@@ -88,7 +92,10 @@ extern void initAudio();
 extern void initAudioPrefetch();   
 extern void initMidiSynth();
 
+#ifdef ALSA_SUPPORT
 extern snd_seq_t * alsaSeq;
+#endif
+
 extern void setAlsaClientName(const char*);
 }
 
@@ -850,8 +857,10 @@ int main(int argc, char* argv[])
           int lash_flags = LASH_Config_File;
           const char *muse_name = PACKAGE_NAME;
           MusEGui::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
+#ifdef ALSA_SUPPORT
           if(MusECore::alsaSeq)
             lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
+#endif
           if (!noAudio) {
                 const char *jack_name = MusEGlobal::audioDevice->clientName();
                 lash_jack_client_name (MusEGui::lash_client, jack_name);

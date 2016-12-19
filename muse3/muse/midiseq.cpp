@@ -32,7 +32,9 @@
 #include <sys/ioctl.h>
 #include <poll.h>
 #include <math.h>
+#include <errno.h>
 
+#include "config.h"
 #include "app.h"
 #include "globals.h"
 #include "driver/alsatimer.h"
@@ -210,7 +212,8 @@ MidiSeq::~MidiSeq()
 signed int MidiSeq::selectTimer()
     {
     int tmrFd;
-    
+
+#ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
     tmrFd = timer->initTimer();
@@ -219,6 +222,7 @@ signed int MidiSeq::selectTimer()
         return tmrFd;
     }
     delete timer;
+#endif
 
     printf("Trying RTC timer...\n");
     timer = new RtcTimer();

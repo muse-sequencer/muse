@@ -1,3 +1,8 @@
+18.12.2016
+         * ALSA support is now OPTIONAL ! :
+         * MusE can now be built as a PURE Jack application:
+         - Also fixed some problems with various config combinations of DSSI, liblo, and ALSA support.
+           Note: The smaller DSSI ALSA Compatibility package is NOT suitable for our DSSI support. (Tim)
 17.12.2016
          * Eliminated midi sequencer thread when ALSA midi driver is not enabled: (Tim)
            When 'ALSA' button is not clicked in midi config dialog, MusE is running PURE Jack,

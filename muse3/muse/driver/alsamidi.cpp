@@ -21,9 +21,12 @@
 //
 //=========================================================
 
+#include "alsamidi.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <stdio.h>
 
-#include "alsamidi.h"
 #include "globals.h"
 #include "midi.h"
 #include "../midiport.h"
@@ -2368,3 +2371,19 @@ void MidiAlsaDevice::dump(const snd_seq_event_t* ev)
 }
 
 } // namespace MusECore
+
+#else // ALSA_SUPPORT
+
+namespace MusECore {
+
+void initDSSI() {}
+bool initMidiAlsa() { return false; }
+void exitMidiAlsa() {}
+int alsaSelectRfd() { return -1; }
+int alsaSelectWfd() { return -1; }
+void alsaProcessMidiInput() { }
+void alsaScanMidiPorts() { }
+void setAlsaClientName(const char*) { }
+}
+
+#endif // ALSA_SUPPORT

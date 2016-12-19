@@ -128,8 +128,10 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
   }
   #endif  
     
+  #if defined(DSSI_SUPPORT) || defined(OSC_DEBUG)
   bool isSynth = false;
-  
+  #endif
+
   #ifdef DSSI_SUPPORT
   if(strncmp(p, "/dssi_synth/", 12) == 0)
   {

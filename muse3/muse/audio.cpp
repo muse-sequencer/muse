@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "app.h"
 #include "song.h"

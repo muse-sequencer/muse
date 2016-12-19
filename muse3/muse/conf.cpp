@@ -266,6 +266,7 @@ static void readConfigMidiDevice(Xml& xml)
                                     fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
                                   dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                                 }
+#ifdef ALSA_SUPPORT
                                 else
                                 if(type == MidiDevice::ALSA_MIDI)
                                 {
@@ -273,6 +274,7 @@ static void readConfigMidiDevice(Xml& xml)
                                     fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
                                   dev = MidiAlsaDevice::createAlsaMidiDevice(device, rwFlags);  
                                 }
+#endif
                               }                              
                               
                               if(MusEGlobal::debugMsg && !dev) 

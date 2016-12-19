@@ -32,7 +32,6 @@
 #include <QVector>
 #include <QLocale>
 #include <algorithm>
-#include <lo/lo_osc_types.h>
 
 #include "meter.h"
 #include "utils.h"

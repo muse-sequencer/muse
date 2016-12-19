@@ -2971,7 +2971,22 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
 //---------------------------------------------------------
 
 #ifdef OSC_SUPPORT
-int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* value)
+int Plugin::oscConfigure(
+LADSPA_Handle
+#if defined(DSSI_SUPPORT)
+handle
+#endif
+,
+const char*
+#if defined(DSSI_SUPPORT) || defined(PLUGIN_DEBUGIN)
+key
+#endif
+,
+const char*
+#if defined(DSSI_SUPPORT) || defined(PLUGIN_DEBUGIN)
+value
+#endif
+)
       {
       #ifdef PLUGIN_DEBUGIN
       printf("Plugin::oscConfigure effect plugin label:%s key:%s value:%s\n", plugin->Label, key, value);
@@ -3013,7 +3028,17 @@ int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* valu
 //   oscConfigure
 //---------------------------------------------------------
 
-int PluginI::oscConfigure(const char *key, const char *value)
+int PluginI::oscConfigure(
+const char *
+#if defined(DSSI_SUPPORT) || defined(PLUGIN_DEBUGIN)
+key
+#endif
+,
+const char *
+#if defined(DSSI_SUPPORT) || defined(PLUGIN_DEBUGIN)
+value
+#endif
+)
       {
       if(!_plugin)
         return 0;

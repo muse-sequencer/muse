@@ -261,6 +261,8 @@ target_link_libraries(core
       widgets_functiondialogs
 
       ${QT_LIBRARIES}
+      ## Bring in the dssi alsa compatibility libraries if required
+      ${DSSI_ALSA_COMPAT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       ${UUID_LIBRARIES}

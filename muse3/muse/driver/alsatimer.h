@@ -27,6 +27,10 @@
 #ifndef __ALSATIMER_H__
 #define __ALSATIMER_H__
 
+#include "config.h"
+
+#ifdef ALSA_SUPPORT
+
 #include "alsa/asoundlib.h"
 #include "timerdev.h"
 
@@ -63,5 +67,7 @@ class AlsaTimer : public Timer{
 };
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT
 
 #endif //__ALSATIMER_H__

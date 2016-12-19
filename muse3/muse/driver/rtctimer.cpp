@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <poll.h>
+#include <errno.h>
 
 
 #include "rtctimer.h"

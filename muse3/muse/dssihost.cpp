@@ -429,7 +429,11 @@ bool DssiSynthIF::guiVisible() const
 //   showNativeGui
 //---------------------------------------------------------
 
-void DssiSynthIF::showNativeGui(bool v)
+void DssiSynthIF::showNativeGui(bool
+#if defined(OSC_SUPPORT)
+v
+#endif
+)
       {
       #ifdef OSC_SUPPORT
       
