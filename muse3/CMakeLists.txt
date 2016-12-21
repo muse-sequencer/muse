@@ -534,26 +534,13 @@ configure_file (
       ${PROJECT_BINARY_DIR}/config.h
       )
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
+file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h)
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
+file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h)
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
 
 include_directories(
    .

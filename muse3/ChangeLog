@@ -1,3 +1,5 @@
+21.12.2016
+         - Make some cmake system commands friendlier. (Tim)
 20.12.2016
          - Removed libuuid dependency. Replaced with QUuid. (Tim)
            Tested OK copying and pasting/cloning parts and notes (places using uuids).
