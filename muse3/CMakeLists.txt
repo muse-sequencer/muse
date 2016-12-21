@@ -266,13 +266,6 @@ PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
 include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
-## find libuuid
-##
-
-PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
-include_directories(${UUID_INCLUDE_DIRS})
-
-##
 ## find jack >= 0.103.0
 ##
 
@@ -660,10 +653,6 @@ endif (NOT SNDFILE_FOUND)
 if (NOT SAMPLERATE_FOUND)
       message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
 endif (NOT SAMPLERATE_FOUND)
-
-if (NOT UUID_FOUND)
-      message("** ERROR: uuid >= 0.0.1 is required, but development files were not found.")
-endif (NOT UUID_FOUND)
 
 if (NOT JACK_FOUND)
       message("** ERROR: jack >= 0.103 is required, but development files were not found.")

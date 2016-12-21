@@ -27,8 +27,7 @@
 
 #include <map> 
 
-// Added by T356.
-#include <uuid/uuid.h>
+#include <QUuid>
 
 #include "event.h"
 #include "audioconvert.h"
@@ -47,7 +46,7 @@ class PendingOperationList;
 struct ClonePart {
       const Part* cp;
       int id;
-      uuid_t uuid;
+      QUuid _uuid;
       bool is_deleted;
       ClonePart(const Part*, int i = -1);
       };

@@ -265,7 +265,6 @@ target_link_libraries(core
       ${DSSI_ALSA_COMPAT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
-      ${UUID_LIBRARIES}
       ${REM_LIB}
       ${FST_LIB}
       dl

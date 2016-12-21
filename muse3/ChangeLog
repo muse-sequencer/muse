@@ -1,3 +1,6 @@
+20.12.2016
+         - Removed libuuid dependency. Replaced with QUuid. (Tim)
+           Tested OK copying and pasting/cloning parts and notes (places using uuids).
 18.12.2016
          * ALSA support is now OPTIONAL ! :
          * MusE can now be built as a PURE Jack application:

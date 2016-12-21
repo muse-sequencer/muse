@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <uuid/uuid.h>
+#include <QUuid>
 #include <QProgressDialog>
 #include <QMessageBox>
 #include <QCheckBox>
@@ -133,8 +133,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
       {
       int id = -1;
       Part* npart = 0;
-      uuid_t uuid;
-      uuid_clear(uuid);
+      QUuid uuid;
       bool uuidvalid = false;
       bool clone = true;
       bool wave = false;
@@ -168,7 +167,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                           {
                             for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i)
                             {
-                              if(uuid_compare(uuid, i->uuid) == 0) // Is a matching part found in the clone list?
+                              if(uuid == i->_uuid) // Is a matching part found in the clone list?
                               {
                                 Track* cpt = i->cp->track();
                                 if(toTrack) // If we want to paste to the given track...
@@ -261,7 +260,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                             {
                               ClonePart ncp(npart);
                               // New ClonePart creates its own uuid, but we need to replace it.
-                              uuid_copy(ncp.uuid, uuid);
+                              ncp._uuid = uuid; // OK for non-windows?
                               MusEGlobal::cloneList.push_back(ncp);
                             }
                           }
@@ -332,8 +331,8 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                         }
                         else if (tag == "uuid")
                         {
-                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
-                          if(!uuid_is_null(uuid))
+                          uuid = QUuid(xml.s2());
+                          if(!uuid.isNull())
                           {
                             uuidvalid = true;
                           }
@@ -360,8 +359,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
 void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
       int id              = -1;
-      uuid_t uuid;
-      uuid_clear(uuid);
+      QUuid uuid;
       bool dumpEvents     = true;
       bool wave = _track->type() == Track::WAVE;
 
@@ -374,15 +372,15 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         {
           if(i->cp->isCloneOf(this))
           {
-            uuid_copy(uuid, i->uuid);
+            uuid = i->_uuid;
             dumpEvents = false;
             break;
           }
         }
-        if(uuid_is_null(uuid))
+        if(uuid.isNull())
         {
           ClonePart cp(this);
-          uuid_copy(uuid, cp.uuid);
+          uuid = cp._uuid;
           MusEGlobal::cloneList.push_back(cp);
         }
       }
@@ -412,14 +410,10 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       //  part is a clone.
       if(isCopy)
       {
-        char sid[40]; // uuid string is 36 chars. Try 40 for good luck.
-        sid[0] = 0;
-        uuid_unparse_lower(uuid, sid);
-
         if(wave)
-          xml.nput(level, "<part type=\"wave\" uuid=\"%s\"", sid);
+          xml.nput(level, "<part type=\"wave\" uuid=\"%s\"", uuid.toByteArray().constData());
         else
-          xml.nput(level, "<part uuid=\"%s\"", sid);
+          xml.nput(level, "<part uuid=\"%s\"", uuid.toByteArray().constData());
 
         if(hasClones())
           xml.nput(" isclone=\"1\"");
