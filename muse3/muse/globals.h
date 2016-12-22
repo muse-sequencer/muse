@@ -211,7 +211,8 @@ extern const QString noOutputRoutingToolTipWarn;
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"
 #define JACK_MIDI_IN_PORT_SUFFIX  "_in"
 
-extern uid_t euid, ruid;
+// REMOVE Tim. setuid. Removed.
+// extern uid_t euid, ruid;
 extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();

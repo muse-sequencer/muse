@@ -109,31 +109,32 @@ extern lash_client_t * lash_client;
 
 static QString locale_override;
 
-//---------------------------------------------------------
-//   getCapabilities
-//---------------------------------------------------------
-
-static void getCapabilities()
-      {
-#ifdef RTCAP
-#ifdef __linux__
-      const char* napp = getenv("GIVERTCAP");
-      if (napp == 0)
-            napp = "givertcap";
-      int pid = fork();
-      if (pid == 0) {
-            if (execlp(napp, napp, 0) == -1)
-                  perror("exec givertcap failed");
-            }
-      else if (pid == -1) {
-            perror("fork givertcap failed");
-            }
-      else {
-            waitpid(pid, 0, 0);
-            }
-#endif // __linux__
-#endif
-      }
+// REMOVE Tim. setuid. Removed.
+// //---------------------------------------------------------
+// //   getCapabilities
+// //---------------------------------------------------------
+// 
+// static void getCapabilities()
+//       {
+// #ifdef RTCAP
+// #ifdef __linux__
+//       const char* napp = getenv("GIVERTCAP");
+//       if (napp == 0)
+//             napp = "givertcap";
+//       int pid = fork();
+//       if (pid == 0) {
+//             if (execlp(napp, napp, 0) == -1)
+//                   perror("exec givertcap failed");
+//             }
+//       else if (pid == -1) {
+//             perror("fork givertcap failed");
+//             }
+//       else {
+//             waitpid(pid, 0, 0);
+//             }
+// #endif // __linux__
+// #endif
+//       }
 
 //---------------------------------------------------------
 //   printVersion
@@ -590,13 +591,14 @@ int main(int argc, char* argv[])
       argc -= optind;
       ++argc;
         
-      MusEGlobal::ruid = getuid();
-      MusEGlobal::euid = geteuid();
-      MusEGlobal::undoSetuid();
-      getCapabilities();
-      if (MusEGlobal::debugMsg)
-            printf("Start euid: %d ruid: %d, Now euid %d\n",
-                  MusEGlobal::euid, MusEGlobal::ruid, geteuid());
+// REMOVE Tim. setuid. Removed.
+//       MusEGlobal::ruid = getuid();
+//       MusEGlobal::euid = geteuid();
+//       MusEGlobal::undoSetuid();
+//       getCapabilities();
+//       if (MusEGlobal::debugMsg)
+//             printf("Start euid: %d ruid: %d, Now euid %d\n",
+//                   MusEGlobal::euid, MusEGlobal::ruid, geteuid());
             
       srand(time(0));   // initialize random number generator
       //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
