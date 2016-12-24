@@ -28,7 +28,6 @@
 #include <QButtonGroup>
 #include <QLabel>
 #include <QFileDialog>
-//#include <QSocketNotifier>
 #include <QLayout>
 #include <QToolTip>
 #include <QLineEdit>

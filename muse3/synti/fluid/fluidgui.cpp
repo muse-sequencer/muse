@@ -30,7 +30,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
-//#include <QSocketNotifier>
 
 #include "common_defs.h"
 #include "fluidgui.h"
