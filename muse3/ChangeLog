@@ -1,3 +1,5 @@
+23.12.2016
+         - MESS synths: Use Queued Connections instead of pipes for gui -> synth IPC. (Tim)
 21.12.2016
          - Make some cmake system commands friendlier. (Tim)
          - Remove some more old setuid stuff.

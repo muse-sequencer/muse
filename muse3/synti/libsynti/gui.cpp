@@ -25,7 +25,14 @@
 #include "gui.h"
 #include "muse/midi.h"
 
-#include <unistd.h>
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_SYNTH_GUI(dev, format, args...) // fprintf(dev, format, ##args);
+
+
+void SignalGui::sendSignal()
+{
+  emit wakeup(0);
+}
 
 //---------------------------------------------------------
 //   MessGui
@@ -36,13 +43,8 @@ MessGui::MessGui()
       //
       // prepare for interprocess communication:
       //
-      int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
-            perror("thread:creating pipe4");
-            exit(-1);
-            }
-      readFd      = filedes[0];
-      writeFd     = filedes[1];
+      guiSignal = new SignalGui();
+
       wFifoSize   = 0;
       wFifoWindex = 0;
       wFifoRindex = 0;
@@ -57,6 +59,8 @@ MessGui::MessGui()
 
 MessGui::~MessGui()
       {
+        if(guiSignal)
+          delete guiSignal;
       }
 
 //---------------------------------------------------------
@@ -65,9 +69,7 @@ MessGui::~MessGui()
 
 void MessGui::readMessage()
       {
-      char c;
       while (rFifoSize) {
-            ::read(readFd, &c, 1);
             processEvent(rFifo[rFifoRindex]);
             rFifoRindex = (rFifoRindex + 1) % EVENT_FIFO_SIZE;
             --rFifoSize;
@@ -81,7 +83,7 @@ void MessGui::readMessage()
 void MessGui::sendEvent(const MusECore::MidiPlayEvent& ev)
       {
       if (wFifoSize == EVENT_FIFO_SIZE) {
-            printf("event gui->synti  fifo overflow\n");
+            fprintf(stderr, "event gui->synti  fifo overflow\n");
             return;
             }
       wFifo[wFifoWindex] = ev;
@@ -95,9 +97,6 @@ void MessGui::sendEvent(const MusECore::MidiPlayEvent& ev)
 
 void MessGui::sendController(int ch, int idx, int val)
       {
-//      MusECore::MidiPlayEvent pe(0, 0, ch, MusECore::ME_CONTROLLER, idx, val);
-//      sendEvent(pe);
-
       sendEvent(MusECore::MidiPlayEvent(0, 0, ch, MusECore::ME_CONTROLLER, idx, val));
       }
 
@@ -107,9 +106,6 @@ void MessGui::sendController(int ch, int idx, int val)
 
 void MessGui::sendSysex(unsigned char* p, int n)
       {
-//      MusECore::MidiPlayEvent pe(0, 0, MusECore::ME_SYSEX, p, n);
-//      sendEvent(pe);
-        
         sendEvent(MusECore::MidiPlayEvent(0, 0, MusECore::ME_SYSEX, p, n));
       }
 
@@ -121,13 +117,13 @@ void MessGui::sendSysex(unsigned char* p, int n)
 void MessGui::writeEvent(const MusECore::MidiPlayEvent& ev)
       {
       if (rFifoSize == EVENT_FIFO_SIZE) {
-            printf("event synti->gui  fifo overflow\n");
+            fprintf(stderr, "event synti->gui  fifo overflow\n");
             return;
             }
       rFifo[rFifoWindex] = ev;
       rFifoWindex = (rFifoWindex + 1) % EVENT_FIFO_SIZE;
       ++rFifoSize;
-      write(writeFd, "x", 1);  // wakeup GUI
+      guiSignal->sendSignal();
       }
 
 //---------------------------------------------------------

@@ -25,10 +25,37 @@
 #ifndef __SYNTH_GUI_H__
 #define __SYNTH_GUI_H__
 
+#include <QObject>
+#include <QWidget>
+
 #include "mpevent.h"
 
 const int EVENT_FIFO_SIZE = 256;
-class QWidget;
+
+class SignalGui : public QObject
+{
+  Q_OBJECT
+
+  public:
+    void sendSignal();
+
+  // The magic of automatic connection types:
+  // ----------------------------------------
+  // Sometimes this will be a direct connection (when sending initialization
+  //  data from GUI thread for example), and sometimes this will be a queued
+  //  connection (when sending user-adjusted controller values from the realtime
+  //  audio thread for example).
+  // Tested OK so far in debugger. It decouples just fine by itself when needed !
+  //
+  // Quote from http://wiki.qt.io/Threads_Events_QObjects:
+  // "...the current Qt documentation is simply wrong when it states:
+  //  ' Auto Connection (default) The behavior is the same as the Direct Connection,
+  //     if the emitter and receiver are in the same thread. The behavior is the same
+  //     as the Queued Connection, if the emitter and receiver are in different threads.'
+  //  because the emitter object's thread affinity does not matter."
+  signals:
+    void wakeup(int);
+};
 
 //---------------------------------------------------------
 //   MessGui
@@ -36,8 +63,6 @@ class QWidget;
 //---------------------------------------------------------
 
 class MessGui {
-      int writeFd;
-
       // Event Fifo  synti -> GUI
       MusECore::MidiPlayEvent rFifo[EVENT_FIFO_SIZE];
       volatile int rFifoSize;
@@ -51,8 +76,8 @@ class MessGui {
       int wFifoRindex;
 
    protected:
-      int readFd;
-      void readMessage();
+      SignalGui* guiSignal;
+      virtual void readMessage();
       void sendEvent(const MusECore::MidiPlayEvent& ev);
       void sendController(int,int,int);
       void sendSysex(unsigned char*, int);
