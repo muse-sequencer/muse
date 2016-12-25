@@ -4,7 +4,7 @@
 //  $Id: audio.cpp,v 1.59.2.30 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011 - 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -47,6 +47,7 @@
 #include "ticksynth.h"
 //#include "operations.h"
 #include "undo.h"
+#include "gui_signaller.h"
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -112,7 +113,6 @@ const char* audioStates[] = {
       "STOP", "START_PLAY", "PLAY", "LOOP1", "LOOP2", "SYNC", "PRECOUNT"
       };
 
-
 //---------------------------------------------------------
 //   Audio
 //---------------------------------------------------------
@@ -156,25 +156,15 @@ Audio::Audio()
       //---------------------------------------------------
       //  establish pipes/sockets
       //---------------------------------------------------
-
-      int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
-            perror("creating pipe0");
-            exit(-1);
-            }
-      fromThreadFdw = filedes[1];
-      fromThreadFdr = filedes[0];
-      int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
-      if (rv == -1)
-            perror("set pipe O_NONBLOCK");
-
-      if (pipe(filedes) == -1) {
-            perror("creating pipe1");
-            exit(-1);
-            }
-      sigFd = filedes[1];
-      sigFdr = filedes[0];
+      _guiSignaller = new GuiSignaller();
+      _audioMsgSn = -1;
       }
+
+Audio::~Audio()
+{
+  if(_guiSignaller)
+    delete _guiSignaller;
+}
 
 //---------------------------------------------------------
 //   start
@@ -319,7 +309,7 @@ void Audio::shutdown()
       {
       _running = false;
       printf("Audio::shutdown()\n");
-      write(sigFd, "S", 1);
+      _guiSignaller->sendSignal(GuiSignaller::Command, 'S');
       }
 
 //---------------------------------------------------------
@@ -333,13 +323,10 @@ void Audio::process(unsigned frames)
       if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);
-            int sn = msg->serialNo;
+            const int sn = msg->serialNo;
             msg    = 0;    // dont process again
-            int rv = write(fromThreadFdw, &sn, sizeof(int));
-            if (rv != sizeof(int)) {
-                  fprintf(stderr, "audio: write(%d) pipe failed: %s\n",
-                     fromThreadFdw, strerror(errno));
-                  }
+            // Inform the waiting GUI thread (which sends the messages) that we are done.
+            _guiSignaller->sendSignal(GuiSignaller::AudioMessage, sn);
             }
 
       OutputList* ol = MusEGlobal::song->outputs();
@@ -360,7 +347,7 @@ void Audio::process(unsigned frames)
             MusEGlobal::song->reenableTouchedControllers();
             startRolling();
             if (_bounce)
-                  write(sigFd, "f", 1);
+                 _guiSignaller->sendSignal(GuiSignaller::Command, 'f');
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
@@ -377,7 +364,7 @@ void Audio::process(unsigned frames)
                   MusEGlobal::audioDevice->startTransport();
                   }
             else
-                  write(sigFd, "3", 1);   // abort rolling
+                  _guiSignaller->sendSignal(GuiSignaller::Command, '3'); // abort rolling
             }
       else if (state == STOP && jackState == PLAY) {
             _loopCount = 0;
@@ -420,7 +407,7 @@ void Audio::process(unsigned frames)
 
             if (_bounce && _pos >= MusEGlobal::song->rPos()) {
                   _bounce = false;
-                  write(sigFd, "F", 1);
+                  _guiSignaller->sendSignal(GuiSignaller::Command, 'F');
                   return;
                   }
                   
@@ -828,7 +815,7 @@ void Audio::seek(const Pos& p)
             MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
       }
             
-      write(sigFd, "G", 1);   // signal seek to gui
+      _guiSignaller->sendSignal(GuiSignaller::Command, 'G');  // signal seek to gui
       }
 
 //---------------------------------------------------------
@@ -874,7 +861,7 @@ void Audio::startRolling()
                   }
             }
       state = PLAY;
-      write(sigFd, "1", 1);   // Play
+      _guiSignaller->sendSignal(GuiSignaller::Command, '1'); // Play
 
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
       if(!MusEGlobal::extSyncFlag.value())
@@ -999,7 +986,7 @@ void Audio::stopRolling()
       recording    = false;
       endRecordPos = _pos;
       endExternalRecTick = curTickPos;
-      write(sigFd, "0", 1);   // STOP
+      _guiSignaller->sendSignal(GuiSignaller::Command, '0'); // STOP
       }
 
 //---------------------------------------------------------
@@ -1145,7 +1132,7 @@ unsigned Audio::timestamp() const
 
 void Audio::sendMsgToGui(char c)
       {
-      write(sigFd, &c, 1);
+      _guiSignaller->sendSignal(GuiSignaller::Command, c);
       }
 
 } // namespace MusECore

@@ -46,6 +46,7 @@
 #include "midiseq.h"
 #include "gconfig.h"
 #include "ticksynth.h"
+#include "gui_signaller.h"
 
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_
@@ -634,7 +635,7 @@ namespace MusECore {
 
 void Audio::midiPortsChanged()
       {
-      write(sigFd, "P", 1);
+      _guiSignaller->sendSignal(GuiSignaller::Command, 'P');
       }
 
 //---------------------------------------------------------
