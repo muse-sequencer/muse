@@ -24,13 +24,6 @@
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
 ##
-## Expand Qt macros in source files
-##
-QT5_WRAP_CPP ( synti_mocs
-      gui.h
-      )
-
-##
 ## List of source files to compile
 ##
 file (GLOB synti_source_files
@@ -49,7 +42,6 @@ file (GLOB synti_source_files
 ##
 add_library(synti ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h
-      ${synti_mocs}
       ${synti_source_files}
       )
 

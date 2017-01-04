@@ -30,7 +30,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
-//#include <QSocketNotifier>
+#include <QSocketNotifier>
 
 #include "common_defs.h"
 #include "fluidgui.h"
@@ -46,11 +46,10 @@ FLUIDGui::FLUIDGui()
    : QDialog(0, Qt::Window), MessGui()
       {
       setupUi(this);
-
-      // Connect notifier to fifo.
-      // Tests OK. See notes on connection types in gui.h
-      connect(guiSignal, SIGNAL(wakeup(int)), SLOT(readMessage(int)));
-
+      //Connect socketnotifier to fifo
+      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
+      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      
       fdialogButton->setIcon(QIcon(*MusEGui::openIcon));
       connect(fdialogButton, SIGNAL(clicked()), SLOT(soundFontFileDialog()));
       connect(loadButton, SIGNAL(clicked()), SLOT(loadFont()));
