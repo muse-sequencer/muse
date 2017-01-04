@@ -114,6 +114,8 @@ class AudioDevice;
 #define SC_PORT_ALIAS_PREFERENCE      0x80000000  // (Jack) port alias viewing preference has changed
 #define SC_ROUTER_CHANNEL_GROUPING    0x100000000  // Router channel grouping changed
 #define SC_AUDIO_CONTROLLER_LIST      0x200000000  // An audio controller list was added deleted or modified.
+#define SC_PIANO_SELECTION            0x400000000  // Piano keyboard selected note changed.
+#define SC_DRUM_SELECTION             0x800000000  // Drum list selected note changed.
 #define SC_EVERYTHING                 -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

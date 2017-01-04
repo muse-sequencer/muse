@@ -1031,8 +1031,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             default:
             return;
           }
-          return;
         }
+        return;
       }
 
       int field = MusECore::WorkingDrumMapEntry::NoField;
@@ -1088,6 +1088,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       update();
       if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
         dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
+
+      MusEGlobal::song->update(SC_DRUM_SELECTION);
       }
 
 //---------------------------------------------------------
