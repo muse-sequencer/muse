@@ -72,10 +72,6 @@ details.
       - JACK >= 0.103 (development files)
           http://jackaudio.org/
 
-      - libuuid (development files)
-         e2fsprogs package http://e2fsprogs.sourceforge.net/
-         Some distros may include it in another package such as 'libuuid', or offer a choice.
-
       - LADSPA (development file ladspa.h)
          www.ladspa.org
 
