@@ -48,15 +48,6 @@
 namespace MusECore {
 
 //---------------------------------------------------------
-//   handleGuiSignal
-//---------------------------------------------------------
-
-void Audio::handleGuiSignal(int signal)
-{
-  _audioMsgSn = signal;
-}
-
-//---------------------------------------------------------
 //   sendMsg
 //---------------------------------------------------------
 
@@ -67,23 +58,17 @@ void Audio::sendMsg(AudioMsg* m)
 
       if (_running) {
             m->serialNo = sno++;
+            //DEBUG:
             msg = m;
-
-            // Wait for next audio "process" call to finish operation.
-            _audioMsgSn = -1;
-            while(true)
-            {
-              qApp->processEvents();
-              if(_audioMsgSn == -1)
-                continue;
-
-              if(_audioMsgSn != (sno - 1))
-                fprintf(stderr, "audio: bad serial number, read %d expected %d\n", _audioMsgSn, sno - 1);
-
-              break;
-            }
-
-
+            // wait for next audio "process" call to finish operation
+            int no = -1;
+            int rv = read(fromThreadFdr, &no, sizeof(int));
+            if (rv != sizeof(int))
+                  perror("Audio: read pipe failed");
+            else if (no != (sno-1)) {
+                  fprintf(stderr, "audio: bad serial number, read %d expected %d\n",
+                     no, sno-1);
+                  }
             }
       else {
             // if audio is not running (during initialization)

@@ -4,7 +4,7 @@
 //  $Id: audio.h,v 1.25.2.13 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 - 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -32,8 +32,6 @@
 #include "route.h"
 #include "event.h"
 
-#define AUDIO_MSG_FIFO_SIZE 16384
-
 // An experiment to use true frames for time-stamping all recorded input. 
 // (All recorded data actually arrived in the previous period.)
 // TODO: Some more work needs to be done in WaveTrack::getData() in order to
@@ -46,7 +44,6 @@ class AudioTrack;
 class Event;
 class Event;
 class EventList;
-class GuiSignaller;
 class MidiDevice;
 class MidiInstrument;
 class MidiPlayEvent;
@@ -99,11 +96,12 @@ enum {
 extern const char* seqMsgList[];  // for debug
 
 //---------------------------------------------------------
-//   AudioMsg
+//   Msg
 //---------------------------------------------------------
 
 struct AudioMsg : public ThreadMsg {   // this should be an union
       int serialNo;
+      //SndFile* downmix; // DELETETHIS this is unused and probably WRONG (all SndFiles have been replaced by SndFileRs)
       AudioTrack* snode;
       AudioTrack* dnode;
       Route sroute, droute;
@@ -165,11 +163,11 @@ class Audio {
       State state;
 
       AudioMsg* msg;
-      // Signaller for messages to gui
-      GuiSignaller* _guiSignaller;
-      // Serial number for next audio "process" call to finish operation
-      int _audioMsgSn;
+      int fromThreadFdw, fromThreadFdr;  // message pipe
 
+      int sigFd;              // pipe fd for messages to gui
+      int sigFdr;
+      
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
@@ -192,11 +190,11 @@ class Audio {
 
    public:
       Audio();
-      virtual ~Audio();
+      virtual ~Audio() { } 
 
       // Access to message pipe (like from gui namespace), otherwise audio would need to depend on gui.
-      GuiSignaller* guiSignaller() const { return _guiSignaller; }
-      void handleGuiSignal(int signal);
+      int getFromThreadFdw() { return sigFd; } 
+      int getFromThreadFdr() { return sigFdr; }  
       
       void process(unsigned frames);
       bool sync(int state, unsigned frame);

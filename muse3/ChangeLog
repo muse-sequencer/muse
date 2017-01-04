@@ -1,5 +1,3 @@
-24.12.2016
-         - Audio: Use Queued Connections instead of pipes for gui <-> audio IPC. (Tim)
 23.12.2016
          - MESS synths: Use Queued Connections instead of pipes for gui -> synth IPC. (Tim)
 21.12.2016

@@ -471,7 +471,7 @@ public:
       void setClick(bool val);
       void setQuantize(bool val);
       void panic();
-      void seqSignal(int type, int signal);
+      void seqSignal(int fd);
       Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
