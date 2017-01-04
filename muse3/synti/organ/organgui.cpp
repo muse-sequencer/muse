@@ -31,6 +31,7 @@
 #include <QCheckBox>
 #include <QSignalMapper>
 #include <QSlider>
+//#include <QSocketNotifier>
 #include <QSpinBox>
 
 #include "common_defs.h"

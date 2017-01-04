@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
+//#include <QSocketNotifier>
 
 #include "muse/midi.h"
 #include "muse/midictrl.h"

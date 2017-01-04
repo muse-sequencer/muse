@@ -42,6 +42,7 @@
 #include <QLCDNumber>
 #include <QSignalMapper>
 #include <QSlider>
+//#include <QSocketNotifier>
 
 #include "muse/globals.h"
 #include "muse/xml.h"
