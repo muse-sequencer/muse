@@ -69,6 +69,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       cobject.h
       conf.h
       confmport.h
+      gui_signaller.h
       midieditor.h
       miditransform.h
       plugin.h

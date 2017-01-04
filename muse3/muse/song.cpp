@@ -68,6 +68,7 @@
 #include "tempo.h"
 #include "route.h"
 #include "libs/strntcpy.h"
+#include "gui_signaller.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -2140,130 +2141,115 @@ void Song::cleanupForQuit()
         printf("...finished cleaning up.\n");
 }
 
-void Song::seqSignal(int fd)
-      {
-      const int buf_size = 256;  
-      char buffer[buf_size]; 
+void Song::seqSignal(int type, int signal)
+{
+  switch(type)
+  {
+    case GuiSignaller::Command:
+        switch(signal)
+        {
+              case '0':         // STOP
+                    stopRolling();
+                    break;
+              case '1':         // PLAY
+                    setStopPlay(true);
+                    break;
+              case '2':   // record
+                    setRecord(true);
+                    break;
+              case '3':   // START_PLAY + jack STOP
+                    abortRolling();
+                    break;
+              case 'P':   // alsa ports changed
+                    alsaScanMidiPorts();
+                    break;
+              case 'G':
+                    clearRecAutomation(true);
+                    setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+                    break;
+              case 'S':   // shutdown audio
+                    MusEGlobal::muse->seqStop();
 
-      int n = ::read(fd, buffer, buf_size);
-      if (n < 0) {
-            fprintf(stderr, "Song: seqSignal(): READ PIPE failed: %s\n",
-               strerror(errno));
-            return;
-            }
-      for (int i = 0; i < n; ++i) {
-            switch(buffer[i]) {
-                  case '0':         // STOP
-                        stopRolling();
-                        break;
-                  case '1':         // PLAY
-                        setStopPlay(true);
-                        break;
-                  case '2':   // record
-                        setRecord(true);
-                        break;
-                  case '3':   // START_PLAY + jack STOP
-                        abortRolling();
-                        break;
-                  case 'P':   // alsa ports changed
-                        alsaScanMidiPorts();
-                        break;
-                  case 'G':
-                        clearRecAutomation(true);
-                        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
-                        break;
-                  case 'S':   // shutdown audio
-                        MusEGlobal::muse->seqStop();
+                    {
+                    // give the user a sensible explanation
+                    int btn = QMessageBox::critical( MusEGlobal::muse, tr("Jack shutdown!"),
+                        tr("Jack has detected a performance problem which has lead to\n"
+                        "MusE being disconnected.\n"
+                        "This could happen due to a number of reasons:\n"
+                        "- a performance issue with your particular setup.\n"
+                        "- a bug in MusE (or possibly in another connected software).\n"
+                        "- a random hiccup which might never occur again.\n"
+                        "- jack was voluntary stopped by you or someone else\n"
+                        "- jack crashed\n"
+                        "If there is a persisting problem you are much welcome to discuss it\n"
+                        "on the MusE mailinglist.\n"
+                        "(there is information about joining the mailinglist on the MusE\n"
+                        " homepage which is available through the help menu)\n"
+                        "\n"
+                        "To proceed check the status of Jack and try to restart it and then .\n"
+                        "click on the Restart button."), "restart", "cancel");
+                    if (btn == 0) {
+                          fprintf(stderr, "restarting!\n");
+                          MusEGlobal::muse->seqRestart();
+                          }
+                    }
 
-                        {
-                        // give the user a sensible explanation
-                        int btn = QMessageBox::critical( MusEGlobal::muse, tr("Jack shutdown!"),
-                            tr("Jack has detected a performance problem which has lead to\n"
-                            "MusE being disconnected.\n"
-                            "This could happen due to a number of reasons:\n"
-                            "- a performance issue with your particular setup.\n"
-                            "- a bug in MusE (or possibly in another connected software).\n"
-                            "- a random hiccup which might never occur again.\n"
-                            "- jack was voluntary stopped by you or someone else\n"
-                            "- jack crashed\n"
-                            "If there is a persisting problem you are much welcome to discuss it\n"
-                            "on the MusE mailinglist.\n"
-                            "(there is information about joining the mailinglist on the MusE\n"
-                            " homepage which is available through the help menu)\n"
-                            "\n"
-                            "To proceed check the status of Jack and try to restart it and then .\n"
-                            "click on the Restart button."), "restart", "cancel");
-                        if (btn == 0) {
-                              fprintf(stderr, "restarting!\n");
-                              MusEGlobal::muse->seqRestart();
-                              }
-                        }
+                    break;
+              case 'f':   // start freewheel
+                    if(MusEGlobal::debugMsg)
+                      fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
 
-                        break;
-                  case 'f':   // start freewheel
-                        if(MusEGlobal::debugMsg)
-                          fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
-                        
-                        if(MusEGlobal::config.freewheelMode)
-                          MusEGlobal::audioDevice->setFreewheel(true);
-                        
-                        break;
+                    if(MusEGlobal::config.freewheelMode)
+                      MusEGlobal::audioDevice->setFreewheel(true);
 
-                  case 'F':   // stop freewheel
-                        if(MusEGlobal::debugMsg)
-                          fprintf(stderr, "Song: seqSignal: case F: setFreewheel stop\n");
-                        
-                        if(MusEGlobal::config.freewheelMode)
-                          MusEGlobal::audioDevice->setFreewheel(false);
-                        
-                        MusEGlobal::audio->msgPlay(false);
-#if 0 // DELETETHIS
-                        if (record())
-                              MusEGlobal::audio->recordStop();
-                        setStopPlay(false);
-#endif
-                        break;
+                    break;
 
-                  case 'C': // Graph changed
-                        if (MusEGlobal::audioDevice)
-                            MusEGlobal::audioDevice->graphChanged();
-                        break;
+              case 'F':   // stop freewheel
+                    if(MusEGlobal::debugMsg)
+                      fprintf(stderr, "Song: seqSignal: case F: setFreewheel stop\n");
 
-                  case 'R': // Registration changed
-                        if (MusEGlobal::audioDevice)
-                            MusEGlobal::audioDevice->registrationChanged();
-                        break;
+                    if(MusEGlobal::config.freewheelMode)
+                      MusEGlobal::audioDevice->setFreewheel(false);
 
-                  case 'J': // Port connections changed
-                        if (MusEGlobal::audioDevice)
-                            MusEGlobal::audioDevice->connectionsChanged();
-                        break;
+                    MusEGlobal::audio->msgPlay(false);
+      #if 0 // DELETETHIS
+                    if (record())
+                          MusEGlobal::audio->recordStop();
+                    setStopPlay(false);
+      #endif
+                    break;
 
-//                   case 'U': // Send song changed signal
-//                         {
-//                           int d_len = sizeof(SongChangedFlags_t);
-//                           if((n - (i + 1)) < d_len)  // i + 1 = data after this 'U' 
-//                           {
-//                             fprintf(stderr, "Song: seqSignal: case U: Not enough bytes read for SongChangedFlags_t !\n");
-//                             break;
-//                           }
-//                           SongChangedFlags_t f;
-//                           memcpy(&f, &buffer[i + 1], d_len);
-//                           i += d_len; // Move pointer ahead. Loop will also add one ++i. 
-//                           update(f);
-//                         }
-//                         break;
-                        
-                  case 'D': // Drum map changed
-                        update(SC_DRUMMAP);
-                        break;
+              case 'C': // Graph changed
+                    if (MusEGlobal::audioDevice)
+                        MusEGlobal::audioDevice->graphChanged();
+                    break;
 
-                  default:
-                        fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
-                        break;
-                  }
-            }
-      }
+              case 'R': // Registration changed
+                    if (MusEGlobal::audioDevice)
+                        MusEGlobal::audioDevice->registrationChanged();
+                    break;
+
+              case 'J': // Port connections changed
+                    if (MusEGlobal::audioDevice)
+                        MusEGlobal::audioDevice->connectionsChanged();
+                    break;
+
+              case 'D': // Drum map changed
+                    update(SC_DRUMMAP);
+                    break;
+
+              default:
+                    fprintf(stderr, "unknown Seq Signal <%c>\n", signal);
+                    break;
+        }
+    break;
+
+    case GuiSignaller::AudioMessage:
+      if(MusEGlobal::audio)
+        MusEGlobal::audio->handleGuiSignal(signal);
+    break;
+  }
+}
 
 //---------------------------------------------------------
 //   recordEvent

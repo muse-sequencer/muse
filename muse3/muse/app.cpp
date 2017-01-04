@@ -34,7 +34,6 @@
 #include <QProgressDialog>
 #include <QMdiArea>
 #include <QMdiSubWindow>
-#include <QSocketNotifier>
 #include <QString>
 #include <QStyleFactory>
 #include <QTextStream>
@@ -102,6 +101,7 @@
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
 #include "cpu_toolbar.h"
+#include "gui_signaller.h"
 
 
 namespace MusECore {
@@ -744,9 +744,8 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(sig_tb);
 
-
-       QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this);
-       connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));
+      // Tests OK. See notes on connection types in gui_signaller.h
+      connect(MusEGlobal::audio->guiSignaller(), SIGNAL(wakeup(int, int)), MusEGlobal::song, SLOT(seqSignal(int, int)));
 
       //---------------------------------------------------
       //    Popups

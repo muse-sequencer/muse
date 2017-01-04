@@ -34,7 +34,6 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QSocketNotifier>
 
 #include "muse/midi.h"
 #include "muse/midictrl.h"
@@ -416,9 +415,10 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setPreset(QTreeWidgetItem*)));
   connect(presetListView, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
 	  this, SLOT(setPreset(QTreeWidgetItem*)));
-  //Connect socketnotifier to fifo
-  QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-  connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+
+  // Connect notifier to fifo.
+  // Tests OK. See notes on connection types in gui.h
+  connect(guiSignal, SIGNAL(wakeup(int)), SLOT(readMessage(int)));
 
   QString sharePath(MusEGlobal::museGlobalShare);
   // Tim.

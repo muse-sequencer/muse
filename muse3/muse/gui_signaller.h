@@ -1,10 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    software synthesizer helper library
-//    $Id: gui.h,v 1.4 2004/06/19 09:50:37 wschweer Exp $
 //
-//  (C) Copyright 2004 Werner Schweer (ws@seh.de)
+//  gui_signaller.h
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,22 +21,20 @@
 //
 //=========================================================
 
-#ifndef __SYNTH_GUI_H__
-#define __SYNTH_GUI_H__
+#ifndef __GUI_SIGNALLER_H__
+#define __GUI_SIGNALLER_H__
 
 #include <QObject>
-#include <QWidget>
 
-#include "mpevent.h"
+namespace MusECore {
 
-const int EVENT_FIFO_SIZE = 256;
-
-class SignalGui : public QObject
+class GuiSignaller : public QObject
 {
   Q_OBJECT
 
   public:
-    void sendSignal();
+    enum GuiSignalType { Command, AudioMessage };
+    void sendSignal(int type, int signal) { emit wakeup(type, signal); }
 
   // The magic of automatic connection types:
   // ----------------------------------------
@@ -54,59 +51,10 @@ class SignalGui : public QObject
   //     as the Queued Connection, if the emitter and receiver are in different threads.'
   //  because the emitter object's thread affinity does not matter."
   signals:
-    void wakeup(int);
+    void wakeup(int type, int signal);
 };
 
-//---------------------------------------------------------
-//   MessGui
-//    manage IO from synti-GUI to Host
-//---------------------------------------------------------
 
-class MessGui {
-      // Event Fifo  synti -> GUI
-      MusECore::MidiPlayEvent rFifo[EVENT_FIFO_SIZE];
-      volatile int rFifoSize;
-      int rFifoWindex;
-      int rFifoRindex;
-
-      // Event Fifo  GUI -> synti
-      MusECore::MidiPlayEvent wFifo[EVENT_FIFO_SIZE];
-      volatile int wFifoSize;
-      int wFifoWindex;
-      int wFifoRindex;
-
-   protected:
-      SignalGui* guiSignal;
-      virtual void readMessage();
-      void sendEvent(const MusECore::MidiPlayEvent& ev);
-      void sendController(int,int,int);
-      void sendSysex(unsigned char*, int);
-
-      virtual void processEvent(const MusECore::MidiPlayEvent&) {};
-
-   public:
-      MessGui();
-      virtual ~MessGui();
-
-      void writeEvent(const MusECore::MidiPlayEvent&);
-      int fifoSize() const { return wFifoSize; }
-      MusECore::MidiPlayEvent readEvent();
-      };
-
-//---------------------------------------------------------
-//   SynthGuiCtrl
-//---------------------------------------------------------
-
-struct SynthGuiCtrl  {
-      enum EditorType { SLIDER, SWITCH, COMBOBOX };
-      QWidget* editor;
-      QWidget* label;
-      EditorType type;
-
-      SynthGuiCtrl() {}
-      SynthGuiCtrl(QWidget* w, QWidget* l, const EditorType t)
-         : editor(w), label(l), type(t) {}
-      };
+} // namespace MusECore
 
 #endif
-
