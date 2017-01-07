@@ -52,7 +52,7 @@
 #define __WIDTH_COMPENSATION 4
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_MIXER(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_MIXER(dev, format, args...)  // fprintf(dev, format, ##args);
 
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
@@ -149,6 +149,7 @@ ViewWidget::paintEvent
 
 bool ScrollArea::viewportEvent(QEvent* event)
 {
+  DEBUG_MIXER(stderr, "viewportEvent type %d\n", (int)event->type());
   event->ignore();
   // Let it do the layout now, before we emit.
   const bool res = QScrollArea::viewportEvent(event);
@@ -629,6 +630,7 @@ bool AudioMixerApp::event(QEvent* event)
 
 void AudioMixerApp::setSizing()
 {
+  DEBUG_MIXER(stderr, "setSizing\n");
       int w = 0;
       
       w = mixerLayout->minimumSize().width();
@@ -753,6 +755,7 @@ void AudioMixerApp::initMixer()
 
 void AudioMixerApp::configChanged()    
 { 
+  DEBUG_MIXER(stderr, "configChanged\n");
   StripList::iterator si = stripList.begin();  // Catch when fonts change, viewable tracks, etc. No full rebuild.  p4.0.45
   for (; si != stripList.end(); ++si) 
         (*si)->configChanged();
@@ -1085,6 +1088,7 @@ void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
 bool AudioMixerApp::eventFilter(QObject *obj,
                              QEvent *event)
 {
+  DEBUG_MIXER(stderr, "eventFilter type %d\n", (int)event->type());
     QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
     bool result = false;//return true to consume the keystroke
 

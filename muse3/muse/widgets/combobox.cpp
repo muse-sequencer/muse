@@ -110,8 +110,8 @@ void ComboBox::addAction(const QString& s, int id)
 //   CompactComboBox
 //---------------------------------------------------------
 
-CompactComboBox::CompactComboBox(QWidget* parent, const QIcon& icon_A, const QIcon& icon_B, const char* name)
-   : CompactToolButton(parent, icon_A, icon_B, name)
+CompactComboBox::CompactComboBox(QWidget* parent, const QIcon& icon, const char* name)
+   : CompactToolButton(parent, icon, name)
       {
       _currentItem = 0;
 

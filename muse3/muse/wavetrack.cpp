@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <math.h>
+
 #include "track.h"
 #include "event.h"
 #include "audio.h"
@@ -88,47 +90,48 @@ void WaveTrack::assign(const Track& t, int flags)
 //    called from prefetch thread
 //---------------------------------------------------------
 
-void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek)
+void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite)
       {
       #ifdef WAVETRACK_DEBUG
-      printf("WaveTrack::fetchData %s samples:%lu pos:%u\n", name().toLatin1().constData(), samples, pos);
+      printf("WaveTrack::fetchData %s samples:%lu pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
       #endif
-      
+
       // reset buffer to zero
-      for (int i = 0; i < channels(); ++i)
+      if(overwrite)
+        for (int i = 0; i < channels(); ++i)
             memset(bp[i], 0, samples * sizeof(float));
-      
+
       // Process only if track is not off.
       if(!off())
-      {  
-        
+      {
+        bool do_overwrite = overwrite;
         PartList* pl = parts();
         unsigned n = samples;
         for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
               WavePart* part = (WavePart*)(ip->second);
               if (part->mute())
                   continue;
-              
+
               unsigned p_spos = part->frame();
               unsigned p_epos = p_spos + part->lenFrame();
               if (pos + n < p_spos)
                 break;
               if (pos >= p_epos)
                 continue;
-  
+
               for (iEvent ie = part->nonconst_events().begin(); ie != part->nonconst_events().end(); ++ie) {
                     Event& event = ie->second;
                     unsigned e_spos  = event.frame() + p_spos;
                     unsigned nn      = event.lenFrame();
                     unsigned e_epos  = e_spos + nn;
-                    
-                    if (pos + n < e_spos) 
+
+                    if (pos + n < e_spos)
                       break;
-                    if (pos >= e_epos) 
+                    if (pos >= e_epos)
                       continue;
-  
+
                     int offset = e_spos - pos;
-  
+
                     unsigned srcOffset, dstOffset;
                     if (offset > 0) {
                           nn = n - offset;
@@ -138,7 +141,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     else {
                           srcOffset = -offset;
                           dstOffset = 0;
-                          
+
                           nn += offset;
                           if (nn > n)
                                 nn = n;
@@ -146,20 +149,20 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     float* bpp[channels()];
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
-  
-                    event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, false);
-                    
+
+                    event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
+                    do_overwrite = false;
                     }
               }
       }
-              
-      if(MusEGlobal::config.useDenormalBias) {
+
+      if(overwrite && MusEGlobal::config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (unsigned int j = 0; j < samples; ++j)
                       bp[i][j] +=MusEGlobal::denormalBias;
             }
-      
+
       _prefetchFifo.add();
       }
 
@@ -254,112 +257,125 @@ bool WaveTrack::closeAllParts()
 //   getData
 //---------------------------------------------------------
 
-bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
+bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, float** bp)
+{
+  bool have_data = false;
+
+  if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
+  {
+    have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+    if(have_data && recordFlag() && MusEGlobal::audio->isRecording() && recFile())
+    {
+      if(MusEGlobal::audio->freewheel())
       {
-      bool have_data = false;
-      if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
-        
-// REMOVE Tim. Wave. Changed.
-            have_data = AudioTrack::getData(framePos, channels, nframe, bp);
-//             float t_latency = 0.0;
-//             float lat;
-//             AudioTrack* atrack;
-//             RouteList* irl = inRoutes();
-//             for(ciRoute i = irl->begin(); i != irl->end(); ++i)
-//             {
-//               if(i->track->isMidiTrack())
-//                 continue;
-//               atrack = static_cast<AudioTrack*>(i->track);
-//               atrack->copyData(framePos, channels,
-//                                i->channel,
-//                                i->channels,
-//                                nframe, bp, have_data);
-//               have_data = true;
-// 
-//               // TODO: Just a quick hack to get AUTOMATIC record latency compensation to work
-//               //              with a SINGLE DIRECT ROUTE from Audio Input Track to Wave Track ONLY !
-//               //             For now, this should satisfy a majority of users.
-//               if(!atrack->off())
-//               {
-//                 // TODO We can't take advantage of per-channel latency yet, so just take channel 0.
-//                 //      Would require mods to fifo.put below...
-//                 lat = atrack->latency(0);
-//                 //fprintf(stderr, "WaveTrack::getData track:%s, latency:%f\n", atrack->name().toLatin1().constData(), lat);
-//                 if(lat > t_latency)
-//                   t_latency = lat;
-//               }
-//             }
-            
-            if (recordFlag()) {
-            //if (have_data && recordFlag()) {
-                  //if (MusEGlobal::audio->isRecording() && recFile()) {
-                  if (have_data && MusEGlobal::audio->isRecording() && recFile()) {
-                        if (MusEGlobal::audio->freewheel()) {
-                              }
-                        else {
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                              // TODO: Tested: This is the line that would be needed for Audio Inputs, 
-                              //  because the data arrived in the previous period! Test OK, the waves are in sync.
-                              // So we need to do Audio Inputs separately above, AND find a way to mix two overlapping
-                              //  periods into the file! Nothing wrong with the FIFO per se, we could stamp overlapping
-                              //  times. But the soundfile just writes, does not mix.
-                              //if (fifo.put(channels, nframe, bp, MusEGlobal::audio->previousPos().frame()))
-                              //
-                              // Tested: This line is OK for track-to-track recording, the waves are in sync:
-#endif                              
-                              if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))  
-                                      printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
-                                        framePos, channels, nframe);
-                                      
-// REMOVE Tim. Wave. Added.
-// TODO Work In Progress. Tests OK but we now need output latency correction as well...
-//                               if(framePos >= (unsigned int)t_latency)
-//                               {
-//                                 if (fifo.put(channels, nframe, bp, framePos - (unsigned int)t_latency))
-//                                       printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
-//                                         framePos, channels, nframe);
-//                               }
-
-                            }
-                        }
-                  //return true;  // REMOVE Tim. Can't hear existing parts while recording, even while simply armed.
-                  // FIXME TODO Remove this. But first code below needs to become ADDITIVE/REPLACING (don't just take over buffers).
-                  return have_data;  
-                  }
-            }
-      if (!MusEGlobal::audio->isPlaying())
-            return false;
-            //return have_data;
-      
-      if (MusEGlobal::audio->freewheel()) {
-
-            // when freewheeling, read data direct from file:
-            // Indicate do not seek file before each read.
-            fetchData(framePos, nframe, bp, false);
-
-            }
-      else {
-            unsigned pos;
-            if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                  printf("WaveTrack::getData(%s) (A) fifo underrun\n",
-                      name().toLocal8Bit().constData());
-                  return false;
-                  }
-            if (pos != framePos) {
-                  if (MusEGlobal::debugMsg)
-                        printf("fifo get error expected %d, got %d\n",
-                            framePos, pos);
-                  while (pos < framePos) {
-                        if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                              printf("WaveTrack::getData(%s) (B) fifo underrun\n",
-                                  name().toLocal8Bit().constData());
-                              return false;
-                              }
-                        }
-                  }
-            }
-      return true;
       }
+      else
+      {
+        if(fifo.put(dstChannels, nframe, bp, MusEGlobal::audio->pos().frame()))
+          printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n", framePos, dstChannels, nframe);
+      }
+    }
+  }
+
+  //---------------------------------------------------
+  //    metering
+  //---------------------------------------------------
+
+  // If we are RECORD-ARMed (but not monitoring), display the incoming levels on the meters.
+  // For technical reasons during PLAYBACK it is very much more difficult to pass a separate,
+  //  effected, panned and attenuated signal just to the meters - WITHOUT listening - and a
+  //  different signal to the actual audio output - while also showing that signal on the meters.
+  // So for consistency we do this in PLAYBACK and STOP.
+  // A benefit is the user sees the actual record level, not the post-effect/controlled one.
+  // TODO: User-selectable metering points, a mixture of user and automatic here...
+  if(have_data && recordFlag() && !_recMonitor)
+  {
+    const int trackChans = channels();
+    int chans = dstChannels;
+    if(chans > trackChans)
+      chans = trackChans;
+
+    double met[chans];
+
+    // FIXME TODO Need multichannel changes here?
+    for(int c = 0; c < chans; ++c)
+    {
+      met[c] = 0.0;
+      float* sp = bp[c];
+      for(unsigned k = 0; k < nframe; ++k)
+      {
+        const double f = fabs(*sp++);
+        if(f > met[c])
+          met[c] = f;
+      }
+      if(met[c] > _meter[c])
+        _meter[c] = met[c];
+      if(_meter[c] > _peak[c])
+        _peak[c] = _meter[c];
+
+      if(_meter [c] > 1.0)
+          _isClipped[c] = true;
+    }
+  }
+
+  if(!MusEGlobal::audio->isPlaying())
+  {
+    if(!have_data || (_recMonitor && have_data))
+      return have_data;
+    return false;
+  }
+
+  // If there was no data, or we do not want record monitoring, zero the supplied buffers.
+  const bool do_overwrite = !have_data || !_recMonitor;
+
+  // Set the return type.
+  have_data = true;
+
+  if(MusEGlobal::audio->freewheel())
+  {
+    // when freewheeling, read data direct from file:
+    // Indicate do not seek file before each read.
+    fetchData(framePos, nframe, bp, false, do_overwrite);
+  }
+  else
+  {
+    unsigned pos;
+    float* pf_buf[dstChannels];
+
+    if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+    {
+      printf("WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+      return have_data;
+    }
+    if(pos != framePos)
+    {
+      if(MusEGlobal::debugMsg)
+        printf("fifo get error expected %d, got %d\n", framePos, pos);
+      while (pos < framePos)
+      {
+        if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+        {
+          printf("WaveTrack::getData(%s) (B) fifo underrun\n",
+              name().toLocal8Bit().constData());
+          return have_data;
+        }
+      }
+    }
+
+    if(do_overwrite)
+    {
+      for(int i = 0; i < dstChannels; ++i)
+        AL::dsp->cpy(bp[i], pf_buf[i], nframe, MusEGlobal::config.useDenormalBias);
+    }
+    else
+    {
+      for(int i = 0; i < dstChannels; ++i)
+        AL::dsp->mix(bp[i], pf_buf[i], nframe);
+    }
+  }
+
+  return have_data;
+}
 
 //---------------------------------------------------------
 //   setChannels

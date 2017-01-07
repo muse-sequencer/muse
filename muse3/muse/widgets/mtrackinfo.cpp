@@ -107,7 +107,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
   recEchoButton->setFocusPolicy(Qt::NoFocus);
-  recEchoButton->setIcon((selected && ((MusECore::MidiTrack*)selected)->recEcho()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
+  recEchoButton->setIcon((selected && ((MusECore::MidiTrack*)selected)->recMonitor()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
   recEchoButton->setIconSize(midiThruOnIcon->size());  
   //recEchoButton->setOffPixmap(midiThruOffIcon);
   //recEchoButton->setOnPixmap(midiThruOnIcon);
@@ -1186,9 +1186,8 @@ void MidiTrackInfo::recEchoToggled(bool v)
 {
   if(!selected)
     return;
-  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-  track->setRecEcho(v);
-  MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
+  selected->setRecMonitor(v);
+  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
 //---------------------------------------------------------
@@ -1575,16 +1574,16 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         iOutputChannel->blockSignals(false);
       }
       
-      if(flags & (SC_MIDI_TRACK_PROP))  
+      if(flags & (SC_TRACK_REC_MONITOR))
       {
         // Set record echo.
-        if(recEchoButton->isChecked() != track->recEcho())
+        if(recEchoButton->isChecked() != track->recMonitor())
         {
           recEchoButton->blockSignals(true);
-          recEchoButton->setChecked(track->recEcho());
+          recEchoButton->setChecked(track->recMonitor());
           recEchoButton->blockSignals(false);
         }
-        recEchoButton->setIcon(track->recEcho() ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
+        recEchoButton->setIcon(track->recMonitor() ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
       }
         
       int nprogram = mp->hwCtrlState(outChannel, MusECore::CTRL_PROGRAM);

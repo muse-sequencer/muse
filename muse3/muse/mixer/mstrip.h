@@ -46,7 +46,6 @@ class DoubleLabel;
 class Slider;
 class CompactSlider;
 class CompactPatchEdit;
-class TransparentToolButton;
 class ScrollArea;
 class ElidedLabel;
 class CompactToolButton;

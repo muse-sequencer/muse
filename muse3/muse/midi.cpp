@@ -939,7 +939,7 @@ void Audio::processMidi()
       MusEGlobal::midiBusy=true;
 
       // An experiment, to try and pass input through without having to rec-arm a track. Disabled for now.
-      const bool no_mute_midi_input = false;
+      //const bool no_mute_midi_input = false;
 
       const bool extsync = MusEGlobal::extSyncFlag.value();
 
@@ -1123,9 +1123,10 @@ void Audio::processMidi()
         }
       }
 
-      for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
+      MidiTrackList* mtl = MusEGlobal::song->midis();
+      for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t)
       {
-            MusECore::MidiTrack* track = *t;
+            MidiTrack* track = *t;
             int port = track->outPort();
             MidiDevice* md = MusEGlobal::midiPorts[port].device();
             if(md)
@@ -1142,10 +1143,12 @@ void Audio::processMidi()
             //----------midi recording
             //
             const bool track_rec_flag = track->recordFlag();
-            if(no_mute_midi_input || track_rec_flag)
+            const bool track_rec_monitor = track->recMonitor();
+//             if(no_mute_midi_input || track_rec_flag)
+            if(track_rec_monitor || track_rec_flag)
             {
-                  MusECore::MPEventList& rl = track->mpevents;
-                  MusECore::MidiPort* tport = &MusEGlobal::midiPorts[port];
+                  MPEventList& rl = track->mpevents;
+                  MidiPort* tport = &MusEGlobal::midiPorts[port];
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
                   {
@@ -1181,17 +1184,18 @@ void Audio::processMidi()
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
-                            MusECore::MidiRecFifo& rf = dev->recordEvents(MIDI_CHANNELS);
+                            MidiRecFifo& rf = dev->recordEvents(MIDI_CHANNELS);
                             // Get the frozen snapshot of the size.
                             int count = dev->tmpRecordCount(MIDI_CHANNELS);
 
                             for(int i = 0; i < count; ++i)
                             {
-                              MusECore::MidiRecordEvent event(rf.peek(i));
+                              MidiRecordEvent event(rf.peek(i));
                               event.setPort(port);
                               // dont't echo controller changes back to software
                               // synthesizer:
-                              if(!dev->isSynti() && md && track->recEcho())
+//                               if(!dev->isSynti() && md && track->recEcho())
+                              if(!dev->isSynti() && md && track_rec_monitor)
                               {
                                 // All recorded events arrived in the previous period. Shift into this period for playback.
                                 unsigned int et = event.time();
@@ -1217,14 +1221,14 @@ void Audio::processMidi()
                             dev->setSysexFIFOProcessed(true);
                           }
 
-                          MusECore::MidiRecFifo& rf = dev->recordEvents(channel);
+                          MidiRecFifo& rf = dev->recordEvents(channel);
                           int count = dev->tmpRecordCount(channel);
                           for(int i = 0; i < count; ++i)
                           {
-                                MusECore::MidiRecordEvent event(rf.peek(i));
+                                MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
-                                MusECore::MidiController *mc = 0;
+                                MidiController *mc = 0;
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
@@ -1388,7 +1392,8 @@ void Audio::processMidi()
                                     // Check if we're outputting to another port than default:
                                     if (devport == defaultPort) {
                                           event.setPort(port);
-                                          if(md && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
+//                                           if(md && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
+                                          if(md && track_rec_monitor && !track->off() && !track->isMute())
                                           {
                                             if(event.isNoteOff())
                                             {
@@ -1397,19 +1402,32 @@ void Audio::processMidi()
                                               if(track->removeStuckLiveNote(port, event.channel(), event.dataA()))
                                                 md->addScheduledEvent(event);
                                             }
-                                            else
+                                            else if(event.isNote())
                                             {
-                                              md->addScheduledEvent(event);
-                                              if(event.isNote())
-                                                track->addStuckLiveNote(port, event.channel(), event.dataA());
+                                              // Check if a stuck live note exists on any track.
+                                              ciMidiTrack it_other = mtl->begin();
+                                              for( ; it_other != mtl->end(); ++it_other)
+                                              {
+                                                if((*it_other)->stuckLiveNoteExists(port, event.channel(), event.dataA()))
+                                                  break;
+                                              }
+                                              // Only if NO stuck live note existed do we schedule the note on to play.
+                                              if(it_other == mtl->end())
+                                              {
+                                                if(track->addStuckLiveNote(port, event.channel(), event.dataA()))
+                                                  md->addScheduledEvent(event);
+                                              }
                                             }
+                                            else
+                                              md->addScheduledEvent(event);
                                           }
                                           //else
                                           //  MusEGlobal::midiPorts[port].sendHwCtrlState(event); // Don't care about return value.
                                         }
                                     else {
                                           MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-                                          if(mdAlt && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
+//                                           if(mdAlt && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
+                                          if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
                                           {
                                             if(event.isNoteOff())
                                             {
@@ -1418,12 +1436,24 @@ void Audio::processMidi()
                                               if(track->removeStuckLiveNote(event.port(), event.channel(), event.dataA()))
                                                 mdAlt->addScheduledEvent(event);
                                             }
-                                            else
+                                            else if(event.isNote())
                                             {
-                                              mdAlt->addScheduledEvent(event);
-                                              if(event.isNote())
-                                                track->addStuckLiveNote(event.port(), event.channel(), event.dataA());
+                                              // Check if a stuck live note exists on any track.
+                                              ciMidiTrack it_other = mtl->begin();
+                                              for( ; it_other != mtl->end(); ++it_other)
+                                              {
+                                                if((*it_other)->stuckLiveNoteExists(event.port(), event.channel(), event.dataA()))
+                                                  break;
+                                              }
+                                              // Only if NO stuck live note existed do we schedule the note on to play.
+                                              if(it_other == mtl->end())
+                                              {
+                                                if(track->addStuckLiveNote(event.port(), event.channel(), event.dataA()))
+                                                  mdAlt->addScheduledEvent(event);
+                                              }
                                             }
+                                            else
+                                              mdAlt->addScheduledEvent(event);
                                           }
                                           //else
                                           //  MusEGlobal::midiPorts[devport].sendHwCtrlState(event); // Don't care about return value.
@@ -1560,9 +1590,14 @@ void Audio::processMidi()
           }
 
           // If no echo or off, or not rec-armed (or muted), we want to cancel all 'live' (rec) stuck notes immediately.
-          if(!track->recEcho() || track->off() ||
-             (no_mute_midi_input && (track->isMute())) ||
-             (!no_mute_midi_input && !track_rec_flag))
+//           if(!track->recEcho() || track->off() ||
+//              (no_mute_midi_input && (track->isMute())) ||
+//              (!no_mute_midi_input && !track_rec_flag))
+          // If no monitor or off, or not rec-armed (or muted), we want to cancel all 'live' (rec) stuck notes immediately.
+          if(!track_rec_monitor || track->off() ||
+             //(no_mute_midi_input && (track->isMute())) ||
+             //(!no_mute_midi_input && !track_rec_flag))
+             track->isMute())
           {
             //------------------------------------------------------------
             //    Send all track-related 'live' (rec) note-offs

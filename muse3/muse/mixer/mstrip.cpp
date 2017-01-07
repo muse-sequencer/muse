@@ -1600,13 +1600,13 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _midiThru->setContentsMargins(0, 0, 0, 0);
       _midiThru->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       _midiThru->setCheckable(true);
-      _midiThru->setToolTip(tr("midi thru"));
-      _midiThru->setWhatsThis(tr("Pass input events through ('thru') to output"));
+      _midiThru->setToolTip(tr("Monitor"));
+      _midiThru->setWhatsThis(tr("Pass input through to output"));
       QIcon thruIcon(*midiThruOffIcon);
       thruIcon.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
       _midiThru->setIcon(thruIcon);
       _midiThru->setIconSize(midiThruOffIcon->size());  
-      _midiThru->setChecked(t->recEcho());
+      _midiThru->setChecked(t->recMonitor());
       connect(_midiThru, SIGNAL(toggled(bool)), SLOT(midiThruToggled(bool)));
       QHBoxLayout* routesLayout = new QHBoxLayout();
       routesLayout->setContentsMargins(0, 0, 0, 0);
@@ -1822,7 +1822,9 @@ void MidiStrip::updateOffState()
       _lowerRack->setEnabled(val);
       
       label->setEnabled(val);
-      
+
+      if (_midiThru)
+            _midiThru->setEnabled(val);
       if (record)
             record->setEnabled(val);
       if (solo)
@@ -1981,18 +1983,15 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
         updateRouteButtons();
       }
       
-      if(val & SC_MIDI_TRACK_PROP)
+      if(val & SC_TRACK_REC_MONITOR)
       {
-        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
-        
-        // Set record echo.
-        if(_midiThru->isChecked() != mt->recEcho())
+        // Set record monitor.
+        if(_midiThru->isChecked() != track->recMonitor())
         {
           _midiThru->blockSignals(true);
-          _midiThru->setChecked(mt->recEcho());
+          _midiThru->setChecked(track->recMonitor());
           _midiThru->blockSignals(false);
         }
-
       }
     }
 
@@ -2011,11 +2010,10 @@ void MidiStrip::controlRightClicked(QPoint p, int id)
 
 void MidiStrip::midiThruToggled(bool v)
 {
-  if(MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track))
-  {
-    mt->setRecEcho(v);
-    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
-  }
+  if(!track)
+    return;
+  track->setRecMonitor(v);
+  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
 //---------------------------------------------------------
@@ -2103,7 +2101,11 @@ void MidiStrip::heartBeat()
       _upperRack->updateComponents();
       _infoRack->updateComponents();
       _lowerRack->updateComponents();
-            
+
+      if(_midiThru && _midiThru->isChecked() && MusEGlobal::blinkTimerPhase != _midiThru->blinkPhase())
+        _midiThru->setBlinkPhase(MusEGlobal::blinkTimerPhase);
+
+
       Strip::heartBeat();
       inHeartBeat = false;
       }

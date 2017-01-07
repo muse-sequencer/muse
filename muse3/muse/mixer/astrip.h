@@ -46,6 +46,8 @@ class EffectRack;
 class Knob;
 class Slider;
 class CompactSlider;
+class CompactToolButton;
+//class PixmapButton;
 
 //---------------------------------------------------------
 //   AudioComponentRack
@@ -146,8 +148,9 @@ class AudioStrip : public Strip {
       GridPosStruct _recPos;
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
+      GridPosStruct _routesPos;
+      //GridPosStruct _inRoutesPos;
+      //GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
       GridPosStruct _rightSpacerPos;
     
@@ -165,6 +168,8 @@ class AudioStrip : public Strip {
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
       
+      CompactToolButton* _recMonitor;
+      //PixmapButton* _recMonitor;
       QToolButton* stereo;
       QToolButton* pre;
       QToolButton* off;
@@ -183,6 +188,7 @@ class AudioStrip : public Strip {
       void updateRackSizes(bool upper, bool lower);
 
    private slots:
+      void recMonitorToggled(bool);
       void stereoToggled(bool);
       void preToggled(bool);
       void offToggled(bool);

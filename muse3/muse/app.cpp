@@ -337,6 +337,11 @@ MusE::MusE() : QMainWindow()
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
 
+      blinkTimer = new QTimer(this);
+      blinkTimer->setObjectName("blinkTimer");
+      connect(blinkTimer, SIGNAL(timeout()), SLOT(blinkTimerSlot()));
+      blinkTimer->start( 250 );      // Every quarter second, for a flash rate of 2 Hz.
+
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
       saveTimer->start( 60 * 1000 ); // every minute
@@ -994,7 +999,12 @@ void MusE::heartBeat()
                             MusEGlobal::song->dspLoad(), 
                             MusEGlobal::song->xRunsCount());
 }
-      
+
+void MusE::blinkTimerSlot()
+{
+  MusEGlobal::blinkTimerPhase = !MusEGlobal::blinkTimerPhase;
+}
+
 //---------------------------------------------------------
 //   setDirty
 //---------------------------------------------------------

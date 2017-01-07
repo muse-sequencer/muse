@@ -153,7 +153,7 @@ void exitDsp()
   dsp = 0;  
 }
 
-void Dsp::cpy(float* dst, float* src, unsigned n)
+void Dsp::cpy(float* dst, float* src, unsigned n, bool addDenormal)
 {
 // FIXME: Changed by T356. Not defined. Where are these???
 //#if defined(ARCH_X86) || defined(ARCH_X86_64)
@@ -176,8 +176,17 @@ void Dsp::cpy(float* dst, float* src, unsigned n)
 
                        //: "%ecx", "%esi", "%edi", "memory"                
 #else
-            //printf("Dsp: using memcpy\n");
-            memcpy(dst, src, sizeof(float) * n);
+      if(addDenormal)
+      {
+        for(unsigned i = 0; i < n; ++i)
+          dst[i] = src[i] + MusEGlobal::denormalBias;
+      }
+      else
+      {
+        //printf("Dsp: using memcpy\n");
+        memcpy(dst, src, sizeof(float) * n);
+      }
+
 #endif
 }
 

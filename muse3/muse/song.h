@@ -116,6 +116,7 @@ class AudioDevice;
 #define SC_AUDIO_CONTROLLER_LIST      0x200000000  // An audio controller list was added deleted or modified.
 #define SC_PIANO_SELECTION            0x400000000  // Piano keyboard selected note changed.
 #define SC_DRUM_SELECTION             0x800000000  // Drum list selected note changed.
+#define SC_TRACK_REC_MONITOR          0x1000000000 // Audio or midi track's record monitor changed.
 #define SC_EVERYTHING                 -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

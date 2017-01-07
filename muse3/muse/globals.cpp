@@ -52,6 +52,8 @@ bool overrideAudioInput = false;
 
 QTimer* heartBeatTimer;
 
+bool blinkTimerPhase = false;
+
 bool hIsB = true;             // call note h "b"
 
 const signed char sharpTab[14][7] = {

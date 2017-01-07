@@ -215,7 +215,8 @@ void AudioPrefetch::prefetch(bool doSeek)
             if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos))
                   continue;
 
-            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek);
+            // True = do overwrite.
+            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek, true);
             
             }
       writePos += MusEGlobal::segmentSize;

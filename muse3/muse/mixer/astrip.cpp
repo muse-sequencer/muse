@@ -61,7 +61,8 @@
 #include "amixer.h"
 #include "icons.h"
 #include "gconfig.h"
-#include "ttoolbutton.h"
+//#include "ttoolbutton.h"
+#include "pixmap_button.h"
 #include "menutitleitem.h"
 #include "routepopup.h"
 #include "ctrl.h"
@@ -790,6 +791,9 @@ void AudioStrip::heartBeat()
    _infoRack->updateComponents();
    _lowerRack->updateComponents();
 
+   if(_recMonitor && _recMonitor->isChecked() && MusEGlobal::blinkTimerPhase != _recMonitor->blinkPhase())
+     _recMonitor->setBlinkPhase(MusEGlobal::blinkTimerPhase);
+
    Strip::heartBeat();
 }
 
@@ -943,7 +947,17 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
                   }
           }
 
-      // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+      if(val & SC_TRACK_REC_MONITOR)
+      {
+        // Set record monitor.
+        if(_recMonitor && (_recMonitor->isChecked() != track->recMonitor()))
+        {
+          _recMonitor->blockSignals(true);
+          _recMonitor->setChecked(track->recMonitor());
+          _recMonitor->blockSignals(false);
+        }
+      }
+      // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track!
       // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
       _upperRack->songChanged(val);
       _infoRack->songChanged(val);
@@ -1041,6 +1055,8 @@ void AudioStrip::updateOffState()
       _infoRack->setAuxEnabled(ae);
       _lowerRack->setAuxEnabled(ae);
             
+      if (_recMonitor)
+            _recMonitor->setEnabled(val);
       if (pre)
             pre->setEnabled(val);
       if (record)
@@ -1082,6 +1098,18 @@ void AudioStrip::stereoToggled(bool val)
       MusEGlobal::audio->msgSetChannels(static_cast<MusECore::AudioTrack*>(track), nc);
       MusEGlobal::song->update(SC_CHANNELS);
       }
+
+//---------------------------------------------------------
+//   recMonitorToggled
+//---------------------------------------------------------
+
+void AudioStrip::recMonitorToggled(bool v)
+{
+  if(!track)
+    return;
+  track->setRecMonitor(v);
+  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+}
 
 //---------------------------------------------------------
 //   volumeMoved
@@ -1270,11 +1298,14 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       {
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
 
+      MusECore::Track::TrackType type = at->type();
+
       volume        = -1.0;
       _volPressed   = false;
       
       record        = 0;
       off           = 0;
+      _recMonitor   = 0;
       
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
@@ -1286,8 +1317,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       channel       = at->channels();
 
-      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
+      //_inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
+      //_outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
+      _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
 
@@ -1405,7 +1437,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       // disable mono/stereo for Synthesizer-Plugins
-      if (at->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+      if (type == MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(false);
 
       pre = new CompactToolButton();
@@ -1547,8 +1579,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
-      MusECore::Track::TrackType type = at->type();
-
       mute  = new CompactToolButton();
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
@@ -1618,13 +1648,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new CompactToolButton(0, *routesInIcon);
+            iR->setContentsMargins(0, 0, 0, 0);
             iR->setFocusPolicy(Qt::NoFocus);
             iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             // Give it a wee bit more height.
             iR->setIconSize(QSize(routesInIcon->width(), routesInIcon->height() + 5));
             iR->setCheckable(false);
             iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-            addGridWidget(iR, _inRoutesPos); 
             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
             }
             
@@ -1636,8 +1666,37 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       oR->setIconSize(QSize(routesOutIcon->width(), routesOutIcon->height() + 5));
       oR->setCheckable(false);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-      addGridWidget(oR, _outRoutesPos); 
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+
+      updateRouteButtons();
+
+      if (type == MusECore::Track::WAVE)
+      {
+        _recMonitor = new CompactToolButton();
+        _recMonitor->setFocusPolicy(Qt::NoFocus);
+        _recMonitor->setContentsMargins(0, 0, 0, 0);
+        _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        _recMonitor->setCheckable(true);
+        _recMonitor->setToolTip(tr("Monitor"));
+        _recMonitor->setWhatsThis(tr("Pass input through to output"));
+        QIcon monIcon(*midiThruOffIcon);
+        monIcon.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
+        _recMonitor->setIcon(monIcon);
+        _recMonitor->setIconSize(midiThruOffIcon->size());
+        _recMonitor->setChecked(at->recMonitor());
+        connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+      }
+
+      QHBoxLayout* routesLayout = new QHBoxLayout();
+      routesLayout->setContentsMargins(0, 0, 0, 0);
+      routesLayout->setSpacing(0);
+      if(iR)
+        routesLayout->addWidget(iR);
+      if(_recMonitor)
+        routesLayout->addWidget(_recMonitor);
+      if(oR)
+        routesLayout->addWidget(oR);
+      addGridLayout(routesLayout, _routesPos);
 
       //---------------------------------------------------
       //    automation type

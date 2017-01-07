@@ -1,3 +1,17 @@
+07.01.2017
+         * New - Monitoring feature: (Tim)
+         - Midi Tracks and Wave Tracks have a 'Monitor' button.
+           Push to pass input through to output.
+           Midi Track 'Midi Thru' was re-branded and re-purposed as 'Monitor'.
+         - Meters: When in 'rec-arm' mode but not 'Monitor', meters are active.
+           Wave Tracks: NOTE: Be aware that when 'rec-armed', the meters show
+            the RECORDING levels pre-fader/rack etc. NOT post-fader.
+           This was a technical necessity, but actually has benefits: The user
+            can see the actual recording levels before the signal hits the disk.
+         - Since monitoring is important and can cause unaware unwanted mixing or
+            missing audio, the 'Monitor' buttons flash to indicate being active.
+         - TODO: Add an Arranger track list 'Monitor' column.
+                 Make Wave Tracks NOT monitor by default ??
 21.12.2016
          - Make some cmake system commands friendlier. (Tim)
          - Remove some more old setuid stuff.

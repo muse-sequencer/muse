@@ -867,8 +867,14 @@ void AudioTrack::copyData(unsigned pos,
 
   int i;
 
+  // Protection for pre-allocated _dataBuffers.
+  if(nframes > MusEGlobal::segmentSize)
+  {
+    printf("MusE: Error: AudioTrack::copyData: nframes:%u > segmentSize:%u\n", nframes, MusEGlobal::segmentSize);
+    nframes = MusEGlobal::segmentSize;
+  }
+
   float* buffer[srcTotalOutChans];
-  float data[nframes * srcTotalOutChans];
   double meter[trackChans];
 
   // Have we been here already during this process cycle?
@@ -1005,6 +1011,10 @@ void AudioTrack::copyData(unsigned pos,
     _haveData = false;  // Reset.
     _processed = true;  // Set this now.
 
+    // Start by clearing the meters. There may be multiple contributions to them below.
+    for(i = 0; i < trackChans; ++i)
+      _meter[i] = 0.0;
+
     if(off())
     {
       #ifdef NODE_DEBUG_PROCESS
@@ -1028,20 +1038,22 @@ void AudioTrack::copyData(unsigned pos,
       _efxPipe->apply(pos, 0, nframes, 0);  // Just process controls only, not audio (do not 'run').
       processTrackCtrls(pos, 0, nframes, 0);
 
-      for(i = 0; i < trackChans; ++i)
-        _meter[i] = 0.0;
+      //for(i = 0; i < trackChans; ++i)
+      //  _meter[i] = 0.0;
 
       return;
     }
 
-    // Point the input buffers at a temporary stack buffer.
+    // Point the input buffers at a temporary buffer.
     for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
+        buffer[i] = _dataBuffers[i];
 
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc.
     // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
     // Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
     //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
+    // Since the meters are cleared above, getData can contribute (add) to them directly and return HaveMeterDataOnly
+    //  if it does not want to pass the audio for listening.
     if(!getData(pos, srcTotalOutChans, nframes, buffer))
     {
       #ifdef NODE_DEBUG_PROCESS
@@ -1096,7 +1108,8 @@ void AudioTrack::copyData(unsigned pos,
         if(f > meter[c])
           meter[c] = f;
       }
-      _meter[c] = meter[c];
+      if(meter[c] > _meter[c])
+        _meter[c] = meter[c];
       if(_meter[c] > _peak[c])
         _peak[c] = _meter[c];
 
@@ -2017,6 +2030,20 @@ void AudioTrack::setTotalOutChannels(int num)
       int chans = _totalOutChannels;
       if(num != chans)
       {
+        if(_dataBuffers)
+        {
+          for(int i = 0; i < _totalOutChannels; ++i)
+          {
+            if(_dataBuffers[i])
+            {
+              free(_dataBuffers[i]);
+              _dataBuffers[i] = NULL;
+            }
+          }
+          delete[] _dataBuffers;
+          _dataBuffers = NULL;
+        }
+
         _totalOutChannels = num;
         int new_chans = num;
         // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
@@ -2040,6 +2067,7 @@ void AudioTrack::setTotalOutChannels(int num)
             outBuffers = NULL;
           }
         }
+
         initBuffers();
       }
       chans = num;

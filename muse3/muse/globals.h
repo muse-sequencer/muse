@@ -61,6 +61,8 @@ extern bool overrideAudioInput;
 
 extern QTimer* heartBeatTimer;
 
+extern bool blinkTimerPhase;
+
 extern bool hIsB;
 
 extern const signed char sharpTab[14][7];

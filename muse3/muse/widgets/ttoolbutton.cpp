@@ -21,6 +21,7 @@
 //=========================================================
 
 #include <QPainter>
+#include <QPaintEvent>
 #include <QStyle>
 
 #include "ttoolbutton.h"
@@ -51,12 +52,11 @@ void TransparentToolButton::drawButton(QPainter* p)
 //   CompactToolButton
 //---------------------------------------------------------
 
-CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon_A, const QIcon& icon_B, const char* name)
-         : QToolButton(parent), _icon_A(icon_A), _icon_B(icon_B)
+CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon, const char* name)
+         : QToolButton(parent), _icon(icon)
 {
   setObjectName(name);
-  _useIcon_B = false;
-  setIcon(_icon_A);
+  _blinkPhase = false;
 }
 
 QSize CompactToolButton::sizeHint() const
@@ -76,29 +76,35 @@ QSize CompactToolButton::sizeHint() const
   return QSize(w, h);
 }
       
-void CompactToolButton::setIconA(const QIcon& ico)
+void CompactToolButton::setIcon(const QIcon & icon)
 {
-  _icon_A = ico;
-  if(!_useIcon_B)
-    setIcon(_icon_A);
+  _icon = icon;
+  update();
 }
 
-void CompactToolButton::setIconB(const QIcon& ico)
+void CompactToolButton::setBlinkPhase(bool v)
 {
-  _icon_B = ico;
-  if(_useIcon_B)
-    setIcon(_icon_B);
-}
-
-void CompactToolButton::setCurrentIcon(bool v)
-{
-  if(_useIcon_B == v)
+  if(_blinkPhase == v)
     return;
-  _useIcon_B = v;
-  if(_useIcon_B)
-    setIcon(_icon_B);
+  _blinkPhase = v;
+  if(isEnabled())
+    update();
+}
+
+void CompactToolButton::paintEvent(QPaintEvent* ev)
+{
+  QToolButton::paintEvent(ev);
+
+  QIcon::Mode mode;
+  if(isEnabled())
+    mode = hasFocus() ? QIcon::Selected : QIcon::Normal;
   else
-    setIcon(_icon_A);
+    mode = QIcon::Disabled;
+  QIcon::State state = (isChecked() && (!_blinkPhase || !isEnabled())) ? QIcon::On : QIcon::Off;
+
+  QPainter p(this);
+  _icon.paint(&p, rect(), Qt::AlignCenter, mode, state);
+  ev->accept();
 }
 
 

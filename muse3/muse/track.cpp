@@ -254,6 +254,7 @@ void Track::init()
       _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
+      _recMonitor    = true;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
@@ -315,6 +316,7 @@ void Track::internal_assign(const Track& t, int flags)
         _height       = t._height;
         _comment      = t.comment();
         _locked       = t.locked();
+        _recMonitor   = t._recMonitor;
       }
 }
 
@@ -579,7 +581,6 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         delay          = mt.delay;
         len            = mt.len;
         compression    = mt.compression;
-        _recEcho       = mt.recEcho();
         clefType       = mt.clefType;
       }  
       
@@ -830,7 +831,6 @@ void MidiTrack::init()
       delay          = 0;
       len            = 100;          // percent
       compression    = 100;          // percent
-      _recEcho       = true;
       }
 
 void MidiTrack::init_drum_ordering()
@@ -1085,11 +1085,19 @@ bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
       
 //---------------------------------------------------------
 //   addStuckLiveNote
-//   Return true if note was removed.
+//   Return true if note was added.
 //---------------------------------------------------------
 
 bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
 {
+//   for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
+//   {
+//     // We're looking for port, channel, and note. Time and velocity are not relevant.
+//     if((*k).port() == port &&
+//        (*k).channel() == chan &&
+//        (*k).dataA() == note)
+//       return false;
+//   }
   stuckLiveNotes.add(MidiPlayEvent(0, port, chan, ME_NOTEOFF, note, vel)); // Mark for immediate playback
   return true;
 }
@@ -1111,6 +1119,24 @@ bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
       stuckLiveNotes.erase(k);
       return true;
     }
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+//   stuckLiveNoteExists
+//   Return true if note exists.
+//---------------------------------------------------------
+
+bool MidiTrack::stuckLiveNoteExists(int port, int chan, int note)
+{
+  for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
+  {
+    // We're looking for port, channel, and note. Time and velocity are not relevant.
+    if((*k).port() == port &&
+       (*k).channel() == chan &&
+       (*k).dataA() == note)
+      return true;
   }
   return false;
 }
@@ -1160,7 +1186,6 @@ void MidiTrack::write(int level, Xml& xml) const
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
       xml.intTag(level, "locked", _locked);
-      xml.intTag(level, "echo", _recEcho);
 
       xml.intTag(level, "transposition", transposition);
       xml.intTag(level, "velocity", velocity);
@@ -1471,8 +1496,8 @@ void MidiTrack::read(Xml& xml)
                               chanmask = xml.parseInt();            // Obsolete but support old files.
                         else if (tag == "locked")
                               _locked = xml.parseInt();
-                        else if (tag == "echo")
-                              _recEcho = xml.parseInt();
+                        else if (tag == "echo")                     // Obsolete but support old files.
+                              _recMonitor = xml.parseInt();
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
@@ -1593,6 +1618,7 @@ void Track::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "channels", _channels);
       xml.intTag(level, "height", _height);
       xml.intTag(level, "locked", _locked);
+      xml.intTag(level, "recMonitor", _recMonitor);
       if (_selected)
       {
             xml.intTag(level, "selected", _selected);
@@ -1631,6 +1657,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       }      
       else if (tag == "locked")
             _locked = xml.parseInt();
+      else if (tag == "recMonitor")
+            _recMonitor = xml.parseInt();
       else if (tag == "selected")
             _selected = xml.parseInt();
       else if (tag == "selectionOrder")
