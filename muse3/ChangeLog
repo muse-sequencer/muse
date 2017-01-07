@@ -12,6 +12,8 @@
             missing audio, the 'Monitor' buttons flash to indicate being active.
          - TODO: Add an Arranger track list 'Monitor' column.
                  Make Wave Tracks NOT monitor by default ??
+         - FIXED: Wave tracks now mix playback audio with incoming audio -
+                   you can now hear what's playing as you are recording.
 21.12.2016
          - Make some cmake system commands friendlier. (Tim)
          - Remove some more old setuid stuff.
