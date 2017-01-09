@@ -4,7 +4,7 @@
 //  $Id: mstrip.cpp,v 1.9.2.13 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 - 2016 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011 - 2017 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -929,8 +929,9 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   const int port    = _track->outPort();
   if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
     return;
-    
-  MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+  MusECore::MidiInstrument* instr = mp->instrument();
   if(!instr)
     return;
   
@@ -945,8 +946,8 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
         // 0xffffff cannot be a valid patch number... yet...
         if(rv == MusECore::CTRL_PROGRAM_VAL_DONT_CARE)
           rv = 0xffff00;
-        MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
+        MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+        mp->putEvent(ev);
         //updateTrackInfo(-1);
     }
   }
@@ -962,11 +963,13 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
         //be pedantic about checks
         if(sif)
         {
-          MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
           if(mp)
           {
               if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-                MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+                mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+                                                           MusECore::ME_CONTROLLER,
+                                                           MusECore::CTRL_PROGRAM,
+                                                           MusECore::CTRL_VAL_UNKNOWN));
               sif->applyPreset(act->data().value<void *>());
           }
         }
@@ -999,14 +1002,18 @@ void MidiComponentRack::controllerChanged(int val, int id)
   if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
   {
     if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      MusEGlobal::audio->msgSetHwCtrlState(mp, channel, id, MusECore::CTRL_VAL_UNKNOWN);
+    {
+      mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+                                                 MusECore::ME_CONTROLLER,
+                                                 id,
+                                                 MusECore::CTRL_VAL_UNKNOWN));
+    }
   }
   else
   {
     val += mc->bias();
-    int tick     = MusEGlobal::song->cpos();
-    MusECore::MidiPlayEvent ev(tick, port, channel, MusECore::ME_CONTROLLER, id, val);
-    MusEGlobal::audio->msgPlayMidiEvent(&ev);
+    MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, val);
+    mp->putEvent(ev);
   }
 }
 
@@ -1040,15 +1047,19 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int /*sc
   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
   {
     if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      MusEGlobal::audio->msgSetHwCtrlState(mp, channel, id, MusECore::CTRL_VAL_UNKNOWN);
-  }  
+    {
+      mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+                                                 MusECore::ME_CONTROLLER,
+                                                 id,
+                                                 MusECore::CTRL_VAL_UNKNOWN));
+    }
+  }
   else
   {
     ival += mc->bias();
-    int tick     = MusEGlobal::song->cpos();
-    MusECore::MidiPlayEvent ev(tick, port, channel, MusECore::ME_CONTROLLER, id, ival);
-    MusEGlobal::audio->msgPlayMidiEvent(&ev);
-  }  
+    MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+    mp->putEvent(ev);
+  }
 }
 
 void MidiComponentRack::controllerMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/)
@@ -2045,19 +2056,22 @@ void MidiStrip::volLabelDoubleClicked()
         kiv = mc->maxVal();
       kiv += mc->bias();
       
-      MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, num, kiv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, num, kiv);
+      mp->putEvent(ev);
     }
     else
     {
-      MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, num, lastv);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, num, lastv);
+      mp->putEvent(ev);
     }
   }  
   else
   {
     if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, num, MusECore::CTRL_VAL_UNKNOWN);
+      mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+                                                  MusECore::ME_CONTROLLER,
+                                                  num,
+                                                  MusECore::CTRL_VAL_UNKNOWN));
   }
 }
 
@@ -2218,15 +2232,17 @@ void MidiStrip::ctrlChanged(double v, bool off, int num)
       if(off || (val < mctl->minVal()) || (val > mctl->maxVal()))
       {
         if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, num, MusECore::CTRL_VAL_UNKNOWN);
-      }  
+          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+                                                     MusECore::ME_CONTROLLER,
+                                                     num,
+                                                     MusECore::CTRL_VAL_UNKNOWN));
+      }
       else
       {
         val += mctl->bias();
-        int tick     = MusEGlobal::song->cpos();
-        MusECore::MidiPlayEvent ev(tick, port, chan, MusECore::ME_CONTROLLER, num, val);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      }  
+        MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, num, val);
+        mp->putEvent(ev);
+      }
     }
 
 //---------------------------------------------------------

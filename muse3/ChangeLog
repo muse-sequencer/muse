@@ -1,3 +1,11 @@
+09.01.2017
+         - FIXED: Midi strip controls much too slow with large audio (Jack) period. (Tim)
+         - Created and installed new template class 'LockFreeBuffer<T>' to replace clumsy
+            per-type / fixed capacity multiple implementations. Works with ANY type, and
+            capacity can be set per-instance.
+         - Replaced 'waiting' calls of midi strip controls, with the new LockFreeBuffer<T>.
+           Midi controls are now fast and smooth, like audio controls, even at high Jack periods.
+         - TODO: Fix midi controller graphs much too slow as well!
 07.01.2017
          * New - Monitoring feature: (Tim)
          - Midi Tracks and Wave Tracks have a 'Monitor' button.

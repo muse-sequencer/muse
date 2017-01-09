@@ -943,12 +943,13 @@ void Audio::processMidi()
 
       const bool extsync = MusEGlobal::extSyncFlag.value();
 
-      // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs)...
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* md = *id;
         int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
 
+        // Process events sent by synthesizers (which in turn may have been passed by their GUI -> synth FIFOs).
+        // Receive events sent from a synth's gui thread (which might be different than our gui thread) to the audio thread.
         if(md->isSynti())
         {
           SynthI* s = (SynthI*)md;
@@ -1734,6 +1735,7 @@ void Audio::processMidi()
         MidiDevice* pl_md = *id;
         // We are done with the 'frozen' recording fifos, remove the events.
         pl_md->afterProcess();
+
         // ALSA devices handled by another thread.
         const MidiDevice::MidiDeviceType typ = pl_md->deviceType();
         switch(typ)
@@ -1747,6 +1749,14 @@ void Audio::processMidi()
           break;
         }
       }
+
+      //
+      // Receive events sent from our gui thread to this audio thread.
+      // Update hardware controller gui knobs, sliders etc.
+      //
+      for(int igmp = 0; igmp < MIDI_PORTS; ++igmp)
+        MusEGlobal::midiPorts[igmp].processGui2AudioEvents();
+
       MusEGlobal::midiBusy=false;
       }
 

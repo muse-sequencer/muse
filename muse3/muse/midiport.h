@@ -4,7 +4,7 @@
 //  $Id: midiport.h,v 1.9.2.6 2009/11/17 22:08:22 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2017 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@
 #include "globaldefs.h"
 #include "sync.h"
 #include "route.h"
+#include "mpevent.h"
+#include "lock_free_buffer.h"
 
 class QMenu;
 class QWidget;
@@ -36,13 +38,11 @@ namespace MusECore {
 
 class MidiDevice;
 class Part;
-//class MidiSyncInfo;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
-class MidiPlayEvent;
 
 //---------------------------------------------------------
 //   MidiPort
@@ -64,10 +64,19 @@ class MidiPort {
       // Whether Init sysexes and default controller values have been sent. To be reset whenever
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
-      
+
+      // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
+      LockFreeBuffer<MidiPlayEvent> *_gui2AudioFifo;
+
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
+
+      // Prepares an event for putting into the gui2audio fifo.
+      // To be called from gui thread only. Returns true if the event was staged.
+      bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
+      // To be called from audio thread only. Returns true if event cannot be delivered.
+      bool handleGui2AudioEvent(const MidiPlayEvent&);
 
    public:
       MidiPort();
@@ -166,6 +175,16 @@ class MidiPort {
       bool initSent() const { return _initializationsSent; }  
       void clearInitSent() { _initializationsSent = false; }  
       
+      // Put an event into the gui2audio fifo for playback. Calls stageEvent().
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      bool putHwCtrlEvent(const MidiPlayEvent&);
+      // Put an event into both the device and the gui2audio fifo for playback. Calls stageEvent().
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      bool putEvent(const MidiPlayEvent&);
+      // Process the gui2AudioFifo. Called from audio thread only.
+      bool processGui2AudioEvents();
+
+
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }

@@ -4,7 +4,7 @@
 //  $Id: midiport.cpp,v 1.21.2.15 2009/12/07 20:11:51 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2017 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -94,6 +94,7 @@ void initMidiPorts()
 MidiPort::MidiPort()
    : _state("not configured")
       {
+      _gui2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(64);
       _initializationsSent = false;  
       _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
       _defaultOutChannels = 0;
@@ -109,6 +110,7 @@ MidiPort::MidiPort()
 
 MidiPort::~MidiPort()
       {
+      delete _gui2AudioFifo;
       delete _controller;
       }
 
@@ -882,7 +884,264 @@ int MidiPort::limitValToInstrCtlRange(int ctl, int val)
   
   return val;
 }
-            
+
+//---------------------------------------------------------
+//   stageEvent
+//   Prepares an event for putting into the gui2audio fifo.
+//   To be called from gui thread only.
+//   Returns true if the event was staged.
+//---------------------------------------------------------
+
+bool MidiPort::stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src)
+{
+  PendingOperationList operations;
+
+  const int chn = src.channel();
+  int ctrl = -1;
+
+  if (src.type() == ME_CONTROLLER)
+  {
+        ctrl = src.dataA();
+        int db = src.dataB();
+
+        // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+        //        defined by the user in the controller list.
+        if(ctrl == CTRL_HBANK)
+        {
+          ctrl = CTRL_PROGRAM;
+          dst = src;
+        }
+        else if(ctrl == CTRL_LBANK)
+        {
+          ctrl = CTRL_PROGRAM;
+          dst = src;
+        }
+        else if(ctrl == CTRL_PROGRAM)
+        {
+          dst = src;
+        }
+        else
+        {
+          db = limitValToInstrCtlRange(ctrl, db);
+          dst = MidiPlayEvent(src.time(), src.port(), chn, src.type(), ctrl, db);
+        }
+  }
+  else
+  if (src.type() == ME_POLYAFTER)
+  {
+        const int pitch = src.dataA() & 0x7f;
+        ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
+        const int db = limitValToInstrCtlRange(ctrl, src.dataB());
+        dst = MidiPlayEvent(src.time(), src.port(), chn, src.type(), ctrl, db);
+  }
+  else
+  if (src.type() == ME_AFTERTOUCH)
+  {
+        ctrl = CTRL_AFTERTOUCH;
+        const int da = limitValToInstrCtlRange(ctrl, src.dataA());
+        dst = MidiPlayEvent(src.time(), src.port(), chn, src.type(), ctrl, da);
+  }
+  else
+  if (src.type() == ME_PITCHBEND)
+  {
+        ctrl = CTRL_PITCH;
+        const int da = limitValToInstrCtlRange(ctrl, src.dataA());
+        dst = MidiPlayEvent(src.time(), src.port(), chn, src.type(), ctrl, da);
+  }
+  else
+  if (src.type() == ME_PROGRAM)
+  {
+    ctrl = CTRL_PROGRAM;
+    dst = src;
+  }
+  else
+    return false;
+
+  // Make sure the controller exists, create it if not.
+  if(ctrl != -1)
+  {
+    iMidiCtrlValList cl = _controller->find(chn, ctrl);
+    if(cl == _controller->end())
+    {
+      PendingOperationItem poi(_controller, 0, chn, ctrl, PendingOperationItem::AddMidiCtrlValList);
+      if(operations.findAllocationOp(poi) == operations.end())
+      {
+        MidiCtrlValList* mcvl = new MidiCtrlValList(ctrl);
+        poi._mcvl = mcvl;
+        operations.add(poi);
+        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      }
+    }
+  }
+
+  return true;
+}
+
+//---------------------------------------------------------
+//   putHwCtrlEvent
+//   To be called from gui thread only.
+//   Returns true if event cannot be delivered.
+//---------------------------------------------------------
+
+bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
+{
+  MidiPlayEvent staged_ev;
+  const bool stage_res = stageEvent(staged_ev, ev);
+  if(stage_res && _gui2AudioFifo->put(staged_ev))
+  {
+    fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
+    return true;
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+//   putEvent
+//   To be called from gui thread only.
+//   Returns true if event cannot be delivered.
+//---------------------------------------------------------
+
+bool MidiPort::putEvent(const MidiPlayEvent& ev)
+{
+  // Send the event to the device first so that current parameters could be updated on process.
+  MidiPlayEvent staged_ev;
+  const bool stage_res = stageEvent(staged_ev, ev);
+  bool res = false;
+  if(_device)
+    res = _device->putEvent(ev);
+  if(stage_res && _gui2AudioFifo->put(staged_ev))
+    fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
+  return res;
+}
+
+//---------------------------------------------------------
+//   handleGui2AudioEvent
+//   To be called from audio thread only.
+//   Returns true if event cannot be delivered.
+//---------------------------------------------------------
+
+bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev)
+{
+  const int chn = ev.channel();
+  int ctrl = -1;
+  int val = ev.dataB();
+
+  if (ev.type() == ME_CONTROLLER)
+  {
+        ctrl = ev.dataA();
+
+        // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+        //        defined by the user in the controller list.
+        if(ctrl == CTRL_HBANK)
+        {
+          int hb = ctrl & 0xff;
+          int lb = 0xff;
+          int pr = 0xff;
+          if(_device)
+          {
+            _device->curOutParamNums(chn)->currentProg(&pr, &lb, NULL);
+            _device->curOutParamNums(chn)->BANKH = hb;
+          }
+          val = (hb << 16) | (lb << 8) | pr;
+          ctrl = CTRL_PROGRAM;
+        }
+        else if(ctrl == CTRL_LBANK)
+        {
+          int hb = 0xff;
+          int lb = ctrl & 0xff;
+          int pr = 0xff;
+          if(_device)
+          {
+            _device->curOutParamNums(chn)->currentProg(&pr, NULL, &hb);
+            _device->curOutParamNums(chn)->BANKL = lb;
+          }
+          val = (hb << 16) | (lb << 8) | pr;
+          ctrl = CTRL_PROGRAM;
+        }
+        else if(ctrl == CTRL_PROGRAM)
+        {
+          // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+          //        defined by the user in the controller list.
+        }
+        else
+        {
+        }
+  }
+  else
+  if (ev.type() == ME_POLYAFTER)
+  {
+        const int pitch = ev.dataA() & 0x7f;
+        ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
+        //const int db = limitValToInstrCtlRange(ctrl, ev.dataB());  // Already done by sender !
+  }
+  else
+  if (ev.type() == ME_AFTERTOUCH)  // ... Same
+  {
+        ctrl = CTRL_AFTERTOUCH;
+        //const int da = limitValToInstrCtlRange(ctrl, ev.dataA());  // Already done by sender !
+        val = ev.dataA();
+  }
+  else
+  if (ev.type() == ME_PITCHBEND)
+  {
+        ctrl = CTRL_PITCH;
+        //const int da = limitValToInstrCtlRange(ctrl, ev.dataA()); // Already done by sender !
+        val = ev.dataA();
+  }
+  else
+  if (ev.type() == ME_PROGRAM)
+  {
+    ctrl = CTRL_PROGRAM;
+    int hb = 0xff;
+    int lb = 0xff;
+    int pr = ev.dataA() & 0xff;
+    if(_device)
+    {
+      _device->curOutParamNums(chn)->currentProg(NULL, &lb, &hb);
+      _device->curOutParamNums(chn)->PROG = pr;
+    }
+    val = (hb << 16) | (lb << 8) | pr;
+  }
+  else
+  {
+
+  }
+
+  // For now we are only interested in controllers not notes etc.
+  if(ctrl == -1)
+    return false;
+
+  iMidiCtrlValList imcvl = _controller->find(chn, ctrl);
+  if(imcvl == _controller->end())
+  {
+    fprintf(stderr, "MidiPort::handleGui2AudioEvent Error: Controller:%d on chan:%d does not exist. Sender should have created it!\n", ctrl, chn);
+    return true;
+  }
+
+  MidiCtrlValList* mcvl = imcvl->second;
+  const bool res = mcvl->setHwVal(val);
+  // If program controller be sure to update drum maps (and inform the gui).
+  if(res && ctrl == CTRL_PROGRAM)
+    updateDrumMaps(chn, val);
+  //return res;
+
+  return false;
+}
+
+//---------------------------------------------------------
+//   processGui2AudioEvents
+//   Return true if error.
+//---------------------------------------------------------
+
+bool MidiPort::processGui2AudioEvents()
+{
+  // Receive events sent from our gui thread to this audio thread.
+  while(_gui2AudioFifo->getSize())
+    // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+    handleGui2AudioEvent(_gui2AudioFifo->get()); // Don't care about return value.
+  return false;
+}
+
 //---------------------------------------------------------
 //   sendHwCtrlState
 //   Return true if it is OK to go ahead and deliver the event.
