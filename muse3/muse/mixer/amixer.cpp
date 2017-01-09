@@ -1010,8 +1010,7 @@ void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
         emit incPan(val);
       break;
     default:
-      ev->ignore();
-      QMainWindow::keyPressEvent(ev);
+      return QMainWindow::keyPressEvent(ev);
       break;
   }
   ev->accept();
