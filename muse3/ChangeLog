@@ -2,8 +2,9 @@
          - Replaced midi editors' control panel knob with compact knob and LCD patch editor. (Tim)
            Both use the 'waitless' method of 09.01.2017.
          - Improvements to compact knob look and functionality. (Should look OK with 8pt font now.)
-         - Clear focus after compact* controls popup editors close. We can't really have focus
-            hanging around there for the unaware user - when enter was hit the control still had focus.
+         - Clear focus after LCD patch edit popup editor closes. FIXME There are three sections,
+            need to clear focus for now, we can't really have focus hanging around there for the
+            unaware user - need to add a section 'hilighter/selector'.
 09.01.2017
          - FIXED: Midi strip controls much too slow with large audio (Jack) period. (Tim)
          - Created and installed new template class 'LockFreeBuffer<T>' to replace clumsy

@@ -1078,8 +1078,7 @@ void CompactKnob::editorReturnPressed()
       setValue(_editor->value());
     _editor->deleteLater();
     _editor = 0;
-    //setFocus();
-    clearFocus();
+    setFocus();
   }
 }
 
@@ -1091,8 +1090,7 @@ void CompactKnob::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    //setFocus();
-    clearFocus();
+    setFocus();
   }
 }
 

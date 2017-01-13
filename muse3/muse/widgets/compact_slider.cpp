@@ -1080,8 +1080,7 @@ void CompactSlider::editorReturnPressed()
       setValue(_editor->value());
     _editor->deleteLater();
     _editor = 0;
-    //setFocus();
-    clearFocus();
+    setFocus();
   }
 }
 
@@ -1093,8 +1092,7 @@ void CompactSlider::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    //setFocus();
-    clearFocus();
+    setFocus();
   }
 }
 

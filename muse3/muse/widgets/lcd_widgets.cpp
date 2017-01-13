@@ -935,7 +935,7 @@ void LCDPatchEdit::editorReturnPressed()
     _editor->deleteLater();
     _editor = 0;
   }
-  //setFocus();
+  //setFocus(); // FIXME There are three sections. Need to clear focus for now.
   clearFocus();
 }
 
@@ -947,7 +947,7 @@ void LCDPatchEdit::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    //setFocus();
+    //setFocus(); FIXME There are three sections. Need to clear focus for now.
     clearFocus();
   }
 }

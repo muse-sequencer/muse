@@ -76,7 +76,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       setObjectName(name);
       inHeartBeat = true;
 
-      setFocusPolicy(Qt::NoFocus);
+      //setFocusPolicy(Qt::NoFocus);
 
       _knob = 0;
       _slider = 0;
@@ -198,7 +198,7 @@ void CtrlPanel::buildPanel()
     _knob = new CompactKnob(this, "CtrlPanelKnob", CompactKnob::Bottom);
     _knob->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _knob->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
-    _knob->setFocusPolicy(Qt::NoFocus);
+    //_knob->setFocusPolicy(Qt::NoFocus);
     _knob->setRange(0.0, 127.0, 1.0);
     _knob->setValue(0.0);
     _knob->setEnabled(false);
@@ -229,7 +229,7 @@ void CtrlPanel::buildPanel()
     _slider = new CompactSlider(this, "CtrlPanelSlider");
     _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _slider->setToolTip(tr("manual adjust (Ctrl-double-click on/off)"));
-    _slider->setFocusPolicy(Qt::NoFocus);
+    //_slider->setFocusPolicy(Qt::NoFocus);
     _slider->setRange(0.0, 127.0, 1.0);
     _slider->setValue(0.0);
     _slider->setEnabled(false);
