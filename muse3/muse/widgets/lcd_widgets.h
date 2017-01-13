@@ -70,8 +70,11 @@ class LCDPatchEdit : public QFrame
 
   public:
     enum PatchSections { HBankSection, LBankSection, ProgSection };
+    enum PatchOrientation { PatchHorizontal = 0, PatchVertical };
 
   protected:
+    PatchOrientation _orient;
+
     int _maxAliasedPointSize;
     int _xMargin;
     int _yMargin;
@@ -155,11 +158,14 @@ class LCDPatchEdit : public QFrame
 
     static QSize getMinimumSizeHint(const QFontMetrics& fm,
                                     int xMargin = 0,
-                                    int yMargin = 0
+                                    int yMargin = 0,
+                                    PatchOrientation orient = PatchHorizontal
                                    );
 
     int id() const             { return _id; }
     void setId(int i)          { _id = i; }
+
+    void setReadoutOrientation(PatchOrientation);
 
     QColor readoutColor() const { return _readoutColor; }
     void setReadoutColor(const QColor& c) { _readoutColor = c; update(); }

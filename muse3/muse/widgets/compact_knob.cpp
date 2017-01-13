@@ -7,7 +7,7 @@
 //  Copyright (C) 1997  Josef Wilgen
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net) completely redesigned.
-//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge). New CompactKnob based on Knob.
+//  (C) Copyright 2016 - 2017 Tim E. Real (terminator356 on sourceforge). New CompactKnob based on Knob.
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -143,6 +143,7 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       _valueDecimals = 2;
       _off = false;
       d_offText = tr("off");
+      _showLabel = true;
       _showValue = true;
 
       setUpdateTime(50);
@@ -158,32 +159,33 @@ CompactKnob::~CompactKnob()
 QSize CompactKnob::getMinimumSizeHint(const QFontMetrics& fm,
                                         KnobLabelPos labelPos,
                                         bool showValue,
+                                        bool showLabel,
                                         int xMargin,
                                         int yMargin)
 {
   // Put some kind of limit so the knobs aren't tiny at small fonts.
   const int minh = 17;
-  int h;
-  if(showValue)
-    h = 2 * (fm.height() - fm.leading() - fm.descent()) - 1;
-  else
-    h = fm.height() + 2;
+  int label_h, label_h_2, fin_label_h;
+  label_h = (fm.height() - fm.leading() - fm.descent()) + 1;
+  label_h_2 = 2 * label_h - 1;
 
-  if(h < minh)
-    h = minh;
+  if(showValue && showLabel)
+    fin_label_h = label_h_2;
+  else
+    fin_label_h = fm.height() + 5;
 
   switch(labelPos) {
         case Left:
-              return QSize(h + 2 * xMargin, h + 2 * yMargin);
+              return QSize(label_h_2 + 2 * xMargin, label_h_2 + 2 * yMargin);
               break;
         case Right:
-              return QSize(h + 2 * xMargin, h + 2 * yMargin);
+              return QSize(label_h_2 + 2 * xMargin, label_h_2 + 2 * yMargin);
               break;
         case Top:
-              return QSize(h + 2 * xMargin, h + 2 * yMargin);
+              return QSize(label_h_2 + 2 * xMargin, label_h_2 + fin_label_h + 2 * yMargin);
               break;
         case Bottom:
-              return QSize(h + 2 * xMargin, h + 2 * yMargin);
+              return QSize(label_h_2 + 2 * xMargin, label_h_2 + fin_label_h + 2 * yMargin);
               break;
         case None:
               break;
@@ -314,6 +316,14 @@ void CompactKnob::setRange(double vmin, double vmax, double vstep, int pagesize,
 void CompactKnob::setShowValue(bool show)
 {
   _showValue = show;
+  resize(size());
+  updateGeometry(); // Required.
+  update();
+}
+
+void CompactKnob::setShowLabel(bool show)
+{
+  _showLabel = show;
   resize(size());
   updateGeometry(); // Required.
   update();
@@ -637,6 +647,17 @@ void CompactKnob::resizeEvent(QResizeEvent* ev)
       const int spacing = 0;
       int x, y, sz;
 
+      QFontMetrics fm = fontMetrics();
+
+      int label_h, label_h_2, fin_label_h;
+      label_h = (fm.height() - fm.leading() - fm.descent()) + 1;
+      label_h_2 = 2 * label_h - 1;
+
+      if(_showValue && _showLabel)
+        fin_label_h = label_h_2;
+      else
+        fin_label_h = fm.height() + 5;
+
       switch(d_labelPos) {
         case Left:
               sz = r.height();
@@ -649,10 +670,13 @@ void CompactKnob::resizeEvent(QResizeEvent* ev)
               sz = r.height();
               x = r.x();
               y = r.y();
-              _knobRect.setRect(x, y, sz, sz);
-              _labelRect.setRect(r.x() + sz + spacing, r.y(), r.width() - sz - spacing, sz);
+              _knobRect.setRect(x, y, label_h_2 + 2 * d_xMargin, label_h_2 + 2 * d_yMargin);
+              _labelRect.setRect(r.x() + label_h_2 + 2 * d_xMargin + spacing,
+                                 r.y(),
+                                 r.width() - label_h_2 - 2 * d_xMargin - spacing,
+                                 label_h_2 + 2 * d_yMargin);
               break;
-        case Top:
+        case Top:  // TODO
               sz = r.width();
               x = r.x();
               y = r.y() + r.height() - sz;
@@ -660,11 +684,17 @@ void CompactKnob::resizeEvent(QResizeEvent* ev)
               _labelRect.setRect(r.x(), r.y(), sz, r.height() - sz - spacing);
               break;
         case Bottom:
-              sz = r.width();
+              sz = r.height();
               x = r.x();
               y = r.y();
-              _knobRect.setRect(x, y, sz, sz);
-              _labelRect.setRect(r.x(), r.y() + sz + spacing, sz, r.height() - sz - spacing);
+              _knobRect.setRect(r.width() / 2 - label_h_2 / 2,
+                                y,
+                                label_h_2 + 2 * d_xMargin,
+                                label_h_2 + 2 * d_yMargin);
+              _labelRect.setRect(x,
+                                 y + label_h_2 + 2 * d_yMargin + spacing,
+                                 r.width(),
+                                 fin_label_h + 2 * spacing);
               break;
         case None:
               sz = MusECore::qwtMin(r.height(), r.width());
@@ -691,22 +721,25 @@ void CompactKnob::showEditor()
     DEBUG_KNOB(stderr, "   creating editor\n");
     _editor = new PopupDoubleSpinBox(this);
     _editor->setFrame(false);
+    _editor->setContentsMargins(0, 0, 0, 0);
     _editor->setFocusPolicy(Qt::WheelFocus);
-    _editor->setDecimals(_valueDecimals);
-    _editor->setSingleStep(step());
-    _editor->setPrefix(valPrefix());
-    _editor->setSuffix(valSuffix());
-    _editor->setMinimum(minValue());
-    _editor->setMaximum(maxValue());
-    _editor->setValue(value());
     connect(_editor, SIGNAL(returnPressed()), SLOT(editorReturnPressed()));
     connect(_editor, SIGNAL(escapePressed()), SLOT(editorEscapePressed()));
   }
   int w = width();
-  if (w < _editor->sizeHint().width())
-    w = _editor->sizeHint().width();
-  _editor->setGeometry(0, 0, w, height());
+  //int w = _labelRect.width();
+  //if (w < _editor->sizeHint().width())
+  //  w = _editor->sizeHint().width();
+  //_editor->setGeometry(0, 0, w, height());
+  _editor->setGeometry(0, _labelRect.y(), w, _labelRect.height());
   DEBUG_KNOB(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height());
+  _editor->setDecimals(_valueDecimals);
+  _editor->setSingleStep(step());
+  _editor->setPrefix(valPrefix());
+  _editor->setSuffix(valSuffix());
+  _editor->setMinimum(minValue());
+  _editor->setMaximum(maxValue());
+  _editor->setValue(value());
   _editor->selectAll();
   _editMode = true;
   _editor->show();
@@ -727,8 +760,6 @@ void CompactKnob::paintEvent(QPaintEvent*)
       if(hasScale)
         d_scale.draw(&p, palette());
       drawKnob(&p, _knobRect);
-      //drawMarker(&p, d_oldAngle, d_curFaceColor);
-      //drawMarker(&p, d_angle, d_markerColor);
 
       if(d_labelPos != None)
         drawLabel(&p);
@@ -742,12 +773,45 @@ void CompactKnob::paintEvent(QPaintEvent*)
 
 void CompactKnob::drawBackground(QPainter* painter)
 {
-  _bkgPainter->drawBackground(painter,
-                              rect(),
-                              palette(),
-                              d_xMargin,
-                              d_yMargin,
-                              hasOffMode() && ! isOff() ? _labelRect : QRect());
+  switch(d_labelPos)
+  {
+    case None:
+    case Left:
+    case Right:
+      // Paint a background for the whole control.
+      _bkgPainter->drawBackground(painter,
+                                  rect(),
+                                  palette(),
+                                  d_xMargin,
+                                  d_yMargin,
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+    break;
+
+    case Top:
+    case Bottom:
+    {
+      // Paint a separate background for the knob.
+      // No, let's not paint a background for the knob. But if you want it, here it is:
+/*
+      //QRect kr(rect().x(), _knobRect.y(), rect().width(), _knobRect.height());
+      QRect kr(_knobRect.x() - 2, _knobRect.y(), _knobRect.width() + 4, _knobRect.height());
+      _bkgPainter->drawBackground(painter,
+                                  kr,
+                                  palette(),
+                                  d_xMargin,
+                                  d_yMargin);
+*/
+
+      // Paint a separate background for the label.
+      _bkgPainter->drawBackground(painter,
+                                  _labelRect,
+                                  palette(),
+                                  d_xMargin,
+                                  d_yMargin,
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect());
+    }
+    break;
+  }
 }
 
 //------------------------------------------------------------
@@ -765,8 +829,6 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
             r.width()  - 2*d_borderWidth,
             r.height() - 2*d_borderWidth);
 
-//       int width = r.width();
-//       int height = r.height();
       int width = r.width() - 2 * d_xMargin;
       int height = r.height() - 2 * d_yMargin;
       int size = qMin(width, height);
@@ -777,13 +839,11 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
       // draw the rim
       //
 
-//       QLinearGradient linearg(QPoint(r.x(),r.y()), QPoint(size, size));
       QLinearGradient linearg(QPoint(r.x() + d_xMargin,r.y() + d_yMargin), QPoint(size, size));
       linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
       linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
       p->setBrush(linearg);
       p->setPen(Qt::NoPen);
-//       p->drawEllipse(r.x(),r.y(),size,size);
       p->drawEllipse(r.x() + d_xMargin,r.y() + d_yMargin,size,size);
 
 
@@ -803,7 +863,13 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
       // draw button face
       //
 
-      QRadialGradient gradient(size/2, size/2, size-d_borderWidth, size/2-d_borderWidth, size/2-d_borderWidth);
+      QRadialGradient gradient(//aRect.x() + size/2,
+                               //aRect.y() + size/2,
+                               aRect.x(),
+                               aRect.y(),
+                               size-d_borderWidth,
+                               aRect.x() + size/2-d_borderWidth,
+                               aRect.y() + size/2-d_borderWidth);
       gradient.setColorAt(0, d_curFaceColor.lighter(150));
       gradient.setColorAt(1, d_curFaceColor.darker(150));
       p->setBrush(gradient);
@@ -907,21 +973,23 @@ void CompactKnob::drawLabel(QPainter* painter)
   switch(d_labelPos)
   {
     case Left:
-      label_flags = Qt::AlignRight | (_showValue ?  Qt::AlignTop : Qt::AlignVCenter);
-      value_flags = Qt::AlignRight | (_showValue ?  Qt::AlignBottom : Qt::AlignVCenter);
+      label_flags = Qt::AlignRight | ((_showValue && _showLabel) ?  Qt::AlignTop : Qt::AlignVCenter);
+      value_flags = Qt::AlignRight | ((_showValue && _showLabel) ?  Qt::AlignBottom : Qt::AlignVCenter);
     break;
 
     case Right:
-      label_flags = Qt::AlignLeft | (_showValue ?  Qt::AlignTop : Qt::AlignVCenter);
-      value_flags = Qt::AlignLeft | (_showValue ?  Qt::AlignBottom : Qt::AlignVCenter);
+      label_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignTop : Qt::AlignVCenter);
+      value_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignBottom : Qt::AlignVCenter);
     break;
 
     case Top:
-      label_flags = Qt::AlignHCenter | Qt::AlignBottom;
+      label_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignTop : Qt::AlignVCenter);
+      value_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignBottom : Qt::AlignVCenter);
     break;
 
     case Bottom:
-      label_flags = Qt::AlignHCenter | Qt::AlignTop;
+      label_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignTop : Qt::AlignVCenter);
+      value_flags = Qt::AlignLeft | ((_showValue && _showLabel) ?  Qt::AlignBottom : Qt::AlignVCenter);
     break;
 
     case None:
@@ -936,29 +1004,28 @@ void CompactKnob::drawLabel(QPainter* painter)
   const QRect label_br = fm.boundingRect(d_labelText);
   const int label_bw = label_br.width();
 
-  QRect label_r = _labelRect.adjusted(1, -descent + d_yMargin + 1, -2, 0);
+  if(_showLabel)
+  {
+    QRect label_r = _labelRect.adjusted(3, -descent + d_yMargin + 1, -2, 0);
 
-  int label_xoff = (label_r.width() - label_bw) / 2;
-  if(label_xoff < 0)
-    label_xoff = 0;
+    int label_xoff = (label_r.width() - label_bw) / 2;
+    if(label_xoff < 0)
+      label_xoff = 0;
 
-  label_r.adjust(label_xoff, 0, 0, 0);
+    label_r.adjust(label_xoff, 0, 0, 0);
 
-  painter->drawText(label_r, label_flags, d_labelText);
+    painter->drawText(label_r, label_flags, d_labelText);
+  }
 
   if(_showValue)
   {
     const double minV = minValue(ConvertNone);
     const double val = value(ConvertNone);
-    //const QString val_txt = QString::number(val);
-    //const QString val_txt = isOff() ? d_offText :
-    //                            ((val <= minV && !d_specialValueText.isEmpty()) ?
-    //                            d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
     const QString val_txt = (val <= minV && !d_specialValueText.isEmpty()) ?
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix);
     const QRect val_br = fm.boundingRect(val_txt);
     const int val_bw = val_br.width();
-    QRect val_r = _labelRect.adjusted(1, 0, -2, descent + leading - d_yMargin - 1);
+    QRect val_r = _labelRect.adjusted(3, -1, -2, descent + leading - d_yMargin - 2);
     int val_xoff = (val_r.width() - val_bw) / 2;
     if(val_xoff < 0)
       val_xoff = 0;
@@ -1011,7 +1078,8 @@ void CompactKnob::editorReturnPressed()
       setValue(_editor->value());
     _editor->deleteLater();
     _editor = 0;
-    setFocus();
+    //setFocus();
+    clearFocus();
   }
 }
 
@@ -1023,7 +1091,8 @@ void CompactKnob::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    setFocus();
+    //setFocus();
+    clearFocus();
   }
 }
 
@@ -1219,6 +1288,10 @@ void CompactKnob::recalcAngle()
 void CompactKnob::setFaceColor(const QColor& c)
 {
   d_faceColor = c;
+
+//   if(!d_faceColor.isValid())
+//     d_faceColor     = palette().color(QPalette::Window);
+//   d_curFaceColor  = d_faceColor;
   if(!_faceColSel)
     update();
 }
@@ -1302,6 +1375,7 @@ QSize CompactKnob::sizeHint() const
       QSize sz = getMinimumSizeHint(fontMetrics(),
                                 d_labelPos,
                                 _showValue,
+                                _showLabel,
                                 d_xMargin,
                                 d_yMargin);
       DEBUG_KNOB(stderr, "CompactKnob::sizeHint w:%d h:%d\n", sz.width(), sz.height());

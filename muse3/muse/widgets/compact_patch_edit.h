@@ -42,7 +42,12 @@ class CompactPatchEdit : public QFrame
 {
   Q_OBJECT
 
+  public:
+    enum ReadoutOrientation { ReadoutHorizontal = 0, ReadoutVertical };
+
   private:
+    ReadoutOrientation _orient;
+    bool _showPatchLabel;
     int _maxAliasedPointSize;
     int _id;
     int _currentPatch;
@@ -79,6 +84,9 @@ class CompactPatchEdit : public QFrame
     void setValue(int v);
     void setLastValidValue(int v);
     void setLastValidBytes(int hbank, int lbank, int prog);
+
+    void setReadoutOrientation(ReadoutOrientation);
+    void setShowPatchLabel(bool);
 
     void setReadoutColor(const QColor&);
 

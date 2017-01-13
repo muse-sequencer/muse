@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: ctrlpanel.cpp,v 1.10.2.9 2009/06/14 05:24:45 terminator356 Exp $
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2017 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@
 #include <QHBoxLayout>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QColor>
 
 #include <math.h>
 
@@ -52,10 +53,12 @@
 #include "midiedit/drummap.h"
 #include "gconfig.h"
 #include "song.h"
-#include "knob.h"
-#include "doublelabel.h"
+#include "compact_knob.h"
+#include "compact_slider.h"
+#include "lcd_widgets.h"
+#include "utils.h"
+
 #include "midi.h"
-#include "audio.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
 #include "helper.h"
@@ -72,6 +75,16 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       {
       setObjectName(name);
       inHeartBeat = true;
+
+      setFocusPolicy(Qt::NoFocus);
+
+      _knob = 0;
+      _slider = 0;
+      _patchEdit = 0;
+      _veloPerNoteButton = 0;
+
+      _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+      _showval = MusEGlobal::config.showControlValues;
       editor = e;
       ctrlcanvas = c;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -80,17 +93,17 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       bbox->setSpacing (0);
       vbox->addLayout(bbox);
       vbox->addStretch();
-      QHBoxLayout* kbox = new QHBoxLayout;
-      QHBoxLayout* dbox = new QHBoxLayout;
+      kbox = new QHBoxLayout;
       vbox->addLayout(kbox);
-      vbox->addLayout(dbox);
       vbox->addStretch();
       vbox->setContentsMargins(0, 0, 0, 0);
       bbox->setContentsMargins(0, 0, 0, 0);
       kbox->setContentsMargins(0, 0, 0, 0);
-      dbox->setContentsMargins(0, 0, 0, 0);
+      vbox->setSpacing (0);
+      kbox->setSpacing(0);
 
       selCtrl = new QPushButton(tr("S"), this);
+      selCtrl->setContentsMargins(0, 0, 0, 0);
       selCtrl->setFocusPolicy(Qt::NoFocus);
       selCtrl->setFont(MusEGlobal::config.fonts[3]);
       selCtrl->setFixedHeight(20);
@@ -100,6 +113,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"), this);
+      destroy->setContentsMargins(0, 0, 0, 0);
       destroy->setFocusPolicy(Qt::NoFocus);
       destroy->setFont(MusEGlobal::config.fonts[3]);
       destroy->setFixedHeight(20);
@@ -112,70 +126,153 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       
       _track = 0;
       _ctrl = 0;
-      _val = MusECore::CTRL_VAL_UNKNOWN;
       _dnum = -1;
-      
-      _knob = new Knob(this);
-      _knob->setFixedWidth(25);
-      _knob->setFixedHeight(25);
-      _knob->setToolTip(tr("manual adjust"));
-      _knob->setRange(0.0, 127.0, 1.0);
-      _knob->setValue(0.0);
-      _knob->setEnabled(false);
-      _knob->hide();
-      _knob->setAltFaceColor(Qt::red);
-      
-      _dl = new DoubleLabel(-1.0, 0.0, +127.0, this);
-      _dl->setPrecision(0);
-      _dl->setToolTip(tr("ctrl-double-click on/off"));
-      _dl->setSpecialText(tr("off"));
-      _dl->setFont(MusEGlobal::config.fonts[1]);
-      _dl->setBackgroundRole(QPalette::Mid);
-      _dl->setFrame(true);
-      _dl->setFixedWidth(36);
-      _dl->setFixedHeight(15);
-      _dl->setEnabled(false);
-      _dl->hide();
-      
-      //connect(_knob, SIGNAL(sliderMoved(double,int)), SLOT(ctrlChanged(double)));
-      connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
-      connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
-      connect(_dl, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
-      connect(_dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked()));
-      
-      _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
-      _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
-      _veloPerNoteButton->setCheckable(true);
-      _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
-      _veloPerNoteButton->setEnabled(false);
-      _veloPerNoteButton->hide();
-      connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
       
       bbox->addStretch();
       bbox->addWidget(selCtrl);
       bbox->addWidget(destroy);
       bbox->addStretch();
-      kbox->addStretch();
-      kbox->addWidget(_knob);
-      kbox->addWidget(_veloPerNoteButton);
-      kbox->addStretch();
-      dbox->addStretch();
-      dbox->addWidget(_dl);
-      dbox->addStretch();
-      
+
+      buildPanel();
+      setController();
+      configChanged();
+
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       setLayout(vbox);
       }
+
+void CtrlPanel::buildPanel()
+{
+  if(_veloPerNoteButton)
+  {
+    delete _veloPerNoteButton;
+    _veloPerNoteButton = 0;
+  }
+
+  if(_slider)
+  {
+    delete _slider;
+    _slider = 0;
+  }
+
+  if(_knob)
+  {
+    delete _knob;
+    _knob = 0;
+  }
+
+  if(_patchEdit)
+  {
+    delete _patchEdit;
+    _patchEdit = 0;
+  }
+
+  _patchEdit = new LCDPatchEdit(this);
+  _patchEdit->setReadoutOrientation(LCDPatchEdit::PatchVertical);
+  _patchEdit->setValue(MusECore::CTRL_VAL_UNKNOWN);
+  _patchEdit->setFocusPolicy(Qt::NoFocus);
+  // Don't allow anything here, it interferes with the CompactPatchEdit which sets it's own controls' tooltips.
+  //control->setToolTip(d->_toolTipText);
+  _patchEdit->setEnabled(false);
+  _patchEdit->hide();
+  _patchEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+  _patchEdit->setContentsMargins(0, 0, 0, 0);
+
+  _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+  if(_patchEdit->font() != MusEGlobal::config.fonts[1])
+  {
+    _patchEdit->setFont(MusEGlobal::config.fonts[1]);
+    _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+  }
+
+  connect(_patchEdit, SIGNAL(valueChanged(int,int)), SLOT(patchCtrlChanged(int)));
+  connect(_patchEdit, SIGNAL(rightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+  kbox->addWidget(_patchEdit);
+
+  if(_preferKnobs)
+  {
+    _knob = new CompactKnob(this, "CtrlPanelKnob", CompactKnob::Bottom);
+    _knob->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _knob->setToolTip(tr("Manual adjust (Ctrl-double-click on/off)"));
+    _knob->setFocusPolicy(Qt::NoFocus);
+    _knob->setRange(0.0, 127.0, 1.0);
+    _knob->setValue(0.0);
+    _knob->setEnabled(false);
+    _knob->hide();
+    _knob->setHasOffMode(true);
+    _knob->setOff(true);
+    _knob->setValueDecimals(0);
+    _knob->setFaceColor(MusEGlobal::config.midiControllerSliderDefaultColor);
+    _knob->setStep(1.0);
+    _knob->setShowLabel(false);
+    _knob->setShowValue(true);
+    _knob->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
+    _knob->setShowValueToolTipsOnHover(false); //
+
+    if(_knob->font() != MusEGlobal::config.fonts[1])
+    {
+      _knob->setFont(MusEGlobal::config.fonts[1]);
+      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    }
+
+    connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+    kbox->addWidget(_knob);
+  }
+  else
+  {
+    _slider = new CompactSlider(this, "CtrlPanelSlider");
+    _slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _slider->setToolTip(tr("manual adjust (Ctrl-double-click on/off)"));
+    _slider->setFocusPolicy(Qt::NoFocus);
+    _slider->setRange(0.0, 127.0, 1.0);
+    _slider->setValue(0.0);
+    _slider->setEnabled(false);
+    _slider->hide();
+    _slider->setHasOffMode(true);
+    _slider->setOff(true);
+    _slider->setValueDecimals(0);
+    _slider->setBarColor(MusEGlobal::config.sliderDefaultColor);
+    _slider->setStep(1.0);
+    _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+    _slider->setEnableValueToolTips(false);      // FIXME: Tooltip just gets in the way!
+    _slider->setShowValueToolTipsOnHover(false); //
+
+    if(_slider->font() != MusEGlobal::config.fonts[1])
+    {
+      _slider->setFont(MusEGlobal::config.fonts[1]);
+      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    }
+
+    connect(_slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
+
+    kbox->addWidget(_slider);
+  }
+
+  _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
+  _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
+  _veloPerNoteButton->setCheckable(true);
+  _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
+  _veloPerNoteButton->setEnabled(false);
+  _veloPerNoteButton->hide();
+  connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
+
+  kbox->addWidget(_veloPerNoteButton);
+}
+
 //---------------------------------------------------------
 //   heartBeat
 //---------------------------------------------------------
 
 void CtrlPanel::heartBeat()
 {
-  if(editor->deleting())  // Ignore while while deleting to prevent crash.
+  if(editor && editor->deleting())  // Ignore while while deleting to prevent crash.
     return;
   
   inHeartBeat = true;
@@ -212,46 +309,182 @@ void CtrlPanel::heartBeat()
       }
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
-      
-      int v = mp->hwCtrlState(chan, _dnum);
-      if(v == MusECore::CTRL_VAL_UNKNOWN)
+      MusECore::MidiCtrlValListList* mcvll = mp->controller();
+
+      MusECore::ciMidiCtrlValList imcvl = mcvll->find(chan, _dnum);
+      const bool enable = imcvl != mcvll->end() && !_track->off();
+
+// REMOVE Tim. midi. Added.
+// Although we do this for the midi strip control racks (and probably shouldn't),
+//  we need the control to be enabled - user would expect to be able to adjust it
+//  even if controller was not found - our code will create the controller.
+//       if(_knob)
+//       {
+//         if(_knob->isEnabled() != enable)
+//           _knob->setEnabled(enable);
+//       }
+//       else if(_slider)
+//       {
+//         if(_slider->isEnabled() != enable)
+//           _slider->setEnabled(enable);
+//       }
+
+      if(enable)
       {
-        // MusEGui::DoubleLabel ignores the value if already set...
-        _dl->setValue(_dl->off() - 1.0);
-        _val = MusECore::CTRL_VAL_UNKNOWN;
-        v = mp->lastValidHWCtrlState(chan, _dnum);
-        if(v != MusECore::CTRL_VAL_UNKNOWN && ((_dnum != MusECore::CTRL_PROGRAM) || ((v & 0xff) != 0xff) ))
+        MusECore::MidiCtrlValList* mcvl = imcvl->second;
+
+        int hwVal = mcvl->hwVal();
+
+        if(_patchEdit && _dnum == MusECore::CTRL_PROGRAM)
         {
-          if(_dnum == MusECore::CTRL_PROGRAM)
-            v = (v & 0x7f) + 1;
-          else  
-            // Auto bias...
-            v -= _ctrl->bias();
-          if (double(v) != _knob->value())
-            _knob->setValue(double(v));
-        }
-      }
-      else if(v != _val)
-      {
-        _val = v;
-        if(v == MusECore::CTRL_VAL_UNKNOWN || ((_dnum == MusECore::CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
-        {
-          _dl->setValue(_dl->off() - 1.0);
+          // Special for new LCD patch edit control: Need to give both current and last values.
+          // Keeping a local last value with the control won't work.
+          _patchEdit->blockSignals(true);
+          _patchEdit->setLastValidPatch(mcvl->lastValidHWVal());
+          _patchEdit->setLastValidBytes(mcvl->lastValidByte2(), mcvl->lastValidByte1(), mcvl->lastValidByte0());
+          _patchEdit->setValue(hwVal);
+          _patchEdit->blockSignals(false);
         }
         else
         {
-          if(_dnum == MusECore::CTRL_PROGRAM)
-            v = (v & 0x7f) + 1;
-          else  
-            // Auto bias...
-            v -= _ctrl->bias();
-          
-          _knob->setValue(double(v));
-          _dl->setValue(double(v));
-        }  
-      }  
-    }  
-  }  
+          int min = 0;
+          int max = 127;
+          int bias = 0;
+          int initval = 0;
+          MusECore::MidiController* mc = mp->midiController(_dnum);
+          if(mc)
+          {
+            bias = mc->bias();
+            min = mc->minVal();
+            max = mc->maxVal();
+            initval = mc->initVal();
+            if(initval == MusECore::CTRL_VAL_UNKNOWN)
+              initval = 0;
+          }
+
+          const double dmin = (double)min;
+          const double dmax = (double)max;
+
+          if(_knob)
+          {
+            const double c_dmin = _knob->minValue();
+            const double c_dmax = _knob->maxValue();
+            if(c_dmin != min && c_dmax != max)
+            {
+              _knob->blockSignals(true);
+              _knob->setRange(dmin, dmax, 1.0);
+              _knob->blockSignals(false);
+            }
+            else if(c_dmin != min)
+            {
+              _knob->blockSignals(true);
+              _knob->setMinValue(min);
+              _knob->blockSignals(false);
+            }
+            else if(c_dmax != max)
+            {
+              _knob->blockSignals(true);
+              _knob->setMaxValue(max);
+              _knob->blockSignals(false);
+            }
+
+            if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+            {
+              hwVal = mcvl->lastValidHWVal();
+              if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+              {
+                hwVal = initval;
+                if(!_knob->isOff() || hwVal != _knob->value())
+                {
+                  _knob->blockSignals(true);
+                  _knob->setValueState(hwVal, true);
+                  _knob->blockSignals(false);
+                }
+              }
+              else
+              {
+                hwVal -= bias;
+                if(!_knob->isOff() || hwVal != _knob->value())
+                {
+                  _knob->blockSignals(true);
+                  _knob->setValueState(hwVal, true);
+                  _knob->blockSignals(false);
+                }
+              }
+            }
+            else
+            {
+              hwVal -= bias;
+              if(_knob->isOff() || hwVal != _knob->value())
+              {
+                _knob->blockSignals(true);
+                _knob->setValueState(hwVal, false);
+                _knob->blockSignals(false);
+              }
+            }
+          }
+          else if(_slider)
+          {
+            const double c_dmin = _slider->minValue();
+            const double c_dmax = _slider->maxValue();
+            if(c_dmin != min && c_dmax != max)
+            {
+              _slider->blockSignals(true);
+              _slider->setRange(dmin, dmax, 1.0);
+              _slider->blockSignals(false);
+            }
+            else if(c_dmin != min)
+            {
+              _slider->blockSignals(true);
+              _slider->setMinValue(min);
+              _slider->blockSignals(false);
+            }
+            else if(c_dmax != max)
+            {
+              _slider->blockSignals(true);
+              _slider->setMaxValue(max);
+              _slider->blockSignals(false);
+            }
+
+            if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+            {
+              hwVal = mcvl->lastValidHWVal();
+              if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
+              {
+                hwVal = initval;
+                if(!_slider->isOff() || hwVal != _slider->value())
+                {
+                  _slider->blockSignals(true);
+                  _slider->setValueState(hwVal, true);
+                  _slider->blockSignals(false);
+                }
+              }
+              else
+              {
+                hwVal -= bias;
+                if(!_slider->isOff() || hwVal != _slider->value())
+                {
+                  _slider->blockSignals(true);
+                  _slider->setValueState(hwVal, true);
+                  _slider->blockSignals(false);
+                }
+              }
+            }
+            else
+            {
+              hwVal -= bias;
+              if(_slider->isOff() || hwVal != _slider->value())
+              {
+                _slider->blockSignals(true);
+                _slider->setValueState(hwVal, false);
+                _slider->blockSignals(false);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   inHeartBeat = false;
 }
@@ -260,9 +493,54 @@ void CtrlPanel::heartBeat()
 //   configChanged
 //---------------------------------------------------------
 
-void CtrlPanel::configChanged()    
+void CtrlPanel::configChanged()
 { 
-  songChanged(SC_CONFIG); 
+  songChanged(SC_CONFIG);
+
+  // Detect when knobs are preferred and rebuild.
+  if(_preferKnobs != MusEGlobal::config.preferKnobsVsSliders)
+  {
+    _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+    buildPanel();
+    setController();
+  }
+
+  if(_patchEdit)
+  {
+    if(_patchEdit->font() != MusEGlobal::config.fonts[1])
+    {
+      _patchEdit->setFont(MusEGlobal::config.fonts[1]);
+      _patchEdit->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    }
+    _patchEdit->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+  }
+
+  if(_knob)
+  {
+    if(_knob->font() != MusEGlobal::config.fonts[1])
+    {
+      _knob->setFont(MusEGlobal::config.fonts[1]);
+      _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    }
+
+    // Whether to show values along with labels for certain controls.
+    //_knob->setShowValue(MusEGlobal::config.showControlValues);
+  }
+
+  if(_slider)
+  {
+    if(_slider->font() != MusEGlobal::config.fonts[1])
+    {
+      _slider->setFont(MusEGlobal::config.fonts[1]);
+      _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
+    }
+
+    _slider->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
+    // Whether to show values along with labels for certain controls.
+    //_slider->setShowValue(MusEGlobal::config.showControlValues);
+  }
+
+  setControlColor();
 }
 
 //---------------------------------------------------------
@@ -271,122 +549,13 @@ void CtrlPanel::configChanged()
 
 void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 {
-  if(editor->deleting())  // Ignore while while deleting to prevent crash.
+  if(editor && editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
 }
 
-//---------------------------------------------------------
-//   labelDoubleClicked
-//---------------------------------------------------------
-
-void CtrlPanel::labelDoubleClicked()
+void CtrlPanel::patchCtrlChanged(int val)
 {
-  if(!_track || !_ctrl || _dnum == -1)
-      return;
-  
-  int outport = _track->outPort();
-  int chan = _track->outChannel();
-  int cdp = ctrlcanvas->getCurDrumPitch();
-  if(_ctrl->isPerNoteController() && cdp >= 0)
-  {
-    if(_track->type() == MusECore::Track::DRUM)
-    {
-      // Default to track port if -1 and track channel if -1.
-      outport = MusEGlobal::drumMap[cdp].port;
-      if(outport == -1)
-        outport = _track->outPort();
-      chan = MusEGlobal::drumMap[cdp].channel;
-      if(chan == -1)
-        chan = _track->outChannel();
-    }
-    else if(_track->type() == MusECore::Track::NEW_DRUM)
-    {
-      // Default to track port if -1 and track channel if -1.
-      outport = _track->drummap()[cdp].port;
-      if(outport == -1)
-        outport = _track->outPort();
-      chan = _track->drummap()[cdp].channel;
-      if(chan == -1)
-        chan = _track->outChannel();
-    }
-  }
-
-  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
-  int lastv = mp->lastValidHWCtrlState(chan, _dnum);
-  
-  int curv = mp->hwCtrlState(chan, _dnum);
-  
-//   if(_dnum == MusECore::CTRL_AFTERTOUCH)
-//   {
-//     // Auto bias...
-//     ival += _ctrl->bias();
-//     MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_AFTERTOUCH, ival, 0);
-//     MusEGlobal::audio->msgPlayMidiEvent(&ev);
-//   }
-//   else 
-  if(_dnum == MusECore::CTRL_PROGRAM)
-  {
-    if(curv == MusECore::CTRL_VAL_UNKNOWN || ((curv & 0xffffff) == 0xffffff))
-    {
-      // If no value has ever been set yet, use the current knob value 
-      //  (or the controller's initial value?) to 'turn on' the controller.
-      if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
-      {
-        int kiv = lrint(_knob->value());
-        --kiv;
-        kiv &= 0x7f;
-        kiv |= 0xffff00;
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      }
-      else
-      {
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      }
-    }
-    else
-    {
-      //if((curv & 0xffff00) == 0xffff00) DELETETHIS?
-      //{
-        ////if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
-      //}
-      //else
-      //{
-      //  MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, (curv & 0xffff00) | 0xff);
-      //  MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      //}
-    }  
-  }
-  else
-  {
-    if(curv == MusECore::CTRL_VAL_UNKNOWN)
-    {
-      // If no value has ever been set yet, use the current knob value 
-      //  (or the controller's initial value?) to 'turn on' the controller.
-      if(lastv == MusECore::CTRL_VAL_UNKNOWN)
-      {
-        int kiv = lrint(_knob->value());
-        if(kiv < _ctrl->minVal())
-          kiv = _ctrl->minVal();
-        if(kiv > _ctrl->maxVal())
-          kiv = _ctrl->maxVal();
-        kiv += _ctrl->bias();
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      }
-      else
-      {
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      }
-    }  
-    else
-    {
-      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
-    }    
-  }
+  ctrlChanged(double(val));
 }
 
 //---------------------------------------------------------
@@ -403,6 +572,8 @@ void CtrlPanel::ctrlChanged(double val)
       int ival = lrint(val);
       int outport = _track->outPort();
       int chan = _track->outChannel();
+      if(chan < 0 || chan >= MIDI_CHANNELS || outport < 0 || outport >= MIDI_PORTS)
+          return;
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_ctrl->isPerNoteController() && cdp >= 0)
       {
@@ -430,64 +601,75 @@ void CtrlPanel::ctrlChanged(double val)
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
       int curval = mp->hwCtrlState(chan, _dnum);
-      
-//       if(_dnum == MusECore::CTRL_AFTERTOUCH)
-//       {
-//         // Auto bias...
-//         ival += _ctrl->bias();
-//         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_AFTERTOUCH, ival, 0);
-//         MusEGlobal::audio->msgPlayMidiEvent(&ev);
-//       }
-//       else
+
       if(_dnum == MusECore::CTRL_PROGRAM)
       {
-        --ival; 
-        ival &= 0x7f;
-        
-        if(curval == MusECore::CTRL_VAL_UNKNOWN)
-          ival |= 0xffff00;
+        if(val == MusECore::CTRL_VAL_UNKNOWN || (val < _ctrl->minVal()) || (val > _ctrl->maxVal()))
+        {
+          if(curval != MusECore::CTRL_VAL_UNKNOWN)
+          {
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+                                                      MusECore::ME_CONTROLLER,
+                                                      MusECore::CTRL_PROGRAM,
+                                                      MusECore::CTRL_VAL_UNKNOWN));
+          }
+        }
         else
-          ival |= (curval & 0xffff00);  
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
+        {
+          MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
+          mp->putEvent(ev);
+        }
       }
       else
       // Shouldn't happen, but...
       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
       {
         if(curval != MusECore::CTRL_VAL_UNKNOWN)
-          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
-      }  
+          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+                                                     MusECore::ME_CONTROLLER,
+                                                     _dnum,
+                                                     MusECore::CTRL_VAL_UNKNOWN));
+      }
       else
       {
         // Auto bias...
         ival += _ctrl->bias();
-      
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
-        MusEGlobal::audio->msgPlayMidiEvent(&ev);
+        mp->putEvent(ev);
       }
     }
 
 //---------------------------------------------------------
-//   setHWController
+//   setController
 //---------------------------------------------------------
 
-void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController* ctrl) 
-{ 
-  inHeartBeat = true;
-  
-  _track = t; _ctrl = ctrl; 
-  
+void CtrlPanel::setController()
+{
+//   inHeartBeat = true;
+
   if(!_track || !_ctrl)
   {
-    _knob->setEnabled(false);
-    _dl->setEnabled(false);
-    _knob->hide();
-    _dl->hide();
+    if(_patchEdit)
+    {
+      _patchEdit->setEnabled(false);
+      _patchEdit->hide();
+    }
+
+    if(_knob)
+    {
+      _knob->setEnabled(false);
+      _knob->hide();
+    }
+
+    if(_slider)
+    {
+      _slider->setEnabled(false);
+      _slider->hide();
+    }
     inHeartBeat = false;
     return;
   }
-  
+
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[_track->outPort()];
   int ch = _track->outChannel();
   int cdp = ctrlcanvas->getCurDrumPitch();
@@ -526,63 +708,151 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
 
   if(_dnum == MusECore::CTRL_VELOCITY)
   {
-    _knob->setEnabled(false);
-    _dl->setEnabled(false);
-    _knob->hide();
-    _dl->hide();
+    if(_patchEdit)
+    {
+      _patchEdit->setEnabled(false);
+      _patchEdit->hide();
+    }
+
+    if(_knob)
+    {
+      _knob->setEnabled(false);
+      _knob->hide();
+    }
+
+    if(_slider)
+    {
+      _slider->setEnabled(false);
+      _slider->hide();
+    }
     _veloPerNoteButton->setEnabled(true);
     _veloPerNoteButton->show();
   }
   else
   {
-    _knob->setEnabled(true);
-    _dl->setEnabled(true);
     _veloPerNoteButton->setEnabled(false);
     _veloPerNoteButton->hide();
-    double dlv;
+
+    MusECore::MidiCtrlValListList* mcvll = mp->controller();
+
     int mn; int mx; int v;
     if(_dnum == MusECore::CTRL_PROGRAM)
     {
-      mn = 1;
-      mx = 128;
-      v = mp->hwCtrlState(ch, _dnum);
-      _val = v;
-      _knob->setRange(double(mn), double(mx), 1.0);
-      _dl->setRange(double(mn), double(mx));
-      if(v == MusECore::CTRL_VAL_UNKNOWN || ((v & 0xffffff) == 0xffffff))
+      if(_patchEdit)
       {
-        int lastv = mp->lastValidHWCtrlState(ch, _dnum);
-        if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
+        _patchEdit->setEnabled(true);
+        if(_knob)
         {
-          int initv = _ctrl->initVal();
-          if(initv == MusECore::CTRL_VAL_UNKNOWN || ((initv & 0xffffff) == 0xffffff))
-            v = 1;
-          else  
-            v = (initv + 1) & 0xff;
+          _knob->setEnabled(false);
+          _knob->hide();
         }
-        else  
-          v = (lastv + 1) & 0xff;
-        
-        if(v > 128)
-          v = 128;
-        dlv = _dl->off() - 1.0;
-      }  
+        if(_slider)
+        {
+          _slider->setEnabled(false);
+          _slider->hide();
+        }
+        MusECore::ciMidiCtrlValList imcvl = mcvll->find(ch, _dnum);
+        if(imcvl != mcvll->end())
+        {
+          MusECore::MidiCtrlValList* mcvl = imcvl->second;
+          int hwVal = mcvl->hwVal();
+          // Special for new LCD patch edit control: Need to give both current and last values.
+          // Keeping a local last value with the control won't work.
+          _patchEdit->blockSignals(true);
+          _patchEdit->setLastValidPatch(mcvl->lastValidHWVal());
+          _patchEdit->setLastValidBytes(mcvl->lastValidByte2(), mcvl->lastValidByte1(), mcvl->lastValidByte0());
+          _patchEdit->setValue(hwVal);
+          _patchEdit->blockSignals(false);
+        }
+        _patchEdit->show();
+        _patchEdit->update();
+      }
       else
       {
-        v = (v + 1) & 0xff;
-        if(v > 128)
-          v = 128;
-        dlv = double(v);
+        if(_knob)
+        {
+          _knob->setEnabled(true);
+          if(_slider)
+          {
+            _slider->setEnabled(false);
+            _slider->hide();
+          }
+        }
+        else if(_slider)
+          _slider->setEnabled(true);
+
+        mn = 1;
+        mx = 128;
+        v = mp->hwCtrlState(ch, _dnum);
+
+        if(_knob)
+          _knob->setRange(double(mn), double(mx), 1.0);
+        else if(_slider)
+          _slider->setRange(double(mn), double(mx), 1.0);
+        if(v == MusECore::CTRL_VAL_UNKNOWN || ((v & 0xffffff) == 0xffffff))
+        {
+          int lastv = mp->lastValidHWCtrlState(ch, _dnum);
+          if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
+          {
+            int initv = _ctrl->initVal();
+            if(initv == MusECore::CTRL_VAL_UNKNOWN || ((initv & 0xffffff) == 0xffffff))
+              v = 1;
+            else
+              v = (initv + 1) & 0xff;
+          }
+          else
+            v = (lastv + 1) & 0xff;
+
+          if(v > 128)
+            v = 128;
+        }
+        else
+        {
+          v = (v + 1) & 0xff;
+          if(v > 128)
+            v = 128;
+        }
+
+        if(_knob)
+        {
+          _knob->setValue(double(v));
+          _knob->show();
+          _knob->update();
+        }
+        else if(_slider)
+        {
+          _slider->setValue(double(v));
+          _slider->show();
+          _slider->update();
+        }
       }
     }
     else
     {
+      if(_patchEdit)
+      {
+        _patchEdit->setEnabled(false);
+        _patchEdit->hide();
+      }
+      if(_knob)
+      {
+        _knob->setEnabled(true);
+        if(_slider)
+        {
+          _slider->setEnabled(false);
+          _slider->hide();
+        }
+      }
+      else if(_slider)
+        _slider->setEnabled(true);
+
       mn = _ctrl->minVal();
       mx = _ctrl->maxVal();
       v = mp->hwCtrlState(ch, _dnum);
-      _val = v;
-      _knob->setRange(double(mn), double(mx), 1.0);
-      _dl->setRange(double(mn), double(mx));
+      if(_knob)
+        _knob->setRange(double(mn), double(mx), 1.0);
+      else if(_slider)
+        _slider->setRange(double(mn), double(mx), 1.0);
       if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
         int lastv = mp->lastValidHWCtrlState(ch, _dnum);
@@ -590,30 +860,89 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
         {
           if(_ctrl->initVal() == MusECore::CTRL_VAL_UNKNOWN)
             v = 0;
-          else  
+          else
             v = _ctrl->initVal();
         }
-        else  
+        else
           v = lastv - _ctrl->bias();
-        dlv = _dl->off() - 1.0;
-      }  
+      }
       else
       {
         // Auto bias...
         v -= _ctrl->bias();
-        dlv = double(v);
+      }
+
+      if(_knob)
+      {
+        _knob->setValue(double(v));
+        _knob->show();
+        _knob->update();
+      }
+      else if(_slider)
+      {
+        _slider->setValue(double(v));
+        _slider->show();
+        _slider->update();
       }
     }
-    _knob->setValue(double(v));
-    _dl->setValue(dlv);
-    
-    _knob->show();
-    _dl->show();
-    // Incomplete drawing sometimes. Update fixes it.
-    _knob->update();
-    _dl->update();
   }
+
+  setControlColor();
+
+//   inHeartBeat = false;
+}
+
+void CtrlPanel::setControlColor()
+{
+  if(_dnum == -1)
+    return;
   
+  QColor color = MusEGlobal::config.sliderDefaultColor;
+
+  switch(_dnum)
+  {
+    case MusECore::CTRL_PANPOT:
+      color = MusEGlobal::config.panSliderColor;
+    break;
+
+    case MusECore::CTRL_PROGRAM:
+      color = MusEGlobal::config.midiPatchReadoutColor;
+    break;
+
+    default:
+      color = MusEGlobal::config.midiControllerSliderDefaultColor;
+    break;
+  }
+
+  if(_patchEdit)
+  {
+    _patchEdit->setReadoutColor(color);
+  }
+
+  if(_knob)
+  {
+    _knob->setFaceColor(color);
+  }
+
+  if(_slider)
+  {
+    _slider->setBorderColor(color);
+    _slider->setBarColor(MusEGlobal::config.sliderBarDefaultColor);
+  }
+}
+
+//---------------------------------------------------------
+//   setHWController
+//---------------------------------------------------------
+
+void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController* ctrl) 
+{ 
+  inHeartBeat = true;
+  
+  _track = t; _ctrl = ctrl; 
+
+  setController();
+
   inHeartBeat = false;
 }
 

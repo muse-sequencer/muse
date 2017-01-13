@@ -87,9 +87,10 @@ void ItemBackgroundPainter::drawBackground(QPainter* painter,
 
   if(!onRect.isNull())
   {
-    QRect labeldraw = QRect(onRect.x(), fullRect.y() + yMargin, onRect.width() - xMargin, fullRect.height() - 2 * yMargin);
-    if(onfull)
-      labeldraw.adjust(xMargin, 0, 0, 0);
+    QRect labeldraw = QRect(onRect.x() + xMargin,
+                            onRect.y() + yMargin,
+                            onRect.width() - 2 * xMargin,
+                            onRect.height() - 2 * yMargin);
     painter->setBrush(acolor);
     painter->drawRoundedRect(labeldraw, 2, 2);
   }

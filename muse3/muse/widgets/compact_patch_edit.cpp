@@ -39,6 +39,9 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent,
 {
   setObjectName(name);
 
+  _orient = ReadoutHorizontal;
+  _showPatchLabel = true;
+
   _maxAliasedPointSize = -1;
   _id           = -1;
   _currentPatch = 0;
@@ -112,6 +115,16 @@ void CompactPatchEdit::setReadoutColor(const QColor& c)
 {
   _patchEdit->setReadoutColor(c);
    //update();
+}
+
+void CompactPatchEdit::setReadoutOrientation(ReadoutOrientation orient)
+{
+  _orient = orient;
+}
+
+void CompactPatchEdit::setShowPatchLabel(bool v)
+{
+  _showPatchLabel = v;
 }
 
 void CompactPatchEdit::setMaxAliasedPointSize(int sz)

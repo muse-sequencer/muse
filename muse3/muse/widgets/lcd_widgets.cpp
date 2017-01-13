@@ -228,6 +228,8 @@ LCDPatchEdit::LCDPatchEdit(QWidget* parent,
 //   //  filling, even when requesting small udpdates! Background is drawn by us.
 //   setAttribute(Qt::WA_OpaquePaintEvent);
 
+  _orient = PatchHorizontal;
+
   _enableValueToolTips = true;
   _editor = 0;
   _editMode = false;
@@ -264,13 +266,30 @@ LCDPatchEdit::~LCDPatchEdit()
 // Static.
 QSize LCDPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
                                        int xMargin,
-                                       int yMargin
+                                       int yMargin,
+                                       PatchOrientation orient
                                       )
 {
   const int font_height = fm.height();
-  const int h = font_height + 1 + 2 * yMargin; // +1 for extra anti-aliasing space.
+  int h;
+  switch(orient)
+  {
+    case PatchHorizontal:
+      h = font_height + 1 + 2 * yMargin; // +1 for extra anti-aliasing space.
+    break;
+    case PatchVertical:
+      h = 3 * (font_height + 3) + 2 * yMargin; // +1 for extra anti-aliasing space.
+    break;
+  }
 
   return QSize(16 + xMargin, h);
+}
+
+void LCDPatchEdit::setReadoutOrientation(PatchOrientation orient)
+{
+  _orient = orient;
+  resize(this->size());
+  update();
 }
 
 void LCDPatchEdit::setMaxAliasedPointSize(int sz)
@@ -295,7 +314,8 @@ QSize LCDPatchEdit::sizeHint() const
 {
   return getMinimumSizeHint(fontMetrics(),
                             _xMargin,
-                            _yMargin
+                            _yMargin,
+                            _orient
                            );
 }
 
@@ -409,7 +429,29 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
 
   ItemBackgroundPainter ibp;
 
-  ibp.drawBackground(&painter, rect(), pal);
+  //ibp.drawBackground(&painter, rect(), pal);
+
+  switch(_orient)
+  {
+    case PatchHorizontal:
+      painter.setRenderHint(QPainter::Antialiasing, false);
+      ibp.drawBackground(&painter, rect(), pal);
+
+      painter.setPen(offCol);
+      painter.drawPoint(colon1x, colon_y1);
+      painter.drawPoint(colon1x, colon_y2);
+
+      painter.setPen(offCol);
+      painter.drawPoint(colon2x, colon_y1);
+      painter.drawPoint(colon2x, colon_y2);
+    break;
+
+    case PatchVertical:
+      ibp.drawBackground(&painter, _HBankRect, pal);
+      ibp.drawBackground(&painter, _LBankRect, pal);
+      ibp.drawBackground(&painter, _ProgRect, pal);
+    break;
+  }
 
   painter.setPen(hbcolaa);
   painter.setRenderHint(QPainter::Antialiasing, true);
@@ -418,22 +460,14 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
   painter.setRenderHint(QPainter::Antialiasing, false);
   _LCDPainter->drawText(&painter, _HBankFieldRect, hbstr);
 
-  painter.setPen(offCol);
-  painter.drawPoint(colon1x, colon_y1);
-  painter.drawPoint(colon1x, colon_y2);
-  painter.setRenderHint(QPainter::Antialiasing, true);
-
   painter.setPen(lbcolaa);
+      painter.setRenderHint(QPainter::Antialiasing, true);
   _LCDPainter->drawText(&painter, _LBankFieldRect, lbstr);
   painter.setPen(lbcol);
   painter.setRenderHint(QPainter::Antialiasing, false);
   _LCDPainter->drawText(&painter, _LBankFieldRect, lbstr);
 
-  painter.setPen(offCol);
-  painter.drawPoint(colon2x, colon_y1);
-  painter.drawPoint(colon2x, colon_y2);
   painter.setRenderHint(QPainter::Antialiasing, true);
-
   painter.setPen(prgcolaa);
   _LCDPainter->drawText(&painter, _ProgFieldRect, prgstr);
   painter.setPen(prgcol);
@@ -609,7 +643,20 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
   QFrame::resizeEvent(e);
   autoAdjustFontSize();
 
-  const QRect aRect = activeDrawingArea();
+  const QFontMetrics fm = fontMetrics();
+  const int font_height = fm.height();
+
+  QRect aRect = activeDrawingArea();
+  switch(_orient)
+  {
+    case PatchHorizontal:
+    break;
+
+    case PatchVertical:
+      aRect.setHeight(font_height);
+    break;
+  }
+
   const int sz2 = charWidth(aRect);
   const int margin = readoutMargin(sz2);
 
@@ -621,24 +668,53 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
   if(spacing > 16)
     spacing = 16;
   _sectionSpacing = spacing;
+  const int indent = aRect.width() / 2 - w / 2;
 
-  const int x0 = aRect.x() + _xMargin;
-  const int x1 = x0 + w + _sectionSpacing;
-  const int x2 = x1 + w + _sectionSpacing;
+  int x0, x1, x2;
+  int recty1, recty2, recty3, recth;
+  int frecty1, frecty2, frecty3, frecth;
 
-  const int recty = rect().y() + _yMargin;
-  const int recth = rect().height() - 2 * _yMargin;
+  switch(_orient)
+  {
+    case PatchHorizontal:
+      x0 = aRect.x() + _xMargin;
+      x1 = x0 + w + _sectionSpacing;
+      x2 = x1 + w + _sectionSpacing;
 
-  _HBankRect.setRect(x0, recty, w + _sectionSpacing, recth);
-  _LBankRect.setRect(x1, recty, w + _sectionSpacing, recth);
-  _ProgRect.setRect (x2, recty, w + _sectionSpacing, recth);
+      recty1 = recty2 = recty3 = rect().y() + _yMargin;
+      recth = rect().height() - 2 * _yMargin;
 
-  const int frecty = aRect.y();
-  const int frecth = aRect.height();
+      frecty1 = frecty2 = frecty3 = aRect.y();
+      frecth = aRect.height();
 
-  _HBankFieldRect.setRect(x0, frecty, w, frecth);
-  _LBankFieldRect.setRect(x1, frecty, w, frecth);
-  _ProgFieldRect.setRect (x2, frecty, w, frecth);
+
+      _HBankFieldRect.setRect(x0, frecty1, w, frecth);
+      _LBankFieldRect.setRect(x1, frecty2, w, frecth);
+      _ProgFieldRect.setRect (x2, frecty3, w, frecth);
+    break;
+
+    case PatchVertical:
+      x0 = x1 = x2 = aRect.x() + indent; // + _xMargin;
+
+      recth = font_height + 3;
+      recty1 = rect().y() + _yMargin;
+      recty2 = recty1 + recth;
+      recty3 = recty2 + recth;
+
+      frecth = font_height;
+      frecty1 = aRect.y() + 1;
+      frecty2 = frecty1 + frecth + 3;
+      frecty3 = frecty2 + frecth + 3;
+
+      _HBankFieldRect.setRect(x0 + _sectionSpacing / 2 + _xMargin, frecty1, w, frecth);
+      _LBankFieldRect.setRect(x1 + _sectionSpacing / 2 + _xMargin, frecty2, w, frecth);
+      _ProgFieldRect.setRect (x2 + _sectionSpacing / 2 + _xMargin, frecty3, w, frecth);
+    break;
+  }
+
+  _HBankRect.setRect(x0, recty1, w + _sectionSpacing, recth);
+  _LBankRect.setRect(x1, recty2, w + _sectionSpacing, recth);
+  _ProgRect.setRect (x2, recty3, w + _sectionSpacing, recth);
 
   update();
 }
@@ -859,7 +935,8 @@ void LCDPatchEdit::editorReturnPressed()
     _editor->deleteLater();
     _editor = 0;
   }
-  setFocus();
+  //setFocus();
+  clearFocus();
 }
 
 void LCDPatchEdit::editorEscapePressed()
@@ -870,7 +947,8 @@ void LCDPatchEdit::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    setFocus();
+    //setFocus();
+    clearFocus();
   }
 }
 
@@ -1232,49 +1310,64 @@ void LCDPatchEdit::showEditor()
     _editor->setSpecialValueText(tr("off"));
     _editor->setMinimum(0);
     _editor->setMaximum(128);
-    const bool is_unk = _currentPatch == MusECore::CTRL_VAL_UNKNOWN;
-    switch(_curEditSection)
-    {
-      case HBankSection:
-      {
-        int hb = (_currentPatch >> 16) & 0xff;
-        if(is_unk || hb < 0 || hb > 127)
-          hb = 0;
-        else
-          ++hb;
-        _editor->setValue(hb);
-      }
-      break;
-
-      case LBankSection:
-      {
-        int lb = (_currentPatch >> 8) & 0xff;
-        if(is_unk || lb < 0 || lb > 127)
-          lb = 0;
-        else
-          ++lb;
-        _editor->setValue(lb);
-      }
-      break;
-
-      case ProgSection:
-      {
-        int pr = _currentPatch & 0xff;
-        if(is_unk || pr < 0 || pr > 127)
-          pr = 0;
-        else
-          ++pr;
-        _editor->setValue(pr);
-      }
-      break;
-    }
     connect(_editor, SIGNAL(returnPressed()), SLOT(editorReturnPressed()));
     connect(_editor, SIGNAL(escapePressed()), SLOT(editorEscapePressed()));
   }
   int w = width();
-  if (w < _editor->sizeHint().width())
-    w = _editor->sizeHint().width();
-  _editor->setGeometry(0, 0, w, height());
+  //if (w < _editor->sizeHint().width())
+  //  w = _editor->sizeHint().width();
+  QRect r;
+  const bool is_unk = _currentPatch == MusECore::CTRL_VAL_UNKNOWN;
+  switch(_curEditSection)
+  {
+    case HBankSection:
+    {
+      r = _HBankRect;
+      int hb = (_currentPatch >> 16) & 0xff;
+      if(is_unk || hb < 0 || hb > 127)
+        hb = 0;
+      else
+        ++hb;
+      _editor->setValue(hb);
+    }
+    break;
+
+    case LBankSection:
+    {
+      r = _LBankRect;
+      int lb = (_currentPatch >> 8) & 0xff;
+      if(is_unk || lb < 0 || lb > 127)
+        lb = 0;
+      else
+        ++lb;
+      _editor->setValue(lb);
+    }
+    break;
+
+    case ProgSection:
+    {
+      r = _ProgRect;
+      int pr = _currentPatch & 0xff;
+      if(is_unk || pr < 0 || pr > 127)
+        pr = 0;
+      else
+        ++pr;
+      _editor->setValue(pr);
+    }
+    break;
+  }
+
+  switch(_orient)
+  {
+    case PatchHorizontal:
+      _editor->setGeometry(0, 0, w, height());
+    break;
+
+    case PatchVertical:
+      _editor->setGeometry(0, r.y(), w, r.height());
+    break;
+  }
+
   DEBUG_LCD_WIDGETS(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height());
   _editor->selectAll();
   _editMode = true;
