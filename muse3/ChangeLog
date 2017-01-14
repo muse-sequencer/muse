@@ -1,3 +1,5 @@
+14.01.2017
+         - Drum editor list: Added 'Set field', 'Set row', 'Set list' to right-click menu. (Tim)
 13.01.2017
          - Replaced midi editors' control panel knob with compact knob and LCD patch editor. (Tim)
            Both use the 'waitless' method of 09.01.2017.

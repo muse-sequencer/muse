@@ -1978,10 +1978,9 @@ isInstrumentMod
       else
       {
         cur_enote = dm.enote;
-
-        if(includeDefault && doWholeMap)
+        if(includeDefault)
         {
-          // We are in the middle of 'promoting' the entire list to default patch list...
+          // We are 'promoting' the fields to default patch list...
           other_wdme._fields = fields;
           other_wdme._mapItem = dm;
           // Add the item to the default patch drum list.
@@ -1992,47 +1991,48 @@ isInstrumentMod
         }
         else
         {
-          if(includeDefault)
+          if(doWholeMap)
           {
-            // We are 'promoting' the fields to default patch list...
-            other_wdme._fields = fields;
-            other_wdme._mapItem = dm;
-            _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, index, other_wdme);
-            // Now remove the item from the non-default patch drum list.
-            if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
-              _workingDrumMapPatchList->remove(patch, index, WorkingDrumMapEntry::AllFields, false); // Do not include defaults.
+            if(fields == WorkingDrumMapEntry::AllFields)
+            {
+              other_wdme._fields = fields;
+              other_wdme._mapItem = dm;
+              _workingDrumMapPatchList->add(patch, index, other_wdme);
+            }
+            else
+              _workingDrumMapPatchList->add(patch, index, wdme);
           }
           else
           {
             _workingDrumMapPatchList->add(patch, index, wdme);
             getMapItem(patch, index, dm, WorkingDrumMapEntry::AllOverrides);
           }
+        }
 
-          if(fields & WorkingDrumMapEntry::ENoteField)
+        if(!doWholeMap && (fields & WorkingDrumMapEntry::ENoteField))
+        {
+          new_enote = dm.enote;
+          other_index = drum_in_map[new_enote];
+          // If there is already another track override on the other index we must change it.
+          if(isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) != WorkingDrumMapEntry::NoOverride)
           {
-            new_enote = dm.enote;
-            other_index = drum_in_map[new_enote];
-            // If there is already another track override on the other index we must change it.
-            if(isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) != WorkingDrumMapEntry::NoOverride)
+            other_dm.enote = cur_enote;
+            //WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
+            other_wdme._mapItem = other_dm;
+            other_wdme._fields = WorkingDrumMapEntry::ENoteField;
+            if(includeDefault)
             {
-              other_dm.enote = cur_enote;
-              //WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
-              other_wdme._mapItem = other_dm;
-              other_wdme._fields = WorkingDrumMapEntry::ENoteField;
-              if(includeDefault)
-              {
-                _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, other_index, other_wdme);
-                // Now remove the item from the non-default patch drum list.
-                if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
-                  _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, false); // Do not include defaults.
-              }
-              else
-                _workingDrumMapPatchList->add(patch, other_index, other_wdme);
-
-              //_drummap[other_index].enote = cur_enote;
-              //drum_in_map[cur_enote] = other_index;
-              //drum_in_map[new_enote] = index;
+              _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, other_index, other_wdme);
+              // Now remove the item from the non-default patch drum list.
+              if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+                _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, false); // Do not include defaults.
             }
+            else
+              _workingDrumMapPatchList->add(patch, other_index, other_wdme);
+
+            //_drummap[other_index].enote = cur_enote;
+            //drum_in_map[cur_enote] = other_index;
+            //drum_in_map[new_enote] = index;
           }
         }
       }

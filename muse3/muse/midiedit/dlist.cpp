@@ -793,10 +793,10 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
         if(dcanvas && !old_style_drummap_mode)
         {
           enum MapPopupIDs { HideInstrumentID = 0, ShowInstrumentID,
-                            ResetFieldID, ResetItemID, ResetMapID,
-                            SetColumnID, SetDefaultColumnID, ResetColumnID,
-                            SetDefaultFieldID, SetDefaultItemID, SetDefaultMapID,
-                            ResetAllPatchMaps,
+                            ResetFieldID, ResetItemID, ResetColumnID, ResetMapID,
+                            SetFieldID, SetItemID, SetColumnID, SetMapID,
+                            SetDefaultFieldID, SetDefaultItemID, SetDefaultColumnID, SetDefaultMapID,
+                            ResetAllPatchMapsID,
 #ifdef _USE_INSTRUMENT_OVERRIDES_
                             ResetInstrumentFieldID, ResetInstrumentItemID, ResetInstrumentMapID,
                             SetInstrumentFieldID, SetInstrumentItemID, SetInstrumentMapID
@@ -851,28 +851,25 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
           popup->addSeparator();
 
+          act = popup->addAction(tr("Set field"));
+          //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
+          act->setData(SetFieldID);
+          act->setToolTip(tr("Sets a field"));
+
+          act = popup->addAction(tr("Set row"));
+          //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
+          act->setData(SetItemID);
+          act->setToolTip(tr("Sets a row"));
+
           act = popup->addAction(tr("Set column"));
           act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
           act->setData(SetColumnID);
           act->setToolTip(tr("Sets a whole column to the field"));
 
-          popup->addSeparator();
-
-          act = popup->addAction(tr("Promote field to default patch"));
-          act->setData(SetDefaultFieldID);
-          act->setToolTip(tr("Promotes a field in a row to the default patch"));
-
-          act = popup->addAction(tr("Promote row to default patch"));
-          act->setData(SetDefaultItemID);
-          act->setToolTip(tr("Promotes a row to the default patch"));
-
-          act = popup->addAction(tr("Promote column to default patch"));
-          act->setData(SetDefaultColumnID);
-          act->setToolTip(tr("Promotes a column to the default patch"));
-
-          act = popup->addAction(tr("Promote list to default patch"));
-          act->setData(SetDefaultMapID);
-          act->setToolTip(tr("Promotes the whole list to the default patch"));
+          act = popup->addAction(tr("Set list"));
+          //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
+          act->setData(SetMapID);
+          act->setToolTip(tr("Sets the whole list"));
 
           popup->addSeparator();
 
@@ -897,11 +894,29 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
           act->setToolTip(tr("Resets the whole list to the instrument values"));
 
           popup->addSeparator();
-
+          
           act = popup->addAction(tr("Reset track's drum list"));
           act->setEnabled(dcanvas->hasOverrides(instrument));
-          act->setData(ResetAllPatchMaps);
+          act->setData(ResetAllPatchMapsID);
           act->setToolTip(tr("Resets all lists on all patches to the instrument values"));
+
+          popup->addSeparator();
+
+          act = popup->addAction(tr("Promote field to default patch"));
+          act->setData(SetDefaultFieldID);
+          act->setToolTip(tr("Promotes a field in a row to the default patch"));
+
+          act = popup->addAction(tr("Promote row to default patch"));
+          act->setData(SetDefaultItemID);
+          act->setToolTip(tr("Promotes a row to the default patch"));
+
+          act = popup->addAction(tr("Promote column to default patch"));
+          act->setData(SetDefaultColumnID);
+          act->setToolTip(tr("Promotes a column to the default patch"));
+
+          act = popup->addAction(tr("Promote list to default patch"));
+          act->setData(SetDefaultMapID);
+          act->setToolTip(tr("Promotes the whole list to the default patch"));
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
           popup->addSeparator();
@@ -980,8 +995,20 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
               dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, true, false, true);
             break;
 
+            case SetFieldID:
+              dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
+            break;
+
+            case SetItemID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, false, false, false);
+            break;
+
             case SetColumnID:
               dcanvas->propagate_drummap_change(instrument, field, false, false, false, true);
+            break;
+
+            case SetMapID:
+              dcanvas->propagate_drummap_change(instrument, MusECore::WorkingDrumMapEntry::AllFields, false, false, false, true);
             break;
 
             case SetDefaultColumnID:
@@ -992,7 +1019,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
               dcanvas->propagate_drummap_change(instrument, field, true, true, false, true);
             break;
 
-            case ResetAllPatchMaps:
+            case ResetAllPatchMapsID:
               dcanvas->resetOverridesForAllPatches(instrument);
             break;
 
