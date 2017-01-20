@@ -133,10 +133,30 @@ details.
 
       - PyQt4 is used by some of the bundled midi scripts
 
-  =============================
-      Building MusE:
-  =============================
+  Quick instructions for Ubuntu and similar distributions:
+  
+  
+  =================================
+      Building MusE under Ubuntu:
+  =================================
 
+    1. Open terminal and type (either on one line or with several 'sudo apt-get install <packages'):
+        sudo apt-get install build-essential cmake libsndfile1-dev libsamplerate0-dev\
+            libjack-jackd2-dev ladspa-sdk qt5-default qttools5-dev qttools5-dev-tools\
+            liblo-dev dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev git\
+            libfluidsynth-dev libgtkmm-2.4-dev
+    2. Clone muse source with command: 
+     'git clone https://github.com/muse-sequencer/muse.git'
+    3. Type 'cd muse/muse3'
+    4. Type './compile_muse.sh' and wait until it is finished
+    5. Type 'cd build'
+    6. Type `sudo make install` - this will install muse3 to /usr/local
+    7. Run it by typing `muse3`
+  
+  =============================
+      Generic building MusE:
+  =============================
+  
       - Download source from http://muse-sequencer.org/
 
       - Unpack the source somewhere.  
@@ -148,7 +168,7 @@ details.
          top level directory where the source code was unpacked
          (the directory where THIS README FILE is found): 
        
-	******************************************************
+	    ******************************************************
         *                      Notice:                       *
         * A quick way is to run the ./compile_muse.sh        *
         * script in the same dir, it should perform the same *
