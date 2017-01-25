@@ -207,7 +207,7 @@ class RhythmGen : public QMainWindow, public Ui::RhythmBase
    public:
 //      virtual void OnMenuCommand(int id);
 //      virtual void OnSize(int w, int h);
-      RhythmGen(QWidget* parent = 0, Qt::WFlags fo = Qt::Window);
+      RhythmGen(QWidget* parent = 0, Qt::WindowFlags fo = Qt::Window);
       virtual ~RhythmGen();
 //      void OnPaint();
 //      void GenRhythm();
