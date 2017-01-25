@@ -63,7 +63,7 @@ class MidiControllerEditDialog : public MidiControllerEditDialogBase {
       void songChanged(MusECore::SongChangedFlags_t);
 
    public:
-      MidiControllerEditDialog(QWidget* parent = 0, const char* name = 0, bool modal = false, Qt::WFlags fl = 0);
+      MidiControllerEditDialog(QWidget* parent = 0, const char* name = 0, bool modal = false, Qt::WindowFlags fl = 0);
       };
 
 extern MidiControllerEditDialog* midiControllerEditDialog;
