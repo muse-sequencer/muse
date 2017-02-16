@@ -269,6 +269,18 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
 
       EventList mel;
 
+      MidiInstrument::NoteOffMode nom = MidiInstrument::NoteOffAll;
+      MidiPort* mp = 0;
+      MidiInstrument* minstr = 0;
+      const int port = track->outPort();
+      if(port >= 0 && port < MIDI_PORTS)
+      {
+        mp = &MusEGlobal::midiPorts[port];
+        minstr = mp->instrument();
+        if(minstr)
+          nom = minstr->noteOffMode();
+      }
+
       for (iMPEvent i = el.begin(); i != el.end(); ++i) {
             MidiPlayEvent ev = *i;
             if (!addSysexMeta && (ev.type() == ME_SYSEX || ev.type() == ME_META))
@@ -383,7 +395,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                           }
                                     if (!found) {
                                           if (rpnh == -1 || rpnl == -1) {
-                                                printf("parameter number not defined, data 0x%x\n", datah);
+                                                fprintf(stderr, "parameter number not defined, data 0x%x\n", datah);
                                                 }
                                           else {
                                                 int ctrl = dataType | (rpnh << 8) | rpnl;
@@ -399,7 +411,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     datal = val;
 
                                     if (rpnh == -1 || rpnl == -1) {
-                                          printf("parameter number not defined, data 0x%x 0x%x, tick %d, channel %d\n",
+                                          fprintf(stderr, "parameter number not defined, data 0x%x 0x%x, tick %d, channel %d\n",
                                              datah, datal, tick, track->outChannel());
                                           break;
                                           }
@@ -533,7 +545,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_KEY_SIGNATURE:  // Key Signature
                                     break;
                               default:
-                                    printf("buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
+                                    fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
                                     e.setData(ev.data(), ev.len());
@@ -543,7 +555,87 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   }   // switch(ev.type()
             if (!e.empty()) {
                   e.setTick(tick);
-                  mel.add(e);
+
+                  //-------------------------------------------
+                  //    Check for and prevent duplicate events
+                  //-------------------------------------------
+
+                  const int midi_evtype = ev.type();
+                  const bool midi_noteoff = (midi_evtype == ME_NOTEOFF) || (midi_evtype == ME_NOTEON && ev.dataB() == 0);
+                  const bool midi_noteon = midi_evtype == ME_NOTEON && ev.dataB() != 0;
+                  const bool midi_controller = midi_evtype == ME_CONTROLLER;
+                  bool noteon_found = false;
+                  bool noteoff_found = false;
+                  bool ctrlval_found = false;
+                  bool other_ctrlval_found = false;
+                  if(i != el.begin())
+                  {
+                    iMPEvent k = i;
+                    while(k != el.begin())
+                    {
+                      --k;
+                      MidiPlayEvent k_ev = *k;
+                      if(k_ev.channel() != ev.channel() || k_ev.port() != ev.port())
+                        continue;
+                      const int check_midi_evtype = k_ev.type();
+                      const bool check_midi_noteoff = (check_midi_evtype == ME_NOTEOFF) || (check_midi_evtype == ME_NOTEON && k_ev.dataB() == 0);
+                      const bool check_midi_noteon = check_midi_evtype == ME_NOTEON && k_ev.dataB() != 0;
+                      const bool check_midi_controller = check_midi_evtype == ME_CONTROLLER;
+                      if(midi_noteon || midi_noteoff)
+                      {
+                        if(ev.dataA() == k_ev.dataA())  // Note
+                        {
+                          if(check_midi_noteon)
+                          {
+                            // Check the instrument's note-off mode: If it does not support note-offs,
+                            //  don't bother doing duplicate note-on checks.
+                            // This allows drum input triggers (no note offs at all), although it is awkward to
+                            //  first have to choose an output instrument with no note-off mode.
+                            if(!midi_noteon || (nom != MidiInstrument::NoteOffNone))
+                              noteon_found = true;
+                            break;
+                          }
+                          if(check_midi_noteoff)
+                          {
+                            noteoff_found = true;
+                            break;
+                          }
+                        }
+                      }
+                      else if(midi_controller)
+                      {
+                        if(ev.dataA() == k_ev.dataA())     // Controller number
+                        {
+                          if(check_midi_controller)
+                          {
+                            // All we can really do is prevent multiple events at the same time.
+                            // We must allow multiple events at different times having the same value,
+                            //  since the sender may have wanted it that way (a 'flat' graph).
+                            if(ev.time() == k_ev.time())     // Event time
+                              ctrlval_found = true;
+                            // Optimization: Do not allow multiple events at different times having the same value.
+                            // Nice, but can't really discard these, sender may have wanted it that way (a 'flat' graph).
+                          #if 0
+                            if(ev.dataB() == k_ev.dataB()) // Controller value
+                              ctrlval_found = true;
+                            else
+                              other_ctrlval_found = true;
+                          #endif
+                            break;
+                          }
+                        }
+                      }
+                      else
+                      {
+                        // TODO: Other types!
+                      }
+                    }
+                  }
+                  // Accept the event only if no duplicate was found. // TODO: Other types!
+                  if((midi_noteon && !noteon_found) ||
+                    (midi_noteoff && !noteoff_found) ||
+                    (midi_controller && (other_ctrlval_found || !ctrlval_found)))
+                    mel.add(e);
                   }
             }  // i != el.end()
 
@@ -569,7 +661,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                 int t = k->first - i->first;
                                 if (t <= 0) {
                                       if (MusEGlobal::debugMsg) {
-                                            printf("Note len is (%d-%d)=%d, set to 1\n",
+                                            fprintf(stderr, "Note len is (%d-%d)=%d, set to 1\n",
                                               k->first, i->first, k->first - i->first);
                                             ev.dump();
                                             event.dump();
@@ -582,7 +674,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                 }
                           }
                     if (k == mel.end()) {
-                          printf("-no note-off! %d pitch %d velo %d\n",
+                          fprintf(stderr, "-no note-off! %d pitch %d velo %d\n",
                             ev.tick(), ev.pitch(), ev.velo());
                           //
                           // switch off at end of measure
@@ -594,7 +686,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                           if (k==i) {
                             //this will never happen, because i->second has to be a NOTE ON,
                             //while k has to be a NOTE OFF. but in case something changes:
-                            printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
+                            fprintf(stderr, "ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
                           }
                           else {
                             mel.erase(k);
@@ -606,11 +698,10 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     }
               }
 
-
       for (iEvent i = mel.begin(); i != mel.end(); ++i) {
             Event ev  = i->second;
             if (ev.isNoteOff()) {
-                  printf("+extra note-off! %d pitch %d velo %d\n",
+                  fprintf(stderr, "+extra note-off! %d pitch %d velo %d\n",
                            i->first, ev.pitch(), ev.velo());
                   continue;
                   }
@@ -661,7 +752,7 @@ void Audio::panic()
                   continue;
             for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
                   if (MusEGlobal::debugMsg)
-                    printf("send all sound of to midi port %d channel %d\n", i, chan);
+                    fprintf(stderr, "send all sound of to midi port %d channel %d\n", i, chan);
                   port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_ALL_SOUNDS_OFF, 0), true);
                   port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_RESET_ALL_CTRL, 0), true);
                   }
@@ -707,7 +798,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
             int delay         = track->delay;
 
             if (cts > nts) {
-                  printf("processMidi: FATAL: cur > next %d > %d\n",
+                  fprintf(stderr, "processMidi: FATAL: cur > next %d > %d\n",
                      cts, nts);
                   return;
                   }
@@ -1145,7 +1236,6 @@ void Audio::processMidi()
             //
             const bool track_rec_flag = track->recordFlag();
             const bool track_rec_monitor = track->recMonitor();
-//             if(no_mute_midi_input || track_rec_flag)
             if(track_rec_monitor || track_rec_flag)
             {
                   MPEventList& rl = track->mpevents;
@@ -1195,19 +1285,23 @@ void Audio::processMidi()
                               event.setPort(port);
                               // dont't echo controller changes back to software
                               // synthesizer:
-//                               if(!dev->isSynti() && md && track->recEcho())
-                              if(!dev->isSynti() && md && track_rec_monitor)
+                              if(md && track_rec_monitor)
                               {
-                                // All recorded events arrived in the previous period. Shift into this period for playback.
-                                unsigned int et = event.time();
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-#else
-                                unsigned int t = et + frameOffset;
-#endif
-                                event.setTime(t);
-                                md->addScheduledEvent(event);
-                                event.setTime(et);  // Restore for recording.
+                                // Do not echo synth events back to the same synth instance under any circumstances,
+                                //  not even if monitor (echo) is on.
+                                if(!dev->isSynti() || dev != md)
+                                {
+                                  // All recorded events arrived in the previous period. Shift into this period for playback.
+                                  unsigned int et = event.time();
+  #ifdef _AUDIO_USE_TRUE_FRAME_
+                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+  #else
+                                  unsigned int t = et + frameOffset;
+  #endif
+                                  event.setTime(t);
+                                  md->addScheduledEvent(event);
+                                  event.setTime(et);  // Restore for recording.
+                                }
                               }
 
                               // Make sure the event is recorded in units of ticks.
@@ -1374,29 +1468,42 @@ void Audio::processMidi()
                                 // dont't echo controller changes back to software
                                 // synthesizer:
 
-                                if (!dev->isSynti())
+                                // Zero means zero. Should mean no note at all?
+                                // If the event is marked as a note with zero velocity (above), do not sound the note.
+                                if(!event.isNote() || event.dataB() != 0)
                                 {
-                                  // Zero means zero. Should mean no note at all?
-                                  // If the event is marked as a note with zero velocity (above), do not sound the note.
-                                  if(!event.isNote() || event.dataB() != 0)
-                                  {
 
-                                    // All recorded events arrived in previous period. Shift into this period for playback.
-                                    //  frameoffset needed to make process happy.
-                                    unsigned int et = event.time();
-  #ifdef _AUDIO_USE_TRUE_FRAME_
-                                    unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
-  #else
-                                    unsigned int t = et + frameOffset;
-  #endif
-                                    event.setTime(t);
-                                    // Check if we're outputting to another port than default:
-                                    if (devport == defaultPort) {
-                                          event.setPort(port);
-//                                           if(md && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
-                                          if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                  // All recorded events arrived in previous period. Shift into this period for playback.
+                                  //  frameoffset needed to make process happy.
+                                  unsigned int et = event.time();
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else
+                                  unsigned int t = et + frameOffset;
+#endif
+                                  event.setTime(t);
+                                  // Check if we're outputting to another port than default:
+                                  if (devport == defaultPort) {
+                                        event.setPort(port);
+                                        if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                        {
+                                          // Do not echo synth events back to the same synth instance under any circumstances,
+                                          //  not even if monitor (echo) is on.
+                                          if(!dev->isSynti() || dev != md)
                                           {
-                                            if(event.isNoteOff())
+                                            MidiInstrument* minstr = MusEGlobal::midiPorts[port].instrument();
+                                            const MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
+                                            // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                            // This allows drum input triggers (no note offs at all), although it is awkward to
+                                            //  first have to choose an output instrument with no note-off mode.
+                                            if(nom == MidiInstrument::NoteOffNone)
+                                            {
+                                              if(event.isNoteOff())
+                                                // Try to remove any corresponding stuck live note.
+                                                track->removeStuckLiveNote(port, event.channel(), event.dataA());
+                                              md->addScheduledEvent(event);
+                                            }
+                                            else if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
@@ -1421,16 +1528,34 @@ void Audio::processMidi()
                                             }
                                             else
                                               md->addScheduledEvent(event);
+                                            //else
+                                            //  MusEGlobal::midiPorts[port].sendHwCtrlState(event); // Don't care about return value.
                                           }
-                                          //else
-                                          //  MusEGlobal::midiPorts[port].sendHwCtrlState(event); // Don't care about return value.
                                         }
-                                    else {
-                                          MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-//                                           if(mdAlt && track->recEcho() && !track->off() && (!no_mute_midi_input || !track->isMute()))
-                                          if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                      }
+                                  else {
+                                        MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
+                                        if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                        {
+                                          // Do not echo synth events back to the same synth instance under any circumstances,
+                                          //  not even if monitor (echo) is on.
+                                          if(!dev->isSynti() || dev != mdAlt)
                                           {
-                                            if(event.isNoteOff())
+                                            MidiInstrument* minstr = MusEGlobal::midiPorts[devport].instrument();
+                                            MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
+                                            // If the instrument has no note-off mode, do not use the
+                                            //  stuck notes mechanism, just send as is.
+                                            // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                            // This allows drum input triggers (no note offs at all), although it is awkward to
+                                            //  first have to choose an output instrument with no note-off mode.
+                                            if(nom == MidiInstrument::NoteOffNone)
+                                            {
+                                              if(event.isNoteOff())
+                                                // Try to remove any corresponding stuck live note.
+                                                track->removeStuckLiveNote(event.port(), event.channel(), event.dataA());
+                                              mdAlt->addScheduledEvent(event);
+                                            }
+                                            else if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
@@ -1455,70 +1580,69 @@ void Audio::processMidi()
                                             }
                                             else
                                               mdAlt->addScheduledEvent(event);
+                                            //else
+                                            //  MusEGlobal::midiPorts[devport].sendHwCtrlState(event); // Don't care about return value.
                                           }
-                                          //else
-                                          //  MusEGlobal::midiPorts[devport].sendHwCtrlState(event); // Don't care about return value.
                                         }
-                                    event.setTime(et);  // Restore for recording.
-                                  //}
+                                      }
+                                  event.setTime(et);  // Restore for recording.
 
-                                  // Shall we activate meters even while rec echo is off? Sure, why not...
-                                  if(event.isNote() && event.dataB() > track->activity())
-                                    track->setActivity(event.dataB());
-                                }
+                                // Shall we activate meters even while rec echo is off? Sure, why not...
+                                if(event.isNote() && event.dataB() > track->activity())
+                                  track->setActivity(event.dataB());
+                              }
 
-                                if (recording && track_rec_flag)
-                                {
-                                      // Make sure the event is recorded in units of ticks.
-                                      if(extsync)
-                                        event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
-                                      else
-                                        event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
+                              if (recording && track_rec_flag)
+                              {
+                                    // Make sure the event is recorded in units of ticks.
+                                    if(extsync)
+                                      event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
+                                    else
+                                      event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
 
-                                      // In these next steps, it is essential to set the recorded event's port
-                                      //  to the track port so buildMidiEventList will accept it. Even though
-                                      //  the port may have no device "<none>".
-                                      //
-                                      if (track->type() == Track::DRUM || track->type() == Track::NEW_DRUM)
+                                    // In these next steps, it is essential to set the recorded event's port
+                                    //  to the track port so buildMidiEventList will accept it. Even though
+                                    //  the port may have no device "<none>".
+                                    //
+                                    if (track->type() == Track::DRUM || track->type() == Track::NEW_DRUM)
+                                    {
+                                      // Is it a drum controller event?
+                                      if(mc)
                                       {
-                                        // Is it a drum controller event?
-                                        if(mc)
-                                        {
-                                            MusECore::MidiPlayEvent drumRecEvent = event;
-                                            drumRecEvent.setA(ctl | drumRecPitch);
-                                            // In this case, preVelo is simply the controller value.
-                                            drumRecEvent.setB(preVelo);
-                                            drumRecEvent.setPort(port); //rec-event to current port
-                                            drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                            track->mpevents.add(drumRecEvent);
-                                        }
-                                        else
-                                        {
-                                            MusECore::MidiPlayEvent drumRecEvent = event;
-                                            drumRecEvent.setA(drumRecPitch);
-                                            drumRecEvent.setB(preVelo);
-                                            // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
-                                            //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
-                                            drumRecEvent.setPort(port);  //rec-event to current port
-                                            drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                            track->mpevents.add(drumRecEvent);
-                                        }
+                                          MusECore::MidiPlayEvent drumRecEvent = event;
+                                          drumRecEvent.setA(ctl | drumRecPitch);
+                                          // In this case, preVelo is simply the controller value.
+                                          drumRecEvent.setB(preVelo);
+                                          drumRecEvent.setPort(port); //rec-event to current port
+                                          drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                          track->mpevents.add(drumRecEvent);
                                       }
                                       else
                                       {
-                                            // Restore record-pitch to non-transposed value since we don't want the note transposed twice next
-                                            MusECore::MidiPlayEvent recEvent = event;
-                                            if (prePitch)
-                                                  recEvent.setA(prePitch);
-                                            if (preVelo)
-                                                  recEvent.setB(preVelo);
-                                            recEvent.setPort(port);
-                                            recEvent.setChannel(track->outChannel());
-
-                                            track->mpevents.add(recEvent);
+                                          MusECore::MidiPlayEvent drumRecEvent = event;
+                                          drumRecEvent.setA(drumRecPitch);
+                                          drumRecEvent.setB(preVelo);
+                                          // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
+                                          //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
+                                          drumRecEvent.setPort(port);  //rec-event to current port
+                                          drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                          track->mpevents.add(drumRecEvent);
                                       }
-                                }
-                            }
+                                    }
+                                    else
+                                    {
+                                          // Restore record-pitch to non-transposed value since we don't want the note transposed twice next
+                                          MusECore::MidiPlayEvent recEvent = event;
+                                          if (prePitch)
+                                                recEvent.setA(prePitch);
+                                          if (preVelo)
+                                                recEvent.setB(preVelo);
+                                          recEvent.setPort(port);
+                                          recEvent.setChannel(track->outChannel());
+
+                                          track->mpevents.add(recEvent);
+                                    }
+                              }
                         }
                   }
             }
@@ -1645,20 +1769,20 @@ void Audio::processMidi()
                     if (tick == 0 && beat == 0) {
                         audioTickSound = MusECore::measureSound;
                         if (MusEGlobal::debugMsg)
-                            printf("meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                            fprintf(stderr, "meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                     }
                     else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
                         audioTickSound = MusECore::accent2Sound;
                         if (MusEGlobal::debugMsg)
-                            printf("acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                            fprintf(stderr, "acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                     }
                     else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
                         audioTickSound = MusECore::accent1Sound;
                         if (MusEGlobal::debugMsg)
-                            printf("acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                            fprintf(stderr, "acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                     } else {
                         if (MusEGlobal::debugMsg)
-                            printf("beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                            fprintf(stderr, "beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                     }
                   }
 

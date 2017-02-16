@@ -544,7 +544,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       }
 
 //---------------------------------------------------------
-//   midiReceived
+//   eventReceived
 //---------------------------------------------------------
 
 void MidiJackDevice::eventReceived(jack_midi_event_t* ev)

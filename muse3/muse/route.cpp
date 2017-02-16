@@ -358,8 +358,8 @@ void addRoute(Route src, Route dst)
             
             // Do not allow synth ports to connect to any track. It may be useful in some cases, 
             //  may be desired later, but for now it's just a routing hassle.  p4.0.35 
-            if(mp->device() && mp->device()->isSynti())
-              return;
+            //if(mp->device() && mp->device()->isSynti())
+            //  return;
             
             src.channel = dst.channel;
             RouteList* rl;
@@ -958,12 +958,12 @@ bool routeCanConnect(const Route& src, const Route& dst)
             if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack() || dst.channel < -1 || dst.channel >= MIDI_CHANNELS)
               return false;
             
-            MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+            //MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
             
             // Do not allow synth ports to connect to any track. It may be useful in some cases, 
             //  may be desired later, but for now it's just a routing hassle.  p4.0.35 
-            if(mp->device() && mp->device()->isSynti())
-              return false;
+            //if(mp->device() && mp->device()->isSynti())
+            //  return false;
             
             const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
@@ -1347,12 +1347,12 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
             if(dst.type != Route::TRACK_ROUTE || !dst.track->isMidiTrack())
               return false;
             
-            MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
+            //MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
             
             // Do not allow synth ports to connect to any track. It may be useful in some cases, 
             //  may be desired later, but for now it's just a routing hassle.  p4.0.35 
-            if(mp->device() && mp->device()->isSynti())
-              return false;
+            //if(mp->device() && mp->device()->isSynti())
+            //  return false;
             
             if(check_types_only)
               return true;

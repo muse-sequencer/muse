@@ -1,3 +1,15 @@
+16.02.2017
+         * Recording from synthesizer midi output supported: (Tim)
+         - All synths are now marked as both readable/writable.
+         - Synths can now be selected as a midi input route.
+         - Received events from a synth will absolutely NOT be echoed back to the
+            SAME synth instance under any circumstances, even if 'monitor' button is on.
+         - Recording: buildMidiEventList(): Added protection from duplicate events
+            sent by certain broken plugins or malformed midi import files.
+           (Our 'live stuck notes' mechanism already protects from playing 'live' duplicate notes.)
+         - If output port's instrument has no note-off mode, do not use our 'live stuck notes'
+            mechanism. This allows for example drum trigger input devices sending NO note-offs,
+            although you must first select an instrument having no note-off mode.
 14.01.2017
          - Drum editor list: Added 'Set field', 'Set row', 'Set list' to right-click menu. (Tim)
 13.01.2017

@@ -462,7 +462,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // So for now, just list all valid ports whether read or write.
       //if(!md)
       //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 2 : 1)))  // If this is an output click we are looking for midi writeable here.
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
         continue;
       // Do not list synth devices!
       if(!show_synths && md->isSynti())
@@ -481,7 +481,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       // So for now, just list all valid ports whether read or write.
       //if(!md)
       //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
         continue;
       // Do not list synth devices!
       if(!show_synths && md->isSynti())

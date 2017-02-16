@@ -176,6 +176,7 @@ class MidiDevice {
       virtual void processInput()      {}
       virtual void discardInput()      {}
 
+      // Event time and tick must be set by caller beforehand.
       virtual void recordEvent(MidiRecordEvent&);
 
       // Schedule an event for playback. Returns false if event cannot be delivered.

@@ -2200,7 +2200,19 @@ void alsaProcessMidiInput()
                         break;
             }
             if(event.type())
+            {
+              // Moved here from MidiDevice. Devices now must set time before calling.
+              // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
+              unsigned frame_ts = MusEGlobal::audio->timestamp();
+#ifndef _AUDIO_USE_TRUE_FRAME_
+              if(MusEGlobal::audio->isPlaying())
+              frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+#endif
+              event.setTime(frame_ts);
+              event.setTick(MusEGlobal::lastExtMidiSyncTick);
+
               mdev->recordEvent(event);
+            }
                   
             snd_seq_free_event(ev);
             if (rv == 0)
