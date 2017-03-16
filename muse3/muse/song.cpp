@@ -1790,9 +1790,11 @@ void Song::endMsgCmd()
             
             // It is possible the undo list is empty after removal of an empty undo, 
             //  either by optimization or no given operations.
-            MusEGlobal::undoAction->setEnabled(!undoList->empty());
+            if(MusEGlobal::undoAction)
+              MusEGlobal::undoAction->setEnabled(!undoList->empty());
             
-            MusEGlobal::redoAction->setEnabled(false);
+            if(MusEGlobal::redoAction)
+              MusEGlobal::redoAction->setEnabled(false);
             setUndoRedoText();
             emit songChanged(updateFlags);
             }
@@ -1819,9 +1821,11 @@ void Song::undo()
       
       redoList->push_back(opGroup);
       undoList->pop_back();
-      
-      MusEGlobal::redoAction->setEnabled(true);
-      MusEGlobal::undoAction->setEnabled(!undoList->empty());
+
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(true);
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(!undoList->empty());
       setUndoRedoText();
 
       emit songChanged(updateFlags);
@@ -1850,8 +1854,10 @@ void Song::redo()
       undoList->push_back(opGroup);
       redoList->pop_back();
       
-      MusEGlobal::undoAction->setEnabled(true);
-      MusEGlobal::redoAction->setEnabled(!redoList->empty());
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(true);
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
 
       emit songChanged(updateFlags);
@@ -2088,7 +2094,10 @@ void Song::cleanupForQuit()
       
       // Clear all midi port controllers and values.
       for(int i = 0; i < MIDI_PORTS; ++i)
+      {
         MusEGlobal::midiPorts[i].controller()->clearDelete(true); // Remove the controllers and the values.
+        MusEGlobal::midiPorts[i].setMidiDevice(0);
+      }
         
       // Can't do this here. Jack isn't running. Fixed. Test OK so far. DELETETHIS (the comment and #if/#endif)
       #if 1

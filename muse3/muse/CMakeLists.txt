@@ -86,6 +86,7 @@ QT5_WRAP_CPP ( muse_moc_headers
 ##
 QT5_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
+		  ../resources.qrc
 		  )
 
 file (GLOB core_source_files

@@ -159,11 +159,16 @@ class MidiPlayEvent : public MEvent {
 typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
 
 struct MPEventList : public MPEL {
-      void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
+  public:
+      // Optimize to eliminate duplicate events at the SAME time.
+      // It will not handle duplicate events at DIFFERENT times.
+      // Replaces event if it already exists.
+      void add(const MidiPlayEvent& ev);
 };
 
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
+typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
 
 /* DELETETHIS 20 ??
 //---------------------------------------------------------

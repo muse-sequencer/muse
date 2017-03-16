@@ -27,6 +27,11 @@
 class QPixmap;
 class QIcon;
 
+
+// NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
+//          certain styles do not support it, such as QtCurve.
+//         Therefore the separate icons must be manually set upon each state.
+
 namespace MusEGui {
 
 extern QPixmap* track_commentIcon;
@@ -296,6 +301,87 @@ extern QPixmap* routerFilterDestinationIcon;
 extern QPixmap* routerFilterSourceRoutesIcon;
 extern QPixmap* routerFilterDestinationRoutesIcon;
 extern QPixmap* routerViewSplitterIcon;
+
+
+//----------------------------------
+//   SVG...
+//----------------------------------
+
+extern QPixmap* routingInputSVGPixmap;
+extern QPixmap* routingOutputSVGPixmap;
+extern QPixmap* routingInputUnconnectedSVGPixmap;
+extern QPixmap* routingOutputUnconnectedSVGPixmap;
+
+extern QPixmap* headphonesOffSVGPixmap;
+extern QPixmap* headphonesOnSVGPixmap;
+
+extern QPixmap* muteOffSVGPixmap;
+extern QPixmap* muteOnSVGPixmap;
+extern QPixmap* muteOnXSVGPixmap;
+extern QPixmap* muteProxyOnSVGPixmap;
+extern QPixmap* muteAndProxyOnSVGPixmap;
+
+extern QPixmap* soloOffSVGPixmap;
+extern QPixmap* soloOnSVGPixmap;
+extern QPixmap* soloProxyOnSVGPixmap;
+extern QPixmap* soloAndProxyOnSVGPixmap;
+
+extern QPixmap* trackOffSVGPixmap;
+extern QPixmap* trackOnSVGPixmap;
+
+extern QPixmap* stereoOffSVGPixmap;
+extern QPixmap* stereoOnSVGPixmap;
+
+extern QPixmap* preFaderOffSVGPixmap;
+extern QPixmap* preFaderOnSVGPixmap;
+
+extern QPixmap* recArmOffSVGPixmap;
+extern QPixmap* recArmOnSVGPixmap;
+
+extern QPixmap* monitorOffSVGPixmap;
+extern QPixmap* monitorOnSVGPixmap;
+
+
+extern QIcon* routingInputSVGIcon;
+extern QIcon* routingOutputSVGIcon;
+extern QIcon* routingInputUnconnectedSVGIcon;
+extern QIcon* routingOutputUnconnectedSVGIcon;
+
+extern QIcon* headphonesOffSVGIcon;
+extern QIcon* headphonesOnSVGIcon;
+
+extern QIcon* muteOffSVGIcon;
+extern QIcon* muteOnSVGIcon;
+extern QIcon* muteOnXSVGIcon;
+extern QIcon* muteProxyOnSVGIcon;
+extern QIcon* muteAndProxyOnSVGIcon;
+
+extern QIcon* soloOffSVGIcon;
+extern QIcon* soloOnSVGIcon;
+extern QIcon* soloProxyOnSVGIcon;
+extern QIcon* soloAndProxyOnSVGIcon;
+
+extern QIcon* trackOffSVGIcon;
+extern QIcon* trackOnSVGIcon;
+
+extern QIcon* stereoOffSVGIcon;
+extern QIcon* stereoOnSVGIcon;
+
+extern QIcon* preFaderOffSVGIcon;
+extern QIcon* preFaderOnSVGIcon;
+
+extern QIcon* recArmOffSVGIcon;
+extern QIcon* recArmOnSVGIcon;
+
+extern QIcon* monitorOffSVGIcon;
+extern QIcon* monitorOnSVGIcon;
+
+
+extern QIcon* soloSVGIcon;
+extern QIcon* soloProxySVGIcon;
+extern QIcon* muteSVGIcon;
+extern QIcon* trackEnableSVGIcon;
+extern QIcon* recArmSVGIcon;
 
 } // namespace MusEGui
 

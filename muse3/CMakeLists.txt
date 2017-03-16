@@ -207,6 +207,7 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5UiTools REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(Qt5Xml REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 # Needed for plugins factory:
 SET(QT_USE_QTUITOOLS TRUE)
@@ -215,13 +216,15 @@ include_directories (${Qt5Widgets_INCLUDE_DIRS})
 include_directories (${Qt5Core_INCLUDE_DIRS})
 include_directories (${Qt5UiTools_INCLUDE_DIRS})
 include_directories (${Qt5Xml_INCLUDE_DIRS})
+include_directories (${Qt5Svg_INCLUDE_DIRS})
 
 LINK_DIRECTORIES(${Qt5Widgets_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5Core_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5UiTools_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt5Svg_LIBRARY_DIRS})
 
-SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Core_LIBRARIES})
+SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Svg_LIBRARIES} ${Qt5Core_LIBRARIES})
 
 
 ##include(${QT_USE_FILE})

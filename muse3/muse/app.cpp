@@ -291,6 +291,7 @@ MusE::MusE() : QMainWindow()
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
+      _isRestartingApp      = false;
       clipListEdit          = 0;
       midiSyncConfig        = 0;
       midiRemoteConfig      = 0;
@@ -1504,6 +1505,7 @@ void MusE::closeEvent(QCloseEvent* event)
             if (n == 0) {
                   if (!save())      // dont quit if save failed
                   {
+                        setRestartingApp(false); // Cancel any restart.
                         event->ignore();
                         QApplication::restoreOverrideCursor();
                         return;
@@ -1511,6 +1513,7 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             else if (n == 2)
             {
+                  setRestartingApp(false); // Cancel any restart.
                   event->ignore();
                   QApplication::restoreOverrideCursor();
                   return;
@@ -2568,11 +2571,23 @@ void MusE::changeConfig(bool writeFlag, bool simple)
 
       if(!simple)
       {
-        loadTheme(MusEGlobal::config.style);
+        // Qt FIXME BUG: Cannot load certain themes with a stylesheet - even a blank one.
+        //               Although it works for a few styles, others like Breeze and Oxygen
+        //                cause the main MDI window to not respond. Force Fusion for now.
+        if(MusEGlobal::config.styleSheetFile.isEmpty())
+          loadTheme(MusEGlobal::config.style);
+        else
+          loadTheme("Fusion");
+
         QApplication::setFont(MusEGlobal::config.fonts[0]);
 
         if(!MusEGlobal::config.styleSheetFile.isEmpty())
           loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+
+        //if(MusEGlobal::config.styleSheetFile.isEmpty())
+        //  loadStyleSheetFile(QString());
+        //else
+        //  loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
       }
 
       emit configChanged();
@@ -3105,8 +3120,10 @@ void MusE::updateConfiguration()
 
       //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
-      MusEGlobal::undoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_UNDO].key);
-      MusEGlobal::redoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_REDO].key);
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_UNDO].key);
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_REDO].key);
 
 
       //editSongInfoAction has no acceleration

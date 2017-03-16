@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <stdio.h>
+#include <string.h>
 
 #include "mpevent.h"
 
@@ -200,6 +201,9 @@ int MEvent::sortingWeight() const
 
 bool MEvent::operator<(const MEvent& e) const
       {
+      // Be careful about being any more specific than these checks.
+      // Be sure to examine the add() method, which might be upset by it.
+
       if (time() != e.time())
             return time() < e.time();
       if (port() != e.port())
@@ -214,6 +218,96 @@ bool MEvent::operator<(const MEvent& e) const
       int map[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15 };
       return map[channel()] < map[e.channel()];
       }
+
+//---------------------------------------------------------
+//   add
+//    Optimize to eliminate duplicate events at the SAME time.
+//    It will not handle duplicate events at DIFFERENT times.
+//    Replaces event if it already exists.
+//---------------------------------------------------------
+
+void MPEventList::add(const MidiPlayEvent& ev)
+{
+  MPEventListRangePair_t range = equal_range(ev);
+
+  for(iMPEvent impe = range.first; impe != range.second; ++impe)
+  {
+    // Note that (multi)set iterators are constant and can't be modified.
+    // The only option is to erase the old item(s), then insert a new item.
+    const MidiPlayEvent& l_ev = *impe;
+
+    // The type, time, port, and channel should already be equal, according to the operator< method.
+    switch(ev.type())
+    {
+      case ME_NOTEON:
+      case ME_NOTEOFF:
+      case ME_CONTROLLER:
+      case ME_POLYAFTER:
+        // Are the notes or controller numbers the same?
+        if(l_ev.dataA() == ev.dataA())
+        {
+          // If the velocities or values are the same, just ignore.
+          if(l_ev.dataB() == ev.dataB())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
+          return;
+        }
+      break;
+
+      case ME_PROGRAM:
+      case ME_AFTERTOUCH:
+      case ME_PITCHBEND:
+      case ME_SONGPOS:
+      case ME_MTC_QUARTER:
+      case ME_SONGSEL:
+          // If the values are the same, just ignore.
+          if(l_ev.dataA() == ev.dataA())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
+          return;
+      break;
+
+      case ME_SYSEX:
+      {
+        const int len = ev.len();
+        // If length is zero there's no point in adding this sysex. Just return.
+        if(len == 0)
+          return;
+        // If the two sysexes are the same, ignore the event to be added.
+        // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
+        //  happen to be identical, they should not be at the same time anyway - they
+        //  should be serialized.
+        // REMOVE Tim. autoconnect. Fix this.
+        // FIXME That's not necessarily true - should be able to schedule in order at
+        //        the same time but the device does the serialization.
+        // Currently we don't support chunks anyway, so we are safe for now...
+        if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
+          return;
+      }
+      break;
+
+      case ME_CLOCK:
+      case ME_START:
+      case ME_CONTINUE:
+      case ME_STOP:
+      case ME_SYSEX_END:
+      case ME_TUNE_REQ:
+      case ME_TICK:
+      case ME_SENSE:
+        // Event already exists. Ignore the event to be added.
+        return;
+      break;
+
+      case ME_META: // TODO: This could be reset, or might be a meta, depending on MPEventList usage.
+      break;
+    }
+  }
+  insert(ev);
+}
 
 //---------------------------------------------------------
 //   put

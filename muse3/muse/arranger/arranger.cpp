@@ -692,6 +692,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         
         // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+           SC_TRACK_MOVED |
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
           unsigned endTick = MusEGlobal::song->len();
@@ -710,11 +711,14 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
+        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
+          SC_TRACK_MOVED |
+          SC_TRACK_MODIFIED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
         if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+                   SC_TRACK_MOVED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
           canvas->partsChanged();

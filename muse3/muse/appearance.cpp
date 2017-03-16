@@ -323,8 +323,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(fontBrowse5, SIGNAL(clicked()), SLOT(browseFont5()));
       connect(fontBrowse6, SIGNAL(clicked()), SLOT(browseFont6()));
 
-      connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
-      connect(okButton, SIGNAL(clicked()), SLOT(ok()));
+      connect(applyButton, SIGNAL(clicked()), SLOT(applyClicked()));
+      connect(okButton, SIGNAL(clicked()), SLOT(okClicked()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
       connect(addBgButton, SIGNAL(clicked()), SLOT(addBackground()));
       connect(removeBgButton, SIGNAL(clicked()), SLOT(removeBackground()));
@@ -672,8 +672,9 @@ void Appearance::changeTheme()
       return;
     }
     if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-        tr("Do you really want to reset colors to theme default?"), tr("&Ok"), tr("&Cancel"),
-        QString::null, 0, 1 ) == 1)
+      tr("Do you really want to reset colors to theme default?"),
+      QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)
+       != QMessageBox::Ok)
     {
         return;
     }
@@ -705,14 +706,15 @@ void Appearance::changeTheme()
 
     hide();
 }
+
 //---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
-void Appearance::apply()
-      {
-//
-//
+bool Appearance::apply()
+{
+      bool restart_required = false;
+
       int showPartEvent = 0;
       int showPartType = 0;
 
@@ -753,7 +755,11 @@ void Appearance::apply()
       for (int i = 0; i < user_bg->childCount(); ++i)
             config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
 
-      config->styleSheetFile = styleSheetPath->text();
+      if(config->styleSheetFile != styleSheetPath->text())
+      {
+        restart_required = true;
+        config->styleSheetFile = styleSheetPath->text();
+      }
 
       config->fonts[0].setFamily(fontName0->text());
 
@@ -792,7 +798,12 @@ void Appearance::apply()
       config->fonts[6].setItalic(italic6->isChecked());
       config->fonts[6].setBold(bold6->isChecked());
 
-      config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
+      if(config->style != (themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText()))
+      {
+        restart_required = true;
+        config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
+      }
+
       // setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
       config->canvasShowGrid = arrGrid->isChecked();
@@ -807,10 +818,43 @@ void Appearance::apply()
       MusEGlobal::config = *config;
       *backupConfig = *config;
       updateColorItems();
-      
+
       MusEGlobal::muse->changeConfig(true);
       raise();
-      }
+
+      return restart_required;
+}
+
+//---------------------------------------------------------
+//   checkClose
+//---------------------------------------------------------
+
+bool Appearance::checkClose()
+{
+  if(QMessageBox::warning(MusEGlobal::muse, QString("Muse"),
+    tr("Style was changed.\nThe application needs to restart.\nRestart now?"),
+    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+     == QMessageBox::Yes)
+  {
+    MusEGlobal::muse->setRestartingApp(true);
+    if(MusEGlobal::muse->close())
+      return true;
+  }
+
+  MusEGlobal::muse->setRestartingApp(false); // Cancel any restart. Also cleared in muse->closeEvent().
+  return false;
+}
+
+//---------------------------------------------------------
+//   applyClicked
+//---------------------------------------------------------
+
+void Appearance::applyClicked()
+{
+  if(apply())
+    // If required, ask user to restart the application for proper results.
+    checkClose();
+}
 
 //---------------------------------------------------------
 //   colorNameEditFinished
@@ -1162,13 +1206,12 @@ void Appearance::closeEvent(QCloseEvent* e)
 }
 
 //---------------------------------------------------------
-//   ok
+//   okClicked
 //---------------------------------------------------------
 
-void Appearance::ok()
+void Appearance::okClicked()
       {
       DEBUG_APPEARANCE(stderr, "Appearance::ok\n");
-      apply();
       if(_colorDialog)
       {
         _colorDialog->deleteLater();
@@ -1176,6 +1219,11 @@ void Appearance::ok()
       }
       //close();
       hide();
+
+      if(apply())
+        // If required, ask user to restart the application for proper results.
+        checkClose();
+
       }
 
 //---------------------------------------------------------

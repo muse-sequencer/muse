@@ -134,8 +134,10 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
 void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
-      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
+      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG
+         | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED
+         | SC_TRACK_MOVED
+         | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             update();
