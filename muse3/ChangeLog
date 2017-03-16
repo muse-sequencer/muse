@@ -10,6 +10,7 @@
          - New class IconButton replaces clumsy ToolButton and icon usage. Has TWO different
             icon groups, perfect for our 'proxy' solo and mute.
          - All mute buttons now show 'proxy' mute ie. when any OTHER track is soloed.
+         - All 'Monitor' buttons are now off by default.
       * Bug fixes:
          - Fixes for 'frozen' Arranger not responding:
            NEW! Changing theme style in Appearance dialog automatically restarts MusE.

@@ -254,7 +254,7 @@ void Track::init()
       _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
-      _recMonitor    = true;
+      _recMonitor    = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
