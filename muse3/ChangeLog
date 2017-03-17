@@ -1,3 +1,5 @@
+16.03.2017
+         - Draw the frame around all mixer strips. (Tim)
 15.03.2017
       * Routing and mixer relief: (Tim)
          - Fixed auto-connect routing: Midi tracks by default now only connect to the first

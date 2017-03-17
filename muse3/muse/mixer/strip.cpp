@@ -813,14 +813,17 @@ void Strip::setLabelFont()
   MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
 }
 
-void Strip::paintEvent(QPaintEvent * /*ev*/)
+void Strip::paintEvent(QPaintEvent * ev)
 {
+  QFrame::paintEvent(ev);
   QPainter p(this);
   if (_highlight) {
-    p.setPen(Qt::darkYellow);
+    QPen pen(Qt::yellow);
+    pen.setWidth(1);
+    p.setPen(pen);
     p.drawRect(0,0,width()-1,height()-1);
-    p.drawRect(1,1,width()-2,height()-2);
   }
+  ev->accept();
 }
 
 //---------------------------------------------------------
@@ -938,7 +941,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       
       ///setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
-      setLineWidth(2);
+      setLineWidth(1);
       
       track    = t;
       meter[0] = 0;
@@ -1229,7 +1232,25 @@ ExpanderHandle::ExpanderHandle(QWidget* parent, int handleWidth, Qt::WindowFlags
   setContentsMargins(0, 0, 0, 0);
  _resizeMode = ResizeModeNone;
 }
- 
+
+void ExpanderHandle::paintEvent(QPaintEvent * ev)
+{
+  QPainter p(this);
+
+  if(const QStyle* st = style())
+  {
+    st = st->proxy();
+
+    QStyleOption o;
+    o.initFrom(this);
+    o.rect = rect();
+    o.state = QStyle::State_Active | QStyle::State_Enabled;
+    st->drawControl(QStyle::CE_Splitter, &o, &p);
+  }
+
+  ev->accept();
+}
+
 void ExpanderHandle::mousePressEvent(QMouseEvent* e)
 {
   // Only one button at a time.

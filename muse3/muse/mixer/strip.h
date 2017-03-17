@@ -660,7 +660,8 @@ class ExpanderHandle : public QFrame
 
   protected:
     enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
-    
+    virtual void paintEvent(QPaintEvent*);
+
   private:
     int _handleWidth;
     ResizeMode _resizeMode;

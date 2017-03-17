@@ -48,6 +48,7 @@ Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       setObjectName(name);
       _slider = 0;      
       _id = -1;
+      setAutoFillBackground(true);
       drawFrame = false;
       QLineEdit::setFrame(drawFrame);
       timer = new QTimer(this);
@@ -207,19 +208,19 @@ void Dentry::mouseReleaseEvent(QMouseEvent*)
 //   mouseMoveEvent
 //---------------------------------------------------------
 
-void Dentry::mouseMoveEvent(QMouseEvent*)
-      {
-      switch (button) {
-            case Qt::LeftButton:
-                  break;
-            case Qt::MidButton:
-                  break;
-            case Qt::RightButton:
-                  break;
-            default:
-                  break;
-            }
-      }
+// void Dentry::mouseMoveEvent(QMouseEvent*)
+//       {
+//       switch (button) {
+//             case Qt::LeftButton:
+//                   break;
+//             case Qt::MidButton:
+//                   break;
+//             case Qt::RightButton:
+//                   break;
+//             default:
+//                   break;
+//             }
+//       }
 
 //---------------------------------------------------------
 //   mouseDoubleClickEvent
