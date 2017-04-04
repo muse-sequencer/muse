@@ -443,6 +443,7 @@ void deinitLV2()
       delete synthsToFree [i];
 
    }
+   synthsToFree.clear();
 
    for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
    {

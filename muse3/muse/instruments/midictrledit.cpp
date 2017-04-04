@@ -102,7 +102,7 @@ void MidiControllerEditDialog::addControllerToView(MidiController* mctrl)
 //   MidiControllerEditDialog
 //---------------------------------------------------------
 
-MidiControllerEditDialog::MidiControllerEditDialog(QWidget* parent, const char* name, bool modal, Qt::WFlags fl)
+MidiControllerEditDialog::MidiControllerEditDialog(QWidget* parent, const char* name, bool modal, Qt::WindowFlags fl)
    : MidiControllerEditDialogBase(parent, name, modal, fl)
       {
       _lastPort = midiPortsList->currentItem();

@@ -1182,8 +1182,49 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
    }
 
    case audioMasterProcessEvents:
-      // VstEvents* in <ptr>
-      return 0;  // TODO:
+   {
+     // VstEvents* in <ptr>
+     VstEvents* ve = (VstEvents*)ptr;
+     int num_ev = ve->numEvents;
+#ifdef VST_NATIVE_DEBUG
+     fprintf(stderr, "VstNativeSynthIF::hostCallback audioMasterProcessEvents: numEvents:%d\n", num_ev);
+#endif
+     for(int i = 0; i < num_ev; ++i)
+     {
+       // Due to incomplete vestige midi type support, cast as VstMidiEvent first in order to get the type.
+       VstMidiEvent* vme = (VstMidiEvent*)ve->events[i];
+       switch(vme->type)
+       {
+         // Is it really a midi event?
+         case kVstMidiType:
+         {
+#ifdef VST_NATIVE_DEBUG
+           fprintf(stderr, "  kVstMidiType: deltaFrames:%d midiData[0]:%u [1]:%u [2]:%u\n",
+                   vme->deltaFrames,
+                   (unsigned char)vme->midiData[0], (unsigned char)vme->midiData[1], (unsigned char)vme->midiData[2]);
+#endif
+           if(userData->sif)
+             userData->sif->eventReceived(vme);
+           //else if(userData->pstate) // TODO Plugin midi
+             //  vstPlug = userData->pstate->plugin;
+         }
+         break;
+
+#ifndef VST_VESTIGE_SUPPORT
+         case kVstSysExType:
+         break;
+#endif
+
+         default:
+#ifdef VST_NATIVE_DEBUG
+           fprintf(stderr, "  unknown event type:%d\n", vme->type);
+#endif
+         break;
+       }
+     }
+     //return 0;  // TODO:
+     return 1; // Supported and processed.
+   }
 
    case audioMasterIOChanged:
       // numInputs and/or numOutputs has changed
@@ -1617,6 +1658,167 @@ void VstNativeSynthIF::editorDeleted()
 MidiPlayEvent VstNativeSynthIF::receiveEvent()
       {
       return MidiPlayEvent();
+      }
+
+//---------------------------------------------------------
+//   eventReceived
+//---------------------------------------------------------
+
+void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
+      {
+      const int port = synti->midiPort();
+
+      MidiRecordEvent event;
+      event.setB(0);
+      //event.setPort(_port);
+      event.setPort(port);
+
+      // NOTE: From muse_qt4_evolution. Not done here in Muse-2 (yet).
+      // move all events 2*MusEGlobal::segmentSize into the future to get
+      // jitterfree playback
+      //
+      //  cycle   n-1         n          n+1
+      //          -+----------+----------+----------+-
+      //               ^          ^          ^
+      //               catch      process    play
+      //
+
+      // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
+      // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio
+      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
+      //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
+      // If ALSA works OK than this should too...
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->deltaFrames);
+#else
+      event.setTime(MusEGlobal::audio->pos().frame() + ev->deltaFrames);
+#endif
+      event.setTick(MusEGlobal::lastExtMidiSyncTick);
+
+//       event.setChannel(*(ev->buffer) & 0xf);
+//       int type = *(ev->buffer) & 0xf0;
+//       int a    = *(ev->buffer + 1) & 0x7f;
+//       int b    = *(ev->buffer + 2) & 0x7f;
+      event.setChannel(ev->midiData[0] & 0xf);
+      int type = ev->midiData[0] & 0xf0;
+      int a    = ev->midiData[1] & 0x7f;
+      int b    = ev->midiData[2] & 0x7f;
+      event.setType(type);
+
+      switch(type) {
+            case ME_NOTEON:
+                 // REMOVE Tim. Noteoff. Added.
+                 // Convert zero-velocity note ons to note offs as per midi spec.
+                 if(b == 0)
+                   event.setType(ME_NOTEOFF);
+                 // Fall through.
+
+            case ME_NOTEOFF:
+            case ME_CONTROLLER:
+            case ME_POLYAFTER:
+                  //event.setA(*(ev->buffer + 1));
+                  //event.setB(*(ev->buffer + 2));
+                  event.setA(ev->midiData[1]);
+                  event.setB(ev->midiData[2]);
+                  break;
+            case ME_PROGRAM:
+            case ME_AFTERTOUCH:
+                  //event.setA(*(ev->buffer + 1));
+                  event.setA(ev->midiData[1]);
+                  break;
+
+            case ME_PITCHBEND:
+                  event.setA(((b << 7) + a) - 8192);
+                  break;
+
+            case ME_SYSEX:
+                  {
+                    //int type = *(ev->buffer) & 0xff;
+                    int type = ev->midiData[0] & 0xff;
+                    switch(type)
+                    {
+// TODO: Sysex NOT suppported with Vestige !
+//                           case ME_SYSEX:
+//
+//                                 // TODO: Deal with large sysex, which are broken up into chunks!
+//                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
+//                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
+//                                 {
+//                                   if(MusEGlobal::debugMsg)
+//                                     printf("VstNativeSynthIF::eventReceived sysex chunks not supported!\n");
+//                                   return;
+//                                 }
+//
+//                                 //event.setTime(0);      // mark as used
+//                                 event.setType(ME_SYSEX);
+//                                 event.setData((unsigned char*)(ev->buffer + 1), ev->size - 2);
+//                                 break;
+                          case ME_MTC_QUARTER:
+                                //if(_port != -1)
+                                if(port != -1)
+                                {
+                                  //MusEGlobal::midiSyncContainer.mtcInputQuarter(_port, *(ev->buffer + 1));
+                                  MusEGlobal::midiSyncContainer.mtcInputQuarter(port, ev->midiData[1]);
+                                }
+                                return;
+                          case ME_SONGPOS:
+                                //if(_port != -1)
+                                if(port != -1)
+                                {
+                                  //MusEGlobal::midiSyncContainer.setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) << 7 )); // LSB then MSB
+                                  MusEGlobal::midiSyncContainer.setSongPosition(port, ev->midiData[1] | (ev->midiData[2] << 7 )); // LSB then MSB
+                                }
+                                return;
+                          //case ME_SONGSEL:
+                          //case ME_TUNE_REQ:
+                          //case ME_SENSE:
+
+// TODO: Hm, need the last frame time... Isn't that the same as audio->pos().frame() like above?
+//                           case ME_CLOCK:
+//                           case ME_TICK:
+//                           case ME_START:
+//                           case ME_CONTINUE:
+//                           case ME_STOP:
+//                           {
+//                                 if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+//                                 {
+//                                   MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//                                   jack_client_t* jc = jad->jackClient();
+//                                   if(jc)
+//                                   {
+//                                     jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+//                                     double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+//                                     MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
+//                                   }
+//                                 }
+//                                 return;
+//                           }
+
+                          //case ME_SYSEX_END:
+                                //break;
+                          //      return;
+                          default:
+                                if(MusEGlobal::debugMsg)
+                                  printf("VstNativeSynthIF::eventReceived unsupported system event 0x%02x\n", type);
+                                return;
+                    }
+                  }
+                  //return;
+                  break;
+            default:
+              if(MusEGlobal::debugMsg)
+                printf("VstNativeSynthIF::eventReceived unknown event 0x%02x\n", type);
+                //printf("VstNativeSynthIF::eventReceived unknown event 0x%02x size:%d buf:0x%02x 0x%02x 0x%02x ...0x%02x\n", type, ev->size, *(ev->buffer), *(ev->buffer + 1), *(ev->buffer + 2), *(ev->buffer + (ev->size - 1)));
+              return;
+            }
+
+      #ifdef VST_NATIVE_DEBUG
+      printf("VstNativeSynthIF::eventReceived time:%d type:%d ch:%d A:%d B:%d\n", event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      #endif
+
+      // Let recordEvent handle it from here, with timestamps, filtering, gui triggering etc.
+      synti->recordEvent(event);
       }
 
 //---------------------------------------------------------

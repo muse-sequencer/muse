@@ -43,6 +43,7 @@
 #include "midiseq.h"
 #include "sync.h"
 #include "midiitransform.h"
+#include "mitplugin.h"
 #include "part.h"
 #include "drummap.h"
 #include "operations.h"
@@ -248,14 +249,18 @@ void MidiDevice::beforeProcess()
 
 void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
-      // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. 
-      unsigned frame_ts = MusEGlobal::audio->timestamp();
-#ifndef _AUDIO_USE_TRUE_FRAME_
-      if(MusEGlobal::audio->isPlaying())
-       frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
-#endif
-      event.setTime(frame_ts);  
-      event.setTick(MusEGlobal::lastExtMidiSyncTick);    
+// Removed. Let the caller handle the timestamp. This was moved into alsa driver.
+// Jack midi device already has its own recordEvent() - simply without the timestamp it does its own,
+//  but we might now replace that override method with this default method.
+//
+//       // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
+//       unsigned frame_ts = MusEGlobal::audio->timestamp();
+// #ifndef _AUDIO_USE_TRUE_FRAME_
+//       if(MusEGlobal::audio->isPlaying())
+//        frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+// #endif
+//       event.setTime(frame_ts);
+//       event.setTick(MusEGlobal::lastExtMidiSyncTick);
       
       if(MusEGlobal::audio->isPlaying())
         event.setLoopNum(MusEGlobal::audio->loopCount());

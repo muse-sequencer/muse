@@ -29,7 +29,6 @@
 #include "strip.h"
 #include "clipper_label.h"
 
-class QToolButton;
 class QButton;
 class QHBoxLayout;
 class QVBoxLayout;
@@ -46,8 +45,7 @@ class EffectRack;
 class Knob;
 class Slider;
 class CompactSlider;
-class CompactToolButton;
-//class PixmapButton;
+class IconButton;
 
 //---------------------------------------------------------
 //   AudioComponentRack
@@ -149,10 +147,11 @@ class AudioStrip : public Strip {
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
       GridPosStruct _routesPos;
-      //GridPosStruct _inRoutesPos;
-      //GridPosStruct _outRoutesPos;
+      GridPosStruct _inRoutesPos;
+      GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
       GridPosStruct _rightSpacerPos;
+      GridPosStruct _offMonRecPos;
     
       int channel;
       MusEGui::Slider* slider;
@@ -168,11 +167,10 @@ class AudioStrip : public Strip {
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
       
-      CompactToolButton* _recMonitor;
-      //PixmapButton* _recMonitor;
-      QToolButton* stereo;
-      QToolButton* pre;
-      QToolButton* off;
+      IconButton* _recMonitor;
+      IconButton* stereo;
+      IconButton* pre;
+      IconButton* off;
 
       double volume;
       bool _volPressed;

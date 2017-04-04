@@ -61,7 +61,6 @@
 #include "amixer.h"
 #include "icons.h"
 #include "gconfig.h"
-//#include "ttoolbutton.h"
 #include "pixmap_button.h"
 #include "menutitleitem.h"
 #include "routepopup.h"
@@ -791,8 +790,8 @@ void AudioStrip::heartBeat()
    _infoRack->updateComponents();
    _lowerRack->updateComponents();
 
-   if(_recMonitor && _recMonitor->isChecked() && MusEGlobal::blinkTimerPhase != _recMonitor->blinkPhase())
-     _recMonitor->setBlinkPhase(MusEGlobal::blinkTimerPhase);
+//    if(_recMonitor && _recMonitor->isChecked() && MusEGlobal::blinkTimerPhase != _recMonitor->blinkPhase())
+//      _recMonitor->setBlinkPhase(MusEGlobal::blinkTimerPhase);
 
    Strip::heartBeat();
 }
@@ -916,20 +915,22 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
             mute->blockSignals(true);
             mute->setChecked(src->mute());
             mute->blockSignals(false);
-            mute->setIcon(src->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+//             mute->setIcon(src->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+            //mute->setIcon(src->mute() ? *muteOnSVGIcon : *muteOffSVGIcon);
+            updateMuteIcon();
             updateOffState();
             }
       if (solo && (val & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
-            if(track->internalSolo())
-              solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
-            else
-              solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+            solo->setIconSetB(track->internalSolo());
+            updateMuteIcon();
             }
       if (val & SC_RECFLAG)
+      {
             setRecordFlag(track->recordFlag());
+      }
       if (val & SC_TRACK_MODIFIED)
       {
             setLabelText();
@@ -950,7 +951,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       if(val & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
-        if(_recMonitor && (_recMonitor->isChecked() != track->recMonitor()))
+        if(_recMonitor) // && (_recMonitor->isChecked() != track->recMonitor()))
         {
           _recMonitor->blockSignals(true);
           _recMonitor->setChecked(track->recMonitor());
@@ -1026,6 +1027,9 @@ void AudioStrip::updateVolume()
 
 void AudioStrip::offToggled(bool val)
       {
+//       off->setIcon(val ? *trackOffSVGIcon : *trackOnSVGIcon);
+      if(!track)
+        return;
       MusEGlobal::audio->msgSetTrackOff(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
@@ -1069,7 +1073,6 @@ void AudioStrip::updateOffState()
             off->blockSignals(true);
             off->setChecked(track->off());
             off->blockSignals(false);
-            off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
             }
       }
 
@@ -1079,6 +1082,8 @@ void AudioStrip::updateOffState()
 
 void AudioStrip::preToggled(bool val)
       {
+      if(!track)
+        return;
       MusEGlobal::audio->msgSetPrefader(static_cast<MusECore::AudioTrack*>(track), val);
       resetPeaks();
       MusEGlobal::song->update(SC_ROUTE);
@@ -1090,9 +1095,10 @@ void AudioStrip::preToggled(bool val)
 
 void AudioStrip::stereoToggled(bool val)
       {
-      int oc = track->channels();
-      int nc = val ? 2 : 1;
-//      stereo->setIcon(nc == 2 ? *stereoIcon : *monoIcon);
+      if(!track)
+        return;
+      const int nc = val ? 2 : 1;
+      const int oc = track->channels();
       if (oc == nc)
             return;
       MusEGlobal::audio->msgSetChannels(static_cast<MusECore::AudioTrack*>(track), nc);
@@ -1277,7 +1283,6 @@ void AudioStrip::updateChannels()
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
-      stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
       }
 
 //---------------------------------------------------------
@@ -1317,8 +1322,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       channel       = at->channels();
 
-      //_inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
-      //_outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
+      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
+      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
       _routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
@@ -1347,6 +1352,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       _offPos              = GridPosStruct(_curGridRow + 10, 0, 1, 1);
       _recPos              = GridPosStruct(_curGridRow + 10, 1, 1, 1);
+      _offMonRecPos        = GridPosStruct(_curGridRow + 10, 0, 1, 2);
+
 
       _mutePos             = GridPosStruct(_curGridRow + 11, 0, 1, 1);
       _soloPos             = GridPosStruct(_curGridRow + 11, 1, 1, 1);
@@ -1354,38 +1361,34 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _automationPos       = GridPosStruct(_curGridRow + 12, 0, 1, 2);
 
       _rightSpacerPos      = GridPosStruct(_curGridRow + 13, 2, 1, 1);
+      //_rightSpacerPos      = GridPosStruct(_curGridRow, 2, _curGridRow + 12, 1);
 
 
       _infoRack = new AudioComponentRack(at, aStripInfoRack, false);
-
-//       _infoRack->setVisible(false); // Not visible unless expanded.
-      
+      //_infoRack->setVisible(false); // Not visible unless expanded.
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
-//       _infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+      //_infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
       _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      
       _infoRack->setLineWidth(rackFrameWidth);
       _infoRack->setMidLineWidth(0);
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
-
       _infoRack->addStretch();
-      addGridWidget(_infoRack, _propertyRackPos);
+       addGridWidget(_infoRack, _propertyRackPos);
                   
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding),
                     _infoSpacerTop._row, _infoSpacerTop._col, _infoSpacerTop._rowSpan, _infoSpacerTop._colSpan);
 
       _upperRack = new AudioComponentRack(at, aStripUpperRack, true); // True = manage auxs.
-      
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
       //_upperRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
       _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      
       _upperRack->setLineWidth(rackFrameWidth);
       _upperRack->setMidLineWidth(0);
       // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
-      _upperRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+      _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+      _upperRack->setFocusPolicy(Qt::NoFocus);
 
       int ch = 0;
       for (; ch < channel; ++ch)
@@ -1412,7 +1415,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       rack = new EffectRack(this, at);
-      rack->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      rack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
 
       addGridWidget(rack, _effectRackPos);
       addGridWidget(_upperRack, _preScrollAreaPos_A);
@@ -1421,18 +1424,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      stereo  = new CompactToolButton();
+      stereo  = new IconButton(stereoOnSVGIcon, stereoOffSVGIcon, 0, 0, false, true);
       stereo->setContentsMargins(0, 0, 0, 0);
       stereo->setFocusPolicy(Qt::NoFocus);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
-      
-      QIcon stereo_icon(*monoIcon);
-      stereo_icon.addPixmap(*stereoIcon, QIcon::Normal, QIcon::On);
-      stereo->setIcon(stereo_icon);
-      stereo->setIconSize(stereoIcon->size());  
       stereo->setChecked(channel == 2);
-      
       stereo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
@@ -1440,12 +1437,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       if (type == MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(false);
 
-      pre = new CompactToolButton();
+      pre = new IconButton(preFaderOnSVGIcon, preFaderOffSVGIcon, 0, 0, false, true);
       pre->setContentsMargins(0, 0, 0, 0);
       pre->setFocusPolicy(Qt::NoFocus);
       pre->setCheckable(true);
-      pre->setText(tr("Pre"));
-      pre->setToolTip(tr("pre fader - post fader"));
+      pre->setToolTip(tr("Pre Fader Listening (PFL)"));
       pre->setChecked(at->prefader());
       pre->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
@@ -1515,7 +1511,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
       sl->setContentsMargins(0, 0, 0, 0);
       sl->setSlider(slider);
-      sl->setBackgroundRole(QPalette::Mid);
+      //sl->setBackgroundRole(QPalette::Mid);
       sl->setToolTip(tr("Volume/gain"));
       sl->setSuffix(tr("dB"));
       sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + tr("dB"));
@@ -1533,7 +1529,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
    
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding), 
+      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding),
                     _infoSpacerBottom._row, _infoSpacerBottom._col, _infoSpacerBottom._rowSpan, _infoSpacerBottom._colSpan);
       
       addGridWidget(sl, _sliderLabelPos, Qt::AlignCenter);
@@ -1543,15 +1539,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       _lowerRack = new AudioComponentRack(at, aStripLowerRack, false);
-      
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not. 
       //_lowerRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
       _lowerRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      
       _lowerRack->setLineWidth(rackFrameWidth);
       _lowerRack->setMidLineWidth(0);
       // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
-      _lowerRack->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+      _lowerRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
 
       addGridWidget(_lowerRack, _postScrollAreaPos_A);
@@ -1559,111 +1553,74 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _upperRack->setEnabled(!at->off());
       _infoRack->setEnabled(!at->off());
       _lowerRack->setEnabled(!at->off());
-      
+
       //---------------------------------------------------
       //    mute, solo, record
       //---------------------------------------------------
 
       if (track->canRecord()) {
-            record  = new CompactToolButton();
+            record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
             record->setFocusPolicy(Qt::NoFocus);
             record->setCheckable(true);
             record->setContentsMargins(0, 0, 0, 0);
             record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-            record->setToolTip(tr("record"));
-            QIcon rec_icon(*record_off_Icon);
-            rec_icon.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
-            record->setIcon(rec_icon);
-            record->setIconSize(record_off_Icon->size());  
+            if(type == MusECore::Track::AUDIO_OUTPUT)
+              record->setToolTip(tr("Record downmix"));
+            else
+              record->setToolTip(tr("Record arm"));
             record->setChecked(at->recordFlag());
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
-      mute  = new CompactToolButton();
+      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setContentsMargins(0, 0, 0, 0);
-      mute->setToolTip(tr("mute"));
-      QIcon mute_icon(*muteIconOn);
-      mute_icon.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
-      mute->setIcon(mute_icon);
-      mute->setIconSize(muteIconOn->size());  
+      mute->setToolTip(tr("Mute or proxy mute"));
       mute->setChecked(at->mute());
+      updateMuteIcon();
       mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = new CompactToolButton();
+      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setContentsMargins(0, 0, 0, 0);
+      solo->setToolTip(tr("Solo or proxy solo"));
       solo->setCheckable(true);
-      QIcon solo_icon_A(*soloIconOff);
-      solo_icon_A.addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
-      solo->setIcon(solo_icon_A);
-      QIcon solo_icon_B(*soloblksqIconOff);
-      solo_icon_B.addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
-      solo->setIconSize(soloIconOff->size());  
+      solo->setIconSetB(at->internalSolo());
       solo->setChecked(at->solo());
-      
-      // TODO:
-      if(at->internalSolo())
-        solo->setIcon(at->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
-      else
-        solo->setIcon(at->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-      
       solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
-      if (type == MusECore::Track::AUDIO_OUTPUT) {
-            record->setToolTip(tr("record downmix"));
-            //solo->setToolTip(tr("solo mode (monitor)"));
-            solo->setToolTip(tr("solo mode"));
-            }
-      else {
-            //solo->setToolTip(tr("pre fader listening"));
-            solo->setToolTip(tr("solo mode"));
-            }
 
-      off  = new CompactToolButton();
+      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
       off->setContentsMargins(0, 0, 0, 0);
       off->setFocusPolicy(Qt::NoFocus);
-      off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       off->setCheckable(true);
-      off->setToolTip(tr("off"));
-      QIcon off_icon(*exitIcon);
-      off_icon.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
-      off->setIcon(off_icon);
-      off->setIconSize(exitIcon->size());  
+      off->setToolTip(tr("Track off"));
       off->setChecked(at->off());
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
-      addGridWidget(off, _offPos);
-      if(record)
-        addGridWidget(record, _recPos);
-      addGridWidget(mute, _mutePos);
-      addGridWidget(solo, _soloPos);
-      
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
       if (type != MusECore::Track::AUDIO_AUX) {
-            iR = new CompactToolButton(0, *routesInIcon);
+            iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
             iR->setContentsMargins(0, 0, 0, 0);
             iR->setFocusPolicy(Qt::NoFocus);
             iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-            // Give it a wee bit more height.
-            iR->setIconSize(QSize(routesInIcon->width(), routesInIcon->height() + 5));
             iR->setCheckable(false);
             iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
             }
             
-      oR = new CompactToolButton(0, *routesOutIcon);
+      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
       oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      // Give it a wee bit more height.
-      oR->setIconSize(QSize(routesOutIcon->width(), routesOutIcon->height() + 5));
       oR->setCheckable(false);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
@@ -1672,31 +1629,42 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       if (type == MusECore::Track::WAVE)
       {
-        _recMonitor = new CompactToolButton();
+        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
         _recMonitor->setFocusPolicy(Qt::NoFocus);
         _recMonitor->setContentsMargins(0, 0, 0, 0);
         _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         _recMonitor->setCheckable(true);
-        _recMonitor->setToolTip(tr("Monitor"));
+        _recMonitor->setToolTip(tr("Input monitor"));
         _recMonitor->setWhatsThis(tr("Pass input through to output"));
-        QIcon monIcon(*midiThruOffIcon);
-        monIcon.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
-        _recMonitor->setIcon(monIcon);
-        _recMonitor->setIconSize(midiThruOffIcon->size());
         _recMonitor->setChecked(at->recMonitor());
         connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
       }
 
-      QHBoxLayout* routesLayout = new QHBoxLayout();
-      routesLayout->setContentsMargins(0, 0, 0, 0);
-      routesLayout->setSpacing(0);
+      if(record && _recMonitor)
+      {
+        QHBoxLayout* offRecMonLayout = new QHBoxLayout();
+        offRecMonLayout->setContentsMargins(0, 0, 0, 0);
+        offRecMonLayout->setSpacing(0);
+        offRecMonLayout->addWidget(off);
+        offRecMonLayout->addWidget(_recMonitor);
+        offRecMonLayout->addWidget(record);
+        addGridLayout(offRecMonLayout, _offMonRecPos);
+      }
+      else
+      {
+        addGridWidget(off, _offPos);
+        if(_recMonitor)
+          addGridWidget(_recMonitor, _recPos);
+        else if(record)
+          addGridWidget(record, _recPos);
+      }
+      addGridWidget(mute, _mutePos);
+      addGridWidget(solo, _soloPos);
+
       if(iR)
-        routesLayout->addWidget(iR);
-      if(_recMonitor)
-        routesLayout->addWidget(_recMonitor);
+        addGridWidget(iR, _inRoutesPos);
       if(oR)
-        routesLayout->addWidget(oR);
-      addGridLayout(routesLayout, _routesPos);
+        addGridWidget(oR, _outRoutesPos);
 
       //---------------------------------------------------
       //    automation type
@@ -1735,8 +1703,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
       addGridWidget(autoType, _automationPos);
 
-      grid->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored), 
-                    _rightSpacerPos._row, _rightSpacerPos._col, _rightSpacerPos._rowSpan, _rightSpacerPos._colSpan);
+      grid->setColumnStretch(2, 10);
 
       if (off) {
             off->blockSignals(true);

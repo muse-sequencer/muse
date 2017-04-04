@@ -22,7 +22,6 @@
 //
 //=========================================================
 
-#include <QToolButton>
 #include <QLayout>
 #include <QPalette>
 #include <QColor>
@@ -49,6 +48,8 @@
 #include "compact_slider.h"
 #include "elided_label.h"
 #include "menutitleitem.h"
+#include "ttoolbutton.h"
+#include "pixmap_button.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -775,6 +776,7 @@ void Strip::resetPeaks()
 
 void Strip::recordToggled(bool val)
       {
+      //record->setIcon(val ? *recArmOnSVGIcon : *recArmOffSVGIcon);
       if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
             if (val && track->recordFlag() == false) {
                   MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
@@ -783,7 +785,8 @@ void Strip::recordToggled(bool val)
             if (!((MusECore::AudioOutput*)track)->recFile())
             {  
                   record->setChecked(false);
-            }      
+                  //record->setIcon(*recArmOffSVGIcon);
+            }
             return;
             }
       MusEGlobal::song->setRecordFlag(track, val);
@@ -810,14 +813,17 @@ void Strip::setLabelFont()
   MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
 }
 
-void Strip::paintEvent(QPaintEvent * /*ev*/)
+void Strip::paintEvent(QPaintEvent * ev)
 {
+  QFrame::paintEvent(ev);
   QPainter p(this);
   if (_highlight) {
-    p.setPen(Qt::darkYellow);
+    QPen pen(Qt::yellow);
+    pen.setWidth(1);
+    p.setPen(pen);
     p.drawRect(0,0,width()-1,height()-1);
-    p.drawRect(1,1,width()-2,height()-2);
   }
+  ev->accept();
 }
 
 //---------------------------------------------------------
@@ -888,7 +894,9 @@ void Strip::setLabelText()
 
 void Strip::muteToggled(bool val)
       {
-      MusEGlobal::audio->msgSetTrackMute(track, val);
+      if(track)
+        MusEGlobal::audio->msgSetTrackMute(track, val);
+      updateMuteIcon();
       MusEGlobal::song->update(SC_MUTE);
       }
 
@@ -898,6 +906,13 @@ void Strip::muteToggled(bool val)
 
 void Strip::soloToggled(bool val)
       {
+      //if(track && track->internalSolo())
+      //  solo->setIcon(val ? *soloAndProxyOnSVGIcon : *soloProxyOnSVGIcon);
+      //else
+      //  solo->setIcon(val ? *soloOnSVGIcon : *soloOffSVGIcon);
+      solo->setIconSetB(track && track->internalSolo());
+      if(!track)
+        return;
       MusEGlobal::audio->msgSetSolo(track, val);
       MusEGlobal::song->update(SC_SOLO);
       }
@@ -926,7 +941,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       
       ///setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
-      setLineWidth(2);
+      setLineWidth(1);
       
       track    = t;
       meter[0] = 0;
@@ -1037,28 +1052,30 @@ void Strip::updateRouteButtons()
 {
   if (iR)
   {
+      iR->setIconSetB(track->noInRoute());
       if (track->noInRoute())
       {
-        iR->setStyleSheet("background-color:rgb(200, 84, 84);");
+        //iR->setStyleSheet("background-color:rgb(200, 84, 84);");
         iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
       }
       else
       {
-        iR->setStyleSheet("");
+        //iR->setStyleSheet("");
         iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
       }
   }
 
   if (oR)
   {
+    oR->setIconSetB(track->noOutRoute());
     if (track->noOutRoute())
     {
-      oR->setStyleSheet("background-color:rgb(200, 84, 84);");
+      //oR->setStyleSheet("background-color:rgb(200, 84, 84);");
       oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
     }
     else
     {
-      oR->setStyleSheet("");
+      //oR->setStyleSheet("");
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
     }
   }
@@ -1068,12 +1085,11 @@ void Strip::updateRouteButtons()
 
 void Strip::mousePressEvent(QMouseEvent* ev)
 {
+  ev->accept();
+
   // Only one button at a time.
   if(ev->buttons() ^ ev->button())
-  {
-    ev->accept();
     return;
-  }
 
   QPoint mousePos = QCursor::pos();
   mouseWidgetOffset = pos() - mousePos;
@@ -1109,8 +1125,6 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     if (!act)
     {
       delete menu;
-      ev->ignore();
-      QFrame::mousePressEvent(ev);
       return;
     }
 
@@ -1174,8 +1188,6 @@ void Strip::mousePressEvent(QMouseEvent* ev)
       }
     }
   }
-  ev->ignore();
-  QFrame::mousePressEvent(ev);
 }
  
 QSize Strip::sizeHint() const
@@ -1220,7 +1232,25 @@ ExpanderHandle::ExpanderHandle(QWidget* parent, int handleWidth, Qt::WindowFlags
   setContentsMargins(0, 0, 0, 0);
  _resizeMode = ResizeModeNone;
 }
- 
+
+void ExpanderHandle::paintEvent(QPaintEvent * ev)
+{
+  QPainter p(this);
+
+  if(const QStyle* st = style())
+  {
+    st = st->proxy();
+
+    QStyleOption o;
+    o.initFrom(this);
+    o.rect = rect();
+    o.state = QStyle::State_Active | QStyle::State_Enabled;
+    st->drawControl(QStyle::CE_Splitter, &o, &p);
+  }
+
+  ev->accept();
+}
+
 void ExpanderHandle::mousePressEvent(QMouseEvent* e)
 {
   // Only one button at a time.
@@ -1366,16 +1396,16 @@ QSize ExpanderHandle::sizeHint() const
 
 void Strip::mouseReleaseEvent(QMouseEvent* ev)
 {
+  ev->accept();
   if (!_isEmbedded && dragOn) {
     emit moveStrip(this);
   }
   dragOn=false;
-  QFrame::mouseReleaseEvent(ev);
-
 }
 
 void Strip::mouseMoveEvent(QMouseEvent* e)
 {
+  e->accept();
   if(e->buttons() == Qt::LeftButton)
   {
     if(!_isEmbedded)
@@ -1417,6 +1447,32 @@ void Strip::setHighLight(bool highlight)
 {
   _highlight = highlight;
   update();
+}
+
+void Strip::updateMuteIcon()
+{
+  if(!track)
+    return;
+
+  bool found = false;
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    MusECore::Track* t = *it;
+    // Ignore this track.
+    if(t != track && (t->internalSolo() || t->solo()))
+    {
+      found = true;
+      break;
+    }
+  }
+
+  //if(found && !track->internalSolo() && !track->solo())
+  //  mute->setIcon(track->mute() ? *muteAndProxyOnSVGIcon : *muteProxyOnSVGIcon);
+  //else
+  //  mute->setIcon(track->mute() ? *muteOnSVGIcon : *muteOffSVGIcon);
+  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+  //mute->setChecked(track->mute());
 }
 
 } // namespace MusEGui

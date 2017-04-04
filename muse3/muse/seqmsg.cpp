@@ -639,12 +639,18 @@ void Audio::msgRemoveTracks()
 {
       Undo operations;
       TrackList* tl = MusEGlobal::song->tracks();
-      for(iTrack t = tl->begin(); t != tl->end(); ++t) 
+
+      // NOTICE: This must be done in reverse order so that
+      //          'undo' will repopulate in ascending index order!
+      ciTrack it = tl->end();
+      while(it != tl->begin())
       {
-        Track* tr = *t;
-        if(tr->selected()) 
+        --it;
+        Track* tr = *it;
+        if(tr->selected())
           operations.push_back(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(tr), tr));
       }
+      
       MusEGlobal::song->applyOperationGroup(operations);
 }
 

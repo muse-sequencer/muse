@@ -81,9 +81,12 @@ void initMidiPorts()
             
             port->changeInstrument(registerMidiInstrument("GM"));
             port->syncInfo().setPort(i);
-            // p4.0.17 Set the first channel on the first port to auto-connect to midi track outputs.
+            // Set the first channel on the first port to auto-connect to midi track outputs.
             if(i == 0)
-              port->setDefaultOutChannels(1);      
+            {
+              port->setDefaultOutChannels(1);
+              port->setDefaultInChannels(1);
+            }
             }
       }
 
@@ -96,7 +99,7 @@ MidiPort::MidiPort()
       {
       _gui2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(64);
       _initializationsSent = false;  
-      _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
+      _defaultInChannels  = 0;
       _defaultOutChannels = 0;
       _device     = 0;
       _instrument = 0;

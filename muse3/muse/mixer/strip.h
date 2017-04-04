@@ -37,7 +37,6 @@
 
 class QMouseEvent;
 class QResizeEvent;
-class QToolButton;
 class QGridLayout;
 class QLayout;
 class QSize;
@@ -52,6 +51,8 @@ class Meter;
 class CompactKnob;
 class CompactSlider;
 class ElidedLabel;
+class CompactToolButton;
+class IconButton;
 
 //---------------------------------------------
 // ComponentWidget
@@ -659,7 +660,8 @@ class ExpanderHandle : public QFrame
 
   protected:
     enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
-    
+    virtual void paintEvent(QPaintEvent*);
+
   private:
     int _handleWidth;
     ResizeMode _resizeMode;
@@ -706,11 +708,11 @@ class Strip : public QFrame {
       int _userWidth;
       ExpanderHandle* _handle;
       
-      QToolButton* record;
-      QToolButton* solo;
-      QToolButton* mute;
-      QToolButton* iR; // Input routing button
-      QToolButton* oR; // Output routing button
+      IconButton* record;
+      IconButton* solo;
+      IconButton* mute;
+      IconButton* iR; // Input routing button
+      IconButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       CompactComboBox* autoType;
       void setLabelText();
@@ -775,6 +777,8 @@ class Strip : public QFrame {
 
       bool isEmbedded() const { return _isEmbedded; }
       void setEmbedded(bool embed) { _isEmbedded = embed; }
+
+      void updateMuteIcon();
       };
 
 } // namespace MusEGui

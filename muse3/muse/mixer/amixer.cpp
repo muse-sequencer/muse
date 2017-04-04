@@ -837,7 +837,12 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
   DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags);
     
   
-  // FIXME TODO: The is costly to do every time. Try to filter it according to required flags.
+  // This costly to do every time. Try to filter it according to required flags.
+  // The only flags which would require a redraw, which is very costly, are the following:
+  if (flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
+               //| SC_CHANNELS   // Channels due to one/two meters and peak labels can change the strip width.
+               //| SC_AUX
+              ))
   redrawMixer();
 
   StripList::iterator si = stripList.begin();

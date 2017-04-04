@@ -46,9 +46,7 @@ class DoubleLabel;
 class Slider;
 class CompactSlider;
 class CompactPatchEdit;
-class ScrollArea;
-class ElidedLabel;
-class CompactToolButton;
+class IconButton;
 
 
 //---------------------------------------------------------
@@ -219,13 +217,17 @@ class MidiStrip : public Strip {
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
       GridPosStruct _routesPos;
+      GridPosStruct _inRoutesPos;
+      GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
       GridPosStruct _rightSpacerPos;
-      
-      MusEGui::Slider* slider;
-      MusEGui::DoubleLabel* sl;
-      QToolButton* off;
-      
+      GridPosStruct _offMonRecPos;
+
+      Slider* slider;
+      DoubleLabel* sl;
+      IconButton* off;
+      IconButton* _midiThru;
+
       MidiComponentRack* _upperRack;
       MidiComponentRack* _lowerRack;
       MidiComponentRack* _infoRack;
@@ -235,7 +237,6 @@ class MidiStrip : public Strip {
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
 
-      CompactToolButton* _midiThru;
       int _heartBeatCounter;
       
       int volume;

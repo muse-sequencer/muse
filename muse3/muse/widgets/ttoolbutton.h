@@ -54,15 +54,23 @@ class CompactToolButton : public QToolButton {
    
    private:
      QIcon _icon;
+     bool _hasFixedIconSize;
+     bool _drawFlat;
      bool _blinkPhase;
 
    protected:
      virtual void paintEvent(QPaintEvent*);
 
    public:
-      CompactToolButton(QWidget* parent = 0, const QIcon& icon = QIcon(), const char* name = 0);
+      CompactToolButton(QWidget* parent = 0, const QIcon& icon = QIcon(), bool hasFixedIconSize = true, bool drawFlat = false, const char* name = 0);
          
-      // This relies on iconSize(). Be sure to set iconSize to the desired value.
+      bool hasFixedIconSize() const { return _hasFixedIconSize; }
+      void setHasFixedIconSize(bool v);
+
+      bool drawFlat() const { return _drawFlat; }
+      void setDrawFlat(bool v);
+
+      // If _hasFixedIconSize is true, this relies on iconSize(). Be sure to set iconSize to the desired value.
       virtual QSize sizeHint() const;
       
       void setIcon(const QIcon & icon);

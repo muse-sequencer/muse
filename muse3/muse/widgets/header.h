@@ -44,6 +44,7 @@ class Header : public QHeaderView {
       Header(QWidget* parent=0, const char* name=0);
       void writeStatus(int level, MusECore::Xml&) const;
       void readStatus(MusECore::Xml&);
+      QString columnLabel(int col);
       void setColumnLabel( const QString & s, int col, int width = -1 );
       void setToolTip(int col, const QString &text);
       void setWhatsThis(int col, const QString &text);

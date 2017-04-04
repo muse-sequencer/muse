@@ -222,6 +222,8 @@ class VstNativeSynthIF : public SynthIF
       void editorOpened();
       void editorClosed();
 
+      void eventReceived(VstMidiEvent*);
+
    public:
       VstNativeSynthIF(SynthI* s);
       virtual ~VstNativeSynthIF();

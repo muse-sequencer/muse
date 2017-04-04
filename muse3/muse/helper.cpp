@@ -370,7 +370,9 @@ void populateMidiPorts()
   MusECore::MidiDevice* dev = 0;
   int port_num = 0;
   int jack_midis_found = 0;
-  
+  bool def_in_found = false;
+  bool def_out_found = false;
+
   // If Jack is running, prefer Jack midi devices over ALSA.
   if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::JACK_AUDIO)  
   {
@@ -380,7 +382,26 @@ void populateMidiPorts()
       if(dev)
       {
         ++jack_midis_found;
-        MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
+        MidiPort* mp = &MusEGlobal::midiPorts[port_num];
+        MusEGlobal::audio->msgSetMidiDevice(mp, dev);
+
+        // Global function initMidiPorts() already sets defs to port #1, but this will override.
+        if(!def_out_found && dev->rwFlags() & 0x1)
+        {
+          mp->setDefaultOutChannels(1);
+          def_out_found = true;
+        }
+        else
+          mp->setDefaultOutChannels(0);
+
+        if(!def_in_found && dev->rwFlags() & 0x2)
+        {
+          mp->setDefaultInChannels(1);
+          def_in_found = true;
+        }
+        else
+          mp->setDefaultInChannels(0);
+
         if(++port_num == MIDI_PORTS)
           return;
       }  
@@ -399,7 +420,25 @@ void populateMidiPorts()
       if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
         continue;
       dev = *i;
-      MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
+      MidiPort* mp = &MusEGlobal::midiPorts[port_num];
+      MusEGlobal::audio->msgSetMidiDevice(mp, dev);
+
+      // Global function initMidiPorts() already sets defs to port #1, but this will override.
+      if(!def_out_found && dev->rwFlags() & 0x1)
+      {
+        mp->setDefaultOutChannels(1);
+        def_out_found = true;
+      }
+      else
+        mp->setDefaultOutChannels(0);
+
+      if(!def_in_found && dev->rwFlags() & 0x2)
+      {
+        mp->setDefaultInChannels(1);
+        def_in_found = true;
+      }
+      else
+        mp->setDefaultInChannels(0);
 
       if(++port_num == MIDI_PORTS)
         return;

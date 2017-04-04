@@ -1,3 +1,41 @@
+16.03.2017
+         - Draw the frame around all mixer strips. (Tim)
+15.03.2017
+      * Routing and mixer relief: (Tim)
+         - Fixed auto-connect routing: Midi tracks by default now only connect to the first
+            suitable midi port input or output instead of all of them at once.
+         - Multi-selected tracks editing: New: Routing buttons apply to ALL selected tracks
+            ie. select two or more tracks and the routing buttons apply to each track.
+           The selected tracks must be type-compatible. TODO: All other strip controls.
+         - Added some SVG icons: Mixer window now scales almost perfectly to chosen font.
+           Moved 'Monitor' button to between 'Off' and 'Rec arm' buttons.
+         - New class IconButton replaces clumsy ToolButton and icon usage. Has TWO different
+            icon groups, perfect for our 'proxy' solo and mute.
+         - All mute buttons now show 'proxy' mute ie. when any OTHER track is soloed.
+         - All 'Monitor' buttons are now off by default.
+      * Bug fixes:
+         - Fixes for 'frozen' Arranger not responding:
+           NEW! Changing theme style in Appearance dialog automatically restarts MusE.
+           If a stylesheet is chosen, 'style' is forced to 'Fusion' for now until fixed upstream.
+         - Fixed duplicate events: From multiple tracks connected to the same inputs and output
+            if 'Monitor' was active. Protection from same-time events (only) in MPEventList::add().
+         - Fixed: Track ordering incorrect after deleting multiple tracks then undoing.
+         - Fixed: Big CPU % spikes when clicking almost anything in the mixer window.
+           Excessive redrawMixer() calls: Fix some controls/strip mouse handling: Accept, not ignore.
+           New specific SC_TRACK_MOVED flag replaces the more general SC_TRACK_MODIFIED when
+            moving tracks in Arranger or Mixer, and filter out other flags causing redrawMixer().
+16.02.2017
+         * Recording from synthesizer midi output supported: (Tim)
+         - All synths are now marked as both readable/writable.
+         - Synths can now be selected as a midi input route.
+         - Received events from a synth will absolutely NOT be echoed back to the
+            SAME synth instance under any circumstances, even if 'monitor' button is on.
+         - Recording: buildMidiEventList(): Added protection from duplicate events
+            sent by certain broken plugins or malformed midi import files.
+           (Our 'live stuck notes' mechanism already protects from playing 'live' duplicate notes.)
+         - If output port's instrument has no note-off mode, do not use our 'live stuck notes'
+            mechanism. This allows for example drum trigger input devices sending NO note-offs,
+            although you must first select an instrument having no note-off mode.
 14.01.2017
          - Drum editor list: Added 'Set field', 'Set row', 'Set list' to right-click menu. (Tim)
 13.01.2017

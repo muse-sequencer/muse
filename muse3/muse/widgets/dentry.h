@@ -50,7 +50,7 @@ class Dentry : public QLineEdit {
 
       virtual void wheelEvent(QWheelEvent*);
       virtual void mousePressEvent(QMouseEvent*);
-      virtual void mouseMoveEvent(QMouseEvent*);
+//       virtual void mouseMoveEvent(QMouseEvent*);
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void mouseReleaseEvent(QMouseEvent*);
       void contextMenuEvent(QContextMenuEvent*);

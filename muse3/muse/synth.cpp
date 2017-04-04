@@ -55,6 +55,8 @@
 #include "midictrl.h"
 #include "popupmenu.h"
 #include "globaldefs.h"
+#include "midiitransform.h"
+#include "mitplugin.h"
 
 namespace MusEGlobal {
 std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
@@ -344,8 +346,11 @@ SynthI::SynthI()
       {
       synthesizer = 0;
       _sif        = 0;
-      _rwFlags    = 1;
-      _openFlags  = 1;
+
+      // Allow synths to be readable, ie send midi back to the host.
+      _rwFlags    = 3;
+      _openFlags  = 3;
+
       _readEnable = false;
       _writeEnable = false;
       setVolume(1.0);
@@ -357,8 +362,11 @@ SynthI::SynthI(const SynthI& si, int flags)
       {
       synthesizer = 0;
       _sif        = 0;
-      _rwFlags    = 1;
-      _openFlags  = 1;
+
+      // Allow synths to be readable, ie send midi back to the host.
+      _rwFlags    = 3;
+      _openFlags  = 3;
+
       _readEnable = false;
       _writeEnable = false;
       setVolume(1.0);
@@ -459,6 +467,102 @@ void SynthI::setName(const QString& s)
       AudioTrack::setName(s);
       MidiDevice::setName(s);
       }
+
+
+//---------------------------------------------------------
+//   recordEvent
+//---------------------------------------------------------
+
+void SynthI::recordEvent(MidiRecordEvent& event)
+      {
+      if(MusEGlobal::audio->isPlaying())
+        event.setLoopNum(MusEGlobal::audio->loopCount());
+
+      if (MusEGlobal::midiInputTrace) {
+            fprintf(stderr, "MidiInput from synth: ");
+            event.dump();
+            }
+
+      int typ = event.type();
+
+      if(_port != -1)
+      {
+        int idin = MusEGlobal::midiPorts[_port].syncInfo().idIn();
+
+        //---------------------------------------------------
+        // filter some SYSEX events
+        //---------------------------------------------------
+
+        if (typ == ME_SYSEX) {
+              const unsigned char* p = event.data();
+              int n = event.len();
+              if (n >= 4) {
+                    if ((p[0] == 0x7f)
+                      && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
+                          if (p[2] == 0x06) {
+                                MusEGlobal::midiSyncContainer.mmcInput(_port, p, n);
+                                return;
+                                }
+                          if (p[2] == 0x01) {
+                                MusEGlobal::midiSyncContainer.mtcInputFull(_port, p, n);
+                                return;
+                                }
+                          }
+                    else if (p[0] == 0x7e) {
+                          MusEGlobal::midiSyncContainer.nonRealtimeSystemSysex(_port, p, n);
+                          return;
+                          }
+                    }
+          }
+          else
+            // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
+            MusEGlobal::midiPorts[_port].syncInfo().trigActDetect(event.channel());
+      }
+
+      //
+      //  process midi event input filtering and
+      //    transformation
+      //
+
+      processMidiInputTransformPlugins(event);
+
+      if (filterEvent(event, MusEGlobal::midiRecordType, false))
+            return;
+
+      if (!applyMidiInputTransformation(event)) {
+            if (MusEGlobal::midiInputTrace)
+                  fprintf(stderr, "   midi input transformation: event filtered\n");
+            return;
+            }
+
+// TODO Maybe support this later, but for now it's not a good idea to control from the synths.
+//      Especially since buggy ones may repeat events multiple times.
+#if 1
+      //
+      // transfer noteOn and Off events to gui for step recording and keyboard
+      // remote control (changed by flo93: added noteOff-events)
+      //
+      if (typ == ME_NOTEON) {
+            int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
+            MusEGlobal::song->putEvent(pv);
+            }
+      else if (typ == ME_NOTEOFF) {
+            int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
+            MusEGlobal::song->putEvent(pv);
+            }
+#endif
+
+      // Do not bother recording if it is NOT actually being used by a port.
+      // Because from this point on, process handles things, by selected port.
+      if(_port == -1)
+        return;
+
+      // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
+      unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
+      if(_recordFifo[ch].put(event))
+        fprintf(stderr, "SynthI::recordEvent: fifo channel %d overflow\n", ch);
+      }
+
 
 RouteCapabilitiesStruct SynthI::routeCapabilities() const 
 { 

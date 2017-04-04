@@ -134,8 +134,10 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
 void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
-      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
+      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG
+         | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED
+         | SC_TRACK_MOVED
+         | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             update();
@@ -250,6 +252,26 @@ void TList::paint(const QRect& r)
       mask.setColorAt(0.85, mask_edge);
       mask.setColorAt(1, mask_edge);
 
+      // Find up to two tracks that are soloed.
+      MusECore::Track* solo_t_1 = 0;
+      MusECore::Track* solo_t_2 = 0;
+      {
+        MusECore::TrackList* tl = MusEGlobal::song->tracks();
+        for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+        {
+          MusECore::Track* t = *it;
+          if(t->internalSolo() || t->solo())
+          {
+            if(!solo_t_1)
+              solo_t_1 = t;
+            else if(!solo_t_2)
+              solo_t_2 = t;
+          }
+          // Did we find at least two tracks? Done.
+          if(solo_t_1 && solo_t_2)
+            break;
+        }
+      }
 
       MusECore::TrackList* l = MusEGlobal::song->tracks();
       int idx = 0;
@@ -318,171 +340,175 @@ void TList::paint(const QRect& r)
                   int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
                   QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight)); 
+                  QRect r_sm = r.adjusted(1, 1, -1, -1);
 
-                  switch (section) {
-                        case COL_RECORD:
-                              if (track->canRecord() && !header->isSectionHidden(COL_RECORD)) {
-                                    //bool aa = p.testRenderHint(QPainter::SmoothPixmapTransform); // Antialiasing);  // The rec icon currently looks very jagged. AA should help.
-                                    //p.setRenderHint(QPainter::SmoothPixmapTransform); //Antialiasing);  
-                                    drawCenteredPixmap(p,
-                                       track->recordFlag() ? record_on_Icon : record_off_Icon, r);
-                                    //p.setRenderHint(QPainter::SmoothPixmapTransform, aa); //Antialiasing, aa);  
-                                    }
-                              break;
-                        case COL_CLASS:
-                              {
-                              if (header->isSectionHidden(COL_CLASS))
+                  if(!header->isSectionHidden(section))
+                  {
+                    switch (section) {
+                          case COL_RECORD:
+                                if (track->canRecord()) {
+                                      (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      }
                                 break;
-                              if(const QPixmap* pm = MusECore::Track::trackTypeIcon(type))
-                                drawCenteredPixmap(p, pm, r);
-                              }
-                              break;
-                        case COL_MUTE:
-                              if (track->off())
-                                    drawCenteredPixmap(p, offIcon, r);
-                              else if (track->mute())
-                                    drawCenteredPixmap(p, editmuteSIcon, r);
-                              break;
-                        case COL_SOLO:
-                              if(track->solo() && track->internalSolo())
-                                    drawCenteredPixmap(p, blacksqcheckIcon, r);
-                              else      
-                              if(track->internalSolo())
-                                    drawCenteredPixmap(p, blacksquareIcon, r);
-                              else
-                              if (track->solo())
-                                    drawCenteredPixmap(p, checkSquareIcon, r);
-                              break;
-                        case COL_TIMELOCK:
-                              if (track->isMidiTrack()
-                                 && track->locked()) {
-                                    drawCenteredPixmap(p, lockIcon, r);
-                                    }
-                              break;
-                        case COL_NAME:
-                              if (track->type() == MusECore::Track::AUDIO_AUX) {
-                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, ((MusECore::AudioAux *)track)->auxName());
-                              } else {
-                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
-                              }
-                              break;
-                        case COL_OCHANNEL:
-                              {
-                              QString s;
-                              int n;
-                              // Default to track port if -1 and track channel if -1.
-                              if (track->isMidiTrack()) {
-                                    n = ((MusECore::MidiTrack*)track)->outChannel() + 1;
-                                    }
-                              else {
-                                    // show number of ports
-                                    n = ((MusECore::WaveTrack*)track)->channels();
-                                    }
-                              s.setNum(n);
-                              p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, s);
-                              }
-                              break;
-                        case COL_OPORT:
-                              {
-                              QString s;
-                              if (track->isMidiTrack()) {
-                                    int outport = ((MusECore::MidiTrack*)track)->outPort();
-                                    s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
-                                    }
-                              else
-                              if(track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
-                              {
-                                MusECore::MidiDevice* md = dynamic_cast<MusECore::MidiDevice*>(track);  
-                                if(md)
+                          case COL_CLASS:
                                 {
-                                  int outport = md->midiPort();
-                                  if((outport >= 0) && (outport < MIDI_PORTS))
-                                    s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
-                                  else
-                                    s = tr("<none>");
-                                }  
-                              }  
-                              
-                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-                              }
-                              break;
-                        case COL_AUTOMATION:
-                              {
-                              QString s="-";
-
-                              if (!track->isMidiTrack()) {
-                                    MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)track)->controller();
-                                    int countAll=0, countVisible=0;
-                                    for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-                                        MusECore::CtrlList *cl = icll->second;
-                                        if (!cl->dontShow())
-                                            countAll++;
-                                        if (cl->isVisible())
-                                            countVisible++;
-                                    }
-                                    //s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toLatin1().data());
-                                    //make this more Unicode-aware as toLatin1 discards all internatianal data
-                                    s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
-                                    }
-
-
-                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-                              }
-                              break;
-                        case COL_CLEF:
-                              if (track->isMidiTrack() && track->type() == MusECore::Track::MIDI) { // no drum tracks!
-                                QString s = tr("no clef");
-                                if (((MusECore::MidiTrack*)track)->getClef() == trebleClef)
-                                  s=tr("Treble");
-                                else if (((MusECore::MidiTrack*)track)->getClef() == bassClef)
-                                  s=tr("Bass");
-                                else if (((MusECore::MidiTrack*)track)->getClef() == grandStaff)
-                                  s=tr("Grand");
-                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-                              }
-                              break;
-                        default:
-                              if (section>=COL_CUSTOM_MIDICTRL_OFFSET)
-                              {
-                                if (track->isMidiTrack())
+                                if(const QPixmap* pm = MusECore::Track::trackTypeIcon(type))
+                                  drawCenteredPixmap(p, pm, r);
+                                }
+                                break;
+                          case COL_MUTE:
+                                if (track->off())
+                                      trackOffSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                else
                                 {
-                                  int col_ctrl_no=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
-                                  MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
-                                  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                                  MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
-                                  int val;
-                                  if (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos == 
-                                      Arranger::custom_col_t::AFFECT_BEGIN)
-                                    val=mt->getControllerChangeAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
-                                  else
+                                  if(!track->internalSolo() && !track->solo() &&
+                                    ((solo_t_1 && solo_t_1 != track) || (solo_t_2 && solo_t_2 != track)))
+                                    (track->mute() ? muteAndProxyOnSVGIcon : muteProxyOnSVGIcon)->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                  else if(track->mute())
+                                    muteOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                }
+                                break;
+                          case COL_SOLO:
+                                if(track->solo() && track->internalSolo())
+                                      soloAndProxyOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                else
+                                if(track->internalSolo())
+                                      soloProxyOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                else
+                                if (track->solo())
+                                      soloOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                break;
+                          case COL_TIMELOCK:
+                                if (track->isMidiTrack()
+                                  && track->locked()) {
+                                      drawCenteredPixmap(p, lockIcon, r);
+                                      }
+                                break;
+                          case COL_NAME:
+                                if (track->type() == MusECore::Track::AUDIO_AUX) {
+                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, ((MusECore::AudioAux *)track)->auxName());
+                                } else {
+                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
+                                }
+                                break;
+                          case COL_OCHANNEL:
+                                {
+                                QString s;
+                                int n;
+                                // Default to track port if -1 and track channel if -1.
+                                if (track->isMidiTrack()) {
+                                      n = ((MusECore::MidiTrack*)track)->outChannel() + 1;
+                                      }
+                                else {
+                                      // show number of ports
+                                      n = ((MusECore::WaveTrack*)track)->channels();
+                                      }
+                                s.setNum(n);
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, s);
+                                }
+                                break;
+                          case COL_OPORT:
+                                {
+                                QString s;
+                                if (track->isMidiTrack()) {
+                                      int outport = ((MusECore::MidiTrack*)track)->outPort();
+                                      s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
+                                      }
+                                else
+                                if(track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+                                {
+                                  MusECore::MidiDevice* md = dynamic_cast<MusECore::MidiDevice*>(track);
+                                  if(md)
                                   {
-                                    val=mp->hwCtrlState(mt->outChannel(), col_ctrl_no);
-                                    old_ctrl_hw_states[mt][section]=val;
-                                  }
-                                    
-                                  if (val!=MusECore::CTRL_VAL_UNKNOWN)
-                                    val-=mctl->bias();
-                                  
-                                  if (col_ctrl_no!=MusECore::CTRL_PROGRAM)
-                                  {
-                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, 
-                                      (val!=MusECore::CTRL_VAL_UNKNOWN)?QString::number(val):tr("off"));
-                                  }
-                                  else
-                                  {
-                                    MusECore::MidiInstrument* instr = mp->instrument();
-                                    QString name;
-                                    if (val!=MusECore::CTRL_VAL_UNKNOWN)
-                                      name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack(), true); // Include default.
+                                    int outport = md->midiPort();
+                                    if((outport >= 0) && (outport < MIDI_PORTS))
+                                      s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
                                     else
-                                      name = tr("<unknown>");
-                                      
-                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, name);
+                                      s = tr("<none>");
                                   }
                                 }
-                              }
-                              break;
-                        }
+
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                                }
+                                break;
+                          case COL_AUTOMATION:
+                                {
+                                QString s="-";
+
+                                if (!track->isMidiTrack()) {
+                                      MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)track)->controller();
+                                      int countAll=0, countVisible=0;
+                                      for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+                                          MusECore::CtrlList *cl = icll->second;
+                                          if (!cl->dontShow())
+                                              countAll++;
+                                          if (cl->isVisible())
+                                              countVisible++;
+                                      }
+                                      //s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toLatin1().data());
+                                      //make this more Unicode-aware as toLatin1 discards all internatianal data
+                                      s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
+                                      }
+
+
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                                }
+                                break;
+                          case COL_CLEF:
+                                if (track->isMidiTrack() && track->type() == MusECore::Track::MIDI) { // no drum tracks!
+                                  QString s = tr("no clef");
+                                  if (((MusECore::MidiTrack*)track)->getClef() == trebleClef)
+                                    s=tr("Treble");
+                                  else if (((MusECore::MidiTrack*)track)->getClef() == bassClef)
+                                    s=tr("Bass");
+                                  else if (((MusECore::MidiTrack*)track)->getClef() == grandStaff)
+                                    s=tr("Grand");
+                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                                }
+                                break;
+                          default:
+                                if (section>=COL_CUSTOM_MIDICTRL_OFFSET)
+                                {
+                                  if (track->isMidiTrack())
+                                  {
+                                    int col_ctrl_no=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                                    MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
+                                    MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                                    MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
+                                    int val;
+                                    if (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
+                                        Arranger::custom_col_t::AFFECT_BEGIN)
+                                      val=mt->getControllerChangeAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
+                                    else
+                                    {
+                                      val=mp->hwCtrlState(mt->outChannel(), col_ctrl_no);
+                                      old_ctrl_hw_states[mt][section]=val;
+                                    }
+
+                                    if (val!=MusECore::CTRL_VAL_UNKNOWN)
+                                      val-=mctl->bias();
+
+                                    if (col_ctrl_no!=MusECore::CTRL_PROGRAM)
+                                    {
+                                      p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter,
+                                        (val!=MusECore::CTRL_VAL_UNKNOWN)?QString::number(val):tr("off"));
+                                    }
+                                    else
+                                    {
+                                      MusECore::MidiInstrument* instr = mp->instrument();
+                                      QString name;
+                                      if (val!=MusECore::CTRL_VAL_UNKNOWN)
+                                        name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack(), true); // Include default.
+                                      else
+                                        name = tr("<unknown>");
+
+                                      p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, name);
+                                    }
+                                  }
+                                }
+                                break;
+                          }
+                  }
                   x += header->sectionSize(section);
                   }
             p.setPen(Qt::gray);
