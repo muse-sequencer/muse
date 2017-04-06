@@ -27,12 +27,6 @@
 
 #include <QFrame>
 
-class QEvent;
-class QPaintEvent;
-class QSize;
-class QResizeEvent;
-class QMouseEvent;
-
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -74,11 +68,13 @@ class ElidedLabel : public QFrame
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
     virtual void leaveEvent(QEvent*);
+    virtual void keyPressEvent(QKeyEvent*);
 
   signals:
     void pressed(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     void released(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
-    
+    void returnPressed(QPoint p, int id, Qt::KeyboardModifiers keys);
+
   public:
     explicit ElidedLabel(QWidget* parent = 0, 
                          Qt::TextElideMode elideMode = Qt::ElideNone, 
@@ -96,6 +92,9 @@ class ElidedLabel : public QFrame
     
     Qt::TextElideMode elideMode() const { return _elideMode; }
     void setElideMode(Qt::TextElideMode mode) { _elideMode = mode; update(); }
+
+    Qt::Alignment alignment() const { return _alignment; }
+    void setAlignment(Qt::Alignment align) { _alignment = align; update(); }
 
     bool hasOffMode() const { return _hasOffMode; }
     void setHasOffMode(bool v);

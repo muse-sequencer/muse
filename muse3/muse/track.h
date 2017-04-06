@@ -42,6 +42,7 @@
 #include "controlfifo.h"
 
 class QPixmap;
+class QColor;
 
 namespace MusECore {
 class Pipeline;
@@ -140,8 +141,12 @@ class Track {
       
       static const char* _cname[];
       static QPixmap* trackTypeIcon(TrackType);
+      static QColor trackTypeColor(TrackType);
+      static QColor trackTypeLabelColor(TrackType);
       QPixmap* icon() const { return trackTypeIcon(type()); }
-      
+      QColor color() const { return trackTypeColor(type()); }
+      QColor labelColor() const { return trackTypeLabelColor(type()); }
+
       QString comment() const         { return _comment; }
       void setComment(const QString& s) { _comment = s; }
 

@@ -158,6 +158,13 @@ class MidiController {
       void copy(const MidiController &mc);
       MidiController& operator= (const MidiController &mc);
 
+      // Convert given controller double value to integer.
+      static int dValToInt(double v);
+      // Whether the given integer value is CTRL_VAL_UNKNOWN.
+      static inline bool iValIsUnknown(int v) { return v == CTRL_VAL_UNKNOWN; }
+      // Whether the given double value is CTRL_VAL_UNKNOWN.
+      static inline bool dValIsUnknown(double v) { return iValIsUnknown(dValToInt(v)); }
+
       const QString& name() const         { return _name;   }
       int num() const                     { return _num;    }
       void setName(const QString& s)      { _name = s;      }
@@ -167,8 +174,10 @@ class MidiController {
       int minVal() const                  { return _minVal; }
       int maxVal() const                  { return _maxVal; }
       int initVal() const                 { return _initVal; }
+      inline bool initValIsUnknown() const { return iValIsUnknown(_initVal); }
       void setInitVal(int val)            { _initVal = val; }
       int drumInitVal() const             { return _drumInitVal; }
+      inline bool drumInitValIsUnknown() const { return iValIsUnknown(_drumInitVal); }
       void setDrumInitVal(int val)        { _drumInitVal = val; }
       void setMinVal(int val)             { _minVal = val; updateBias(); }
       void setMaxVal(int val)             { _maxVal = val; updateBias(); }
@@ -204,10 +213,10 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       // The controller number.
       int ctrlNum;
       // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
-      int _hwVal;
+      double _hwVal;
       // The last value that was not CTRL_VAL_UNKNOWN. Can still be CTRL_VAL_UNKNOWN (typically at startup).
       // Note that in the case of PROGRAM for example, HBank/LBank bytes can still be 0xff (OFF).
-      int _lastValidHWVal;
+      double _lastValidHWVal;
       // The last byte values that were not CTRL_VAL_UNKNOWN or 0xff (Off).
       // Can never be 0xff (OFF), but can still be CTRL_VAL_UNKNOWN (typically at startup).
       // Special for example PROGRAM controller, has 3 separate values: HBank, LBank and Program.
@@ -240,21 +249,30 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       void delMCtlVal(int tick, Part* part);
       
       iMidiCtrlVal findMCtlVal(int tick, Part* part);
-      
+
       // Current set value in midi hardware. Can be CTRL_VAL_UNKNOWN.
-      int hwVal() const       { return _hwVal;   }
+      inline int hwVal() const { return MidiController::dValToInt(_hwVal); }
+
+      double hwDVal() const { return _hwVal; }
+      inline bool hwValIsUnknown() const { return MidiController::iValIsUnknown(MidiController::dValToInt(_hwVal)); }
+
       // Set current value in midi hardware. Can be CTRL_VAL_UNKNOWN.
-      bool setHwVal(const int v);
+      // Returns false if value is already equal, true if value is changed.
+      bool setHwVal(const double v);
       //   Sets current and last HW values.
       //   Handy for forcing labels to show 'off' and knobs to show specific values
       //    without having to send two messages.
       //   Returns false if both values are already set, true if either value is changed.
-      bool setHwVals(const int v, const int lastv);
+      bool setHwVals(const double v, const double lastv);
       // The controller number.
-      int num() const         { return ctrlNum;  }
+      int num() const { return ctrlNum; }
       // The last value that was not CTRL_VAL_UNKNOWN. Can still be CTRL_VAL_UNKNOWN (typically at startup).
       // Note that in the case of PROGRAM for example, HBank/LBank bytes can still be 0xff (OFF).
-      int lastValidHWVal() const          { return _lastValidHWVal; }
+      inline int lastValidHWVal() const { return MidiController::dValToInt(_lastValidHWVal); }
+
+      double lastValidHWDVal() const { return _lastValidHWVal; }
+      inline bool lastHwValIsUnknown() const { return MidiController::iValIsUnknown(MidiController::dValToInt(_lastValidHWVal)); }
+
       // The last byte values that were not CTRL_VAL_UNKNOWN or 0xff (Off).
       // Can never be 0xff (OFF), but can still be CTRL_VAL_UNKNOWN (typically at startup).
       // Special for example PROGRAM controller, has 3 separate values: HBank, LBank and Program.

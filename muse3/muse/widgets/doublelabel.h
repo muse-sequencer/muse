@@ -50,8 +50,8 @@ class DoubleLabel : public Dentry {
 
       virtual bool setSValue(const QString&);
       virtual bool setString(double val);
-      virtual void incValue(double);
-      virtual void decValue(double);
+      virtual void incValue(int steps = 1);
+      virtual void decValue(int steps = 1);
 
    public:
       DoubleLabel(QWidget* parent = 0, const char* name = 0);
@@ -61,19 +61,19 @@ class DoubleLabel : public Dentry {
       double minValue() const               { return min; }
       double maxValue() const               { return max; }
       double off()      const               { return _off; }
-      void setMinValue(double v)            { min = v; }
-      void setMaxValue(double v)            { max = v; }
-      void setRange(double a, double b)     { _off = a - (min - _off); min = a; max = b; }
+      void setMinValue(double v)            { min = v; updateGeometry(); }
+      void setMaxValue(double v)            { max = v; updateGeometry(); }
+      void setRange(double a, double b)     { _off = a - (min - _off); min = a; max = b; updateGeometry(); }
       void setOff(double v);
       int precision() const                 { return _precision; }
       void setPrecision(int val);
       QString specialText() const           { return _specialText; }
       void setSpecialText(const QString& s) {
             _specialText = s;
-            update();
+            updateGeometry();
             }
       QString suffix() const                { return _suffix; }
-      void setSuffix(const QString& s)      { _suffix = s; }
+      void setSuffix(const QString& s)      { _suffix = s; updateGeometry(); }
       };
 
 } // namespace MusEGui

@@ -64,7 +64,7 @@ class SliderBase : public QWidget, public DoubleRange
   QPoint _lastMousePos;
   QPoint _lastGlobalMousePos;
   Qt::MouseButtons _pagingButtons;
-  
+
   // Internal flags.
   bool _ignoreMouseMove;
   bool _firstMouseMoveAfterPress;
@@ -108,6 +108,7 @@ class SliderBase : public QWidget, public DoubleRange
   void mouseReleaseEvent(QMouseEvent *e);
   virtual void mouseMoveEvent(QMouseEvent *e);
   virtual void mouseDoubleClickEvent(QMouseEvent *e);
+  virtual void keyPressEvent(QKeyEvent*);
   // Required because if focus is lost while a mouse button is pressed, we do not get the mouseReleaseEvent.
   virtual void focusOutEvent(QFocusEvent*);
   
@@ -135,8 +136,8 @@ class SliderBase : public QWidget, public DoubleRange
  signals:
   void valueChanged(double value, int id);
   void valueChanged(double value, int id, int scrollMode);
-  void sliderPressed(int id);
-  void sliderReleased(int id);
+  void sliderPressed(double value, int id);
+  void sliderReleased(double value, int id);
   void sliderMoved(double value, int id);
   void sliderMoved(double value, int id, bool shift);
   void sliderRightClicked(QPoint p, int id);

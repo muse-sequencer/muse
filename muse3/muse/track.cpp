@@ -353,6 +353,70 @@ QPixmap* Track::trackTypeIcon(TrackType type)
 }
 
 //---------------------------------------------------------
+//   trackTypeColor
+//   Static
+//---------------------------------------------------------
+
+QColor Track::trackTypeColor(TrackType type)
+{
+  switch(type) {
+        case MusECore::Track::MIDI:
+              return MusEGlobal::config.midiTrackBg;
+        case MusECore::Track::NEW_DRUM:
+              return MusEGlobal::config.newDrumTrackBg;
+        case MusECore::Track::DRUM:
+              return MusEGlobal::config.drumTrackBg;
+        case MusECore::Track::WAVE:
+              return MusEGlobal::config.waveTrackBg;
+        case MusECore::Track::AUDIO_OUTPUT:
+              return MusEGlobal::config.outputTrackBg;
+        case MusECore::Track::AUDIO_INPUT:
+              return MusEGlobal::config.inputTrackBg;
+        case MusECore::Track::AUDIO_GROUP:
+              return MusEGlobal::config.groupTrackBg;
+        case MusECore::Track::AUDIO_AUX:
+              return MusEGlobal::config.auxTrackBg;
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+              return MusEGlobal::config.synthTrackBg;
+        default:
+              break;
+        }
+  return QColor();
+}
+
+//---------------------------------------------------------
+//   trackTypeLabelColor
+//   Static
+//---------------------------------------------------------
+
+QColor Track::trackTypeLabelColor(TrackType type)
+{
+  switch(type) {
+        case MusECore::Track::MIDI:
+              return MusEGlobal::config.midiTrackLabelBg;
+        case MusECore::Track::NEW_DRUM:
+              return MusEGlobal::config.newDrumTrackLabelBg;
+        case MusECore::Track::DRUM:
+              return MusEGlobal::config.drumTrackLabelBg;
+        case MusECore::Track::WAVE:
+              return MusEGlobal::config.waveTrackLabelBg;
+        case MusECore::Track::AUDIO_OUTPUT:
+              return MusEGlobal::config.outputTrackLabelBg;
+        case MusECore::Track::AUDIO_INPUT:
+              return MusEGlobal::config.inputTrackLabelBg;
+        case MusECore::Track::AUDIO_GROUP:
+              return MusEGlobal::config.groupTrackLabelBg;
+        case MusECore::Track::AUDIO_AUX:
+              return MusEGlobal::config.auxTrackLabelBg;
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+              return MusEGlobal::config.synthTrackLabelBg;
+        default:
+              break;
+        }
+  return QColor();
+}
+
+//---------------------------------------------------------
 //   setDefaultName
 //    generate unique name for track
 //---------------------------------------------------------

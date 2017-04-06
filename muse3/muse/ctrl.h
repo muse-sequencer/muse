@@ -214,6 +214,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       int id() const             { return _id; }
       QString name() const       { return _name; }
       void setName(const QString& s) { _name = s; }
+      double minVal() const { return _min; }
+      double maxVal() const { return _max; }
       void setRange(double min, double max) {
             _min = min;
             _max = max;

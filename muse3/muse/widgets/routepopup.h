@@ -56,7 +56,10 @@ class RoutePopupMenu : public PopupMenu
     RoutePopupHit _lastHoveredHit;
     // To inform a pending hover slot whether the hover was from mouse or not.
     bool _hoverIsFromMouse;
-    
+    // Whether to propagate changes to other selected tracks.
+    // This includes operating a control or using the universal up/down volume/ pan keys etc.
+    bool _broadcastChanges;
+
     void init();
     // Prepares (fills) the popup before display.
     void prepare();
@@ -101,13 +104,16 @@ class RoutePopupMenu : public PopupMenu
 
     // For auto-breakup of a too-wide menu. Virtual.
     virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool /*stayOpen*/ = false)
-      { return new RoutePopupMenu(_route, title, parent, _isOutMenu); }
+      { return new RoutePopupMenu(_route, title, parent, _isOutMenu, _broadcastChanges); }
 
   public:
-    RoutePopupMenu(QWidget* parent = 0, bool isOutput = false);
-    RoutePopupMenu(const MusECore::Route& route, QWidget* parent = 0, bool isOutput = false);
-    RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent = 0, bool isOutput = false);
+    RoutePopupMenu(QWidget* parent = 0, bool isOutput = false, bool broadcastChanges = false);
+    RoutePopupMenu(const MusECore::Route& route, QWidget* parent = 0, bool isOutput = false, bool broadcastChanges = false);
+    RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent = 0, bool isOutput = false, bool broadcastChanges = false);
     
+    bool broadcastChanges() const { return _broadcastChanges; }
+    void setBroadcastChanges(bool v) { _broadcastChanges = v; }
+
     void updateRouteMenus();
     
     void exec(const MusECore::Route& route, bool isOutput = false);

@@ -289,6 +289,9 @@ GlobalConfigValues config = {
       MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
       true,                         // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
       true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
+      false,                        // monitorOnRecord  Whether to automatically monitor on record arm.
+      true,                         // lineEditStyleHack Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
+      false,                        // preferMidiVolumeDb Prefer midi volume as decibels instead of 0-127.
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample

@@ -590,12 +590,14 @@ class PluginGui : public QMainWindow {
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
       void guiParamChanged(int);
-      void ctrlPressed(int);
-      void ctrlReleased(int);
+      void ctrlPressed(double, int);
+      void ctrlReleased(double, int);
+      void switchPressed(int);
+      void switchReleased(int);
       void guiParamPressed(int);
       void guiParamReleased(int);
-      void guiSliderPressed(int);
-      void guiSliderReleased(int);
+      void guiSliderPressed(double, int);
+      void guiSliderReleased(double, int);
       void ctrlRightClicked(const QPoint &, int);
       void guiSliderRightClicked(const QPoint &, int);
       void guiContextMenuReq(int idx);

@@ -754,6 +754,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.preferKnobsVsSliders = xml.parseInt();
                         else if (tag == "showControlValues")
                               MusEGlobal::config.showControlValues = xml.parseInt();
+                        else if (tag == "monitorOnRecord")
+                              MusEGlobal::config.monitorOnRecord = xml.parseInt();
+                        else if (tag == "lineEditStyleHack")
+                              MusEGlobal::config.lineEditStyleHack = xml.parseInt();
+                        else if (tag == "preferMidiVolumeDb")
+                              MusEGlobal::config.preferMidiVolumeDb = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -1764,6 +1770,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
       xml.intTag(level, "preferKnobsVsSliders", MusEGlobal::config.preferKnobsVsSliders);
       xml.intTag(level, "showControlValues", MusEGlobal::config.showControlValues);
+      xml.intTag(level, "monitorOnRecord", MusEGlobal::config.monitorOnRecord);
+      xml.intTag(level, "lineEditStyleHack", MusEGlobal::config.lineEditStyleHack);
+      xml.intTag(level, "preferMidiVolumeDb", MusEGlobal::config.preferMidiVolumeDb);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 

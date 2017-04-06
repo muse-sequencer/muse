@@ -186,7 +186,8 @@ void Slider::scaleChange()
 //------------------------------------------------------------
 void Slider::fontChange(const QFont & /*oldFont*/)
 {
-    repaint();
+//     repaint();
+    update();
 }
 
 void Slider::drawThumb(QPainter *p, const QRect &r)
@@ -701,22 +702,8 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
   }
 }
 
-//------------------------------------------------------------
-//.F  Slider::resizeEvent
-//  Qt resize event
-//
-//.u  Parameters
-//.p  QResizeEvent *e
-//
-//.u  Syntax
-//.f  void Slider::resizeEvent(QResizeEvent *e)
-//------------------------------------------------------------
-
-void Slider::resizeEvent(QResizeEvent *e)
+void Slider::adjustSize(const QSize& s)
 {
-    SliderBase::resizeEvent(e);
-    d_resized = true;
-    QSize s = e->size();
     const QFontMetrics fm = fontMetrics();
     const int sliderWidth = d_thumbWidth;
     // reposition slider
@@ -735,7 +722,7 @@ void Slider::resizeEvent(QResizeEvent *e)
               d_sliderRect.width() - d_thumbLength,
               ScaleDraw::Top);
             break;
-      
+
         case Bottom:
             d_sliderRect.setRect(this->rect().x() + d_xMargin,
               this->rect().y() + d_yMargin,
@@ -746,7 +733,7 @@ void Slider::resizeEvent(QResizeEvent *e)
               d_sliderRect.width() - d_thumbLength,
               ScaleDraw::Bottom);
             break;
-      
+
         case InsideHorizontal:
             d_sliderRect.setRect(this->rect().x() + d_xMargin,
               this->rect().y() + s.height() - 1
@@ -759,7 +746,7 @@ void Slider::resizeEvent(QResizeEvent *e)
               d_sliderRect.width() - d_thumbLength,
               ScaleDraw::InsideHorizontal);
             break;
-            
+
         default:
             d_sliderRect.setRect(this->rect().x(), this->rect().x(),
               s.width(), s.height());
@@ -781,7 +768,7 @@ void Slider::resizeEvent(QResizeEvent *e)
               s.height() - d_thumbLength,
               ScaleDraw::Left);
             break;
-            
+
         case Right:
             d_sliderRect.setRect(this->rect().x() + d_xMargin,
               this->rect().y() + d_yMargin,
@@ -793,7 +780,7 @@ void Slider::resizeEvent(QResizeEvent *e)
               s.height() - d_thumbLength,
               ScaleDraw::Right);
             break;
-            
+
         case InsideVertical:
         {
 //             d_sliderRect.setRect(this->rect().x() + s.width()
@@ -810,7 +797,7 @@ void Slider::resizeEvent(QResizeEvent *e)
             const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
             const int sldymargin = fh > d_thumbLength ? fh - d_thumbLength : 0;
             const int sldymargin2 = fh2 > d_thumbHalf ? fh2 - d_thumbHalf : 0;
-            
+
 //             d_sliderRect.setRect(this->rect().x() + (s.width() - 1) - sliderWidth - sclw + sldoffs, // - d_xMargin,
             d_sliderRect.setRect(this->rect().x() + s.width() - sliderWidth - sclw + sldoffs, // - d_xMargin,
 //               this->rect().y() + d_yMargin,
@@ -819,13 +806,13 @@ void Slider::resizeEvent(QResizeEvent *e)
 //               s.height() - 2 * d_yMargin);
 //               s.height() - margin - 2 * d_yMargin);
               s.height() - sldymargin - 2 * d_yMargin);
-              
+
             //d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
 //             d_scale.setGeometry(this->rect().x() + d_xMargin + d_scale.maxWidth(fm, false) + d_scaleDist,
             d_scale.setGeometry(this->rect().x() + d_xMargin + mxlw + sclw + d_scaleDist,
 //               d_sliderRect.y() + d_thumbHalf,
 //               d_sliderRect.y(),
-              this->rect().y() + d_yMargin + margin2,                                
+              this->rect().y() + d_yMargin + margin2,
 //               s.height() - d_thumbLength,
 //               s.height() - margin,
 //               d_sliderRect.height(),
@@ -833,14 +820,14 @@ void Slider::resizeEvent(QResizeEvent *e)
               ScaleDraw::InsideVertical);
         }
         break;
-            
+
         default:
             d_sliderRect.setRect(this->rect().x(), this->rect().x(),
               s.width(), s.height());
             break;
       }
     }
-    
+
   adjustScale();
 }
 
@@ -888,7 +875,7 @@ void Slider::adjustScale()
     int unit_h = fm.height();
     if(unit_h == 0)
       unit_h = 20;
-    
+
     if(hasUserScale())
     {
       if(d_sliderRect.height() != 0)
@@ -919,7 +906,67 @@ void Slider::adjustScale()
     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
   else
     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
-  update();
+//   update();
+  updateGeometry();
+}
+
+//------------------------------------------------------------
+//.F  Slider::resizeEvent
+//  Qt resize event
+//
+//.u  Parameters
+//.p  QResizeEvent *e
+//
+//.u  Syntax
+//.f  void Slider::resizeEvent(QResizeEvent *e)
+//------------------------------------------------------------
+
+void Slider::resizeEvent(QResizeEvent *e)
+{
+    SliderBase::resizeEvent(e);
+    adjustSize(e->size());
+}
+
+void Slider::setScale(double vmin, double vmax, int logarithmic)
+{
+  ScaleIf::setScale(vmin, vmax, logarithmic);
+  // Must adjust the scale.
+   adjustScale();
+}
+
+void Slider::setScale(double vmin, double vmax, double step, int logarithmic)
+{
+  ScaleIf::setScale(vmin, vmax, step, logarithmic);
+  // Must adjust the scale.
+  adjustScale();
+}
+
+void Slider::setScale(const ScaleDiv &s)
+{
+  ScaleIf::setScale(s);
+  // Must adjust the scale.
+   adjustScale();
+}
+
+void Slider::setScaleMaxMajor(int ticks)
+{
+  ScaleIf::setScaleMaxMajor(ticks);
+  // Must adjust the scale.
+   adjustScale();
+}
+
+void Slider::setScaleMaxMinor(int ticks)
+{
+  ScaleIf::setScaleMaxMinor(ticks);
+  // Must adjust the scale.
+   adjustScale();
+}
+
+void Slider::setScaleBackBone(bool v)
+{
+  ScaleIf::setScaleBackBone(v);
+  // Must adjust the scale.
+  adjustScale();
 }
 
 //------------------------------------------------------------
@@ -944,7 +991,7 @@ void Slider::valueChange()
       if(d_scrollMode == ScrDirect)
       {
         processSliderPressed(id());
-        emit sliderPressed(id());
+        emit sliderPressed(value(), id());
       }
       
       // Emits valueChanged if tracking enabled.
@@ -967,7 +1014,8 @@ void Slider::rangeChange()
     if (!hasUserScale())
        d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
     SliderBase::rangeChange();
-    repaint();
+//     repaint();
+    update();
 }
 
 //------------------------------------------------------------

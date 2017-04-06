@@ -260,11 +260,14 @@ bool WaveTrack::closeAllParts()
 bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, float** bp)
 {
   bool have_data = false;
+  
+  const bool track_rec_flag = recordFlag();
+  const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
 
   if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
   {
     have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
-    if(have_data && recordFlag() && MusEGlobal::audio->isRecording() && recFile())
+    if(have_data && track_rec_flag && MusEGlobal::audio->isRecording() && recFile())
     {
       if(MusEGlobal::audio->freewheel())
       {
@@ -288,7 +291,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // So for consistency we do this in PLAYBACK and STOP.
   // A benefit is the user sees the actual record level, not the post-effect/controlled one.
   // TODO: User-selectable metering points, a mixture of user and automatic here...
-  if(have_data && recordFlag() && !_recMonitor)
+  if(have_data && track_rec_flag && !track_rec_monitor)
   {
     const int trackChans = channels();
     int chans = dstChannels;
@@ -320,13 +323,13 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
   if(!MusEGlobal::audio->isPlaying())
   {
-    if(!have_data || (_recMonitor && have_data))
+    if(!have_data || (track_rec_monitor && have_data))
       return have_data;
     return false;
   }
 
   // If there was no data, or we do not want record monitoring, zero the supplied buffers.
-  const bool do_overwrite = !have_data || !_recMonitor;
+  const bool do_overwrite = !have_data || !track_rec_monitor;
 
   // Set the return type.
   have_data = true;

@@ -160,7 +160,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
     trackNameLabel->setObjectName(selected->cname());
   
   //trackNameLabel->setStyleSheet(QString("background-color: ") + QColor(0, 160, 255).name()); // Med blue
-  trackNameLabel->setWordWrap(true);
+//   trackNameLabel->setWordWrap(true);
   trackNameLabel->setAutoFillBackground(true);
   trackNameLabel->setTextFormat(Qt::PlainText);
   trackNameLabel->setLineWidth(2);
@@ -599,8 +599,27 @@ void MidiTrackInfo::setLabelFont()
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
       trackNameLabel->setFont(MusEGlobal::config.fonts[6]);
+
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      MusECore::autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
+//       MusECore::autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5);
+//       const bool need_word_wrap =
+//         !MusECore::autoAdjustFontSize(trackNameLabel,
+//                                      trackNameLabel->text(), false, true,
+//                                      MusEGlobal::config.fonts[6].pointSize(), 6);
+
+      QFont fnt(MusEGlobal::config.fonts[6]);
+//       const bool need_word_wrap =
+//         !MusECore::autoAdjustFontSize(trackNameLabel,
+//                                      trackNameLabel->text(), false, true,
+//                                      fnt, 6);
+      const bool need_word_wrap =
+        !MusECore::autoAdjustFontSize(trackNameLabel,
+                                     trackNameLabel->text(), fnt, false, true,
+                                     fnt.pointSize(), 6);
+      // TODO: Add an updateStyleSheet() method.
+
+      if(trackNameLabel->wordWrap() != need_word_wrap)
+        trackNameLabel->setWordWrap(need_word_wrap);
 }
   
 //---------------------------------------------------------

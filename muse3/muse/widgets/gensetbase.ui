@@ -1725,10 +1725,33 @@ Certain operations will also force them to be resent,
                <x>0</x>
                <y>0</y>
                <width>526</width>
-               <height>462</height>
+               <height>534</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
+              <item row="2" column="2">
+               <widget class="QCheckBox" name="moveArmedCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0" colspan="2">
+               <widget class="QLabel" name="TextLabel1_3">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Some popup menus stay open (else hold Ctrl)</string>
+                </property>
+               </widget>
+              </item>
               <item row="3" column="0">
                <widget class="QLabel" name="textLabel1_4_3">
                 <property name="text">
@@ -1808,29 +1831,6 @@ Certain operations will also force them to be resent,
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QCheckBox" name="moveArmedCheckBox">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0" colspan="2">
-               <widget class="QLabel" name="TextLabel1_3">
-                <property name="toolTip">
-                 <string/>
-                </property>
-                <property name="text">
-                 <string>Some popup menus stay open (else hold Ctrl)</string>
                 </property>
                </widget>
               </item>
@@ -2053,14 +2053,14 @@ Disable to use an alternate standard
                 </property>
                </widget>
               </item>
-              <item row="19" column="0">
+              <item row="23" column="0">
                <widget class="QLabel" name="label_11">
                 <property name="text">
                  <string>LV2 UI Open behavior</string>
                 </property>
                </widget>
               </item>
-              <item row="19" column="1" colspan="2">
+              <item row="23" column="1" colspan="2">
                <widget class="QComboBox" name="lv2UiBehaviorComboBox">
                 <item>
                  <property name="text">
@@ -2108,6 +2108,62 @@ Disable to use an alternate standard
                 <property name="toolTip">
                  <string>Whether to show knob and slider values in certain places, for example mixer strips.
 Turn off to reduce clutter.</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>Monitor on record-arm automatically</string>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="2">
+               <widget class="QCheckBox" name="monitorOnRecordCheckBox">
+                <property name="toolTip">
+                 <string>Whether record-arming a track 
+ automatically activates monitoring.</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="20" column="0">
+               <widget class="QLabel" name="label_17">
+                <property name="text">
+                 <string>Style hack: Force line edit widgets to draw a frame</string>
+                </property>
+               </widget>
+              </item>
+              <item row="20" column="2">
+               <widget class="QCheckBox" name="lineEditStyleHackCheckBox">
+                <property name="toolTip">
+                 <string>Force line edit widgets to draw a frame at 
+ small sizes. Some styles refuse to draw 
+ the frame. This hack forces a frame to be 
+ drawn, but may interfere with other styles.</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Prefer midi volume as decibels instead of 0-127</string>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="2">
+               <widget class="QCheckBox" name="preferMidiVolumeDbCheckBox">
+                <property name="toolTip">
+                 <string>Prefer midi volume as decibels 
+ instead of 0-127.</string>
                 </property>
                 <property name="text">
                  <string/>

@@ -44,6 +44,21 @@ class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
 
+struct Gui2AudioFifoStruct {
+  int _type;
+  int _chan;
+  int _ctlnum;
+  double _val;
+  bool _incremental;
+
+  Gui2AudioFifoStruct()
+    : _type(0), _chan(0), _ctlnum(0), _val(0.0), _incremental(false) { }
+  Gui2AudioFifoStruct(int type, int chan, int ctlnum, double val, bool incremental)
+    : _type(type), _chan(chan), _ctlnum(ctlnum), _val(val), _incremental(incremental) { }
+  Gui2AudioFifoStruct(const MidiPlayEvent& ev)
+    : _type(ev.type()), _chan(ev.channel()), _ctlnum(ev.dataA()), _val(ev.dataB()), _incremental(false) { }
+};
+
 //---------------------------------------------------------
 //   MidiPort
 //---------------------------------------------------------
@@ -66,7 +81,7 @@ class MidiPort {
       bool _initializationsSent; 
 
       // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
-      LockFreeBuffer<MidiPlayEvent> *_gui2AudioFifo;
+      LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
 
       RouteList _inRoutes, _outRoutes;
       
@@ -76,7 +91,8 @@ class MidiPort {
       // To be called from gui thread only. Returns true if the event was staged.
       bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
       // To be called from audio thread only. Returns true if event cannot be delivered.
-      bool handleGui2AudioEvent(const MidiPlayEvent&);
+      //bool handleGui2AudioEvent(const MidiPlayEvent&);
+      bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 
    public:
       MidiPort();
@@ -99,9 +115,13 @@ class MidiPort {
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
+      double lastValidHWDCtrlState(int ch, int ctrl) const;
       int hwCtrlState(int ch, int ctrl) const;
+      double hwDCtrlState(int ch, int ctrl) const;
       bool setHwCtrlState(int ch, int ctrl, int val);
+      bool setHwCtrlState(int ch, int ctrl, double val);
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
+      bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
       void deleteController(int ch, int tick, int ctrl, Part* part);
       void addDefaultControllers();
       
@@ -128,7 +148,9 @@ class MidiPort {
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val);
+      double limitValToInstrCtlRange(int ctl, double val);
       int limitValToInstrCtlRange(MidiController* mc, int val);
+      double limitValToInstrCtlRange(MidiController* mc, double val);
       MidiController* drumController(int ctl);
       // Update drum maps when patch is known.
       // If audio is running (and not idle) this should only be called by the rt audio thread.
@@ -181,6 +203,15 @@ class MidiPort {
       // Put an event into both the device and the gui2audio fifo for playback. Calls stageEvent().
       // Called from gui thread only. Returns true if event cannot be delivered.
       bool putEvent(const MidiPlayEvent&);
+      // Special method for incrementing a value: Handles getting the current hw value,
+      //  incrementing it (as dB if specified), and sending it and setting the current hw value.
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      // NOTE: Caller should use the Audio::msgAudioWait() to wait for the current value
+      //        to change in the audio thread before calling again, especially rapidly.
+      //       This method looks at the current value, so the current value must be up to date.
+      //       It will not call Audio::msgAudioWait(), to allow caller to optimize multiple calls.
+      bool putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb);
+      bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
       // Process the gui2AudioFifo. Called from audio thread only.
       bool processGui2AudioEvents();
 

@@ -1235,7 +1235,8 @@ void Audio::processMidi()
             //----------midi recording
             //
             const bool track_rec_flag = track->recordFlag();
-            const bool track_rec_monitor = track->recMonitor();
+            const bool track_rec_monitor = track->recMonitor(); // Separate monitor and record functions.
+
             if(track_rec_monitor || track_rec_flag)
             {
                   MPEventList& rl = track->mpevents;

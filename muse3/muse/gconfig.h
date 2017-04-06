@@ -292,6 +292,9 @@ struct GlobalConfigValues {
       CONF_LV2_UI_BEHAVIOR lv2UiBehavior;
       bool preferKnobsVsSliders; // Whether to prefer the use of knobs over sliders, esp in mixer.
       bool showControlValues; // Whether to show the value along with label in small controls, esp in mixer.
+      bool monitorOnRecord;  // Whether to automatically monitor on record arm.
+      bool lineEditStyleHack; // Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
+      bool preferMidiVolumeDb; // Prefer midi volume as decibels instead of 0-127.
 
       QString measSample;
       QString beatSample;
