@@ -1182,7 +1182,6 @@ bool CompactSlider::event(QEvent* e)
     break;
   }
   
-  e->ignore();
   return SliderBase::event(e);
 }
 
@@ -1406,7 +1405,7 @@ void CompactSlider::valueChange()
       if(d_scrollMode == ScrDirect)
       {
         processSliderPressed(id());
-        emit sliderPressed(id());
+        emit sliderPressed(value(), id());
       }
       
       // Emits valueChanged if tracking enabled.

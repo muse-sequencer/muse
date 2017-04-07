@@ -312,6 +312,8 @@ void IconButton::setDown(bool v)
 
 void IconButton::paintEvent(QPaintEvent* ev)
 {
+  ev->accept();
+
 //   if(!_drawFlat)
 //     QToolButton::paintEvent(ev);
 
@@ -392,13 +394,11 @@ void IconButton::paintEvent(QPaintEvent* ev)
 //     st->drawPrimitive(QStyle::PE_FrameFocusRect, &o, &p);
 //
 //   }
-
-
-  ev->accept();
 }
 
 void IconButton::mousePressEvent(QMouseEvent* e)
 {
+  e->accept();
   if(_checkable)
     _checked = !_checked;
   update();
@@ -409,16 +409,20 @@ void IconButton::mousePressEvent(QMouseEvent* e)
 
 //   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons...
 //   QWidget::mousePressEvent(e);   // Hm, need this so menus can close.
-  e->accept();
 }
 
 void IconButton::mouseReleaseEvent(QMouseEvent* e)
 {
+  e->accept();
   emit clicked(_checked);
 
 //   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons...
 //   QWidget::mouseReleaseEvent(e); // Hm, need this so menus can close.
-  e->accept();
+}
+
+void IconButton::mouseMoveEvent(QMouseEvent* ev)
+{
+  ev->accept();
 }
 
 void IconButton::contextMenuEvent(QContextMenuEvent * e)

@@ -248,7 +248,6 @@ bool PopupMenu::event(QEvent* event)
       break;
    }
 
-   event->ignore();
    return QMenu::event(event);
 }
 

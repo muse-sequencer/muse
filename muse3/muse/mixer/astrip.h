@@ -80,18 +80,18 @@ class AudioComponentRack : public ComponentRack
   protected slots:
     virtual void controllerChanged(double val, bool isOff, int id, int scrollMode);
     virtual void controllerMoved(double, int, bool);
-    virtual void controllerPressed(int);
-    virtual void controllerReleased(int);
+    virtual void controllerPressed(double, int);
+    virtual void controllerReleased(double, int);
     virtual void controllerRightClicked(QPoint, int);
     virtual void propertyChanged(double val, bool isOff, int id, int scrollMode);
     virtual void propertyMoved(double, int, bool);
-    virtual void propertyPressed(int);
-    virtual void propertyReleased(int);
+    virtual void propertyPressed(double, int);
+    virtual void propertyReleased(double, int);
     virtual void propertyRightClicked(QPoint, int);
     virtual void auxChanged(double val, bool isOff, int id, int scrollMode);
     virtual void auxMoved(double, int, bool);
-    virtual void auxPressed(int);
-    virtual void auxReleased(int);
+    virtual void auxPressed(double, int);
+    virtual void auxReleased(double, int);
     virtual void auxRightClicked(QPoint p, int);
 
   public slots:
@@ -122,11 +122,6 @@ class AudioStrip : public Strip {
   public:      
       // ID numbers for each rack in this strip.
       enum AStripRacks { aStripUpperRack = 0, aStripInfoRack = 1, aStripLowerRack = 2 };
-      
-      static const int xMarginHorSlider;
-      static const int yMarginHorSlider;
-      static const int upperRackSpacerHeight;
-      static const int rackFrameWidth;
       
   private:
       GridPosStruct _preScrollAreaPos_A;
@@ -186,16 +181,17 @@ class AudioStrip : public Strip {
       void updateRackSizes(bool upper, bool lower);
 
    private slots:
+      void recordToggled(bool);
       void recMonitorToggled(bool);
       void stereoToggled(bool);
       void preToggled(bool);
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void volumeMoved(double,int,bool);
+      void volumeMoved(double val, int id, bool shift_pressed);
       void volumeChanged(double val, int id, int scrollMode);
-      void volumePressed();
-      void volumeReleased();
+      void volumePressed(double val, int id);
+      void volumeReleased(double val, int id);
       void volLabelChanged(double);
       void volumeRightClicked(QPoint);
       void resetClipper();
@@ -226,8 +222,18 @@ class AudioStrip : public Strip {
       static const double gainSliderMax;
       static const int    gainSliderPrec;
 
+      static const int xMarginHorSlider;
+      static const int yMarginHorSlider;
+      static const int upperRackSpacerHeight;
+      static const int rackFrameWidth;
+
       // Destroy and rebuild strip components.
       virtual void buildStrip();
+
+      // Sets up tabbing for the entire strip.
+      // Accepts a previousWidget which can be null and returns the last widget in the strip,
+      //  which allows chaining other widgets.
+      virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
       };
 
 } // namespace MusEGui

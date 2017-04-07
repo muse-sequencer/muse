@@ -179,7 +179,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
     
     if(rt_chans != 0 && t_chans != 0)
     {
-      RoutePopupMenu* subp = new RoutePopupMenu(_route, this, isOutput);
+      RoutePopupMenu* subp = new RoutePopupMenu(_route, this, isOutput, _broadcastChanges);
       subp->addAction(new MenuTitleItem(tr("Channels"), this));
       act->setMenu(subp);
       QActionGroup* act_group = new QActionGroup(this);
@@ -433,7 +433,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         case MusECore::MidiDevice::JACK_MIDI:
         {
           const MusECore::Route md_r(md, -1);
-          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput);
+          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
           addJackPorts(md_r, subp);
           wa->setMenu(subp);
         }
@@ -552,7 +552,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         {
           //PopupMenu* subp = new PopupMenu(this, true);
           const MusECore::Route md_r(md, -1);
-          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput);
+          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
           addJackPorts(md_r, subp);
           wa->setMenu(subp);
         }
@@ -934,7 +934,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
 
   if(!act_list.isEmpty())
   {
-    RoutePopupMenu* subp = new RoutePopupMenu(route, this, _isOutMenu);
+    RoutePopupMenu* subp = new RoutePopupMenu(route, this, _isOutMenu, _broadcastChanges);
     subp->setTitle(tr("Unavailable"));
     const int sz = act_list.size();
     for(int i = 0; i < sz; ++i)
@@ -947,21 +947,21 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
 // RoutePopupMenu
 //======================
 
-RoutePopupMenu::RoutePopupMenu(QWidget* parent, bool isOutput)
-               : PopupMenu(parent, true), _isOutMenu(isOutput)
+RoutePopupMenu::RoutePopupMenu(QWidget* parent, bool isOutput, bool broadcastChanges)
+               : PopupMenu(parent, true), _isOutMenu(isOutput), _broadcastChanges(broadcastChanges)
 {
   init();
 }
 
-RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, QWidget* parent, bool isOutput) 
-               : PopupMenu(parent, true), _route(route), _isOutMenu(isOutput)
+RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, QWidget* parent, bool isOutput, bool broadcastChanges)
+               : PopupMenu(parent, true), _route(route), _isOutMenu(isOutput), _broadcastChanges(broadcastChanges)
 {
   init();
 }
 
-RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent, bool isOutput)
+RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent, bool isOutput, bool broadcastChanges)
                //: PopupMenu(title, parent, true), _track(track), _isOutMenu(isOutput)
-               : PopupMenu(title, parent, true), _route(route), _isOutMenu(isOutput)
+               : PopupMenu(title, parent, true), _route(route), _isOutMenu(isOutput), _broadcastChanges(broadcastChanges)
 {
   init();        
 }
@@ -1137,7 +1137,6 @@ bool RoutePopupMenu::event(QEvent* event)
     break;
   }
   
-  event->ignore();
   return PopupMenu::event(event);
 }
 
@@ -2529,7 +2528,8 @@ void RoutePopupMenu::trackRouteActivated(QAction* action, MusECore::Route& rem_r
         if((track->isMidiTrack() && !t->isMidiTrack()) || (t->type() != track->type()))
           continue;
         // We are looking for the given track alone if unselected, or else all selected tracks.
-        if(t != track && (!t->selected() || !track->selected()))
+        // Ignore other tracks if broadcasting changes is disabled.
+        if(t != track && (!_broadcastChanges || !t->selected() || !track->selected()))
           continue;
 
 
@@ -2610,7 +2610,8 @@ void RoutePopupMenu::jackRouteActivated(QAction* action, const MusECore::Route& 
               if((track->isMidiTrack() && !t->isMidiTrack()) || (t->type() != track->type()))
                 continue;
               // We are looking for the given track alone if unselected, or else all selected tracks.
-              if(t != track && (!t->selected() || !track->selected()))
+              // Ignore other tracks if broadcasting changes is disabled.
+              if(t != track && (!_broadcastChanges || !t->selected() || !track->selected()))
                 continue;
 
               this_route.track = t;
@@ -2721,7 +2722,8 @@ void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& 
       if((track->isMidiTrack() && !t->isMidiTrack()) || (t->type() != track->type()))
         continue;
       // We are looking for the given track alone if unselected, or else all selected tracks.
-      if(t != track && (!t->selected() || !track->selected()))
+      // Ignore other tracks if broadcasting changes is disabled.
+      if(t != track && (!_broadcastChanges || !t->selected() || !track->selected()))
         continue;
 
       MusECore::RouteList* rl = _isOutMenu ? t->outRoutes() : t->inRoutes();
@@ -2804,7 +2806,8 @@ void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& 
       if((track->isMidiTrack() && !t->isMidiTrack()) || (t->type() != track->type()))
         continue;
       // We are looking for the given track alone if unselected, or else all selected tracks.
-      if(t != track && (!t->selected() || !track->selected()))
+      // Ignore other tracks if broadcasting changes is disabled.
+      if(t != track && (!_broadcastChanges || !t->selected() || !track->selected()))
         continue;
 
 
@@ -2848,7 +2851,8 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
     {
       MusECore::MidiTrack* mt = *it;
       // We are looking for the given track alone if unselected, or else all selected tracks.
-      if(mt != track && (!mt->selected() || !track->selected()))
+      // Ignore other tracks if broadcasting changes is disabled.
+      if(mt != track && (!_broadcastChanges || !mt->selected() || !track->selected()))
         continue;
 
   #ifdef _USE_SIMPLIFIED_SOLO_CHAIN_
@@ -2913,7 +2917,8 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
     {
       MusECore::MidiTrack* mt = *it;
       // We are looking for the given track alone if unselected, or else all selected tracks.
-      if(mt != track && (!mt->selected() || !track->selected()))
+      // Ignore other tracks if broadcasting changes is disabled.
+      if(mt != track && (!_broadcastChanges || !mt->selected() || !track->selected()))
         continue;
 
       if(matrix_wa)
@@ -3426,7 +3431,7 @@ void RoutePopupMenu::prepare()
           {
             addSeparator();
             addAction(new MenuTitleItem(tr("Soloing chain"), this)); 
-            RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu);
+            RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
             subp->setTitle(tr("Audio returns")); 
             for(MusECore::ciAudioInput ai = il->begin(); ai != il->end(); ++ai)
             {
@@ -3481,7 +3486,7 @@ void RoutePopupMenu::prepare()
                   act->setChecked(true);
                 
                 // Add channel routes:
-                RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu);
+                RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
                 wa_subp->addAction(new MenuTitleItem(tr("Channels"), this));
                 act->setMenu(wa_subp);
                 //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
@@ -3628,7 +3633,7 @@ void RoutePopupMenu::prepare()
                 //
                 addSeparator();
                 addAction(new MenuTitleItem(tr("Soloing chain"), this)); 
-                RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu);
+                RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
                 subp->setTitle(tr("Audio returns")); 
                 addMenu(subp);
                 gid = addInPorts(t, subp, gid, -1, -1, true);  
@@ -3722,14 +3727,14 @@ void RoutePopupMenu::prepare()
                 addAction(new MenuTitleItem(tr("Soloing chain"), this));
                 if(!MusEGlobal::song->outputs()->empty())
                 {
-                  subp = new RoutePopupMenu(_route, this, _isOutMenu);
+                  subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
                   subp->setTitle(tr("Audio sends")); 
                   addMenu(subp);
                   gid = addOutPorts(t, subp, gid, -1, -1, false);  
                 }
                 if(!MusEGlobal::song->midis()->empty())
                 {
-                  subp = new RoutePopupMenu(_route, this, true);
+                  subp = new RoutePopupMenu(_route, this, true, _broadcastChanges);
                   subp->setTitle(tr("Midi sends")); 
                   addMenu(subp);
                   addMidiTracks(t, subp, false);

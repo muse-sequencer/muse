@@ -3363,13 +3363,14 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                             ((DoubleLabel*)gw[i].widget)->setSlider(s);
                         }
                         connect(s, SIGNAL(valueChanged(double,int,int)), mapper, SLOT(map()));
-                        connect(s, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
-                        connect(s, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
+                        connect(s, SIGNAL(sliderPressed(double, int)), SLOT(guiSliderPressed(double, int)));
+                        connect(s, SIGNAL(sliderReleased(double, int)), SLOT(guiSliderReleased(double, int)));
                         connect(s, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
                   else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
                         ((DoubleLabel*)obj)->setId(nobj);
+                        ((DoubleLabel*)obj)->setAlignment(Qt::AlignCenter);
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
@@ -3449,6 +3450,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         params[i].type  = GuiParam::GUI_SLIDER;
                         params[i].label = new DoubleLabel(val, lower, upper, 0);
                         params[i].label->setFrame(true);
+                        params[i].label->setAlignment(Qt::AlignCenter);
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
 
@@ -3504,16 +3506,16 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect(params[i].actuator, SIGNAL(valueChanged(double,int,int)), SLOT(sliderChanged(double,int,int)));
+                        connect((Slider*)params[i].actuator, SIGNAL(valueChanged(double,int,int)), SLOT(sliderChanged(double,int,int)));
                         connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
-                        connect(params[i].actuator, SIGNAL(sliderPressed(int)), SLOT(ctrlPressed(int)));
-                        connect(params[i].actuator, SIGNAL(sliderReleased(int)), SLOT(ctrlReleased(int)));
-                        connect(params[i].actuator, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        connect((Slider*)params[i].actuator, SIGNAL(sliderPressed(double, int)), SLOT(ctrlPressed(double, int)));
+                        connect((Slider*)params[i].actuator, SIGNAL(sliderReleased(double, int)), SLOT(ctrlReleased(double, int)));
+                        connect((Slider*)params[i].actuator, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
                         }
                   else if (params[i].type == GuiParam::GUI_SWITCH){
-                        connect(params[i].actuator, SIGNAL(checkboxPressed(int)), SLOT(ctrlPressed(int)));
-                        connect(params[i].actuator, SIGNAL(checkboxReleased(int)), SLOT(ctrlReleased(int)));
-                        connect(params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
+                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxPressed(int)), SLOT(switchPressed(int)));
+                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxReleased(int)), SLOT(switchReleased(int)));
+                        connect((CheckBox*)params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
                         }
                   }
 
@@ -3539,6 +3541,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       paramsOut[i].type  = GuiParam::GUI_METER;
                       paramsOut[i].label = new DoubleLabel(val, lower, upper, 0);
                       paramsOut[i].label->setFrame(true);
+                      paramsOut[i].label->setAlignment(Qt::AlignCenter);
                       paramsOut[i].label->setPrecision(2);
                       paramsOut[i].label->setId(i);
 
@@ -3634,7 +3637,7 @@ void PluginGui::heartBeat()
 //   ctrlPressed
 //---------------------------------------------------------
 
-void PluginGui::ctrlPressed(int param)
+void PluginGui::ctrlPressed(double /*val*/, int param)
 {
       params[param].pressed = true;
       MusECore::AudioTrack* track = plugin->track();
@@ -3675,7 +3678,7 @@ void PluginGui::ctrlPressed(int param)
 //   ctrlReleased
 //---------------------------------------------------------
 
-void PluginGui::ctrlReleased(int param)
+void PluginGui::ctrlReleased(double /*val*/, int param)
 {
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
@@ -3715,6 +3718,51 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
   int id = plugin->id();
   if(id != -1)
     MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
+}
+
+//---------------------------------------------------------
+//   switchPressed
+//---------------------------------------------------------
+
+void PluginGui::switchPressed(int param)
+{
+      params[param].pressed = true;
+      MusECore::AudioTrack* track = plugin->track();
+      int id = plugin->id();
+      if(id != -1)
+      {
+        id = MusECore::genACnum(id, param);
+        if(params[param].type == GuiParam::GUI_SWITCH)
+        {
+          float val = (float)((CheckBox*)params[param].actuator)->isChecked();
+          if(track)
+          {
+            track->startAutoRecord(id, val);
+            track->setPluginCtrlVal(id, val);
+          }
+        }
+      }
+      plugin->enableController(param, false);
+}
+
+//---------------------------------------------------------
+//   switchReleased
+//---------------------------------------------------------
+
+void PluginGui::switchReleased(int param)
+{
+      AutomationType at = AUTO_OFF;
+      MusECore::AudioTrack* track = plugin->track();
+      if(track)
+        at = track->automationType();
+
+      // Special for switch - don't enable controller until transport stopped.
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
+                                !MusEGlobal::audio->isPlaying()) ) )
+        plugin->enableController(param, true);
+
+      params[param].pressed = false;
 }
 
 //---------------------------------------------------------
@@ -4229,7 +4277,7 @@ void PluginGui::guiParamReleased(int idx)
 //   guiSliderPressed
 //---------------------------------------------------------
 
-void PluginGui::guiSliderPressed(int idx)
+void PluginGui::guiSliderPressed(double /*val*/, int idx)
 {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
@@ -4273,7 +4321,7 @@ void PluginGui::guiSliderPressed(int idx)
 //   guiSliderReleased
 //---------------------------------------------------------
 
-void PluginGui::guiSliderReleased(int idx)
+void PluginGui::guiSliderReleased(double /*val*/, int idx)
       {
       int param  = gw[idx].param;
       QWidget *w = gw[idx].widget;

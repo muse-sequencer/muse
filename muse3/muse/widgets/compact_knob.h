@@ -138,7 +138,7 @@ class CompactKnob : public SliderBase, public ScaleIf
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void leaveEvent(QEvent*);
-      virtual bool event(QEvent*);
+//       virtual bool event(QEvent*);
 
       double getValue(const QPoint &p);
       //  Determine the value corresponding to a specified mouse movement.

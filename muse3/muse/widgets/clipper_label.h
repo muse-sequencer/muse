@@ -27,6 +27,9 @@ protected:
    virtual void paintEvent(QPaintEvent *);
    virtual void resizeEvent(QResizeEvent *e);
    virtual void mousePressEvent(QMouseEvent *);
+   virtual void mouseReleaseEvent(QMouseEvent *);
+   virtual void mouseMoveEvent(QMouseEvent *);
+   virtual void contextMenuEvent(QContextMenuEvent*);
 
 signals:
    void clicked();

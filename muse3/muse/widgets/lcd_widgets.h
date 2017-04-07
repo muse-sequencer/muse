@@ -115,10 +115,6 @@ class LCDPatchEdit : public QFrame
     bool autoAdjustFontSize();
     // The total active drawing area, not including margins.
     QRect activeDrawingArea() const;
-    // The width of a character, not including inter-character space, in a given active area.
-    int charWidth(const QRect& aRect) const;
-    // The amount of space between the blocks of digits, for a given character width.
-    int readoutMargin(int charWidth) const;
 
     void showEditor();
     // Show a handy tooltip value box.
@@ -155,6 +151,11 @@ class LCDPatchEdit : public QFrame
                          Qt::WindowFlags flags = 0);
 
     virtual ~LCDPatchEdit();
+
+    // The width of a character, not including inter-character space, in a given active area.
+    static int charWidth(const QRect& aRect);
+    // The amount of space between the blocks of digits, for a given character width.
+    static int readoutMargin(int charWidth);
 
     static QSize getMinimumSizeHint(const QFontMetrics& fm,
                                     int xMargin = 0,

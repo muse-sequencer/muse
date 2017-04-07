@@ -415,7 +415,7 @@ void CompactKnob::valueChange()
       if(d_scrollMode == ScrDirect)
       {
         processSliderPressed(id());
-        emit sliderPressed(id());
+        emit sliderPressed(value(), id());
       }
 
       // Emits valueChanged if tracking enabled.
@@ -1181,30 +1181,30 @@ void CompactKnob::mousePressEvent(QMouseEvent* e)
   SliderBase::mousePressEvent(e);
 }
 
-bool CompactKnob::event(QEvent* e)
-{
-  switch(e->type())
-  {
-    // FIXME: Doesn't work.
-    case QEvent::NonClientAreaMouseButtonPress:
-      DEBUG_KNOB(stderr, "CompactKnob::event NonClientAreaMouseButtonPress\n");
-      e->accept();
-      _editMode = false;
-      if(_editor)
-      {
-        _editor->deleteLater();
-        _editor = 0;
-      }
-      return true;
-    break;
-
-    default:
-    break;
-  }
-
-  e->ignore();
-  return SliderBase::event(e);
-}
+// bool CompactKnob::event(QEvent* e)
+// {
+//   switch(e->type())
+//   {
+//     // FIXME: Doesn't work.
+//     case QEvent::NonClientAreaMouseButtonPress:
+//       DEBUG_KNOB(stderr, "CompactKnob::event NonClientAreaMouseButtonPress\n");
+//       e->accept();
+//       _editMode = false;
+//       if(_editor)
+//       {
+//         _editor->deleteLater();
+//         _editor = 0;
+//       }
+//       return true;
+//     break;
+//
+//     default:
+//     break;
+//   }
+//
+//   //e->ignore();   // No, this causes duplicates! For ex. skipping tab focus.
+//   return SliderBase::event(e);
+// }
 
 //------------------------------------------------------------
 //

@@ -1,3 +1,36 @@
+04.04.2017
+      * More routing and mixer relief: (Tim)
+         - New: As requested: Monitor on Record Arm option. Right click any strip, or Global Settings.
+         - New: Mixer strip volume/pan affect multiple selected tracks. Works fully with midi <-> audio strips.
+           Works in mixer and arranger, but purposely NOT in pianoroll to avoid accidental changes to other tracks.
+           Tally of things that currently can operate on multiple selected tracks:
+               Track list: Channel, port, mute, solo. Strip: Volume, pan, routing buttons.
+         - New: Strip keyboard focusing and operations: All strip controls now accept keyboard
+            focus. Strip volume box is now the default PROXY focus for all strips. Any strip control
+            having focus can be adjusted with up/down keys. Regardless of who has focus,
+            volume and pan always can be adjusted with universal keys.
+            Keys:              Up/down: Adjust any focused control.
+                         Alt + Up/down: Adjust volume regardless of focused control.
+                      Alt + Left/right: Adjust pan regardless of focused control.
+               Ctrl + Alt + Left/right: Switch to a neighbouring strip.
+                                Escape: "Get me out of this focused control to something higher-level!"
+                                        (Back to the arranger canvas, or the mixer window.)
+         - New: Show midi volume as dB option. Right click any strip, or Global Settings.
+         - To achieve midi volume as dB and support inter-strip increments, class MidiCtrlValList hwVal
+            member type was changed from INT to DOUBLE. Was required to support fractional increments.
+         - New: Midi strip instrument and patch labels respond to enter/return key to open popup menu.
+         - New: As requested: Strip name labels: Double-click to edit track name, or right-click context menu.
+         - New: Strips: 'Tabs' hold palettes of controls. Extra controls have been moved there from right.
+           The tabs accept keyboard focus and can be activated by hitting return/enter or clicking.
+         - Fixed: Yay! Finally the strip volume boxes have proper focus and mouse-over rectangles.
+           There is a dumb problem with KDE Oxygen and Breeze themes: They turn off ALL such rectangles
+            if the widget-to-font height ratio is too small. This required a HACK to force the
+            rectangles to be drawn. Fixed with new class LineEdit, now is base of class DEntry.
+         - Fixed: Strip labels now show colour with a stylesheet active. Looks good with dark stylesheets.
+           It was a problem with the order and way in which stylesheets were set. (And they override
+            fonts, so you can't SET then READ a widget font, it always returns what the stylesheet set.)
+         - Fixed: Strip volume scale drawing was offset too much to the left sometimes.
+         - Several other fixes along the way.
 16.03.2017
          - Draw the frame around all mixer strips. (Tim)
 15.03.2017

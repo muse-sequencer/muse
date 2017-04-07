@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <stdio.h>
+#include <math.h>
 
 #include "globaldefs.h"
 #include "midictrl.h"
@@ -34,6 +35,7 @@
 #include "mpevent.h"
 #include "midiport.h"
 #include "minstrument.h"
+#include "muse_math.h"
 
 #include "track.h"
 
@@ -306,6 +308,15 @@ MidiController& MidiController::operator=(const MidiController &mc)
 {
   copy(mc);
   return *this;
+}
+
+// Static
+inline int MidiController::dValToInt(double v)
+{
+  // TODO: Decide best choice here.
+  //return int(round(v));
+  //return lrint(v);
+  return int(v);
 }
 
 //---------------------------------------------------------
@@ -1024,23 +1035,27 @@ void MidiCtrlValListList::clear()
 #endif
 // =========================================================
 
+
 //---------------------------------------------------------
 //   setHwVal
 //   Returns false if value is already equal, true if value is changed.
 //---------------------------------------------------------
-      
-bool MidiCtrlValList::setHwVal(const int v)    
-{ 
-  if(_hwVal == v)
+
+bool MidiCtrlValList::setHwVal(const double v)
+{
+  const double r_v = muse_round2micro(v);
+  if(_hwVal == r_v)
     return false;
-  
-  _hwVal = v;
-  if(_hwVal != CTRL_VAL_UNKNOWN)
+
+  _hwVal = r_v;
+
+  const int i_val = MidiController::dValToInt(_hwVal);
+  if(!MidiController::iValIsUnknown(i_val))
   {
     _lastValidHWVal = _hwVal;
-    const int hb = (_lastValidHWVal >> 16) & 0xff;
-    const int lb = (_lastValidHWVal >> 8) & 0xff;
-    const int pr = _lastValidHWVal & 0xff;
+    const int hb = (i_val >> 16) & 0xff;
+    const int lb = (i_val >> 8) & 0xff;
+    const int pr = i_val & 0xff;
     if(hb >= 0 && hb <= 127)
       _lastValidByte2 = hb;
     if(lb >= 0 && lb <= 127)
@@ -1048,8 +1063,8 @@ bool MidiCtrlValList::setHwVal(const int v)
     if(pr >= 0 && pr <= 127)
       _lastValidByte0 = pr;
   }
-    
-  return true;  
+
+  return true;
 }
 
 //---------------------------------------------------------
@@ -1060,24 +1075,28 @@ bool MidiCtrlValList::setHwVal(const int v)
 //   Returns false if both values are already set, true if either value is changed.
 //---------------------------------------------------------
 
-bool MidiCtrlValList::setHwVals(const int v, int const lastv)
+bool MidiCtrlValList::setHwVals(const double v, const double lastv)
 {
-  if(_hwVal == v && _lastValidHWVal == lastv)
+  const double r_v = muse_round2micro(v);
+  const double r_lastv = muse_round2micro(lastv);
+
+  if(_hwVal == r_v && _lastValidHWVal == r_lastv)
     return false;
-  
-  _hwVal = v;
+
+  _hwVal = r_v;
   // Don't want to break our own rules - _lastValidHWVal can't be unknown while _hwVal is valid...
   // But _hwVal can be unknown while _lastValidHWVal is valid...
-  if(lastv == CTRL_VAL_UNKNOWN)
+  if(MidiController::dValIsUnknown(r_lastv))
     _lastValidHWVal = _hwVal;
-  else  
-    _lastValidHWVal = lastv;
+  else
+    _lastValidHWVal = r_lastv;
 
-  if(_lastValidHWVal != CTRL_VAL_UNKNOWN)
+  const int i_lasthwval = MidiController::dValToInt(_lastValidHWVal);
+  if(!MidiController::iValIsUnknown(i_lasthwval))
   {
-    const int hb = (_lastValidHWVal >> 16) & 0xff;
-    const int lb = (_lastValidHWVal >> 8) & 0xff;
-    const int pr = _lastValidHWVal & 0xff;
+    const int hb = (i_lasthwval >> 16) & 0xff;
+    const int lb = (i_lasthwval >> 8) & 0xff;
+    const int pr = i_lasthwval & 0xff;
     if(hb >= 0 && hb <= 127)
       _lastValidByte2 = hb;
     if(lb >= 0 && lb <= 127)
@@ -1086,7 +1105,7 @@ bool MidiCtrlValList::setHwVals(const int v, int const lastv)
       _lastValidByte0 = pr;
   }
 
-  return true;  
+  return true;
 }
 
 //---------------------------------------------------------

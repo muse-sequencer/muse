@@ -89,6 +89,7 @@ const char* seqMsgList[] = {
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
       "AUDIO_RECORD",
+      "AUDIO_RECORD_MONITOR",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
@@ -630,6 +631,9 @@ void Audio::processMsg(AudioMsg* msg)
       switch(msg->id) {
             case AUDIO_RECORD:
                   msg->snode->setRecordFlag2(msg->ival);
+                  break;
+            case AUDIO_RECORD_MONITOR:
+                  msg->track->setRecMonitor(msg->ival);
                   break;
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);

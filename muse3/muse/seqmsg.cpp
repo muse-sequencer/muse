@@ -169,6 +169,19 @@ void Audio::msgSetRecord(AudioTrack* node, bool val)
       }
 
 //---------------------------------------------------------
+//   msgSetRecMonitor
+//---------------------------------------------------------
+
+void Audio::msgSetRecMonitor(Track* track, bool val)
+      {
+      AudioMsg msg;
+      msg.id     = AUDIO_RECORD_MONITOR;
+      msg.track  = track;
+      msg.ival   = int(val);
+      sendMsg(&msg);
+      }
+
+//---------------------------------------------------------
 //   msgSetPrefader
 //---------------------------------------------------------
 

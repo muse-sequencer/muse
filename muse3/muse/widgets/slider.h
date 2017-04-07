@@ -66,7 +66,6 @@ class Slider : public SliderBase, public ScaleIf
   int d_yMargin;
   int d_mMargin;
 
-  bool d_resized;
   bool d_autoResize;
   double d_scaleStep;
 
@@ -90,6 +89,9 @@ class Slider : public SliderBase, public ScaleIf
   double moveValue(const QPoint& /*deltaP*/, bool /*fineMode*/ = false);
   //  Determine scrolling mode and direction.
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
+
+  // Setup all slider and scale rectangles.
+  void adjustSize(const QSize& s);
   // Adjust scale so marks are not too close together.
   void adjustScale();
 
@@ -115,6 +117,13 @@ class Slider : public SliderBase, public ScaleIf
 
   void setOrientation(Qt::Orientation o);
   Qt::Orientation orientation() const;
+
+  void setScale (double vmin, double vmax, int logarithmic = 0);
+  void setScale (double vmin, double vmax, double step, int logarithmic = 0);
+  void setScale(const ScaleDiv &s);
+  void setScaleMaxMajor( int ticks);
+  void setScaleMaxMinor( int ticks);
+  void setScaleBackBone(bool v);
 
   double lineStep() const;
   double pageStep() const;

@@ -1186,8 +1186,16 @@ void Arranger::switchInfo(int n)
                           //w->deleteLater();
                     }
                     w = new AudioStrip(trackInfoWidget, static_cast<MusECore::AudioTrack*>(selected));
-                    //w->setFocusPolicy(Qt::TabFocus);
-                    
+                    // Broadcast changes to other selected tracks.
+                    w->setBroadcastChanges(true);
+
+                    // Set focus yielding to the canvas.
+                    if(MusEGlobal::config.smartFocus)
+                    {
+                      w->setFocusYieldWidget(canvas);
+                      //w->setFocusPolicy(Qt::WheelFocus);
+                    }
+
                     // We must marshall song changed instead of connecting to the strip's song changed
                     //  otherwise it crashes when loading another song because track is no longer valid
                     //  and the strip's songChanged() seems to be called before Arranger songChanged()
@@ -1224,8 +1232,15 @@ void Arranger::switchInfo(int n)
                         //w->deleteLater();
                   }
                   w = new MidiStrip(trackInfoWidget, static_cast<MusECore::MidiTrack*>(selected));
-                  //w->setFocusPolicy(Qt::TabFocus);
-                  
+                  // Broadcast changes to other selected tracks.
+                  w->setBroadcastChanges(true);
+                  // Set focus yielding to the arranger canvas.
+                  if(MusEGlobal::config.smartFocus)
+                  {
+                    w->setFocusYieldWidget(canvas);
+                    //w->setFocusPolicy(Qt::WheelFocus);
+                  }
+
                   // No. See above.
                   //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   

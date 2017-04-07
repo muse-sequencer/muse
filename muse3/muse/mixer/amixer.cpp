@@ -211,6 +211,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showAuxTracksId = new QAction(tr("Show Auxs"), actionItems);
       showSyntiTracksId = new QAction(tr("Show Synthesizers"), actionItems);
 
+      showDrumTracksId->setVisible(false);
+      
       showMidiTracksId->setCheckable(true);
       showDrumTracksId->setCheckable(true);
       showNewDrumTracksId->setCheckable(true);
@@ -222,8 +224,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showSyntiTracksId->setCheckable(true);
 
       connect(showMidiTracksId, SIGNAL(triggered(bool)), SLOT(showMidiTracksChanged(bool)));
-      connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));      
-      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));      
+      connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));
+      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));
       connect(showWaveTracksId, SIGNAL(triggered(bool)), SLOT(showWaveTracksChanged(bool)));      
       connect(showInputTracksId, SIGNAL(triggered(bool)), SLOT(showInputTracksChanged(bool)));      
       connect(showOutputTracksId, SIGNAL(triggered(bool)), SLOT(showOutputTracksChanged(bool)));      
@@ -416,10 +418,6 @@ void AudioMixerApp::redrawMixer()
       }
 
       break;
-  }
-
-  foreach (Strip *s, stripList) {
-    s->setFocus();
   }
 
   update();
@@ -643,15 +641,12 @@ void AudioMixerApp::setSizing()
       
       if(w < 40)
         w = 40;
-//       setMaximumWidth(w);   
       view->setUpdatesEnabled(false);
       setUpdatesEnabled(false);
       if(stripList.size() <= 6)
-//         view->setMinimumWidth(w);
         setMinimumWidth(w);
         
       setMaximumWidth(w);
-//       view->setMaximumWidth(w);      
 
       setUpdatesEnabled(true);
       view->setUpdatesEnabled(true);
@@ -673,8 +668,15 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
     else
           strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false);
 
-    connect(this, SIGNAL(incVolume(int)), strip, SLOT(incVolume(int)));
-    connect(this, SIGNAL(incPan(int)), strip, SLOT(incPan(int)));
+    // Broadcast changes to other selected tracks.
+    strip->setBroadcastChanges(true);
+
+    // Set focus yielding to the mixer window.
+    if(MusEGlobal::config.smartFocus)
+    {
+      strip->setFocusYieldWidget(this);
+      //strip->setFocusPolicy(Qt::WheelFocus);
+    }
 
     connect(strip, SIGNAL(clearStripSelection()),this,SLOT(clearStripSelection()));
     connect(strip, SIGNAL(moveStrip(Strip*)),this,SLOT(moveStrip(Strip*)));
@@ -817,7 +819,10 @@ void AudioMixerApp::updateSelectedStrips()
   foreach(Strip *s, stripList)
   {
     if(MusECore::Track* t = s->getTrack())
-      s->setSelected(t->selected());
+    {
+      if(s->isSelected() != t->selected())
+        s->setSelected(t->selected());
+    }
   }
 }
 
@@ -985,40 +990,39 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
 
 void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
 {
-  int val = 5;
   bool moveEnabled=false;
-  bool shift = ev->modifiers() & Qt::ShiftModifier;
-  if (shift) {
-    val = 1;
-  }
-  if (ev->modifiers() & Qt::ControlModifier) {
+  const bool shift = ev->modifiers() & Qt::ShiftModifier;
+  const bool alt = ev->modifiers() & Qt::AltModifier;
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+  if (ctl && alt) {
     moveEnabled=true;
   }
 
   switch (ev->key()) {
-    case Qt::Key_Up:
-      emit incVolume(val);
-      break;
-    case Qt::Key_Down:
-      emit incVolume(-val);
-      break;
     case Qt::Key_Left:
       if (moveEnabled)
+      {
         selectNextStrip(false, !shift);
-      else
-        emit incPan(-val);
+        ev->accept();
+        return;
+      }
       break;
+
     case Qt::Key_Right:
       if (moveEnabled)
+      {
         selectNextStrip(true, !shift);
-      else
-        emit incPan(val);
+        ev->accept();
+        return;
+      }
       break;
+
     default:
-      return QMainWindow::keyPressEvent(ev);
       break;
   }
-  ev->accept();
+
+  ev->ignore();
+  return QMainWindow::keyPressEvent(ev);
 }
 
 void AudioMixerApp::clearStripSelection()

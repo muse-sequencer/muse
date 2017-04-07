@@ -66,6 +66,7 @@ QT5_WRAP_CPP (widget_mocs
       knob_and_meter.h
       lcd_widgets.h
       lcombo.h  
+      line_edit.h
       menutitleitem.h
       meter.h
       meter_slider.h
@@ -111,6 +112,7 @@ QT5_WRAP_CPP (widget_mocs
       swidget.h  
       tb1.h  
       tempolabel.h
+      text_edit.h
       tools.h
       trackinfo_layout.h
       tracks_duplicate.h
@@ -208,6 +210,7 @@ file (GLOB widgets_source_files
       knob_and_meter.cpp
       lcd_widgets.cpp
       lcombo.cpp 
+      line_edit.cpp
       menutitleitem.cpp
       meter.cpp
       meter_slider.cpp
@@ -233,7 +236,7 @@ file (GLOB widgets_source_files
       popupmenu.cpp 
       # posedit.cpp 
       poslabel.cpp
-      projectcreateimpl.cpp 
+      projectcreateimpl.cpp
       routepopup.cpp 
       scldiv.cpp
       scldraw.cpp
@@ -256,6 +259,7 @@ file (GLOB widgets_source_files
       swidget.cpp 
       tb1.cpp   
       tempolabel.cpp 
+      text_edit.cpp
       tools.cpp
       trackinfo_layout.cpp
       tracks_duplicate.cpp

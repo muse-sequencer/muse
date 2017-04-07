@@ -43,7 +43,7 @@ ElidedLabel::ElidedLabel(QWidget* parent,
                          const QString& text, 
                          Qt::WindowFlags flags)
     : QFrame(parent, flags), 
-    _elideMode(elideMode), 
+    _elideMode(elideMode),
     //_fontPointMax(maxFontPoint),
     _fontPointMin(minFontPoint), 
     _fontIgnoreHeight(ignoreHeight),
@@ -52,7 +52,7 @@ ElidedLabel::ElidedLabel(QWidget* parent,
 {
   setMouseTracking(true);
   setEnabled(true);
-  setFocusPolicy(Qt::WheelFocus);
+  setFocusPolicy(Qt::StrongFocus);
 
   //setAutoFillBackground(false);
   //setAttribute(Qt::WA_NoSystemBackground);
@@ -74,6 +74,31 @@ ElidedLabel::ElidedLabel(QWidget* parent,
   autoAdjustFontSize();
 }
 
+void ElidedLabel::keyPressEvent(QKeyEvent* e)
+{
+  switch (e->key())
+  {
+    case Qt::Key_Escape:
+      // Don't let ancestor grab it, let it pass up the chain.
+      e->ignore();
+      return;
+    break;
+
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+      e->accept();
+      emit returnPressed(pos(), _id, e->modifiers());
+      return;
+    break;
+
+    default:
+    break;
+  }
+
+  e->ignore();
+  return QFrame::keyPressEvent(e);
+}
+
 void ElidedLabel::setOff(bool v)
 {
   if(v && !_hasOffMode)
@@ -90,42 +115,6 @@ void ElidedLabel::setHasOffMode(bool v)
   _hasOffMode = v;
   setOff(false);
 }
-
-// void ElidedLabel::setValueState(double v, bool off, ConversionMode mode)
-// {
-//   // Do not allow setting value from the external while mouse is pressed.
-//   if(_pressed)
-//     return;
-//
-//   bool do_off_upd = false;
-//   bool do_val_upd = false;
-//   // Both setOff and setValue emit valueStateChanged and setValue emits valueChanged.
-//   // We will block them and emit our own here. Respect the current block state.
-//   const bool blocked = signalsBlocked();
-//   if(!blocked)
-//     blockSignals(true);
-//   if(isOff() != off)
-//   {
-//     do_off_upd = true;
-//     setOff(off);
-//   }
-// //   if(value() != v)
-//   if(value(mode) != v)
-//   {
-//     do_val_upd = true;
-// //     setValue(v);
-//     setValue(v, mode);
-//   }
-//   if(!blocked)
-//     blockSignals(false);
-//
-//   if(do_off_upd || do_val_upd)
-//     update();
-//   if(do_val_upd)
-//     emit valueChanged(value(), id());
-//   if(do_off_upd || do_val_upd)
-//     emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
-// }
 
 void ElidedLabel::paintEvent(QPaintEvent* e)
 {
@@ -293,8 +282,9 @@ void ElidedLabel::leaveEvent(QEvent *e)
 
 void ElidedLabel::mouseMoveEvent(QMouseEvent *e)
 {
-  e->ignore();
-  QFrame::mouseMoveEvent(e);
+  //e->ignore();
+  //QFrame::mouseMoveEvent(e);
+  e->accept();
   if(!_hovered)
   {
     _hovered = true;
@@ -317,7 +307,7 @@ void ElidedLabel::setFontPointMin(int point)
 
 QSize ElidedLabel::sizeHint() const
 {
-  QSize sz(1, fontMetrics().height() + 4);
+  QSize sz(fontMetrics().width(_text) + 8, fontMetrics().height() + 4);
   return sz;
 }
 

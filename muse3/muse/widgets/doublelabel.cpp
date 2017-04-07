@@ -135,11 +135,11 @@ bool DoubleLabel::setSValue(const QString& s)
 //   incValue
 //---------------------------------------------------------
 
-void DoubleLabel::incValue(double)
+void DoubleLabel::incValue(int steps)
       {
       if(val >= max)
         return;
-      double inc = calcIncrement();
+      double inc = calcIncrement() * double(steps);
       if(val + inc >= max)
         setValue(max);
       else  
@@ -151,11 +151,11 @@ void DoubleLabel::incValue(double)
 //   decValue
 //---------------------------------------------------------
 
-void DoubleLabel::decValue(double)
+void DoubleLabel::decValue(int steps)
       {
       if(val <= min)
         return;
-      double inc = calcIncrement();
+      double inc = calcIncrement() * double(steps);
       if(val - inc <= min)
         setValue(min);
       else  
@@ -170,6 +170,7 @@ void DoubleLabel::decValue(double)
 void DoubleLabel::setPrecision(int v)
       {
       _precision = v;
+      updateGeometry();
       setString(val);
       }
 
@@ -180,9 +181,9 @@ void DoubleLabel::setPrecision(int v)
 QSize DoubleLabel::sizeHint() const
       {
       QFontMetrics fm = fontMetrics();
-      int h           = fm.height() + 5;
+      int h           = fm.height() + 9;
       int n = _precision;
-      
+
       ++n;  // For some reason I have to add one digit. Shouldn't have to.
       double aval = fmax(fabs(max), fabs(min));
       if (aval >= 10.0)
@@ -195,7 +196,7 @@ QSize DoubleLabel::sizeHint() const
             ++n;
       if (aval >= 100000.0)
             ++n;
-      
+
       int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
       if(!_suffix.isEmpty())
       {

@@ -218,8 +218,8 @@ LCDPatchEdit::LCDPatchEdit(QWidget* parent,
 
   setMouseTracking(true);
   setEnabled(true);
-//   setFocusPolicy(Qt::WheelFocus);
-  setFocusPolicy(Qt::NoFocus);
+  setFocusPolicy(Qt::WheelFocus);
+  //setFocusPolicy(Qt::NoFocus);
 
 //   setAutoFillBackground(false);
 //   setAttribute(Qt::WA_NoSystemBackground);
@@ -271,18 +271,39 @@ QSize LCDPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
                                       )
 {
   const int font_height = fm.height();
-  int h;
+  int fin_h;
+  int fin_w;
+  QRect aRect;
   switch(orient)
   {
     case PatchHorizontal:
-      h = font_height + 1 + 2 * yMargin; // +1 for extra anti-aliasing space.
+      fin_h = font_height + 1 + 2 * yMargin; // +1 for extra anti-aliasing space.
+      aRect.setHeight(font_height);
     break;
     case PatchVertical:
-      h = 3 * (font_height + 3) + 2 * yMargin; // +1 for extra anti-aliasing space.
+      fin_h = 3 * (font_height + 3) + 2 * yMargin; // +1 for extra anti-aliasing space.
+      aRect.setHeight(font_height);
     break;
   }
 
-  return QSize(16 + xMargin, h);
+  const int sz2 = charWidth(aRect);
+  const int margin = readoutMargin(sz2);
+
+  const int w = 2 * (sz2 + margin) + 1 + margin; // Three digit spaces: two full and one special slim consideration for leading '1'.
+  const int spacing = 4;
+
+  switch(orient)
+  {
+    case PatchHorizontal:
+      fin_w = 2 * xMargin + 2 * spacing + 3 * w + 2;
+    break;
+
+    case PatchVertical:
+      fin_w = w + spacing;
+    break;
+  }
+
+  return QSize(fin_w, fin_h);
 }
 
 void LCDPatchEdit::setReadoutOrientation(PatchOrientation orient)
@@ -321,7 +342,9 @@ QSize LCDPatchEdit::sizeHint() const
 
 void LCDPatchEdit::paintEvent(QPaintEvent* e)
 {
+  e->ignore();
   QFrame::paintEvent(e);
+  e->accept();
   if(rect().width() <= 0 || rect().height() <= 0)
     return;
   QPainter painter(this);
@@ -624,7 +647,8 @@ QRect LCDPatchEdit::activeDrawingArea() const
   return rect().adjusted(_xMargin, _yMargin + 1, -_xMargin, -_yMargin);
 }
 
-int LCDPatchEdit::charWidth(const QRect& aRect) const
+// Static.
+int LCDPatchEdit::charWidth(const QRect& aRect)
 {
   int sz = aRect.height();
   if(sz < 7)
@@ -632,7 +656,8 @@ int LCDPatchEdit::charWidth(const QRect& aRect) const
   return round(double(sz) / 2.8);
 }
 
-int LCDPatchEdit::readoutMargin(int charWidth) const
+// Static.
+int LCDPatchEdit::readoutMargin(int charWidth)
 {
   return 1 + charWidth / 6;
 }
@@ -641,6 +666,7 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
 {
   e->ignore();
   QFrame::resizeEvent(e);
+  e->accept();
   autoAdjustFontSize();
 
   const QFontMetrics fm = fontMetrics();
@@ -724,6 +750,7 @@ void LCDPatchEdit::mouseMoveEvent(QMouseEvent *e)
   //fprintf(stderr, "LCDPatchEdit::mouseMoveEvent\n");
   e->ignore();
   QFrame::mouseMoveEvent(e);
+  e->accept();
 
   QPoint p = e->pos();
 
@@ -794,6 +821,7 @@ void LCDPatchEdit::enterEvent(QEvent *e)
 
   e->ignore();
   QFrame::enterEvent(e);
+  e->accept();
   if(doupd)
     update();
 }
@@ -822,6 +850,7 @@ void LCDPatchEdit::leaveEvent(QEvent *e)
 
   e->ignore();
   QFrame::leaveEvent(e);
+  e->accept();
   if(doupd)
     update();
 }
@@ -935,8 +964,8 @@ void LCDPatchEdit::editorReturnPressed()
     _editor->deleteLater();
     _editor = 0;
   }
-  //setFocus(); // FIXME There are three sections. Need to clear focus for now.
-  clearFocus();
+  setFocus(); // FIXME There are three sections. Need to clear focus for now.
+//   clearFocus();
 }
 
 void LCDPatchEdit::editorEscapePressed()
@@ -947,20 +976,28 @@ void LCDPatchEdit::editorEscapePressed()
   {
     _editor->deleteLater();
     _editor = 0;
-    //setFocus(); FIXME There are three sections. Need to clear focus for now.
-    clearFocus();
+    setFocus(); //FIXME There are three sections. Need to clear focus for now.
+//     clearFocus();
   }
 }
 
 void LCDPatchEdit::keyPressEvent(QKeyEvent* e)
 {
-  if(e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)
+  switch (e->key())
   {
-    // A disabled spinbox up or down button will pass the event to the parent! Causes pseudo 'wrapping'. Eat it up.
-    if(!_editor || !_editor->hasFocus())
-      showEditor();
-    e->accept();
-    return;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+    {
+      // A disabled spinbox up or down button will pass the event to the parent! Causes pseudo 'wrapping'. Eat it up.
+      if(!_editor || !_editor->hasFocus())
+        showEditor();
+      e->accept();
+      return;
+    }
+    break;
+
+    default:
+    break;
   }
 
   e->ignore();
@@ -988,7 +1025,6 @@ bool LCDPatchEdit::event(QEvent* e)
     break;
   }
 
-  e->ignore();
   return QFrame::event(e);
 }
 
