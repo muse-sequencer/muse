@@ -323,7 +323,9 @@ extern QPixmap* muteAndProxyOnSVGPixmap;
 
 extern QPixmap* soloOffSVGPixmap;
 extern QPixmap* soloOnSVGPixmap;
+extern QPixmap* soloOnAloneSVGPixmap;
 extern QPixmap* soloProxyOnSVGPixmap;
+extern QPixmap* soloProxyOnAloneSVGPixmap;
 extern QPixmap* soloAndProxyOnSVGPixmap;
 
 extern QPixmap* trackOffSVGPixmap;
@@ -358,7 +360,9 @@ extern QIcon* muteAndProxyOnSVGIcon;
 
 extern QIcon* soloOffSVGIcon;
 extern QIcon* soloOnSVGIcon;
+extern QIcon* soloOnAloneSVGIcon;
 extern QIcon* soloProxyOnSVGIcon;
+extern QIcon* soloProxyOnAloneSVGIcon;
 extern QIcon* soloAndProxyOnSVGIcon;
 
 extern QIcon* trackOffSVGIcon;
