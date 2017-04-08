@@ -63,7 +63,7 @@ QSize TextEdit::sizeHint() const
   const int lines = document()->lineCount();
   const int fh = fontMetrics().lineSpacing();
   const int marg = contentsMargins().bottom() + contentsMargins().top() +
-                   viewportMargins().bottom() + viewportMargins().top() +
+                   //viewportMargins().bottom() + viewportMargins().top() +  // Only in Qt 5.5
                    viewport()->contentsMargins().bottom() + viewport()->contentsMargins().top();
   const int h = fh * lines + marg + 6; // Extra for some kind of voodoo added deep down, can't find it.
   return QSize(w, h);
