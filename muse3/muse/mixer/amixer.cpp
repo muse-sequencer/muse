@@ -150,7 +150,7 @@ ViewWidget::paintEvent
 bool ScrollArea::viewportEvent(QEvent* event)
 {
   DEBUG_MIXER(stderr, "viewportEvent type %d\n", (int)event->type());
-  event->ignore();
+//   event->ignore();
   // Let it do the layout now, before we emit.
   const bool res = QScrollArea::viewportEvent(event);
   
