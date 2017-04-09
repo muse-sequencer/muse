@@ -4,6 +4,7 @@
 //  $Id: ./synti/fluidsynth/fluidsynti.cpp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -39,6 +40,24 @@
 //#include "common_defs.h"
 #include "fluidsynti.h"
 #include "muse/midi.h"
+
+
+#ifdef HAVE_INSTPATCH
+#include <libinstpatch/libinstpatch.h>
+typedef std::multimap < int /* note */, std::string > NoteSampleNameList_t;
+typedef NoteSampleNameList_t::iterator iNoteSampleNameList_t;
+typedef NoteSampleNameList_t::const_iterator ciNoteSampleNameList_t;
+typedef std::pair<int, std::string> NoteSampleNameInsertPair_t;
+typedef NoteSampleNameList_t NoteSampleNameList;
+
+typedef std::map < int /*patch*/, NoteSampleNameList_t > PatchNoteSampleNameList_t;
+typedef PatchNoteSampleNameList_t::iterator iPatchNoteSampleNameList_t;
+typedef PatchNoteSampleNameList_t::const_iterator ciPatchNoteSampleNameList_t;
+typedef std::pair<iPatchNoteSampleNameList_t, bool> PatchNoteSampleNameListResult_t;
+typedef std::pair<int, NoteSampleNameList_t> PatchNoteSampleNameInsertPair_t;
+typedef PatchNoteSampleNameList_t PatchNoteSampleNameList;
+#endif
+
 
 FluidCtrl FluidSynth::fluidCtrl[] = {
       //{ "Expression", MusECore::CTRL_EXPRESSION, 0, 127 },
@@ -436,6 +455,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
             }
 
       if (*chptr != FS_INIT_CHANNEL_SECTION) {
+            delete[] fonts;
             sendError("Init-data corrupt... Projectfile error. Initdata ignored.\n");
             return;
             }
@@ -642,6 +662,151 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       return true;
       }
 
+
+#ifdef HAVE_INSTPATCH
+static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
+{
+  IpatchList *presets, *pZones, *iZones;
+  IpatchIter pIter, pZoneIter, iZoneIter;
+  IpatchItem *pset, *pZone, *inst, *iZone;
+  char *psetName, *instName, *sampName;
+  int bank, program, patch;
+  gboolean pRangeSet, iRangeSet;
+  IpatchSF2GenAmount pNoteRange, iNoteRange;
+  IpatchSF2Sample *samp;
+
+  // Get preset children of SoundFont
+  presets = ipatch_container_get_children (IPATCH_CONTAINER (sf2), IPATCH_TYPE_SF2_PRESET);
+  ipatch_list_init_iter (presets, &pIter);
+
+  // Iterate over presets in list
+  for (pset = ipatch_item_first (&pIter); pset != NULL; pset = ipatch_item_next (&pIter))
+  { // Get name of preset, MIDI bank, and MIDI program number
+    g_object_get (pset,
+                  "name", &psetName,
+                  "bank", &bank,
+                  "program", &program,
+                  NULL);
+
+
+    //fprintf(stderr, "psetName:%s bank:%d program:%d\n", psetName, bank, program);
+
+    // Compose a patch numer. Drums are on special bank 128.
+    patch = (bank << 16) | (0xff << 8) | (program & 0x7f);
+    PatchNoteSampleNameListResult_t res_pnsnl = font._noteSampleNameList.insert(PatchNoteSampleNameInsertPair_t(patch, NoteSampleNameList()));
+    iPatchNoteSampleNameList_t res_ipnsnl = res_pnsnl.first;
+    NoteSampleNameList& nsl = res_ipnsnl->second;
+
+    // Get preset zones
+    pZones = ipatch_container_get_children (IPATCH_CONTAINER (pset), IPATCH_TYPE_SF2_ZONE);
+    ipatch_list_init_iter (pZones, &pZoneIter);
+
+    // Iterate over preset zones
+    for (pZone = ipatch_item_first (&pZoneIter); pZone != NULL; pZone = ipatch_item_next (&pZoneIter))
+    { // Get linked instrument and preset zone note range set flag
+      g_object_get (pZone,
+                    "link-item", &inst,
+                    "note-range-set", &pRangeSet,
+                    NULL);
+
+      // Get instrument name and global zone note range
+      g_object_get (inst,
+                    "name", &instName,
+                    NULL);
+
+      //fprintf(stderr, "\tinstName:%s\n", instName);
+
+      // Get instrument zones
+      iZones = ipatch_container_get_children (IPATCH_CONTAINER (inst), IPATCH_TYPE_SF2_ZONE);
+      ipatch_list_init_iter (iZones, &iZoneIter);
+
+      for (iZone = ipatch_item_first (&iZoneIter); iZone != NULL; iZone = ipatch_item_next (&iZoneIter))
+      { // Get sample and instrument zone note range set flag
+        g_object_get (iZone,
+                      "note-range-set", &iRangeSet,
+                      "link-item", &samp,
+                      NULL);
+
+        // Get instrument name and global zone note range
+        g_object_get (samp,
+                      "name", &sampName,
+                      NULL);
+
+        if (pRangeSet)
+          ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (pZone), IPATCH_SF2_GEN_NOTE_RANGE, &pNoteRange);
+        else ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (pset), IPATCH_SF2_GEN_NOTE_RANGE, &pNoteRange);
+
+        if (iRangeSet)
+          ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (iZone), IPATCH_SF2_GEN_NOTE_RANGE, &iNoteRange);
+        else ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (inst), IPATCH_SF2_GEN_NOTE_RANGE, &iNoteRange);
+
+        if (ipatch_sf2_gen_range_intersect (&iNoteRange, &pNoteRange))    // Returns false if no common range
+        {
+          // Note range spans iNoteRange.range.low to iNoteRange.range.high
+          //fprintf(stderr, "\t\t%s\tiNoteRange h:%u l:%u  pNoteRange h:%u l:%u\n", sampName, iNoteRange.range.high, iNoteRange.range.low, pNoteRange.range.high, pNoteRange.range.low);
+
+          for(int iNote = iNoteRange.range.low; iNote <= iNoteRange.range.high; ++iNote) // Yes, that's less than or equal.
+            nsl.insert(NoteSampleNameInsertPair_t(iNote, std::string(sampName)));
+        }
+
+        g_free (sampName);
+        g_object_unref (samp);
+      }
+
+      g_object_unref (iZones);
+      g_free (instName);
+      g_object_unref (inst);
+    }
+
+    g_object_unref (pZones);
+    g_free (psetName);
+  }
+
+  g_object_unref (presets);
+}
+
+//---------------------------------------------------------
+//   loadNoteSampleNames
+//    Extracts all the note sample names
+//---------------------------------------------------------
+
+static void loadNoteSampleNames(FluidSoundFont& font)
+{
+  IpatchSF2 *sf2;
+  IpatchSF2Reader* sf2_reader;
+  IpatchFileHandle *fhandle;
+  IpatchSF2File *sffile;
+  GError *err = NULL;
+  const QByteArray ba = font.file_name.toLatin1();
+  const char* fname = ba.constData();
+
+  /* initialize libInstPatch */
+  ipatch_init ();
+
+  sffile = ipatch_sf2_file_new ();
+
+  fhandle = ipatch_file_open(IPATCH_FILE(sffile), fname, "r", &err);
+  if(!fhandle)
+  {
+    fprintf (stderr, "Failed to identify file '%s': %s\n", fname,
+              ipatch_gerror_message (err));
+    g_clear_error (&err);
+    g_object_unref (sffile);
+    return;
+  }
+
+  sf2_reader = ipatch_sf2_reader_new(fhandle);
+  sf2 = ipatch_sf2_reader_load(sf2_reader, NULL);
+
+  loadSf2NoteSampleNames(font, sf2);
+
+  ipatch_file_close(fhandle);
+  g_object_unref (sf2);
+  //g_object_unref(sf2_reader);  // Needed?
+  g_object_unref (sffile);
+}
+#endif
+
 //---------------------------------------------------------
 //   fontLoadThread
 //    helper thread to load soundfont in the
@@ -696,6 +861,11 @@ static void* fontLoadThread(void* t)
       //Strip off the filename
       QFileInfo fi(h->file_name);
       font.name = fi.fileName();
+
+      #ifdef HAVE_INSTPATCH
+      loadNoteSampleNames(font);
+      #endif
+
       fptr->stack.push_front(font);
       fptr->currentlyLoadedFonts++;
 
@@ -1110,6 +1280,46 @@ int FluidSynth::getControllerInfo(int id, QString* name, int* controller, int* m
                    id,(*name).toLatin1().constData(),*controller,*min,*max,*initval);
       return ++id;
       }
+
+#ifdef HAVE_INSTPATCH
+bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const
+{
+  if(!name || channel < 0 || channel >= FS_MAX_NR_OF_CHANNELS)
+    return false;
+  const FluidChannel& fc = channels[channel];
+  if(fc.drumchannel != drum)
+    return false;
+  // Force the low bank to don't care, we don't use it in fluidsynth MESS).
+  patch |= 0xff00;
+  if(drum)
+  {
+    patch &= 0xffff;    // Remove the high bank.
+    patch |= 0x800000;  // Set high bank to 128 (special soundfont bank number meaning drums), and low bank to don't care.
+  }
+
+  for(std::list<FluidSoundFont>::const_iterator it = stack.begin(); it != stack.end(); it++)
+  {
+    const FluidSoundFont& fsf = *it;
+    if(fsf.intid == fc.font_intid) // || fsf.extid == fc.font_extid)
+    {
+      ciPatchNoteSampleNameList_t ipnsnl = fsf._noteSampleNameList.find(patch);
+      if(ipnsnl != fsf._noteSampleNameList.end())
+      {
+        const NoteSampleNameList& pnsnl = ipnsnl->second;
+        ciNoteSampleNameList_t insnl = pnsnl.find(note);
+        if(insnl != pnsnl.end())
+        {
+          const std::string& str = insnl->second;
+          *name = QString::fromStdString(str);
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+#endif
 
 //---------------------------------------------------------
 //   sendError

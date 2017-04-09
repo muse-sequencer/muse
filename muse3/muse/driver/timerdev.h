@@ -27,8 +27,6 @@
 #ifndef __TIMERDEV_H__
 #define __TIMERDEV_H__
 
-#include "alsa/asoundlib.h"
-
 #define TIMER_DEBUG 0
 
 namespace MusECore {
@@ -57,4 +55,4 @@ class Timer {
 
 } // namespace MusECore
 
-#endif //__ALSATIMER_H__
+#endif //__TIMERDEV_H__

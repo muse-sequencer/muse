@@ -1,5 +1,176 @@
+08.04.2017
+         - Crash fix: File > New > Audio.med > change wave track 1 to stereo -> crashes soon after. (Tim)
+           In AudioTrack::copyData(): In two sections concerning '2ch' -> '1ch' mixing: Move 'sp' inside
+            channel loop. Was allowed to increment beyond, into other variable data, causing silent corruption.
+         - Also, fixed template "audo.med": Both audio output track's outputs were routed to same jack port. (Tim)
+         - Slightly simpler track list solo icons. (Tim)
+04.04.2017
+      * More routing and mixer relief: (Tim)
+         - New: As requested: Monitor on Record Arm option. Right click any strip, or Global Settings.
+         - New: Mixer strip volume/pan affect multiple selected tracks. Works fully with midi <-> audio strips.
+           Works in mixer and arranger, but purposely NOT in pianoroll to avoid accidental changes to other tracks.
+           Tally of things that currently can operate on multiple selected tracks:
+               Track list: Channel, port, mute, solo. Strip: Volume, pan, routing buttons.
+         - New: Strip keyboard focusing and operations: All strip controls now accept keyboard
+            focus. Strip volume box is now the default PROXY focus for all strips. Any strip control
+            having focus can be adjusted with up/down keys. Regardless of who has focus,
+            volume and pan always can be adjusted with universal keys.
+            Keys:              Up/down: Adjust any focused control.
+                         Alt + Up/down: Adjust volume regardless of focused control.
+                      Alt + Left/right: Adjust pan regardless of focused control.
+               Ctrl + Alt + Left/right: Switch to a neighbouring strip.
+                                Escape: "Get me out of this focused control to something higher-level!"
+                                        (Back to the arranger canvas, or the mixer window.)
+         - New: Show midi volume as dB option. Right click any strip, or Global Settings.
+         - To achieve midi volume as dB and support inter-strip increments, class MidiCtrlValList hwVal
+            member type was changed from INT to DOUBLE. Was required to support fractional increments.
+         - New: Midi strip instrument and patch labels respond to enter/return key to open popup menu.
+         - New: As requested: Strip name labels: Double-click to edit track name, or right-click context menu.
+         - New: Strips: 'Tabs' hold palettes of controls. Extra controls have been moved there from right.
+           The tabs accept keyboard focus and can be activated by hitting return/enter or clicking.
+         - Fixed: Yay! Finally the strip volume boxes have proper focus and mouse-over rectangles.
+           There is a dumb problem with KDE Oxygen and Breeze themes: They turn off ALL such rectangles
+            if the widget-to-font height ratio is too small. This required a HACK to force the
+            rectangles to be drawn. Fixed with new class LineEdit, now is base of class DEntry.
+         - Fixed: Strip labels now show colour with a stylesheet active. Looks good with dark stylesheets.
+           It was a problem with the order and way in which stylesheets were set. (And they override
+            fonts, so you can't SET then READ a widget font, it always returns what the stylesheet set.)
+         - Fixed: Strip volume scale drawing was offset too much to the left sometimes.
+         - Several other fixes along the way.
+16.03.2017
+         - Draw the frame around all mixer strips. (Tim)
+15.03.2017
+      * Routing and mixer relief: (Tim)
+         - Fixed auto-connect routing: Midi tracks by default now only connect to the first
+            suitable midi port input or output instead of all of them at once.
+         - Multi-selected tracks editing: New: Routing buttons apply to ALL selected tracks
+            ie. select two or more tracks and the routing buttons apply to each track.
+           The selected tracks must be type-compatible. TODO: All other strip controls.
+         - Added some SVG icons: Mixer window now scales almost perfectly to chosen font.
+           Moved 'Monitor' button to between 'Off' and 'Rec arm' buttons.
+         - New class IconButton replaces clumsy ToolButton and icon usage. Has TWO different
+            icon groups, perfect for our 'proxy' solo and mute.
+         - All mute buttons now show 'proxy' mute ie. when any OTHER track is soloed.
+         - All 'Monitor' buttons are now off by default.
+      * Bug fixes:
+         - Fixes for 'frozen' Arranger not responding:
+           NEW! Changing theme style in Appearance dialog automatically restarts MusE.
+           If a stylesheet is chosen, 'style' is forced to 'Fusion' for now until fixed upstream.
+         - Fixed duplicate events: From multiple tracks connected to the same inputs and output
+            if 'Monitor' was active. Protection from same-time events (only) in MPEventList::add().
+         - Fixed: Track ordering incorrect after deleting multiple tracks then undoing.
+         - Fixed: Big CPU % spikes when clicking almost anything in the mixer window.
+           Excessive redrawMixer() calls: Fix some controls/strip mouse handling: Accept, not ignore.
+           New specific SC_TRACK_MOVED flag replaces the more general SC_TRACK_MODIFIED when
+            moving tracks in Arranger or Mixer, and filter out other flags causing redrawMixer().
+16.02.2017
+         * Recording from synthesizer midi output supported: (Tim)
+         - All synths are now marked as both readable/writable.
+         - Synths can now be selected as a midi input route.
+         - Received events from a synth will absolutely NOT be echoed back to the
+            SAME synth instance under any circumstances, even if 'monitor' button is on.
+         - Recording: buildMidiEventList(): Added protection from duplicate events
+            sent by certain broken plugins or malformed midi import files.
+           (Our 'live stuck notes' mechanism already protects from playing 'live' duplicate notes.)
+         - If output port's instrument has no note-off mode, do not use our 'live stuck notes'
+            mechanism. This allows for example drum trigger input devices sending NO note-offs,
+            although you must first select an instrument having no note-off mode.
+14.01.2017
+         - Drum editor list: Added 'Set field', 'Set row', 'Set list' to right-click menu. (Tim)
+13.01.2017
+         - Replaced midi editors' control panel knob with compact knob and LCD patch editor. (Tim)
+           Both use the 'waitless' method of 09.01.2017.
+         - Improvements to compact knob look and functionality. (Should look OK with 8pt font now.)
+         - Clear focus after LCD patch edit popup editor closes. FIXME There are three sections,
+            need to clear focus for now, we can't really have focus hanging around there for the
+            unaware user - need to add a section 'hilighter/selector'.
+09.01.2017
+         - FIXED: Midi strip controls much too slow with large audio (Jack) period. (Tim)
+         - Created and installed new template class 'LockFreeBuffer<T>' to replace clumsy
+            per-type / fixed capacity multiple implementations. Works with ANY type, and
+            capacity can be set per-instance.
+         - Replaced 'waiting' calls of midi strip controls, with the new LockFreeBuffer<T>.
+           Midi controls are now fast and smooth, like audio controls, even at high Jack periods.
+         - TODO: Fix midi controller graphs much too slow as well!
+07.01.2017
+         * New - Monitoring feature: (Tim)
+         - Midi Tracks and Wave Tracks have a 'Monitor' button.
+           Push to pass input through to output.
+           Midi Track 'Midi Thru' was re-branded and re-purposed as 'Monitor'.
+         - Meters: When in 'rec-arm' mode but not 'Monitor', meters are active.
+           Wave Tracks: NOTE: Be aware that when 'rec-armed', the meters show
+            the RECORDING levels pre-fader/rack etc. NOT post-fader.
+           This was a technical necessity, but actually has benefits: The user
+            can see the actual recording levels before the signal hits the disk.
+         - Since monitoring is important and can cause unaware unwanted mixing or
+            missing audio, the 'Monitor' buttons flash to indicate being active.
+         - TODO: Add an Arranger track list 'Monitor' column.
+                 Make Wave Tracks NOT monitor by default ??
+         - FIXED: Wave tracks now mix playback audio with incoming audio -
+                   you can now hear what's playing as you are recording.
+21.12.2016
+         - Make some cmake system commands friendlier. (Tim)
+         - Remove some more old setuid stuff.
+20.12.2016
+         - Removed libuuid dependency. Replaced with QUuid. (Tim)
+           Tested OK copying and pasting/cloning parts and notes (places using uuids).
+18.12.2016
+         * ALSA support is now OPTIONAL ! :
+         * MusE can now be built as a PURE Jack application:
+         - Also fixed some problems with various config combinations of DSSI, liblo, and ALSA support.
+           Note: The smaller DSSI ALSA Compatibility package is NOT suitable for our DSSI support. (Tim)
+17.12.2016
+         * Eliminated midi sequencer thread when ALSA midi driver is not enabled: (Tim)
+           When 'ALSA' button is not clicked in midi config dialog, MusE is running PURE Jack,
+            ie no sequencer thread (midiSeq), and no timer. Pure Jack.
+16.12.2016
+         - Bug #520 by asbaklm: "Muse fails to start, produces stack smashing error": (Tim)
+           Further to Bug #548 fix 09.11.2016:
+           (Very old RTC timer was still causing it to crash upon the resolution request ioctl.)
+           Did looong overdue ALSA timer code rewrite. Picks best timer such as 1,000,000,000Hz HR Timer.
+         - ALSA Timer is now checked and chosen first over the RTC timer. RTC could still be chosen
+            as a LAST resort. Apparently RTC works OK for some users (not using DrumGizmo?).
+15.12.2016
+         - Update: Fluidsynth MESS plugin GUI updates the song's maps when
+            soundfonts are removed or the channel or drum column is changed. (Tim)
+         - Besides drum patches, note sample names are now cached for ALL melodic
+            patches as well, they can be obtained although nothing uses them yet. (Tim)
+14.12.2016
+         * New - Fluidsynth MESS synth plugin automatically shows correct drum note names: (Tim)
+         - No more manually loading a drum map file ;-)
+         - Load up some SoundFont(s) in the plugin, and try it out. Works with multiple
+            SoundFonts in different channels (be sure to mark 'drum' column).
+         - Automatically looks for libinstpatch-1.0 (from Swami) and uses if found.
+         - Door is open for our Instrument Editor to allow PER-CHANNEL drum maps,since
+            the system supports it now. You could add it manually to .idf files for now.
+         - TODO: Remove (L) (R) etc. from name strings. ie. find a better way to make
+            reasonable names out of multi-sample notes.
+           Does not update maps yet when fonts removed. Please toggle the track channel
+            or some other way force a map update manually for now.
+         - Thanks to Swami author 'Element Green' for help.
+11.12.2016
+         - LV2 Synth Tracks: Fixed patch not changing when patch list popped up. (Tim)
+           Was simple change to include QVariant::UInt in *::patchPopupActivated().
 10.12.2016
          - Fixed lingering Arranger bug not restoring size properly on project reload. (Tim)
+09.12.2016
+         * More 'New drum' track fixes. 'Old drums' invisible now, going soon: (Tim)
+         - Midi Instrument Editor: A default Patch Number is allowed now
+            (HBank = LBank = Prg = don't care). See GM instr for ex.
+           ALL drum map items are editable now including Hide, Mute, Channel, Port, Anote.
+           When 'Save' is clicked, song is updated immediately with changes to the instrument.
+         - Drum Tracks: Added Track Drum Map overrides. Right-click any map item to see options.
+           Channel, Port and ANote can be edited now.
+         - Added a standard GM drum map to our GM instrument, on the default patch (see above).
+         - Old midi export bug: Some controllers not exported! My typo: Changed 0x1000 to 0x10000
+            in exportmidi.cpp:addController().
+         - Midi Import/Export Dialog: Added two options for how drum controllers should be exported,
+            see their tooltips/whatsthis for more detailed info:
+              Apply drum map Port, Channel and ANote overrides
+              Drum map channel overrides go to a separate track
+         - Automatic conversion of loaded projects to use new drum tracks instead of old.
+           Warning: The project will be SAVED with NEW drum tracks!
+         - Old drum tracks hidden now. Will be removed later since they are no longer needed.
 09.11.2016
          - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
            Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).

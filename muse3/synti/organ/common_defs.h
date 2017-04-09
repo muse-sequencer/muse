@@ -23,7 +23,8 @@
 #ifndef __ORGAN_UNIQUE_ID_H
 #define __ORGAN_UNIQUE_ID_H
 
-// Make sure this number is unique among all the MESS synths.
+// Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 #define ORGAN_UNIQUE_ID      1
 
 #endif

@@ -26,7 +26,8 @@
 
 #include "config.h"
 
-// Make sure this number is unique among all the MESS synths and DSSI and VST host synths.
+// Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 #define VST_NATIVE_SYNTH_UNIQUE_ID 9
 // Midistate sysex initialization command.
 #define VST_NATIVE_INIT_DATA_CMD 1
@@ -220,6 +221,8 @@ class VstNativeSynthIF : public SynthIF
       void editorDeleted();
       void editorOpened();
       void editorClosed();
+
+      void eventReceived(VstMidiEvent*);
 
    public:
       VstNativeSynthIF(SynthI* s);

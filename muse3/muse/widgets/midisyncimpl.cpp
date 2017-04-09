@@ -640,14 +640,12 @@ void MidiSyncConfig::apply()
         if(fp_idx >= 0 && fp_idx < MusECore::MidiSyncInfo::TYPE_END)
         {
           MusEGlobal::syncRecFilterPreset = MusECore::MidiSyncInfo::SyncRecFilterPresetType(fp_idx);
-          if(MusEGlobal::midiSeq)
-            MusEGlobal::midiSeq->setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+          MusEGlobal::midiSyncContainer.setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
         }
       }
       MusEGlobal::syncRecTempoValQuant = syncRecTempoValQuant->value();
-      if(MusEGlobal::midiSeq)
-        MusEGlobal::midiSeq->setRecTempoValQuant(MusEGlobal::syncRecTempoValQuant);
-      
+      MusEGlobal::midiSyncContainer.setRecTempoValQuant(MusEGlobal::syncRecTempoValQuant);
+
       MusEGlobal::mtcOffset.setH(mtcOffH->value());
       MusEGlobal::mtcOffset.setM(mtcOffM->value());
       MusEGlobal::mtcOffset.setS(mtcOffS->value());

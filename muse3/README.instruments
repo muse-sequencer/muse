@@ -1,15 +1,23 @@
 ================================================
     MusE loadable Midi Instrument Definitions
-    (valid from around MusE 0.8.1, Edited by Tim NOV.11.2012, at MusE 2.1rc1)
+    (valid from around MusE 0.8.1, Edited by Tim DEC.16.2016, at MusE 3.0rc2)
 ================================================
 
   - File Extension  ".idf"
-  - searched in Subdirectory  "instruments"
-    (/usr/share/muse/instruments on my system)
+  - Searched in "instruments" in 'share' installation subdirectory.
   - Can be viewed, created or edited with menu 'Midi -> Edit Instrument'
+  - In the Instrument Editor, when an existing instrument is modified
+     and saved, a COPY of that instrument is saved in the user's
+     ~/.config/MusE directory, and it is used instead. This preserves
+     original instruments while allowing modifications.
 
   All found instrument definitions are presented by MusE
   in Config->MidiPorts in Pulldown in column "Instrument".
+
+  As of MusE-2.1 or so, Drum Maps can be integrated into the .idf file.
+  The Instrument Editor has a facility for editing them.
+  See the GM2, GS, or XG instruments for examples.
+  TODO: Formal specs.
 
 -------------------------------------------------
    Example of Instrument Definition File:
@@ -125,7 +133,7 @@
       h:  controller number MSB. Default 0 if omitted.
       l:  controller number LSB. Default 0 if omitted.
             For per-pitch controllers, 'l' can also be "pitch" indicating each 'note' or
-             'drum sound' has its own controller. Some devices such as XG support this.
+             'drum sound' has its own controller. Some devices such as XG or GM2 support this.
 
       min:  minimum value for controller
       max:  maximum value for controller

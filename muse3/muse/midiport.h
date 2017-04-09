@@ -4,7 +4,7 @@
 //  $Id: midiport.h,v 1.9.2.6 2009/11/17 22:08:22 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2017 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@
 #include "globaldefs.h"
 #include "sync.h"
 #include "route.h"
+#include "mpevent.h"
+#include "lock_free_buffer.h"
 
 class QMenu;
 class QWidget;
@@ -36,13 +38,26 @@ namespace MusECore {
 
 class MidiDevice;
 class Part;
-//class MidiSyncInfo;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
-class MidiPlayEvent;
+
+struct Gui2AudioFifoStruct {
+  int _type;
+  int _chan;
+  int _ctlnum;
+  double _val;
+  bool _incremental;
+
+  Gui2AudioFifoStruct()
+    : _type(0), _chan(0), _ctlnum(0), _val(0.0), _incremental(false) { }
+  Gui2AudioFifoStruct(int type, int chan, int ctlnum, double val, bool incremental)
+    : _type(type), _chan(chan), _ctlnum(ctlnum), _val(val), _incremental(incremental) { }
+  Gui2AudioFifoStruct(const MidiPlayEvent& ev)
+    : _type(ev.type()), _chan(ev.channel()), _ctlnum(ev.dataA()), _val(ev.dataB()), _incremental(false) { }
+};
 
 //---------------------------------------------------------
 //   MidiPort
@@ -64,14 +79,20 @@ class MidiPort {
       // Whether Init sysexes and default controller values have been sent. To be reset whenever
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
-      
+
+      // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
+      LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
+
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
-      // Update drum maps when patch is known.
-      bool updateDrumMaps(int chan, int patch);
-      // Update drum maps when patch is not known.
-      bool updateDrumMaps();
+
+      // Prepares an event for putting into the gui2audio fifo.
+      // To be called from gui thread only. Returns true if the event was staged.
+      bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
+      // To be called from audio thread only. Returns true if event cannot be delivered.
+      //bool handleGui2AudioEvent(const MidiPlayEvent&);
+      bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 
    public:
       MidiPort();
@@ -94,9 +115,13 @@ class MidiPort {
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
+      double lastValidHWDCtrlState(int ch, int ctrl) const;
       int hwCtrlState(int ch, int ctrl) const;
+      double hwDCtrlState(int ch, int ctrl) const;
       bool setHwCtrlState(int ch, int ctrl, int val);
+      bool setHwCtrlState(int ch, int ctrl, double val);
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
+      bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
       void deleteController(int ch, int tick, int ctrl, Part* part);
       void addDefaultControllers();
       
@@ -123,8 +148,18 @@ class MidiPort {
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val);
+      double limitValToInstrCtlRange(int ctl, double val);
       int limitValToInstrCtlRange(MidiController* mc, int val);
+      double limitValToInstrCtlRange(MidiController* mc, double val);
       MidiController* drumController(int ctl);
+      // Update drum maps when patch is known.
+      // If audio is running (and not idle) this should only be called by the rt audio thread.
+      // Returns true if maps were changed.
+      bool updateDrumMaps(int chan, int patch);
+      // Update drum maps when patch is not known.
+      // If audio is running (and not idle) this should only be called by the rt audio thread.
+      // Returns true if maps were changed.
+      bool updateDrumMaps();
 
       int defaultInChannels() const { return _defaultInChannels; }
       int defaultOutChannels() const { return _defaultOutChannels; }
@@ -162,6 +197,25 @@ class MidiPort {
       bool initSent() const { return _initializationsSent; }  
       void clearInitSent() { _initializationsSent = false; }  
       
+      // Put an event into the gui2audio fifo for playback. Calls stageEvent().
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      bool putHwCtrlEvent(const MidiPlayEvent&);
+      // Put an event into both the device and the gui2audio fifo for playback. Calls stageEvent().
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      bool putEvent(const MidiPlayEvent&);
+      // Special method for incrementing a value: Handles getting the current hw value,
+      //  incrementing it (as dB if specified), and sending it and setting the current hw value.
+      // Called from gui thread only. Returns true if event cannot be delivered.
+      // NOTE: Caller should use the Audio::msgAudioWait() to wait for the current value
+      //        to change in the audio thread before calling again, especially rapidly.
+      //       This method looks at the current value, so the current value must be up to date.
+      //       It will not call Audio::msgAudioWait(), to allow caller to optimize multiple calls.
+      bool putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb);
+      bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
+      // Process the gui2AudioFifo. Called from audio thread only.
+      bool processGui2AudioEvents();
+
+
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }

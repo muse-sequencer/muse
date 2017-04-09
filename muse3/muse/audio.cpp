@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "app.h"
 #include "song.h"
@@ -62,8 +63,8 @@
 #endif
 
 namespace MusEGlobal {
-MusECore::Audio* audio;
-MusECore::AudioDevice* audioDevice;   // current audio device in use
+MusECore::Audio* audio = NULL;
+MusECore::AudioDevice* audioDevice = NULL;   // current audio device in use
 extern unsigned int volatile midiExtSyncTicks;   
 }
 
@@ -88,6 +89,7 @@ const char* seqMsgList[] = {
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
       "AUDIO_RECORD",
+      "AUDIO_RECORD_MONITOR",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
@@ -538,9 +540,8 @@ void Audio::process(unsigned frames)
 
 void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       {
-      if (MusEGlobal::midiSeqRunning) {
-            processMidi();
-            }
+      processMidi();
+
       //
       // process not connected tracks
       // to animate meter display
@@ -572,7 +573,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       ((AudioTrack*)metronome)->preProcessAlways();
       
       // Process Aux tracks first.
-      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it)
       {
         if((*it)->isMidiTrack())
           continue;
@@ -589,7 +590,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
-      }      
+      }
       
       OutputList* ol = MusEGlobal::song->outputs();
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 
@@ -630,6 +631,9 @@ void Audio::processMsg(AudioMsg* msg)
       switch(msg->id) {
             case AUDIO_RECORD:
                   msg->snode->setRecordFlag2(msg->ival);
+                  break;
+            case AUDIO_RECORD_MONITOR:
+                  msg->track->setRecMonitor(msg->ival);
                   break;
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);
@@ -740,7 +744,8 @@ void Audio::processMsg(AudioMsg* msg)
                   
             case SEQM_IDLE:
                   idle = msg->a;
-                  MusEGlobal::midiSeq->sendMsg(msg);
+                  if(MusEGlobal::midiSeq)
+                    MusEGlobal::midiSeq->sendMsg(msg);
                   break;
 
             case AUDIO_WAIT:
@@ -790,21 +795,40 @@ void Audio::seek(const Pos& p)
 #endif
       curTickPos  = _pos.tick();
 
-// ALSA support       
-#if 1 
-      MusEGlobal::midiSeq->msgSeek();     // handle stuck notes and set controller for new position
-#else      
-      if (curTickPos == 0 && !MusEGlobal::song->record())     // Moved here from MidiSeq::processStop()
-            MusEGlobal::audio->initDevices();
-      for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
-          (*i)->handleSeek();  
-#endif
-      
+      //
+      // Handle stuck notes and set controllers for new position:
+      //
+
+      // TODO: TEST: What about that initDevices thing above? Was that incorporated before into handleSeek()?
+
+      // Seek the ALSA devices...
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->msgSeek();  // FIXME: This waits!
+
+      // Seek any non-ALSA devices...
+      for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+      {
+        MidiDevice* md = *i;
+        const MidiDevice::MidiDeviceType type = md->deviceType();
+        // Only for non-ALSA devices.
+        switch(type)
+        {
+          case MidiDevice::ALSA_MIDI:
+          break;
+
+          case MidiDevice::JACK_MIDI:
+          case MidiDevice::SYNTH_MIDI:
+            md->handleSeek();
+          break;
+        }
+      }
+
       if (state != LOOP2 && !freewheel())
       {
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
+            // This does not wait.
             MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
       }
             
@@ -938,22 +962,39 @@ void Audio::stopRolling()
         printf("Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
-      
-// ALSA support      
-#if 1        
-      MusEGlobal::midiSeq->msgStop();
-#else      
-      MusEGlobal::midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   
-      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
+
+      //
+      // Clear midi device notes and stop stuck notes:
+      //
+
+      // Clear the special sync play state (separate from audio play state).
+      MusEGlobal::midiSyncContainer.setExternalPlayState(false); // Not playing.   Moved here from MidiSeq::processStop()
+
+      // Stop the ALSA devices...
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->msgStop();  // FIXME: This waits!
+
+      // Stop any non-ALSA devices...
+      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
         MidiDevice* md = *id;
-        md->handleStop();
+        const MidiDevice::MidiDeviceType type = md->deviceType();
+        // Only for non-ALSA devices.
+        switch(type)
+        {
+          case MidiDevice::ALSA_MIDI:
+          break;
+
+          case MidiDevice::JACK_MIDI:
+          case MidiDevice::SYNTH_MIDI:
+            md->handleStop();
+          break;
+        }
       }
-#endif
-      
+
       // There may be disk read/write fifo buffers waiting to be emptied. Send one last tick to the disk thread.
       if(!freewheel())
-        MusEGlobal::audioPrefetch->msgTick(recording, false);
+        MusEGlobal::audioPrefetch->msgTick(recording, false); // This does not wait.
       
       WaveTrackList* tracks = MusEGlobal::song->waves();
       for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {

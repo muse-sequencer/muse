@@ -86,6 +86,7 @@ QT5_WRAP_CPP ( muse_moc_headers
 ##
 QT5_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
+		  ../resources.qrc
 		  )
 
 file (GLOB core_source_files
@@ -113,6 +114,7 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
+      lock_free_buffer.h
       memory.cpp
       midi.cpp
       midictrl.cpp
@@ -263,10 +265,11 @@ target_link_libraries(core
       widgets_functiondialogs
 
       ${QT_LIBRARIES}
+      ## Bring in the dssi alsa compatibility libraries if required
+      ${DSSI_ALSA_COMPAT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       # Note that this also appears in the audio_convert/src_resampler shared library.
       ${SAMPLERATE_LIBRARIES}
-      ${UUID_LIBRARIES}
       ${REM_LIB}
       ${FST_LIB}
       dl

@@ -60,18 +60,8 @@ class Knob;
 class RouteDialog;
 class Slider;
 class Strip;
-// class ExpanderHandle;
-
-// struct StripItem {
-//   Strip* _strip;
-//   ExpanderHandle* _handle;
-//   
-//   StripItem() : _strip(0), _handle(0) { }
-//   StripItem(Strip* strip, ExpanderHandle* handle) : _strip(strip), _handle(handle) { }
-// };
 
 typedef QList<Strip*> StripList;
-// typedef QList<StripItem> StripList;
 
 //---------------------------------------------------------
 //   ScrollArea
@@ -102,14 +92,11 @@ class AudioMixerApp : public QMainWindow {
         UNHIDE_STRIPS = -1000,
         UNHANDLED_NUMBER = -1001
       };
-      //QString name;
       MusEGlobal::MixerConfig* cfg;
       StripList stripList;
 
       QScrollArea* view;
       QWidget* central;
-      //QSplitter* splitter;
-      //Strip* master;
       QHBoxLayout* mixerLayout;
       QMenu* menuStrips;
       MusEGui::RouteDialog* routingDialog;
@@ -128,12 +115,9 @@ class AudioMixerApp : public QMainWindow {
 
       bool mixerClicked;
 
-      //virtual void closeEvent(QCloseEvent*);
-
       bool stripIsVisible(Strip* s);
       void redrawMixer();
       void addStrip(MusECore::Track* t, bool visible=true);
-      //void addStrip(MusECore::Track* t);
       void showRouteDialog(bool);
 
       void updateStripList();
@@ -155,18 +139,13 @@ class AudioMixerApp : public QMainWindow {
 
    signals:
       void closed();
-      void incVolume(int v);
-      void incPan(int v);
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);
-      //void configChanged()    { songChanged(-1); }
       void configChanged();
-      //void addNewTrack(QAction*);
       void setSizing();
       void toggleRouteDialog();
       void routingDialogClosed();
-      //void showTracksChanged(QAction*);
       void showMidiTracksChanged(bool);
       void showDrumTracksChanged(bool);
       void showNewDrumTracksChanged(bool);
@@ -179,19 +158,15 @@ class AudioMixerApp : public QMainWindow {
       void stripsMenu();
       void handleMenu(QAction *);
       void clearStripSelection();
-      void moveStrip(Strip *s);
+      void moveStrip(Strip*);
 
    protected:
-   //   virtual bool event(QEvent* event);
+      //virtual bool event(QEvent* event);
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
 
-
    public:
-      //AudioMixerApp(QWidget* parent);
       AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
-      //void write(Xml&, const char* name);
-      //void write(int level, Xml& xml, const char* name);
       void write(int level, MusECore::Xml& xml);
       void clearAndDelete();
       };

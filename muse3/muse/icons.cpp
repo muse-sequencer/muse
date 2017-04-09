@@ -21,6 +21,10 @@
 //
 //=========================================================
 
+// NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
+//          certain styles do not support it, such as QtCurve.
+//         Therefore the separate icons must be manually set upon each state.
+
 #include "globals.h"
 
 #include <QIcon>
@@ -562,6 +566,91 @@ QPixmap* routerFilterSourceRoutesIcon;
 QPixmap* routerFilterDestinationRoutesIcon;
 QPixmap* routerViewSplitterIcon;
 
+
+//----------------------------------
+//   SVG...
+//----------------------------------
+
+QPixmap* routingInputSVGPixmap;
+QPixmap* routingOutputSVGPixmap;
+QPixmap* routingInputUnconnectedSVGPixmap;
+QPixmap* routingOutputUnconnectedSVGPixmap;
+
+QPixmap* headphonesOffSVGPixmap;
+QPixmap* headphonesOnSVGPixmap;
+
+QPixmap* muteOffSVGPixmap;
+QPixmap* muteOnSVGPixmap;
+QPixmap* muteOnXSVGPixmap;
+QPixmap* muteProxyOnSVGPixmap;
+QPixmap* muteAndProxyOnSVGPixmap;
+
+QPixmap* soloOffSVGPixmap;
+QPixmap* soloOnSVGPixmap;
+QPixmap* soloOnAloneSVGPixmap;
+QPixmap* soloProxyOnSVGPixmap;
+QPixmap* soloProxyOnAloneSVGPixmap;
+QPixmap* soloAndProxyOnSVGPixmap;
+
+QPixmap* trackOffSVGPixmap;
+QPixmap* trackOnSVGPixmap;
+
+QPixmap* stereoOffSVGPixmap;
+QPixmap* stereoOnSVGPixmap;
+
+QPixmap* preFaderOffSVGPixmap;
+QPixmap* preFaderOnSVGPixmap;
+
+QPixmap* recArmOffSVGPixmap;
+QPixmap* recArmOnSVGPixmap;
+
+QPixmap* monitorOffSVGPixmap;
+QPixmap* monitorOnSVGPixmap;
+
+
+QIcon* routingInputSVGIcon;
+QIcon* routingOutputSVGIcon;
+QIcon* routingInputUnconnectedSVGIcon;
+QIcon* routingOutputUnconnectedSVGIcon;
+
+QIcon* headphonesOffSVGIcon;
+QIcon* headphonesOnSVGIcon;
+
+QIcon* muteOffSVGIcon;
+QIcon* muteOnSVGIcon;
+QIcon* muteOnXSVGIcon;
+QIcon* muteProxyOnSVGIcon;
+QIcon* muteAndProxyOnSVGIcon;
+
+QIcon* soloOffSVGIcon;
+QIcon* soloOnSVGIcon;
+QIcon* soloOnAloneSVGIcon;
+QIcon* soloProxyOnSVGIcon;
+QIcon* soloProxyOnAloneSVGIcon;
+QIcon* soloAndProxyOnSVGIcon;
+
+QIcon* trackOffSVGIcon;
+QIcon* trackOnSVGIcon;
+
+QIcon* stereoOffSVGIcon;
+QIcon* stereoOnSVGIcon;
+
+QIcon* preFaderOffSVGIcon;
+QIcon* preFaderOnSVGIcon;
+
+QIcon* recArmOffSVGIcon;
+QIcon* recArmOnSVGIcon;
+
+QIcon* monitorOffSVGIcon;
+QIcon* monitorOnSVGIcon;
+
+
+QIcon* soloSVGIcon;
+QIcon* soloProxySVGIcon;
+QIcon* muteSVGIcon;
+QIcon* trackEnableSVGIcon;
+QIcon* recArmSVGIcon;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -840,6 +929,103 @@ void initIcons()
       routerFilterDestinationRoutesIcon             = new MPIXMAP(router_filter_destination_routes_xpm, NULL);
       routerViewSplitterIcon                        = new MPIXMAP(router_view_splitter_xpm, NULL);
       
+
+      //----------------------------------
+      //   SVG...
+      //----------------------------------
+
+      routingInputSVGPixmap = new MPIXMAP(":/svg/routing_input.svg", NULL);
+      routingOutputSVGPixmap = new MPIXMAP(":/svg/routing_output.svg", NULL);
+      routingInputUnconnectedSVGPixmap = new MPIXMAP(":/svg/routing_input_unconnected.svg", NULL);
+      routingOutputUnconnectedSVGPixmap = new MPIXMAP(":/svg/routing_output_unconnected.svg", NULL);
+
+      headphonesOffSVGPixmap = new MPIXMAP(":/svg/headphones_off.svg", NULL);
+      headphonesOnSVGPixmap = new MPIXMAP(":/svg/headphones_on.svg", NULL);
+
+      muteOffSVGPixmap = new MPIXMAP(":/svg/mute_off.svg", NULL);
+      muteOnSVGPixmap = new MPIXMAP(":/svg/mute_on.svg", NULL);
+      muteOnXSVGPixmap = new MPIXMAP(":/svg/mute_on_X.svg", NULL);
+      muteProxyOnSVGPixmap = new MPIXMAP(":/svg/mute_proxy_on.svg", NULL);
+      muteAndProxyOnSVGPixmap = new MPIXMAP(":/svg/mute_and_proxy_on.svg", NULL);
+
+      soloOffSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_off.svg", NULL);
+      soloOnSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on.svg", NULL);
+      soloOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on_alone.svg", NULL);
+      soloProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on.svg", NULL);
+      soloProxyOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on_alone.svg", NULL);
+      soloAndProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_and_proxy_spotlight_on.svg", NULL);
+
+      trackOffSVGPixmap = new MPIXMAP(":/svg/track_off.svg", NULL);
+      trackOnSVGPixmap = new MPIXMAP(":/svg/track_on.svg", NULL);
+
+      stereoOffSVGPixmap = new MPIXMAP(":/svg/stereo_off.svg", NULL);
+      stereoOnSVGPixmap = new MPIXMAP(":/svg/stereo_on.svg", NULL);
+
+      preFaderOffSVGPixmap = new MPIXMAP(":/svg/pre_fader_off.svg", NULL);
+      preFaderOnSVGPixmap = new MPIXMAP(":/svg/pre_fader_on.svg", NULL);
+
+      //recArmOffSVGPixmap = new MPIXMAP(":/svg/rec_arm_off.svg", NULL);
+      recArmOffSVGPixmap = new MPIXMAP(":/svg/rec_arm_off_default_col.svg", NULL);
+      recArmOnSVGPixmap = new MPIXMAP(":/svg/rec_arm_on.svg", NULL);
+
+      //monitorOffSVGPixmap = new MPIXMAP(":/svg/monitor_off.svg", NULL);
+      monitorOffSVGPixmap = new MPIXMAP(":/svg/monitor_off_default_col.svg", NULL);
+      monitorOnSVGPixmap = new MPIXMAP(":/svg/monitor_on.svg", NULL);
+      //monitorOffSVGPixmap = new MPIXMAP(":/svg/headphones_off.svg", NULL);
+      //monitorOnSVGPixmap = new MPIXMAP(":/svg/headphones_on.svg", NULL);
+
+
+      routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
+      routingOutputSVGIcon = new QIcon(*routingOutputSVGPixmap);
+      routingInputUnconnectedSVGIcon = new QIcon(*routingInputUnconnectedSVGPixmap);
+      routingOutputUnconnectedSVGIcon = new QIcon(*routingOutputUnconnectedSVGPixmap);
+
+      headphonesOffSVGIcon = new QIcon(*headphonesOffSVGPixmap);
+      headphonesOnSVGIcon = new QIcon(*headphonesOnSVGPixmap);
+
+      muteOffSVGIcon = new QIcon(*muteOffSVGPixmap);
+      muteOnSVGIcon = new QIcon(*muteOnSVGPixmap);
+      muteOnXSVGIcon = new QIcon(*muteOnXSVGPixmap);
+      muteProxyOnSVGIcon = new QIcon(*muteProxyOnSVGPixmap);
+      muteAndProxyOnSVGIcon = new QIcon(*muteAndProxyOnSVGPixmap);
+
+      soloOffSVGIcon = new QIcon(*soloOffSVGPixmap);
+      soloOnSVGIcon = new QIcon(*soloOnSVGPixmap);
+      soloOnAloneSVGIcon = new QIcon(*soloOnAloneSVGPixmap);
+      soloProxyOnSVGIcon = new QIcon(*soloProxyOnSVGPixmap);
+      soloProxyOnAloneSVGIcon = new QIcon(*soloProxyOnAloneSVGPixmap);
+      soloAndProxyOnSVGIcon = new QIcon(*soloAndProxyOnSVGPixmap);
+
+      trackOffSVGIcon  = new QIcon(*trackOffSVGPixmap);
+      trackOnSVGIcon = new QIcon(*trackOnSVGPixmap);
+
+      stereoOffSVGIcon  = new QIcon(*stereoOffSVGPixmap);
+      stereoOnSVGIcon = new QIcon(*stereoOnSVGPixmap);
+
+      preFaderOffSVGIcon  = new QIcon(*preFaderOffSVGPixmap);
+      preFaderOnSVGIcon = new QIcon(*preFaderOnSVGPixmap);
+
+      recArmOffSVGIcon = new QIcon(*recArmOffSVGPixmap);
+      recArmOnSVGIcon = new QIcon(*recArmOnSVGPixmap);
+
+      monitorOffSVGIcon = new QIcon(*monitorOffSVGPixmap);
+      monitorOnSVGIcon = new QIcon(*monitorOnSVGPixmap);
+
+
+      soloSVGIcon = new QIcon(":/svg/headphones_off.svg");
+      soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
+      // TODO
+      soloProxySVGIcon = new QIcon(":/svg/headphones_off.svg");
+      soloProxySVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
+      muteSVGIcon = new QIcon(":/svg/mute_off.svg");
+      muteSVGIcon->addFile(":/svg/mute_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
+      trackEnableSVGIcon = new QIcon(":/svg/track_on.svg");
+      trackEnableSVGIcon->addFile(":/svg/track_off.svg", QSize(), QIcon::Normal, QIcon::On);
+
+      recArmSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
+      recArmSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
       }
 
 //---------------------------------------------------------
@@ -1103,6 +1289,89 @@ void deleteIcons()
       delete routerFilterSourceRoutesIcon;
       delete routerFilterDestinationRoutesIcon;
       delete routerViewSplitterIcon;
+
+
+      //----------------------------------
+      //   SVG...
+      //----------------------------------
+
+      delete routingInputSVGPixmap;
+      delete routingOutputSVGPixmap;
+      delete routingInputUnconnectedSVGPixmap;
+      delete routingOutputUnconnectedSVGPixmap;
+
+      delete headphonesOffSVGPixmap;
+      delete headphonesOnSVGPixmap;
+
+      delete muteOffSVGPixmap;
+      delete muteOnSVGPixmap;
+      delete muteOnXSVGPixmap;
+
+      delete soloOffSVGPixmap;
+      delete soloOnSVGPixmap;
+      delete soloOnAloneSVGPixmap;
+      delete soloProxyOnSVGPixmap;
+      delete soloProxyOnAloneSVGPixmap;
+      delete soloAndProxyOnSVGPixmap;
+
+      delete trackOffSVGPixmap;
+      delete trackOnSVGPixmap;
+
+      delete stereoOffSVGPixmap;
+      delete stereoOnSVGPixmap;
+
+      delete preFaderOffSVGPixmap;
+      delete preFaderOnSVGPixmap;
+
+      delete recArmOffSVGPixmap;
+      delete recArmOnSVGPixmap;
+
+      delete monitorOffSVGPixmap;
+      delete monitorOnSVGPixmap;
+
+
+      delete routingInputSVGIcon;
+      delete routingOutputSVGIcon;
+      delete routingInputUnconnectedSVGIcon;
+      delete routingOutputUnconnectedSVGIcon;
+
+      delete headphonesOffSVGIcon;
+      delete headphonesOnSVGIcon;
+
+      delete muteOffSVGIcon;
+      delete muteOnSVGIcon;
+      delete muteOnXSVGIcon;
+      delete muteProxyOnSVGIcon;
+      delete muteAndProxyOnSVGIcon;
+
+      delete soloOffSVGIcon;
+      delete soloOnSVGIcon;
+      delete soloOnAloneSVGIcon;
+      delete soloProxyOnSVGIcon;
+      delete soloProxyOnAloneSVGIcon;
+      delete soloAndProxyOnSVGIcon;
+
+      delete trackOffSVGIcon;
+      delete trackOnSVGIcon;
+
+      delete stereoOffSVGIcon;
+      delete stereoOnSVGIcon;
+
+      delete preFaderOffSVGIcon;
+      delete preFaderOnSVGIcon;
+
+      delete recArmOffSVGIcon;
+      delete recArmOnSVGIcon;
+
+      delete monitorOffSVGIcon;
+      delete monitorOnSVGIcon;
+
+
+      delete soloSVGIcon;
+      delete soloProxySVGIcon;
+      delete muteSVGIcon;
+      delete trackEnableSVGIcon;
+      delete recArmSVGIcon;
       }
 
 } // namespace MusEGui

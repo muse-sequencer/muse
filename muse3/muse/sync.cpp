@@ -4,6 +4,7 @@
 //  $Id: sync.cpp,v 1.6.2.12 2009/06/20 22:20:41 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -62,6 +63,8 @@ double volatile curExtMidiSyncTime = 0.0;
 double volatile lastExtMidiSyncTime = 0.0;
 MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset = MusECore::MidiSyncInfo::SMALL;
 double syncRecTempoValQuant = 1.0;
+
+MusECore::MidiSyncContainer midiSyncContainer;
 
 // Not used yet. DELETETHIS?
 // static bool mcStart = false;
@@ -501,12 +504,49 @@ void MidiSyncInfo::write(int level, Xml& xml)
   xml.etag(level, "midiSyncInfo");
 }
 
+
+//---------------------------------------------------------
+//   MidiSyncContainer
+//---------------------------------------------------------
+
+MidiSyncContainer::MidiSyncContainer()
+{
+  _midiClock = 0;
+  mclock1 = 0.0;
+  mclock2 = 0.0;
+  songtick1 = songtick2 = 0;
+  lastTempo = 0;
+  storedtimediffs = 0;
+  playStateExt = false; // not playing
+  recTick = 0;
+  recTick1 = 0;
+  recTick2 = 0;
+
+  _clockAveragerStages = new int[16]; // Max stages is 16!
+
+  _syncRecFilterPreset = MidiSyncInfo::SMALL;
+  setSyncRecFilterPresetArrays();
+
+  for(int i = 0; i < _clockAveragerPoles; ++i)
+  {
+    _avgClkDiffCounter[i] = 0;
+    _averagerFull[i] = false;
+  }
+  _tempoQuantizeAmount = 1.0;
+  _lastRealTempo      = 0.0;
+}
+
+MidiSyncContainer::~MidiSyncContainer()
+{
+    delete[] _clockAveragerStages;
+}
+
 //---------------------------------------------------------
 //  mmcInput
 //    Midi Machine Control Input received
 //---------------------------------------------------------
 
-void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
+void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
       {
       if (MusEGlobal::debugSync)
             printf("mmcInput: n:%d %02x %02x %02x %02x\n",
@@ -604,7 +644,7 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
 //    process Quarter Frame Message
 //---------------------------------------------------------
 
-void MidiSeq::mtcInputQuarter(int port, unsigned char c)
+void MidiSyncContainer::mtcInputQuarter(int port, unsigned char c)
       {
       static int hour, min, sec, frame;
 
@@ -666,7 +706,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
                     if(port == MusEGlobal::curMidiSyncInPort && MusEGlobal::extSyncFlag.value() && msync.MTCIn())
                     {
                       if(MusEGlobal::debugSync)
-                        printf("MidiSeq::mtcInputQuarter hour byte:%x\n", (unsigned int)tmphour);
+                        printf("MidiSyncContainer::mtcInputQuarter hour byte:%x\n", (unsigned int)tmphour);
                       mtcSyncMsg(MusEGlobal::mtcCurTime, type, !MusEGlobal::mtcSync);
                     }
                   }
@@ -684,7 +724,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
 //    process Frame Message
 //---------------------------------------------------------
 
-void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
+void MidiSyncContainer::mtcInputFull(int port, const unsigned char* p, int n)
       {
       if (MusEGlobal::debugSync)
             printf("mtcInputFull\n");
@@ -735,7 +775,7 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
 //   nonRealtimeSystemSysex
 //---------------------------------------------------------
 
-void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n)
+void MidiSyncContainer::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n)
       {
       switch(p[3]) {
             case 4:
@@ -756,7 +796,7 @@ void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n
 //    quarter note).
 //---------------------------------------------------------
 
-void MidiSeq::setSongPosition(int port, int midiBeat)
+void MidiSyncContainer::setSongPosition(int port, int midiBeat)
       {
       if (MusEGlobal::midiInputTrace)
             printf("set song position port:%d %d\n", port, midiBeat);
@@ -789,10 +829,10 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
 //---------------------------------------------------------
 //   set all runtime variables to the "in sync" value
 //---------------------------------------------------------
-void MidiSeq::alignAllTicks(int frameOverride)
+void MidiSyncContainer::alignAllTicks(int frameOverride)
       {
       unsigned curFrame;
-      if (!frameOverride)
+      if (!frameOverride && MusEGlobal::audio)
         curFrame = MusEGlobal::audio->pos().frame();
       else
         curFrame = frameOverride;
@@ -837,7 +877,7 @@ void MidiSeq::alignAllTicks(int frameOverride)
 //   realtimeSystemInput
 //    real time message received
 //---------------------------------------------------------
-void MidiSeq::realtimeSystemInput(int port, int c, double time)
+void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
       {
 
       if (MusEGlobal::midiInputTrace)
@@ -878,7 +918,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                   // Must be careful not to allow more than one clock input at a time.
                   // Would re-transmit mixture of multiple clocks - confusing receivers.
                   // Solution: Added MusEGlobal::curMidiSyncInPort.
-                  // Maybe in MidiSeq::processTimerTick(), call sendClock for the other devices, instead of here.
+                  // Maybe in MidiSyncContainer::processTimerTick(), call sendClock for the other devices, instead of here.
                   for(int p = 0; p < MIDI_PORTS; ++p)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                       MusEGlobal::midiPorts[p].sendClock();
@@ -1428,17 +1468,17 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
 //                start
 //---------------------------------------------------------
 
-void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
+void MidiSyncContainer::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       {
       double time = mtc.time();
       double stime = mtc.time(type);
       if (MusEGlobal::debugSync)
-            printf("MidiSeq::MusEGlobal::mtcSyncMsg time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
+            printf("MidiSyncContainer::mtcSyncMsg time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
 
       if (seekFlag && MusEGlobal::audio->isRunning()) {
             if (!MusEGlobal::checkAudioDevice()) return;
             if (MusEGlobal::debugSync)
-              printf("MidiSeq::MusEGlobal::mtcSyncMsg starting transport.\n");
+              printf("MidiSyncContainer::mtcSyncMsg starting transport.\n");
             MusEGlobal::audioDevice->startTransport();
             return;
             }
@@ -1458,5 +1498,72 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
             printf("   state %d diff %f\n", MusEGlobal::mtcState, diff);
       */
       }
+
+//---------------------------------------------------------
+//   setSyncRecFilterPresetArrays
+//   To be called in realtime thread only.
+//---------------------------------------------------------
+void MidiSyncContainer::setSyncRecFilterPresetArrays()
+{
+  switch(_syncRecFilterPreset)
+  {
+    // NOTE: Max _clockAveragerPoles is 16 and maximum stages is 48 per pole !
+    case MidiSyncInfo::NONE:
+      _clockAveragerPoles = 0;
+      _preDetect = false;
+    break;
+    case MidiSyncInfo::TINY:
+      _clockAveragerPoles = 2;
+      _clockAveragerStages[0] = 4;
+      _clockAveragerStages[1] = 4;
+      _preDetect = false;
+    break;
+    case MidiSyncInfo::SMALL:
+      _clockAveragerPoles = 3;
+      _clockAveragerStages[0] = 12;
+      _clockAveragerStages[1] = 8;
+      _clockAveragerStages[2] = 4;
+      _preDetect = false;
+    break;
+    case MidiSyncInfo::MEDIUM:
+      _clockAveragerPoles = 3;
+      _clockAveragerStages[0] = 28;
+      _clockAveragerStages[1] = 12;
+      _clockAveragerStages[2] = 8;
+      _preDetect = false;
+    break;
+    case MidiSyncInfo::LARGE:
+      _clockAveragerPoles = 4;
+      _clockAveragerStages[0] = 48;
+      _clockAveragerStages[1] = 48;
+      _clockAveragerStages[2] = 48;
+      _clockAveragerStages[3] = 48;
+      _preDetect = false;
+    break;
+    case MidiSyncInfo::LARGE_WITH_PRE_DETECT:
+      _clockAveragerPoles = 4;
+      _clockAveragerStages[0] = 8;
+      _clockAveragerStages[1] = 48;
+      _clockAveragerStages[2] = 48;
+      _clockAveragerStages[3] = 48;
+      _preDetect = true;
+    break;
+
+    default:
+      fprintf(stderr, "MidiSyncContainer::setSyncRecFilterPresetArrays unknown preset type:%d\n", (int)_syncRecFilterPreset);
+  }
+}
+
+//---------------------------------------------------------
+//   setSyncRecFilterPreset
+//   To be called in realtime thread only.
+//---------------------------------------------------------
+void MidiSyncContainer::setSyncRecFilterPreset(MidiSyncInfo::SyncRecFilterPresetType type)
+{
+  _syncRecFilterPreset = type;
+  setSyncRecFilterPresetArrays();
+  alignAllTicks();
+}
+
 
 } // namespace MusECore

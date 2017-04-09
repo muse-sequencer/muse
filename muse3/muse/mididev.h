@@ -176,13 +176,14 @@ class MidiDevice {
       virtual void processInput()      {}
       virtual void discardInput()      {}
 
+      // Event time and tick must be set by caller beforehand.
       virtual void recordEvent(MidiRecordEvent&);
 
       // Schedule an event for playback. Returns false if event cannot be delivered.
       virtual bool addScheduledEvent(const MidiPlayEvent& ev) { _playEvents.add(ev); return true; }
       // Add a stuck note. Returns false if event cannot be delivered.
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
-      // Put an event for immediate playback.
+      // Put an event for immediate playback. Returns true if event cannot be delivered.
       virtual bool putEvent(const MidiPlayEvent&) = 0;
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads.

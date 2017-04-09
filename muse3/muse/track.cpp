@@ -254,6 +254,7 @@ void Track::init()
       _selectionOrder = 0;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
+      _recMonitor    = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
@@ -315,6 +316,7 @@ void Track::internal_assign(const Track& t, int flags)
         _height       = t._height;
         _comment      = t.comment();
         _locked       = t.locked();
+        _recMonitor   = t._recMonitor;
       }
 }
 
@@ -348,6 +350,70 @@ QPixmap* Track::trackTypeIcon(TrackType type)
               break;
         }
   return 0;        
+}
+
+//---------------------------------------------------------
+//   trackTypeColor
+//   Static
+//---------------------------------------------------------
+
+QColor Track::trackTypeColor(TrackType type)
+{
+  switch(type) {
+        case MusECore::Track::MIDI:
+              return MusEGlobal::config.midiTrackBg;
+        case MusECore::Track::NEW_DRUM:
+              return MusEGlobal::config.newDrumTrackBg;
+        case MusECore::Track::DRUM:
+              return MusEGlobal::config.drumTrackBg;
+        case MusECore::Track::WAVE:
+              return MusEGlobal::config.waveTrackBg;
+        case MusECore::Track::AUDIO_OUTPUT:
+              return MusEGlobal::config.outputTrackBg;
+        case MusECore::Track::AUDIO_INPUT:
+              return MusEGlobal::config.inputTrackBg;
+        case MusECore::Track::AUDIO_GROUP:
+              return MusEGlobal::config.groupTrackBg;
+        case MusECore::Track::AUDIO_AUX:
+              return MusEGlobal::config.auxTrackBg;
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+              return MusEGlobal::config.synthTrackBg;
+        default:
+              break;
+        }
+  return QColor();
+}
+
+//---------------------------------------------------------
+//   trackTypeLabelColor
+//   Static
+//---------------------------------------------------------
+
+QColor Track::trackTypeLabelColor(TrackType type)
+{
+  switch(type) {
+        case MusECore::Track::MIDI:
+              return MusEGlobal::config.midiTrackLabelBg;
+        case MusECore::Track::NEW_DRUM:
+              return MusEGlobal::config.newDrumTrackLabelBg;
+        case MusECore::Track::DRUM:
+              return MusEGlobal::config.drumTrackLabelBg;
+        case MusECore::Track::WAVE:
+              return MusEGlobal::config.waveTrackLabelBg;
+        case MusECore::Track::AUDIO_OUTPUT:
+              return MusEGlobal::config.outputTrackLabelBg;
+        case MusECore::Track::AUDIO_INPUT:
+              return MusEGlobal::config.inputTrackLabelBg;
+        case MusECore::Track::AUDIO_GROUP:
+              return MusEGlobal::config.groupTrackLabelBg;
+        case MusECore::Track::AUDIO_AUX:
+              return MusEGlobal::config.auxTrackLabelBg;
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+              return MusEGlobal::config.synthTrackLabelBg;
+        default:
+              break;
+        }
+  return QColor();
 }
 
 //---------------------------------------------------------
@@ -579,7 +645,6 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         delay          = mt.delay;
         len            = mt.len;
         compression    = mt.compression;
-        _recEcho       = mt.recEcho();
         clefType       = mt.clefType;
       }  
       
@@ -830,7 +895,6 @@ void MidiTrack::init()
       delay          = 0;
       len            = 100;          // percent
       compression    = 100;          // percent
-      _recEcho       = true;
       }
 
 void MidiTrack::init_drum_ordering()
@@ -1085,11 +1149,19 @@ bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
       
 //---------------------------------------------------------
 //   addStuckLiveNote
-//   Return true if note was removed.
+//   Return true if note was added.
 //---------------------------------------------------------
 
 bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
 {
+//   for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
+//   {
+//     // We're looking for port, channel, and note. Time and velocity are not relevant.
+//     if((*k).port() == port &&
+//        (*k).channel() == chan &&
+//        (*k).dataA() == note)
+//       return false;
+//   }
   stuckLiveNotes.add(MidiPlayEvent(0, port, chan, ME_NOTEOFF, note, vel)); // Mark for immediate playback
   return true;
 }
@@ -1111,6 +1183,24 @@ bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
       stuckLiveNotes.erase(k);
       return true;
     }
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+//   stuckLiveNoteExists
+//   Return true if note exists.
+//---------------------------------------------------------
+
+bool MidiTrack::stuckLiveNoteExists(int port, int chan, int note)
+{
+  for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
+  {
+    // We're looking for port, channel, and note. Time and velocity are not relevant.
+    if((*k).port() == port &&
+       (*k).channel() == chan &&
+       (*k).dataA() == note)
+      return true;
   }
   return false;
 }
@@ -1160,7 +1250,6 @@ void MidiTrack::write(int level, Xml& xml) const
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
       xml.intTag(level, "locked", _locked);
-      xml.intTag(level, "echo", _recEcho);
 
       xml.intTag(level, "transposition", transposition);
       xml.intTag(level, "velocity", velocity);
@@ -1471,8 +1560,8 @@ void MidiTrack::read(Xml& xml)
                               chanmask = xml.parseInt();            // Obsolete but support old files.
                         else if (tag == "locked")
                               _locked = xml.parseInt();
-                        else if (tag == "echo")
-                              _recEcho = xml.parseInt();
+                        else if (tag == "echo")                     // Obsolete but support old files.
+                              _recMonitor = xml.parseInt();
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
@@ -1593,6 +1682,7 @@ void Track::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "channels", _channels);
       xml.intTag(level, "height", _height);
       xml.intTag(level, "locked", _locked);
+      xml.intTag(level, "recMonitor", _recMonitor);
       if (_selected)
       {
             xml.intTag(level, "selected", _selected);
@@ -1631,6 +1721,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       }      
       else if (tag == "locked")
             _locked = xml.parseInt();
+      else if (tag == "recMonitor")
+            _recMonitor = xml.parseInt();
       else if (tag == "selected")
             _selected = xml.parseInt();
       else if (tag == "selectionOrder")
@@ -1950,10 +2042,9 @@ isInstrumentMod
       else
       {
         cur_enote = dm.enote;
-
-        if(includeDefault && doWholeMap)
+        if(includeDefault)
         {
-          // We are in the middle of 'promoting' the entire list to default patch list...
+          // We are 'promoting' the fields to default patch list...
           other_wdme._fields = fields;
           other_wdme._mapItem = dm;
           // Add the item to the default patch drum list.
@@ -1964,47 +2055,48 @@ isInstrumentMod
         }
         else
         {
-          if(includeDefault)
+          if(doWholeMap)
           {
-            // We are 'promoting' the fields to default patch list...
-            other_wdme._fields = fields;
-            other_wdme._mapItem = dm;
-            _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, index, other_wdme);
-            // Now remove the item from the non-default patch drum list.
-            if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
-              _workingDrumMapPatchList->remove(patch, index, WorkingDrumMapEntry::AllFields, false); // Do not include defaults.
+            if(fields == WorkingDrumMapEntry::AllFields)
+            {
+              other_wdme._fields = fields;
+              other_wdme._mapItem = dm;
+              _workingDrumMapPatchList->add(patch, index, other_wdme);
+            }
+            else
+              _workingDrumMapPatchList->add(patch, index, wdme);
           }
           else
           {
             _workingDrumMapPatchList->add(patch, index, wdme);
             getMapItem(patch, index, dm, WorkingDrumMapEntry::AllOverrides);
           }
+        }
 
-          if(fields & WorkingDrumMapEntry::ENoteField)
+        if(!doWholeMap && (fields & WorkingDrumMapEntry::ENoteField))
+        {
+          new_enote = dm.enote;
+          other_index = drum_in_map[new_enote];
+          // If there is already another track override on the other index we must change it.
+          if(isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) != WorkingDrumMapEntry::NoOverride)
           {
-            new_enote = dm.enote;
-            other_index = drum_in_map[new_enote];
-            // If there is already another track override on the other index we must change it.
-            if(isWorkingMapItem(other_index, WorkingDrumMapEntry::ENoteField, patch) != WorkingDrumMapEntry::NoOverride)
+            other_dm.enote = cur_enote;
+            //WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
+            other_wdme._mapItem = other_dm;
+            other_wdme._fields = WorkingDrumMapEntry::ENoteField;
+            if(includeDefault)
             {
-              other_dm.enote = cur_enote;
-              //WorkingDrumMapEntry other_wdme(other_dm, WorkingDrumMapEntry::ENoteField);
-              other_wdme._mapItem = other_dm;
-              other_wdme._fields = WorkingDrumMapEntry::ENoteField;
-              if(includeDefault)
-              {
-                _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, other_index, other_wdme);
-                // Now remove the item from the non-default patch drum list.
-                if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
-                  _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, false); // Do not include defaults.
-              }
-              else
-                _workingDrumMapPatchList->add(patch, other_index, other_wdme);
-
-              //_drummap[other_index].enote = cur_enote;
-              //drum_in_map[cur_enote] = other_index;
-              //drum_in_map[new_enote] = index;
+              _workingDrumMapPatchList->add(CTRL_PROGRAM_VAL_DONT_CARE, other_index, other_wdme);
+              // Now remove the item from the non-default patch drum list.
+              if(patch != CTRL_PROGRAM_VAL_DONT_CARE)
+                _workingDrumMapPatchList->remove(patch, other_index, WorkingDrumMapEntry::ENoteField, false); // Do not include defaults.
             }
+            else
+              _workingDrumMapPatchList->add(patch, other_index, other_wdme);
+
+            //_drummap[other_index].enote = cur_enote;
+            //drum_in_map[cur_enote] = other_index;
+            //drum_in_map[new_enote] = index;
           }
         }
       }
@@ -2102,7 +2194,8 @@ void MidiTrack::getMapItem(int patch, int index, DrumMap& dest_map, int override
   }
 
   // Get the instrument's map item, and include any requested overrides.
-  midi_instr->getMapItem(patch, index, dest_map, overrideType);
+  const int channel = outChannel();
+  midi_instr->getMapItem(channel, patch, index, dest_map, overrideType);
 
   // Did we request to include any track default patch overrides?
   if(overrideType & WorkingDrumMapEntry::TrackDefaultOverride)

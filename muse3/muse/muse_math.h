@@ -32,6 +32,8 @@
 #define muse_val2dbr(x) (round(log10(x) * 20000000.0) * 0.000001)
 // Convert dB to val.
 #define muse_db2val(x) pow10(x * 0.05) 
+// Round to the nearest .000001
+#define muse_round2micro(x) (round(x * 1000000.0) * 0.000001)
 
 #endif
 

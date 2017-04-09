@@ -29,6 +29,7 @@
 
 #include <QFrame>
 #include <QVBoxLayout>
+#include <QWidgetItem>
 #include <QLabel>
 
 #include "type_defs.h"
@@ -37,7 +38,6 @@
 
 class QMouseEvent;
 class QResizeEvent;
-class QToolButton;
 class QGridLayout;
 class QLayout;
 class QSize;
@@ -52,6 +52,8 @@ class Meter;
 class CompactKnob;
 class CompactSlider;
 class ElidedLabel;
+class CompactToolButton;
+class IconButton;
 
 //---------------------------------------------
 // ComponentWidget
@@ -187,22 +189,14 @@ class ComponentDescriptor
     QColor _color;
     
     bool _enabled;
-    
-    // Slots:
-    const char* _changedSlot; 
-    const char* _movedSlot; 
-    const char* _pressedSlot; 
-    const char* _releasedSlot; 
-    const char* _rightClickedSlot;
 
-  public:        
+  public:
     ComponentDescriptor() :
                             _widgetType(0),
                             _componentType(0), 
                             _objName(0), 
                             _index(0), 
-                            _enabled(true),
-                            _changedSlot(0), _movedSlot(0), _pressedSlot(0), _releasedSlot(0), _rightClickedSlot(0)
+                            _enabled(true)
                             { } 
                             
     ComponentDescriptor(ComponentWidget::ComponentWidgetType widgetType,
@@ -212,12 +206,7 @@ class ComponentDescriptor
                         const QString& toolTipText = QString(), 
                         const QString& label = QString(), 
                         const QColor& color = QColor(),
-                        bool enabled = true,
-                        const char* changedSlot = 0, 
-                        const char* movedSlot = 0, 
-                        const char* pressedSlot = 0, 
-                        const char* releasedSlot = 0, 
-                        const char* rightClickedSlot = 0
+                        bool enabled = true
                         ) : 
                             _widgetType(widgetType),
                             _componentType(type),
@@ -225,12 +214,7 @@ class ComponentDescriptor
                             _toolTipText(toolTipText), 
                             _label(label),
                             _color(color),
-                            _enabled(enabled),
-                            _changedSlot(changedSlot), 
-                            _movedSlot(movedSlot), 
-                            _pressedSlot(pressedSlot),
-                            _releasedSlot(releasedSlot), 
-                            _rightClickedSlot(rightClickedSlot)
+                            _enabled(enabled)
                             { }
 };
 
@@ -275,25 +259,34 @@ class ComponentRack : public QFrame
 
     // Adds a component widget created by newComponentWidget.
     void addComponentWidget( const ComponentWidget& cw, const ComponentWidget& before = ComponentWidget() );
-    
+
   protected slots:
     virtual void controllerChanged(double /*val*/, bool /*isOff*/, int /*id*/, int /*scrollMode*/) { }
     virtual void controllerMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/) { }
-    virtual void controllerPressed(int /*id*/) { }
-    virtual void controllerReleased(int /*id*/) { }
+    virtual void controllerPressed(double /*val*/, int /*id*/) { }
+    virtual void controllerReleased(double /*val*/, int /*id*/) { }
     virtual void controllerRightClicked(QPoint /*p*/, int /*id*/) { }
     virtual void propertyChanged(double /*val*/, bool /*isOff*/, int /*id*/, int /*scrollMode*/) { }
     virtual void propertyMoved(double /*val*/, int /*id*/, bool /*shift_pressed*/) { }
-    virtual void propertyPressed(int /*id*/) { }
-    virtual void propertyReleased(int /*id*/) { }
+    virtual void propertyPressed(double /*val*/, int /*id*/) { }
+    virtual void propertyReleased(double /*val*/, int /*id*/) { }
     virtual void propertyRightClicked(QPoint /*p*/, int /*id*/) { }
     virtual void labelPropertyPressed(QPoint /*p*/, int /*id*/, Qt::MouseButtons /*buttons*/, Qt::KeyboardModifiers /*keys*/) { }
     virtual void labelPropertyReleased(QPoint /*p*/, int /*id*/, Qt::MouseButtons /*buttons*/, Qt::KeyboardModifiers /*keys*/) { }
-    
+    virtual void labelPropertyReturnPressed(QPoint /*p*/, int /*id*/, Qt::KeyboardModifiers /*keys*/) { }
+
    public slots:
       virtual void songChanged(MusECore::SongChangedFlags_t) { }
       virtual void configChanged();
-      
+
+   signals:
+      // Argument int 'type' is ComponentRack::ComponentTypes or
+      //  other user type (Audio/MidiComponentRack::ComponentTypes for ex).
+      void componentChanged(int type, double val, bool off, int id, int scrollMode);
+      void componentMoved(int type, double val, int id, bool shift_pressed);
+      void componentPressed(int type, double val, int id);
+      void componentReleased(int type, double val, int id);
+
   public:
     ComponentRack(int id = -1, QWidget* parent = 0, Qt::WindowFlags f = 0);
     
@@ -304,7 +297,7 @@ class ComponentRack : public QFrame
       int componentWidgetType = -1,
       int index = -1,
       QWidget* widget = 0);
-    
+
     // Destroys all components and clears the component list.
     void clearDelete();
 
@@ -315,6 +308,8 @@ class ComponentRack : public QFrame
     virtual void addStretch() { _layout->addStretch(); }
     // Add spacing to the layout.
     virtual void addSpacing(int spc) { _layout->addSpacing(spc); }
+    virtual double componentMinValue(const ComponentWidget&) const;
+    virtual double componentMaxValue(const ComponentWidget&) const;
     virtual void setComponentRange(const ComponentWidget&, double min, double max, bool updateOnly = true,
                                    double step = 0.0, int pageSize = 1,
                                    DoubleRange::ConversionMode mode = DoubleRange::ConvertDefault);
@@ -322,10 +317,16 @@ class ComponentRack : public QFrame
     virtual void setComponentMaxValue(const ComponentWidget&, double max, bool updateOnly = true);
     virtual double componentValue(const ComponentWidget&) const;
     virtual void setComponentValue(const ComponentWidget&, double val, bool updateOnly = true);
+    virtual void fitComponentValue(const ComponentWidget&, double val, bool updateOnly = true);
     virtual void incComponentValue(const ComponentWidget&, int steps, bool updateOnly = true);
     virtual void setComponentText(const ComponentWidget&, const QString& text, bool updateOnly = true);
     virtual void setComponentEnabled(const ComponentWidget&, bool enable, bool updateOnly = true);
     virtual void setComponentShowValue(const ComponentWidget&, bool show, bool updateOnly = true);
+
+    // Sets up tabbing for the existing controls in the rack.
+    // Accepts a previousWidget which can be null and returns the last widget in the rack,
+    //  which allows chaining racks or other widgets.
+    virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
 };
 
 //---------------------------------------------
@@ -355,12 +356,7 @@ class WidgetComponentDescriptor : public ComponentDescriptor
                         const QString& toolTipText = QString(),
                         const QString& label = QString(),
                         const QColor& color = QColor(),
-                        bool enabled = true,
-                        const char* changedSlot = 0,
-                        const char* movedSlot = 0,
-                        const char* pressedSlot = 0,
-                        const char* releasedSlot = 0,
-                        const char* rightClickedSlot = 0
+                        bool enabled = true
                         ) : 
                             ComponentDescriptor(ComponentRack::ExternalComponentWidget,
                                                 componentType,
@@ -369,12 +365,7 @@ class WidgetComponentDescriptor : public ComponentDescriptor
                                                 toolTipText,
                                                 label,
                                                 color,
-                                                enabled,
-                                                changedSlot,
-                                                movedSlot,
-                                                pressedSlot,
-                                                releasedSlot,
-                                                rightClickedSlot
+                                                enabled
                                                ),
                             _widget(widget)
                             { }
@@ -439,12 +430,7 @@ class CompactKnobComponentDescriptor : public ComponentDescriptor
       double initVal = 0.0,
       bool hasOffMode = false,
       bool isOff = false,
-      bool showValue = true,
-      const char* changedSlot = 0,
-      const char* movedSlot = 0,
-      const char* pressedSlot = 0,
-      const char* releasedSlot = 0,
-      const char* rightClickedSlot = 0
+      bool showValue = true
     )
     : ComponentDescriptor(ComponentRack::CompactKnobComponentWidget,
                           componentType,
@@ -453,12 +439,7 @@ class CompactKnobComponentDescriptor : public ComponentDescriptor
                           toolTipText,
                           label,
                           borderColour,
-                          enabled,
-                          changedSlot,
-                          movedSlot,
-                          pressedSlot,
-                          releasedSlot,
-                          rightClickedSlot
+                          enabled
                          ),
       _compactKnob(0),
       _min(min),
@@ -536,12 +517,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
       double initVal = 0.0,
       bool hasOffMode = false,
       bool isOff = false,
-      bool showValue = true,
-      const char* changedSlot = 0,
-      const char* movedSlot = 0,
-      const char* pressedSlot = 0,
-      const char* releasedSlot = 0,
-      const char* rightClickedSlot = 0
+      bool showValue = true
     )
     : ComponentDescriptor(ComponentRack::CompactSliderComponentWidget,
                           componentType,
@@ -550,12 +526,7 @@ class CompactSliderComponentDescriptor : public ComponentDescriptor
                           toolTipText,
                           label,
                           borderColour,
-                          enabled,
-                          changedSlot,
-                          movedSlot,
-                          pressedSlot,
-                          releasedSlot,
-                          rightClickedSlot
+                          enabled
                          ),
       _compactSlider(0),
       _activeBorders(activeBorders),
@@ -591,17 +562,13 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
     bool _ignoreHeight;
     bool _ignoreWidth;
 
-    // Slots:
-    const char* _labelPressedSlot; 
-    const char* _labelReleasedSlot; 
-    
   public:        
     ElidedLabelComponentDescriptor() : 
       ComponentDescriptor(ComponentRack::ElidedLabelComponentWidget,
                           ComponentRack::propertyComponent), 
       _elidedLabel(0),
-      _elideMode(Qt::ElideNone), _minFontPoint(5), _ignoreHeight(true), _ignoreWidth(false),
-      _labelPressedSlot(0), _labelReleasedSlot(0) { }
+      _elideMode(Qt::ElideNone), _minFontPoint(5), _ignoreHeight(true), _ignoreWidth(false)
+      { }
                             
     ElidedLabelComponentDescriptor(
       ComponentWidget::ComponentType componentType,
@@ -614,9 +581,7 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
       int minFontPoint = 5,
       bool ignoreHeight = true, 
       bool ignoreWidth = false,
-      bool enabled = true,
-      const char* labelPressedSlot = 0,
-      const char* labelReleasedSlot = 0
+      bool enabled = true
     )
     : ComponentDescriptor(ComponentRack::ElidedLabelComponentWidget,
                           componentType,
@@ -631,11 +596,29 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
       _elideMode(elideMode), 
       _minFontPoint(minFontPoint), 
       _ignoreHeight(ignoreHeight), 
-      _ignoreWidth(ignoreWidth),
-      _labelPressedSlot(labelPressedSlot),
-      _labelReleasedSlot(labelReleasedSlot)
+      _ignoreWidth(ignoreWidth)
        { }
 };
+
+//---------------------------------------------------------
+//   TrackNameLabel
+//---------------------------------------------------------
+
+class TrackNameLabel : public QLabel
+{
+  Q_OBJECT
+
+  protected:
+    virtual void mouseDoubleClickEvent(QMouseEvent*);
+
+  signals:
+    void doubleClicked();
+
+  public:
+    TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
+    TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = 0);
+};
+
 
 struct GridPosStruct
 {
@@ -659,7 +642,8 @@ class ExpanderHandle : public QFrame
 
   protected:
     enum ResizeMode { ResizeModeNone, ResizeModeHovering, ResizeModeDragging };
-    
+    virtual void paintEvent(QPaintEvent*);
+
   private:
     int _handleWidth;
     ResizeMode _resizeMode;
@@ -696,21 +680,28 @@ class Strip : public QFrame {
       bool _highlight;
 
    protected:
-      
+      // Whether to propagate changes to other selected tracks.
+      // This includes operating a control or using the universal up/down volume/ pan keys etc.
+      bool _broadcastChanges;
+
       MusECore::Track* track;
-      QLabel* label;
+
+      TrackNameLabel* label;
       QGridLayout* grid;
       int _curGridRow;
       Meter* meter[MAX_CHANNELS];
       // Extra width applied to the sizeHint, from user expanding the strip.
       int _userWidth;
       ExpanderHandle* _handle;
-      
-      QToolButton* record;
-      QToolButton* solo;
-      QToolButton* mute;
-      QToolButton* iR; // Input routing button
-      QToolButton* oR; // Output routing button
+
+      // The widget that will receive focus when we want to clear focus.
+      QWidget* _focusYieldWidget;
+
+      IconButton* record;
+      IconButton* solo;
+      IconButton* mute;
+      IconButton* iR; // Input routing button
+      IconButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       CompactComboBox* autoType;
       void setLabelText();
@@ -718,18 +709,27 @@ class Strip : public QFrame {
       virtual void mousePressEvent(QMouseEvent *);
       virtual void mouseReleaseEvent(QMouseEvent *);
       virtual void mouseMoveEvent(QMouseEvent *);
+      virtual void keyPressEvent(QKeyEvent *);
       virtual void paintEvent(QPaintEvent *);
 
       virtual void updateRouteButtons();
 
-   private slots:
-      void recordToggled(bool);
+   protected slots:
+      virtual void componentChanged(int type, double val, bool off, int id, int scrollMode);
+      virtual void componentMoved(int type, double val, int id, bool shift_pressed);
+      virtual void componentPressed(int type, double val, int id);
+      virtual void componentReleased(int type, double val, int id);
+      virtual void componentIncremented(int type, double oldCompVal, double newCompVal,
+                                        bool off, int id, int scrollMode);
+
+      virtual void recordToggled(bool);
       void soloToggled(bool);
       void muteToggled(bool);
 
-   protected slots:
+      virtual void focusYieldWidgetDestroyed(QObject*);
       virtual void heartBeat();
       void setAutomationType(int t);
+      virtual void changeTrackName();
 
    public slots:
       void resetPeaks();
@@ -742,15 +742,24 @@ class Strip : public QFrame {
 
    signals:
       void clearStripSelection();
-      void trackSelected(MusECore::Track*, bool);
       void moveStrip(Strip *s);
-
+      
    public:
       Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true);
-      ~Strip();
+      virtual ~Strip();
 
       // Destroy and rebuild strip components.
       virtual void buildStrip() { }
+
+      // The widget that will receive focus when we want to clear focus.
+      QWidget* focusYieldWidget() const { return _focusYieldWidget; }
+      // Sets the widget that will receive focus when we want to clear focus.
+      virtual void setFocusYieldWidget(QWidget*);
+
+      // Sets up tabbing for the entire strip.
+      // Accepts a previousWidget which can be null and returns the last widget in the strip,
+      //  which allows chaining other widgets.
+      virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0) = 0;
 
       bool getStripVisible() { return _visible; }
       void setStripVisible(bool v) { _visible = v; }
@@ -759,9 +768,9 @@ class Strip : public QFrame {
       
       void setRecordFlag(bool flag);
       MusECore::Track* getTrack() const { return track; }
-      void setLabelFont();
       void setHighLight(bool highlight);
-      QString getLabelText() { return label->text(); }
+      QString getLabelText();
+      void updateStyleSheet();
       
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
       void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);
@@ -775,6 +784,11 @@ class Strip : public QFrame {
 
       bool isEmbedded() const { return _isEmbedded; }
       void setEmbedded(bool embed) { _isEmbedded = embed; }
+
+      bool broadcastChanges() const { return _broadcastChanges; }
+      void setBroadcastChanges(bool v) { _broadcastChanges = v; }
+
+      void updateMuteIcon();
       };
 
 } // namespace MusEGui

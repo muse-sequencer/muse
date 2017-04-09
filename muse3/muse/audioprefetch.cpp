@@ -130,14 +130,14 @@ void AudioPrefetch::processMsg1(const void* m)
                   break;
             case PREFETCH_SEEK:
                   #ifdef AUDIOPREFETCH_DEBUG
-                  printf("AudioPrefetch::processMsg1 PREFETCH_SEEK msg->pos:%d\n", msg->pos); 
+                  fprintf(stderr, "AudioPrefetch::processMsg1 PREFETCH_SEEK msg->pos:%d\n", msg->pos);
                   #endif
                   
                   // process seek in background
                   seek(msg->pos);
                   break;
             default:
-                  printf("AudioPrefetch::processMsg1: unknown message\n");
+                  fprintf(stderr, "AudioPrefetch::processMsg1: unknown message\n");
             }
       }
 
@@ -153,7 +153,7 @@ void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
       msg._isRecTick = isRecTick;
       msg._isPlayTick = isPlayTick;
       while (sendMsg1(&msg, sizeof(msg))) {
-            printf("AudioPrefetch::msgTick(): send failed!\n");
+            fprintf(stderr, "AudioPrefetch::msgTick(): send failed!\n");
             }
       }
 
@@ -170,14 +170,14 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       ++seekCount;
       
       #ifdef AUDIOPREFETCH_DEBUG
-      printf("AudioPrefetch::msgSeek samplePos:%u force:%d seekCount:%d\n", samplePos, force, seekCount); 
+      fprintf(stderr, "AudioPrefetch::msgSeek samplePos:%u force:%d seekCount:%d\n", samplePos, force, seekCount);
       #endif
       
       PrefetchMsg msg;
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
       while (sendMsg1(&msg, sizeof(msg))) {
-            printf("AudioPrefetch::msgSeek::sleep(1)\n");
+            fprintf(stderr, "AudioPrefetch::msgSeek::sleep(1)\n");
             sleep(1);
             }
       }
@@ -189,7 +189,7 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
 void AudioPrefetch::prefetch(bool doSeek)
       {
       if (writePos == ~0U) {
-            printf("AudioPrefetch::prefetch: invalid write position\n");
+            fprintf(stderr, "AudioPrefetch::prefetch: invalid write position\n");
             return;
             }
       if (MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value()) {
@@ -215,7 +215,8 @@ void AudioPrefetch::prefetch(bool doSeek)
             if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos))
                   continue;
 
-            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek);
+            // True = do overwrite.
+            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek, true);
             
             // REMOVE Tim. samplerate. Added. Removed temporarily. TODO: Reinstate
             //track->prefetchAudio(writePos, ch, track->off(), MusEGlobal::segmentSize);
@@ -231,7 +232,7 @@ void AudioPrefetch::prefetch(bool doSeek)
 void AudioPrefetch::seek(unsigned seekTo)
       {
       #ifdef AUDIOPREFETCH_DEBUG
-      printf("AudioPrefetch::seek to:%u seekCount:%d\n", seekTo, seekCount); 
+      fprintf(stderr, "AudioPrefetch::seek to:%u seekCount:%d\n", seekTo, seekCount);
       #endif
       
       // Speedup: More than one seek message pending?

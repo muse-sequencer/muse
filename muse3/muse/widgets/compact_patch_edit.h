@@ -42,7 +42,12 @@ class CompactPatchEdit : public QFrame
 {
   Q_OBJECT
 
+  public:
+    enum ReadoutOrientation { ReadoutHorizontal = 0, ReadoutVertical };
+
   private:
+    ReadoutOrientation _orient;
+    bool _showPatchLabel;
     int _maxAliasedPointSize;
     int _id;
     int _currentPatch;
@@ -54,6 +59,10 @@ class CompactPatchEdit : public QFrame
     void patchEditDoubleClicked(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     void patchEditRightClicked(QPoint p, int id);
     void patchNamePressed(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    void patchNameReturnPressed(QPoint p, int id, Qt::KeyboardModifiers keys);
+
+//  protected:
+//     virtual void keyPressEvent(QKeyEvent*);
 
   signals:
     void patchValueRightClicked(QPoint p, int id);
@@ -80,6 +89,9 @@ class CompactPatchEdit : public QFrame
     void setLastValidValue(int v);
     void setLastValidBytes(int hbank, int lbank, int prog);
 
+    void setReadoutOrientation(ReadoutOrientation);
+    void setShowPatchLabel(bool);
+
     void setReadoutColor(const QColor&);
 
     // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing.
@@ -95,6 +107,8 @@ class CompactPatchEdit : public QFrame
     void setPatchName(const QString& patchName);
     // Sets the off state.
     void setPatchNameOff(bool v);
+    
+    //virtual QSize sizeHint() const;
 };
 
 } // namespace MusEGui

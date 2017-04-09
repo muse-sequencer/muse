@@ -7,6 +7,7 @@
 //  alsalib 1.0.7
 //
 //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,27 +25,31 @@
 //
 //=========================================================
         
-#include "alsatimer.h"
-#include <climits>
 
-#define TIMER_DEBUG 0
+#include "alsatimer.h"
+
+#ifdef ALSA_SUPPORT
+
+#include <climits>
+#include <stdio.h>
+
+#define ALSA_TIMER_DEBUG 0
 
 namespace MusECore {
   
   AlsaTimer::AlsaTimer()
      {
-     if(TIMER_DEBUG)
+     if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
        fprintf(stderr,"AlsaTimer::AlsaTimer(this=%p) called\n",this);
      handle = NULL;
      id = NULL;
      info = NULL;
      params = NULL;
-     findBest = true;
      }
      
   AlsaTimer::~AlsaTimer()
     {
-    if(TIMER_DEBUG)
+    if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
        fprintf(stderr,"AlsaTimer::~AlsaTimer(this=%p) called\n",this);
     if (handle)
       snd_timer_close(handle);
@@ -52,144 +57,170 @@ namespace MusECore {
     if (info) snd_timer_info_free(info);
     if (params) snd_timer_params_free(params);
     }
-  
-  signed int AlsaTimer::initTimer()
-    {
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::initTimer(this=%p)\n",this);
-  
-    int err;
+
+signed int AlsaTimer::initTimer()
+{
+  if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+    fprintf(stderr, "AlsaTimer::initTimer(this=%p)\n",this);
+
+  if(id || info || params)
+  {
+    fprintf(stderr, "AlsaTimer::initTimer(): called on initialised timer!\n");
+    return fds->fd;
+  }
+
+  snd_timer_id_malloc(&id);
+  snd_timer_id_set_class(id, SND_TIMER_CLASS_NONE);
+  snd_timer_info_malloc(&info);
+  snd_timer_params_malloc(&params);
+
+  int best_dev = SND_TIMER_GLOBAL_SYSTEM;
+  int best_devclass = SND_TIMER_CLASS_GLOBAL;
+  int best_sclass = SND_TIMER_CLASS_NONE;
+  int best_card = 0;
+  int best_subdevice = 0;
+  long best_res = LONG_MAX;
+  int err;
+
+  snd_timer_query_t *timer_query = NULL;
+  if(snd_timer_query_open(&timer_query, "hw", 0) >= 0)
+  {
+    int is_slave;
+    int device = SND_TIMER_GLOBAL_SYSTEM;
     int devclass = SND_TIMER_CLASS_GLOBAL;
     int sclass = SND_TIMER_CLASS_NONE;
     int card = 0;
-    int device = SND_TIMER_GLOBAL_SYSTEM;
     int subdevice = 0;
-    int test_ids[] = { SND_TIMER_GLOBAL_SYSTEM
-                     , SND_TIMER_GLOBAL_RTC
-#ifdef SND_TIMER_GLOBAL_HPET
-                     , SND_TIMER_GLOBAL_HPET
-#endif
-                     };
-    int max_ids = sizeof(test_ids) / sizeof(int);
-    long best_res = LONG_MAX;
-    //int best_dev = -1; // SND_TIMER_GLOBAL_SYSTEM;
-    int best_dev = SND_TIMER_GLOBAL_SYSTEM;          
-    int i;
 
-    if (id || info || params) {
-      fprintf(stderr,"AlsaTimer::initTimer(): called on initialised timer!\n");
-      return fds->fd;
-    }  
-    snd_timer_id_malloc(&id);
-    snd_timer_info_malloc(&info);
-    snd_timer_params_malloc(&params);
-
-    if (findBest) {
-      for (i = 0; i < max_ids; ++i) {
-        device = test_ids[i];
-        sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
-        if ((err = snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK)) < 0) {
-          continue;
+    while(snd_timer_query_next_device(timer_query, id) >= 0)
+    {
+      devclass = snd_timer_id_get_class(id);
+      if(devclass < 0)
+        break;
+      sclass = snd_timer_id_get_sclass(id);
+      if(sclass < 0)
+        sclass = 0;
+      card = snd_timer_id_get_card(id);
+      if(card < 0)
+        card = 0;
+      device = snd_timer_id_get_device(id);
+      if(device < 0)
+        device = 0;
+      subdevice = snd_timer_id_get_subdevice(id);
+      if(subdevice < 0)
+        subdevice = 0;
+      snprintf(timername, sizeof(timername) - 1, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
+      if(snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK) >= 0)
+      {
+        if(snd_timer_info(handle, info) >= 0)
+        {
+          // Select a non slave timer with the lowest resolution value
+          is_slave = snd_timer_info_is_slave(info);
+          long res = snd_timer_info_get_resolution(info);
+          if((is_slave == 0) && (best_res > res))
+          {
+            best_res = res;
+            best_dev = device;
+            best_devclass = devclass;
+            best_sclass = sclass;
+            best_card = card;
+            best_subdevice = subdevice;
           }
-        if ((err = snd_timer_info(handle, info)) < 0) {
-          snd_timer_close(handle);
-          continue;
-          }
-        // select a non slave timer with the lowest resolution value
-        int is_slave = snd_timer_info_is_slave(info);
-        long res = snd_timer_info_get_resolution(info);
-        if ((is_slave == 0) && (best_res > res)) {
-          best_res = res;
-          best_dev = device;
-          }
-        snd_timer_close(handle);
         }
-      device = best_dev;
+        snd_timer_close(handle);
       }
-
-    //if(best_dev==-1)
-    //  return -1; // no working timer found
-
-    sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
-    if ((err = snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK))<0) {
-      fprintf(stderr, "AlsaTimer::initTimer(): timer open %i (%s)\n", err, snd_strerror(err));
-      return -1;  
-      }
-    
-    if ((err = snd_timer_info(handle, info)) < 0) {
-      fprintf(stderr, "AlsaTimer::initTimer(): timer info %i (%s)\n", err, snd_strerror(err));
-      return -1;
-      }
-
-    //if(debugMsg)
-      fprintf(stderr, "AlsaTimer::initTimer(): best available ALSA timer: %s\n", snd_timer_info_get_name(info));
-
-    snd_timer_params_set_auto_start(params, 1);
-    snd_timer_params_set_ticks(params, 1);
-      
-    if ((err = snd_timer_params(handle, params)) < 0) {
-      fprintf(stderr, "AlsaTimer::initTimer(): timer params %i (%s)\n", err, snd_strerror(err));
-      return -1;
-      }
-    
-    count = snd_timer_poll_descriptors_count(handle);
-    fds = (pollfd *)calloc(count, sizeof(pollfd));
-    if (fds == NULL) {
-      fprintf(stderr, "AlsaTimer::initTimer(): malloc error\n");
-      return -1;
-      }
-    if ((err = snd_timer_poll_descriptors(handle, fds, count)) < 0) {
-      fprintf(stderr, "AlsaTimer::initTimer(): snd_timer_poll_descriptors error: %s\n", snd_strerror(err));
-      return -1;
-      }
-    return fds->fd;
     }
-  
+    snd_timer_query_close(timer_query);
+  }
+
+  sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", best_devclass, best_sclass, best_card, best_dev, best_subdevice);
+  if ((err = snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK))<0) {
+    fprintf(stderr, "AlsaTimer::initTimer(): timer open %i (%s)\n", err, snd_strerror(err));
+    return -1;
+    }
+
+  if ((err = snd_timer_info(handle, info)) < 0) {
+    fprintf(stderr, "AlsaTimer::initTimer(): timer info %i (%s)\n", err, snd_strerror(err));
+    return -1;
+    }
+
+  //if(debugMsg)
+    fprintf(stderr, "AlsaTimer::initTimer(): best available ALSA timer: %s\n", snd_timer_info_get_name(info));
+
+  snd_timer_params_set_auto_start(params, 1);
+  snd_timer_params_set_ticks(params, 1);
+
+  if ((err = snd_timer_params(handle, params)) < 0) {
+    fprintf(stderr, "AlsaTimer::initTimer(): timer params %i (%s)\n", err, snd_strerror(err));
+    return -1;
+    }
+
+  count = snd_timer_poll_descriptors_count(handle);
+  fds = (pollfd *)calloc(count, sizeof(pollfd));
+  if (fds == NULL) {
+    fprintf(stderr, "AlsaTimer::initTimer(): malloc error\n");
+    return -1;
+    }
+  if ((err = snd_timer_poll_descriptors(handle, fds, count)) < 0) {
+    fprintf(stderr, "AlsaTimer::initTimer(): snd_timer_poll_descriptors error: %s\n", snd_strerror(err));
+    return -1;
+    }
+
+  return fds->fd;
+}
+
   unsigned int AlsaTimer::setTimerResolution(unsigned int resolution)
     {
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::setTimerResolution(%d)\n",resolution);
+    if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+      fprintf(stderr, "AlsaTimer::setTimerResolution(%d)\n",resolution);
     /* Resolution of an AlsaTimer is fixed - it cannot be set */
     return 0;
     }
   
-  unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
+unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
+{
+  signed int err;
+
+  if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+    fprintf(stderr, "AlsaTimer::setTimerFreq(this=%p)\n",this);
+
+  const long int ticks = snd_timer_params_get_ticks(params);
+  const long int res = snd_timer_info_get_resolution(info);
+  const long int adj_res = 1000000000L / res;
+  const long int setTick = adj_res / freq;
+  const long int cur_freq = adj_res / ticks;
+
+  if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+    fprintf(stderr, "AlsaTimer::setTimerFreq res:%ld ticks:%ld\n", res, ticks);
+
+  if(setTick == 0)
+  {
+    // Return, print error if freq is below 500 (timing will suffer).
+    if(cur_freq < 500)
     {
-    signed int err;
-    unsigned int setTick, actFreq;
-    
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::setTimerFreq(this=%p)\n",this);
-
-    setTick = (1000000000 / snd_timer_info_get_resolution(info)) / freq;
-
-    if (setTick == 0) {
-      // return, print error if freq is below 500 (timing will suffer)
-      if (((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)) < 500) {
-        fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %g)\n",
-          freq, 1000000000.0 / snd_timer_info_get_resolution(info));
-        fprintf(stderr,"  freq stays at %ld Hz\n",
-          (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)));
-      }
-
-      return (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params));
+      fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %ld)\n", freq, adj_res);
+      fprintf(stderr,"  freq stays at %ld Hz\n", cur_freq);
     }
-    actFreq = (1000000000 / snd_timer_info_get_resolution(info)) / setTick;
-    if (actFreq != freq) {
-      fprintf(stderr,"AlsaTimer::setTimerTicks(): warning: requested %u Hz, actual freq is %u Hz\n",
-        freq, actFreq);
-    }
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::setTimerFreq(): Setting ticks (period) to %d ticks\n", setTick);
-    snd_timer_params_set_auto_start(params, 1);
-    snd_timer_params_set_ticks(params, setTick);
-    if ((err = snd_timer_params(handle, params)) < 0) {
-      fprintf(stderr, "AlsaTimer::setTimerFreq(): timer params %i (%s)\n", err, snd_strerror(err));
-      return 0;
-      }
+    return cur_freq;
+  }
 
-    return actFreq;
-    }
+  const long int actFreq = adj_res / setTick;
+  if(actFreq != freq)
+  {
+    fprintf(stderr,"AlsaTimer::setTimerTicks(): warning: requested %u Hz, actual freq is %ld Hz\n", freq, actFreq);
+  }
+  if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+    fprintf(stderr, "AlsaTimer::setTimerFreq(): Setting ticks (period) to %ld ticks\n", setTick);
+  snd_timer_params_set_auto_start(params, 1);
+  snd_timer_params_set_ticks(params, setTick);
+  if ((err = snd_timer_params(handle, params)) < 0)
+  {
+    fprintf(stderr, "AlsaTimer::setTimerFreq(): timer params %i (%s)\n", err, snd_strerror(err));
+    return 0;
+  }
+
+  return actFreq;
+}
   
   unsigned int AlsaTimer::getTimerResolution()
     {
@@ -203,8 +234,8 @@ namespace MusECore {
         
   bool AlsaTimer::startTimer()
     {
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::startTimer(this=%p): handle=%p\n",this,handle);
+    if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+      fprintf(stderr, "AlsaTimer::startTimer(this=%p): handle=%p\n",this,handle);
     int err;
     if ((err = snd_timer_start(handle)) < 0) {
       fprintf(stderr, "AlsaTimer::startTimer(): timer start %i (%s)\n", err, snd_strerror(err));
@@ -216,8 +247,8 @@ namespace MusECore {
   bool AlsaTimer::stopTimer()
     {
     int err;
-    if(TIMER_DEBUG)
-      printf("AlsaTimer::stopTimer(this=%p): handle=%p\n",this,handle);
+    if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
+      fprintf(stderr, "AlsaTimer::stopTimer(this=%p): handle=%p\n",this,handle);
     if ((err = snd_timer_stop(handle)) < 0) {
       fprintf(stderr, "AlsaTimer::stopTimer(): timer stop %i (%s)\n", err, snd_strerror(err));
       return false;
@@ -227,13 +258,13 @@ namespace MusECore {
         
   unsigned int  AlsaTimer::getTimerTicks(bool printTicks)
     {
-    //if(TIMER_DEBUG)
+    //if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
     //  printf("AlsaTimer::getTimerTicks\n");
     snd_timer_read_t tr;
     tr.ticks = 0;
     while (snd_timer_read(handle, &tr, sizeof(tr)) == sizeof(tr)) {
               if (printTicks) {
-                  printf("TIMER: resolution = %uns, ticks = %u\n",
+                  fprintf(stderr, "TIMER: resolution = %uns, ticks = %u\n",
                     tr.resolution, tr.ticks);
                   }
       }
@@ -241,3 +272,5 @@ namespace MusECore {
     }
 
 } // namespace MusECore
+
+#endif // ALSA_SUPPORT

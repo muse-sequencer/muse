@@ -174,7 +174,7 @@ bool MusE::importMidi(const QString name, bool merge)
             if(md)
             {
               // TEST: Hopefully shouldn't require any routing saves/restorations as in midi port config set device name...
-              MusEGlobal::midiSeq->msgSetMidiDevice(mp, md);
+              MusEGlobal::audio->msgSetMidiDevice(mp, md);
               // TEST: Hopefully can get away with this ouside the loop below...
               //MusEGlobal::muse->changeConfig(true);     // save configuration file
               //MusEGlobal::audio->msgUpdateSoloStates();

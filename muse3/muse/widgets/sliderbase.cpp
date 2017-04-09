@@ -67,8 +67,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
       setObjectName(name);
       _id           = -1;
       _cursorHoming    = false;
-      
-      
+
 // NOTE: Avoid using borderlessMouse for now because it may jump when clicking from another active window:
       _borderlessMouse = false;
 
@@ -406,7 +405,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                      value(ConvertNone) == d_valueAtPress)
                   {
                     processSliderPressed(_id);
-                    emit sliderPressed(_id);
+                    emit sliderPressed(value(), _id);
                   }
                   
                   // Show a handy tooltip value box.
@@ -513,7 +512,7 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
       
       DEBUG_SLIDER_BASE(stderr, " Calling processSliderReleased val:%.20f d_valueAtPress:%.20f\n", value(), d_valueAtPress);
       processSliderReleased(_id);
-      emit sliderReleased(_id);
+      emit sliderReleased(value(), _id);
   
     break;
 
@@ -738,12 +737,60 @@ void SliderBase::mouseDoubleClickEvent(QMouseEvent* e)
   QWidget::mouseDoubleClickEvent(e);
 }
 
+void SliderBase::keyPressEvent(QKeyEvent* e)
+{
+  int val = 0;
+  switch (e->key())
+  {
+    case Qt::Key_Up:
+      val = 1;
+    break;
+
+    case Qt::Key_Down:
+      val = -1;
+    break;
+
+    default:
+      // Let ancestor handle it.
+      e->ignore();
+      QWidget::keyPressEvent(e);
+      return;
+    break;
+  }
+
+  if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
+  {
+    // Let ancestor handle it.
+    e->ignore();
+    QWidget::keyPressEvent(e);
+    return;
+  }
+
+  e->accept();
+  // Do not allow setting value from the external while mouse is pressed.
+  if(_pressed)
+    return;
+
+  if(e->modifiers() == Qt::ShiftModifier)
+    //incPages(val);
+    incValue(val * 5);
+  else
+    incValue(val);
+
+  // Show a handy tooltip value box.
+  //if(d_enableValueToolTips)
+  //  showValueToolTip(e->globalPos());
+
+  emit sliderMoved(value(), _id);
+  emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
+}
+
 void SliderBase::focusOutEvent(QFocusEvent* e)
 {
   DEBUG_SLIDER_BASE(stderr, "SliderBase::focusOutEvent _pressed:%d\n", _pressed);
   e->ignore();
   QWidget::focusOutEvent(e);
-  
+
   // Was a mouse button already pressed before focus was lost?
   // We will NOT get a mouseReleaseEvent! Take care of it here.
   // Typically this happens when popping up a menu in reponse to a click.

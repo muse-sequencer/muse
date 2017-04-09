@@ -1940,7 +1940,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                   case UndoOp::MoveTrack:
                         pendingOperations.add(PendingOperationItem(&_tracks, i->b, i->a, PendingOperationItem::MoveTrack));
-                        updateFlags |= SC_TRACK_MODIFIED;
+                        updateFlags |= SC_TRACK_MOVED;
                         break;
                         
                   case UndoOp::ModifyPartName:
@@ -2631,7 +2631,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::MoveTrack:
                         pendingOperations.add(PendingOperationItem(&_tracks, i->a, i->b, PendingOperationItem::MoveTrack));
-                        updateFlags |= SC_TRACK_MODIFIED;
+                        updateFlags |= SC_TRACK_MOVED;
                         break;
                         
                   case UndoOp::ModifyPartName:

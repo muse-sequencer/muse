@@ -22,7 +22,8 @@
 //
 //=========================================================
 
-#include <QToolButton>
+#include <math.h>
+
 #include <QLayout>
 #include <QPalette>
 #include <QColor>
@@ -32,6 +33,9 @@
 #include <QSignalMapper>
 #include <QString>
 #include <QPainter>
+#include <QList>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -42,6 +46,10 @@
 #include "strip.h"
 #include "meter.h"
 #include "utils.h"
+#include "muse_math.h"
+#include "ctrl.h"
+#include "midi.h"
+#include "midictrl.h"
 #include "icons.h"
 #include "undo.h"
 #include "amixer.h"
@@ -49,6 +57,7 @@
 #include "compact_slider.h"
 #include "elided_label.h"
 #include "menutitleitem.h"
+#include "pixmap_button.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -175,42 +184,21 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
 
         //control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
 
-        if(d->_changedSlot)
-          connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), d->_changedSlot);
-        if(d->_movedSlot)
-          connect(control, SIGNAL(sliderMoved(double,int,bool)), d->_movedSlot);
-        if(d->_pressedSlot)
-          connect(control, SIGNAL(sliderPressed(int)), d->_pressedSlot);
-        if(d->_releasedSlot)
-          connect(control, SIGNAL(sliderReleased(int)), d->_releasedSlot);
-        if(d->_rightClickedSlot)
-          connect(control, SIGNAL(sliderRightClicked(QPoint,int)), d->_rightClickedSlot);
-
         switch(d->_componentType)
         {
           case controllerComponent:
-            if(!d->_changedSlot)
               connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(controllerChanged(double,bool,int,int)));
-            if(!d->_movedSlot)
               connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(controllerMoved(double,int,bool)));
-            if(!d->_pressedSlot)
-              connect(control, SIGNAL(sliderPressed(int)), SLOT(controllerPressed(int)));
-            if(!d->_releasedSlot)
-              connect(control, SIGNAL(sliderReleased(int)), SLOT(controllerReleased(int)));
-            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderPressed(double, int)), SLOT(controllerPressed(double, int)));
+              connect(control, SIGNAL(sliderReleased(double, int)), SLOT(controllerReleased(double, int)));
               connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
           break;
 
           case propertyComponent:
-            if(!d->_changedSlot)
               connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(propertyChanged(double,bool,int,int)));
-            if(!d->_movedSlot)
               connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(propertyMoved(double,int,bool)));
-            if(!d->_pressedSlot)
-              connect(control, SIGNAL(sliderPressed(int)), SLOT(propertyPressed(int)));
-            if(!d->_releasedSlot)
-              connect(control, SIGNAL(sliderReleased(int)), SLOT(propertyReleased(int)));
-            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderPressed(double, int)), SLOT(propertyPressed(double, int)));
+              connect(control, SIGNAL(sliderReleased(double, int)), SLOT(propertyReleased(double, int)));
               connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
           break;
         }
@@ -258,42 +246,21 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
 
         control->setMaxAliasedPointSize(MusEGlobal::config.maxAliasedPointSize);
         
-        if(d->_changedSlot)
-          connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), d->_changedSlot);
-        if(d->_movedSlot)
-          connect(control, SIGNAL(sliderMoved(double,int,bool)), d->_movedSlot);
-        if(d->_pressedSlot)
-          connect(control, SIGNAL(sliderPressed(int)), d->_pressedSlot);
-        if(d->_releasedSlot)
-          connect(control, SIGNAL(sliderReleased(int)), d->_releasedSlot);
-        if(d->_rightClickedSlot)
-          connect(control, SIGNAL(sliderRightClicked(QPoint,int)), d->_rightClickedSlot);
-
         switch(d->_componentType)
         {
           case controllerComponent:
-            if(!d->_changedSlot)
               connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(controllerChanged(double,bool,int,int)));
-            if(!d->_movedSlot)
               connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(controllerMoved(double,int,bool)));
-            if(!d->_pressedSlot)
-              connect(control, SIGNAL(sliderPressed(int)), SLOT(controllerPressed(int)));
-            if(!d->_releasedSlot)
-              connect(control, SIGNAL(sliderReleased(int)), SLOT(controllerReleased(int)));
-            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderPressed(double, int)), SLOT(controllerPressed(double, int)));
+              connect(control, SIGNAL(sliderReleased(double, int)), SLOT(controllerReleased(double, int)));
               connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controllerRightClicked(QPoint,int)));
           break;
           
           case propertyComponent:
-            if(!d->_changedSlot)
               connect(control, SIGNAL(valueStateChanged(double,bool,int, int)), SLOT(propertyChanged(double,bool,int,int)));
-            if(!d->_movedSlot)
               connect(control, SIGNAL(sliderMoved(double,int,bool)), SLOT(propertyMoved(double,int,bool)));
-            if(!d->_pressedSlot)
-              connect(control, SIGNAL(sliderPressed(int)), SLOT(propertyPressed(int)));
-            if(!d->_releasedSlot)
-              connect(control, SIGNAL(sliderReleased(int)), SLOT(propertyReleased(int)));
-            if(!d->_rightClickedSlot)
+              connect(control, SIGNAL(sliderPressed(double, int)), SLOT(propertyPressed(double, int)));
+              connect(control, SIGNAL(sliderReleased(double, int)), SLOT(propertyReleased(double, int)));
               connect(control, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(propertyRightClicked(QPoint,int)));
           break;
         }
@@ -331,20 +298,15 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
           control->setPalette(pal);
         }
 
-        if(d->_labelPressedSlot)
-          connect(control, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), d->_labelPressedSlot);
-        if(d->_labelReleasedSlot)
-          connect(control, SIGNAL(released(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), d->_labelReleasedSlot);
-
         switch(d->_componentType)
         {
           case propertyComponent:
-            if(!d->_labelPressedSlot)
               connect(control, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), 
                       SLOT(labelPropertyPressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
-            if(!d->_labelReleasedSlot)
-              connect(control, SIGNAL(released(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)), 
+              connect(control, SIGNAL(released(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
                       SLOT(labelPropertyReleased(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
+              connect(control, SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
+                      SLOT(labelPropertyReturnPressed(QPoint,int,Qt::KeyboardModifiers)));
           break;
         }
       }
@@ -466,6 +428,44 @@ void ComponentRack::setComponentMaxValue(const ComponentWidget& cw, double max, 
   }
 }
 
+double ComponentRack::componentMinValue(const ComponentWidget& cw) const
+{
+  if(cw._widget)
+  {
+    switch(cw._widgetType)
+    {
+      case CompactSliderComponentWidget:
+        return static_cast<CompactSlider*>(cw._widget)->minValue();
+      break;
+
+      case CompactKnobComponentWidget:
+        return static_cast<CompactKnob*>(cw._widget)->minValue();
+      break;
+    }
+  }
+
+  return 0.0;
+}
+
+double ComponentRack::componentMaxValue(const ComponentWidget& cw) const
+{
+  if(cw._widget)
+  {
+    switch(cw._widgetType)
+    {
+      case CompactSliderComponentWidget:
+        return static_cast<CompactSlider*>(cw._widget)->maxValue();
+      break;
+
+      case CompactKnobComponentWidget:
+        return static_cast<CompactKnob*>(cw._widget)->maxValue();
+      break;
+    }
+  }
+
+  return 0.0;
+}
+
 void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, double max, bool updateOnly,
                                       double step, int pageSize, 
                                       DoubleRange::ConversionMode mode)
@@ -566,6 +566,47 @@ void ComponentRack::setComponentValue(const ComponentWidget& cw, double val, boo
         if(updateOnly)
           w->blockSignals(true);
         w->setValue(val);
+        if(updateOnly)
+          w->blockSignals(false);
+        //cw->_currentValue = val;  // TODO ?
+      }
+    }
+    break;
+  }
+}
+
+void ComponentRack::fitComponentValue(const ComponentWidget& cw, double val, bool updateOnly)
+{
+  if(!cw._widget)
+    return;
+
+  switch(cw._widgetType)
+  {
+    case CompactSliderComponentWidget:
+    {
+      CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
+      //if(val != cw->_currentValue) // TODO ?
+      if(val != w->value())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->fitValue(val);
+        if(updateOnly)
+          w->blockSignals(false);
+        //cw->_currentValue = val;  // TODO ?
+      }
+    }
+    break;
+
+    case CompactKnobComponentWidget:
+    {
+      CompactKnob* w = static_cast<CompactKnob*>(cw._widget);
+      //if(val != cw->_currentValue) // TODO ?
+      if(val != w->value())
+      {
+        if(updateOnly)
+          w->blockSignals(true);
+        w->fitValue(val);
         if(updateOnly)
           w->blockSignals(false);
         //cw->_currentValue = val;  // TODO ?
@@ -703,6 +744,21 @@ void ComponentRack::setComponentShowValue(const ComponentWidget& cw, bool show, 
   }
 }
 
+QWidget* ComponentRack::setupComponentTabbing(QWidget* previousWidget)
+{
+  QWidget* prev = previousWidget;
+  for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    const ComponentWidget& cw = *ic;
+    if(!cw._widget)
+      continue;
+    if(prev)
+      QWidget::setTabOrder(prev, cw._widget);
+    prev = cw._widget;
+  }
+  return prev;
+}
+
 //---------------------------------------------------------
 //   configChanged
 //   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
@@ -745,6 +801,33 @@ void ComponentRack::configChanged()
   }
 }
 
+
+//---------------------------------------------------------
+//   TrackNameLabel
+//---------------------------------------------------------
+
+TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlags f)
+ : QLabel(parent, f)
+{
+  setObjectName(name);
+}
+
+TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
+ : QLabel(text, parent, f)
+{
+  setObjectName(name);
+}
+
+void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
+{
+  ev->accept();
+  emit doubleClicked();
+}
+
+//---------------------------------------------------------
+//   Strip
+//---------------------------------------------------------
+
 const int Strip::FIXED_METER_WIDTH = 10;
 
 //---------------------------------------------------------
@@ -783,11 +866,59 @@ void Strip::recordToggled(bool val)
             if (!((MusECore::AudioOutput*)track)->recFile())
             {  
                   record->setChecked(false);
-            }      
+            }
             return;
             }
       MusEGlobal::song->setRecordFlag(track, val);
       }
+
+//---------------------------------------------------------
+//   returnPressed
+//---------------------------------------------------------
+
+void Strip::changeTrackName()
+{
+  if(!track)
+    return;
+
+  const QString oldname = track->name();
+
+  QInputDialog dlg(this);
+  dlg.setWindowTitle(tr("Name"));
+  dlg.setLabelText(tr("Enter track name:"));
+  dlg.setTextValue(oldname);
+  // FIXME: Can't seem to set a larger font. Seems to pick one used by strip.
+  //dlg.setStyleSheet("");
+  //dlg.setFont(MusEGlobal::config.fonts[0]);
+
+  const int res = dlg.exec();
+  if(res == QDialog::Rejected)
+    return;
+
+  const QString newname = dlg.textValue();
+
+  if(newname == oldname)
+    return;
+
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i)
+  {
+    if ((*i)->name() == newname)
+    {
+      QMessageBox::critical(this,
+        tr("MusE: bad trackname"),
+        tr("please choose a unique track name"),
+        QMessageBox::Ok,
+        Qt::NoButton,
+        Qt::NoButton);
+      return;
+    }
+  }
+
+  MusEGlobal::song->applyOperation(
+    MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, track, oldname, newname));
+}
+
 //---------------------------------------------------------
 //   heartBeat
 //---------------------------------------------------------
@@ -796,28 +927,58 @@ void Strip::heartBeat()
       {
       }
 
-//---------------------------------------------------------
-//   setLabelFont
-//---------------------------------------------------------
-
-void Strip::setLabelFont()
+void Strip::paintEvent(QPaintEvent * ev)
 {
-  // Use the new font #6 I created just for these labels (so far).
-  // Set the label's font.
-  label->setFont(MusEGlobal::config.fonts[6]);
-  label->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[6]));
-  // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-  MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
-}
-
-void Strip::paintEvent(QPaintEvent * /*ev*/)
-{
+  QFrame::paintEvent(ev);
   QPainter p(this);
   if (_highlight) {
-    p.setPen(Qt::darkYellow);
+    QPen pen(Qt::yellow);
+    pen.setWidth(1);
+    p.setPen(pen);
     p.drawRect(0,0,width()-1,height()-1);
-    p.drawRect(1,1,width()-2,height()-2);
   }
+  ev->accept();
+}
+
+//---------------------------------------------------------
+//   updateStyleSheet
+//---------------------------------------------------------
+
+void Strip::updateStyleSheet()
+{
+  if(!track)
+    return;
+
+  QFont fnt(MusEGlobal::config.fonts[6]);
+  const bool need_word_wrap =
+    !MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
+                                fnt.pointSize(), 6);
+
+  // Set the label's font.
+  // Note that this is effectively useless if a stylesheet font is set.
+  // When reading font(), it returns what the stylesheet says.
+  // But we set it here anyway, in case stylesheets are not used.
+  label->setFont(fnt);
+
+  if(need_word_wrap)
+    label->setWordWrap(true);
+//     label->setWordWrapMode(QTextOption::WrapAnywhere);
+  else
+//     label->setWordWrapMode(QTextOption::NoWrap);
+    label->setWordWrap(false);
+
+  QColor c(track->labelColor());
+  QColor c2(c.lighter());
+  c.setAlpha(190);
+  c2.setAlpha(190);
+
+  QString stxt = QString("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
+      "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
+      .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+  stxt += QString("color: rgb(0, 0, 0);");
+  stxt += MusECore::font2StyleSheet(fnt);
+
+  label->setStyleSheet(stxt);
 }
 
 //---------------------------------------------------------
@@ -826,60 +987,16 @@ void Strip::paintEvent(QPaintEvent * /*ev*/)
 
 void Strip::setLabelText()
 {
-      QColor c;
-      switch(track->type()) {
-            case MusECore::Track::AUDIO_OUTPUT:
-                  //c = Qt::green;
-                  c = MusEGlobal::config.outputTrackLabelBg;
-                  break;
-            case MusECore::Track::AUDIO_GROUP:
-                  //c = Qt::yellow;
-                  c = MusEGlobal::config.groupTrackLabelBg;
-                  break;
-            case MusECore::Track::AUDIO_AUX:
-                  //c = QColor(120, 255, 255);   // Light blue
-                  c = MusEGlobal::config.auxTrackLabelBg;
-                  break;
-            case MusECore::Track::WAVE:
-                  //c = Qt::magenta;
-                  c = MusEGlobal::config.waveTrackLabelBg;
-                  break;
-            case MusECore::Track::AUDIO_INPUT:
-                  //c = Qt::red;
-                  c = MusEGlobal::config.inputTrackLabelBg;
-                  break;
-            case MusECore::Track::AUDIO_SOFTSYNTH:
-                  //c = QColor(255, 130, 0);  // Med orange
-                  c = MusEGlobal::config.synthTrackLabelBg;
-                  break;
-            case MusECore::Track::MIDI:
-                  //c = QColor(0, 160, 255); // Med blue
-                  c = MusEGlobal::config.midiTrackLabelBg;
-                  break;
-            case MusECore::Track::DRUM:
-                  //c = QColor(0, 160, 255); // Med blue
-                  c = MusEGlobal::config.drumTrackLabelBg;
-                  break;
-            case MusECore::Track::NEW_DRUM:
-                  //c = QColor(0, 160, 255); // Med blue
-                  c = MusEGlobal::config.newDrumTrackLabelBg;
-                  break;
-            default:
-                  return;      
-            }
-      
+      if(!track)
+        return;
+
       if (track->type() == MusECore::Track::AUDIO_AUX) {
           label->setText(((MusECore::AudioAux*)track)->auxName());
       } else {
           label->setText(track->name());
       }
-      QPalette palette;
-      QLinearGradient gradient(label->geometry().topLeft(), label->geometry().bottomLeft());
-      gradient.setColorAt(0, c);
-      gradient.setColorAt(0.5, c.lighter());
-      gradient.setColorAt(1, c);
-      palette.setBrush(label->backgroundRole(), gradient);
-      label->setPalette(palette);
+
+      updateStyleSheet();
 }
 
 //---------------------------------------------------------
@@ -888,7 +1005,9 @@ void Strip::setLabelText()
 
 void Strip::muteToggled(bool val)
       {
-      MusEGlobal::audio->msgSetTrackMute(track, val);
+      if(track)
+        MusEGlobal::audio->msgSetTrackMute(track, val);
+      updateMuteIcon();
       MusEGlobal::song->update(SC_MUTE);
       }
 
@@ -898,6 +1017,9 @@ void Strip::muteToggled(bool val)
 
 void Strip::soloToggled(bool val)
       {
+      solo->setIconSetB(track && track->internalSolo());
+      if(!track)
+        return;
       MusEGlobal::audio->msgSetSolo(track, val);
       MusEGlobal::song->update(SC_SOLO);
       }
@@ -911,7 +1033,13 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
    : QFrame(parent)
       {
       setMouseTracking(true);
+
+      // Set so that strip can redirect focus proxy to volume label in descendants.
+      setFocusPolicy(Qt::WheelFocus);
+
+      _focusYieldWidget = 0;
       _isEmbedded = isEmbedded;
+      _broadcastChanges = false;
       _selected = false;
       _highlight = false;
 
@@ -924,9 +1052,8 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       iR            = 0;
       oR            = 0;
       
-      ///setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
-      setLineWidth(2);
+      setLineWidth(1);
       
       track    = t;
       meter[0] = 0;
@@ -957,30 +1084,29 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //    label
       //---------------------------------------------
 
-      label = new QLabel(this);
+//       label = new TextEdit(this);
+//       label->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//       label->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//       label->viewport()->setContentsMargins(0, 0, 0, 0);
+//       label->setMaximumBlockCount(1);
+//       label->setBackgroundVisible(false);
+//       label->setTextFormat(Qt::PlainText);
+//       label->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+      label = new TrackNameLabel(this);
       label->setObjectName(track->cname());
-      label->setTextFormat(Qt::PlainText);
-      
-      // Unfortunately for the mixer labels, QLabel doesn't support the BreakAnywhere flag.
-      // Changed by Tim. p3.3.9
-      //label->setAlignment(AlignCenter);
-      //label->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-      // MusE-2 Tested: TextWrapAnywhere actually works, but in fact it takes precedence 
-      //  over word wrap, so I found it is not really desirable. Maybe with a user setting...
-      //label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
-      // changed by Orcan: We can't use Qt::TextWordWrap in alignment in Qt4.
+      label->setContentsMargins(0, 0, 0, 0);
       label->setAlignment(Qt::AlignCenter);
-      label->setWordWrap(true);
       label->setAutoFillBackground(true);
       label->setLineWidth(2);
       label->setFrameStyle(Sunken | StyledPanel);
-      
       label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      
+      //label->setWordWrap(true); // This is set dynamically.
+
       setLabelText();
-      setLabelFont();
       
       grid->addWidget(label, _curGridRow++, 0, 1, 3);
+
+      connect(label, SIGNAL(doubleClicked()), SLOT(changeTrackName()));
       }
 
 //---------------------------------------------------------
@@ -990,6 +1116,25 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 Strip::~Strip()
       {
       }
+
+void Strip::setFocusYieldWidget(QWidget* w)
+{
+  if(_focusYieldWidget == w)
+    return;
+  if(_focusYieldWidget)
+    disconnect(_focusYieldWidget, SIGNAL(destroyed(QObject*)), this, SLOT(focusYieldWidgetDestroyed(QObject*)));
+  _focusYieldWidget = w;
+  if(_focusYieldWidget)
+    connect(_focusYieldWidget, SIGNAL(destroyed(QObject*)), this, SLOT(focusYieldWidgetDestroyed(QObject*)));
+}
+
+void Strip::focusYieldWidgetDestroyed(QObject* obj)
+{
+  if(obj != _focusYieldWidget)
+    return;
+  //disconnect(_focusYieldWidget, SIGNAL(destroyed(QObject*)), this, SLOT(focusYieldWidgetDestroyed(QObject*)));
+  _focusYieldWidget = 0;
+}
 
 void Strip::addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment)
 {
@@ -1029,51 +1174,37 @@ void Strip::resizeEvent(QResizeEvent* ev)
 {
   DEBUG_STRIP(stderr, "Strip::resizeEvent\n");  
   QFrame::resizeEvent(ev);
-  setLabelText();  
-  setLabelFont();
+  setLabelText();
 }  
 
 void Strip::updateRouteButtons()
 {
   if (iR)
   {
+      iR->setIconSetB(track->noInRoute());
       if (track->noInRoute())
-      {
-        iR->setStyleSheet("background-color:rgb(200, 84, 84);");
         iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
-      }
       else
-      {
-        iR->setStyleSheet("");
         iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-      }
   }
 
   if (oR)
   {
+    oR->setIconSetB(track->noOutRoute());
     if (track->noOutRoute())
-    {
-      oR->setStyleSheet("background-color:rgb(200, 84, 84);");
       oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
-    }
     else
-    {
-      oR->setStyleSheet("");
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-    }
   }
 }
 
-
-
 void Strip::mousePressEvent(QMouseEvent* ev)
 {
+  ev->accept();
+
   // Only one button at a time.
   if(ev->buttons() ^ ev->button())
-  {
-    ev->accept();
     return;
-  }
 
   QPoint mousePos = QCursor::pos();
   mouseWidgetOffset = pos() - mousePos;
@@ -1093,9 +1224,25 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.showControlValues);
 
+    act = menu->addAction(tr("Prefer midi volume as decibels"));
+    act->setData(int(4));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.preferMidiVolumeDb);
+
+    menu->addSeparator();
+
+    act = menu->addAction(tr("Monitor on record-arm automatically"));
+    act->setData(int(5));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.monitorOnRecord);
+
+    menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
+
+    act = menu->addAction(tr("Change track name"));
+    act->setData(int(1001));
+
     if(!_isEmbedded)
     {
-      menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
 
 //      act = menu->addAction(tr("Remove track"));
 //      act->setData(int(0));
@@ -1109,8 +1256,6 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     if (!act)
     {
       delete menu;
-      ev->ignore();
-      QFrame::mousePressEvent(ev);
       return;
     }
 
@@ -1149,6 +1294,26 @@ void Strip::mousePressEvent(QMouseEvent* ev)
           MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
         }
       break;
+
+      case 4:
+        if(MusEGlobal::config.preferMidiVolumeDb != checked)
+        {
+          MusEGlobal::config.preferMidiVolumeDb = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
+
+      case 5:
+        if(MusEGlobal::config.monitorOnRecord != checked)
+        {
+          MusEGlobal::config.monitorOnRecord = checked;
+          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+        }
+      break;
+
+      case 1001:
+        changeTrackName();
+      break;
     }
 
     ev->accept();
@@ -1174,8 +1339,6 @@ void Strip::mousePressEvent(QMouseEvent* ev)
       }
     }
   }
-  ev->ignore();
-  QFrame::mousePressEvent(ev);
 }
  
 QSize Strip::sizeHint() const
@@ -1220,7 +1383,25 @@ ExpanderHandle::ExpanderHandle(QWidget* parent, int handleWidth, Qt::WindowFlags
   setContentsMargins(0, 0, 0, 0);
  _resizeMode = ResizeModeNone;
 }
- 
+
+void ExpanderHandle::paintEvent(QPaintEvent * ev)
+{
+  QPainter p(this);
+
+  if(const QStyle* st = style())
+  {
+    st = st->proxy();
+
+    QStyleOption o;
+    o.initFrom(this);
+    o.rect = rect();
+    o.state = QStyle::State_Active | QStyle::State_Enabled;
+    st->drawControl(QStyle::CE_Splitter, &o, &p);
+  }
+
+  ev->accept();
+}
+
 void ExpanderHandle::mousePressEvent(QMouseEvent* e)
 {
   // Only one button at a time.
@@ -1366,16 +1547,16 @@ QSize ExpanderHandle::sizeHint() const
 
 void Strip::mouseReleaseEvent(QMouseEvent* ev)
 {
+  ev->accept();
   if (!_isEmbedded && dragOn) {
     emit moveStrip(this);
   }
   dragOn=false;
-  QFrame::mouseReleaseEvent(ev);
-
 }
 
 void Strip::mouseMoveEvent(QMouseEvent* e)
 {
+  e->accept();
   if(e->buttons() == Qt::LeftButton)
   {
     if(!_isEmbedded)
@@ -1395,8 +1576,80 @@ void Strip::mouseMoveEvent(QMouseEvent* e)
   //QFrame::mouseMoveEvent(ev);
 }
 
+void Strip::keyPressEvent(QKeyEvent* ev)
+{
+  const bool shift = ev->modifiers() & Qt::ShiftModifier;
+  const bool alt = ev->modifiers() & Qt::AltModifier;
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+  const bool meta = ev->modifiers() & Qt::MetaModifier;
+  const int val = shift ? 5 : 1;
+
+  switch (ev->key())
+  {
+    case Qt::Key_Escape:
+      //if(hasFocus() && _focusYieldWidget)
+      if(_focusYieldWidget)
+      {
+        ev->accept();
+        // Yield the focus to the given widget.
+        _focusYieldWidget->setFocus();
+        // Activate the window.
+        if(!_focusYieldWidget->isActiveWindow())
+          _focusYieldWidget->activateWindow();
+        return;
+      }
+    break;
+
+    case Qt::Key_Up:
+    if(alt && !ctl && !meta)
+    {
+      incVolume(val);
+      ev->accept();
+      return;
+    }
+    break;
+
+    case Qt::Key_Down:
+    if(alt && !ctl && !meta)
+    {
+      incVolume(-val);
+      ev->accept();
+      return;
+    }
+    break;
+
+    case Qt::Key_Left:
+    if(alt && !ctl && !meta)
+    {
+      incPan(-val);
+      ev->accept();
+      return;
+    }
+    break;
+
+    case Qt::Key_Right:
+    if(alt && !ctl && !meta)
+    {
+      incPan(val);
+      ev->accept();
+      return;
+    }
+    break;
+
+    default:
+    break;
+  }
+
+  // Let mixer window or other higher up handle it.
+  ev->ignore();
+  QFrame::keyPressEvent(ev);
+}
+
 void Strip::setSelected(bool v)
 {
+  if(_selected == v)
+    return;
+  
   if(_isEmbedded)
   {
     _selected = false;
@@ -1405,6 +1658,8 @@ void Strip::setSelected(bool v)
   if (v) {
     label->setFrameStyle(Raised | StyledPanel);
     setHighLight(true);
+    // First time selected? Set the focus.
+    setFocus();
   }
   else {
     label->setFrameStyle(Sunken | StyledPanel);
@@ -1417,6 +1672,1319 @@ void Strip::setHighLight(bool highlight)
 {
   _highlight = highlight;
   update();
+}
+
+QString Strip::getLabelText()
+{
+  return label->text();
+}
+
+void Strip::updateMuteIcon()
+{
+  if(!track)
+    return;
+
+  bool found = false;
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    MusECore::Track* t = *it;
+    // Ignore this track.
+    if(t != track && (t->internalSolo() || t->solo()))
+    {
+      found = true;
+      break;
+    }
+  }
+  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+}
+
+
+
+//--------------------------------
+//    Control ganging support.
+//--------------------------------
+
+struct MidiIncListStruct
+{
+  int _port;
+  int _chan;
+  MidiIncListStruct(int port, int chan) : _port(port), _chan(chan) { }
+  bool operator==(const MidiIncListStruct& other) { return other._port == _port && other._chan == _chan; }
+};
+
+void Strip::componentChanged(int type, double val, bool off, int id, int scrollMode)
+{
+  // The track has already taken care of its own controllers.
+  // Don't bother other tracks if the track is not selected. ie part of a selected group.
+  // Don't bother if broadcasting changes is disabled.
+  if(!track || !track->selected() || !_broadcastChanges)
+    return;
+
+  // TODO: Only controller components handled for now.
+  if(type != ComponentRack::controllerComponent)
+    return;
+
+  QList<MidiIncListStruct> doneMidiTracks;
+  QList<MusECore::Track*> doneAudioTracks;
+
+  if(track->isMidiTrack())
+  {
+    // TODO: Only volume and pan handled for now.
+    int a_ctlnum;
+    switch(id)
+    {
+      case MusECore::CTRL_VOLUME:
+        a_ctlnum = MusECore::AC_VOLUME;
+      break;
+      case MusECore::CTRL_PANPOT:
+        a_ctlnum = MusECore::AC_PAN;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::MidiTrack* m_track = static_cast<MusECore::MidiTrack*>(track);
+    const int m_port  = m_track->outPort();
+    const int m_chan  = m_track->outChannel();
+    MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
+    MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
+    if(!m_mctl)
+      return;
+
+    int i_m_min = m_mctl->minVal();
+    const int i_m_max = m_mctl->maxVal();
+    const int i_m_bias = m_mctl->bias();
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double m_val = val;
+    double ma_val = val;
+    if(id == MusECore::CTRL_VOLUME)
+    {
+      if(MusEGlobal::config.preferMidiVolumeDb)
+      {
+        if(ma_val <= MusEGlobal::config.minSlider)
+          m_val = ma_val = 0.0;
+        else
+        {
+          m_val = double(i_m_max) * muse_db2val(m_val);
+          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
+        }
+      }
+      else
+      {
+        // It's a linear scale. We need to convert to Db and
+        //  scale the linear value by 2 since the midi scale is
+        //  twice the usual Db per step. Then convert back to linear.
+        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val *= 2.0;
+        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+      }
+    }
+
+    //--------------------------------------------------------------
+    //   NOTE: Midi int to audio float conversion:
+    //   If the control has a bias at all, it is supposed
+    //    to define the 'middle', like pan.
+    //   But if the control's range is odd (127), that
+    //    makes an uneven, uncentered float conversion.
+    //   So the policy here is to force an even range for
+    //    symmetrical +/- float conversion. (0.0 in the middle.)
+    //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+    //--------------------------------------------------------------
+    if(i_m_bias != 0 && ((i_m_max - i_m_min) & 0x1))
+      ++i_m_min;
+    const int i_m_range = i_m_max - i_m_min;
+    if(i_m_range == 0) // Avoid divide by zero.
+      return;
+
+    if(m_val < i_m_min)
+     m_val = i_m_min;
+    if(m_val > i_m_max)
+     m_val = i_m_max;
+    const double m_fact = (m_val - (double)i_m_min) / (double)i_m_range;
+
+    // Make sure to include this track as already done.
+    doneMidiTracks.append(MidiIncListStruct(m_port, m_chan));
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+
+      if(t->isMidiTrack())
+      {
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+        const int port     = mt->outPort();
+        const int chan  = mt->outChannel();
+        // Make sure midi tracks on same port and channel are only done once.
+        const MidiIncListStruct mils(port, chan);
+        if(doneMidiTracks.contains(mils))
+          continue;
+        doneMidiTracks.append(mils);
+
+        double d_val = ma_val;
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiController* mctl = mp->midiController(id, false);
+        if(!mctl)
+          continue;
+        if(off || (d_val < double(mctl->minVal())) || (d_val > double(mctl->maxVal())))
+        {
+          if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+                                                      MusECore::ME_CONTROLLER,
+                                                      id,
+                                                      MusECore::CTRL_VAL_UNKNOWN));
+        }
+        else
+        {
+          d_val += double(mctl->bias());
+          mp->putControllerValue(port, chan, id, d_val, false);
+        }
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        MusECore::iCtrlList icl = at->controller()->find(a_ctlnum);
+        if(icl == at->controller()->end())
+          continue;
+        MusECore::CtrlList* cl = icl->second;
+
+        // The audio volume can go above 0dB (amplification) while
+        //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+        const double a_min = cl->minVal();
+        const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+        const double a_range = a_max - a_min;
+        const double a_val = (m_fact * a_range) + a_min;
+
+        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
+        // ScrDirect mode is one-time only on press with modifier.
+        if(scrollMode != SliderBase::ScrDirect)
+          at->recordAutomation(a_ctlnum, a_val);
+        at->setParam(a_ctlnum, a_val);  // Schedules a timed control change.
+        at->enableController(a_ctlnum, false);
+      }
+    }
+  }
+  else
+  {
+    // TODO: Only volume and pan handled for now.
+    int m_ctlnum;
+    switch(id)
+    {
+      case MusECore::AC_VOLUME:
+        m_ctlnum = MusECore::CTRL_VOLUME;
+      break;
+      case MusECore::AC_PAN:
+        m_ctlnum = MusECore::CTRL_PANPOT;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::AudioTrack* a_track = static_cast<MusECore::AudioTrack*>(track);
+    MusECore::iCtrlList icl = a_track->controller()->find(id);
+    if(icl == a_track->controller()->end())
+      return;
+    MusECore::CtrlList* cl = icl->second;
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double a_val = val;
+    double ma_val = val;
+    if(id == MusECore::AC_VOLUME)
+    {
+      if(ma_val <= MusEGlobal::config.minSlider)
+        a_val = ma_val = 0.0;
+      else
+      {
+        a_val = muse_db2val(a_val);
+        ma_val = muse_db2val(ma_val / 2.0);
+      }
+    }
+
+    // The audio volume can go above 0dB (amplification) while
+    //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+    const double a_min = cl->minVal();
+    const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+    const double a_range = a_max - a_min;
+    if(a_range < 0.0001) // Avoid divide by zero.
+      return;
+    const double a_fact = (ma_val - a_min) / a_range;
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+      if(t->isMidiTrack())
+      {
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+        const int port     = mt->outPort();
+        const int chan  = mt->outChannel();
+        // Make sure midi tracks on same port and channel are only done once.
+        const MidiIncListStruct mils(port, chan);
+        if(doneMidiTracks.contains(mils))
+          continue;
+        doneMidiTracks.append(mils);
+
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiController* mctl = mp->midiController(m_ctlnum, false);
+        if(mctl)
+        {
+          int min = mctl->minVal();
+          const int max = mctl->maxVal();
+          const int bias = mctl->bias();
+
+          //--------------------------------------------------------------
+          //   NOTE: Midi int to audio float conversion:
+          //   If the control has a bias at all, it is supposed
+          //    to define the 'middle', like pan.
+          //   But if the control's range is odd (127), that
+          //    makes an uneven, uncentered float conversion.
+          //   So the policy here is to force an even range for
+          //    symmetrical +/- float conversion. (0.0 in the middle.)
+          //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+          //--------------------------------------------------------------
+          if(bias != 0 && ((max - min) & 0x1))
+            ++min;
+
+          const double d_min = (double)min;
+          const double d_range = double(max - min);
+          double d_val = a_fact * d_range + d_min;
+
+          if(d_val < double(mctl->minVal()))
+            d_val = mctl->minVal();
+          if(d_val > double(mctl->maxVal()))
+            d_val = mctl->maxVal();
+          d_val += double(mctl->bias());
+          mp->putControllerValue(port, chan, m_ctlnum, d_val, false);
+        }
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
+        // ScrDirect mode is one-time only on press with modifier.
+        if(scrollMode != SliderBase::ScrDirect)
+          at->recordAutomation(id, a_val);
+        at->setParam(id, a_val);  // Schedules a timed control change.
+        at->enableController(id, false);
+      }
+    }
+  }
+}
+
+void Strip::componentMoved(int /*type*/, double /*val*/, int /*id*/, bool /*shift_pressed*/)
+{
+  //emit componentMoved(this, type, val, id, shift_pressed);
+}
+
+void Strip::componentPressed(int type, double val, int id)
+{
+  // The track has already taken care of its own controllers.
+  // Don't bother other tracks if the track is not selected. ie part of a selected group.
+  // Don't bother if broadcasting changes is disabled.
+  if(!track || !track->selected() || !_broadcastChanges)
+    return;
+
+  // TODO: Only controller components handled for now.
+  if(type != ComponentRack::controllerComponent)
+    return;
+
+  QList<MidiIncListStruct> doneMidiTracks;
+  QList<MusECore::Track*> doneAudioTracks;
+
+  if(track->isMidiTrack())
+  {
+    // TODO: Only volume and pan handled for now.
+    int a_ctlnum;
+    switch(id)
+    {
+      case MusECore::CTRL_VOLUME:
+        a_ctlnum = MusECore::AC_VOLUME;
+      break;
+      case MusECore::CTRL_PANPOT:
+        a_ctlnum = MusECore::AC_PAN;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::MidiTrack* m_track = static_cast<MusECore::MidiTrack*>(track);
+    const int m_port  = m_track->outPort();
+    const int m_chan  = m_track->outChannel();
+    MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
+    MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
+    if(!m_mctl)
+      return;
+
+    int i_m_min = m_mctl->minVal();
+    const int i_m_max = m_mctl->maxVal();
+    const int i_m_bias = m_mctl->bias();
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double m_val = val;
+    double ma_val = val;
+    if(id == MusECore::CTRL_VOLUME)
+    {
+      if(MusEGlobal::config.preferMidiVolumeDb)
+      {
+        if(ma_val <= MusEGlobal::config.minSlider)
+          m_val = ma_val = 0.0;
+        else
+        {
+          m_val = double(i_m_max) * muse_db2val(m_val);
+          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
+        }
+      }
+      else
+      {
+        // It's a linear scale. We need to convert to Db and
+        //  scale the linear value by 2 since the midi scale is
+        //  twice the usual Db per step. Then convert back to linear.
+        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val *= 2.0;
+        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+      }
+    }
+
+    //--------------------------------------------------------------
+    //   NOTE: Midi int to audio float conversion:
+    //   If the control has a bias at all, it is supposed
+    //    to define the 'middle', like pan.
+    //   But if the control's range is odd (127), that
+    //    makes an uneven, uncentered float conversion.
+    //   So the policy here is to force an even range for
+    //    symmetrical +/- float conversion. (0.0 in the middle.)
+    //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+    //--------------------------------------------------------------
+    if(i_m_bias != 0 && ((i_m_max - i_m_min) & 0x1))
+      ++i_m_min;
+    const int i_m_range = i_m_max - i_m_min;
+    if(i_m_range == 0) // Avoid divide by zero.
+      return;
+
+    if(m_val < i_m_min)
+     m_val = i_m_min;
+    if(m_val > i_m_max)
+     m_val = i_m_max;
+    const double m_fact = (m_val - (double)i_m_min) / (double)i_m_range;
+
+    // Make sure to include this track as already done.
+    doneMidiTracks.append(MidiIncListStruct(m_port, m_chan));
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+
+      if(t->isMidiTrack())
+      {
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        MusECore::iCtrlList icl = at->controller()->find(a_ctlnum);
+        if(icl == at->controller()->end())
+          continue;
+        MusECore::CtrlList* cl = icl->second;
+
+        // The audio volume can go above 0dB (amplification) while
+        //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+        const double a_min = cl->minVal();
+        const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+        const double a_range = a_max - a_min;
+        const double a_val = (m_fact * a_range) + a_min;
+
+        at->startAutoRecord(a_ctlnum, a_val);
+        at->setPluginCtrlVal(a_ctlnum, a_val);
+        //at->setParam(a_ctlnum, val);   // Schedules a timed control change. // TODO Try this instead
+        at->enableController(a_ctlnum, false);
+      }
+    }
+  }
+  else
+  {
+    // TODO: Only volume and pan handled for now.
+    switch(id)
+    {
+      case MusECore::AC_VOLUME:
+      break;
+      case MusECore::AC_PAN:
+      break;
+
+      default:
+        return;
+      break;
+    }
+
+    double a_val = val;
+    if(id == MusECore::AC_VOLUME)
+    {
+      if(a_val <= MusEGlobal::config.minSlider)
+        a_val = 0.0;
+      else
+        a_val = muse_db2val(a_val);
+    }
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+      if(t->isMidiTrack())
+      {
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        at->startAutoRecord(id, a_val);
+        at->setPluginCtrlVal(id, a_val);
+        //at->setParam(id, val);   // Schedules a timed control change. // TODO Try this instead
+        at->enableController(id, false);
+      }
+    }
+  }
+}
+
+void Strip::componentReleased(int type, double val, int id)
+{
+  // The track has already taken care of its own controllers.
+  // Don't bother other tracks if the track is not selected. ie part of a selected group.
+  // Don't bother if broadcasting changes is disabled.
+  if(!track || !track->selected() || !_broadcastChanges)
+    return;
+
+  // TODO: Only controller components handled for now.
+  if(type != ComponentRack::controllerComponent)
+    return;
+
+  QList<MidiIncListStruct> doneMidiTracks;
+  QList<MusECore::Track*> doneAudioTracks;
+
+  if(track->isMidiTrack())
+  {
+    // TODO: Only volume and pan handled for now.
+    int a_ctlnum;
+    switch(id)
+    {
+      case MusECore::CTRL_VOLUME:
+        a_ctlnum = MusECore::AC_VOLUME;
+      break;
+      case MusECore::CTRL_PANPOT:
+        a_ctlnum = MusECore::AC_PAN;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::MidiTrack* m_track = static_cast<MusECore::MidiTrack*>(track);
+    const int m_port  = m_track->outPort();
+    const int m_chan  = m_track->outChannel();
+    MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
+    MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
+    if(!m_mctl)
+      return;
+
+    int i_m_min = m_mctl->minVal();
+    const int i_m_max = m_mctl->maxVal();
+    const int i_m_bias = m_mctl->bias();
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double m_val = val;
+    double ma_val = val;
+    if(id == MusECore::CTRL_VOLUME)
+    {
+      if(MusEGlobal::config.preferMidiVolumeDb)
+      {
+        if(ma_val <= MusEGlobal::config.minSlider)
+          m_val = ma_val = 0.0;
+        else
+        {
+          m_val = double(i_m_max) * muse_db2val(m_val);
+          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
+        }
+      }
+      else
+      {
+        // It's a linear scale. We need to convert to Db and
+        //  scale the linear value by 2 since the midi scale is
+        //  twice the usual Db per step. Then convert back to linear.
+        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val *= 2.0;
+        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+      }
+    }
+
+    //--------------------------------------------------------------
+    //   NOTE: Midi int to audio float conversion:
+    //   If the control has a bias at all, it is supposed
+    //    to define the 'middle', like pan.
+    //   But if the control's range is odd (127), that
+    //    makes an uneven, uncentered float conversion.
+    //   So the policy here is to force an even range for
+    //    symmetrical +/- float conversion. (0.0 in the middle.)
+    //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+    //--------------------------------------------------------------
+    if(i_m_bias != 0 && ((i_m_max - i_m_min) & 0x1))
+      ++i_m_min;
+    const int i_m_range = i_m_max - i_m_min;
+    if(i_m_range == 0) // Avoid divide by zero.
+      return;
+
+    if(m_val < i_m_min)
+     m_val = i_m_min;
+    if(m_val > i_m_max)
+     m_val = i_m_max;
+    const double m_fact = (m_val - (double)i_m_min) / (double)i_m_range;
+
+    // Make sure to include this track as already done.
+    doneMidiTracks.append(MidiIncListStruct(m_port, m_chan));
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+
+      if(t->isMidiTrack())
+      {
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        MusECore::iCtrlList icl = at->controller()->find(a_ctlnum);
+        if(icl == at->controller()->end())
+          continue;
+        MusECore::CtrlList* cl = icl->second;
+
+        // The audio volume can go above 0dB (amplification) while
+        //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+        const double a_min = cl->minVal();
+        const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+        const double a_range = a_max - a_min;
+        const double a_val = (m_fact * a_range) + a_min;
+
+        AutomationType atype = at->automationType();
+        at->stopAutoRecord(a_ctlnum, a_val);
+        if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+          at->enableController(a_ctlnum, true);
+      }
+    }
+  }
+  else
+  {
+    // TODO: Only volume and pan handled for now.
+    switch(id)
+    {
+      case MusECore::AC_VOLUME:
+      break;
+      case MusECore::AC_PAN:
+      break;
+
+      default:
+        return;
+      break;
+    }
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double a_val = val;
+    if(id == MusECore::AC_VOLUME)
+    {
+      if(a_val <= MusEGlobal::config.minSlider)
+        a_val = 0.0;
+      else
+        a_val = muse_db2val(a_val);
+    }
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+      if(t->isMidiTrack())
+      {
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        AutomationType atype = at->automationType();
+        at->stopAutoRecord(id, a_val);
+        if(atype == AUTO_OFF || atype == AUTO_TOUCH)
+          at->enableController(id, true);
+      }
+    }
+  }
+}
+
+void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
+                                 bool off, int id, int /*scrollMode*/)
+{
+  // The track has already taken care of its own controllers.
+  // Don't bother other tracks if the track is not selected. ie part of a selected group.
+  // Don't bother if broadcasting changes is disabled.
+  if(!track || !track->selected() || !_broadcastChanges)
+    return;
+
+  // TODO: Only controller components handled for now.
+  if(type != ComponentRack::controllerComponent)
+    return;
+
+  bool wait_required = false;
+  QList<MidiIncListStruct> doneMidiTracks;
+  QList<MusECore::Track*> doneAudioTracks;
+
+  const double d_comp_val_delta = newCompVal - oldCompVal;
+
+  if(track->isMidiTrack())
+  {
+    // TODO: Only volume and pan handled for now.
+    int a_ctlnum;
+    switch(id)
+    {
+      case MusECore::CTRL_VOLUME:
+        a_ctlnum = MusECore::AC_VOLUME;
+      break;
+      case MusECore::CTRL_PANPOT:
+        a_ctlnum = MusECore::AC_PAN;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::MidiTrack* m_track = static_cast<MusECore::MidiTrack*>(track);
+    const int m_port  = m_track->outPort();
+    const int m_chan  = m_track->outChannel();
+    MusECore::MidiPort* m_mp = &MusEGlobal::midiPorts[m_port];
+    MusECore::MidiController* m_mctl = m_mp->midiController(id, false);
+    if(!m_mctl)
+      return;
+
+    const int i_m_min = m_mctl->minVal();
+    const int i_m_max = m_mctl->maxVal();
+    const int i_m_bias = m_mctl->bias();
+    int i_ma_min = i_m_min;
+    const int i_ma_max = i_m_max;
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+//     double val_delta = newVal - oldVal;
+    double m_old_val = oldCompVal;
+    double ma_old_val = oldCompVal;
+    double m_new_val = newCompVal;
+    double ma_new_val = newCompVal;
+//     double d_m_old_ctl_val = oldCtlVal;
+//     double d_ma_old_ctl_val = oldCtlVal;
+    if(id == MusECore::CTRL_VOLUME)
+    {
+      if(MusEGlobal::config.preferMidiVolumeDb)
+      {
+        if(ma_old_val <= MusEGlobal::config.minSlider)
+          m_old_val = ma_old_val = 0.0;
+        else
+        {
+//           m_old_val = double(i_m_max) * muse_db2val(m_old_val);
+//           ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val / 2.0);
+          m_old_val = double(i_m_max) * muse_db2val(m_old_val / 2.0);
+          ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val);
+        }
+
+        if(ma_new_val <= MusEGlobal::config.minSlider)
+          m_new_val = ma_new_val = 0.0;
+        else
+        {
+//           m_new_val = double(i_m_max) * muse_db2val(m_new_val);
+//           ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val / 2.0);
+          m_new_val = double(i_m_max) * muse_db2val(m_new_val / 2.0);
+          ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val);
+        }
+
+//         d_m_old_ctl_val = muse_val2dbr(d_m_old_ctl_val / double(i_m_max)) * 2.0;
+      }
+      else
+      {
+        // It's a linear scale. We need to convert to Db and
+        //  scale the linear value by 2 since the midi scale is
+        //  twice the usual Db per step. Then convert back to linear.
+//         m_old_val = muse_val2dbr(m_old_val / double(i_m_max)) * 2.0;
+//         m_old_val *= 2.0;
+//         m_old_val = double(i_m_max) * muse_db2val(m_old_val / 2.0);
+//
+//         m_new_val = muse_val2dbr(m_new_val / double(i_m_max)) * 2.0;
+//         m_new_val *= 2.0;
+//         m_new_val = double(i_m_max) * muse_db2val(m_new_val / 2.0);
+        ma_old_val = muse_val2dbr(ma_old_val / double(i_ma_max)) * 2.0;
+        ma_old_val *= 2.0;
+        ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val / 2.0);
+
+        ma_new_val = muse_val2dbr(ma_new_val / double(i_ma_max)) * 2.0;
+        ma_new_val *= 2.0;
+        ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val / 2.0);
+      }
+    }
+
+    //--------------------------------------------------------------
+    //   NOTE: Midi int to audio float conversion:
+    //   If the control has a bias at all, it is supposed
+    //    to define the 'middle', like pan.
+    //   But if the control's range is odd (127), that
+    //    makes an uneven, uncentered float conversion.
+    //   So the policy here is to force an even range for
+    //    symmetrical +/- float conversion. (0.0 in the middle.)
+    //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+    //--------------------------------------------------------------
+    if(i_m_bias != 0 && ((i_ma_max - i_ma_min) & 0x1))
+      ++i_ma_min;
+    const int i_m_range = i_m_max - i_m_min;
+    const int i_ma_range = i_ma_max - i_ma_min;
+
+    if(m_old_val < i_m_min)
+     m_old_val = i_m_min;
+    if(m_old_val > i_m_max)
+     m_old_val = i_m_max;
+
+    if(m_new_val < i_m_min)
+     m_new_val = i_m_min;
+    if(m_new_val > i_m_max)
+     m_new_val = i_m_max;
+
+    if(ma_old_val < i_ma_min)
+     ma_old_val = i_ma_min;
+    if(ma_old_val > i_ma_max)
+     ma_old_val = i_ma_max;
+
+    if(ma_new_val < i_ma_min)
+     ma_new_val = i_ma_min;
+    if(ma_new_val > i_ma_max)
+     ma_new_val = i_ma_max;
+
+    if(i_m_range == 0 || i_ma_range == 0) // Avoid divide by zero.
+      return;
+
+    // Get the current or last valid actual controller value.
+//     int i_m_cur_val = m_mp->hwCtrlState(m_chan, id);
+//     int i_ma_cur_val = i_m_cur_val;
+//     if(i_m_cur_val == MusECore::CTRL_VAL_UNKNOWN)
+//     {
+//       i_m_cur_val = m_mp->lastValidHWCtrlState(m_chan, id);
+//       i_ma_cur_val = i_m_cur_val;
+//     }
+//     if(i_m_cur_val == MusECore::CTRL_VAL_UNKNOWN)
+//     {
+//       i_m_cur_val = int(m_old_val);
+//       i_ma_cur_val = int(ma_old_val);
+//     }
+//     int i_m_cur_val = lrint(d_m_old_ctl_val);
+//     int i_ma_cur_val = lrint(d_ma_old_ctl_val);
+
+//     i_m_cur_val -= i_m_bias;
+//     i_ma_cur_val -= i_m_bias;
+//
+//     if(i_m_cur_val < i_m_min)
+//       i_m_cur_val = i_m_min;
+//     if(i_m_cur_val > i_m_max)
+//       i_m_cur_val = i_m_max;
+//
+//     if(i_ma_cur_val < i_ma_min)
+//       i_ma_cur_val = i_ma_min;
+//     if(i_ma_cur_val > i_ma_max)
+//       i_ma_cur_val = i_ma_max;
+
+    //const double d_m_cur_val = double(i_m_cur_val);
+//     const double d_ma_cur_val = double(i_ma_cur_val);
+
+    const double m_val_delta = m_new_val - m_old_val;
+    const double ma_val_delta = ma_new_val - ma_old_val;
+
+    //const double d_m_cur_val_delta = double(lrint(m_new_val)) - d_m_cur_val;
+//     const double d_ma_cur_val_delta = double(lrint(ma_new_val)) - d_ma_cur_val;
+
+//     const double m_old_fact = (m_old_val - (double)i_m_min) / (double)i_m_range;
+//     const double m_new_fact = (m_new_val - (double)i_m_min) / (double)i_m_range;
+    //const double m_new_delta_fact = m_val_delta / (double)i_m_range;
+    const double ma_new_delta_fact = ma_val_delta / (double)i_ma_range;
+
+    // Make sure to include this track as already done.
+    doneMidiTracks.append(MidiIncListStruct(m_port, m_chan));
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+
+      if(t->isMidiTrack())
+      {
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+        const int port     = mt->outPort();
+        const int chan  = mt->outChannel();
+        // Make sure midi tracks on same port and channel are only done once.
+        const MidiIncListStruct mils(port, chan);
+        if(doneMidiTracks.contains(mils))
+          continue;
+        doneMidiTracks.append(mils);
+
+        //int i_new_val = lrint(ma_new_val);
+        //int i_new_val = lrint(m_new_val);
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiController* mctl = mp->midiController(id, false);
+        if(!mctl)
+          continue;
+        int min = mctl->minVal();
+        const int max = mctl->maxVal();
+        //const int bias = mctl->bias();
+        //if(bias != 0 && ((max - min) & 0x1))
+        //  ++min;
+
+        //if(off || (i_new_val < mctl->minVal()) || (i_new_val > mctl->maxVal()))
+        if(off)
+        {
+          if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+                                                      MusECore::ME_CONTROLLER,
+                                                      id,
+                                                      MusECore::CTRL_VAL_UNKNOWN));
+        }
+        else
+        {
+          //int i_fin_val;
+          double d_fin_val = m_new_val;
+          //double d_cur_val;
+          // Get the current or last valid value.
+//           int d_cur_val =  mp->hwCtrlState(chan, id);
+          double d_cur_val =  mp->hwDCtrlState(chan, id);
+          if(MusECore::MidiController::dValIsUnknown(d_cur_val))
+            d_cur_val = mp->lastValidHWDCtrlState(chan, id);
+          if(MusECore::MidiController::dValIsUnknown(d_cur_val))
+            d_fin_val = m_new_val;
+          else
+          {
+//             const double d_cur_val = double(i_cur_val - mctl->bias());
+            d_cur_val = d_cur_val - double(mctl->bias());
+//             double d_fin_val;
+            if(id == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
+            {
+              d_fin_val = muse_val2dbr(d_cur_val / double(max)) * 2.0;
+              d_fin_val += d_comp_val_delta;
+              d_fin_val = double(max) * muse_db2val(d_fin_val / 2.0);
+//               d_fin_val = d_cur_val + d_m_cur_val_delta;
+            }
+            else
+              //d_fin_val = d_cur_val + val_delta;
+              //d_fin_val = d_cur_val + d_m_cur_val_delta;
+              d_fin_val = d_cur_val + m_val_delta;
+
+//             i_fin_val = lrint(d_fin_val);
+            //i_fin_val = round(d_fin_val);
+          }
+
+//           if(i_fin_val < min)
+//             i_fin_val = min;
+//           if(i_fin_val > max)
+//             i_fin_val = max;
+          if(d_fin_val < double(min))
+            d_fin_val = min;
+          if(d_fin_val > double(max))
+            d_fin_val = max;
+
+//           i_fin_val += mctl->bias();
+          d_fin_val += double(mctl->bias());
+
+          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+//           mp->putEvent(ev);
+
+          // False = linear not dB because we are doing the conversion here.
+          //mp->putControllerIncrement(port, chan, id, d_fin_val, false);
+          mp->putControllerValue(port, chan, id, d_fin_val, false);
+
+          // Trip the wait flag.
+          wait_required = true;
+        }
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        MusECore::iCtrlList icl = at->controller()->find(a_ctlnum);
+        if(icl == at->controller()->end())
+          continue;
+        MusECore::CtrlList* cl = icl->second;
+
+        double d_cur_val = cl->curVal();
+        // The audio volume can go above 0dB (amplification) while
+        //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+        const double a_min = cl->minVal();
+        const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+        const double a_range = a_max - a_min;
+        //const double a_val = (ma_new_val * a_range) + a_min;
+        //const double a_val_delta = (m_new_delta_fact * a_range) + a_min;
+        const double a_val_delta = ma_new_delta_fact * a_range;
+
+        if(id == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
+        {
+          if(d_cur_val <= 0.0)
+            d_cur_val = MusEGlobal::config.minSlider;
+          else
+            d_cur_val = muse_val2dbr(d_cur_val);
+
+          d_cur_val += d_comp_val_delta;
+          if(d_cur_val < MusEGlobal::config.minSlider)
+            d_cur_val = MusEGlobal::config.minSlider;
+          if(d_cur_val > 10.0)
+            d_cur_val = 10.0;
+
+          d_cur_val = muse_db2val(d_cur_val);
+        }
+        else
+          d_cur_val += a_val_delta;
+
+        if(d_cur_val < a_min)
+          d_cur_val = a_min;
+        if(d_cur_val > a_max)
+          d_cur_val = a_max;
+
+        //const double d_fin_val = d_cur_val + d_m_cur_val_delta;
+//         const double d_fin_val = d_cur_val + d_ma_cur_val_delta;
+        //const double d_fin_val = d_cur_val + a_val_delta;
+
+//         // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
+//         // ScrDirect mode is one-time only on press with modifier.
+//         if(scrollMode != SliderBase::ScrDirect)
+//           at->recordAutomation(a_ctlnum, a_val);
+          at->recordAutomation(a_ctlnum, d_cur_val);
+//         at->setParam(a_ctlnum, a_val);  // Schedules a timed control change.
+        at->setParam(a_ctlnum, d_cur_val);  // Schedules a timed control change.
+        at->enableController(a_ctlnum, false);
+
+        // Trip the wait flag.
+        wait_required = true;
+      }
+    }
+  }
+  else
+  {
+    // TODO: Only volume and pan handled for now.
+    int m_ctlnum;
+    switch(id)
+    {
+      case MusECore::AC_VOLUME:
+        m_ctlnum = MusECore::CTRL_VOLUME;
+      break;
+      case MusECore::AC_PAN:
+        m_ctlnum = MusECore::CTRL_PANPOT;
+      break;
+      default:
+        return;
+      break;
+    }
+
+    MusECore::AudioTrack* a_track = static_cast<MusECore::AudioTrack*>(track);
+    MusECore::iCtrlList icl = a_track->controller()->find(id);
+    if(icl == a_track->controller()->end())
+      return;
+    MusECore::CtrlList* cl = icl->second;
+
+    //----------------------------------------------------------
+    // For midi volume, the formula given by MMA is:
+    //  volume dB = 40 * log(midivol / 127)  and the inverse is:
+    //  midi volume = 127 * 10 ^ (volume dB / 40)
+    // Unusual, it is a factor of 40 not 20. Since muse_db2val()
+    //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
+    //----------------------------------------------------------
+    double a_val = newCompVal;
+    double ma_val = newCompVal;
+    if(id == MusECore::AC_VOLUME)
+    {
+      if(ma_val <= MusEGlobal::config.minSlider)
+        a_val = ma_val = 0.0;
+      else
+      {
+        a_val = muse_db2val(a_val);
+        ma_val = muse_db2val(ma_val / 2.0);
+      }
+    }
+
+    // The audio volume can go above 0dB (amplification) while
+    //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+    const double a_min = cl->minVal();
+//     const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+    const double a_max = cl->maxVal();
+    const double a_range = a_max - a_min;
+    if(a_range < 0.0001) // Avoid divide by zero.
+      return;
+//     const double a_fact = (ma_val - a_min) / a_range;
+    const double a_fact_delta = muse_round2micro((newCompVal - oldCompVal) / a_range);
+
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+    {
+      MusECore::Track* t = *it;
+      // Do selected tracks. Ignore this track, it has already taken care of its own controllers.
+      if(t == track || !t->selected())
+        continue;
+      if(t->isMidiTrack())
+      {
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+        const int port     = mt->outPort();
+        const int chan  = mt->outChannel();
+        // Make sure midi tracks on same port and channel are only done once.
+        const MidiIncListStruct mils(port, chan);
+        if(doneMidiTracks.contains(mils))
+          continue;
+        doneMidiTracks.append(mils);
+
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiController* mctl = mp->midiController(m_ctlnum, false);
+        if(mctl)
+        {
+          int min = mctl->minVal();
+          const int max = mctl->maxVal();
+          const int bias = mctl->bias();
+
+          //--------------------------------------------------------------
+          //   NOTE: Midi int to audio float conversion:
+          //   If the control has a bias at all, it is supposed
+          //    to define the 'middle', like pan.
+          //   But if the control's range is odd (127), that
+          //    makes an uneven, uncentered float conversion.
+          //   So the policy here is to force an even range for
+          //    symmetrical +/- float conversion. (0.0 in the middle.)
+          //   Treat value '0' (-64 pan) and '1' (-63 pan) the same.
+          //--------------------------------------------------------------
+          if(bias != 0 && ((max - min) & 0x1))
+            ++min;
+
+          const double d_min = (double)min;
+          const double d_max = (double)max;
+          const double d_range = double(max - min);
+
+//           int m_val = lrint((a_fact_delta * d_range) + d_min);
+//
+//           if(m_val < mctl->minVal())
+//             m_val = mctl->minVal();
+//           if(m_val > mctl->maxVal())
+//             m_val = mctl->maxVal();
+//           m_val += mctl->bias();
+//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, m_ctlnum, m_val);
+//           mp->putEvent(ev);
+
+          const double m_val_delta = muse_round2micro(a_fact_delta * d_range);
+
+          double d_fin_val = 0.0;
+          //double d_cur_val;
+          // Get the current or last valid value.
+//           int d_cur_val =  mp->hwCtrlState(chan, id);
+          double d_cur_val =  mp->hwDCtrlState(chan, m_ctlnum);
+          if(MusECore::MidiController::dValIsUnknown(d_cur_val))
+            d_cur_val = mp->lastValidHWDCtrlState(chan, m_ctlnum);
+          if(MusECore::MidiController::dValIsUnknown(d_cur_val))
+          {
+            if(!mctl->initValIsUnknown())
+              d_cur_val = double(mctl->initVal()) + double(bias);
+          }
+          if(MusECore::MidiController::dValIsUnknown(d_cur_val))
+            d_fin_val = 0.0;
+          else
+          {
+//             const double d_cur_val = double(i_cur_val - mctl->bias());
+            d_cur_val = d_cur_val - double(mctl->bias());
+//             double d_fin_val;
+            //if(m_ctlnum == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
+            if(m_ctlnum == MusECore::CTRL_VOLUME)
+            {
+              d_fin_val = muse_val2dbr(d_cur_val / d_max) * 2.0;
+              d_fin_val += d_comp_val_delta;
+              d_fin_val = d_max * muse_db2val(d_fin_val / 2.0);
+//               d_fin_val = d_cur_val + d_m_cur_val_delta;
+            }
+            else
+              //d_fin_val = d_cur_val + val_delta;
+              //d_fin_val = d_cur_val + d_m_cur_val_delta;
+              d_fin_val = d_cur_val + m_val_delta;
+
+//             i_fin_val = lrint(d_fin_val);
+            //i_fin_val = round(d_fin_val);
+          }
+
+//           if(i_fin_val < min)
+//             i_fin_val = min;
+//           if(i_fin_val > max)
+//             i_fin_val = max;
+          if(d_fin_val < d_min)
+            d_fin_val = d_min;
+          if(d_fin_val > d_max)
+            d_fin_val = d_max;
+
+//           i_fin_val += mctl->bias();
+          d_fin_val += double(mctl->bias());
+
+          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+//           mp->putEvent(ev);
+
+          // False = linear not dB because we are doing the conversion here.
+          //mp->putControllerIncrement(port, chan, id, d_fin_val, false);
+          mp->putControllerValue(port, chan, m_ctlnum, d_fin_val, false);
+
+          // Trip the wait flag.
+          wait_required = true;
+        }
+      }
+      else
+      {
+        // Make sure we're not doing the same track more than once.
+        if(doneAudioTracks.contains(t))
+          continue;
+        doneAudioTracks.append(t);
+
+        MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+        MusECore::iCtrlList icl = at->controller()->find(id);
+        if(icl == at->controller()->end())
+          continue;
+        MusECore::CtrlList* cl = icl->second;
+
+        double d_cur_val = cl->curVal();
+        // The audio volume can go above 0dB (amplification) while
+        //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
+        const double d_min = cl->minVal();
+        //const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+        const double d_max = cl->maxVal();
+        const double d_range = d_max - d_min;
+        //const double a_val = (ma_new_val * a_range) + a_min;
+        //const double a_val_delta = (m_new_delta_fact * a_range) + a_min;
+        const double d_val_delta = a_fact_delta * d_range;
+
+        if(id == MusECore::AC_VOLUME)
+        {
+          if(d_cur_val <= 0.0)
+            d_cur_val = MusEGlobal::config.minSlider;
+          else
+            d_cur_val = muse_val2dbr(d_cur_val);
+
+          d_cur_val += d_comp_val_delta;
+          if(d_cur_val < MusEGlobal::config.minSlider)
+            d_cur_val = MusEGlobal::config.minSlider;
+          if(d_cur_val > 10.0)
+            d_cur_val = 10.0;
+
+          d_cur_val = muse_db2val(d_cur_val);
+        }
+        else
+          d_cur_val += d_val_delta;
+
+        if(d_cur_val < d_min)
+          d_cur_val = d_min;
+        if(d_cur_val > d_max)
+          d_cur_val = d_max;
+
+        // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
+        // ScrDirect mode is one-time only on press with modifier.
+        //if(scrollMode != SliderBase::ScrDirect)
+          at->recordAutomation(id, d_cur_val);
+        at->setParam(id, d_cur_val);  // Schedules a timed control change.
+        at->enableController(id, false);
+
+        // Trip the wait flag.
+        wait_required = true;
+      }
+    }
+  }
+
+  // This is a DELTA operation. Unfortunately we may need to WAIT for the hw controls to update
+  //  in the audio thread before we can apply ANOTHER delta to the soon-to-be 'current' value.
+  if(wait_required)
+    MusEGlobal::audio->msgAudioWait();
 }
 
 } // namespace MusEGui

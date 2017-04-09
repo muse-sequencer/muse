@@ -85,7 +85,7 @@ class CompactComboBox : public CompactToolButton {
       void activated(int id);
 
    public:
-      CompactComboBox(QWidget* parent = 0, const QIcon& icon_A = QIcon(), const QIcon& icon_B = QIcon(), const char* name = 0);
+      CompactComboBox(QWidget* parent = 0, const QIcon& icon = QIcon(), const char* name = 0);
       virtual ~CompactComboBox();
       void setCurrentItem(int);
       void addAction(const QString& s, int id = -1);

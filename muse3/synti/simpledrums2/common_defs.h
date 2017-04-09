@@ -23,7 +23,8 @@
 #ifndef __SIMPLEDRUMS_UNIQUE_ID_H
 #define __SIMPLEDRUMS_UNIQUE_ID_H
 
-// Make sure this number is unique among all the MESS synths.
+// Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
+// 127 is reserved for special MusE system messages.
 #define SIMPLEDRUMS_UNIQUE_ID      4
 
 #endif

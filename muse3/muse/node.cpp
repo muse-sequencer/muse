@@ -827,7 +827,6 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
 //   copyData
 //---------------------------------------------------------
 
-// this is also addData(). addData() just calls copyData(..., true);
 void AudioTrack::copyData(unsigned pos,
                           int dstStartChan, int requestedDstChannels, int availDstChannels,
                           int srcStartChan, int srcChannels,
@@ -841,7 +840,7 @@ void AudioTrack::copyData(unsigned pos,
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
 
   #ifdef NODE_DEBUG_PROCESS
-  printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().toLatin1().constData(), processed());
+  fprintf(stderr, "MusE: AudioTrack::copyData name:%s processed:%d _haveData:%d\n", name().toLatin1().constData(), processed(), _haveData);
   #endif
 
   if(srcStartChan == -1)
@@ -867,17 +866,31 @@ void AudioTrack::copyData(unsigned pos,
 
   int i;
 
+  // Protection for pre-allocated _dataBuffers.
+  if(nframes > MusEGlobal::segmentSize)
+  {
+    fprintf(stderr, "MusE: Error: AudioTrack::copyData: nframes:%u > segmentSize:%u\n", nframes, MusEGlobal::segmentSize);
+    nframes = MusEGlobal::segmentSize;
+  }
+
   float* buffer[srcTotalOutChans];
-  float data[nframes * srcTotalOutChans];
   double meter[trackChans];
+
+  #ifdef NODE_DEBUG_PROCESS
+    fprintf(stderr, "MusE: AudioTrack::copyData "
+                    "trackChans:%d srcTotalOutChans:%d srcStartChan:%d srcChannels:%d "
+                    "dstStartChan:%d"
+                    "requestedSrcChans:%d availableSrcChans:%d "
+                    "requestedDstChannels:%d availDstChannels:%d\n",
+            trackChans, srcTotalOutChans, srcStartChan, srcChannels,
+            dstStartChan,
+            requestedSrcChans, availableSrcChans,
+            requestedDstChannels, availDstChannels);
+    #endif
 
   // Have we been here already during this process cycle?
   if(processed())
   {
-    #ifdef NODE_DEBUG_PROCESS
-    printf("MusE: AudioTrack::copyData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
-    #endif
-
     // Is there already some data gathered from a previous call during this process cycle?
     if(_haveData)
     {
@@ -923,10 +936,10 @@ void AudioTrack::copyData(unsigned pos,
         const int cnt = availableSrcChans > 2 ? 2 : availableSrcChans;
         if(availDstChannels >= 1)
         {
-          float* dp = dstBuffer[dstStartChan];
           for(int sch = 0; sch < cnt; ++sch)
           {
             float* sp = outBuffers[srcStartChan + sch];
+            float* dp = dstBuffer[dstStartChan];
             if((addArray ? addArray[dstStartChan] : add) || sch != 0)
             {
               for(unsigned k = 0; k < nframes; ++k)
@@ -1005,10 +1018,14 @@ void AudioTrack::copyData(unsigned pos,
     _haveData = false;  // Reset.
     _processed = true;  // Set this now.
 
+    // Start by clearing the meters. There may be multiple contributions to them below.
+    for(i = 0; i < trackChans; ++i)
+      _meter[i] = 0.0;
+
     if(off())
     {
       #ifdef NODE_DEBUG_PROCESS
-      printf("MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), availDstChannels);
+      fprintf(stderr, "MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), availDstChannels);
       #endif
 
       // Track is off. Zero the supplied buffers.
@@ -1028,24 +1045,26 @@ void AudioTrack::copyData(unsigned pos,
       _efxPipe->apply(pos, 0, nframes, 0);  // Just process controls only, not audio (do not 'run').
       processTrackCtrls(pos, 0, nframes, 0);
 
-      for(i = 0; i < trackChans; ++i)
-        _meter[i] = 0.0;
+      //for(i = 0; i < trackChans; ++i)
+      //  _meter[i] = 0.0;
 
       return;
     }
 
-    // Point the input buffers at a temporary stack buffer.
+    // Point the input buffers at a temporary buffer.
     for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
+        buffer[i] = _dataBuffers[i];
 
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc.
     // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
     // Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
     //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
+    // Since the meters are cleared above, getData can contribute (add) to them directly and return HaveMeterDataOnly
+    //  if it does not want to pass the audio for listening.
     if(!getData(pos, srcTotalOutChans, nframes, buffer))
     {
       #ifdef NODE_DEBUG_PROCESS
-      printf("MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLatin1().constData(), srcTotalOutChans);
+      fprintf(stderr, "MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLatin1().constData(), srcTotalOutChans);
       #endif
 
       // No data was available. Track is not off. Zero the working buffers and continue on.
@@ -1073,10 +1092,6 @@ void AudioTrack::copyData(unsigned pos,
     // apply volume, pan
     //---------------------------------------------------
 
-    #ifdef NODE_DEBUG_PROCESS
-    printf("MusE: AudioTrack::copyData trackChans:%d srcTotalOutChans:%d srcStartChan:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcStartChan, srcChans, dstChannels);
-    #endif
-
     processTrackCtrls(pos, trackChans, nframes, buffer);
 
     const int valid_out_bufs = _prefader ? 0 : trackChans;
@@ -1096,7 +1111,8 @@ void AudioTrack::copyData(unsigned pos,
         if(f > meter[c])
           meter[c] = f;
       }
-      _meter[c] = meter[c];
+      if(meter[c] > _meter[c])
+        _meter[c] = meter[c];
       if(_meter[c] > _peak[c])
         _peak[c] = _meter[c];
 
@@ -1233,10 +1249,10 @@ void AudioTrack::copyData(unsigned pos,
       const int cnt = availableSrcChans > 2 ? 2 : availableSrcChans;
       if(availDstChannels >= 1)
       {
-        float* dp = dstBuffer[dstStartChan];
         for(int sch = 0; sch < cnt; ++sch)
         {
           float* sp = outBuffers[srcStartChan + sch];
+          float* dp = dstBuffer[dstStartChan];
           if((addArray ? addArray[dstStartChan] : add) || sch != 0)
           {
             for(unsigned k = 0; k < nframes; ++k)
@@ -1360,7 +1376,7 @@ void AudioOutput::setChannels(int n)
 void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       {
       if (fifo.put(channels, n, bp, MusEGlobal::audio->pos().frame())) {
-            printf("   overrun ???\n");
+            fprintf(stderr, "   overrun ???\n");
             }
       }
 
@@ -1376,7 +1392,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       RouteList* rl = inRoutes();
 
       #ifdef NODE_DEBUG_PROCESS
-      printf("AudioTrack::getData name:%s inRoutes:%u\n", name().toLatin1().constData(), rl->size());
+      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
       #endif
 
       bool have_data = false;
@@ -1387,10 +1403,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
             if(ir->track->isMidiTrack())
               continue;
-
-            #ifdef NODE_DEBUG_PROCESS
-            printf("    calling addData on %s...\n", ir->track->name().toLatin1().constData());
-            #endif
 
             // Only this track knows how many destination channels there are,
             //  while only the route track knows how many source channels there are.
@@ -1405,6 +1417,13 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             int fin_dst_chs = dst_chs;
             if(dst_ch + fin_dst_chs > channels)
               fin_dst_chs = channels - dst_ch;
+
+            #ifdef NODE_DEBUG_PROCESS
+            fprintf(stderr, "    calling copy/addData on %s dst_ch:%d dst_chs:%d fin_dst_chs:%d src_ch:%d src_chs:%d ...\n",
+                    ir->track->name().toLatin1().constData(),
+                    dst_ch, dst_chs, fin_dst_chs,
+                    src_ch, src_chs);
+            #endif
 
             static_cast<AudioTrack*>(ir->track)->copyData(pos,
                                                           dst_ch, dst_chs, fin_dst_chs,
@@ -1609,7 +1628,7 @@ void AudioTrack::record()
       float* buffer[_channels];
       while(fifo.getCount()) {
             if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
-                  printf("AudioTrack::record(): empty fifo\n");
+                  fprintf(stderr, "AudioTrack::record(): empty fifo\n");
                   return;
                   }
               if (_recFile) {
@@ -1667,7 +1686,7 @@ void AudioTrack::record()
 
                     }
               else {
-                    printf("AudioNode::record(): no recFile\n");
+                    fprintf(stderr, "AudioNode::record(): no recFile\n");
                     }
             }
       }
@@ -1689,7 +1708,7 @@ void AudioOutput::processInit(unsigned nframes)
                       }
                   }
             else
-                  printf("PANIC: processInit: no buffer from audio driver\n");
+                  fprintf(stderr, "PANIC: processInit: no buffer from audio driver\n");
             }
       }
 
@@ -1702,7 +1721,7 @@ void AudioOutput::processInit(unsigned nframes)
 void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
 {
       #ifdef NODE_DEBUG_PROCESS
-      printf("MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
+      fprintf(stderr, "MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
       #endif
 
       for (int i = 0; i < _channels; ++i) {
@@ -1752,7 +1771,7 @@ void AudioOutput::processWrite()
       if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
 
             #ifdef METRONOME_DEBUG
-            printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
+            fprintf(stderr, "MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
             #endif
             metronome->copyData(MusEGlobal::audio->pos().frame(), -1, _channels, _channels, -1, -1, _nframes, buffer, true);
             }
@@ -1810,7 +1829,7 @@ Fifo::~Fifo()
 void Fifo::clear()
 {
   #ifdef FIFO_DEBUG
-  printf("FIFO::clear count:%d\n", muse_atomic_read(&count));
+  fprintf(stderr, "FIFO::clear count:%d\n", muse_atomic_read(&count));
   #endif
 
   ridx = 0;
@@ -1869,11 +1888,11 @@ void Fifo::clear()
 bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::put segs:%d samples:%ld pos:%ld count:%d\n", segs, samples, pos, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::put segs:%d samples:%ld pos:%ld count:%d\n", segs, samples, pos, muse_atomic_read(&count));
       #endif
 
       if (muse_atomic_read(&count) == nbuffer) {
-            printf("FIFO %p overrun... %d\n", this, muse_atomic_read(&count));
+            fprintf(stderr, "FIFO %p overrun... %d\n", this, muse_atomic_read(&count));
             return true;
             }
       FifoBuffer* b = buffer[widx];
@@ -1887,7 +1906,7 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos)
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              printf("Fifo::put could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+              fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
               return true;
             }
 
@@ -1895,7 +1914,7 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos)
             }
       if(!b->buffer)
       {
-        printf("Fifo::put no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+        fprintf(stderr, "Fifo::put no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
         return true;
       }
 
@@ -1943,17 +1962,17 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos)
 bool Fifo::get(int segs, MuseCount_t samples, float** dst, MuseCount_t* pos)
       {
       #ifdef FIFO_DEBUG
-      printf("FIFO::get segs:%d samples:%ld count:%d\n", segs, samples, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::get segs:%d samples:%ld count:%d\n", segs, samples, muse_atomic_read(&count));
       #endif
 
       if (muse_atomic_read(&count) == 0) {
-            printf("FIFO %p underrun\n", this);
+            fprintf(stderr, "FIFO %p underrun\n", this);
             return true;
             }
       FifoBuffer* b = buffer[ridx];
       if(!b->buffer)
       {
-        printf("Fifo::get no buffer! segs:%d samples:%ld b->pos:%ld\n", segs, samples, b->pos);
+        fprintf(stderr, "Fifo::get no buffer! segs:%d samples:%ld b->pos:%ld\n", segs, samples, b->pos);
         return true;
       }
 
@@ -1985,7 +2004,7 @@ bool Fifo::isEmpty()
 void Fifo::remove()
       {
       #ifdef FIFO_DEBUG
-      printf("Fifo::remove count:%d\n", muse_atomic_read(&count));
+      fprintf(stderr, "Fifo::remove count:%d\n", muse_atomic_read(&count));
       #endif
 
       ridx = (ridx + 1) % nbuffer;
@@ -2041,7 +2060,7 @@ void Fifo::remove()
 bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_t pos)
       {
       #ifdef FIFO_DEBUG
-      printf("Fifo::getWriteBuffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+      fprintf(stderr, "Fifo::getWriteBuffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
       #endif
 
       if (muse_atomic_read(&count) == nbuffer)
@@ -2058,7 +2077,7 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+              fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
               return true;
             }
 
@@ -2066,7 +2085,7 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
             }
       if(!b->buffer)
       {
-        printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+        fprintf(stderr, "Fifo::getWriteBuffer no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
         return true;
       }
 
@@ -2086,7 +2105,7 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
 void Fifo::add()
       {
       #ifdef FIFO_DEBUG
-      printf("Fifo::add count:%d\n", muse_atomic_read(&count));
+      fprintf(stderr, "Fifo::add count:%d\n", muse_atomic_read(&count));
       #endif
 
       widx = (widx + 1) % nbuffer;
@@ -2131,6 +2150,20 @@ void AudioTrack::setTotalOutChannels(int num)
       int chans = _totalOutChannels;
       if(num != chans)
       {
+        if(_dataBuffers)
+        {
+          for(int i = 0; i < _totalOutChannels; ++i)
+          {
+            if(_dataBuffers[i])
+            {
+              free(_dataBuffers[i]);
+              _dataBuffers[i] = NULL;
+            }
+          }
+          delete[] _dataBuffers;
+          _dataBuffers = NULL;
+        }
+
         _totalOutChannels = num;
         int new_chans = num;
         // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
@@ -2154,6 +2187,7 @@ void AudioTrack::setTotalOutChannels(int num)
             outBuffers = NULL;
           }
         }
+
         initBuffers();
       }
       chans = num;

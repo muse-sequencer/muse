@@ -74,6 +74,7 @@ enum {
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
       AUDIO_RECORD,
+      AUDIO_RECORD_MONITOR,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
@@ -257,6 +258,7 @@ class Audio {
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
       void msgSetRecord(AudioTrack*, bool);
+      void msgSetRecMonitor(Track*, bool);
       void msgLocalOff();
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
@@ -280,7 +282,8 @@ class Audio {
       void msgSetSendMetronome(AudioTrack*, bool);
       void msgStartMidiLearn();
       void msgPlayMidiEvent(const MidiPlayEvent* event);
-      
+      void msgSetMidiDevice(MidiPort* port, MidiDevice* device);
+
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }

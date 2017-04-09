@@ -267,6 +267,7 @@ static void readConfigMidiDevice(Xml& xml)
                                     fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
                                   dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                                 }
+#ifdef ALSA_SUPPORT
                                 else
                                 if(type == MidiDevice::ALSA_MIDI)
                                 {
@@ -274,6 +275,7 @@ static void readConfigMidiDevice(Xml& xml)
                                     fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
                                   dev = MidiAlsaDevice::createAlsaMidiDevice(device, rwFlags);  
                                 }
+#endif
                               }                              
                               
                               if(MusEGlobal::debugMsg && !dev) 
@@ -431,7 +433,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if (dev) {
                                     if(pre_mididevice_ver_found)
                                       dev->setOpenFlags(openFlags);
-                                    MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
+                                    MusEGlobal::audio->msgSetMidiDevice(mp, dev);
                                     }
                               return;
                               }
@@ -682,16 +684,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(p >= 0 && p < MidiSyncInfo::TYPE_END)
                               {
                                 MusEGlobal::syncRecFilterPreset = MidiSyncInfo::SyncRecFilterPresetType(p);
-                                if(MusEGlobal::midiSeq)
-                                  MusEGlobal::midiSeq->setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+                                MusEGlobal::midiSyncContainer.setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
                               }
                               }
                         else if (tag == "syncRecTempoValQuant")
                               {
                                 double qv = xml.parseDouble();
                                 MusEGlobal::syncRecTempoValQuant = qv;
-                                if(MusEGlobal::midiSeq)
-                                  MusEGlobal::midiSeq->setRecTempoValQuant(qv);
+                                MusEGlobal::midiSyncContainer.setRecTempoValQuant(qv);
                               }
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
@@ -768,6 +768,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.preferKnobsVsSliders = xml.parseInt();
                         else if (tag == "showControlValues")
                               MusEGlobal::config.showControlValues = xml.parseInt();
+                        else if (tag == "monitorOnRecord")
+                              MusEGlobal::config.monitorOnRecord = xml.parseInt();
+                        else if (tag == "lineEditStyleHack")
+                              MusEGlobal::config.lineEditStyleHack = xml.parseInt();
+                        else if (tag == "preferMidiVolumeDb")
+                              MusEGlobal::config.preferMidiVolumeDb = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -1786,6 +1792,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "liveWaveUpdate", MusEGlobal::config.liveWaveUpdate);
       xml.intTag(level, "preferKnobsVsSliders", MusEGlobal::config.preferKnobsVsSliders);
       xml.intTag(level, "showControlValues", MusEGlobal::config.showControlValues);
+      xml.intTag(level, "monitorOnRecord", MusEGlobal::config.monitorOnRecord);
+      xml.intTag(level, "lineEditStyleHack", MusEGlobal::config.lineEditStyleHack);
+      xml.intTag(level, "preferMidiVolumeDb", MusEGlobal::config.preferMidiVolumeDb);
       xml.intTag(level, "lv2UiBehavior", static_cast<int>(MusEGlobal::config.lv2UiBehavior));
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 

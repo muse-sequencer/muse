@@ -479,18 +479,18 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
                                 //mmcInput(p, n);
-                                MusEGlobal::midiSeq->mmcInput(_port, p, n);
+                                MusEGlobal::midiSyncContainer.mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
                                 //mtcInputFull(p, n);
-                                MusEGlobal::midiSeq->mtcInputFull(_port, p, n);
+                                MusEGlobal::midiSyncContainer.mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
                           //nonRealtimeSystemSysex(p, n);
-                          MusEGlobal::midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          MusEGlobal::midiSyncContainer.nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
                     }
@@ -544,7 +544,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       }
 
 //---------------------------------------------------------
-//   midiReceived
+//   eventReceived
 //---------------------------------------------------------
 
 void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
@@ -627,11 +627,15 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 break;
                           case ME_MTC_QUARTER:
                                 if(_port != -1)
-                                  MusEGlobal::midiSeq->mtcInputQuarter(_port, *(ev->buffer + 1)); 
+                                {
+                                  MusEGlobal::midiSyncContainer.mtcInputQuarter(_port, *(ev->buffer + 1));
+                                }
                                 return;
                           case ME_SONGPOS:    
                                 if(_port != -1)
-                                  MusEGlobal::midiSeq->setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) << 7 )); // LSB then MSB
+                                {
+                                  MusEGlobal::midiSyncContainer.setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) << 7 )); // LSB then MSB
+                                }
                                 return;
                           //case ME_SONGSEL:    
                           //case ME_TUNE_REQ:   
@@ -650,7 +654,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                   {
                                     jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
                                     double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
-                                    MusEGlobal::midiSeq->realtimeSystemInput(_port, type, abs_ev_t);
+                                    MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
                                   }
                                 }
                                 return;

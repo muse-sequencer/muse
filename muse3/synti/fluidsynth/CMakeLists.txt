@@ -51,6 +51,8 @@ file (GLOB fluidsynth_source_files
       fluidsynthgui.cpp
       )
 
+include_directories(${INSTPATCH_INCLUDE_DIRS})
+
 ##
 ## Define target
 ##
@@ -90,6 +92,7 @@ target_link_libraries(fluid_synth
       synti
       ${QT_LIBRARIES}
       ${FLUIDSYN_LIBRARIES}
+      ${INSTPATCH_LIBRARIES}
       )
 
 ##

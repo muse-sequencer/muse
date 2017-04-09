@@ -153,6 +153,30 @@ void AudioTrack::initBuffers()
       memset(outBuffersExtraMix[i], 0, sizeof(float) * MusEGlobal::segmentSize);
   }
 
+  if(!_dataBuffers)
+  {
+    _dataBuffers = new float*[_totalOutChannels];
+    for(int i = 0; i < _totalOutChannels; ++i)
+    {
+      int rv = posix_memalign((void**)&_dataBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      if(rv != 0)
+      {
+        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign _dataBuffers returned error:%d. Aborting!\n", rv);
+        abort();
+      }
+    }
+  }
+  for(int i = 0; i < _totalOutChannels; ++i)
+  {
+    if(MusEGlobal::config.useDenormalBias)
+    {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+        _dataBuffers[i][q] = MusEGlobal::denormalBias;
+    }
+    else
+      memset(_dataBuffers[i], 0, sizeof(float) * MusEGlobal::segmentSize);
+  }
+
   if(!audioInSilenceBuf)
   {
     int rv = posix_memalign((void**)&audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
@@ -241,6 +265,7 @@ AudioTrack::AudioTrack(TrackType t)
       outBuffersExtraMix = 0;
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
+      _dataBuffers = 0;
 
       _totalOutChannels = MAX_CHANNELS;
 
@@ -276,7 +301,10 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       outBuffersExtraMix = 0;
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
+      _dataBuffers = 0;
+
       _totalOutChannels = 0;
+
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
 
@@ -526,6 +554,16 @@ AudioTrack::~AudioTrack()
 
       if(audioOutDummyBuf)
         free(audioOutDummyBuf);
+
+      if(_dataBuffers)
+      {
+        for(int i = 0; i < _totalOutChannels; ++i)
+        {
+          if(_dataBuffers[i])
+            free(_dataBuffers[i]);
+        }
+        delete[] _dataBuffers;
+      }
 
       if(outBuffersExtraMix)
       {

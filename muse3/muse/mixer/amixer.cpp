@@ -52,7 +52,7 @@
 #define __WIDTH_COMPENSATION 4
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_MIXER(dev, format, args...) // fprintf(dev, format, ##args);
+#define DEBUG_MIXER(dev, format, args...)  // fprintf(dev, format, ##args);
 
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
@@ -149,7 +149,8 @@ ViewWidget::paintEvent
 
 bool ScrollArea::viewportEvent(QEvent* event)
 {
-  event->ignore();
+  DEBUG_MIXER(stderr, "viewportEvent type %d\n", (int)event->type());
+//   event->ignore();
   // Let it do the layout now, before we emit.
   const bool res = QScrollArea::viewportEvent(event);
   
@@ -210,6 +211,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showAuxTracksId = new QAction(tr("Show Auxs"), actionItems);
       showSyntiTracksId = new QAction(tr("Show Synthesizers"), actionItems);
 
+      showDrumTracksId->setVisible(false);
+      
       showMidiTracksId->setCheckable(true);
       showDrumTracksId->setCheckable(true);
       showNewDrumTracksId->setCheckable(true);
@@ -221,8 +224,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       showSyntiTracksId->setCheckable(true);
 
       connect(showMidiTracksId, SIGNAL(triggered(bool)), SLOT(showMidiTracksChanged(bool)));
-      connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));      
-      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));      
+      connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));
+      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));
       connect(showWaveTracksId, SIGNAL(triggered(bool)), SLOT(showWaveTracksChanged(bool)));      
       connect(showInputTracksId, SIGNAL(triggered(bool)), SLOT(showInputTracksChanged(bool)));      
       connect(showOutputTracksId, SIGNAL(triggered(bool)), SLOT(showOutputTracksChanged(bool)));      
@@ -415,10 +418,6 @@ void AudioMixerApp::redrawMixer()
       }
 
       break;
-  }
-
-  foreach (Strip *s, stripList) {
-    s->setFocus();
   }
 
   update();
@@ -629,6 +628,7 @@ bool AudioMixerApp::event(QEvent* event)
 
 void AudioMixerApp::setSizing()
 {
+  DEBUG_MIXER(stderr, "setSizing\n");
       int w = 0;
       
       w = mixerLayout->minimumSize().width();
@@ -641,15 +641,12 @@ void AudioMixerApp::setSizing()
       
       if(w < 40)
         w = 40;
-//       setMaximumWidth(w);   
       view->setUpdatesEnabled(false);
       setUpdatesEnabled(false);
       if(stripList.size() <= 6)
-//         view->setMinimumWidth(w);
         setMinimumWidth(w);
         
       setMaximumWidth(w);
-//       view->setMaximumWidth(w);      
 
       setUpdatesEnabled(true);
       view->setUpdatesEnabled(true);
@@ -671,8 +668,15 @@ void AudioMixerApp::addStrip(MusECore::Track* t, bool visible)
     else
           strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false);
 
-    connect(this, SIGNAL(incVolume(int)), strip, SLOT(incVolume(int)));
-    connect(this, SIGNAL(incPan(int)), strip, SLOT(incPan(int)));
+    // Broadcast changes to other selected tracks.
+    strip->setBroadcastChanges(true);
+
+    // Set focus yielding to the mixer window.
+    if(MusEGlobal::config.smartFocus)
+    {
+      strip->setFocusYieldWidget(this);
+      //strip->setFocusPolicy(Qt::WheelFocus);
+    }
 
     connect(strip, SIGNAL(clearStripSelection()),this,SLOT(clearStripSelection()));
     connect(strip, SIGNAL(moveStrip(Strip*)),this,SLOT(moveStrip(Strip*)));
@@ -753,6 +757,7 @@ void AudioMixerApp::initMixer()
 
 void AudioMixerApp::configChanged()    
 { 
+  DEBUG_MIXER(stderr, "configChanged\n");
   StripList::iterator si = stripList.begin();  // Catch when fonts change, viewable tracks, etc. No full rebuild.  p4.0.45
   for (; si != stripList.end(); ++si) 
         (*si)->configChanged();
@@ -814,7 +819,10 @@ void AudioMixerApp::updateSelectedStrips()
   foreach(Strip *s, stripList)
   {
     if(MusECore::Track* t = s->getTrack())
-      s->setSelected(t->selected());
+    {
+      if(s->isSelected() != t->selected())
+        s->setSelected(t->selected());
+    }
   }
 }
 
@@ -834,7 +842,12 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
   DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags);
     
   
-  // FIXME TODO: The is costly to do every time. Try to filter it according to required flags.
+  // This costly to do every time. Try to filter it according to required flags.
+  // The only flags which would require a redraw, which is very costly, are the following:
+  if (flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
+               //| SC_CHANNELS   // Channels due to one/two meters and peak labels can change the strip width.
+               //| SC_AUX
+              ))
   redrawMixer();
 
   StripList::iterator si = stripList.begin();
@@ -977,41 +990,39 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
 
 void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
 {
-  int val = 5;
   bool moveEnabled=false;
-  bool shift = ev->modifiers() & Qt::ShiftModifier;
-  if (shift) {
-    val = 1;
-  }
-  if (ev->modifiers() & Qt::ControlModifier) {
+  const bool shift = ev->modifiers() & Qt::ShiftModifier;
+  const bool alt = ev->modifiers() & Qt::AltModifier;
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+  if (ctl && alt) {
     moveEnabled=true;
   }
 
   switch (ev->key()) {
-    case Qt::Key_Up:
-      emit incVolume(val);
-      break;
-    case Qt::Key_Down:
-      emit incVolume(-val);
-      break;
     case Qt::Key_Left:
       if (moveEnabled)
+      {
         selectNextStrip(false, !shift);
-      else
-        emit incPan(-val);
+        ev->accept();
+        return;
+      }
       break;
+
     case Qt::Key_Right:
       if (moveEnabled)
+      {
         selectNextStrip(true, !shift);
-      else
-        emit incPan(val);
+        ev->accept();
+        return;
+      }
       break;
+
     default:
-      ev->ignore();
-      QMainWindow::keyPressEvent(ev);
       break;
   }
-  ev->accept();
+
+  ev->ignore();
+  return QMainWindow::keyPressEvent(ev);
 }
 
 void AudioMixerApp::clearStripSelection()
@@ -1085,6 +1096,7 @@ void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
 bool AudioMixerApp::eventFilter(QObject *obj,
                              QEvent *event)
 {
+  DEBUG_MIXER(stderr, "eventFilter type %d\n", (int)event->type());
     QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
     bool result = false;//return true to consume the keystroke
 

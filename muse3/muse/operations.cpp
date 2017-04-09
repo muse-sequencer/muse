@@ -936,7 +936,7 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       _track_list->erase(fromIt);
       iTrack toIt = (_to_idx >= sz) ? _track_list->end() : _track_list->begin() + _to_idx;
       _track_list->insert(toIt, track);
-      flags |= SC_TRACK_MODIFIED;
+      flags |= SC_TRACK_MOVED;
     }
     break;
     

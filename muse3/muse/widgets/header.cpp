@@ -84,6 +84,15 @@ Header::Header(QWidget* parent, const char* name)
       }
 
 //---------------------------------------------------------
+//   columnLabel
+//---------------------------------------------------------
+
+QString Header::columnLabel(int col)
+{
+  return itemModel->horizontalHeaderItem(col)->text();
+}
+
+//---------------------------------------------------------
 //   setColumnLabel
 //---------------------------------------------------------
 

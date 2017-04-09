@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: synth.h,v 1.22.2.12 2009/12/06 10:05:00 terminator356 Exp $
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -164,6 +165,10 @@ class SynthIF : public PluginIBase {
       virtual double getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, double value) = 0;
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) = 0;      
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
+      virtual void getMapItem(int /*channel*/, int /*patch*/, int /*index*/, DrumMap& /*dest_map*/, int /*overrideType*/ = WorkingDrumMapEntry::AllOverrides) const;
 
       //-------------------------
       // Methods for PluginIBase:
@@ -271,6 +276,10 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
+      // Event time and tick must be set by caller beforehand.
+      // Overriden here because input from synths may need to be treated specially.
+      virtual void recordEvent(MidiRecordEvent&);
+
       virtual Plugin::PluginFeatures pluginFeatures() const { return _sif->requiredFeatures(); }
       
       // Number of routable inputs/outputs for each Route::RouteType.
@@ -278,6 +287,13 @@ class SynthI : public AudioTrack, public MidiDevice,
       
       virtual QString getPatchName(int ch, int prog, bool dr, bool /*includeDefault*/ = true) const {
             return _sif->getPatchName(ch, prog, dr);
+            }
+
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
+      virtual void getMapItem(int channel, int patch, int index, DrumMap& dest_map, int overrideType = WorkingDrumMapEntry::AllOverrides) const {
+            return _sif->getMapItem(channel, patch, index, dest_map, overrideType);
             }
 
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
@@ -373,6 +389,10 @@ class MessSynthIF : public SynthIF {
       virtual double getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
+      // Returns a map item with members filled from either the original or working map item,
+      //  depending on which Field flags are set. The returned map includes any requested
+      //  WorkingDrumMapEntry::OverrideType instrument overrides. Channel can be -1 meaning default.
+      virtual void getMapItem(int /*channel*/, int /*patch*/, int /*index*/, DrumMap& /*dest_map*/, int /*overrideType*/ = WorkingDrumMapEntry::AllOverrides) const;
       };
 
 extern QString synthType2String(Synth::Type);

@@ -208,7 +208,22 @@ void FluidSynthGui::sendLastdir(QString dir)
       data[1] = FLUIDSYNTH_UNIQUE_ID;
       data[2] = FS_LASTDIR_CHANGE;
       //memcpy(data+1, dir.toLatin1(), dir.length()+1);
-      memcpy(data+3, dir.toLatin1(), dir.length()+1);
+      memcpy(data+3, dir.toLatin1().constData(), dir.length()+1);
+      sendSysex(data,l);
+      }
+
+//---------------------------------------------------------
+//   sendUpdateDrumMaps
+//   Tell the client to update relevant drum maps
+//---------------------------------------------------------
+
+void FluidSynthGui::sendUpdateDrumMaps()
+      {
+      int l = 3;
+      byte data[l];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = MUSE_SYSEX_SYSTEM_ID;
+      data[2] = MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID;
       sendSysex(data,l);
       }
 
@@ -227,8 +242,23 @@ void FluidSynthGui::sendLoadFont(QString filename)
       data[2] = FS_PUSH_FONT;
       data[3] = FS_UNSPECIFIED_ID;
       //memcpy(data+2, filename.toLatin1(), filename.length()+1);
-      memcpy(data+4, filename.toLatin1().data(), filename.length()+1);
+      memcpy(data+4, filename.toLatin1().constData(), filename.length()+1);
       sendSysex(data,l);
+      }
+
+//---------------------------------------------------------
+//   sendLoadFont
+//   Tell the client to pop a font
+//---------------------------------------------------------
+
+void FluidSynthGui::sendPopFont(int id)
+      {
+      byte data[4];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_SOUNDFONT_POP;
+      data[3] = id;
+      sendSysex(data,4);
       }
 
 //---------------------------------------------------------
@@ -511,7 +541,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             QMenu* popup = new QMenu(this);
             QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
             QTableWidget* listView = item->tableWidget();
-            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt += QPoint(40, listView->horizontalHeader()->height());
             ppt = listView->mapToGlobal(ppt);
 
             int i = 0;
@@ -560,6 +590,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                   //byte channel = atoi(item->text().toLatin1()) - 1;
                   byte channel = row;
                   sendChannelChange(sfid, channel);
+                  sendUpdateDrumMaps();
                   item->setText(fontname);
                   }
             delete popup;
@@ -569,7 +600,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             QMenu* popup = new QMenu(this);
             QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
             QTableWidget* listView = item->tableWidget();
-            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt += QPoint(40, listView->horizontalHeader()->height());
             ppt = listView->mapToGlobal(ppt);
 	    QAction * yes = popup->addAction("Yes");
 	    yes->setData(1);
@@ -583,6 +614,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
 	          int index = act2->data().toInt();
 		  if (index != drumchannels[channel]) {
 		        sendDrumChannelChange(index, channel);
+                        sendUpdateDrumMaps();
                         drumchannels[channel] = index;
                         item->setText(index == 0 ? "No" : "Yes" );
                         }
@@ -644,14 +676,11 @@ void FluidSynthGui::sendDrumChannelChange(byte onoff, byte channel)
 
 void FluidSynthGui::popClicked()
       {
-      //byte data[2];
-      byte data[4];
-      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
-      data[1] = FLUIDSYNTH_UNIQUE_ID;
-      data[2] = FS_SOUNDFONT_POP;
-      data[3] = currentlySelectedFont;
-      //sendSysex(data,2);
-      sendSysex(data,4);
+      if(currentlySelectedFont >= 0)
+      {
+        sendPopFont(currentlySelectedFont);
+        sendUpdateDrumMaps();
+      }
       }
 
 void FluidSynthGui::sfItemClicked(QTreeWidgetItem* item, int /*col*/)

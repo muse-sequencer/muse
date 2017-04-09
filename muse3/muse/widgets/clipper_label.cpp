@@ -73,9 +73,25 @@ void ClipperLabel::resizeEvent(QResizeEvent *)
   _onGradient.setFinalStop(0, frameRect().y() + frameRect().height() - 1);
 }
 
-void ClipperLabel::mousePressEvent(QMouseEvent *)
+void ClipperLabel::mousePressEvent(QMouseEvent *ev)
 {
+  ev->accept();
    emit clicked();
+}
+
+void ClipperLabel::mouseReleaseEvent(QMouseEvent *ev)
+{
+  ev->accept();
+}
+
+void ClipperLabel::mouseMoveEvent(QMouseEvent *ev)
+{
+  ev->accept();
+}
+
+void ClipperLabel::contextMenuEvent(QContextMenuEvent * ev)
+{
+  ev->accept();
 }
 
 void ClipperLabel::setClipped(bool b)

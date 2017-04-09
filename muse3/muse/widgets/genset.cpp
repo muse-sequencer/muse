@@ -174,6 +174,9 @@ void GlobalSettingsConfig::updateSettings()
       liveWaveUpdateCheckBox->setChecked(MusEGlobal::config.liveWaveUpdate);
       preferKnobsVsSlidersCheckBox->setChecked(MusEGlobal::config.preferKnobsVsSliders);
       showControlValuesCheckBox->setChecked(MusEGlobal::config.showControlValues);
+      monitorOnRecordCheckBox->setChecked(MusEGlobal::config.monitorOnRecord);
+      lineEditStyleHackCheckBox->setChecked(MusEGlobal::config.lineEditStyleHack);
+      preferMidiVolumeDbCheckBox->setChecked(MusEGlobal::config.preferMidiVolumeDb);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);
       warnOnFileVersionsCheckBox->setChecked(MusEGlobal::config.warnOnFileVersions);
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
@@ -381,6 +384,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();
       MusEGlobal::config.preferKnobsVsSliders = preferKnobsVsSlidersCheckBox->isChecked();
       MusEGlobal::config.showControlValues = showControlValuesCheckBox->isChecked();
+      MusEGlobal::config.monitorOnRecord = monitorOnRecordCheckBox->isChecked();
+      MusEGlobal::config.lineEditStyleHack = lineEditStyleHackCheckBox->isChecked();
+      MusEGlobal::config.preferMidiVolumeDb = preferMidiVolumeDbCheckBox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();
@@ -429,7 +435,8 @@ void GlobalSettingsConfig::apply()
       }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
-      MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
       if (onlyNewDrumBtn->isChecked())
         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;

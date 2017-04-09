@@ -180,6 +180,8 @@ class FluidSynthGui : public QDialog, public Ui::FLUIDSynthGuiBase, public MessG
       virtual void processEvent(const MusECore::MidiPlayEvent& ev);
       void sendLastdir(QString);
       void sendLoadFont(QString);
+      void sendPopFont(int id);
+      void sendUpdateDrumMaps();
       void sendChannelChange(byte font_id, byte channel);
       void sendDrumChannelChange(byte onoff, byte channel);
       void updateSoundfontListView();

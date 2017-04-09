@@ -348,36 +348,49 @@ unsigned int string2u32bitmap(const QString& str)
       return val;
       }
 
-//---------------------------------------------------------
-//   autoAdjustFontSize
-//   w: Widget to auto adjust font size
-//   s: String to fit
-//   ignoreWidth: Set if dealing with a vertically constrained widget - one which is free to resize horizontally.
-//   ignoreHeight: Set if dealing with a horizontally constrained widget - one which is free to resize vertically. 
-//---------------------------------------------------------
-
-bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool ignoreHeight, int max, int min)
-{
-  // In case the max or min was obtained from QFont::pointSize() which returns -1 
-  //  if the font is a pixel font, or if min is greater than max...
-  if(!w || (min < 0) || (max < 0) || (min > max))
-    return false;
-    
-  // Limit the minimum and maximum sizes to something at least readable.
-  if(max < 4)
-    max = 4;
-  if(min < 4)
-    min = 4;
-
+// //---------------------------------------------------------
+// //   autoAdjustFontSize
+// //   w: Widget to auto adjust font size
+// //   s: String to fit
+// //   ignoreWidth: Set if dealing with a vertically constrained widget - one which is free to resize horizontally.
+// //   ignoreHeight: Set if dealing with a horizontally constrained widget - one which is free to resize vertically.
+// //   Returns false if text would not fit even at min size.
+// //   Caller should enable word wrap (if available) if false is returned, or disable word wrap if true is returned.
+// //   Otherwise if word wrap is enabled all the time, there is the possibility it will break the line prematurely.
+// //---------------------------------------------------------
+//
+// bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool ignoreHeight, int max, int min)
+// {
+//   // In case the max or min was obtained from QFont::pointSize() which returns -1
+//   //  if the font is a pixel font, or if min is greater than max...
+// //   if(!w || (min < 0) || (max < 0) || (min > max))
+//   if(!w)
+//     return false;
+//   if(min > max)
+//     min = max;
+//
+//   // Make the minimum about 3/4 the maximum font size.
+//   min = int(double(max) * 0.7);
+//
+//   // Limit the minimum and maximum sizes to something at least readable.
+//   if(max < 6)
+//     max = 6;
+//   if(min < 6)
+//     min = 6;
+//
 //   QRect cr = w->contentsRect();
 //   QRect r;
 //   QFont fnt = w->font();
 //   // An extra amount just to be sure - I found it was still breaking up two words which would fit on one line.
-//   int extra = 4;
+// //   int extra = 4;
+//   int extra = 0;
+//
+//   int fin_sz = max;
 //   // Allow at least one loop. min can be equal to max.
-//   for(int i = max; i >= min; --i)
+// //   for(int i = max; i >= min; --i)
+//   for( ; fin_sz >= min; --fin_sz)
 //   {
-//     fnt.setPointSize(i);
+//     fnt.setPointSize(fin_sz);
 //     QFontMetrics fm(fnt);
 //     r = fm.boundingRect(s);
 //     // Would the text fit within the widget?
@@ -385,11 +398,216 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 //       break;
 //   }
 //   //printf("autoAdjustFontSize: ptsz:%d widget:%s before setFont x:%d y:%d w:%d h:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height());
-//   
+//
 //   // Here we will always have a font ranging from min to max point size.
 //   w->setFont(fnt);
+// //   w->setStyleSheet(MusECore::font2StyleSheet(fnt));
 //   //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
+//
+// // -----------------------------------------------------------
+// // This is an alternate faster method. But the one below is better.
+// // -----------------------------------------------------------
+//
+// //   QFont fnt = w->font();
+// //   //const int req_w = w->fontMetrics().width(s) + 4;
+// //   const int req_w = w->fontMetrics().boundingRect(s).width() + 4;
+// //   if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+// //   {
+// //     if(fnt.pointSize() != max)
+// //     {
+// //       fnt.setPointSize(max);
+// //       w->setFont(fnt);
+// //     }
+// //   }
+// //   else
+// //   {
+// //     float factor = (float)w->rect().width() / (float)req_w;
+// //     //if((factor < 1) || (factor > 1.25))
+// //     if((factor < 1) || (factor > 1))
+// //     {
+// //       //qreal new_sz = fnt.pointSizeF() * factor;
+// //       int new_sz = (float)fnt.pointSize() * factor;
+// //       bool do_check = true;
+// //       if(new_sz < min)
+// //       {
+// //         new_sz = min;
+// //         do_check = false;
+// //       }
+// //       else if(new_sz > max)
+// //       {
+// //         new_sz = max;
+// //         do_check = false;
+// //       }
+// //
+// //       //if(fnt.pointSizeF() != new_sz)
+// //       if(fnt.pointSize() != new_sz)
+// //       {
+// //         //fnt.setPointSizeF(new_sz);
+// //         fnt.setPointSize(new_sz);
+// //         if(do_check)
+// //         {
+// //           const QFontMetrics fm(fnt);
+// //           const int check_w = fm.boundingRect(s).width() + 4;
+// //           if(check_w > w->rect().width())
+// //           {
+// //             --new_sz;
+// //             fnt.setPointSize(new_sz);
+// //           }
+// //         }
+// //         w->setFont(fnt);
+// //       }
+// //     }
+// //   }
+//
+//
+// // -----------------------------------------------------------
+// // This is an alternate faster method. The accuracy is poorer
+// //  than the top method, and somewhat unreliable. Maybe with more tweaking...
+// // -----------------------------------------------------------
+//
+// //   //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+// //   //QRectF r = boundingRect();
+// //   QRectF r = w->rect();
+// //   //QFont f = painter->font();
+// //   QFont fnt = w->font();
+//
+// //   //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+// //   if(ignoreWidth || s.isEmpty()) // Also avoid divide by zero below.
+// //   {
+// //     if(fnt.pointSize() != max)
+// //     {
+// //       fnt.setPointSize(max);
+// //       w->setFont(fnt);
+// //       w->setStyleSheet(MusECore::font2StyleSheet(fnt));
+// //     }
+// //   }
+// //   else
+// //   {
+// //     //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
+// //     qreal aspectRatio = w->fontMetrics().lineSpacing() / w->fontMetrics().averageCharWidth();
+// //     int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (s.length() * 3)) * aspectRatio;
+// //     fnt.setPixelSize(pixelsize);
+// //     //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
+// //     int flags = Qt::AlignCenter;
+// //     //if ((pixelsize * lod) < 13)
+// //     //    flags |= Qt::TextWrapAnywhere;
+// //     QFontMetricsF fm(fnt);
+// //     QRectF tbr = fm.boundingRect(r,flags,s);
+// //     pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
+// // //     if(pixelsize < min)
+// // //       pixelsize = min;
+// // //     else if(pixelsize > max)
+// // //       pixelsize = max;
+// //     fnt.setPixelSize(pixelsize);
+// //     const QFontInfo fi(fnt);
+// //     const int pointsize = fi.pointSize();
+// //     if(pointsize <= min)
+// //       fnt.setPointSize(min);
+// //     else if(pointsize >= max)
+// //       fnt.setPointSize(max);
+// //     w->setFont(fnt);
+// //     w->setStyleSheet(MusECore::font2StyleSheet(fnt));
+// //     //painter->drawText(r,flags,stitle);
+// //   }
+//
+//
+//
+//   // Force minimum height. Use the expected height for the highest given point size.
+//   // This way the mixer strips aren't all different label heights, but can be larger if necessary.
+//   // Only if ignoreHeight is set (therefore the height is adjustable).
+//   if(ignoreHeight)
+//   {
+//     fnt.setPointSize(max);
+//     const QFontMetrics fm(fnt);
+//     // Set the label's minimum height equal to the height of the font.
+//     w->setMinimumHeight(fm.height() + 2 * w->frameWidth());
+//   }
+//
+// //   return true;
+//
+//   // If the text still wouldn't fit at the min size, tell the caller to turn on word wrap.
+//   return fin_sz >= min;
+// }
 
+//---------------------------------------------------------
+//   autoAdjustFontSize
+//   w: Widget to auto adjust font size
+//   txt: String to fit
+//   targetFont: Font input and output variable. Widget font is NOT automatically set due to stylesheets
+//    completely overriding them, therefore stylesheet must be 'composed' from the resulting font along with OTHER settings.
+//   ignoreWidth: Set if dealing with a vertically constrained widget - one which is free to resize horizontally.
+//   ignoreHeight: Set if dealing with a horizontally constrained widget - one which is free to resize vertically.
+//   Returns false if text would not fit even at min size.
+//   Caller should enable word wrap (if available) if false is returned, or disable word wrap if true is returned.
+//   Otherwise if word wrap is enabled all the time, there is the possibility it will break the line prematurely.
+//---------------------------------------------------------
+
+bool autoAdjustFontSize(QFrame* widget, const QString& txt, QFont& targetFont, bool ignoreWidth, bool ignoreHeight, int max, int min)
+{
+  // In case the max or min was obtained from QFont::pointSize() which returns -1
+  //  if the font is a pixel font, or if min is greater than max...
+//   if(!w || (min < 0) || (max < 0) || (min > max))
+  if(!widget)
+    return false;
+
+  if(min > max)
+    min = max;
+
+  // Make the minimum about 3/4 the maximum font size.
+  min = int(double(max) * 0.7);
+
+  // Limit the minimum and maximum sizes to something at least readable.
+  if(max < 6)
+    max = 6;
+  if(min < 6)
+    min = 6;
+
+  QRect cr = widget->contentsRect();
+  QRect r;
+//   QFont fnt = widget->font();
+//   QFont fnt = targetFont; // Make a copy for later.
+
+  // Force minimum height. Use the expected height for the highest given point size.
+  // This way the mixer strips aren't all different label heights, but can be larger if necessary.
+  // Only if ignoreHeight is set (therefore the height is adjustable).
+  if(ignoreHeight)
+  {
+    targetFont.setPointSize(max);
+    const QFontMetrics fm(targetFont);
+    // Set the label's minimum height equal to the height of the font.
+//     w->setMinimumHeight(fm.height() + 2 * w->frameWidth());
+    widget->setMinimumHeight(fm.height() + 2 * widget->frameWidth());
+  }
+
+  // An extra amount just to be sure - I found it was still breaking up two words which would fit on one line.
+//   int extra = 4;
+  int extra = 0;
+
+  int fin_sz = max;
+  // Allow at least one loop. min can be equal to max.
+//   for(int i = max; i >= min; --i)
+  for( ; fin_sz >= min; --fin_sz)
+  {
+//     fnt.setPointSize(fin_sz);
+    targetFont.setPointSize(fin_sz);
+//     QFontMetrics fm(fnt);
+    QFontMetrics fm(targetFont);
+    r = fm.boundingRect(txt);
+    // Would the text fit within the widget?
+    if((ignoreWidth || (r.width() <= (cr.width() - extra))) && (ignoreHeight || (r.height() <= cr.height())))
+//     if((ignoreWidth || (r.width() <= (sz.width() - extra))) && (ignoreHeight || (r.height() <= sz.height())))
+      break;
+  }
+  //printf("autoAdjustFontSize: ptsz:%d widget:%s before setFont x:%d y:%d w:%d h:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height());
+
+  // Here we will always have a font ranging from min to max point size.
+//   w->setFont(fnt);
+//   w->setStyleSheet(MusECore::font2StyleSheet(fnt));
+  //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
+
+// -----------------------------------------------------------
+// This is an alternate faster method. But the one below is better.
+// -----------------------------------------------------------
 
 //   QFont fnt = w->font();
 //   //const int req_w = w->fontMetrics().width(s) + 4;
@@ -421,7 +639,7 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 //         new_sz = max;
 //         do_check = false;
 //       }
-//         
+//
 //       //if(fnt.pointSizeF() != new_sz)
 //       if(fnt.pointSize() != new_sz)
 //       {
@@ -429,7 +647,7 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 //         fnt.setPointSize(new_sz);
 //         if(do_check)
 //         {
-//           const QFontMetrics fm(fnt); 
+//           const QFontMetrics fm(fnt);
 //           const int check_w = fm.boundingRect(s).width() + 4;
 //           if(check_w > w->rect().width())
 //           {
@@ -441,66 +659,76 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 //       }
 //     }
 //   }
-  
-  //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
-  //QRectF r = boundingRect();
-  QRectF r = w->rect();
-  //QFont f = painter->font();
-  QFont fnt = w->font();
-  
-  //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
-  if(ignoreWidth || s.isEmpty()) // Also avoid divide by zero below.
-  {
-    if(fnt.pointSize() != max)
-    {
-      fnt.setPointSize(max);
-      w->setFont(fnt);
+
+
+// -----------------------------------------------------------
+// This is an alternate faster method. The accuracy is poorer
+//  than the top method, and somewhat unreliable. Maybe with more tweaking...
+// -----------------------------------------------------------
+
+//   //qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+//   //QRectF r = boundingRect();
+//   QRectF r = w->rect();
+//   //QFont f = painter->font();
+//   QFont fnt = w->font();
+
+//   //if(ignoreWidth || req_w == 0) // Also avoid divide by zero below.
+//   if(ignoreWidth || s.isEmpty()) // Also avoid divide by zero below.
+//   {
+//     if(fnt.pointSize() != max)
+//     {
+//       fnt.setPointSize(max);
+//       w->setFont(fnt);
 //       w->setStyleSheet(MusECore::font2StyleSheet(fnt));
-    }
-  }
-  else
-  {
-    //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
-    qreal aspectRatio = w->fontMetrics().lineSpacing() / w->fontMetrics().averageCharWidth();
-    int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (s.length() * 3)) * aspectRatio;
-    fnt.setPixelSize(pixelsize);
-    //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
-    int flags = Qt::AlignCenter;
-    //if ((pixelsize * lod) < 13)
-    //    flags |= Qt::TextWrapAnywhere;
-    QFontMetricsF fm(fnt);
-    QRectF tbr = fm.boundingRect(r,flags,s);
-    pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
-//     if(pixelsize < min)
-//       pixelsize = min;
-//     else if(pixelsize > max)
-//       pixelsize = max;
-    fnt.setPixelSize(pixelsize);
-    const QFontInfo fi(fnt);
-    const int pointsize = fi.pointSize();
-    if(pointsize <= min)
-      fnt.setPointSize(min);
-    else if(pointsize >= max)
-      fnt.setPointSize(max);
-    w->setFont(fnt);
+//     }
+//   }
+//   else
+//   {
+//     //qreal aspectRatio = painter->fontMetrics().lineSpacing() / painter->fontMetrics().averageCharWidth();
+//     qreal aspectRatio = w->fontMetrics().lineSpacing() / w->fontMetrics().averageCharWidth();
+//     int pixelsize = sqrt(r.width() * r.height() / aspectRatio / (s.length() * 3)) * aspectRatio;
+//     fnt.setPixelSize(pixelsize);
+//     //int flags = Qt::AlignCenter|Qt::TextDontClip|Qt::TextWordWrap;
+//     int flags = Qt::AlignCenter;
+//     //if ((pixelsize * lod) < 13)
+//     //    flags |= Qt::TextWrapAnywhere;
+//     QFontMetricsF fm(fnt);
+//     QRectF tbr = fm.boundingRect(r,flags,s);
+//     pixelsize = fnt.pixelSize() * qMin(r.width() * 0.95 / tbr.width(), r.height() * 0.95 / tbr.height());
+// //     if(pixelsize < min)
+// //       pixelsize = min;
+// //     else if(pixelsize > max)
+// //       pixelsize = max;
+//     fnt.setPixelSize(pixelsize);
+//     const QFontInfo fi(fnt);
+//     const int pointsize = fi.pointSize();
+//     if(pointsize <= min)
+//       fnt.setPointSize(min);
+//     else if(pointsize >= max)
+//       fnt.setPointSize(max);
+//     w->setFont(fnt);
 //     w->setStyleSheet(MusECore::font2StyleSheet(fnt));
-    //painter->drawText(r,flags,stitle);
-  }
-  
-  
-  
-  // Force minimum height. Use the expected height for the highest given point size.
-  // This way the mixer strips aren't all different label heights, but can be larger if necessary.
-  // Only if ignoreHeight is set (therefore the height is adjustable).
-  if(ignoreHeight)
-  {
-    fnt.setPointSize(max);
-    const QFontMetrics fm(fnt);
-    // Set the label's minimum height equal to the height of the font.
-    w->setMinimumHeight(fm.height() + 2 * w->frameWidth());
-  }
-  
-  return true;  
+//     //painter->drawText(r,flags,stitle);
+//   }
+
+
+
+//   // Force minimum height. Use the expected height for the highest given point size.
+//   // This way the mixer strips aren't all different label heights, but can be larger if necessary.
+//   // Only if ignoreHeight is set (therefore the height is adjustable).
+//   if(ignoreHeight)
+//   {
+//     fnt.setPointSize(max);
+//     const QFontMetrics fm(fnt);
+//     // Set the label's minimum height equal to the height of the font.
+// //     w->setMinimumHeight(fm.height() + 2 * w->frameWidth());
+//     widget->setMinimumHeight(fm.height() + 2 * widget->frameWidth());
+//   }
+
+//   return true;
+
+  // If the text still wouldn't fit at the min size, tell the caller to turn on word wrap.
+  return fin_sz >= min;
 }
 
 QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPointF& finalStop)

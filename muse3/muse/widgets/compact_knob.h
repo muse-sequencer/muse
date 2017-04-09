@@ -5,7 +5,7 @@
 //  compact_knob.h
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net) completely redesigned.
-//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2016 - 2017 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -71,7 +71,9 @@ class CompactKnob : public SliderBase, public ScaleIf
       QString d_offText;
       int _valueDecimals;
       bool _off;
-      // Whether to display the value, below the text.
+      // Whether to display the label.
+      bool _showLabel;
+      // Whether to display the value.
       bool _showValue;
 
       PopupDoubleSpinBox* _editor;
@@ -136,7 +138,7 @@ class CompactKnob : public SliderBase, public ScaleIf
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void leaveEvent(QEvent*);
-      virtual bool event(QEvent*);
+//       virtual bool event(QEvent*);
 
       double getValue(const QPoint &p);
       //  Determine the value corresponding to a specified mouse movement.
@@ -173,6 +175,7 @@ class CompactKnob : public SliderBase, public ScaleIf
                                       //Qt::Orientation orient = Qt::Vertical,
                                       KnobLabelPos labelPos = None,
                                       bool showValue = true,
+                                      bool showLabel = true,
                                       int xMargin = 0,
                                       int yMargin = 0);
 
@@ -207,6 +210,9 @@ class CompactKnob : public SliderBase, public ScaleIf
       void setMarkerColor(const QColor& c);
 
       QString toolTipValueText(bool inclLabel, bool inclVal) const;
+
+      bool showLabel() const { return _showLabel; }
+      void setShowLabel(bool show);
 
       bool showValue() const { return _showValue; }
       void setShowValue(bool show);

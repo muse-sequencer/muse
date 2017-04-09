@@ -58,6 +58,8 @@ bool overrideAudioInput = false;
 
 QTimer* heartBeatTimer;
 
+bool blinkTimerPhase = false;
+
 bool hIsB = true;             // call note h "b"
 
 const signed char sharpTab[14][7] = {
@@ -315,7 +317,8 @@ const QString noInputRoutingToolTipWarn = inputRoutingToolTipBase + QString("\n"
 const QString outputRoutingToolTipBase = QObject::tr("Output routing");
 const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No output routes! Click to connect...");
 
-uid_t euid, ruid;  // effective user id, real user id
+// REMOVE Tim. setuid. Removed.
+//uid_t euid, ruid;  // effective user id, real user id
 
 bool midiSeqRunning = false;
 

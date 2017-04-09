@@ -4,7 +4,7 @@
 //  $Id: mstrip.h,v 1.4.2.4 2009/10/25 19:26:29 lunar_shuttle Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 - 2016 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011 - 2017 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -32,25 +32,22 @@ class QWidget;
 class QAction;
 class QDialog;
 class QString;
-class QResizeEvent;
 class QString;
 class QPoint;
 class QVBoxLayout;
+class QSpacerItem;
 
 namespace MusECore {
 class MidiTrack;
 }
 
 namespace MusEGui {
+class ElidedLabel;
 class DoubleLabel;
 class Slider;
 class CompactSlider;
 class CompactPatchEdit;
-class TransparentToolButton;
-class ScrollArea;
-class ElidedLabel;
-class CompactToolButton;
-
+class IconButton;
 
 //---------------------------------------------------------
 //   MidiComponentRack
@@ -88,22 +85,24 @@ class MidiComponentRack : public ComponentRack
     void scanControllerComponents();
     // Set component colours upon config changed.
     void setComponentColors();
-    
+    void labelPropertyPressHandler(QPoint p, int id, Qt::KeyboardModifiers keys);
+
   protected slots:
     virtual void controllerChanged(int val, int id);
     virtual void controllerChanged(double val, int id);
     virtual void controllerChanged(double val, bool isOff, int id, int scrollMode);
     virtual void controllerMoved(double, int, bool);
-    virtual void controllerPressed(int);
-    virtual void controllerReleased(int);
+    virtual void controllerPressed(double, int);
+    virtual void controllerReleased(double, int);
     virtual void controllerRightClicked(QPoint, int);
     virtual void propertyChanged(double val, bool isOff, int id, int scrollMode);
     virtual void propertyMoved(double, int, bool);
-    virtual void propertyPressed(int);
-    virtual void propertyReleased(int);
+    virtual void propertyPressed(double, int);
+    virtual void propertyReleased(double, int);
     virtual void propertyRightClicked(QPoint, int);
     virtual void labelPropertyPressed(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
     virtual void labelPropertyReleased(QPoint p, int id, Qt::MouseButtons buttons, Qt::KeyboardModifiers keys);
+    virtual void labelPropertyReturnPressed(QPoint p, int id, Qt::KeyboardModifiers keys);
     void patchPopup(QPoint p);
     void patchPopupActivated(QAction*);
     void instrPopup(QPoint p);
@@ -143,20 +142,13 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
     bool _isOff;
     QColor _readoutColor;
 
-    // Slots:
-    const char* _patchEditChangedSlot;
-    const char* _patchEditValueRightClickedSlot;
-    const char* _patchEditNameClickedSlot;
-    const char* _patchEditNameRightClickedSlot;
-    
   public:        
     CompactPatchEditComponentDescriptor() :
       ComponentDescriptor(ComponentRack::CompactSliderComponentWidget,
                           ComponentRack::controllerComponent),
       _compactPatchEdit(0),
       _initVal(0.0),
-      _isOff(false),
-      _patchEditChangedSlot(0), _patchEditValueRightClickedSlot(0), _patchEditNameClickedSlot(0), _patchEditNameRightClickedSlot(0)
+      _isOff(false)
       { }
                             
     CompactPatchEditComponentDescriptor(
@@ -168,11 +160,7 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
       const QColor& readoutColour = QColor(),
       bool enabled = true,
       double initVal = 0.0,
-      bool isOff = false,
-      const char* patchEditChangedSlot = 0,
-      const char* patchEditSliderRightClickedSlot = 0,
-      const char* patchEditNameClickedSlot = 0,
-      const char* patchEditNameRightClickedSlot = 0
+      bool isOff = false
     )
     : ComponentDescriptor(MidiComponentRack::mStripCompactPatchEditComponentWidget,
                           componentType,
@@ -185,14 +173,9 @@ class CompactPatchEditComponentDescriptor : public ComponentDescriptor
                          ),
       _compactPatchEdit(0),
       _initVal(initVal),
-      _isOff(isOff),
-      _patchEditChangedSlot(patchEditChangedSlot),
-      _patchEditValueRightClickedSlot(patchEditSliderRightClickedSlot),
-      _patchEditNameClickedSlot(patchEditNameClickedSlot),
-      _patchEditNameRightClickedSlot(patchEditNameRightClickedSlot)
+      _isOff(isOff)
       { }
 };
-
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -206,6 +189,7 @@ class MidiStrip : public Strip {
       enum MStripRacks { mStripUpperRack = 0, mStripInfoRack = 1, mStripLowerRack = 2 };
       
   private:
+      GridPosStruct _upperStackTabPos;
       GridPosStruct _preScrollAreaPos_A;
       GridPosStruct _preScrollAreaPos_B;
       GridPosStruct _infoSpacerTop;
@@ -220,13 +204,19 @@ class MidiStrip : public Strip {
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
       GridPosStruct _routesPos;
+      GridPosStruct _inRoutesPos;
+      GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
       GridPosStruct _rightSpacerPos;
-      
-      MusEGui::Slider* slider;
-      MusEGui::DoubleLabel* sl;
-      QToolButton* off;
-      
+      GridPosStruct _offMonRecPos;
+
+      Slider* slider;
+      DoubleLabel* sl;
+      IconButton* off;
+      IconButton* _recMonitor;
+
+      ElidedLabel* _upperStackTabButtonA;
+      ElidedLabel* _upperStackTabButtonB;
       MidiComponentRack* _upperRack;
       MidiComponentRack* _lowerRack;
       MidiComponentRack* _infoRack;
@@ -235,31 +225,38 @@ class MidiStrip : public Strip {
       bool _isExpanded;
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
+      // Current local state of midi volume as decibels preference.
+      bool _preferMidiVolumeDb;
 
-      CompactToolButton* _midiThru;
       int _heartBeatCounter;
-      
-      int volume;
+
+      double volume;
       bool inHeartBeat;
 
       void updateControls();
       void updateOffState();
       void updateRackSizes(bool upper, bool lower);
-   
+
    protected:
-      void resizeEvent(QResizeEvent*);
-     
+      void setupMidiVolume();
+
    private slots:
-      void midiThruToggled(bool);
+      void recordToggled(bool);
+      void recMonitorToggled(bool);
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void setVolume(double);
-      void ctrlChanged(double v, bool off, int num);
-      
+      void setVolume(double val, int id, int scrollMode);
+      void volumePressed(double val, int id);
+      void volumeReleased(double val, int id);
+      void ctrlChanged(double val, bool off, int num, int scrollMode);
+
       void volLabelDoubleClicked();
       void volLabelChanged(double);
       void controlRightClicked(QPoint, int);
+
+      void upperStackTabButtonAPressed();
+      void upperStackTabButtonBPressed();
 
    protected slots:
       virtual void heartBeat();
@@ -269,9 +266,16 @@ class MidiStrip : public Strip {
       virtual void configChanged();
       void incVolume(int v);
       void incPan(int v);
+
    public:
       MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false, bool isEmbedded = true);
       
+      static const double volSliderStepLin;
+
+      static const double volSliderStepDb;
+      static const double volSliderMaxDb;
+      static const int    volSliderPrecDb;
+
       static const int xMarginHorSlider;
       static const int yMarginHorSlider;
       static const int upperRackSpacerHeight;
@@ -279,6 +283,11 @@ class MidiStrip : public Strip {
 
       // Destroy and rebuild strip components.
       virtual void buildStrip();
+
+      // Sets up tabbing for the entire strip.
+      // Accepts a previousWidget which can be null and returns the last widget in the strip,
+      //  which allows chaining other widgets.
+      virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
       };
 
 } // namespace MusEGui

@@ -54,12 +54,12 @@ class WidgetStack : public QWidget {
    protected:
       virtual void wheelEvent(QWheelEvent* e);
       virtual void resizeEvent(QResizeEvent* e);
-      
+
    signals:
       void redirectWheelEvent(QWheelEvent*);
       
    public:
-      WidgetStack(QWidget* parent, const char* name = 0, SizeHintMode sizeHintMode = VisibleHint);
+      WidgetStack(QWidget* parent = 0, const char* name = 0, SizeHintMode sizeHintMode = VisibleHint);
       void raiseWidget(int idx);
       void addWidget(QWidget* w, unsigned int idx);
       QWidget* getWidget(unsigned int idx);

@@ -148,6 +148,7 @@ else (GIT_FOUND)
 endif (GIT_FOUND)
 
 
+option ( ENABLE_ALSA        "Enable Advanced Linux Sound Architecture (ALSA)" ON)
 option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
@@ -160,6 +161,7 @@ option ( ENABLE_LV2_DEBUG        "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_RUBBERBAND  "Enable RubberBand Audio Stretcher/Pitch Shifter/Sample Rate Converter" ON)
 #option ( ENABLE_ZITA_RESAMPLER "Enable Zita Resampler Audio Sample Rate Converter" ON)  # TODO See below...
+option ( ENABLE_INSTPATCH   "Enable Instrument Patch Library support (enhances soundfont support)." ON)
 option ( ENABLE_EXPERIMENTAL "Enable various experimental features (not recommended)."              OFF)
 option ( ENABLE_PYTHON      "Enable experimental python control support (not recommended)."         OFF)
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
@@ -208,6 +210,7 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5UiTools REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(Qt5Xml REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 # Needed for plugins factory:
 SET(QT_USE_QTUITOOLS TRUE)
@@ -216,13 +219,15 @@ include_directories (${Qt5Widgets_INCLUDE_DIRS})
 include_directories (${Qt5Core_INCLUDE_DIRS})
 include_directories (${Qt5UiTools_INCLUDE_DIRS})
 include_directories (${Qt5Xml_INCLUDE_DIRS})
+include_directories (${Qt5Svg_INCLUDE_DIRS})
 
 LINK_DIRECTORIES(${Qt5Widgets_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5Core_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5UiTools_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt5Svg_LIBRARY_DIRS})
 
-SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Core_LIBRARIES})
+SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Svg_LIBRARIES} ${Qt5Core_LIBRARIES})
 
 
 ##include(${QT_USE_FILE})
@@ -241,16 +246,16 @@ if(NOT HAVE_LADSPA_H)
         ${HAVE_LADSPA_H})
 endif(NOT HAVE_LADSPA_H)
 
-##
-## alsa >= 0.9.0
-##
-
-if (APPLE)
-	message("Disabling ALSA support due to OS X build.")
-else (APPLE)
-PKG_CHECK_MODULES(ALSA REQUIRED alsa>=0.9.0)
-include_directories(${ALSA_INCLUDE_DIRS})
-endif (APPLE)
+# ##
+# ## alsa >= 0.9.0
+# ##
+#
+# if (APPLE)
+# 	message("Disabling ALSA support due to OS X build.")
+# else (APPLE)
+# PKG_CHECK_MODULES(ALSA REQUIRED alsa>=0.9.0)
+# include_directories(${ALSA_INCLUDE_DIRS})
+# endif (APPLE)
 
 ##
 ## find sndfile >= 1.0.0
@@ -267,13 +272,6 @@ PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
 include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
-## find libuuid
-##
-
-PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
-include_directories(${UUID_INCLUDE_DIRS})
-
-##
 ## find jack >= 0.103.0
 ##
 
@@ -287,6 +285,33 @@ include_directories(${JACK_INCLUDE_DIRS})
 ##
 ##   Begin OPTIONAL packages...
 ##
+
+##
+## alsa >= 0.9.0
+##
+
+## If requesting DSSI as well, try to grab ALSA too.
+if (ENABLE_DSSI OR ENABLE_ALSA)
+      PKG_CHECK_MODULES(ALSA alsa>=0.9.0)
+      if (ALSA_FOUND)
+            include_directories(${ALSA_INCLUDE_DIRS})
+            set(ALSA_SUPPORT ON)
+## Try to fall back on the cut-down compatibility library
+## TODO: NO-GO: Tested: Incomplete, missing several functions and defs needed for our DSSI implementation !
+#       else (ALSA_FOUND)
+#             if (ENABLE_DSSI)
+#                   PKG_CHECK_MODULES(DSSI_ALSA_COMPAT libdssialsacompat)
+#                   if (DSSI_ALSA_COMPAT_FOUND)
+#                         include_directories(${DSSI_ALSA_COMPAT_INCLUDE_DIRS})
+#                         set(DSSI_ALSA_COMPAT_SUPPORT ON)
+#                   else (DSSI_ALSA_COMPAT_FOUND)
+#                         message("ALSA disabled")
+#                   endif (DSSI_ALSA_COMPAT_FOUND)
+#             endif (ENABLE_DSSI)
+      endif (ALSA_FOUND)
+else (ENABLE_DSSI OR ENABLE_ALSA)
+      message("ALSA disabled")
+endif (ENABLE_DSSI OR ENABLE_ALSA)
 
 ##
 ## find LASH
@@ -328,24 +353,26 @@ endif (ENABLE_PYTHON)
 ## check for dssi >= 0.9.0 and liblo >= 0.23
 ##
 
-if (ENABLE_DSSI)
+## If requesting DSSI as well, try to grab OSC too.
+if (ENABLE_DSSI OR ENABLE_OSC)
+    PKG_CHECK_MODULES(LIBLO liblo>=0.23)
+    if (LIBLO_FOUND)
+          include_directories(${LIBLO_INCLUDE_DIRS})
+          set(OSC_SUPPORT ON)
+    endif (LIBLO_FOUND)
+else (ENABLE_DSSI OR ENABLE_OSC)
+    message("OSC disabled")
+endif (ENABLE_DSSI OR ENABLE_OSC)
+
+if (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
       PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
-      if (DSSI_FOUND)        
-          if (ENABLE_OSC)
-              PKG_CHECK_MODULES(LIBLO liblo>=0.23)
-              if (LIBLO_FOUND)
-                    include_directories(${LIBLO_INCLUDE_DIRS})
-                    set(OSC_SUPPORT ON)
-                    include_directories(${DSSI_INCLUDE_DIRS})
-                    set(DSSI_SUPPORT ON)
-              endif (LIBLO_FOUND)
-          else (ENABLE_OSC)
-              message("DSSI disabled")
-          endif (ENABLE_OSC)
+      if (DSSI_FOUND)
+          include_directories(${DSSI_INCLUDE_DIRS})
+          set(DSSI_SUPPORT ON)
       endif (DSSI_FOUND)
-else (ENABLE_DSSI)
+else (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
       message("DSSI disabled")
-endif (ENABLE_DSSI)
+endif (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 
 ##
 ## Depricated FST-based VST support
@@ -486,7 +513,6 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
-
 ##
 ## check for rubberband
 ##
@@ -517,6 +543,15 @@ else (ENABLE_ZITA_RESAMPLER)
       message("Zita resampler disabled")
 endif (ENABLE_ZITA_RESAMPLER)
 
+if ( ENABLE_INSTPATCH )
+  PKG_CHECK_MODULES(INSTPATCH libinstpatch-1.0)
+  if (INSTPATCH_FOUND)
+        include_directories(${INSTPATCH_INCLUDE_DIRS})
+        set(HAVE_INSTPATCH ON)
+  endif (INSTPATCH_FOUND)
+else ( ENABLE_INSTPATCH )
+      message("Inst(rument) Patch support disabled")
+endif ( ENABLE_INSTPATCH )
 
 ##
 ##   End OPTIONAL packages.
@@ -535,26 +570,13 @@ configure_file (
       ${PROJECT_BINARY_DIR}/config.h
       )
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
+file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h)
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
+file (RENAME ${PROJECT_BINARY_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h)
 
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h
-      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
-      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
+file (COPY ${PROJECT_SOURCE_DIR}/all.h DESTINATION ${PROJECT_BINARY_DIR})
 
 include_directories(
    .
@@ -644,9 +666,8 @@ add_custom_target(uninstall
 
 message("\n")
 
-if (NOT ALSA_FOUND)
-      message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
-endif (NOT ALSA_FOUND)
+## Mandatory:
+## =============
 
 if (NOT SNDFILE_FOUND)
       message("** ERROR: sndfile >= 1.0.0 is required, but development files were not found.")
@@ -656,30 +677,68 @@ if (NOT SAMPLERATE_FOUND)
       message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
 endif (NOT SAMPLERATE_FOUND)
 
-if (NOT UUID_FOUND)
-      message("** ERROR: uuid >= 0.0.1 is required, but development files were not found.")
-endif (NOT UUID_FOUND)
-
 if (NOT JACK_FOUND)
       message("** ERROR: jack >= 0.103 is required, but development files were not found.")
 endif (NOT JACK_FOUND)
+
+
+## Optional:
+## =============
 
 if (ENABLE_LASH AND (NOT LASH_FOUND))
         message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
         message("** HINT: Don't have LASH? Try installing the LADISH LASH compatibility package instead.")
 endif (ENABLE_LASH AND (NOT LASH_FOUND))
 
-if (ENABLE_OSC AND (NOT LIBLO_FOUND))
-        message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
-endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
-
 if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
         message("** WARNING: python was enabled, but development files were not found.")
 endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
 
+if (ENABLE_ALSA AND (NOT ALSA_FOUND))
+      message("** WARNING: ALSA >= 0.9.0 was enabled, but development files were not found.")
+endif (ENABLE_ALSA AND (NOT ALSA_FOUND))
+
+if (DSSI_ALSA_COMPAT_FOUND)
+      message("** WARNING: Using smaller DSSI ALSA Compatibility package instead of full ALSA. ")
+endif (DSSI_ALSA_COMPAT_FOUND)
+
 if (ENABLE_DSSI AND (NOT DSSI_FOUND))
-        message("** WARNING: dssi (>= 0.9.0) was enabled, but development files were not found.")
+        if (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+#                 message("** WARNING: DSSI was enabled, but ALSA was not enabled or DSSI")
+#                 message("             ALSA Compatibility development files were not found.")
+                message("** WARNING: DSSI (>= 0.9.0) was enabled, but ALSA development files were not found.")
+        else (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+                message("** WARNING: DSSI (>= 0.9.0) was enabled, but development files were not found.")
+        endif (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+else (ENABLE_DSSI AND (NOT DSSI_FOUND))
+        if (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+# TODO:
+#                 message("** WARNING: DSSI was enabled, but ALSA was not enabled or DSSI")
+#                 message("             ALSA Compatibility development files were not found.")
+#                 message("   HINT: DSSI needs either full ALSA or the smaller DSSI ALSA Compatibility packages.")
+                message("** WARNING: DSSI was enabled, but ALSA was not enabled.")
+                message("   HINT: MusE DSSI support needs full ALSA development files package.")
+        endif (NOT (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
+
+        if (ENABLE_DSSI AND (NOT LIBLO_FOUND))
+                message("** WARNING: DSSI is enabled, but liblo (Lightweight Open Sound Control) development files were not found.")
+                message("   DSSI support will be built but will NOT have OSC support.")
+        endif (ENABLE_DSSI AND (NOT LIBLO_FOUND))
 endif (ENABLE_DSSI AND (NOT DSSI_FOUND))
+
+if (ENABLE_OSC AND (NOT LIBLO_FOUND))
+        message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
+else (ENABLE_OSC AND (NOT LIBLO_FOUND))
+        if (ENABLE_OSC AND (NOT ENABLE_DSSI))
+                message("** WARNING: OSC is enabled, but DSSI was not enabled.")
+                message("   Currently OSC is only used for DSSI support - you likely want to enable DSSI as well.")
+        else (ENABLE_OSC AND (NOT ENABLE_DSSI))
+                if (NOT DSSI_FOUND)
+                      message("** WARNING: OSC is enabled and DSSI is enabled, but DSSI development files were not found.")
+                      message("   OSC support will be built, but not currently used by anything until future features do.")
+                endif (NOT DSSI_FOUND)
+        endif (ENABLE_OSC AND (NOT ENABLE_DSSI))
+endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
 
 if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
         message("** WARNING: Native VST was enabled, but development files were not found.")
@@ -689,6 +748,11 @@ endif (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
 if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
+
+if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
+        message("** WARNING: libinstpatch (>= 1.0) was enabled, but development files were not found.")
+        message("   Automatic drum lists for fluidsynth MESS plugin will not be available.")
+endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
     if(NOT GTK2_FOUND)
@@ -713,6 +777,9 @@ endif (ENABLE_ZITA_RESAMPLER AND (NOT HAVE_ZITA_RESAMPLER_H))
 message("")
 
 ## Show a summary of what we got
+summary_add("ALSA support" ALSA_SUPPORT)
+# TODO:
+# summary_add("DSSI ALSA Compatibility support" DSSI_ALSA_COMPAT_SUPPORT)
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
@@ -726,6 +793,7 @@ summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("RubberBand support" RUBBERBAND_SUPPORT)
 summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)
+summary_add("Instpatch support" HAVE_INSTPATCH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 

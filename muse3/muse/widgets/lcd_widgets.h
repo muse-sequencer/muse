@@ -70,8 +70,11 @@ class LCDPatchEdit : public QFrame
 
   public:
     enum PatchSections { HBankSection, LBankSection, ProgSection };
+    enum PatchOrientation { PatchHorizontal = 0, PatchVertical };
 
   protected:
+    PatchOrientation _orient;
+
     int _maxAliasedPointSize;
     int _xMargin;
     int _yMargin;
@@ -112,10 +115,6 @@ class LCDPatchEdit : public QFrame
     bool autoAdjustFontSize();
     // The total active drawing area, not including margins.
     QRect activeDrawingArea() const;
-    // The width of a character, not including inter-character space, in a given active area.
-    int charWidth(const QRect& aRect) const;
-    // The amount of space between the blocks of digits, for a given character width.
-    int readoutMargin(int charWidth) const;
 
     void showEditor();
     // Show a handy tooltip value box.
@@ -153,13 +152,21 @@ class LCDPatchEdit : public QFrame
 
     virtual ~LCDPatchEdit();
 
+    // The width of a character, not including inter-character space, in a given active area.
+    static int charWidth(const QRect& aRect);
+    // The amount of space between the blocks of digits, for a given character width.
+    static int readoutMargin(int charWidth);
+
     static QSize getMinimumSizeHint(const QFontMetrics& fm,
                                     int xMargin = 0,
-                                    int yMargin = 0
+                                    int yMargin = 0,
+                                    PatchOrientation orient = PatchHorizontal
                                    );
 
     int id() const             { return _id; }
     void setId(int i)          { _id = i; }
+
+    void setReadoutOrientation(PatchOrientation);
 
     QColor readoutColor() const { return _readoutColor; }
     void setReadoutColor(const QColor& c) { _readoutColor = c; update(); }

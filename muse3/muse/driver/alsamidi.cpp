@@ -21,9 +21,12 @@
 //
 //=========================================================
 
+#include "alsamidi.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <stdio.h>
 
-#include "alsamidi.h"
 #include "globals.h"
 #include "midi.h"
 #include "../midiport.h"
@@ -1272,6 +1275,10 @@ void MidiAlsaDevice::handleSeek()
 
 bool initMidiAlsa()
       {
+      // The sequencer is required for ALSA midi. Initialize it if not already done.
+      // But do not start the sequencer thread yet... the caller may want to do that a bit later.
+      MusECore::initMidiSequencer();
+
       if(alsaSeq)
       {
         DEBUG_PRST_ROUTES(stderr, "initMidiAlsa: alsaSeq already initialized, ignoring\n");
@@ -2114,24 +2121,24 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CLOCK, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CLOCK, curTime());
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_START, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, curTime());
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CONTINUE, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, curTime());
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_STOP, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, curTime());
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_TICK, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, curTime());
                         //mdev->syncInfo().trigTickDetect();
                         break;
 
@@ -2155,12 +2162,12 @@ void alsaProcessMidiInput()
                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:  // write port is released
                         break;
                   case SND_SEQ_EVENT_SONGPOS:
-                        MusEGlobal::midiSeq->setSongPosition(curPort, ev->data.control.value);
+                        MusEGlobal::midiSyncContainer.setSongPosition(curPort, ev->data.control.value);
                         break;
                   case SND_SEQ_EVENT_SENSING:
                         break;
                   case SND_SEQ_EVENT_QFRAME:
-                        MusEGlobal::midiSeq->mtcInputQuarter(curPort, ev->data.control.value);
+                        MusEGlobal::midiSyncContainer.mtcInputQuarter(curPort, ev->data.control.value);
                         break;
                   // case SND_SEQ_EVENT_CLIENT_START:
                   // case SND_SEQ_EVENT_CLIENT_EXIT:
@@ -2193,7 +2200,19 @@ void alsaProcessMidiInput()
                         break;
             }
             if(event.type())
+            {
+              // Moved here from MidiDevice. Devices now must set time before calling.
+              // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
+              unsigned frame_ts = MusEGlobal::audio->timestamp();
+#ifndef _AUDIO_USE_TRUE_FRAME_
+              if(MusEGlobal::audio->isPlaying())
+              frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+#endif
+              event.setTime(frame_ts);
+              event.setTick(MusEGlobal::lastExtMidiSyncTick);
+
               mdev->recordEvent(event);
+            }
                   
             snd_seq_free_event(ev);
             if (rv == 0)
@@ -2364,3 +2383,19 @@ void MidiAlsaDevice::dump(const snd_seq_event_t* ev)
 }
 
 } // namespace MusECore
+
+#else // ALSA_SUPPORT
+
+namespace MusECore {
+
+void initDSSI() {}
+bool initMidiAlsa() { return false; }
+void exitMidiAlsa() {}
+int alsaSelectRfd() { return -1; }
+int alsaSelectWfd() { return -1; }
+void alsaProcessMidiInput() { }
+void alsaScanMidiPorts() { }
+void setAlsaClientName(const char*) { }
+}
+
+#endif // ALSA_SUPPORT

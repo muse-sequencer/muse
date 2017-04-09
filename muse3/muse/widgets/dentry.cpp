@@ -43,19 +43,18 @@ namespace MusEGui {
 //    lineedit double values
 //---------------------------------------------------------
 
-Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
+Dentry::Dentry(QWidget* parent, const char* name) : LineEdit(parent)
       {
       setObjectName(name);
       _slider = 0;      
       _id = -1;
-      drawFrame = false;
-      QLineEdit::setFrame(drawFrame);
+      //setAutoFillBackground(true);
       timer = new QTimer(this);
       connect(timer, SIGNAL(timeout()), SLOT(repeat()));
       val = 0.01;
       connect(this, SIGNAL(returnPressed()), SLOT(endEdit()));
       setCursor(QCursor(Qt::ArrowCursor));
-      evx = 1.0;
+      evx = 1;
       }
 
 //---------------------------------------------------------
@@ -66,17 +65,6 @@ void Dentry::contextMenuEvent(QContextMenuEvent * e)
 {
   e->accept();
 }
-
-//---------------------------------------------------------
-//   setFrame
-//---------------------------------------------------------
-
-void Dentry::setFrame(bool flag)
-      {
-      drawFrame = flag;
-      QLineEdit::setFrame(drawFrame);
-      update();
-      }
 
 //---------------------------------------------------------
 //   endEdit
@@ -91,9 +79,6 @@ void Dentry::endEdit()
                   }
             }
       setString(val);
-      clearFocus();
-      if (!drawFrame)
-            QLineEdit::setFrame(false);
       }
 
 //---------------------------------------------------------
@@ -102,9 +87,25 @@ void Dentry::endEdit()
 
 void Dentry::mousePressEvent(QMouseEvent* event)
       {
-      button = event->button();
+      const Qt::MouseButton m_button = event->button();
+      const Qt::MouseButtons m_buttons = event->buttons();
+
+      event->accept();
+
+      // Only one mouse button at a time! Otherwise bad things happen.
+      if(m_buttons ^ m_button)
+      {
+        button = Qt::NoButton;
+        timer->stop();
+        return;
+      }
+
+      if(m_button == Qt::LeftButton)
+        LineEdit::mousePressEvent(event);
+
+      button = m_button;
       starty = event->y();
-      evx    = double(event->x());
+      evx    = event->x();
       timecount = 0;
       repeat();
       timer->start(TIMER1);
@@ -116,19 +117,6 @@ void Dentry::mousePressEvent(QMouseEvent* event)
 
 void Dentry::wheelEvent(QWheelEvent* event)
       {
-      // Avoid unwanted wheel events from outside the control.
-      // Tested: No go, can't seem to determine where event came from.
-      /*
-      const QPoint gp = mapToGlobal(event->pos());
-      const QRect gr = QRect(mapToGlobal(rect().topLeft()), mapToGlobal(rect().bottomRight()));
-      if(!gr.contains(gp))
-      */
-      //if(sender() != this)
-      //{
-      //  event->ignore();
-      //  return;
-      //}
-      
       event->accept();
       
       int delta = event->delta();
@@ -138,14 +126,14 @@ void Dentry::wheelEvent(QWheelEvent* event)
         if(_slider)
           _slider->stepPages(-1);
         else
-          decValue(-1.0);
+          decValue(1);
       }      
       else if (delta > 0)
       {
         if(_slider)
           _slider->stepPages(1);
         else
-          incValue(1.0);
+          incValue(1);
       }      
       }
 
@@ -197,28 +185,14 @@ void Dentry::repeat()
 //   mouseReleaseEvent
 //---------------------------------------------------------
 
-void Dentry::mouseReleaseEvent(QMouseEvent*)
+void Dentry::mouseReleaseEvent(QMouseEvent* ev)
       {
+      ev->accept();
+      // Don't call ancestor to avoid middle button pasting.
+      //LineEdit::mouseReleaseEvent(ev);
+
       button = Qt::NoButton;
       timer->stop();
-      }
-
-//---------------------------------------------------------
-//   mouseMoveEvent
-//---------------------------------------------------------
-
-void Dentry::mouseMoveEvent(QMouseEvent*)
-      {
-      switch (button) {
-            case Qt::LeftButton:
-                  break;
-            case Qt::MidButton:
-                  break;
-            case Qt::RightButton:
-                  break;
-            default:
-                  break;
-            }
       }
 
 //---------------------------------------------------------
@@ -227,17 +201,83 @@ void Dentry::mouseMoveEvent(QMouseEvent*)
 
 void Dentry::mouseDoubleClickEvent(QMouseEvent* event)
       {
+      event->accept();
       if (event->button() != Qt::LeftButton) {
-            mousePressEvent(event);
+            //mousePressEvent(event);
+            button = event->button();
+            starty = event->y();
+            evx    = event->x();
+            timecount = 0;
+            repeat();
+            timer->start(TIMER1);
             return;
             }
-      setFocus();
-      QLineEdit::setFrame(true);
       update();
       emit doubleClicked(_id);
       if(event->modifiers() & Qt::ControlModifier)
         emit ctrlDoubleClicked(_id);
+      else
+        LineEdit::mouseDoubleClickEvent(event);
       }
+
+void Dentry::keyPressEvent(QKeyEvent* e)
+{
+  bool inc = true;
+  switch (e->key())
+  {
+    case Qt::Key_Up:
+      inc = true;
+    break;
+
+    case Qt::Key_Down:
+      inc = false;
+    break;
+
+    default:
+      // Let ancestor handle it.
+      e->ignore();
+      LineEdit::keyPressEvent(e);
+      return;
+    break;
+  }
+
+  if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
+  {
+    // Let ancestor handle it.
+    e->ignore();
+    LineEdit::keyPressEvent(e);
+    return;
+  }
+
+  e->accept();
+  // Do not allow setting value from the external while mouse is pressed.
+  //if(_pressed)
+  //  return;
+
+  const bool shift = e->modifiers() == Qt::ShiftModifier;
+  int val = 1;
+  if(shift)
+    val *= 10;
+
+  if(inc)
+  {
+    if(_slider)
+      _slider->stepPages(val);
+    else
+      incValue(val);
+  }
+  else
+  {
+    if(_slider)
+      _slider->stepPages(-val);
+    else
+      decValue(val);
+  }
+
+  // Show a handy tooltip value box.
+  //if(d_enableValueToolTips)
+  //  showValueToolTip(e->globalPos());
+}
 
 //---------------------------------------------------------
 //   setValue

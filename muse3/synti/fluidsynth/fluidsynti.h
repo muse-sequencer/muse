@@ -4,6 +4,7 @@
 //  $Id: ./synti/fluidsynth/fluidsynti.h $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -44,6 +45,12 @@
 #include "muse/midictrl.h"
 #include "common_defs.h"
 
+// TODO: Try to not include this. Standalone build of plugin?
+#include "config.h"
+#ifdef HAVE_INSTPATCH
+#include <map>
+#endif
+
 #define FS_DEBUG_DATA 0 //Turn on/off debug print of midi data sent to fluidsynth
 
 typedef unsigned char byte;
@@ -53,6 +60,9 @@ struct FluidSoundFont
       QString file_name;
       QString name;
       byte extid, intid;
+      #ifdef HAVE_INSTPATCH
+      std::map < int /*patch*/, std::multimap < int /* note */, std::string > > _noteSampleNameList;
+      #endif
       };
 
 struct FluidCtrl {
@@ -76,7 +86,6 @@ static const int FS_CHORUS_TYPE     = 8 + MusECore::CTRL_NRPN14_OFFSET;
 static const int FS_CHORUS_SPEED    = 9 + MusECore::CTRL_NRPN14_OFFSET;
 static const int FS_CHORUS_DEPTH   = 10 + MusECore::CTRL_NRPN14_OFFSET;
 static const int FS_CHORUS_LEVEL   = 11 + MusECore::CTRL_NRPN14_OFFSET;
-// Added by T356
 static const int FS_PITCHWHEELSENS  = 0 + MusECore::CTRL_RPN_OFFSET;
 
 // FluidChannel is used to map different soundfonts to different fluid-channels
@@ -92,11 +101,6 @@ struct FluidChannel
       byte banknum; // hbank
       //FluidSoundFont* font;
       };
-
-/*#include <string>
-#include <list>
-#include <map>
-*/
 
 class FluidSynth : public Mess {
    private:
@@ -142,6 +146,10 @@ public:
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
+      #ifdef HAVE_INSTPATCH
+      // True if it found a name.
+      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const;
+      #endif
 
       //virtual bool hasGui() const { return true; }
       //virtual bool guiVisible() const;

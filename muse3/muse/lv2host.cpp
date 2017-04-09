@@ -443,6 +443,7 @@ void deinitLV2()
       delete synthsToFree [i];
 
    }
+   synthsToFree.clear();
 
    for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
    {
@@ -3230,14 +3231,14 @@ int LV2SynthIF::getControllerInfo(int id, QString* name, int *ctrl, int *min, in
       return 0;
    }
 
-   int ctlnum = DSSI_NONE;
+   int ctlnum; // = DSSI_NONE;
 
    // No controller number? Give it one.
-   if(ctlnum == DSSI_NONE)
-   {
+   //if(ctlnum == DSSI_NONE)
+   //{
       // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
       ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + _id;
-   }
+   //}
 
 
    int def = CTRL_VAL_UNKNOWN;
@@ -3502,11 +3503,11 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       }
 
       unsigned long k = ip->second;
-      int ctlnum = DSSI_NONE;
+      int ctlnum; // = DSSI_NONE;
 
       // No midi controller for the ladspa port? Send to ladspa control.
-      if(ctlnum == DSSI_NONE)
-      {
+      //if(ctlnum == DSSI_NONE)
+      //{
          // Sanity check.
          if(k > _inportsControl)
          {
@@ -3515,7 +3516,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 
          // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
          ctlnum = k + (CTRL_NRPN14_OFFSET + 0x2000);
-      }
+      //}
 
 
       float val = midi2Lv2Value(k, ctlnum, b);

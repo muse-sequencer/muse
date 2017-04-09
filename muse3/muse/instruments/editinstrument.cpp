@@ -445,8 +445,8 @@ void EditInstrument::storePatchCollection()
   using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
-  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
-  if (idx>=0 && (unsigned)idx<pdm->size())
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(pdm && idx>=0 && (unsigned)idx<pdm->size())
   {
     iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx);
@@ -478,8 +478,8 @@ void EditInstrument::fetchPatchCollection()
   using MusECore::iPatchDrummapMapping_t;
 
   int idx=patchCollections->currentIndex().row();
-  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
-  if (idx>=0 && (unsigned)idx<pdm->size())
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(pdm && idx>=0 && (unsigned)idx<pdm->size())
   {
     iPatchDrummapMapping_t it=pdm->begin();
     advance(it,idx);
@@ -521,7 +521,9 @@ void EditInstrument::patchActivated(const QModelIndex& idx)
   {
     using MusECore::DrumMap;
 
-    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+    if(!tmp)
+      return;
     iPatchDrummapMapping_t it=tmp->begin();
     if ((unsigned)idx.row()>=tmp->size())
       printf("THIS SHOULD NEVER HAPPEN: idx.row()>=tmp->size() in EditInstrument::patchActivated()\n");
@@ -567,7 +569,9 @@ void EditInstrument::addPatchCollection()
 
   int idx=patchCollections->currentIndex().row();
 
-  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(!tmp)
+    return;
   iPatchDrummapMapping_t it=tmp->begin();
   advance(it,idx+1);
   tmp->insert(it,patch_drummap_mapping_t());
@@ -604,10 +608,13 @@ void EditInstrument::delPatchCollection()
     collUpBtn->setEnabled(false);
     collDownBtn->setEnabled(false);
 
-    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
-    iPatchDrummapMapping_t it=tmp->begin();
-    advance(it,idx);
-    tmp->erase(it);
+    patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+    if(tmp)
+    {
+      iPatchDrummapMapping_t it=tmp->begin();
+      advance(it,idx);
+      tmp->erase(it);
+    }
 
     repopulatePatchCollections();
 
@@ -624,7 +631,9 @@ void EditInstrument::copyPatchCollection()
 
   int idx=patchCollections->currentIndex().row();
 
-  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping();
+  patch_drummap_mapping_list_t* tmp = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(!tmp)
+    return;
   iPatchDrummapMapping_t it=tmp->begin();
   advance(it,idx);
   patch_drummap_mapping_t tmp2(*it);
@@ -644,9 +653,11 @@ void EditInstrument::patchCollectionUp()
   using MusECore::patch_drummap_mapping_list_t;
   using MusECore::iPatchDrummapMapping_t;
 
-  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
-  int idx=patchCollections->currentIndex().row();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(!pdm)
+    return;
 
+  int idx=patchCollections->currentIndex().row();
   if (idx>=1)
   {
     iPatchDrummapMapping_t it=pdm->begin();
@@ -674,9 +685,11 @@ void EditInstrument::patchCollectionDown()
   using MusECore::patch_drummap_mapping_list_t;
   using MusECore::iPatchDrummapMapping_t;
 
-  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
-  int idx=patchCollections->currentIndex().row();
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(!pdm)
+    return;
 
+  int idx=patchCollections->currentIndex().row();
   if ((unsigned)idx<pdm->size()-1)
   {
     iPatchDrummapMapping_t it=pdm->begin();
@@ -707,12 +720,15 @@ void EditInstrument::repopulatePatchCollections()
   int idx=patchCollections->currentIndex().row();
   QStringList strlist;
 
-  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping();
-  for (iPatchDrummapMapping_t it=pdm->begin(); it!=pdm->end(); it++)
+  patch_drummap_mapping_list_t* pdm = workingInstrument->get_patch_drummap_mapping(-1, false); // No default.
+  if(pdm)
   {
-    patch_drummap_mapping_t& pd = *it;
-    // Patch name: Get drum, and no default - we want an exact match.
-    strlist << (it->to_string() + QString(" (") + workingInstrument->getPatchName(0, pd._patch, true, false) + QString(")"));
+    for (iPatchDrummapMapping_t it=pdm->begin(); it!=pdm->end(); it++)
+    {
+      patch_drummap_mapping_t& pd = *it;
+      // Patch name: Get drum, and no default - we want an exact match.
+      strlist << (it->to_string() + QString(" (") + workingInstrument->getPatchName(0, pd._patch, true, false) + QString(")"));
+    }
   }
 
   patch_coll_model->setStringList(strlist);

@@ -21,7 +21,9 @@
 //=========================================================
 
 #include <QPainter>
+#include <QPaintEvent>
 #include <QStyle>
+#include <QStyleOption>
 
 #include "ttoolbutton.h"
 #include "gconfig.h"
@@ -51,54 +53,128 @@ void TransparentToolButton::drawButton(QPainter* p)
 //   CompactToolButton
 //---------------------------------------------------------
 
-CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon_A, const QIcon& icon_B, const char* name)
-         : QToolButton(parent), _icon_A(icon_A), _icon_B(icon_B)
+CompactToolButton::CompactToolButton(QWidget* parent, const QIcon& icon, bool hasFixedIconSize, bool drawFlat, const char* name)
+         : QToolButton(parent), _icon(icon), _hasFixedIconSize(hasFixedIconSize), _drawFlat(drawFlat)
 {
   setObjectName(name);
-  _useIcon_B = false;
-  setIcon(_icon_A);
+  _blinkPhase = false;
 }
 
 QSize CompactToolButton::sizeHint() const
 {
   // TODO Ask style for margins.
   const QSize isz = iconSize();
-  const QSize tsz = fontMetrics().size(0, text());
-  
+   const int fmw = fontMetrics().width(text());
+  const int fmh = fontMetrics().lineSpacing() + 5;
+
   const int iw = isz.width() + 2;
   const int ih = isz.height() + 2;
-  const int tw = tsz.width() + 4;
-  const int th = tsz.height() + 2;
 
-  const int w = iw > tw ? iw : tw;
-  const int h = ih > th ? ih : th;
-  
+  const int w = (_hasFixedIconSize && iw > fmw) ? iw : fmw;
+  const int h = (_hasFixedIconSize && ih > fmh) ? ih : fmh;
+
   return QSize(w, h);
 }
       
-void CompactToolButton::setIconA(const QIcon& ico)
+void CompactToolButton::setHasFixedIconSize(bool v)
 {
-  _icon_A = ico;
-  if(!_useIcon_B)
-    setIcon(_icon_A);
+  _hasFixedIconSize = v;
+  updateGeometry();
 }
 
-void CompactToolButton::setIconB(const QIcon& ico)
+void CompactToolButton::setDrawFlat(bool v)
 {
-  _icon_B = ico;
-  if(_useIcon_B)
-    setIcon(_icon_B);
+  _drawFlat = v;
+  update();
 }
 
-void CompactToolButton::setCurrentIcon(bool v)
+void CompactToolButton::setIcon(const QIcon & icon)
 {
-  if(_useIcon_B == v)
+  _icon = icon;
+  update();
+}
+
+void CompactToolButton::setBlinkPhase(bool v)
+{
+  if(_blinkPhase == v)
     return;
-  _useIcon_B = v;
-  if(_useIcon_B)
-    setIcon(_icon_B);
+  _blinkPhase = v;
+  if(isEnabled())
+    update();
+}
+
+void CompactToolButton::paintEvent(QPaintEvent* ev)
+{
+  if(!_drawFlat)
+    QToolButton::paintEvent(ev);
+
+  QIcon::Mode mode;
+  if(isEnabled())
+    mode = hasFocus() ? QIcon::Selected : QIcon::Normal;
   else
-    setIcon(_icon_A);
+    mode = QIcon::Disabled;
+  QIcon::State state = (isChecked() && (!_blinkPhase || !isEnabled())) ? QIcon::On : QIcon::Off;
+
+  QPainter p(this);
+  _icon.paint(&p, rect(), Qt::AlignCenter, mode, state);
+
+// TODO Bah! Just want a mouse-over rectangle for flat mode but some styles do this or that but not the other thing.
+//   if(const QStyle* st = style())
+//   {
+//     st = st->proxy();
+// //     QStyleOptionToolButton o;
+// //     initStyleOption(&o);
+// //     o.rect = rect();
+// //     //o.state |= QStyle::State_MouseOver;
+// //     o.state = QStyle::State_Active |
+// //               QStyle::State_Enabled |
+// //               QStyle::State_AutoRaise | // This is required to get rid of the panel.
+// //               QStyle::State_MouseOver;
+// //     st->drawPrimitive(QStyle::PE_PanelButtonTool, &o, &p);
+//
+// //     QStyleOptionFrame o;
+// //     //initStyleOption(&o);
+// //     o.rect = rect();
+// //     o.features = QStyleOptionFrame::Rounded;
+// //     o.frameShape = QFrame::Box;
+// //     o.lineWidth = 2;
+// //     o.midLineWidth = 4;
+// //     o.state |= QStyle::State_MouseOver;
+// //     st->drawPrimitive(QStyle::PE_Frame, &o, &p);
+//
+//
+//     QStyleOptionFocusRect o;
+//     //o.QStyleOption::operator=(option);
+//     //o.rect = st->subElementRect(QStyle::SE_ItemViewItemFocusRect, &option);
+//     o.rect = rect();
+//     o.state |= QStyle::State_KeyboardFocusChange;
+//     o.state |= QStyle::State_Item |
+//                QStyle::State_Active |
+//                QStyle::State_Enabled |
+//                QStyle::State_HasFocus |
+//
+//                //QStyle::State_Raised |
+//                QStyle::State_Sunken |
+//
+//                QStyle::State_Off |
+//                //QStyle::State_On |
+//
+//                QStyle::State_Selected |
+//
+//                //QStyle::State_AutoRaise | // This is required to get rid of the panel.
+//
+//                QStyle::State_MouseOver;
+//
+// //     QPalette::ColorGroup cg =
+// //                         (option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled;
+// //     o.backgroundColor = option.palette.color(cg,
+// //                         (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Window);
+//     st->drawPrimitive(QStyle::PE_FrameFocusRect, &o, &p);
+//
+//   }
+
+
+  ev->accept();
 }
 
 

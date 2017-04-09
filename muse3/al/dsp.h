@@ -69,7 +69,7 @@ class Dsp {
             for (unsigned i = 0; i < n; ++i)
                   dst[i] += src[i];
             }
-      virtual void cpy(float* dst, float* src, unsigned n);
+      virtual void cpy(float* dst, float* src, unsigned n, bool addDenormal = false);
 /*      
       {
 // Changed by T356. Not defined. Where are these???

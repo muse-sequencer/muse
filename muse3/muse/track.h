@@ -42,6 +42,7 @@
 #include "controlfifo.h"
 
 class QPixmap;
+class QColor;
 
 namespace MusECore {
 class Pipeline;
@@ -107,6 +108,7 @@ class Track {
       
       QString _name;
       bool _recordFlag;
+      bool _recMonitor;       // For midi and audio. Whether to pass the input through to output.
       bool _mute;
       bool _solo;
       unsigned int _internalSolo;
@@ -139,8 +141,12 @@ class Track {
       
       static const char* _cname[];
       static QPixmap* trackTypeIcon(TrackType);
+      static QColor trackTypeColor(TrackType);
+      static QColor trackTypeLabelColor(TrackType);
       QPixmap* icon() const { return trackTypeIcon(type()); }
-      
+      QColor color() const { return trackTypeColor(type()); }
+      QColor labelColor() const { return trackTypeLabelColor(type()); }
+
       QString comment() const         { return _comment; }
       void setComment(const QString& s) { _comment = s; }
 
@@ -217,6 +223,8 @@ class Track {
       bool mute() const                  { return _mute;         }
       bool off() const                   { return _off;          }
       bool recordFlag() const            { return _recordFlag;   }
+      void setRecMonitor(bool b)         { _recMonitor = b; }
+      bool recMonitor() const            { return _recMonitor; }
 
       // Internal use...
       static void clearSoloRefCounts();
@@ -257,7 +265,6 @@ class Track {
 class MidiTrack : public Track {
       int _outPort;
       int _outChannel;
-      bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
 
    private:
       static bool _isVisible;
@@ -341,10 +348,8 @@ class MidiTrack : public Track {
       // Overriden for special midi output behaviour.
       virtual bool noOutRoute() const;
       
-      void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }
       int outChannel() const          { return _outChannel;  }
-      bool recEcho() const            { return _recEcho; }
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);
@@ -357,7 +362,8 @@ class MidiTrack : public Track {
       // These are only for 'live' (rec) notes for which we don't have a note-off time yet. Even times = 0.
       virtual bool addStuckLiveNote(int port, int chan, int note, int vel = 64);
       virtual bool removeStuckLiveNote(int port, int chan, int note);
-      
+      virtual bool stuckLiveNoteExists(int port, int chan, int note);
+
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
@@ -461,6 +467,8 @@ class AudioTrack : public Track {
       float*  audioInSilenceBuf;
       // Just a place to connect all unused audio outputs.
       float*  audioOutDummyBuf;
+      // Internal temporary buffers for getData().
+      float** _dataBuffers;
 
       // These two are not the same as the number of track channels which is always either 1 (mono) or 2 (stereo):
       // Total number of output channels.
@@ -469,7 +477,9 @@ class AudioTrack : public Track {
       int _totalInChannels;
       
       Pipeline* _efxPipe;
+
       virtual bool getData(unsigned, int, unsigned, float**);
+
       SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
@@ -752,7 +762,8 @@ class WaveTrack : public AudioTrack {
       void internal_assign(const Track&, int flags);
       
       // REMOVE Tim. samplerate. Added.
-      bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp);
+      // Return false if error.
+      bool getPrefetchData(sf_count_t framePos, int channels, sf_count_t nframe, float** bp, bool overwrite);
       
    public:
 
@@ -773,7 +784,8 @@ class WaveTrack : public AudioTrack {
       virtual void write(int, Xml&) const;
 
       // Called from prefetch thread:
-      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek);
+      // If overwrite is true, copies the data. If false, adds the data.
+      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek, bool overwrite);
       
 // REMOVE Tim. samplerate. Added.
       // REPLACES fetchData().

@@ -217,6 +217,8 @@ class MusE : public QMainWindow
       QMenu* openRecent;
       
       bool writeTopwinState;
+      // Set to restart MusE (almost) from scratch before calling close().
+      bool _isRestartingApp;
       
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate);
@@ -248,6 +250,7 @@ class MusE : public QMainWindow
       QSignalMapper *followSignalMapper;
       QSignalMapper *windowsMapper;
       QTimer *saveTimer;
+      QTimer *blinkTimer;
       int saveIncrement;
 
    signals:
@@ -256,6 +259,7 @@ class MusE : public QMainWindow
 
    private slots:
       void heartBeat();
+      void blinkTimerSlot();
       void saveTimerSlot();
       void loadProject();
       bool save();
@@ -393,6 +397,10 @@ class MusE : public QMainWindow
       void loadDefaultSong(int argc, char** argv);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);
+      // Whether to restart MusE (almost) from scratch when calling close().
+      bool restartingApp() const { return _isRestartingApp;}
+      // Set to restart MusE (almost) from scratch before calling close().
+      void setRestartingApp(bool v) { _isRestartingApp = v;}
       Arranger* arranger() const { return _arranger; }
       ArrangerView* getArrangerView() const { return arrangerView; }
       QRect configGeometryMain;
@@ -405,7 +413,10 @@ class MusE : public QMainWindow
       void changeConfig(bool writeFlag, bool simple = false);
       
       void seqStop();
-      bool seqStart();  
+      bool seqStart();
+      // Starts the ALSA midi portion of the sequencer. audioDevice must be valid.
+      // Returns true if successful or already running.
+//       bool seqStartMidi();
       void setHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }

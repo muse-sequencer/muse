@@ -40,6 +40,7 @@
 #include <QTextStream>
 #include <QToolButton>
 
+#include <errno.h>
 #include <iostream>
 #include <algorithm>
 
@@ -150,87 +151,80 @@ void microSleep(long msleep)
 
 bool MusE::seqStart()
       {
-      if (MusEGlobal::audio->isRunning()) {
-            printf("seqStart(): already running\n");
-            return true;
+      if(MusEGlobal::audio)
+      {
+        if(!MusEGlobal::audio->isRunning())
+        {
+          // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
+          if(MusEGlobal::audio->start())
+          {
+            //
+            // wait for jack callback
+            //
+            for(int i = 0; i < 60; ++i)
+            {
+              if(MusEGlobal::audio->isRunning())
+                break;
+              sleep(1);
             }
-
-      // Start the audio. (Re)connect audio inputs and outputs. Force-fill the audio pre-fetch buffers for the current cpos.
-      if (!MusEGlobal::audio->start()) {
-          QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-              tr("Was not able to start audio, check if jack is running.\n"));
-          return false;
+            if(!MusEGlobal::audio->isRunning())
+            {
+              QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
+                  tr("Timeout waiting for audio to run. Check if jack is running.\n"));
+            }
           }
-
-      //
-      // wait for jack callback
-      //
-      for(int i = 0; i < 60; ++i)
-      {
-        if(MusEGlobal::audio->isRunning())
-          break;
-        sleep(1);
+          else
+          {
+            QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
+                tr("Was not able to start audio, check if jack is running.\n"));
+          }
+        }
       }
-      if(!MusEGlobal::audio->isRunning())
-      {
-        QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-            tr("Timeout waiting for audio to run. Check if jack is running.\n"));
-      }
-      //
-      // now its safe to ask the driver for realtime
-      // priority
+      else
+        fprintf(stderr, "seqStart(): audio is NULL\n");
 
-      MusEGlobal::realTimePriority = MusEGlobal::audioDevice->realtimePriority();
-      if(MusEGlobal::debugMsg)
-        printf("MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
+
+      // Now it is safe to ask the driver for realtime priority
 
       int pfprio = 0;
-      int midiprio = 0;
-
-      // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
-      //  while the determined MusEGlobal::realTimePriority can be 0.
-      // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread
-      //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
-      if(MusEGlobal::realTimeScheduling)
+      // TODO: Hm why is prefetch priority so high again? Was it to overcome some race problems? Should it be lowest - disk thread?
+      if(MusEGlobal::audioDevice)
       {
-        if(MusEGlobal::realTimePriority - 5 >= 0)
-          pfprio = MusEGlobal::realTimePriority - 5;
-        if(MusEGlobal::realTimePriority - 1 >= 0)
-          midiprio = MusEGlobal::realTimePriority - 1;
-      }
-
-      if(MusEGlobal::midiRTPrioOverride > 0)
-        midiprio = MusEGlobal::midiRTPrioOverride;
-
-      // FIXME FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
-
-      MusEGlobal::audioPrefetch->start(pfprio);
-
-      // In case prefetch is not filled, do it now.
-      // REMOVE Tim. samplerate. Changed.
-      //MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
-      MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
-
-      MusEGlobal::midiSeq->start(midiprio);
-
-      int counter=0;
-      while (++counter) {
-        if (counter > 1000) {
-            fprintf(stderr,"midi sequencer thread does not start!? Exiting...\n");
-            exit(33);
-        }
-        MusEGlobal::midiSeqRunning = MusEGlobal::midiSeq->isRunning();
-        if (MusEGlobal::midiSeqRunning)
-          break;
-        usleep(1000);
+        MusEGlobal::realTimePriority = MusEGlobal::audioDevice->realtimePriority();
         if(MusEGlobal::debugMsg)
-          printf("looping waiting for sequencer thread to start\n");
+          fprintf(stderr, "MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
+
+        // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
+        //  while the determined MusEGlobal::realTimePriority can be 0.
+        // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread
+        //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
+        if(MusEGlobal::realTimeScheduling)
+        {
+          if(MusEGlobal::realTimePriority - 5 >= 0)
+            pfprio = MusEGlobal::realTimePriority - 5;
+        }
+        // FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
       }
-      if(!MusEGlobal::midiSeqRunning)
+      else
+        fprintf(stderr, "seqStart(): audioDevice is NULL\n");
+
+      if(MusEGlobal::audioPrefetch)
       {
-        fprintf(stderr, "midiSeq is not running! Exiting...\n");
-        exit(33);
+        if(!MusEGlobal::audioPrefetch->isRunning())
+        {
+          MusEGlobal::audioPrefetch->start(pfprio);
+          // In case prefetch is not filled, do it now.
+          // REMOVE Tim. samplerate. Changed.
+          //MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame()); // Don't force.
+          MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
+        }
       }
+      else
+        fprintf(stderr, "seqStart(): audioPrefetch is NULL\n");
+
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->start(0); // Prio unused, set in start.
+
       return true;
       }
 
@@ -245,7 +239,8 @@ void MusE::seqStop()
 
       MusEGlobal::song->setStop(true);
       MusEGlobal::song->setStopPlay(false);
-      MusEGlobal::midiSeq->stop(true);
+      if(MusEGlobal::midiSeq)
+         MusEGlobal::midiSeq->stop(true);
       MusEGlobal::audio->stop(true);
       MusEGlobal::audioPrefetch->stop(true);
       if (MusEGlobal::realTimeScheduling && watchdogThread)
@@ -299,6 +294,7 @@ MusE::MusE() : QMainWindow()
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
+      _isRestartingApp      = false;
       clipListEdit          = 0;
       midiSyncConfig        = 0;
       midiRemoteConfig      = 0;
@@ -344,6 +340,11 @@ MusE::MusE() : QMainWindow()
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
+
+      blinkTimer = new QTimer(this);
+      blinkTimer->setObjectName("blinkTimer");
+      connect(blinkTimer, SIGNAL(timeout()), SLOT(blinkTimerSlot()));
+      blinkTimer->start( 250 );      // Every quarter second, for a flash rate of 2 Hz.
 
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
@@ -1002,7 +1003,12 @@ void MusE::heartBeat()
                             MusEGlobal::song->dspLoad(), 
                             MusEGlobal::song->xRunsCount());
 }
-      
+
+void MusE::blinkTimerSlot()
+{
+  MusEGlobal::blinkTimerPhase = !MusEGlobal::blinkTimerPhase;
+}
+
 //---------------------------------------------------------
 //   setDirty
 //---------------------------------------------------------
@@ -1502,6 +1508,7 @@ void MusE::closeEvent(QCloseEvent* event)
             if (n == 0) {
                   if (!save())      // dont quit if save failed
                   {
+                        setRestartingApp(false); // Cancel any restart.
                         event->ignore();
                         QApplication::restoreOverrideCursor();
                         return;
@@ -1509,6 +1516,7 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             else if (n == 2)
             {
+                  setRestartingApp(false); // Cancel any restart.
                   event->ignore();
                   QApplication::restoreOverrideCursor();
                   return;
@@ -1603,7 +1611,10 @@ void MusE::closeEvent(QCloseEvent* event)
 
       delete MusEGlobal::audioPrefetch;
       delete MusEGlobal::audio;
-      delete MusEGlobal::midiSeq;
+
+      // Destroy the sequencer object if it exists.
+      MusECore::exitMidiSequencer();
+
       delete MusEGlobal::song;
 
       if(MusEGlobal::debugMsg)
@@ -2577,11 +2588,23 @@ void MusE::changeConfig(bool writeFlag, bool simple)
 
       if(!simple)
       {
-        loadTheme(MusEGlobal::config.style);
+        // Qt FIXME BUG: Cannot load certain themes with a stylesheet - even a blank one.
+        //               Although it works for a few styles, others like Breeze and Oxygen
+        //                cause the main MDI window to not respond. Force Fusion for now.
+        if(MusEGlobal::config.styleSheetFile.isEmpty())
+          loadTheme(MusEGlobal::config.style);
+        else
+          loadTheme("Fusion");
+
         QApplication::setFont(MusEGlobal::config.fonts[0]);
 
         if(!MusEGlobal::config.styleSheetFile.isEmpty())
           loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+
+        //if(MusEGlobal::config.styleSheetFile.isEmpty())
+        //  loadStyleSheetFile(QString());
+        //else
+        //  loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
       }
 
       emit configChanged();
@@ -3114,8 +3137,10 @@ void MusE::updateConfiguration()
 
       //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
-      MusEGlobal::undoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_UNDO].key);
-      MusEGlobal::redoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_REDO].key);
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_UNDO].key);
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_REDO].key);
 
 
       //editSongInfoAction has no acceleration

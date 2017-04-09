@@ -279,10 +279,10 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Midi thru</string>
+        <string>Monitor</string>
        </property>
        <property name="whatsThis">
-        <string>Pass input events through ('thru') to output.</string>
+        <string>Pass input through to output</string>
        </property>
        <property name="text">
         <string/>

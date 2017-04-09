@@ -4,7 +4,7 @@
 //  $Id: midi.h,v 1.4.2.2 2009/11/09 20:28:28 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -126,10 +126,21 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
 QString midiMetaName(int);
 
 // Use these in all the synths and their guis.
-// Did this here for ease, since they all include this file.
+// NOTE: Some synths and hosts might not use this scheme. For example, MESS requires it for IPC,
+//        and both MESS and DSSI use it to store init data in the form of a sysex.
+//
+// Added this here for ease, since they all include this file.
 //
 // A special MusE soft synth sysex manufacturer ID.
 #define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
+// Following the MFG_ID, besides synth specific IDs, this reserved special ID indicates
+//  a MusE system ID will follow in the next byte.
+#define MUSE_SYSEX_SYSTEM_ID 0x7f
+// This SYSTEM command will force any relevant drum maps to update.
+// When a synth's note names have changed, it should issue this command.
+// So far, this command is really just a special requirement for the fluidsynth MESS plugin.
+// It is the only way to inform the host to update the maps.
+#define MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID 0x00
 
 struct MPEventList;
 class MidiTrack;

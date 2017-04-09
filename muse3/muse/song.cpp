@@ -246,7 +246,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         MidiDevice* dev = port->device();
         if (dev==0) 
         {
-          MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
+          MusEGlobal::audio->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
           if (SynthI::visible()) {
             selectAllTracks(false);
@@ -1826,9 +1826,11 @@ void Song::endMsgCmd()
             
             // It is possible the undo list is empty after removal of an empty undo, 
             //  either by optimization or no given operations.
-            MusEGlobal::undoAction->setEnabled(!undoList->empty());
+            if(MusEGlobal::undoAction)
+              MusEGlobal::undoAction->setEnabled(!undoList->empty());
             
-            MusEGlobal::redoAction->setEnabled(false);
+            if(MusEGlobal::redoAction)
+              MusEGlobal::redoAction->setEnabled(false);
             setUndoRedoText();
             emit songChanged(updateFlags);
             }
@@ -1855,9 +1857,11 @@ void Song::undo()
       
       redoList->push_back(opGroup);
       undoList->pop_back();
-      
-      MusEGlobal::redoAction->setEnabled(true);
-      MusEGlobal::undoAction->setEnabled(!undoList->empty());
+
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(true);
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(!undoList->empty());
       setUndoRedoText();
 
       emit songChanged(updateFlags);
@@ -1886,8 +1890,10 @@ void Song::redo()
       undoList->push_back(opGroup);
       redoList->pop_back();
       
-      MusEGlobal::undoAction->setEnabled(true);
-      MusEGlobal::redoAction->setEnabled(!redoList->empty());
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(true);
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
 
       emit songChanged(updateFlags);
@@ -1993,6 +1999,7 @@ void Song::clear(bool signal, bool clear_all)
               break;
             }  
           }  
+#ifdef ALSA_SUPPORT
           else if(dynamic_cast< MidiAlsaDevice* >(*imd))
           {
             // With alsa devices, we must not delete them (they're always in the list). But we must 
@@ -2000,6 +2007,7 @@ void Song::clear(bool signal, bool clear_all)
             (*imd)->inRoutes()->clear();
             (*imd)->outRoutes()->clear();
           }
+#endif
         }
       }  
       while (loop);
@@ -2122,7 +2130,10 @@ void Song::cleanupForQuit()
       
       // Clear all midi port controllers and values.
       for(int i = 0; i < MIDI_PORTS; ++i)
+      {
         MusEGlobal::midiPorts[i].controller()->clearDelete(true); // Remove the controllers and the values.
+        MusEGlobal::midiPorts[i].setMidiDevice(0);
+      }
         
       // Can't do this here. Jack isn't running. Fixed. Test OK so far. DELETETHIS (the comment and #if/#endif)
       #if 1
@@ -3449,9 +3460,11 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
                     ops.add(PendingOperationItem(&MusEGlobal::midiDevices, imd, PendingOperationItem::DeleteMidiDevice));
                   
                   if(s->midiPort() != -1)
+                  {
                     // synthi is attached
                     // Oops, hey this was wrong before, should have been zero.
-                    MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], 0);
+                    MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], 0);
+                  }
                   
                   sec_track_list = &_synthIs;
             }

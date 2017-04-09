@@ -4,6 +4,7 @@
 //  $Id: midiseq.h,v 1.6.2.11 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2016 Tim E. Real (terminator356 on sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,10 +26,6 @@
 #define __MIDISEQ_H__
 
 #include "thread.h"
-#include "mpevent.h"
-#include "driver/alsatimer.h"
-#include "driver/rtctimer.h"
-#include "sync.h"
 
 namespace MusECore {
 
@@ -37,6 +34,7 @@ class MidiPort;
 struct MPEventList;
 class MTC;
 class SynthI;
+class Timer;
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -46,33 +44,9 @@ class MidiSeq : public Thread {
       int timerFd;
       int idle;
       int prio;   // realtime priority
-      int midiClock;
       static int ticker;
-
-/* Testing */
-      bool playStateExt;       // used for keeping play state in sync functions
-      int recTick;            // ext sync tick position
-      double mclock1, mclock2;
-      double songtick1, songtick2;
-      int recTick1, recTick2;
-      int lastTempo;
-      double timediff[16][48];
-      int storedtimediffs;
-      int    _avgClkDiffCounter[16];
-      double _lastRealTempo;
-      bool _averagerFull[16];
-      int _clockAveragerPoles;
-      int* _clockAveragerStages; 
-      bool _preDetect;
-      double _tempoQuantizeAmount;
-      MidiSyncInfo::SyncRecFilterPresetType _syncRecFilterPreset;
-      
-      void alignAllTicks(int frameOverride = 0);
-/* Testing */
-
       Timer *timer;
 
-      signed int selectTimer();
       int setRtcTicks();
       static void midiTick(void* p, void*);
       void processTimerTick();
@@ -80,8 +54,6 @@ class MidiSeq : public Thread {
       void processStop();
       virtual void processMsg(const ThreadMsg*);
       void updatePollFd();
-
-      void mtcSyncMsg(const MTC&, int, bool);
 
    public:
       MidiSeq(const char* name);
@@ -92,33 +64,25 @@ class MidiSeq : public Thread {
       
       virtual void threadStop();
       virtual void threadStart(void*);
+      signed int selectTimer();
+      // Destroy timer if valid. Returns true if successful.
+      bool deleteTimer();
       void addAlsaPollFd();
       void removeAlsaPollFd();
       bool isIdle() const { return idle; }
 
-      bool externalPlayState() const { return playStateExt; }
-      void setExternalPlayState(bool v) { playStateExt = v; }
-      void realtimeSystemInput(int port, int type, double time = 0.0);
-      void mtcInputQuarter(int, unsigned char);
-      void setSongPosition(int, int);
-      void mmcInput(int, const unsigned char*, int);
-      void mtcInputFull(int, const unsigned char*, int);
-      void nonRealtimeSystemSysex(int, const unsigned char*, int);
       void checkAndReportTimingResolution();
-      MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset() const { return _syncRecFilterPreset; }
-      void setSyncRecFilterPreset(MidiSyncInfo::SyncRecFilterPresetType type);
-      double recTempoValQuant() const { return _tempoQuantizeAmount; }
-      void setRecTempoValQuant(double q) { _tempoQuantizeAmount = q; }
 
       void msgMsg(int id);
       void msgSeek();
       void msgStop();
       void msgSetRtc();
       void msgUpdatePollFd();
-      void msgAddSynthI(SynthI* synth);
-      void msgRemoveSynthI(SynthI* synth);
-      void msgSetMidiDevice(MidiPort*, MidiDevice*);
       };
+
+
+extern void initMidiSequencer();
+extern void exitMidiSequencer();
 
 } //namespace MusECore
 

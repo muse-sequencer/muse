@@ -39,6 +39,9 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent,
 {
   setObjectName(name);
 
+  _orient = ReadoutHorizontal;
+  _showPatchLabel = true;
+
   _maxAliasedPointSize = -1;
   _id           = -1;
   _currentPatch = 0;
@@ -63,6 +66,8 @@ CompactPatchEdit::CompactPatchEdit(QWidget *parent,
 
   connect(_patchNameLabel, SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
           SLOT(patchNamePressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)));
+  connect(_patchNameLabel, SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
+          SLOT(patchNameReturnPressed(QPoint,int,Qt::KeyboardModifiers)));
 
   connect(_patchEdit, SIGNAL(valueChanged(int,int)),
           SLOT(patchEditValueChanged(int,int)));
@@ -86,7 +91,8 @@ QSize CompactPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
   const QSize ctrl_sz = LCDPatchEdit::getMinimumSizeHint(
     fm,
     xMargin,
-    yMargin
+    yMargin,
+    orient == Qt::Horizontal ? LCDPatchEdit::PatchHorizontal : LCDPatchEdit::PatchVertical
   );
 
   // HACK Try to find the size of a label
@@ -98,15 +104,30 @@ QSize CompactPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
   const int h = ctrl_sz.height() + lbl_h;
 
   switch(orient) {
-        case Qt::Vertical:
-              return QSize(16, h);
-              break;
         case Qt::Horizontal:
+              return QSize(ctrl_sz.width(), h);   // Patch edit is dominant.
+              break;
+        case Qt::Vertical:
               return QSize(16, h);
               break;
         }
   return QSize(10, 10);
 }
+
+// void CompactPatchEdit::keyPressEvent(QKeyEvent* e)
+// {
+//   switch (e->key())
+//   {
+//     case Qt::Key_Escape:
+//     break;
+//
+//     default:
+//     break;
+//   }
+//
+//   e->ignore();
+//   return QFrame::keyPressEvent(e);
+// }
 
 void CompactPatchEdit::setReadoutColor(const QColor& c)
 {
@@ -114,11 +135,30 @@ void CompactPatchEdit::setReadoutColor(const QColor& c)
    //update();
 }
 
+void CompactPatchEdit::setReadoutOrientation(ReadoutOrientation orient)
+{
+  _orient = orient;
+}
+
+void CompactPatchEdit::setShowPatchLabel(bool v)
+{
+  _showPatchLabel = v;
+}
+
 void CompactPatchEdit::setMaxAliasedPointSize(int sz)
 {
   _maxAliasedPointSize = sz;
   _patchEdit->setMaxAliasedPointSize(sz);
 }
+
+// QSize CompactPatchEdit::sizeHint() const
+// {
+//   return getMinimumSizeHint(fontMetrics(),
+//                             _orient == ReadoutHorizontal ? Qt::Horizontal : Qt::Vertical,
+//                             frameWidth(), //_xMargin,
+//                             frameWidth() //_yMargin
+//                            );
+// }
 
 int CompactPatchEdit::value() const
 {
@@ -185,6 +225,11 @@ void CompactPatchEdit::patchNamePressed(QPoint p, int /*id*/, Qt::MouseButtons b
     emit patchNameClicked(p, _id);
   else if(buttons == Qt::RightButton)
     emit patchNameRightClicked(mapToGlobal(p), _id);
+}
+
+void CompactPatchEdit::patchNameReturnPressed(QPoint p, int /*id*/, Qt::KeyboardModifiers /*keys*/)
+{
+  emit patchNameClicked(p, _id);
 }
 
 

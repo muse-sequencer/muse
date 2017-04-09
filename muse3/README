@@ -31,6 +31,7 @@ details.
          - JACK - The Jack Audio Connection Kit can be used for audio and midi
          - ALSA midi output
          - Plugin formats: LV2, DSSI, VST, LinuxVST, MESS
+         - Support Inst(rument) Patch Library for enhanced fluidsynth features.
          - FLAM plugin guis.
          - Built on Qt5
 
@@ -71,10 +72,6 @@ details.
       - JACK >= 0.103 (development files)
           http://jackaudio.org/
 
-      - libuuid (development files)
-         e2fsprogs package http://e2fsprogs.sourceforge.net/
-         Some distros may include it in another package such as 'libuuid', or offer a choice.
-
       - LADSPA (development file ladspa.h)
          www.ladspa.org
 
@@ -85,6 +82,9 @@ details.
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
           http://sourceforge.net/apps/trac/fluidsynth/
+
+      - libinstpatch >= 1.0    Instrument Patch Library (development files)
+          http://www.swamiproject.org/
 
       - liblo    Lightweight OSC (Open Sound Control) (development files)   
           http://liblo.sourceforge.net/
@@ -133,10 +133,30 @@ details.
 
       - PyQt4 is used by some of the bundled midi scripts
 
-  =============================
-      Building MusE:
-  =============================
+  Quick instructions for Ubuntu and similar distributions:
+  
+  
+  =================================
+      Building MusE under Ubuntu:
+  =================================
 
+    1. Open terminal and type (either on one line or with several 'sudo apt-get install <packages'):
+        sudo apt-get install build-essential cmake libsndfile1-dev libsamplerate0-dev\
+            libjack-jackd2-dev ladspa-sdk qt5-default qttools5-dev qttools5-dev-tools\
+            liblo-dev dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev git\
+            libfluidsynth-dev libgtkmm-2.4-dev
+    2. Clone muse source with command: 
+     'git clone https://github.com/muse-sequencer/muse.git'
+    3. Type 'cd muse/muse3'
+    4. Type './compile_muse.sh' and wait until it is finished
+    5. Type 'cd build'
+    6. Type `sudo make install` - this will install muse3 to /usr/local
+    7. Run it by typing `muse3`
+  
+  =============================
+      Generic building MusE:
+  =============================
+  
       - Download source from http://muse-sequencer.org/
 
       - Unpack the source somewhere.  
@@ -148,7 +168,7 @@ details.
          top level directory where the source code was unpacked
          (the directory where THIS README FILE is found): 
        
-	******************************************************
+	    ******************************************************
         *                      Notice:                       *
         * A quick way is to run the ./compile_muse.sh        *
         * script in the same dir, it should perform the same *
@@ -214,9 +234,10 @@ details.
         MusE is a realtime program which requires special rights to work properly.
 
       - Check if you are running a sufficiently new linux kernel > 2.6.x
-        A modern, standard destop kernel might suit your needs.
-        However, for the best performance a so-called 'low latency' or 'realtime' 
-         kernel may be required. Check your distro's packages for availability. 
+        A modern, standard destop kernel should suit virtually all needs.
+        For even stricter realtime performance a so-called 'low latency'
+         or 'realtime' kernel may be available. Check your distro's packages
+         for availability.
 
       - create an "audio" group if it does not already exists
         and put yourself into this group
@@ -229,18 +250,7 @@ details.
            @audio   -  rtprio     95
            @audio   -  memlock    unlimited
 
-      - make sure you can acces the realtime clock (RTC)
-            chmod 660 /dev/rtc
-            chgrp audio /dev/rtc
-
-      - make sure MusE can set the rtc clock:
-            echo 8192 > /proc/sys/dev/rtc/max-user-freq
-            inspect with:
-            cat /proc/sys/dev/rtc/max-user-freq
-
-      - some distros do not load the alsa sequencer module by default.
-        if necessary, load the alsa sequencer module with:
-            /sbin/modprobe snd-seq
+        Some distros have a graphical menu or tool which does this for you.
 
       - Start jack, typically by using the qjackctl application.
         MusE can also be run without Jack. MusE will use a dummy audio 
@@ -275,6 +285,23 @@ details.
 
       (JACK and all its clients (qjackctl & MusE) must run with the
       same user id)
+
+
+      Startup troubleshooting tips:
+      -----------------------------
+
+      - some distros do not load the alsa sequencer module by default.
+        if necessary, load the alsa sequencer module with:
+            /sbin/modprobe snd-seq
+
+      If MusE falls back to the old RTC timer but fails, try this:
+      - make sure you can acces the realtime clock (RTC)
+            chmod 660 /dev/rtc
+            chgrp audio /dev/rtc
+      - make sure MusE can set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq
+            inspect with:
+            cat /proc/sys/dev/rtc/max-user-freq
 
 
   =============================

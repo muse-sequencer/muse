@@ -26,6 +26,7 @@
 #include <QToolButton>
 
 class QIcon;
+class QPaintEvent;
 
 namespace MusEGui {
 
@@ -52,25 +53,29 @@ class CompactToolButton : public QToolButton {
       Q_OBJECT
    
    private:
-     QIcon _icon_A;
-     QIcon _icon_B;
-     bool _useIcon_B;
+     QIcon _icon;
+     bool _hasFixedIconSize;
+     bool _drawFlat;
+     bool _blinkPhase;
+
+   protected:
+     virtual void paintEvent(QPaintEvent*);
 
    public:
-      CompactToolButton(QWidget* parent = 0, const QIcon& icon_A = QIcon(), const QIcon& icon_B = QIcon(), const char* name = 0);
+      CompactToolButton(QWidget* parent = 0, const QIcon& icon = QIcon(), bool hasFixedIconSize = true, bool drawFlat = false, const char* name = 0);
          
-      // This relies on iconSize(). Be sure to set iconSize to the desired value.
+      bool hasFixedIconSize() const { return _hasFixedIconSize; }
+      void setHasFixedIconSize(bool v);
+
+      bool drawFlat() const { return _drawFlat; }
+      void setDrawFlat(bool v);
+
+      // If _hasFixedIconSize is true, this relies on iconSize(). Be sure to set iconSize to the desired value.
       virtual QSize sizeHint() const;
       
-      QIcon iconA() const { return _icon_A; }
-      void setIconA(const QIcon& ico);
-      QIcon iconB() const { return _icon_B; }
-      void setIconB(const QIcon& ico);
-      
-      // False if using icon A, true if using icon B.
-      bool currentIcon() const { return _useIcon_B; }
-      // False to use icon A, true to use icon B.
-      void setCurrentIcon(bool v);
+      void setIcon(const QIcon & icon);
+      bool blinkPhase() const { return _blinkPhase; }
+      void setBlinkPhase(bool v);
       };
 
 } // namespace MusEGui

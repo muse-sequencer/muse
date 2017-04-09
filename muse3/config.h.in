@@ -20,10 +20,13 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#cmakedefine ALSA_SUPPORT
+#cmakedefine DSSI_ALSA_COMPAT_SUPPORT
 #cmakedefine HAVE_LASH
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
+#cmakedefine HAVE_INSTPATCH
 #cmakedefine HAVE_GTK2
 #cmakedefine VST_SUPPORT
 #cmakedefine VST_NATIVE_SUPPORT

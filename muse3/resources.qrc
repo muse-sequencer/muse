@@ -1,0 +1,43 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+      <file>svg/routing_input.svg</file>
+      <file>svg/routing_output.svg</file>
+      <file>svg/routing_input_unconnected.svg</file>
+      <file>svg/routing_output_unconnected.svg</file>
+
+      <file>svg/headphones_off.svg</file>
+      <file>svg/headphones_on.svg</file>
+
+      <file>svg/mute_off.svg</file>
+      <file>svg/mute_on.svg</file>
+      <file>svg/mute_on_X.svg</file>
+      <file>svg/mute_proxy_on.svg</file>
+      <file>svg/mute_and_proxy_on.svg</file>
+
+      <file>svg/track_off.svg</file>
+      <file>svg/track_on.svg</file>
+
+      <file>svg/stereo_off.svg</file>
+      <file>svg/stereo_on.svg</file>
+
+      <file>svg/pre_fader_off.svg</file>
+      <file>svg/pre_fader_on.svg</file>
+
+      <file>svg/monitor_off_default_col.svg</file>
+      <file>svg/monitor_off.svg</file>
+      <file>svg/monitor_on.svg</file>
+
+      <file>svg/rec_arm_off.svg</file>
+      <file>svg/rec_arm_off_default_col.svg</file>
+      <file>svg/rec_arm_on.svg</file>
+
+      <file>svg/solo_spotlight_off.svg</file>
+      <file>svg/solo_spotlight_on.svg</file>
+      <file>svg/solo_spotlight_on_alone.svg</file>
+      <file>svg/solo_proxy_spotlight_on.svg</file>
+      <file>svg/solo_proxy_spotlight_on_alone.svg</file>
+      <file>svg/solo_and_proxy_spotlight_on.svg</file>
+   </qresource>
+</RCC>
+

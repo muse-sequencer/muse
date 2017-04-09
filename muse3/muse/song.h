@@ -107,15 +107,19 @@ class AudioDevice;
 // SC_MIDI_TRACK_PROP: A midi track's properties changed (name, thru etc). 
 // For fairly 'static' properties, not frequently changing transp del compr velo or len, 
 //  nor output channel/port (use SC_ROUTE).
-#define SC_MIDI_TRACK_PROP            0x8000000L   
+#define SC_MIDI_TRACK_PROP            0x8000000L
 #define SC_PART_SELECTION             0x10000000L   // part selection changed
 #define SC_KEY                        0x20000000L   // key map changed
 #define SC_TRACK_SELECTION            0x40000000L   // track selection changed
 #define SC_PORT_ALIAS_PREFERENCE      0x80000000L   // (Jack) port alias viewing preference has changed
 #define SC_ROUTER_CHANNEL_GROUPING    0x100000000L  // Router channel grouping changed
 #define SC_AUDIO_CONTROLLER_LIST      0x200000000L  // An audio controller list was added deleted or modified.
-#define SC_STRETCH                    0x400000000L  // A stretch map changed.
-#define SC_AUDIO_CONVERTER            0x800000000L  // An audio converter or audio converter setting changed.
+#define SC_PIANO_SELECTION            0x400000000L  // Piano keyboard selected note changed.
+#define SC_DRUM_SELECTION             0x800000000L  // Drum list selected note changed.
+#define SC_TRACK_REC_MONITOR          0x1000000000L // Audio or midi track's record monitor changed.
+#define SC_TRACK_MOVED                0x2000000000L // Audio or midi track's position in track list or mixer changed.
+#define SC_STRETCH                    0x4000000000L // A stretch map changed.
+#define SC_AUDIO_CONVERTER            0x8000000000L // An audio converter or audio converter setting changed.
 #define SC_EVERYTHING                 -1L           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

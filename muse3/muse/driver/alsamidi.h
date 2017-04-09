@@ -24,13 +24,20 @@
 #ifndef __ALSAMIDI_H__
 #define __ALSAMIDI_H__
 
-#include <config.h>
+#include "config.h"
+
+#ifdef ALSA_SUPPORT
+
 #include <alsa/asoundlib.h>
 
 #include "mpevent.h"
 #include "mididev.h"
 
+#endif // ALSA_SUPPORT
+
 namespace MusECore {
+
+#ifdef ALSA_SUPPORT
 
 class Xml;
 
@@ -88,6 +95,8 @@ class MidiAlsaDevice : public MidiDevice {
       virtual bool isAddressUnknown() const { return adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN; }
       };
 
+#endif // ALSA_SUPPORT
+
 extern bool initMidiAlsa();
 extern void exitMidiAlsa();
 extern int alsaSelectRfd();
@@ -95,6 +104,7 @@ extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();
 extern void alsaScanMidiPorts();
 extern void setAlsaClientName(const char*);
+
 
 } // namespace MusECore
 

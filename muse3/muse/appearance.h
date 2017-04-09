@@ -111,10 +111,14 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void setConfigurationColors();
       void setColorDialogWindowText(const QString& colorName = QString());
       void doCancel();
+      // Returns true if restart required (style or stylesheet changed).
+      bool apply();
+      // Ask to close and if so, tell the main window to close the app and return true.
+      bool checkClose();
 
    private slots:
-      void apply();
-      void ok();
+      void applyClicked();
+      void okClicked();
       void changeTheme();
       void cancel();
       void addBackground();

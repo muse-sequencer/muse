@@ -1182,7 +1182,6 @@ bool CompactSlider::event(QEvent* e)
     break;
   }
   
-  e->ignore();
   return SliderBase::event(e);
 }
 
@@ -1266,21 +1265,21 @@ void CompactSlider::showEditor()
     _editor = new PopupDoubleSpinBox(this);
     _editor->setFrame(false);
     _editor->setFocusPolicy(Qt::WheelFocus);
-    _editor->setDecimals(_valueDecimals);
-    _editor->setSingleStep(step());
-    _editor->setPrefix(valPrefix());
-    _editor->setSuffix(valSuffix());
-    _editor->setMinimum(minValue());
-    _editor->setMaximum(maxValue());
-    _editor->setValue(value());
     connect(_editor, SIGNAL(returnPressed()), SLOT(editorReturnPressed()));
     connect(_editor, SIGNAL(escapePressed()), SLOT(editorEscapePressed()));
   }
   int w = width();
-  if (w < _editor->sizeHint().width()) 
-    w = _editor->sizeHint().width();
+  //if (w < _editor->sizeHint().width())
+  //  w = _editor->sizeHint().width();
   _editor->setGeometry(0, 0, w, height());
   DEBUG_COMPACT_SLIDER(stderr, "   x:%d y:%d w:%d h:%d\n", _editor->x(), _editor->y(), w, _editor->height());
+  _editor->setDecimals(_valueDecimals);
+  _editor->setSingleStep(step());
+  _editor->setPrefix(valPrefix());
+  _editor->setSuffix(valSuffix());
+  _editor->setMinimum(minValue());
+  _editor->setMaximum(maxValue());
+  _editor->setValue(value());
   _editor->selectAll();
   _editMode = true;     
   _editor->show();
@@ -1406,7 +1405,7 @@ void CompactSlider::valueChange()
       if(d_scrollMode == ScrDirect)
       {
         processSliderPressed(id());
-        emit sliderPressed(id());
+        emit sliderPressed(value(), id());
       }
       
       // Emits valueChanged if tracking enabled.

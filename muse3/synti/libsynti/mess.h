@@ -28,6 +28,8 @@
 
 #include <QString>
 #include "mpevent.h"
+#include <string>
+#include <map>
 
 class QWidget;
 struct MessP;
@@ -90,6 +92,8 @@ class Mess {
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const {return 0;}
       virtual QString getPatchName(int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
+      // True if it found a name.
+      virtual bool getNoteSampleName(bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const { return false; }
 
       // synthesizer -> host communication
       void sendEvent(MusECore::MidiPlayEvent);  // called from synti

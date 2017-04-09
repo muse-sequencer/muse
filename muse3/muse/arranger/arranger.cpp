@@ -388,21 +388,29 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header = new Header(tracklist, "header");
       header->setFixedHeight(31);
 
-      QFontMetrics fm1(header->font());
+      QFontMetrics fm1 = header->fontMetrics();
       int fw = 11;
 
-      header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
-      header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
-      header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
-      header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
+      header->setColumnLabel(tr("R"), COL_RECORD);
+      header->setColumnLabel(tr("M"), COL_MUTE);
+      header->setColumnLabel(tr("S"), COL_SOLO);
+      header->setColumnLabel(tr("C"), COL_CLASS);
       header->setColumnLabel(tr("Track"), COL_NAME, 100);
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
-      header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
-      header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
+      header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+      header->setColumnLabel(tr("T"), COL_TIMELOCK);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
       for (unsigned i=0;i<custom_columns.size();i++)
         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
+
+      header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
+      header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
+      header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
+      header->resizeSection(COL_CLASS, fm1.width(header->columnLabel(COL_CLASS)) + fw);
+      header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
+      header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
+
       header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
@@ -607,6 +615,24 @@ void Arranger::dclickPart(MusECore::Track* t)
       }
 
 //---------------------------------------------------------
+//   setHeaderSizes
+//---------------------------------------------------------
+
+void Arranger::setHeaderSizes()
+{
+  QFontMetrics fm1(header->font());
+  int fw = 11;
+  header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
+  header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
+  header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
+  header->resizeSection(COL_CLASS, fm1.width(header->columnLabel(COL_CLASS)) + fw);
+  header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
+  header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
+  for (unsigned i=0;i<custom_columns.size();i++)
+    header->resizeSection(COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
+}
+
+//---------------------------------------------------------
 //   configChanged
 //---------------------------------------------------------
 
@@ -619,6 +645,7 @@ void Arranger::configChanged()
       else {
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
+      setHeaderSizes();
       }
 
 //---------------------------------------------------------
@@ -692,6 +719,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         
         // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+           SC_TRACK_MOVED |
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
           unsigned endTick = MusEGlobal::song->len();
@@ -710,11 +738,14 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
+        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
+          SC_TRACK_MOVED |
+          SC_TRACK_MODIFIED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
         if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+                   SC_TRACK_MOVED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
           canvas->partsChanged();
@@ -1155,8 +1186,16 @@ void Arranger::switchInfo(int n)
                           //w->deleteLater();
                     }
                     w = new AudioStrip(trackInfoWidget, static_cast<MusECore::AudioTrack*>(selected));
-                    //w->setFocusPolicy(Qt::TabFocus);
-                    
+                    // Broadcast changes to other selected tracks.
+                    w->setBroadcastChanges(true);
+
+                    // Set focus yielding to the canvas.
+                    if(MusEGlobal::config.smartFocus)
+                    {
+                      w->setFocusYieldWidget(canvas);
+                      //w->setFocusPolicy(Qt::WheelFocus);
+                    }
+
                     // We must marshall song changed instead of connecting to the strip's song changed
                     //  otherwise it crashes when loading another song because track is no longer valid
                     //  and the strip's songChanged() seems to be called before Arranger songChanged()
@@ -1193,8 +1232,15 @@ void Arranger::switchInfo(int n)
                         //w->deleteLater();
                   }
                   w = new MidiStrip(trackInfoWidget, static_cast<MusECore::MidiTrack*>(selected));
-                  //w->setFocusPolicy(Qt::TabFocus);
-                  
+                  // Broadcast changes to other selected tracks.
+                  w->setBroadcastChanges(true);
+                  // Set focus yielding to the arranger canvas.
+                  if(MusEGlobal::config.smartFocus)
+                  {
+                    w->setFocusYieldWidget(canvas);
+                    //w->setFocusPolicy(Qt::WheelFocus);
+                  }
+
                   // No. See above.
                   //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   
