@@ -310,15 +310,6 @@ MidiController& MidiController::operator=(const MidiController &mc)
   return *this;
 }
 
-// Static
-inline int MidiController::dValToInt(double v)
-{
-  // TODO: Decide best choice here.
-  //return int(round(v));
-  //return lrint(v);
-  return int(v);
-}
-
 //---------------------------------------------------------
 //   type
 //---------------------------------------------------------

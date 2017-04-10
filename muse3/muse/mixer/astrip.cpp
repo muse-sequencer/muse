@@ -275,13 +275,15 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
         case aStripAuxComponent:
         {
           if(d->_compactKnob->specialValueText().isEmpty())
-            d->_compactKnob->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character
+          {
+            d->_compactKnob->setSpecialValueText(QString('-') + QString(QChar(0x221e))); // The infinity character
+          }
 
-            connect(d->_compactKnob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
-            connect(d->_compactKnob, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
-            connect(d->_compactKnob, SIGNAL(sliderPressed(double, int)), SLOT(auxPressed(double, int)));
-            connect(d->_compactKnob, SIGNAL(sliderReleased(double, int)), SLOT(auxReleased(double, int)));
-            connect(d->_compactKnob, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
+          connect(d->_compactKnob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
+          connect(d->_compactKnob, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
+          connect(d->_compactKnob, SIGNAL(sliderPressed(double, int)), SLOT(auxPressed(double, int)));
+          connect(d->_compactKnob, SIGNAL(sliderReleased(double, int)), SLOT(auxReleased(double, int)));
+          connect(d->_compactKnob, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
         }
         break;
       }
@@ -314,13 +316,15 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
         case aStripAuxComponent:
         {
           if(d->_compactSlider->specialValueText().isEmpty())
-            d->_compactSlider->setSpecialValueText(QString('-') + QChar(0x221e)); // The infinity character
+          {
+            d->_compactSlider->setSpecialValueText(QString('-') + QString(QChar(0x221e))); // The infinity character
+          }
       
-            connect(d->_compactSlider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
-            connect(d->_compactSlider, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
-            connect(d->_compactSlider, SIGNAL(sliderPressed(double, int)), SLOT(auxPressed(double, int)));
-            connect(d->_compactSlider, SIGNAL(sliderReleased(double, int)), SLOT(auxReleased(double, int)));
-            connect(d->_compactSlider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
+          connect(d->_compactSlider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(auxChanged(double,bool,int,int)));
+          connect(d->_compactSlider, SIGNAL(sliderMoved(double,int,bool)), SLOT(auxMoved(double,int,bool)));
+          connect(d->_compactSlider, SIGNAL(sliderPressed(double, int)), SLOT(auxPressed(double, int)));
+          connect(d->_compactSlider, SIGNAL(sliderReleased(double, int)), SLOT(auxReleased(double, int)));
+          connect(d->_compactSlider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(auxRightClicked(QPoint,int)));
         }
         break;
       }  
