@@ -1,5 +1,6 @@
 10.04.2017
          - Slight tweak: Don't allow the strips to gain focus. (Tim)
+         - Added new Czech translation from Pavel Fric. (Tim)
 08.04.2017
          - Crash fix: File > New > Audio.med > change wave track 1 to stereo -> crashes soon after. (Tim)
            In AudioTrack::copyData(): In two sections concerning '2ch' -> '1ch' mixing: Move 'sp' inside
