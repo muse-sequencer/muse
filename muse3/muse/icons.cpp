@@ -587,7 +587,9 @@ QPixmap* muteAndProxyOnSVGPixmap;
 
 QPixmap* soloOffSVGPixmap;
 QPixmap* soloOnSVGPixmap;
+QPixmap* soloOnAloneSVGPixmap;
 QPixmap* soloProxyOnSVGPixmap;
+QPixmap* soloProxyOnAloneSVGPixmap;
 QPixmap* soloAndProxyOnSVGPixmap;
 
 QPixmap* trackOffSVGPixmap;
@@ -622,7 +624,9 @@ QIcon* muteAndProxyOnSVGIcon;
 
 QIcon* soloOffSVGIcon;
 QIcon* soloOnSVGIcon;
+QIcon* soloOnAloneSVGIcon;
 QIcon* soloProxyOnSVGIcon;
+QIcon* soloProxyOnAloneSVGIcon;
 QIcon* soloAndProxyOnSVGIcon;
 
 QIcon* trackOffSVGIcon;
@@ -946,7 +950,9 @@ void initIcons()
 
       soloOffSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_off.svg", NULL);
       soloOnSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on.svg", NULL);
+      soloOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_spotlight_on_alone.svg", NULL);
       soloProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on.svg", NULL);
+      soloProxyOnAloneSVGPixmap = new MPIXMAP(":/svg/solo_proxy_spotlight_on_alone.svg", NULL);
       soloAndProxyOnSVGPixmap = new MPIXMAP(":/svg/solo_and_proxy_spotlight_on.svg", NULL);
 
       trackOffSVGPixmap = new MPIXMAP(":/svg/track_off.svg", NULL);
@@ -985,7 +991,9 @@ void initIcons()
 
       soloOffSVGIcon = new QIcon(*soloOffSVGPixmap);
       soloOnSVGIcon = new QIcon(*soloOnSVGPixmap);
+      soloOnAloneSVGIcon = new QIcon(*soloOnAloneSVGPixmap);
       soloProxyOnSVGIcon = new QIcon(*soloProxyOnSVGPixmap);
+      soloProxyOnAloneSVGIcon = new QIcon(*soloProxyOnAloneSVGPixmap);
       soloAndProxyOnSVGIcon = new QIcon(*soloAndProxyOnSVGPixmap);
 
       trackOffSVGIcon  = new QIcon(*trackOffSVGPixmap);
@@ -1301,7 +1309,9 @@ void deleteIcons()
 
       delete soloOffSVGPixmap;
       delete soloOnSVGPixmap;
+      delete soloOnAloneSVGPixmap;
       delete soloProxyOnSVGPixmap;
+      delete soloProxyOnAloneSVGPixmap;
       delete soloAndProxyOnSVGPixmap;
 
       delete trackOffSVGPixmap;
@@ -1336,7 +1346,9 @@ void deleteIcons()
 
       delete soloOffSVGIcon;
       delete soloOnSVGIcon;
+      delete soloOnAloneSVGIcon;
       delete soloProxyOnSVGIcon;
+      delete soloProxyOnAloneSVGIcon;
       delete soloAndProxyOnSVGIcon;
 
       delete trackOffSVGIcon;

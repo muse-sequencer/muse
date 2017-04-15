@@ -573,7 +573,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       ((AudioTrack*)metronome)->preProcessAlways();
       
       // Process Aux tracks first.
-      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it)
       {
         if((*it)->isMidiTrack())
           continue;
@@ -590,7 +590,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
-      }      
+      }
       
       OutputList* ol = MusEGlobal::song->outputs();
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 

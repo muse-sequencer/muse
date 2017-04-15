@@ -159,7 +159,13 @@ class MidiController {
       MidiController& operator= (const MidiController &mc);
 
       // Convert given controller double value to integer.
-      static int dValToInt(double v);
+      static inline int dValToInt(double v) {
+        // TODO: Decide best choice here.
+        //return int(round(v));
+        //return lrint(v);
+        return int(v);
+      }
+
       // Whether the given integer value is CTRL_VAL_UNKNOWN.
       static inline bool iValIsUnknown(int v) { return v == CTRL_VAL_UNKNOWN; }
       // Whether the given double value is CTRL_VAL_UNKNOWN.

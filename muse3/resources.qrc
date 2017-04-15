@@ -34,7 +34,9 @@
 
       <file>svg/solo_spotlight_off.svg</file>
       <file>svg/solo_spotlight_on.svg</file>
+      <file>svg/solo_spotlight_on_alone.svg</file>
       <file>svg/solo_proxy_spotlight_on.svg</file>
+      <file>svg/solo_proxy_spotlight_on_alone.svg</file>
       <file>svg/solo_and_proxy_spotlight_on.svg</file>
    </qresource>
 </RCC>

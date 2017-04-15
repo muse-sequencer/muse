@@ -1,3 +1,12 @@
+10.04.2017
+         - Slight tweak: Don't allow the strips to gain focus. (Tim)
+         - Added new Czech translation from Pavel Fric. (Tim)
+08.04.2017
+         - Crash fix: File > New > Audio.med > change wave track 1 to stereo -> crashes soon after. (Tim)
+           In AudioTrack::copyData(): In two sections concerning '2ch' -> '1ch' mixing: Move 'sp' inside
+            channel loop. Was allowed to increment beyond, into other variable data, causing silent corruption.
+         - Also, fixed template "audo.med": Both audio output track's outputs were routed to same jack port. (Tim)
+         - Slightly simpler track list solo icons. (Tim)
 04.04.2017
       * More routing and mixer relief: (Tim)
          - New: As requested: Monitor on Record Arm option. Right click any strip, or Global Settings.

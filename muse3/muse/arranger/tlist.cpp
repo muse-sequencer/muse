@@ -373,10 +373,10 @@ void TList::paint(const QRect& r)
                                       soloAndProxyOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 else
                                 if(track->internalSolo())
-                                      soloProxyOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      soloProxyOnAloneSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 else
                                 if (track->solo())
-                                      soloOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      soloOnAloneSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 break;
                           case COL_TIMELOCK:
                                 if (track->isMidiTrack()

@@ -1035,7 +1035,10 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       setMouseTracking(true);
 
       // Set so that strip can redirect focus proxy to volume label in descendants.
-      setFocusPolicy(Qt::WheelFocus);
+      // Nope. Seemed like a good idea but no. Do not allow the strip to gain focus.
+      // Just in case it does, which is possible, keep descendants' focus proxy code
+      //  so that the slider label will be a sensible place for focus to land.
+      setFocusPolicy(Qt::NoFocus);
 
       _focusYieldWidget = 0;
       _isEmbedded = isEmbedded;
