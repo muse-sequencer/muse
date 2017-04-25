@@ -118,6 +118,7 @@ class AudioDevice;
 #define SC_DRUM_SELECTION             0x800000000  // Drum list selected note changed.
 #define SC_TRACK_REC_MONITOR          0x1000000000 // Audio or midi track's record monitor changed.
 #define SC_TRACK_MOVED                0x2000000000 // Audio or midi track's position in track list or mixer changed.
+#define SC_TRACK_RESIZED              0x4000000000 // Audio or midi track was resized in the arranger.
 #define SC_EVERYTHING                 -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

@@ -134,7 +134,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
 void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
-      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG
+      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_REC_MONITOR
          | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED
          | SC_TRACK_MOVED
          | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
@@ -273,6 +273,9 @@ void TList::paint(const QRect& r)
         }
       }
 
+      const int header_fh = header->fontMetrics().lineSpacing();
+      const int svg_sz = qMin(header_fh + 2, qMax(MIN_TRACKHEIGHT - 5, 6));
+
       MusECore::TrackList* l = MusEGlobal::song->tracks();
       int idx = 0;
       int yy  = -ypos;
@@ -340,14 +343,24 @@ void TList::paint(const QRect& r)
                   int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
                   QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight)); 
-                  QRect r_sm = r.adjusted(1, 1, -1, -1);
+                  QRect svg_r = p.combinedTransform().mapRect(
+                    QRect(x + w / 2 - svg_sz / 2,
+                          yy + trackHeight / 2 - svg_sz / 2,
+                          svg_sz,
+                          svg_sz));
+                    //QRect(x+2, yy, qMin(header_fh, MIN_TRACKHEIGHT)-4, trackHeight));
 
                   if(!header->isSectionHidden(section))
                   {
                     switch (section) {
+                          case COL_INPUT_MONITOR:
+                                if (track->canRecordMonitor()) {
+                                      (track->recMonitor() ? monitorOnSVGIcon : monitorOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      }
+                                break;
                           case COL_RECORD:
                                 if (track->canRecord()) {
-                                      (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                       }
                                 break;
                           case COL_CLASS:
@@ -358,25 +371,25 @@ void TList::paint(const QRect& r)
                                 break;
                           case COL_MUTE:
                                 if (track->off())
-                                      trackOffSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      trackOffSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 else
                                 {
                                   if(!track->internalSolo() && !track->solo() &&
                                     ((solo_t_1 && solo_t_1 != track) || (solo_t_2 && solo_t_2 != track)))
-                                    (track->mute() ? muteAndProxyOnSVGIcon : muteProxyOnSVGIcon)->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                    (track->mute() ? muteAndProxyOnSVGIcon : muteProxyOnSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                   else if(track->mute())
-                                    muteOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                    muteOnSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 }
                                 break;
                           case COL_SOLO:
                                 if(track->solo() && track->internalSolo())
-                                      soloAndProxyOnSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      soloAndProxyOnSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 else
                                 if(track->internalSolo())
-                                      soloProxyOnAloneSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      soloProxyOnAloneSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 else
                                 if (track->solo())
-                                      soloOnAloneSVGIcon->paint(&p, r_sm, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                                      soloOnAloneSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                                 break;
                           case COL_TIMELOCK:
                                 if (track->isMidiTrack()
@@ -1937,28 +1950,59 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
                 }
 
+            case COL_INPUT_MONITOR:
+                  {
+                    if(!t->canRecordMonitor())
+                    {
+                      mode = START_DRAG; // Allow a track drag to start.
+                      break;
+                    }
+
+                    const bool val = !(t->recMonitor());
+                    if (button == Qt::LeftButton)
+                    {
+                      MusEGlobal::audio->msgSetRecMonitor(t, val);
+                      MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+                    }
+                    else if (button == Qt::RightButton)
+                    {
+                      // enable or disable ALL tracks of this type
+                      bool do_upd = false;
+                      MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
+                      foreach (MusECore::Track *other_t, *all_tl)
+                      {
+                        if(other_t->type() != t->type())
+                          continue;
+                        MusEGlobal::audio->msgSetRecMonitor(other_t, val);
+                        do_upd = true;
+                      }
+                      if(do_upd)
+                        MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+                    }
+                  }
+                  break;
+
             case COL_RECORD:
                   {
-                      mode = START_DRAG;
-                      
+                      if(!t->canRecord())
+                      {
+                        mode = START_DRAG; // Allow a track drag to start.
+                        break;
+                      }
+
                       bool val = !(t->recordFlag());
                       if (button == Qt::LeftButton) {
-                        if (!t->isMidiTrack()) {
-                              if (t->type() == MusECore::Track::AUDIO_OUTPUT) {
-                                    if (val && t->recordFlag() == false) {
-                                          MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)t);
-                                          }
-                                    MusEGlobal::audio->msgSetRecord((MusECore::AudioOutput*)t, val);
-                                    if (!((MusECore::AudioOutput*)t)->recFile())
-                                          val = false;
-                                    else
-                                          return;
-                                    }
-                              MusEGlobal::song->setRecordFlag(t, val);
+                        if (t->type() == MusECore::Track::AUDIO_OUTPUT)
+                        {
+                              if (val && !t->recordFlag())
+                              {
+                                MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)t);
+                                break;
                               }
-                        else
-                              MusEGlobal::song->setRecordFlag(t, val);
-                      } else if (button == Qt::RightButton) {
+                        }
+                        MusEGlobal::song->setRecordFlag(t, val);
+                      }
+                      else if (button == Qt::RightButton) {
                         // enable or disable ALL tracks of this type
                         if (!t->isMidiTrack()) {
                               if (t->type() == MusECore::Track::AUDIO_OUTPUT) {
@@ -2004,7 +2048,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
               }
             case COL_MUTE:
                 {
-                  mode = START_DRAG;
                   bool turnOff = (button == Qt::RightButton) || shift;
 
                   if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
@@ -2028,7 +2071,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
                }
             case COL_SOLO:
-                  mode = START_DRAG;
                   if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
@@ -2192,18 +2234,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
 
             case COL_TIMELOCK:
-                  mode = START_DRAG;
-                  t->setLocked(!t->locked());
+                    if(!t->isMidiTrack())
+                    {
+                      mode = START_DRAG;  // Allow a track drag to start.
+                      break;
+                    }
+                    t->setLocked(!t->locked());
                   break;
 
             case COL_OCHANNEL:
                   {
-                    mode = START_DRAG; // or not? (flo)
                     int delta = 0;
                     if (button == Qt::RightButton) 
                       delta = 1;
                     else if (button == Qt::MidButton) 
                       delta = -1;
+                    else
+                    {
+                      mode = START_DRAG;  // Allow a track drag to start.
+                      break;
+                    }
                     setTrackChannel(t, true, 0, delta, ctrl || shift);
                   }
                   break;
@@ -2611,7 +2661,8 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                         if (h < MIN_TRACKHEIGHT)
                               h = MIN_TRACKHEIGHT;
                         t->setHeight(h);
-                        MusEGlobal::song->update(SC_TRACK_MODIFIED);
+                        update();
+                        MusEGlobal::song->update(SC_TRACK_RESIZED);
                       }  
                     }  
                   }

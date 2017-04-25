@@ -159,11 +159,11 @@ void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
 //   msgSetRecord
 //---------------------------------------------------------
 
-void Audio::msgSetRecord(AudioTrack* node, bool val)
+void Audio::msgSetRecord(Track* track, bool val)
       {
       AudioMsg msg;
       msg.id     = AUDIO_RECORD;
-      msg.snode  = node;
+      msg.track  = track;
       msg.ival   = int(val);
       sendMsg(&msg);
       }

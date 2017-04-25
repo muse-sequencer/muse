@@ -857,20 +857,28 @@ void Strip::resetPeaks()
 //---------------------------------------------------------
 
 void Strip::recordToggled(bool val)
+{
+  if (track->type() == MusECore::Track::AUDIO_OUTPUT)
+  {
+    if (val && !track->recordFlag())
+    {
+      MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
+
+      if (!((MusECore::AudioOutput*)track)->recFile())
       {
-      if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
-            if (val && track->recordFlag() == false) {
-                  MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
-                  }
-            MusEGlobal::audio->msgSetRecord((MusECore::AudioOutput*)track, val);
-            if (!((MusECore::AudioOutput*)track)->recFile())
-            {  
-                  record->setChecked(false);
-            }
-            return;
-            }
-      MusEGlobal::song->setRecordFlag(track, val);
+        if(record)
+        {
+          record->blockSignals(true);
+          record->setChecked(false);
+          record->blockSignals(false);
+        }
       }
+      return;
+    }
+  }
+
+  MusEGlobal::song->setRecordFlag(track, val);
+}
 
 //---------------------------------------------------------
 //   returnPressed
@@ -1033,6 +1041,9 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
    : QFrame(parent)
       {
       setMouseTracking(true);
+      setAttribute(Qt::WA_DeleteOnClose);
+      setFrameStyle(Panel | Raised);
+      setLineWidth(1);
 
       // Set so that strip can redirect focus proxy to volume label in descendants.
       // Nope. Seemed like a good idea but no. Do not allow the strip to gain focus.
@@ -1048,16 +1059,17 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 
       _curGridRow = 0;
       _userWidth = 0;
-      autoType = 0;
       _visible = true;
       dragOn=false;
-      setAttribute(Qt::WA_DeleteOnClose);
+
+      sliderGrid    = 0;
+      record        = 0;
+      solo          = 0;
+      mute          = 0;
       iR            = 0;
       oR            = 0;
-      
-      setFrameStyle(Panel | Raised);
-      setLineWidth(1);
-      
+      autoType      = 0;
+
       track    = t;
       meter[0] = 0;
       meter[1] = 0;

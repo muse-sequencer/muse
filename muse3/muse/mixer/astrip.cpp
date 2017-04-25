@@ -1122,19 +1122,6 @@ void AudioStrip::stereoToggled(bool val)
       }
 
 //---------------------------------------------------------
-//   recordToggled
-//---------------------------------------------------------
-
-void AudioStrip::recordToggled(bool val)
-{
-  // Simulate pressing monitor as well. Allow signalling.
-  if(_recMonitor && MusEGlobal::config.monitorOnRecord && track && track->recMonitor() != val)
-    _recMonitor->setChecked(val);
-  // Call ancestor.
-  Strip::recordToggled(val);
-}
-
-//---------------------------------------------------------
 //   recMonitorToggled
 //---------------------------------------------------------
 
@@ -1351,10 +1338,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       volume        = -1.0;
       _volPressed   = false;
       
-      record        = 0;
+      slider        = 0;
+      sl            = 0;
       off           = 0;
       _recMonitor   = 0;
-      
+
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
@@ -1684,7 +1672,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       updateRouteButtons();
 
-      if (type == MusECore::Track::WAVE)
+      if (track && track->canRecordMonitor())
       {
         _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
         _recMonitor->setFocusPolicy(Qt::NoFocus);

@@ -1309,7 +1309,7 @@ bool readConfiguration(const char *configFile)
                               }
                         break;
                   case Xml::TagEnd:
-                        if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
+                        if(!xml.isVersionEqualToLatest())
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
                                   "Conversions may be applied!\n\n",

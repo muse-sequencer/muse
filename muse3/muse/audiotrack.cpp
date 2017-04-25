@@ -2331,6 +2331,8 @@ QString AudioAux::auxName()
 
 bool AudioTrack::setRecordFlag1(bool f)
       {
+      if(!canRecord())
+            return false;
       if (f == _recordFlag)
             return true;
       if (f) {

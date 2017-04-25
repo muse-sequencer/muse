@@ -257,7 +257,7 @@ class Audio {
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
-      void msgSetRecord(AudioTrack*, bool);
+      void msgSetRecord(Track*, bool);
       void msgSetRecMonitor(Track*, bool);
       void msgLocalOff();
       void msgInitMidiDevices(bool force = true);

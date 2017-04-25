@@ -241,7 +241,6 @@ class MidiStrip : public Strip {
       void setupMidiVolume();
 
    private slots:
-      void recordToggled(bool);
       void recMonitorToggled(bool);
       void offToggled(bool);
       void iRoutePressed();
