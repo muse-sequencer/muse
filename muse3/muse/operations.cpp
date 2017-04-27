@@ -879,11 +879,15 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     break;
     
     case SetTrackRecord:
+    {
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackRecord track:%p new_val:%d\n", _track, _boolA);
 #endif      
-      _track->setRecordFlag2(_boolA);
+      const bool mon = _track->setRecordFlag2AndCheckMonitor(_boolA);
       flags |= SC_RECFLAG;
+      if(mon)
+        flags |= SC_TRACK_REC_MONITOR;
+    }
     break;
     
     case SetTrackMute:

@@ -1565,12 +1565,34 @@ void Track::resetAllMeter()
 
 void AudioTrack::setRecordFlag2(bool f)
       {
+      if(!canRecord())
+            return;
       if (f == _recordFlag)
             return;
       _recordFlag = f;
       if (!_recordFlag)
             resetMeter();
       }
+
+bool AudioTrack::setRecordFlag2AndCheckMonitor(bool f)
+{
+  if (f != _recordFlag && canRecord())
+  {
+    _recordFlag = f;
+    if (!_recordFlag)
+        resetMeter();
+  }
+
+  if(MusEGlobal::config.monitorOnRecord && canRecordMonitor())
+  {
+    if(f != _recMonitor)
+    {
+      _recMonitor = f;
+      return true;
+    }
+  }
+  return false;
+}
 
 //---------------------------------------------------------
 //   setMute

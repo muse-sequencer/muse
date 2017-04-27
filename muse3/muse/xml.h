@@ -76,6 +76,9 @@ class Xml {
       int latestMinorVersion() const { return _latestMinorVersion; }
       int majorVersion() const { return _majorVersion; }
       int minorVersion() const { return _minorVersion; }
+      bool isVersionEqualToLatest() const { return _majorVersion == _latestMajorVersion && _minorVersion == _latestMinorVersion; }
+      bool isVersionLessThanLatest() const { return _majorVersion < _latestMajorVersion || _minorVersion < _latestMinorVersion; }
+      bool isVersionGreaterThanLatest() const { return _majorVersion > _latestMajorVersion || _minorVersion > _latestMinorVersion; }
       void setVersion(int maj, int min) {
             _minorVersion = min;
             _majorVersion = maj;

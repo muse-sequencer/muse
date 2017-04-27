@@ -783,6 +783,22 @@ MidiTrack::~MidiTrack()
       }
 
 
+bool MidiTrack::setRecordFlag2AndCheckMonitor(bool f)
+{
+  if(canRecord())
+    _recordFlag = f;
+
+  if(MusEGlobal::config.monitorOnRecord && canRecordMonitor())
+  {
+    if(f != _recMonitor)
+    {
+      _recMonitor = f;
+      return true;
+    }
+  }
+  return false;
+}
+
 void MidiTrack::convertToType(TrackType trackType)
 {
   if(trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM)
@@ -1561,7 +1577,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
-                              _recMonitor = xml.parseInt();
+                              setRecMonitor(xml.parseInt());
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
@@ -1722,7 +1738,7 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       else if (tag == "locked")
             _locked = xml.parseInt();
       else if (tag == "recMonitor")
-            _recMonitor = xml.parseInt();
+            setRecMonitor(xml.parseInt());
       else if (tag == "selected")
             _selected = xml.parseInt();
       else if (tag == "selectionOrder")

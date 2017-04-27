@@ -630,7 +630,7 @@ void Audio::processMsg(AudioMsg* msg)
       {
       switch(msg->id) {
             case AUDIO_RECORD:
-                  msg->snode->setRecordFlag2(msg->ival);
+                  msg->track->setRecordFlag2AndCheckMonitor(msg->ival);
                   break;
             case AUDIO_RECORD_MONITOR:
                   msg->track->setRecMonitor(msg->ival);

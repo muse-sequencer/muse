@@ -1354,6 +1354,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       _preferMidiVolumeDb = MusEGlobal::config.preferMidiVolumeDb;
 
+      slider        = 0;
+      sl            = 0;
+      off           = 0;
+      _recMonitor   = 0;
+
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
@@ -1666,16 +1671,19 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
    
       updateRouteButtons();
-      
-      _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
-      _recMonitor->setFocusPolicy(Qt::NoFocus);
-      _recMonitor->setContentsMargins(0, 0, 0, 0);
-      _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _recMonitor->setCheckable(true);
-      _recMonitor->setToolTip(tr("Input monitor"));
-      _recMonitor->setWhatsThis(tr("Pass input through to output"));
-      _recMonitor->setChecked(t->recMonitor());
-      connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+
+      if(track && track->canRecordMonitor())
+      {
+        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
+        _recMonitor->setFocusPolicy(Qt::NoFocus);
+        _recMonitor->setContentsMargins(0, 0, 0, 0);
+        _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        _recMonitor->setCheckable(true);
+        _recMonitor->setToolTip(tr("Input monitor"));
+        _recMonitor->setWhatsThis(tr("Pass input through to output"));
+        _recMonitor->setChecked(t->recMonitor());
+        connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+      }
 
       if(off && record && _recMonitor)
       {
@@ -2251,19 +2259,6 @@ void MidiStrip::upperStackTabButtonBPressed()
   _infoRack->show();
   _upperStackTabButtonA->setOff(true);
   _upperStackTabButtonB->setOff(false);
-}
-
-//---------------------------------------------------------
-//   recordToggled
-//---------------------------------------------------------
-
-void MidiStrip::recordToggled(bool val)
-{
-  // Simulate pressing monitor as well. Allow signalling.
-  if(_recMonitor && MusEGlobal::config.monitorOnRecord && track && track->recMonitor() != val)
-    _recMonitor->setChecked(val);
-  // Call ancestor.
-  Strip::recordToggled(val);
 }
 
 //---------------------------------------------------------

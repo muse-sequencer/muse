@@ -1,3 +1,11 @@
+24.04.2017
+         - Added Monitor track list column. (Tim)
+         - Streamlined and tightened up the record-arm and bounce operations. (Tim)
+         - Monitor on record-arm is on by default now, upon first installation. (Tim)
+         - Fixed a problem with arranger track resizing taking much too long with
+            many tracks and mixer open - added a separate SC_TRACK_RESIZED. (Tim)
+         - Bumped up songfile version to 3.1, so that incompatible binary header data
+            can be skipped, since a new Monitor column was added. Changed other files. (Tim)
 10.04.2017
          - Slight tweak: Don't allow the strips to gain focus. (Tim)
          - Added new Czech translation from Pavel Fric. (Tim)

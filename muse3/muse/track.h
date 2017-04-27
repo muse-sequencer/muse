@@ -206,8 +206,14 @@ class Track {
       // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
       virtual bool closeAllParts() { return false; };
 
-      virtual bool setRecordFlag1(bool f) = 0;
-      virtual void setRecordFlag2(bool f) = 0;
+      // Called from gui thread only.
+      virtual bool setRecordFlag1(bool) = 0;
+      // Called from audio thread only.
+      virtual void setRecordFlag2(bool) = 0;
+      // Same as setRecordFlag2 except it can automatically set the monitor flag
+      //  depending on the global config.monitorOnRecord. Called from audio thread only.
+      // Returns whether the monitor was changed.
+      virtual bool setRecordFlag2AndCheckMonitor(bool r) = 0;
 
       virtual Part* newPart(Part*p=0, bool clone = false) = 0;
       void dump() const;
@@ -223,7 +229,7 @@ class Track {
       bool mute() const                  { return _mute;         }
       bool off() const                   { return _off;          }
       bool recordFlag() const            { return _recordFlag;   }
-      void setRecMonitor(bool b)         { _recMonitor = b; }
+      void setRecMonitor(bool b)         { if(canRecordMonitor()) _recMonitor = b; }
       bool recMonitor() const            { return _recMonitor; }
 
       // Internal use...
@@ -250,6 +256,7 @@ class Track {
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
       bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
       virtual bool canRecord() const { return false; }
+      virtual bool canRecordMonitor() const { return false; }
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
@@ -310,8 +317,14 @@ class MidiTrack : public Track {
       int len;
       int compression;
 
-      virtual bool setRecordFlag1(bool f) { _recordFlag = f; return true;}
-      virtual void setRecordFlag2(bool) {}
+      // Called from gui thread only.
+      virtual bool setRecordFlag1(bool) { return canRecord(); }
+      // Called from audio thread only.
+      virtual void setRecordFlag2(bool f) { if(canRecord()) _recordFlag = f; }
+      // Same as setRecordFlag2 except it can automatically set the monitor flag
+      //  depending on the global config.monitorOnRecord. Called from audio thread only.
+      // Returns whether the monitor was changed.
+      virtual bool setRecordFlag2AndCheckMonitor(bool);
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -365,6 +378,7 @@ class MidiTrack : public Track {
       virtual bool stuckLiveNoteExists(int port, int chan, int note);
 
       virtual bool canRecord() const  { return true; }
+      virtual bool canRecordMonitor() const { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
       
@@ -495,9 +509,15 @@ class AudioTrack : public Track {
       virtual AudioTrack* clone(int flags) const = 0;
       virtual Part* newPart(Part*p=0, bool clone=false);
 
-      virtual bool setRecordFlag1(bool f);
-      virtual void setRecordFlag2(bool f);
+      // Called from gui thread only.
+      virtual bool setRecordFlag1(bool);
+      // Called from audio thread only.
+      virtual void setRecordFlag2(bool);
       bool prepareRecording();
+      // Same as setRecordFlag2 except it can automatically set the monitor flag
+      //  depending on the global config.monitorOnRecord. Called from audio thread only.
+      // Returns whether the monitor was changed.
+      virtual bool setRecordFlag2AndCheckMonitor(bool);
 
       bool processed() { return _processed; }
 
@@ -790,6 +810,7 @@ class WaveTrack : public AudioTrack {
       virtual bool hasAuxSend() const { return true; }
       bool canEnableRecord() const;
       virtual bool canRecord() const { return true; }
+      virtual bool canRecordMonitor() const { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }

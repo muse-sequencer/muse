@@ -181,7 +181,6 @@ class AudioStrip : public Strip {
       void updateRackSizes(bool upper, bool lower);
 
    private slots:
-      void recordToggled(bool);
       void recMonitorToggled(bool);
       void stereoToggled(bool);
       void preToggled(bool);

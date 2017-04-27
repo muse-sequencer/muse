@@ -1764,20 +1764,12 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
 //---------------------------------------------------------
 
 void Song::setRecordFlag(Track* track, bool val)
-      {
-      if (track->type() == Track::WAVE) {
-            MusECore::WaveTrack* audioTrack = (MusECore::WaveTrack*)track;
-            if(!audioTrack->setRecordFlag1(val))
-                return;
-            MusEGlobal::audio->msgSetRecord(audioTrack, val);
-            }
-      else {
-            track->setRecordFlag1(val);
-            track->setRecordFlag2(val);
-            }
-      update(SC_RECFLAG);
-
-      }
+{
+  if(!track->setRecordFlag1(val))
+    return;
+  MusEGlobal::audio->msgSetRecord(track, val);
+  update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+}
 
 //---------------------------------------------------------
 //   endMsgCmd

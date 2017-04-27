@@ -171,6 +171,7 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 
 void Arranger::setHeaderToolTips()
       {
+      header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
       header->setToolTip(COL_RECORD,     tr("Enable Recording"));
       header->setToolTip(COL_MUTE,       tr("Mute/Off Indicator"));
       header->setToolTip(COL_SOLO,       tr("Solo Indicator"));
@@ -191,7 +192,10 @@ void Arranger::setHeaderToolTips()
 
 void Arranger::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle."));
+      header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to ouput for monitoring.\n"
+                                                 "See also Settings: Automatically Monitor On Record Arm."));
+      header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle.\n"
+                                            "See also Settings: Automatically Monitor On Record Arm."));
       header->setWhatsThis(COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
       header->setWhatsThis(COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
       header->setWhatsThis(COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
@@ -391,6 +395,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       QFontMetrics fm1 = header->fontMetrics();
       int fw = 11;
 
+      header->setColumnLabel(tr("I"), COL_INPUT_MONITOR);
       header->setColumnLabel(tr("R"), COL_RECORD);
       header->setColumnLabel(tr("M"), COL_MUTE);
       header->setColumnLabel(tr("S"), COL_SOLO);
@@ -404,6 +409,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       for (unsigned i=0;i<custom_columns.size();i++)
         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
 
+      header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
       header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
       header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
       header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
@@ -411,6 +417,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->resizeSection(COL_OCHANNEL, fm1.width(header->columnLabel(COL_OCHANNEL)) + fw);
       header->resizeSection(COL_TIMELOCK, fm1.width(header->columnLabel(COL_TIMELOCK)) + fw);
 
+      header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
       header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
@@ -423,6 +430,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
       for (unsigned i=0;i<custom_columns.size();i++)
         header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+
+      // 04/18/17 Time lock remains unused. Disabled until a use is found.
+      // Plans were to use it (or not) when time stretching / pitch shifting work is done.
+      header->setSectionHidden(COL_TIMELOCK, true);
 
       setHeaderToolTips();
       setHeaderWhatsThis();
@@ -622,6 +633,7 @@ void Arranger::setHeaderSizes()
 {
   QFontMetrics fm1(header->font());
   int fw = 11;
+  header->resizeSection(COL_INPUT_MONITOR, fm1.width(header->columnLabel(COL_INPUT_MONITOR)) + fw);
   header->resizeSection(COL_RECORD, fm1.width(header->columnLabel(COL_RECORD)) + fw);
   header->resizeSection(COL_MUTE, fm1.width(header->columnLabel(COL_MUTE)) + fw);
   header->resizeSection(COL_SOLO, fm1.width(header->columnLabel(COL_SOLO)) + fw);
@@ -740,12 +752,12 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         
         if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED |
           SC_TRACK_MOVED |
-          SC_TRACK_MODIFIED))
+          SC_TRACK_MODIFIED | SC_TRACK_RESIZED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
-        if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-                   SC_TRACK_MOVED |
+        if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+                   SC_TRACK_MOVED | SC_TRACK_RESIZED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
           canvas->partsChanged();
@@ -756,7 +768,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
         // Try these:
-        if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+        if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                    SC_CLIP_MODIFIED))
         canvas->redraw();
@@ -824,7 +836,14 @@ void Arranger::readConfiguration(MusECore::Xml& xml)
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "tlist_header")
+                        {
+                          // We can only restore the header state with version-compatible data.
+                          // If columns were altered, 'alien' loaded data will not fit!
+                          if(xml.isVersionEqualToLatest())
                               header_state = QByteArray::fromHex(xml.parse1().toLatin1());
+                          else
+                            xml.parse1();
+                        }
                         else if (tag == "custom_columns")
                               readCustomColumns(xml);
                         else
