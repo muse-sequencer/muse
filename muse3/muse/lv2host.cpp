@@ -4,6 +4,7 @@
 //
 //  lv2host.cpp
 //  Copyright (C) 2014 by Deryabin Andrew <andrewderyabin@gmail.com>
+//  2017 - Implement LV2_STATE__StateChanged #565 (danvd)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -119,6 +120,7 @@ namespace MusECore
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
+#define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
 
 static LilvWorld *lilvWorld = 0;
@@ -213,6 +215,7 @@ LV2_Feature lv2Features [] =
    {LV2_LOG__log, NULL},
    {LV2_STATE__makePath, NULL},
    {LV2_STATE__mapPath, NULL},
+   {LV2_F_STATE_CHANGED, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -962,8 +965,7 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
 {
    //send Atom events to gui.
    //Synchronize send rate with gui update rate
-   if(state->uiInst == NULL)
-      return;
+   
 
    size_t fifoItemSize = state->plugControlEvt.getItemSize();
 
@@ -980,6 +982,18 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
             if(!state->midiOutPorts [j].buffer->read(&frames, &subframes, &type, &size, &data))
             {
                break;
+            }
+            if(state->synth->_fStateChanged > 0) //plugin supports state changed event - make a check
+            {
+               if(type == state->synth->_uAtom_StateChanged)
+               {
+                  //Just make song status dirty (pending event) - something had changed in the plugin controls
+                  state->songDirtyPending = true;
+               }
+            }
+            if(state->uiInst == NULL)
+            {
+               continue;
             }
             unsigned char atom_data [fifoItemSize];
             LV2_Atom *atom_evt = reinterpret_cast<LV2_Atom *>(atom_data);
@@ -2147,6 +2161,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uAtom_EventTransfer   = mapUrid(LV2_ATOM__eventTransfer);
    _uAtom_Chunk           = mapUrid(LV2_ATOM__Chunk);
    _uAtom_Sequence        = mapUrid(LV2_ATOM__Sequence);
+   _uAtom_StateChanged    = mapUrid(LV2_F_STATE_CHANGED);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
    _fSampleRate = (float)MusEGlobal::sampleRate;
@@ -2249,6 +2264,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       {
          _fMapPath = i;
       }
+      else if((std::string(LV2_F_STATE_CHANGED) == _features [i].URI))
+      {
+         _fStateChanged = i;
+      }      
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {
          _fDataAccess = i; //must be the last!
@@ -4170,6 +4189,11 @@ QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
 
 void LV2SynthIF::guiHeartBeat()
 {
+   //check for pending song dirty status
+   if(_state->songDirtyPending){      
+      MusEGlobal::song->setDirty();
+      _state->songDirtyPending = false;
+   }
 
 }
 

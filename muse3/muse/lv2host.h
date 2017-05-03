@@ -288,6 +288,7 @@ private:
     uint32_t _fPrgHost;
     uint32_t _fMakePath;
     uint32_t _fMapPath;
+    uint32_t _fStateChanged;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
@@ -297,6 +298,7 @@ private:
     LV2_URID _uAtom_EventTransfer;
     LV2_URID _uAtom_Chunk;
     LV2_URID _uAtom_Sequence;
+    LV2_URID _uAtom_StateChanged;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
     bool _isConstructed;
@@ -552,7 +554,8 @@ struct LV2PluginWrapper_State {
       uiControlEvt(LV2_RT_FIFO_SIZE),
       plugControlEvt(LV2_RT_FIFO_SIZE),
       gtk2ResizeCompleted(false),
-      gtk2AllocateCompleted(false)
+      gtk2AllocateCompleted(false),
+      songDirtyPending(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -637,6 +640,7 @@ struct LV2PluginWrapper_State {
     std::map<uint32_t, LV2EvBuf *> idx2EvtPorts;
     bool gtk2ResizeCompleted;
     bool gtk2AllocateCompleted;
+    bool songDirtyPending;
 };
 
 
