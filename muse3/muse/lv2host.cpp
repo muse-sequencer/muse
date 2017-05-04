@@ -983,9 +983,10 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
             {
                break;
             }
-            if(state->synth->_fStateChanged > 0) //plugin supports state changed event - make a check
+            if(type == state->synth->_uAtom_Object)
             {
-               if(type == state->synth->_uAtom_StateChanged)
+               const LV2_Atom_Object *aObj = reinterpret_cast<LV2_Atom_Object *>(data);
+               if(aObj->body.otype == state->synth->_uAtom_StateChanged)
                {
                   //Just make song status dirty (pending event) - something had changed in the plugin controls
                   state->songDirtyPending = true;
@@ -1810,6 +1811,16 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2state_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
 #endif
+      if(buffer_size >= sizeof(LV2_Atom_Object))
+      {
+         const LV2_Atom_Object *aObj = reinterpret_cast<const LV2_Atom_Object *>(buffer);
+         if(aObj->body.otype == state->synth->_uAtom_StateChanged)
+         {
+            //Just make song status dirty (pending event) - something had changed in the plugin controls
+            state->songDirtyPending = true;
+            return;
+         }
+      }
       state->uiControlEvt.put(port_index, buffer_size, buffer);
       return;
    }
@@ -2162,6 +2173,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uAtom_Chunk           = mapUrid(LV2_ATOM__Chunk);
    _uAtom_Sequence        = mapUrid(LV2_ATOM__Sequence);
    _uAtom_StateChanged    = mapUrid(LV2_F_STATE_CHANGED);
+   _uAtom_Object          = mapUrid(LV2_ATOM__Object);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
    _fSampleRate = (float)MusEGlobal::sampleRate;
@@ -2263,10 +2275,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if((std::string(LV2_STATE__mapPath) == _features [i].URI))
       {
          _fMapPath = i;
-      }
-      else if((std::string(LV2_F_STATE_CHANGED) == _features [i].URI))
-      {
-         _fStateChanged = i;
       }      
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {

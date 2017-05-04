@@ -288,7 +288,6 @@ private:
     uint32_t _fPrgHost;
     uint32_t _fMakePath;
     uint32_t _fMapPath;
-    uint32_t _fStateChanged;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
@@ -299,6 +298,7 @@ private:
     LV2_URID _uAtom_Chunk;
     LV2_URID _uAtom_Sequence;
     LV2_URID _uAtom_StateChanged;
+    LV2_URID _uAtom_Object;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
     bool _isConstructed;
