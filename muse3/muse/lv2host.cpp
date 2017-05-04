@@ -985,8 +985,8 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
             }
             if(type == state->synth->_uAtom_Object)
             {
-               const LV2_Atom_Object *aObj = reinterpret_cast<LV2_Atom_Object *>(data);
-               if(aObj->body.otype == state->synth->_uAtom_StateChanged)
+               const LV2_Atom_Object_Body *aObjBody = reinterpret_cast<LV2_Atom_Object_Body *>(data);
+               if(aObjBody->otype == state->synth->_uAtom_StateChanged)
                {
                   //Just make song status dirty (pending event) - something had changed in the plugin controls
                   state->songDirtyPending = true;
@@ -1810,17 +1810,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
    {
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2state_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
-#endif
-      if(buffer_size >= sizeof(LV2_Atom_Object))
-      {
-         const LV2_Atom_Object *aObj = reinterpret_cast<const LV2_Atom_Object *>(buffer);
-         if(aObj->body.otype == state->synth->_uAtom_StateChanged)
-         {
-            //Just make song status dirty (pending event) - something had changed in the plugin controls
-            state->songDirtyPending = true;
-            return;
-         }
-      }
+#endif     
       state->uiControlEvt.put(port_index, buffer_size, buffer);
       return;
    }
