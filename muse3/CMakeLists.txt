@@ -591,8 +591,8 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
 set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations
