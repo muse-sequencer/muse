@@ -211,7 +211,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         if (dev==0) 
         {
           MusEGlobal::audio->msgSetMidiDevice(port, si);
-          MusEGlobal::muse->changeConfig(true);     // save configuration file
+          // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+          MusEGlobal::muse->changeConfig(true);
           if (SynthI::visible()) {
             selectAllTracks(false);
             si->setSelected(true);

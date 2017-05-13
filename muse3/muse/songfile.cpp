@@ -1134,6 +1134,7 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                             if(!mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
                             {
                               MusEGlobal::config.warnOnFileVersions = !mb->checkBox()->isChecked();
+                              // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
                             }
                             delete mb;

@@ -534,8 +534,11 @@ int main(int argc, char* argv[])
 
         // Now create the application, and let Qt remove recognized arguments.
         MuseApplication app(argc_copy, argv_copy);
-        QString appStyleObjName = app.style()->objectName();
-        MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);   // NOTE: May need alternate method, above.
+        if(QStyle* def_style = app.style())
+        {
+          const QString appStyleObjName = def_style->objectName();
+          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);   // NOTE: May need alternate method, above.
+        }
 
         QString optstr("aJFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
@@ -724,31 +727,6 @@ int main(int argc, char* argv[])
         }
         MusEGlobal::museUserInstruments = uinstrPath;
 
-        // NOTE: May need alternate method, above.
-        // If setStyle is called after MusE is created, bug: I get transparent background in MDI windows, other artifacts.
-        // Docs say any style should be set before QApplication created, but this actually works OK up to that point!
-        QStringList sl = QStyleFactory::keys();
-
-        // Qt FIXME BUG: Cannot load certain themes with a stylesheet - even a blank one.
-        //               Although it works for a few styles, others like Breeze and Oxygen
-        //                cause the main MDI window to not respond. Force Fusion for now.
-        if(MusEGlobal::config.styleSheetFile.isEmpty())
-        {
-          if (sl.indexOf(MusEGlobal::config.style) != -1)
-          {
-            QStyle* style = app.setStyle(MusEGlobal::config.style);
-            style->setObjectName(MusEGlobal::config.style);
-          }
-        }
-        else
-        {
-          if (sl.indexOf("Fusion") != -1)
-          {
-            QStyle* style = app.setStyle("Fusion");
-            style->setObjectName("Fusion");
-          }
-        }
-
         AL::initDsp();
         MusECore::initAudio();
 
@@ -921,6 +899,11 @@ int main(int argc, char* argv[])
               }
 
         MusEGlobal::muse->show();
+
+        // Change settings. Do not save. Use non-simple version - set style and stylesheet, and do not force the style.
+        MusEGlobal::muse->changeConfig(false);
+        MusEGlobal::muse->updateThemeAndStyle();
+
         MusEGlobal::muse->seqStart();
 
         //--------------------------------------------------
@@ -930,11 +913,7 @@ int main(int argc, char* argv[])
           argc_copy < 2 &&
           (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) &&
           !MusEGlobal::config.startSongLoadConfig)
-        {
           MusECore::populateMidiPorts();
-          //MusEGlobal::muse->changeConfig(true);     // save configuration file
-          //MusEGlobal::song->update();
-        }
 
         //--------------------------------------------------
         // Load the default song.
@@ -990,6 +969,9 @@ int main(int argc, char* argv[])
           }
           free(argv_copy);
         }
+
+        app.setStyleSheet("");
+        app.setStyle(MusEGlobal::config.style);
       }
 
       if(MusEGlobal::debugMsg) 

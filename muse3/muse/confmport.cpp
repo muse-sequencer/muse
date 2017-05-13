@@ -850,6 +850,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                     
                     MusEGlobal::audio->msgSetMidiDevice(port, sdev);
+                    // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                     MusEGlobal::muse->changeConfig(true);     // save configuration file
                     
                     // Add all track routes to/from this port...
@@ -1603,6 +1604,7 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
                   MusEGlobal::audio->msgSetMidiDevice(port, si);
+                  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                   MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();
                   break;
@@ -1829,6 +1831,7 @@ void MPConfig::addAlsaDeviceClicked(bool v)
   MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
 
   MusEGlobal::config.enableAlsaMidiDriver = v;
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
   //MusEGlobal::muse->changeConfig(true);    // Save settings? No, wait till close.
 
   if(v)

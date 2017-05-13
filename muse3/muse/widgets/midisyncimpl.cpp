@@ -664,7 +664,8 @@ void MidiSyncConfig::apply()
   if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
     MusEGlobal::audio->msgIdle(false);
   
-  //muse->changeConfig(true);    // save settings
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+  //muse->changeConfig(true);
   
   _dirty = false;
   if(applyButton->isEnabled())

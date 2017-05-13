@@ -1,3 +1,10 @@
+13.05.2017
+         - More frozen MDI windows fixes: (Tim)
+           Added option "General Settings > Gui Behaviour > Fix frozen MDI sub windows".
+           Move the theme and style stuff in MusE::changeConfig() into a separate
+            MusE::updateThemeAndStyle(). Many places call changeConfig, but only
+            a couple really needed updateThemeAndStyle().
+           TODO: Benign XCB connection errors may still occur. Remove diagnostic printf's.
 24.04.2017
          - Added Monitor track list column. (Tim)
          - Streamlined and tightened up the record-arm and bounce operations. (Tim)

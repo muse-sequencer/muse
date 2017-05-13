@@ -742,6 +742,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(MusEGlobal::config.routerGroupingChannels > 2)
                                 MusEGlobal::config.routerGroupingChannels = 2;
                         }
+                        else if (tag == "fixFrozenMDISubWindows")
+                              MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1628,7 +1630,8 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     return false;
   }
   // Notify app, and write into configuration file.
-  changeConfig(true); 
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+  changeConfig(true);
   return true;
 }
 
@@ -1737,6 +1740,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
+      xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
@@ -2052,6 +2056,7 @@ void MidiFileConfig::okClicked()
       if(exportInstrumentNames->isChecked())
         MusEGlobal::config.exportModeInstr |= MusEGlobal::INSTRUMENT_NAME_META;
       
+      // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();
       }

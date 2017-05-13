@@ -1298,7 +1298,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.preferKnobsVsSliders != checked)
         {
           MusEGlobal::config.preferKnobsVsSliders = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1306,7 +1306,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.showControlValues != checked)
         {
           MusEGlobal::config.showControlValues = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1314,7 +1314,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.preferMidiVolumeDb != checked)
         {
           MusEGlobal::config.preferMidiVolumeDb = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1322,7 +1322,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.monitorOnRecord != checked)
         {
           MusEGlobal::config.monitorOnRecord = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 

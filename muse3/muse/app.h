@@ -73,7 +73,6 @@ class ClipListEdit;
 class EditInstrument;
 class EditToolBar;
 class GlobalSettingsConfig;
-class GlobalSettingsConfig;
 class MRConfig;
 class MarkerView;
 class MetronomeConfig;
@@ -343,7 +342,7 @@ class MusE : public QMainWindow
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void toplevelDeleting(MusEGui::TopWin* tl);
-      void loadTheme(const QString&);
+      void loadTheme(const QString&, bool force = false);
       void loadStyleSheetFile(const QString&);
       bool seqRestart();
       void loadTemplate();
@@ -410,9 +409,10 @@ class MusE : public QMainWindow
       void kbAccel(int);
       
       // writeFlag: Write to configuration file. 
-      // simple: Don't bother with theme, style, and font etc. updates, just emit the configChanged signal.
-      void changeConfig(bool writeFlag, bool simple = false);
-      
+      void changeConfig(bool writeFlag);
+      // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
+      void updateThemeAndStyle(bool forceStyle = false);
+
       void seqStop();
       bool seqStart();
       // Starts the ALSA midi portion of the sequencer. audioDevice must be valid.

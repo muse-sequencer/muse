@@ -480,6 +480,7 @@ void MidiSeq::checkAndReportTimingResolution()
           if(warn != MusEGlobal::config.warnIfBadTiming)  
           {
             MusEGlobal::config.warnIfBadTiming = warn;
+            // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
             //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
           }
         }

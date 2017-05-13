@@ -860,6 +860,7 @@ void Audio::msgInitMidiDevices(bool force)
           if(warn != MusEGlobal::config.warnInitPending)  
           {
             MusEGlobal::config.warnInitPending = warn;
+            // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
             //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
           }
           if(rv != QDialog::Accepted)
