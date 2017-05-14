@@ -147,14 +147,41 @@ signed int AlsaTimer::initTimer()
   //if(debugMsg)
     fprintf(stderr, "AlsaTimer::initTimer(): best available ALSA timer: %s\n", snd_timer_info_get_name(info));
 
-  snd_timer_params_set_auto_start(params, 1);
-  snd_timer_params_set_ticks(params, 1);
-
-  if ((err = snd_timer_params(handle, params)) < 0) {
-    fprintf(stderr, "AlsaTimer::initTimer(): timer params %i (%s)\n", err, snd_strerror(err));
-    return -1;
-    }
-
+//   snd_timer_params_set_auto_start(params, 1);
+//   
+//   if(!snd_timer_info_is_slave(info))
+//   {
+//     const long int resolution = snd_timer_info_get_resolution(info);
+//     fprintf(stderr, "   Average resolution:%li\n", resolution);
+//     snd_timer_params_set_ticks(params, (1000000000L / resolution) / 10000000L); // 100Hz
+//     if(snd_timer_params_get_ticks(params) < 1)
+//       snd_timer_params_set_ticks(params, 1);
+// //     fprintf(stderr, "   Using %li tick(s)\n", snd_timer_params_get_ticks(params));
+//   }
+//   else
+//   {
+//     snd_timer_params_set_ticks(params, 1);
+//   }
+//   
+//   if ((err = snd_timer_params(handle, params)) < 0) 
+//   {
+//     snd_timer_params_set_ticks(params, 1);
+//     
+//     fprintf(stderr, "AlsaTimer::initTimer(): timer params %i (%s)\n"
+//       " Unable to cȟange timer settings. Your system may need adjustment.\n"
+//       " Timer frequency remains at %liHz\n", 
+//       err, snd_strerror(err),
+//       1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params));
+//     //fprintf(stderr, "   Timer frequency remains at:%liHz\n", 
+//     //  1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params));
+//     // REMOVE Tim. autoconnect. Removed. On openSuse you must jump through some hoops
+//     //  before you can access the HPET and RTC timers. And their default freq is a lousy 64Hz !
+//     // Allow it to fall through and at least run.
+// //     return -1;
+//   }
+// 
+//   fprintf(stderr, "AlsaTimer::initTimer() Using %li tick(s)\n", snd_timer_params_get_ticks(params));
+  
   count = snd_timer_poll_descriptors_count(handle);
   fds = (pollfd *)calloc(count, sizeof(pollfd));
   if (fds == NULL) {
@@ -184,42 +211,96 @@ unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
   if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
     fprintf(stderr, "AlsaTimer::setTimerFreq(this=%p)\n",this);
 
-  const long int ticks = snd_timer_params_get_ticks(params);
+//   const long int ticks = snd_timer_params_get_ticks(params);
   const long int res = snd_timer_info_get_resolution(info);
   const long int adj_res = 1000000000L / res;
   const long int setTick = adj_res / freq;
-  const long int cur_freq = adj_res / ticks;
+//   const long int cur_freq = adj_res / ticks;
 
   if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
-    fprintf(stderr, "AlsaTimer::setTimerFreq res:%ld ticks:%ld\n", res, ticks);
+//     fprintf(stderr, "AlsaTimer::setTimerFreq res:%ld ticks:%ld\n", res, ticks);
+    fprintf(stderr, "AlsaTimer::setTimerFreq res:%ld adj_res:%ld setTick:%ld\n", res, adj_res, setTick);
 
-  if(setTick == 0)
-  {
-    // Return, print error if freq is below 500 (timing will suffer).
-    if(cur_freq < 500)
-    {
-      fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %ld)\n", freq, adj_res);
-      fprintf(stderr,"  freq stays at %ld Hz\n", cur_freq);
-    }
-    return cur_freq;
-  }
+//   if(setTick == 0)
+//   {
+//     // Return, print error if freq is below 500 (timing will suffer).
+//     if(cur_freq < 500)
+//     {
+//       fprintf(stderr,"AlsaTimer::setTimerFreq(): requested freq %u Hz too high for timer (max is %ld)\n", freq, adj_res);
+//       fprintf(stderr,"  freq stays at %ld Hz\n", cur_freq);
+//     }
+//     return cur_freq;
+//   }
 
   const long int actFreq = adj_res / setTick;
   if(actFreq != freq)
   {
-    fprintf(stderr,"AlsaTimer::setTimerTicks(): warning: requested %u Hz, actual freq is %ld Hz\n", freq, actFreq);
+    fprintf(stderr,"AlsaTimer::setTimerFreq(): warning: requested %u Hz, actual freq is %ld Hz\n", freq, actFreq);
   }
   if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
     fprintf(stderr, "AlsaTimer::setTimerFreq(): Setting ticks (period) to %ld ticks\n", setTick);
   snd_timer_params_set_auto_start(params, 1);
-  snd_timer_params_set_ticks(params, setTick);
-  if ((err = snd_timer_params(handle, params)) < 0)
+  if(!snd_timer_info_is_slave(info))
   {
-    fprintf(stderr, "AlsaTimer::setTimerFreq(): timer params %i (%s)\n", err, snd_strerror(err));
-    return 0;
+    snd_timer_params_set_ticks(params, setTick);
+    if(snd_timer_params_get_ticks(params) < 1)
+      snd_timer_params_set_ticks(params, 1);
+//     if ((err = snd_timer_params(handle, params)) < 0)
+//     {
+//         fprintf(stderr, "AlsaTimer::setTimerFreq(): timer params %i (%s)\n", err, snd_strerror(err));
+//         fprintf(stderr, "MusE Error: Unable to cȟange timer settings. Your system may need adjustment.\n");
+//         fprintf(stderr, "   Timer frequency remains at:%liHz\n", 1000000000L / snd_timer_info_get_resolution(info));
+//         // REMOVE Tim. autoconnect. Changed.
+//     //     return 0;
+//         return 1000000000L / snd_timer_info_get_resolution(info);
+//     }
+    
+    //const long int resolution = snd_timer_info_get_resolution(info);
+    //fprintf(stderr, "   Average resolution:%li\n", resolution);
+    //snd_timer_params_set_ticks(params, (1000000000L / resolution) / 10000000L); // 100Hz
+    //if(snd_timer_params_get_ticks(params) < 1)
+    //  snd_timer_params_set_ticks(params, 1);
+    //fprintf(stderr, "   Using %li tick(s)\n", snd_timer_params_get_ticks(params));
+    
+  }
+  else
+    snd_timer_params_set_ticks(params, 1);
+
+  if((err = snd_timer_params(handle, params)) < 0)
+  {
+    snd_timer_params_set_ticks(params, 1);
+      
+    fprintf(stderr, "AlsaTimer::setTimerFreq(%u): timer params %i (%s)\n"
+      " Unable to cȟange timer settings. Your system may need adjustment.\n"
+      " Timer frequency remains at %liHz\n", 
+      freq, err, snd_strerror(err),
+      1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params));
+      // REMOVE Tim. autoconnect. Changed.
+//       return 0;
+      //return 1000000000L / snd_timer_info_get_resolution(info);
+  }
+    
+  const long int ticks = snd_timer_params_get_ticks(params);
+  const long int cur_freq = adj_res / ticks;
+  if(setTick <= 0)
+  {
+    // Return, print error if freq is below 500 (timing will suffer).
+    if(cur_freq < 500)
+    {
+      fprintf(stderr,"AlsaTimer::setTimerFreq(): requested freq %u Hz too high for timer (max is %ld)\n", freq, adj_res);
+      fprintf(stderr,"  freq stays at %ld Hz\n", cur_freq);
+    }
+    //return cur_freq;
   }
 
-  return actFreq;
+  fprintf(stderr, "AlsaTimer::setTimerFreq(%u): Using %li tick(s)\n", freq, ticks);
+  
+  // REMOVE Tim. autoconnect. Changed.
+//   return actFreq;
+  // Return the actual frequency.
+  //return 1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params);
+  //return adj_res / ticks;
+  return cur_freq;
 }
   
   unsigned int AlsaTimer::getTimerResolution()
@@ -229,7 +310,7 @@ unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
 
   unsigned int AlsaTimer::getTimerFreq()
     {
-    return (1000000000 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params);
+    return (1000000000L / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params);
     }
         
   bool AlsaTimer::startTimer()

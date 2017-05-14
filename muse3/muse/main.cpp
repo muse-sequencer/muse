@@ -843,9 +843,10 @@ int main(int argc, char* argv[])
         MusECore::initMidiInstruments();
         MusECore::initMidiPorts();
 
-        // If the sequencer object was created, report timing.
-        if(MusEGlobal::midiSeq)
-          MusEGlobal::midiSeq->checkAndReportTimingResolution();
+// REMOVE Tim. autoconnect. Removed. Moved below.
+//         // If the sequencer object was created, report timing.
+//         if(MusEGlobal::midiSeq)
+//           MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
         if (MusEGlobal::loadPlugins)
               MusECore::initPlugins();
@@ -905,6 +906,10 @@ int main(int argc, char* argv[])
         MusEGlobal::muse->updateThemeAndStyle();
 
         MusEGlobal::muse->seqStart();
+        
+        // If the sequencer object was created, report timing.
+        if(MusEGlobal::midiSeq)
+          MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
         //--------------------------------------------------
         // Auto-fill the midi ports, if appropriate.
