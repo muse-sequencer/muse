@@ -2346,18 +2346,40 @@ void MidiStrip::heartBeat()
       if(++_heartBeatCounter >= 10)
         _heartBeatCounter = 0;
       
-      int act = track->activity();
-      double dact = double(act) * (slider->value() / 127.0);
-      
-      if((int)dact > track->lastActivity())
-        track->setLastActivity((int)dact);
-      
-      if(meter[0]) 
-        meter[0]->setVal(dact, track->lastActivity(), false);  
-      
-      // Gives reasonable decay with gui update set to 20/sec.
-      if(act)
-        track->setActivity((int)((double)act * 0.8));
+      if(track && track->isMidiTrack())
+      {
+        int act = track->activity();
+        double m_val = slider->value();
+
+        if(_preferMidiVolumeDb)
+        {
+          MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
+          const int port = t->outPort();
+          MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+          MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, false);
+          if(mctl)
+            m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
+          
+          m_val += double(mctl->bias());
+          
+          if(m_val < double(mctl->minVal()))
+            m_val = double(mctl->minVal());
+          if(m_val > double(mctl->maxVal()))
+            m_val = double(mctl->maxVal());
+        }
+        
+        double dact = double(act) * (m_val / 127.0);
+          
+        if((int)dact > track->lastActivity())
+          track->setLastActivity((int)dact);
+        
+        if(meter[0]) 
+          meter[0]->setVal(dact, track->lastActivity(), false);  
+        
+        // Gives reasonable decay with gui update set to 20/sec.
+        if(act)
+          track->setActivity((int)((double)act * 0.8));
+      }
       
       updateControls();
       

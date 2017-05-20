@@ -1,3 +1,5 @@
+20.05.2017
+         - Oops, fix midi meters when midi sliders are in dB mode. (Tim)
 14.05.2017
          - Some work on ALSA timer. For ex. not working at all in openSuSE. (Tim)
            TODO: More tests. Cleanups. Remove diagnostic printf's.
