@@ -750,11 +750,12 @@ QWidget* ComponentRack::setupComponentTabbing(QWidget* previousWidget)
   for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
     const ComponentWidget& cw = *ic;
-    if(!cw._widget)
-      continue;
-    if(prev)
-      QWidget::setTabOrder(prev, cw._widget);
-    prev = cw._widget;
+    if(cw._widget)
+    {
+      if(prev)
+        QWidget::setTabOrder(prev, cw._widget);
+      prev = cw._widget;
+    }
   }
   return prev;
 }

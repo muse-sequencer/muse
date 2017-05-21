@@ -773,7 +773,6 @@ void AudioComponentRack::setComponentColors()
   }
 }
 
-
 //---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
@@ -871,7 +870,10 @@ void AudioStrip::configChanged()
     // Rebuild the strip components.
     buildStrip();
     // Now set up all tabbing on the strip.
-    setupComponentTabbing();
+    // Don't bother if the strip is part of the mixer (not embedded), 
+    //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+    if(isEmbedded())
+      setupComponentTabbing();
   }
 
   // Set the whole strip's font, except for the label.
@@ -1761,7 +1763,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // Now build the strip components.
       buildStrip();
       // Now set up all tabbing on the strip.
-      setupComponentTabbing();
+      // Don't bother if the strip is part of the mixer (not embedded), 
+      //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+      if(isEmbedded)
+        setupComponentTabbing();
 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 
@@ -1902,7 +1907,8 @@ QWidget* AudioStrip::setupComponentTabbing(QWidget* previousWidget)
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
   {
-    QWidget::setTabOrder(prev, sl);
+    if(prev)
+      QWidget::setTabOrder(prev, sl);
     prev = sl;
   }
   prev = _lowerRack->setupComponentTabbing(prev);

@@ -1,3 +1,5 @@
+21.05.2017
+         - More mixer strip focus tabbing fixes, including strip-to-strip. Should be OK now. (Tim)
 20.05.2017
          - Oops, fix midi meters when midi sliders are in dB mode. (Tim)
 14.05.2017

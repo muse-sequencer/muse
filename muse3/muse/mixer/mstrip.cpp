@@ -1340,6 +1340,35 @@ void MidiComponentRack::setComponentColors()
   }
 }
 
+QWidget* MidiComponentRack::setupComponentTabbing(QWidget* previousWidget)
+{
+  QWidget* prev = previousWidget;
+  for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    const ComponentWidget& cw = *ic;
+    if(cw._widget)
+    {
+      switch(cw._widgetType)
+      {
+        case mStripCompactPatchEditComponentWidget:
+        {
+          CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
+          prev = w->setupComponentTabbing(prev);
+        }
+        break;
+        
+        default:
+          if(prev)
+            QWidget::setTabOrder(prev, cw._widget);
+          prev = cw._widget;
+        break;
+      }  
+    }
+  }
+  return prev;
+}
+
+
 //---------------------------------------------------------
 //   MidiStrip
 //---------------------------------------------------------
@@ -1404,6 +1433,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperStackTabButtonB->setContentsMargins(0, 0, 0, 0);
       _upperStackTabButtonA->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       _upperStackTabButtonB->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      _upperStackTabButtonA->setFocusPolicy(Qt::StrongFocus);
+      _upperStackTabButtonB->setFocusPolicy(Qt::StrongFocus);
       _upperStackTabButtonA->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonA->setToolTip(tr("Palette A"));
@@ -1746,8 +1777,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       // Now build the strip components.
       buildStrip();
+      
       // Now set up all tabbing on the strip.
-      setupComponentTabbing();
+      // Don't bother if the strip is part of the mixer (not embedded), 
+      //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+      if(isEmbedded)
+        setupComponentTabbing();
 
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
@@ -1928,11 +1963,24 @@ void MidiStrip::buildStrip()
 QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 {
   QWidget* prev = previousWidget;
+  if(_upperStackTabButtonA)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _upperStackTabButtonA);
+    prev = _upperStackTabButtonA;
+  }
+  if(_upperStackTabButtonB)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _upperStackTabButtonB);
+    prev = _upperStackTabButtonB;
+  }
   prev = _upperRack->setupComponentTabbing(prev);
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
   {
-    QWidget::setTabOrder(prev, sl);
+    if(prev)
+      QWidget::setTabOrder(prev, sl);
     prev = sl;
   }
   prev = _lowerRack->setupComponentTabbing(prev);
@@ -2134,7 +2182,10 @@ void MidiStrip::configChanged()
     // Rebuild the strip components.
     buildStrip();
     // Now set up all tabbing on the strip.
-    setupComponentTabbing();
+    // Don't bother if the strip is part of the mixer (not embedded), 
+    //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+    if(isEmbedded())
+      setupComponentTabbing();
   }
 
   // Set the whole strip's font, except for the label.
