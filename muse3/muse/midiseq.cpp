@@ -378,6 +378,8 @@ void MidiSeq::threadStop()
 int MidiSeq::setRtcTicks()
       {
       int gotTicks = timer->setTimerFreq(MusEGlobal::config.rtcTicks);
+      if(gotTicks == 0)
+        return 0;
       if (MusEGlobal::config.rtcTicks-24 > gotTicks) {
           fprintf(stderr, "INFO: Could not get the wanted frequency %d, got %d, still it should suffice.\n", MusEGlobal::config.rtcTicks, gotTicks);
       }
@@ -431,8 +433,14 @@ void MidiSeq::start(int /*priority*/, void*)
   prio = midiprio;
 
   MusEGlobal::doSetuid();
-  setRtcTicks();
+  int freq = setRtcTicks();
   MusEGlobal::undoSetuid();
+  
+  if(freq == 0)
+  {
+    fprintf(stderr, "Error setting timer frequency! Midi playback will not work!\n");
+  }
+  
   Thread::start(prio);
 
   int counter=0;
@@ -499,7 +507,7 @@ void MidiSeq::midiTick(void* p, void*)
       {
         if(MidiSeq::ticker++ > 100)
           {
-          printf("tick!\n");
+          fprintf(stderr, "ticker:%i\n", MidiSeq::ticker);
           MidiSeq::ticker=0;
           }
         }

@@ -268,13 +268,44 @@ unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
 
   if((err = snd_timer_params(handle, params)) < 0)
   {
-    snd_timer_params_set_ticks(params, 1);
-      
-    fprintf(stderr, "AlsaTimer::setTimerFreq(%u): timer params %i (%s)\n"
-      " Unable to cȟange timer settings. Your system may need adjustment.\n"
-      " Timer frequency remains at %liHz\n", 
-      freq, err, snd_strerror(err),
-      1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params));
+    const int num_freqs = 10;
+    const unsigned int freqs[num_freqs] {32768, 16384, 8192, 4096, 2048, 1024, 1000, 500, 250, 100};
+    int found_idx = -1;
+    if(!snd_timer_info_is_slave(info))
+    {
+    
+      for(int i = 0; i < num_freqs; ++i)
+      {
+        const unsigned int f = freqs[i];
+        if(f >= freq)
+          continue;
+
+        const long int t = adj_res / f;
+        snd_timer_params_set_ticks(params, t);
+        if(snd_timer_params_get_ticks(params) < 1)
+          snd_timer_params_set_ticks(params, 1);
+        if((err = snd_timer_params(handle, params)) == 0)
+        {
+          found_idx = i;
+          break;
+        }
+      }
+      if(found_idx == -1)
+      {
+        fprintf(stderr, "MusE: Cannot find a suitable ALSA timer frequency. Your system may need adjustment.\n");
+        snd_timer_params_set_ticks(params, 1);
+        return 0;
+      }
+    }
+
+    if(found_idx >= 0)
+    {
+      fprintf(stderr, "MusE: Cannot set requested ALSA timer frequency (%uHz). Your system may need adjustment.\n"
+        " Timer frequency set to best value: %liHz\n", 
+        freq, 
+        1000000000L / snd_timer_info_get_resolution(info) / snd_timer_params_get_ticks(params));
+    }
+        
       // REMOVE Tim. autoconnect. Changed.
 //       return 0;
       //return 1000000000L / snd_timer_info_get_resolution(info);
