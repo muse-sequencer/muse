@@ -856,8 +856,6 @@ QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
     widget = li->widget();
     if(!widget)
       continue;
-    if(!widget->metaObject()->inherits(&Strip::staticMetaObject))
-      continue;
     strip = qobject_cast<Strip*>(widget);
     if(!strip)
       continue;
