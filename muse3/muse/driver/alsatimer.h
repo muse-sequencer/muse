@@ -49,13 +49,12 @@ class AlsaTimer : public Timer{
     struct pollfd *fds;
     char timername[64];
     signed int count;
-    //unsigned int ticks;
 
     public:
        AlsaTimer();
        virtual ~AlsaTimer();
        
-       virtual signed int initTimer();
+       virtual signed int initTimer(unsigned int desiredFrequency);
        virtual unsigned int setTimerResolution(unsigned int resolution);
        virtual unsigned int getTimerResolution();
        virtual unsigned int setTimerFreq(unsigned int freq);

@@ -40,7 +40,6 @@
 
 #include "rtctimer.h"
 #include "globals.h"
-#include "gconfig.h"
 
 namespace MusECore {
 
@@ -55,7 +54,7 @@ RtcTimer::~RtcTimer()
       close(timerFd);
     }
 
-signed int RtcTimer::initTimer()
+signed int RtcTimer::initTimer(unsigned int desiredFrequency)
     {
     if(TIMER_DEBUG)
           printf("RtcTimer::initTimer()\n");
@@ -68,11 +67,10 @@ signed int RtcTimer::initTimer()
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
           fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
-          fprintf(stderr, "hint: check if 'rtc' kernel module is loaded, or used by something else\n");
           MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(MusEGlobal::config.rtcTicks)) {
+    if (!setTimerFreq(desiredFrequency)) {
           // unable to set timer frequency
           return -1;
           }

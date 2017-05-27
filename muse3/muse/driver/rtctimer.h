@@ -42,7 +42,7 @@ class RtcTimer : public Timer{
        RtcTimer();
        virtual ~RtcTimer();
        
-       virtual signed int initTimer();
+       virtual signed int initTimer(unsigned int desiredFrequency);
        virtual unsigned int setTimerResolution(unsigned int resolution);
        virtual unsigned int getTimerResolution();
        virtual unsigned int setTimerFreq(unsigned int tick);

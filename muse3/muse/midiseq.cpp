@@ -213,25 +213,25 @@ signed int MidiSeq::selectTimer()
     {
     int tmrFd;
 
+    printf("Trying RTC timer...\n");
+    timer = new RtcTimer();
+    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (tmrFd != -1) { // ok!
+        printf("got timer = %d\n", tmrFd);
+        return tmrFd;
+    }
+    delete timer;
+    
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
-    tmrFd = timer->initTimer();
+    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
     if ( tmrFd!= -1) { // ok!
         fprintf(stderr, "got timer = %d\n", tmrFd);
         return tmrFd;
     }
     delete timer;
 #endif
-
-    printf("Trying RTC timer...\n");
-    timer = new RtcTimer();
-    tmrFd = timer->initTimer();
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
-    }
-    delete timer;
 
     timer=NULL;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),

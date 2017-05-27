@@ -1,3 +1,11 @@
+26.05.2017
+         - Further to 22.05: [Sigh] More timer fixes: (Tim)
+           Info: Alsa HR timer now has hard-coded 1000 Hz limit, unsettable, unreadable :-o
+           As recommended by ALSA support, step through and try freqs as before.
+           Fixed div by 0 crash in ALSA timer if freq too high - set ticks to 1 if 0.
+           In view of the above, the RTC timer now takes priority. MusE tries it first,
+            and falls back to ALSA (typically the HR timer or else the sytem timer).
+           Updated README with modern info about setting up systems for timers.
 22.05.2017
          - Oops, fix ALSA timer fix of 14.05 not working. (Tim)
            From kernel 4.4.0-77, some weird default 1000Hz limit on HR timer frequency!

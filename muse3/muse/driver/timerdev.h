@@ -41,7 +41,7 @@ class Timer {
        Timer() {};
        virtual ~Timer() {};
        
-       virtual signed int initTimer() = 0;
+       virtual signed int initTimer(unsigned int desiredFrequency) = 0;
        virtual unsigned int setTimerResolution(unsigned int resolution) = 0;
        virtual unsigned int getTimerResolution() = 0;
        virtual unsigned int setTimerFreq(unsigned int freq) = 0;
