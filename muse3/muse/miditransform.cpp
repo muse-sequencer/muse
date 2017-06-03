@@ -688,6 +688,8 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                   break;
             case MusECore::Extract:
                   operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
+            // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+            // FALLTHROUGH
             case MusECore::Copy:
                   newPart->addEvent(newEvent);
                   break;
@@ -1707,6 +1709,7 @@ bool MidiTransformerDialog::typesMatch(const MusECore::Event& e, unsigned selTyp
                   MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
                   matched = (c == MusECore::MidiController::NRPN);
                   }
+            break;
             }
          case MIDITRANSFORM_RPN:
             {
@@ -1714,6 +1717,7 @@ bool MidiTransformerDialog::typesMatch(const MusECore::Event& e, unsigned selTyp
                   MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
                   matched = (c == MusECore::MidiController::RPN);
                   }
+            break;
             }
          case MIDITRANSFORM_PROGRAM:
             {

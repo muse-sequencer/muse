@@ -404,6 +404,7 @@ void readShortCuts(MusECore::Xml& xml)
                                     }
                               }
                         }
+                        break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "shortcuts")
                               return;

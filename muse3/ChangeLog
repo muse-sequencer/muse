@@ -1,3 +1,10 @@
+03.06.2017
+      * GCC 7 fixes: (Tim)
+         - LV2 GTK2 support is now optional, due to a current exception breakage in gtkmm.
+         - Fixed many places using switch/case 'fallthrough'. With gcc7 these now generate 
+            warnings which MusE treats as errors. I used 'comment warning suppressor indicators':
+            // FALLTHROUGH
+         - Fixed slight de-referencing problem in JackAudioDevice::portName().
 26.05.2017
          - Further to 22.05: [Sigh] More timer fixes: (Tim)
            Info: Alsa HR timer now has hard-coded 1000 Hz limit, unsettable, unreadable :-o

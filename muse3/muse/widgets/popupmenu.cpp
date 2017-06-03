@@ -183,6 +183,8 @@ bool PopupMenu::event(QEvent* event)
         case Qt::Key_Space:
           if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
               break;
+        // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+        // FALLTHROUGH
         case Qt::Key_Select:
         case Qt::Key_Return:
         case Qt::Key_Enter:

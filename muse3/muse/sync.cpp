@@ -580,6 +580,8 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
             case 2:
                   if (MusEGlobal::debugSync)
                         printf("  MMC: PLAY\n");
+            // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+            // FALLTHROUGH
             case 3:
                   if (MusEGlobal::debugSync)
                         printf("  MMC: DEFERRED PLAY\n");

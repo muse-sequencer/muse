@@ -1160,10 +1160,10 @@ void Preset::printPreset()
 	       i+1, eg[i].d1l, i+1, eg[i].d2r, i+1, eg[i].rr, i+1);
 	switch(eg[i].egShift)
 	{
-	    case(VOF) : printf("VOF");
-	    case(V48) : printf("48");
-	    case(V24) : printf("24");
-	    case(V12) : printf("12");
+	    case(VOF) : printf("VOF"); break;
+	    case(V48) : printf("48"); break;
+	    case(V24) : printf("24"); break;
+	    case(V12) : printf("12"); break;
 	}
 	printf("\n");
     }

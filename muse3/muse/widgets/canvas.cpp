@@ -1124,6 +1124,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   drag = DRAG_LASSO;
                   setCursor();
                   // proceed with DRAG_LASSO:
+                  // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                  // FALLTHROUGH
             case DRAG_LASSO:
                   {
                   lasso = QRect(start.x(), start.y(), dist.x(), dist.y());

@@ -47,8 +47,16 @@ class MidiInstrument;
 struct Gui2AudioFifoStruct {
   int _type;
   int _chan;
-  int _ctlnum;
-  double _val;
+  union
+  {
+    int _ctlnum;
+    int _dataA;
+  };
+  union
+  {
+    double _val;
+    double _dataB;
+  };
   bool _incremental;
 
   Gui2AudioFifoStruct()

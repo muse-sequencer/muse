@@ -462,6 +462,9 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
 
+      QMenu* panicPopupMenu = new QMenu(this);
+      MusEGlobal::panicAction->setMenu(panicPopupMenu);
+      
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
@@ -838,6 +841,10 @@ MusE::MusE() : QMainWindow()
       menu_functions->addAction(midiInitInstActions);
       menu_functions->addAction(midiLocalOffAction);
 
+      panicPopupMenu->addAction(midiResetInstAction);
+      panicPopupMenu->addAction(midiInitInstActions);
+      panicPopupMenu->addAction(midiLocalOffAction);
+      
       //-------------------------------------------------------------
       //    popup Audio
       //-------------------------------------------------------------

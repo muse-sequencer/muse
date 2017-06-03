@@ -286,10 +286,14 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                                     if (v->envL1.step(&a1))
                                           break;
                                     v->state1 = DECAY;
+                                    // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                                    // FALLTHROUGH
                               case DECAY:
                                     if (v->envL2.step(&a1))
                                           break;
                                     v->state1 = SUSTAIN;
+                                    // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                                    // FALLTHROUGH
                               case SUSTAIN:
                                     a1 = sustain0;
                                     break;
@@ -305,10 +309,14 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                                     if (v->envH1.step(&a2))
                                           break;
                                     v->state2 = DECAY;
+                                    // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                                    // FALLTHROUGH
                               case DECAY:
                                     if (v->envH2.step(&a2))
                                           break;
                                     v->state2 = SUSTAIN;
+                                    // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                                    // FALLTHROUGH
                               case SUSTAIN:
                                     a2 = sustain1;
                                     break;
@@ -346,10 +354,13 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                                     if (v->envL1.step(&a1))
                                           break;
                                     v->state1 = DECAY;
+                                    // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                                    // FALLTHROUGH
                               case DECAY:
                                     if (v->envL2.step(&a1))
                                           break;
                                     v->state1 = SUSTAIN;
+                                    // FALLTHROUGH
                               case SUSTAIN:
                                     a1 = sustain0;
                                     break;
@@ -365,10 +376,12 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                                     if (v->envH1.step(&a2))
                                           break;
                                     v->state2 = DECAY;
+                                    // FALLTHROUGH
                               case DECAY:
                                     if (v->envH2.step(&a2))
                                           break;
                                     v->state2 = SUSTAIN;
+                                    // FALLTHROUGH
                               case SUSTAIN:
                                     a2 = sustain1;
                                     break;

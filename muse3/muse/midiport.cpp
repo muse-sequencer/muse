@@ -1193,7 +1193,8 @@ bool MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
 {
   const int chn = g2as._chan;
   int ctrl = -1;
-  double val = g2as._val;
+//   double val = g2as._val;
+  int val = int(g2as._val);
 
   if (g2as._type == ME_CONTROLLER)
   {
@@ -1203,7 +1204,9 @@ bool MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
         //        defined by the user in the controller list.
         if(ctrl == CTRL_HBANK)
         {
-          int hb = ctrl & 0xff;
+          // REMOVE Tim. autoconnect. Changed. Oops. This must have been a mistake - ctlnum ??? 
+//           int hb = ctrl & 0xff;
+          int hb = val & 0xff;
           int lb = 0xff;
           int pr = 0xff;
           if(_device)
@@ -1217,7 +1220,9 @@ bool MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
         else if(ctrl == CTRL_LBANK)
         {
           int hb = 0xff;
-          int lb = ctrl & 0xff;
+          // REMOVE Tim. autoconnect. Changed. Oops. This must have been a mistake - ctlnum ??? 
+//           int lb = ctrl & 0xff;
+          int lb = val & 0xff;
           int pr = 0xff;
           if(_device)
           {
@@ -1248,7 +1253,9 @@ bool MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
   {
         ctrl = CTRL_AFTERTOUCH;
         //const int da = limitValToInstrCtlRange(ctrl, ev.dataA());  // Already done by sender !
-        val = g2as._val;
+        // REMOVE Tim. autoconnect. Changed. Oops. This must have been a mistake - ctlnum ??? 
+//         val = g2as._val;
+        val = g2as._ctlnum;
   }
   else
   if (g2as._type == ME_PITCHBEND)
