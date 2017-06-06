@@ -81,6 +81,10 @@ QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
+void loadTheme(const QString&, bool force = false);
+void loadStyleSheetFile(const QString&);
+// Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
+void updateThemeAndStyle(bool forceStyle = false);
 } 
 
 #endif

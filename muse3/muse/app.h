@@ -342,8 +342,6 @@ class MusE : public QMainWindow
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void toplevelDeleting(MusEGui::TopWin* tl);
-      void loadTheme(const QString&, bool force = false);
-      void loadStyleSheetFile(const QString&);
       bool seqRestart();
       void loadTemplate();
       void showBigtime(bool);
@@ -410,8 +408,6 @@ class MusE : public QMainWindow
       
       // writeFlag: Write to configuration file. 
       void changeConfig(bool writeFlag);
-      // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
-      void updateThemeAndStyle(bool forceStyle = false);
 
       void seqStop();
       bool seqStart();

@@ -488,17 +488,6 @@ int main(int argc, char* argv[])
       else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
 
-      // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
-      //{  int dummy_argc = 1; char** dummy_argv = &argv[0];
-      //  QApplication dummy_app(dummy_argc, dummy_argv);
-      //  MusEGui::Appearance::defaultStyle = dummy_app.style()->objectName();  }
-      //QStringList sl = QStyleFactory::keys();
-      //if (sl.indexOf(MusEGlobal::config.style) != -1) {
-      //  QStyle* style = QApplication::setStyle(MusEGlobal::config.style);
-      //  style->setObjectName(MusEGlobal::config.style);   
-      //}      
-
-
       int rv = 0;
       bool is_restarting = true; // First-time init true.
       while(is_restarting)
@@ -537,8 +526,14 @@ int main(int argc, char* argv[])
         if(QStyle* def_style = app.style())
         {
           const QString appStyleObjName = def_style->objectName();
-          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);   // NOTE: May need alternate method, above.
+          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
         }
+        
+        // NOTE: Set the stylesheet and style as early as possible!
+        // Any later invites trouble - typically the colours may be off, 
+        //  but currently with Breeze or Oxygen, MDI sub windows  may be frozen!
+        // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
+        MusEGui::updateThemeAndStyle();
 
         QString optstr("aJFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
@@ -901,9 +896,10 @@ int main(int argc, char* argv[])
 
         MusEGlobal::muse->show();
 
-        // Change settings. Do not save. Use non-simple version - set style and stylesheet, and do not force the style.
+        // Let the configuration settings take effect. Do not save.
         MusEGlobal::muse->changeConfig(false);
-        MusEGlobal::muse->updateThemeAndStyle();
+        // Set style and stylesheet, and do not force the style
+        //MusEGui::updateThemeAndStyle(); // Works better if called just after app created, above.
 
         MusEGlobal::muse->seqStart();
         
@@ -975,6 +971,8 @@ int main(int argc, char* argv[])
           free(argv_copy);
         }
 
+        // Reset these before restarting, seems to work better, 
+        //  makes a difference with the MDI freezing problem, above.
         app.setStyleSheet("");
         app.setStyle(MusEGlobal::config.style);
       }

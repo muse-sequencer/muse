@@ -30,6 +30,7 @@
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
 #include "gconfig.h"
+#include "helper.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -395,10 +396,9 @@ void TopWin::setIsMdiWin(bool val)
 			//  force the style and stylesheet again. Otherwise the window freezes.
 			if(MusEGlobal::config.fixFrozenMDISubWindows)
 			{
-				// REMOVE Tim. autoconnect. Added.
-				fprintf(stderr, "TopWin::setIsMdiWin Calling muse->updateThemeAndStyle()\n");
-				MusEGlobal::muse->updateThemeAndStyle(true);
-				//MusEGlobal::muse->loadTheme(MusEGlobal::config.style, true);
+				if(MusEGlobal::debugMsg)
+				  fprintf(stderr, "TopWin::setIsMdiWin Calling updateThemeAndStyle()\n");
+				MusEGui::updateThemeAndStyle(true);
 			}
 
 			if (_sharesToolsAndMenu == _sharesWhenFree[_type])
@@ -736,10 +736,9 @@ void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newS
   if((oldState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)) !=
      (newState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)))
   {
-    // REMOVE Tim. autoconnect. Added.
-    fprintf(stderr, "TopWin::windowStateChanged oldState:%d newState:%d Calling muse->updateThemeAndStyle()\n", int(oldState), int(newState));
-    MusEGlobal::muse->updateThemeAndStyle(true);
-    //MusEGlobal::muse->loadTheme(MusEGlobal::config.style, true);
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "TopWin::windowStateChanged oldState:%d newState:%d Calling updateThemeAndStyle()\n", int(oldState), int(newState));
+    MusEGui::updateThemeAndStyle(true);
   }
 }
 

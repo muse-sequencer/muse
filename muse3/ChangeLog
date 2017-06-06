@@ -1,3 +1,11 @@
+06.06.2017
+         - More frozen MDI sub windows fixes. (Tim)
+           When style or stylesheet is changed in Appearance, warning now is 'changes don't
+            take effect until restarted'. Don't even attempt to set style/stylesheet if user 
+            answers no to self-restart prompt. Moved inital setup of style/stylesheet in main() 
+            from after muse->show to just after QApplication is created - now the only 
+            place allowed to set them, except for hacks if 'Fix frozen windows' setting is on.
+           Note: Setting a stylesheet may still cause it to freeze. Working on the issue...
 03.06.2017
       * GCC 7 fixes: (Tim)
          - LV2 GTK2 support is now optional, due to a current exception breakage in gtkmm.

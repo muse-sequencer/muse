@@ -838,7 +838,7 @@ bool Appearance::apply()
 bool Appearance::checkClose()
 {
   if(QMessageBox::warning(MusEGlobal::muse, QString("Muse"),
-    tr("Style was changed.\nFor best results, the application should restart.\nRestart now?"),
+    tr("Style was changed.\nThe program must be restarted for changes to take place.\nRestart now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
      == QMessageBox::Yes)
   {
@@ -850,7 +850,7 @@ bool Appearance::checkClose()
   // We want the non-simple version, set the style and stylesheet, and don't save - it's already been done.
   // And force the style.
   MusEGlobal::muse->changeConfig(false);
-  MusEGlobal::muse->updateThemeAndStyle(true);
+//   MusEGlobal::muse->updateThemeAndStyle(true);
 
   MusEGlobal::muse->setRestartingApp(false); // Cancel any restart. Also cleared in muse->closeEvent().
   return false;
@@ -1197,7 +1197,7 @@ void Appearance::doCancel()
   MusEGlobal::config = *backupConfig;
   // Save settings. Use non-simple version - set style and stylesheet.
   MusEGlobal::muse->changeConfig(true); // Restore everything possible.
-  MusEGlobal::muse->updateThemeAndStyle(true);
+//   MusEGlobal::muse->updateThemeAndStyle(true);
 }
 
 //---------------------------------------------------------

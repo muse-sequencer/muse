@@ -2520,91 +2520,7 @@ void MusE::configAppearance()
       }
 
 //---------------------------------------------------------
-//   loadTheme
-//---------------------------------------------------------
-
-void MusE::loadTheme(const QString& s, bool force)
-      {
-      // Style sheets take priority over styles, and actually
-      //  reset the style object name to empty when set.
-      const QString oname(qApp->style()->objectName());
-      QStringList sl = QStyleFactory::keys();
-      if (s.isEmpty() || sl.indexOf(s) == -1) {
-        if(MusEGlobal::debugMsg)
-          printf("Set style does not exist, setting default.\n");
-        // To find the name of the current style, use objectName().
-        if(force || oname.compare(Appearance::getSetDefaultStyle(), Qt::CaseInsensitive) != 0)
-        {
-          qApp->setStyle(Appearance::getSetDefaultStyle());
-          // Do the style again to fix a bug where the arranger is non-responsive.
-          if(MusEGlobal::config.fixFrozenMDISubWindows)
-            qApp->setStyle(Appearance::getSetDefaultStyle());
-
-          // REMOVE Tim. autoconnect. Added.
-          fprintf(stderr, "MusE::loadTheme setting app style to default:%s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
-          fprintf(stderr, "   App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-
-          // No style object name? It will hapen when a stylesheet is active.
-          // Give it a name. NOTE: The object names always seem to be lower case while
-          //  the style factory key names are not.
-          if(qApp->style()->objectName().isEmpty())
-          {
-            qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
-            // REMOVE Tim. autoconnect. Added.
-            fprintf(stderr, "   Setting empty style object name. App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-          }
-        }
-      }
-      else if (force || oname.compare(s, Qt::CaseInsensitive) != 0)
-      {
-            qApp->setStyle(s);
-            // Do the style again to fix a bug where the arranger is non-responsive.
-            if(MusEGlobal::config.fixFrozenMDISubWindows)
-              qApp->setStyle(s);
-
-            // REMOVE Tim. autoconnect. Added.
-            fprintf(stderr, "MusE::loadTheme setting app style to:%s\n", s.toLatin1().constData());
-            fprintf(stderr, "   app style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-
-            // No style object name? It will hapen when a stylesheet is active.
-            // Give it a name. NOTE: The object names always seem to be lower case while
-            //  the style factory key names are not.
-            if(qApp->style()->objectName().isEmpty())
-            {
-              qApp->style()->setObjectName(s.toLower());
-              // REMOVE Tim. autoconnect. Added.
-              fprintf(stderr, "   Setting empty style object name. App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-            }
-      }
-      }
-
-//---------------------------------------------------------
-//   loadStyleSheetFile
-//---------------------------------------------------------
-
-void MusE::loadStyleSheetFile(const QString& s)
-{
-    // REMOVE Tim. autoconnect. Added.
-    fprintf(stderr, "MusE::loadStyleSheetFile:%s\n", s.toLatin1().constData());
-    if(s.isEmpty())
-    {
-      qApp->setStyleSheet(s);
-      return;
-    }
-
-    QFile cf(s);
-    if (cf.open(QIODevice::ReadOnly)) {
-          QByteArray ss = cf.readAll();
-          QString sheet(QString::fromUtf8(ss.data()));
-          qApp->setStyleSheet(sheet);
-          cf.close();
-          }
-    else
-          printf("loading style sheet <%s> failed\n", qPrintable(s));
-}
-
-//---------------------------------------------------------
-//   configChanged
+//   changeConfig
 //    - called whenever configuration has changed
 //    - when configuration has changed by user, call with
 //      writeFlag=true to save configuration in ~/.MusE
@@ -3199,20 +3115,6 @@ void MusE::updateConfiguration()
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
       }
-
-//---------------------------------------------------------
-//   updateThemeAndStyle
-//    Call when the theme or stylesheet part of the configuration has changed,
-//     to actually switch them.
-//---------------------------------------------------------
-
-void MusE::updateThemeAndStyle(bool forceStyle)
-{
-  // Note that setting a stylesheet completely takes over the font until blanked again.
-  QApplication::setFont(MusEGlobal::config.fonts[0]);
-  loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
-  loadTheme(MusEGlobal::config.style, forceStyle || !MusEGlobal::config.styleSheetFile.isEmpty());
-}
 
 //---------------------------------------------------------
 //   showBigtime
