@@ -157,6 +157,8 @@ int grepTrack(FILE* f, int trackno)
                   case 0xe0:
                         getc(f);
                         ++cpos;
+                  // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                  // FALLTHROUGH
                   case 0xc0:
                   case 0xd0:
                         if (a == -1) {
