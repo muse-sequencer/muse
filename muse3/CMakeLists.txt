@@ -725,7 +725,7 @@ if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
-    if (ENABLE_LV2_GTK AND (NOT GTK2_FOUND))
+    if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
         message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
     endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
     
