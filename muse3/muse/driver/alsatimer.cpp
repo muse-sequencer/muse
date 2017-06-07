@@ -205,7 +205,7 @@ unsigned int AlsaTimer::setTimerFreq(unsigned int freq)
   if((err = snd_timer_params(handle, params)) < 0)
   {
     const int num_freqs = 10;
-    const unsigned int freqs[num_freqs] {32768, 16384, 8192, 4096, 2048, 1024, 1000, 500, 250, 100};
+    const unsigned int freqs[num_freqs] = {32768, 16384, 8192, 4096, 2048, 1024, 1000, 500, 250, 100};
     int found_idx = -1;
     if(!snd_timer_info_is_slave(info))
     {
