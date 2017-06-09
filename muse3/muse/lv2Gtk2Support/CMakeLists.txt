@@ -35,7 +35,8 @@ add_library ( lv2_gtk2_support ${MODULES_BUILD}
 ## Compilation flags and target name
 ##
 set_target_properties( lv2_gtk2_support
-      PROPERTIES COMPILE_FLAGS "-std=c++11"
+      # Avoid treating warnings as errors here, unlike the rest of the app.
+      PROPERTIES COMPILE_FLAGS "-std=c++11 -Wno-error"
       # COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -std=c++11"
       OUTPUT_NAME muse_lv2_gtk2_support
       )

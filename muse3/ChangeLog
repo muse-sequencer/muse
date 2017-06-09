@@ -2,6 +2,7 @@
          - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 
             QString::arg usage or similar code, or snprintf. Compiler warned of some suspicous 
             sprintf usage with not enough dest space. Fixed a few other compiler complaints. (Tim)
+         - lv2Gtk2Support module: Build with -Wno-error to avoid stopping on warnings. (Tim)
 06.06.2017
          - More frozen MDI sub windows fixes. (Tim)
            When style or stylesheet is changed in Appearance, warning now is 'changes don't
