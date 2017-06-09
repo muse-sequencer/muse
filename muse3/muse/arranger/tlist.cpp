@@ -603,16 +603,16 @@ void TList::returnPressed()
                 MusECore::TrackList* tl = MusEGlobal::song->tracks();
                 for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i) {
                       if ((*i)->name() == editor->text()) {
+                            editTrack = 0;
+                            editor->blockSignals(true);  
+                            editor->hide();
+                            editor->blockSignals(false); 
                             QMessageBox::critical(this,
                               tr("MusE: bad trackname"),
                               tr("please choose a unique track name"),
                               QMessageBox::Ok,
                               Qt::NoButton,
                               Qt::NoButton);
-                            editTrack = 0;
-                            editor->blockSignals(true);  
-                            editor->hide();
-                            editor->blockSignals(false); 
                             setFocus();
                             return;
                             }
