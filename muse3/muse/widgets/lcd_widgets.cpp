@@ -271,8 +271,8 @@ QSize LCDPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
                                       )
 {
   const int font_height = fm.height();
-  int fin_h;
-  int fin_w;
+  int fin_h = 1;
+  int fin_w = 1;
   QRect aRect;
   switch(orient)
   {
@@ -697,7 +697,7 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
   const int indent = aRect.width() / 2 - w / 2;
 
   int x0, x1, x2;
-  int recty1, recty2, recty3, recth;
+  int recty1 = 0, recty2 = 0, recty3 = 0, recth = 0;
   int frecty1, frecty2, frecty3, frecth;
 
   switch(_orient)

@@ -366,22 +366,22 @@ void MidiDeviceList::add(MidiDevice* dev)
       {
       bool gotUniqueName=false;
       int increment = 0;
-      QString origname = dev->name();
+      const QString origname = dev->name();
+      QString newName = origname;
       while (!gotUniqueName) {
             gotUniqueName = true;
             // check if the name's been taken
             for (iMidiDevice i = begin(); i != end(); ++i) {
                   const QString s = (*i)->name();
-                  if (s == dev->name())
+                  if (s == newName)
                         {
-                        char incstr[4];
-                        sprintf(incstr,"_%d",++increment);
-                        dev->setName(origname + QString(incstr));    
+                        newName = origname + QString("_%1").arg(++increment);
                         gotUniqueName = false;
                         }
                   }
             }
-      
+      if(origname != newName)
+        dev->setName(newName);
       push_back(dev);
       }
 
@@ -393,7 +393,8 @@ void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
 {
   bool gotUniqueName=false;
   int increment = 0;
-  QString origname = dev->name();
+  const QString origname = dev->name();
+  QString newName = origname;
   PendingOperationItem poi(this, dev, PendingOperationItem::AddMidiDevice);
   // check if the name's been taken
   while(!gotUniqueName) 
@@ -411,28 +412,23 @@ void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
       PendingOperationItem& poif = *ipo;
       if(poif._midi_device == poi._midi_device)
         return;  // Device itself is already added! 
-        
-      // TODO: This and section below should be changed to simply: dev->setName(origname + QString::number(increment))  
-      //        but first must be careful of localizations - will it give differing results?
-      char incstr[4];
-      sprintf(incstr,"_%d",++increment);
-      dev->setName(origname + QString(incstr));
-      
+      newName = origname + QString("_%1").arg(++increment);
       gotUniqueName = false;
     }    
     
     for(iMidiDevice i = begin(); i != end(); ++i) 
     {
       const QString s = (*i)->name();
-      if(s == dev->name())
+      if(s == newName)
       {
-        char incstr[4];
-        sprintf(incstr,"_%d",++increment);
-        dev->setName(origname + QString(incstr));    
+        newName = origname + QString("_%1").arg(++increment);
         gotUniqueName = false;
       }
     }
   }
+  
+  if(origname != newName)
+    dev->setName(newName);
   
   ops.add(poi);
 }

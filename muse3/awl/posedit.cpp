@@ -259,16 +259,23 @@ void PosEdit::setValue(int t)
 
 void PosEdit::updateValue()
       {
-      char buffer[64];
+      QString s;
       if (_smpte) {
             _pos.msf(&cur_minute, &cur_sec, &cur_frame, &cur_subframe);
-            sprintf(buffer, "%03d:%02d:%02d:%02d", cur_minute, cur_sec, cur_frame, cur_subframe);
+            s = QString("%1:%2:%3:%4")
+                .arg(cur_minute,   3, 10, QLatin1Char('0'))
+                .arg(cur_sec,      2, 10, QLatin1Char('0'))
+                .arg(cur_frame,    2, 10, QLatin1Char('0'))
+                .arg(cur_subframe, 2, 10, QLatin1Char('0'));
             }
       else {
             _pos.mbt(&cur_bar, &cur_beat, &cur_tick);
-            sprintf(buffer, "%04d.%02d.%03d", cur_bar+1, cur_beat+1, cur_tick);
+            s = QString("%1.%2.%3")
+                .arg(cur_bar + 1,  4, 10, QLatin1Char('0'))
+                .arg(cur_beat + 1, 2, 10, QLatin1Char('0'))
+                .arg(cur_tick,     3, 10, QLatin1Char('0'));
             }
-      lineEdit()->setText(buffer);
+      lineEdit()->setText(s);
       }
 
 //---------------------------------------------------------

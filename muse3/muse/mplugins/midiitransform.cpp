@@ -1252,7 +1252,7 @@ void MidiInputTransformDialog::presetNew()
       {
       QString name;
       for (int i = 0;; ++i) {
-            name.sprintf("New-%d", i);
+            name = QString("New-") + QString::number(i);
             MusECore::iMidiInputTransformation imt;
             for (imt = MusECore::mtlist.begin(); imt != MusECore::mtlist.end(); ++imt) {
                   if (name == (*imt)->name)

@@ -656,7 +656,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
   if(!MusEGlobal::checkAudioDevice())
     return;
 
-  MusECore::RouteList* rl;
+  MusECore::RouteList* rl = 0;
   int channels = -1;
   std::list<QString> ol;
   MusECore::RouteCapabilitiesStruct rcaps;

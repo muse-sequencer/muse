@@ -458,8 +458,6 @@ void TList::paint(const QRect& r)
                                           if (cl->isVisible())
                                               countVisible++;
                                       }
-                                      //s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toLatin1().data());
-                                      //make this more Unicode-aware as toLatin1 discards all internatianal data
                                       s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
                                       }
 

@@ -101,7 +101,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   {
     for( ; ni < 65536; ++ni)
     {
-      name.sprintf("jack-midi-%d", ni);
+      name = QString("jack-midi-") + QString::number(ni);
       if(!MusEGlobal::midiDevices.find(name, JACK_MIDI))
         break;
     }

@@ -178,9 +178,7 @@ void MidiControllerEditDialog::updateMidiPortsList()
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &midiPorts[i];
             MidiDevice* dev = port->device();
-            QString name;
-            name.sprintf("%d(%s)", port->portno()+1,
-                     dev ? dev->name().toLatin1() : "none");
+            QString name = QString("%1(%2)").arg(port->portno() + 1).arg(dev ? dev->name() : QString("none"));
             midiPortsList->insertItem(name, i);
             }
       _lastPort = midiPortsList->currentItem();

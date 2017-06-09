@@ -299,8 +299,7 @@ void MidiAudioControl::update()
         //if(!(md->rwFlags() & 1 || md->isSynti()) && (i != outPort))  
         if(!(md->rwFlags() & 2) && (i != _port))   // Only readable ports, or current one.    
           continue;
-        QString name;
-        name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
+        QString name = QString("%1:%2").arg(i + 1).arg(MusEGlobal::midiPorts[i].portname());
         portComboBox->insertItem(item_idx, name, i);
         if(_port == -1)
           _port = i;      // Initialize

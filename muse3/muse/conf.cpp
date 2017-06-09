@@ -1491,23 +1491,17 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
 static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
-            char buffer[32];
-            sprintf(buffer, "palette%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.palette[i]);
+            xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
             }
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "partColor%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
+            xml.colorTag(level, QString("partColor") + QString::number(i), MusEGlobal::config.partColors[i]);
             }
 
       if(partColorNames)
       {
         for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-              char buffer[32];
-              sprintf(buffer, "partColorName%d", i);
-              xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
+              xml.strTag(level, QString("partColorName") + QString::number(i), MusEGlobal::config.partColorNames[i]);
               }
       }
       
@@ -1781,9 +1775,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "font%d", i);
-            xml.strTag(level, buffer, MusEGlobal::config.fonts[i].toString());
+            xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
             
       xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);

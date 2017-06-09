@@ -62,14 +62,13 @@ namespace MusEGui {
 QString string2hex(const unsigned char* data, int len)
       {
       QString d;
-      QString s;
       for (int i = 0; i < len; ++i) {
             if ((i > 0) && ((i % 8)==0)) {
                   d += "\n";
                   }
             else if (i)
                   d += " ";
-            d += s.sprintf("%02x", data[i]);
+            d += QString("%1").arg(data[i], 2, 16, QLatin1Char('0'));
             }
       return d;
       }

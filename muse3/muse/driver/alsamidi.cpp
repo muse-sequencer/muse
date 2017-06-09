@@ -74,7 +74,7 @@ MidiDevice* MidiAlsaDevice::createAlsaMidiDevice(QString name, int rwflags) // 1
   {
     for( ; ni < 65536; ++ni)
     {
-      name.sprintf("alsa-midi-%d", ni);
+      name = QString("alsa-midi-") + QString::number(ni);
       if(!MusEGlobal::midiDevices.find(name))
         break;
     }

@@ -300,7 +300,7 @@ int grepMidi(const char* name)
       FILE* f;
       if (p && strcmp(p, ".gz") == 0) {
             char buffer[512];
-            sprintf(buffer, "gunzip < %s", name);
+            snprintf(buffer, 512, "gunzip < %s", name);
             f = popen(buffer, "r");
             }
       else {

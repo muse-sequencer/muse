@@ -492,7 +492,9 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
             }
             if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
               continue;
-            name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
+            name = QString("%1:%2")
+                .arg(port->portno() + 1)
+                .arg(port->portname());
             if(md || (i == checkPort))   
             {  
               act = p->addAction(name);

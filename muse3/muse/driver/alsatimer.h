@@ -47,7 +47,7 @@ class AlsaTimer : public Timer{
     snd_timer_info_t *info;
     snd_timer_params_t *params;
     struct pollfd *fds;
-    char timername[64];
+    char timername[256];
     signed int count;
 
     public:

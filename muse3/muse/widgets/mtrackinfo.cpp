@@ -1579,8 +1579,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
                 continue;
               if(!(md->rwFlags() & 1) && (i != outPort))   // Only writeable ports, or current one.
                 continue;
-              QString name;
-              name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
+              QString name = QString("%1:%2").arg(i + 1).arg(MusEGlobal::midiPorts[i].portname());
               iOutput->insertItem(item_idx, name, i);
               if (i == outPort)
                     iOutput->setCurrentIndex(item_idx);

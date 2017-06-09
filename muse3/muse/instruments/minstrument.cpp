@@ -113,14 +113,13 @@ int string2sysex(const QString& s, unsigned char** data)
 QString sysex2string(int len, unsigned char* data)
       {
       QString d;
-      QString s;
       for (int i = 0; i < len; ++i) {
             if ((i > 0) && ((i % 8)==0)) {
-                  d += "\n";
+                  d += QString("\n");
                   }
             else if (i)
-                  d += " ";
-            d += s.sprintf("%02x", data[i]);
+                  d += QString(" ");
+            d += QString("%1").arg(data[i], 2, 16, QLatin1Char('0'));
             }
       return d;
       }

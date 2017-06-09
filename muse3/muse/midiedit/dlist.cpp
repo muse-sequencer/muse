@@ -650,7 +650,9 @@ void DList::draw(QPainter& p, const QRect& rect)
                               if(dcanvas)
                                 isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::PortField);
                               if(dm->port != -1)
-                                s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
+                                s = QString("%1:%2")
+                                    .arg(dm->port + 1)
+                                    .arg(MusEGlobal::midiPorts[dm->port].portname());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }

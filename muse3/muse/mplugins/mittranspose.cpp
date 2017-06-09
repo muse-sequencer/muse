@@ -98,8 +98,7 @@ void MITPluginTranspose::triggerKeyChanged(int val)
 
 void MITPluginTranspose::transposeChanged()
       {
-      QString s;
-      s.sprintf("%c%d", transpose >= 0 ? '-' : ' ', transpose);
+      QString s = QString(transpose >= 0 ? '-' : ' ') + QString::number(transpose);
       transposeLabel->setText(s);
       transposeChangedFlag = false;
       }

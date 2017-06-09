@@ -106,14 +106,20 @@ void PosLabel::updateValue()
                   }
             int frame = int(rest);
             int subframe = int((rest-frame)*100);
-            s.sprintf("%03d:%02d:%02d:%02d", min, sec, frame, subframe);
+            s = QString("%1:%2:%3:%4")
+                .arg(min,      3, 10, QLatin1Char('0'))
+                .arg(sec,      2, 10, QLatin1Char('0'))
+                .arg(frame,    2, 10, QLatin1Char('0'))
+                .arg(subframe, 2, 10, QLatin1Char('0'));
             }
       else {
             int bar, beat;
             unsigned tick;
             AL::sigmap.tickValues(_tickValue, &bar, &beat, &tick);
-            //s.sprintf("%04d.%02d.%03ud", bar+1, beat+1, tick);
-            s.sprintf("%04d.%02d.%03u", bar+1, beat+1, tick);
+            s = QString("%1.%2.%3")
+                .arg(bar + 1,      4, 10, QLatin1Char('0'))
+                .arg(beat + 1,     2, 10, QLatin1Char('0'))
+                .arg(tick,         3, 10, QLatin1Char('0'));
             }
       setText(s);
       }

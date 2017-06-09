@@ -1300,8 +1300,8 @@ void MidiTransformerDialog::presetNew()
       {
       QString name;
       for (int i = 0;; ++i) {
-            name.sprintf("New-%d", i);
-	    MusECore::iMidiTransformation imt;
+            name = QString("New-") + QString::number(i);
+            MusECore::iMidiTransformation imt;
             for (imt = MusECore::mtlist.begin(); imt != MusECore::mtlist.end(); ++imt) {
                   if (name == (*imt)->name)
                         break;

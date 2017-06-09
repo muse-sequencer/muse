@@ -297,7 +297,10 @@ QString EventListItem::text(int col) const
                   int bar, beat;
                   unsigned tick;
                   AL::sigmap.tickValues(t, &bar, &beat, &tick);
-                  s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+                  s = QString("%1.%2.%3")
+                      .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                      .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                      .arg(tick,     3, 10, QLatin1Char('0'));
                   }
                   break;
             case 2:
@@ -377,7 +380,7 @@ QString EventListItem::text(int col) const
                     int pr = (val & 0xff) + 1;
                     if (pr == 0x100)
                       pr = 0;
-                    s.sprintf("%d-%d-%d", hb, lb, pr);
+                    s = QString("%1-%2-%3").arg(hb).arg(lb).arg(pr);
                   }
                   else        
                   {

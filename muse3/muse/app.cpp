@@ -1440,7 +1440,7 @@ bool MusE::save()
 
 bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
-      QString backupCommand;
+//       QString backupCommand;
 
       QFile currentName(name);
       if (QFile::exists(name)) {

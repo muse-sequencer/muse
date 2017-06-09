@@ -754,15 +754,18 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              Part* dpart;
+              Part* dpart = 0;
               if(dup)
                 dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
               else if(cpy)
                 dpart = spart->duplicate();
               else if(cln)
                 dpart = spart->createNewClone();
-              dpart->setTrack(this);
-              parts()->add(dpart);
+              if(dpart)
+              {
+                dpart->setTrack(this);
+                parts()->add(dpart);
+              }
               }
       }
       
