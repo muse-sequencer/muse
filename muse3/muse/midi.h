@@ -134,13 +134,23 @@ QString midiMetaName(int);
 // A special MusE soft synth sysex manufacturer ID.
 #define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
 // Following the MFG_ID, besides synth specific IDs, this reserved special ID indicates
-//  a MusE system ID will follow in the next byte.
+//  a MusE SYSTEM ID will follow in the next byte.
 #define MUSE_SYSEX_SYSTEM_ID 0x7f
 // This SYSTEM command will force any relevant drum maps to update.
 // When a synth's note names have changed, it should issue this command.
 // So far, this command is really just a special requirement for the fluidsynth MESS plugin.
 // It is the only way to inform the host to update the maps.
 #define MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID 0x00
+
+// REMOVE Tim. autoconnect. Added.
+// // This SYSTEM command will send CTRL_ALL_SOUNDS_OFF and/or CTRL_RESET_ALL_CTRL,
+// //  where appropriate reset all MidiCtrlValList lastValidByteX members,
+// //  and reset all MidiDevice curOutParamNums members. It is for internal use. It is sent
+// //  to the drivers like any other message (played or putEvent etc.), but it is not transmitted.
+// // It's the only way to tell our ring-buffered drivers to reset their cached values to CTRL_VAL_UNKNOWN.
+// #define MUSE_SYSEX_SYSTEM_PANIC_ID 0x01
+// // The next byte describes what to include in the panic. It is an OR'd combination of these values:
+// enum MUSE_SYSEX_SYSTEM_PANIC_TYPES { MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF = 0x1, MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL = 0x2};
 
 struct MPEventList;
 class MidiTrack;

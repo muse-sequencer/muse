@@ -138,7 +138,7 @@ class MetronomeSynthIF : public SynthIF
 //   getData
 //---------------------------------------------------------
 
-iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned pos, int/*ports*/, unsigned n, float** buffer)
+iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
       {
       // Added by Tim. p3.3.18
       #ifdef METRONOME_DEBUG
@@ -150,26 +150,39 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       }
 
       //set type to unsigned , due to compiler warning: comparison signed/unsigned
-      unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
-      unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
-      unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
-      int frameOffset = MusEGlobal::audio->getFrameOffset();
+// REMOVE Tim. autoconnect. Changed.
+//       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
+//       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
+//       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
+      unsigned int curPos      = 0;
+      unsigned int endPos      = n;
+// REMOVE Tim. autoconnect. Changed.
+//       int frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
 
       for (; i != el->end(); ++i) {
-            unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
-            if (frame >= endPos)
+// REMOVE Tim. autoconnect. Changed.
+//             unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
+//             if (frame >= endPos)
+            unsigned int frame = (i->time() < syncFrame) ? 0 : i->time() - syncFrame;
+            if (frame >= n)
                   break;
             if (frame > curPos) {
-                  if (frame < pos)
-                        printf("should not happen: missed event %d\n", pos -frame);
+//                   if (frame < pos)
+//                         printf("should not happen: missed event %d\n", pos -frame);
+                  if(i->time() < syncFrame)
+                        fprintf(stderr, "MetronomeSynthIF: should not happen: missed event %u\n", i->time());
                   else
-                        process(buffer, curPos-pos, frame - curPos);
+//                         process(buffer, curPos-pos, frame - curPos);
+                        process(buffer, curPos, frame - curPos);
                   curPos = frame;
                   }
             putEvent(*i);
             }
-      if (endPos - curPos)
-            process(buffer, curPos - off, endPos - curPos);
+//       if (endPos - curPos)
+//             process(buffer, curPos - off, endPos - curPos);
+      if (endPos > curPos)
+            process(buffer, curPos, endPos - curPos);
       return el->end();
       }
 

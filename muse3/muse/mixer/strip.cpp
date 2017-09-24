@@ -1857,7 +1857,9 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
         if(off || (d_val < double(mctl->minVal())) || (d_val > double(mctl->maxVal())))
         {
           if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       id,
                                                       MusECore::CTRL_VAL_UNKNOWN));
@@ -2642,7 +2644,9 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         if(off)
         {
           if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       id,
                                                       MusECore::CTRL_VAL_UNKNOWN));
@@ -2692,8 +2696,11 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
 //           i_fin_val += mctl->bias();
           d_fin_val += double(mctl->bias());
 
-          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//           //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+// //           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+          //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+//           MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
 //           mp->putEvent(ev);
 
           // False = linear not dB because we are doing the conversion here.
@@ -2872,7 +2879,9 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
 //           if(m_val > mctl->maxVal())
 //             m_val = mctl->maxVal();
 //           m_val += mctl->bias();
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, m_ctlnum, m_val);
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, m_ctlnum, m_val);
+//           MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, m_ctlnum, m_val);
 //           mp->putEvent(ev);
 
           const double m_val_delta = muse_round2micro(a_fact_delta * d_range);
@@ -2925,8 +2934,11 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
 //           i_fin_val += mctl->bias();
           d_fin_val += double(mctl->bias());
 
-          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//           //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+// //           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
+          //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
+//           MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
 //           mp->putEvent(ev);
 
           // False = linear not dB because we are doing the conversion here.

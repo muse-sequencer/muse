@@ -75,9 +75,21 @@ const int CTRL_REVERB_SEND        = 0x5b;
 const int CTRL_CHORUS_SEND        = 0x5d;
 const int CTRL_VARIATION_SEND     = 0x5e;
 
+// Channel Mode controllers:
+// Same as other 7-bit controllers, but "implements Mode control and
+//  special message by using reserved controller numbers 120-127" (MMA).
+//
+// REMOVE Tim. autoconnect. Added. Added comment.
+// // Don't send these two directly from MusE unless you know what you are doing.
+// // They are controllers requiring special processing.
+// // Send a MUSE_SYSEX_SYSTEM_PANIC_ID sysex (see midi.h).
+// // The midiport and device will catch it and perform the necessary steps
+// //  including some IPC to the ALSA driver thread if required.
 const int CTRL_ALL_SOUNDS_OFF     = 0x78; // 120
 const int CTRL_RESET_ALL_CTRL     = 0x79; // 121
+//
 const int CTRL_LOCAL_OFF          = 0x7a; // 122
+
 
 // controller types 0x10000 - 0x1ffff are 14 bit controller with
 //    0x1xxyy
@@ -262,6 +274,10 @@ class MidiCtrlValList : public std::multimap<int, MidiCtrlVal, std::less<int> > 
       double hwDVal() const { return _hwVal; }
       inline bool hwValIsUnknown() const { return MidiController::iValIsUnknown(MidiController::dValToInt(_hwVal)); }
 
+      // Resets the current, and optionally the last, hardware value to CTRL_VAL_UNKNOWN.
+      // Returns true if either value was changed.
+      bool resetHwVal(bool doLastHwValue = false);
+      
       // Set current value in midi hardware. Can be CTRL_VAL_UNKNOWN.
       // Returns false if value is already equal, true if value is changed.
       bool setHwVal(const double v);
@@ -336,6 +352,10 @@ class MidiCtrlValListList : public MidiCtrlValListList_t {
       size_type del(int num, bool update = true);
       void del(iMidiCtrlValList first, iMidiCtrlValList last, bool update = true);
       void clr();
+      // Convenience method: Resets all current, and optionally the last, hardware controller values to CTRL_VAL_UNKNOWN.
+      // Equivalent to calling resetAllHwVal() on each MidiCtrlValList.
+      // Returns true if either value was changed in any controller.
+      bool resetAllHwVals(bool doLastHwValue);
       
 #ifdef _MIDI_CTRL_METHODS_DEBUG_      
       // Need to catch all insert, erase, clear etc...

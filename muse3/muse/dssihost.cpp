@@ -776,6 +776,7 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::DssiSynthIF\n");
       #endif
+      _osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
       _synth = 0;
       _handle = NULL;
       _controls = 0;
@@ -868,6 +869,9 @@ DssiSynthIF::~DssiSynthIF()
         
       if(_controlsOut)
         delete[] _controlsOut;
+      
+      if(_osc2AudioFifo)
+        delete _osc2AudioFifo;
 }
 
 int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const 
@@ -1527,13 +1531,20 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
-  const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
+// REMOVE Tim. autoconnect. Changed.  
+//   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
+//   snd_seq_event_t events[ev_buf_sz];
+  const unsigned long ev_fifo_sz = synti->eventFifo.getSize();
+  const unsigned long ev_osc_fifo_sz = _osc2AudioFifo->getSize();
+  const unsigned long ev_list_sz = el->size();
+  const unsigned long ev_buf_sz = ev_list_sz + ev_fifo_sz + ev_osc_fifo_sz;
   snd_seq_event_t events[ev_buf_sz];
 
-  const int frameOffset = MusEGlobal::audio->getFrameOffset();
+// REMOVE Tim. autoconnect. Removed.
+//   const int frameOffset = MusEGlobal::audio->getFrameOffset();
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef DSSI_DEBUG_PROCESS
@@ -1805,33 +1816,50 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
         for(; start_event != el->end(); ++start_event)
         {
           #ifdef DSSI_DEBUG
-          fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+// REMOVE Tim. autoconnect. Changed.
+//           fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", 
+//                   start_event->time(), pos, sample, nsamp, frameOffset);
+          fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu syncFrame:%d\n", 
+                  start_event->time(), pos, sample, nsamp, syncFrame);
           #endif
 
-          if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+// REMOVE Tim. autoconnect. Changed.
+//           if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+          if(start_event->time() >= (sample + nsamp + syncFrame))
           {
             #ifdef DSSI_DEBUG
-            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+            //fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - syncFrame - sample);
             #endif
             break;
           }
 
-          // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-          // Same code as in MidiPort::sendEvent()
-          if(mp && !mp->sendHwCtrlState(*start_event, false))
-            continue;
+// REMOVE Tim. autoconnect. Removed.
+//           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//           // Same code as in MidiPort::sendEvent()
+//           if(mp && !mp->sendHwCtrlState(*start_event, false))
+//             continue;
           
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(*start_event, &events[nevents]))
           {
             // Time-stamp the event.
-            int ft = start_event->time() - frameOffset - pos - sample;
-            if(ft < 0)
-              ft = 0;
+// REMOVE Tim. autoconnect. Changed.
+//             int ft = start_event->time() - frameOffset - pos - sample;
+            //int ft = start_event->time() - syncFrame - sample;
+//             if(ft < 0)
+//               ft = 0;
+            unsigned int ft = (start_event->time() < syncFrame) ? 0 : start_event->time() - syncFrame;
+            ft -= (ft < sample) ? 0 : sample;
 
-            if (ft >= int(nsamp))
+//             if (ft >= int(nsamp))
+            if (ft >= nsamp)
             {
-                fprintf(stderr, "DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+// REMOVE Tim. autoconnect. Changed.
+//                 fprintf(stderr, "DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", 
+//                         start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d syncFrame:%lu ft:%u sample:%lu nsamp:%lu\n", 
+                        start_event->time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
 
@@ -1849,7 +1877,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
       }
 
       // Now process putEvent events...
-      while(!synti->eventFifo.isEmpty())
+// REMOVE Tim. autoconnect. Changed.
+//       while(!synti->eventFifo.isEmpty())
+      for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
       {
         MidiPlayEvent e = synti->eventFifo.peek();
 
@@ -1857,7 +1887,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
         fprintf(stderr, "DssiSynthIF::getData eventFifo event time:%d\n", e.time());
         #endif
 
-        if(e.time() >= (pos + sample + nsamp + frameOffset))
+// REMOVE Tim. autoconnect. Changed.
+//         if(e.time() >= (pos + sample + nsamp + frameOffset))
+        if(e.time() >= (syncFrame + sample + nsamp))
           break;
 
         synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
@@ -1867,12 +1899,68 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
           if(processEvent(e, &events[nevents]))
           {
             // Time-stamp the event.
-            int ft = e.time() - frameOffset - pos  - sample;
-            if(ft < 0)
-              ft = 0;
-            if (ft >= int(nsamp))
+// REMOVE Tim. autoconnect. Changed.
+//             int ft = e.time() - frameOffset - pos  - sample;
+//             if(ft < 0)
+//               ft = 0;
+            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
+//             if (ft >= int(nsamp))
+            if (ft >= nsamp)
             {
-                fprintf(stderr, "DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+// REMOVE Tim. autoconnect. Changed.
+//                 fprintf(stderr, "DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", 
+//                         e.time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d syncFrame:%lu ft:%u sample:%lu nsamp:%lu\n", 
+                        e.time(), pos, syncFrame, ft, sample, nsamp);
+                ft = nsamp - 1;
+            }
+            // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
+            //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
+            events[nevents].time.tick = ft;
+
+            ++nevents;
+          }
+        }
+      }
+
+// REMOVE Tim. autoconnect. Added.
+      // FIXME: The two fifos' and event list's processing needs to be interleaved and sorted according to time.
+      // Now process OSC events...
+      for(long unsigned int rb_idx = 0; rb_idx < ev_osc_fifo_sz; ++rb_idx)
+      {
+        MidiPlayEvent e = _osc2AudioFifo->peek();
+
+        #ifdef DSSI_DEBUG
+        fprintf(stderr, "DssiSynthIF::getData _osc2AudioFifo event time:%d\n", e.time());
+        #endif
+
+// REMOVE Tim. autoconnect. Changed.
+//         if(e.time() >= (pos + sample + nsamp + frameOffset))
+        if(e.time() >= (syncFrame + sample + nsamp))
+          break;
+
+        _osc2AudioFifo->remove();    // Done with ring buffer's event. Remove it.
+        if(ports != 0)  // Don't bother if not 'running'.
+        {
+          // Returns false if the event was not filled. It was handled, but some other way.
+          if(processEvent(e, &events[nevents]))
+          {
+            // Time-stamp the event.
+// REMOVE Tim. autoconnect. Changed.
+//             int ft = e.time() - frameOffset - pos  - sample;
+//             if(ft < 0)
+//               ft = 0;
+            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
+//             if (ft >= int(nsamp))
+            if (ft >= nsamp)
+            {
+// REMOVE Tim. autoconnect. Changed.
+//                 fprintf(stderr, "DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", 
+//                         e.time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "DssiSynthIF::getData: _osc2AudioFifo event time:%d out of range. pos:%d syncFrame:%lu ft:%u sample:%lu nsamp:%lu\n", 
+                        e.time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
             // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
@@ -2192,13 +2280,24 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
       
       if(port != -1)
       {
-        MidiPlayEvent event(0, port, channel, a, b, c);
+// REMOVE Tim. autoconnect. Changed.
+//         MidiPlayEvent event(0, port, channel, a, b, c);
+        // Time-stamp the event.
+        MidiPlayEvent event(MusEGlobal::audio->curFrame(), port, channel, a, b, c);
       
         #ifdef DSSI_DEBUG   
         printf("DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
         #endif
         
-        MusEGlobal::midiPorts[port].sendEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//         MusEGlobal::midiPorts[port].sendEvent(event);
+        //// Send one message to our own gui thread, and one message 
+        ////  to the dssi synth instance.
+        //MusEGlobal::midiPorts[port].putHwCtrlEvent(event);
+        //_osc2AudioFifo->put(event);
+        //MusEGlobal::midiPorts[port].putOSCHwCtrlEvent(event);
+        // Put an OSC event into the mid port's OSC fifo.
+        MusEGlobal::midiPorts[port].putOSCEvent(event);
       }
       
       return 0;

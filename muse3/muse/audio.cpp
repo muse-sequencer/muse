@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <cmath>
+#include <set>
 #include <errno.h>
 #include <fcntl.h>
 
@@ -61,6 +62,10 @@
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_
 #include "jackaudio.h"  
 #endif
+
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+
 
 namespace MusEGlobal {
 MusECore::Audio* audio = NULL;
@@ -118,6 +123,8 @@ const char* audioStates[] = {
 //   Audio
 //---------------------------------------------------------
 
+const int Audio::_extClockHistoryCapacity = 8192;
+      
 Audio::Audio()
       {
       _running      = false;
@@ -141,10 +148,14 @@ Audio::Audio()
       clickno       = 0;
       clicksMeasure = 0;
       ticksBeat     = 0;
+      // REMOVE Tim. autoconnect. Added.
+      _extClockHistory = new ExtMidiClock[_extClockHistoryCapacity];
+      _extClockHistorySize = 0;
+//       _extClockLastFrame = 0;
 
       syncTime      = 0.0;
       syncFrame     = 0;
-      frameOffset   = 0;
+//       frameOffset   = 0;
 
       state         = STOP;
       msg           = 0;
@@ -176,6 +187,12 @@ Audio::Audio()
       sigFd = filedes[1];
       sigFdr = filedes[0];
       }
+
+Audio::~Audio() 
+{
+  if(_extClockHistory)
+    delete[] _extClockHistory;
+} 
 
 //---------------------------------------------------------
 //   start
@@ -285,6 +302,7 @@ bool Audio::sync(int jackState, unsigned frame)
 
 //---------------------------------------------------------
 //   reSyncAudio
+//    To be called from audio thread only.
 //---------------------------------------------------------
 
 void Audio::reSyncAudio()
@@ -296,10 +314,12 @@ void Audio::reSyncAudio()
     _previousPos = _pos;
 #endif
     _pos.setTick(curTickPos);
-    int samplePos = _pos.frame();
-    syncFrame     = MusEGlobal::audioDevice->framePos();
+//     int samplePos = _pos.frame();
+// REMOVE Tim. autoconnect. Changed.
+//     syncFrame     = MusEGlobal::audioDevice->framePos();
+    syncFrame     = MusEGlobal::audioDevice->framesAtCycleStart();
     syncTime      = curTime();
-    frameOffset   = syncFrame - samplePos;
+//     frameOffset   = syncFrame - samplePos;
   }
 }  
       
@@ -351,6 +371,15 @@ void Audio::process(unsigned frames)
             return;
             }
 
+      //
+      // resync with audio interface
+      //
+// REMOVE Tim. autoconnect. Changed.
+//       syncFrame   = MusEGlobal::audioDevice->framePos();
+      syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
+      syncTime    = curTime();
+//       frameOffset = syncFrame - samplePos;
+      
       int jackState = MusEGlobal::audioDevice->getState();
 
       //if(MusEGlobal::debugMsg)
@@ -415,6 +444,99 @@ void Audio::process(unsigned frames)
       bool use_jack_timebase = false;
 #endif
 
+      // REMOVE Tim. autoconnect. Added.
+      for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
+      {
+        MidiDevice* md = (*id);
+        const int port = md->midiPort();
+        
+        // Gather midi input from devices that need collecting, such as Jack midi.
+        md->collectMidiEvents();
+        
+        // Process the selected device's external clock history fifo ring buffer.
+        // Quickly transfer the items to a list for easier processing later.
+        // It is possible for the timestamps to be out of order. Deal with it.
+        // Sort all the timestamps. Do not miss a clock, better that it is at least
+        //  included in the count.
+        if(port >= 0 && port < MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
+        {
+          const int clk_fifo_sz = md->extClockHistory()->getSize();
+          if(clk_fifo_sz != 0)
+          {
+            for(int i = 0; i < clk_fifo_sz; ++i)
+            {
+              if(_extClockHistorySize >= _extClockHistoryCapacity)
+              {
+                fprintf(stderr, "Audio::process: _extClockHistory overrun!\n");
+                break;
+              }
+              _extClockHistory[_extClockHistorySize] = md->extClockHistory()->get();
+              ++_extClockHistorySize;
+            }
+          }
+        }
+        else
+          // Otherwise flush and discard the device's unused ring buffer data.
+          md->extClockHistory()->clearRead();
+      }
+      
+      // REMOVE Tim. autoconnect. Added.
+      if(MusEGlobal::extSyncFlag.value() && (MusEGlobal::midiSyncContainer.isRunning() || isPlaying()))
+        fprintf(stderr, "extSyncFlag:%d  externalPlayState:%d isPlaying:%d\n",
+          MusEGlobal::extSyncFlag.value(), MusEGlobal::midiSyncContainer.externalPlayState(), isPlaying());
+//       // Process the external clock history fifo.
+//       // Quickly transfer the items to a list for easier processing later.
+//       // It is possible for the timestamps to be out of order. Deal with it.
+//       // Sort all the timestamps. Do not miss a clock, better that it is at least
+//       //  included in the count.
+//       const int clk_fifo_sz = MusEGlobal::midiSyncContainer.extClockHistory()->getSize();
+// //       _extClockHistorySize = clk_fifo_sz;
+// //       // If external sync has started but the transport has not started yet,
+// //       //  don't reset the clock history yet, just let it pile up until the transport starts.
+// //       // It's because curTickPos does not advance yet until transport is running, so we
+// //       //  can't rely on curTickPos as a base just yet...
+// //       if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiSyncContainer.externalPlayState() || isPlaying())
+// //         _extClockHistorySize = 0;
+//       if(clk_fifo_sz != 0)
+//       {
+// //         unsigned int clk_buf[clk_fifo_sz];
+//         for(int i = 0; i < clk_fifo_sz; ++i)
+//         {
+//           if(_extClockHistorySize >= _extClockHistoryCapacity)
+//           {
+//             fprintf(stderr, "Audio::process: _extClockHistory overrun!\n");
+//             break;
+//           }
+// //           clk_buf[i] = MusEGlobal::midiSyncContainer.extClockHistory()->get();
+// //           _extClockHistory[i] = MusEGlobal::midiSyncContainer.extClockHistory()->get();
+//           _extClockHistory[_extClockHistorySize] = MusEGlobal::midiSyncContainer.extClockHistory()->get();
+// //           fprintf(stderr, "Audio::process: clock fifo idx:%d frame:%u _extClockHistorySize is now:%d\n", 
+// //                   i, _extClockHistory[_extClockHistorySize].frame(), _extClockHistorySize + 1);
+//           ++_extClockHistorySize;
+//         }
+//         fprintf(stderr, "Audio::process: _extClockHistorySize is now:%d clk_fifo_sz was:%d \n", 
+//                 _extClockHistorySize, clk_fifo_sz);
+//         
+// //         for(int k = clk_fifo_sz - 1; k >= 0; --k)
+// //         {
+// //           unsigned int last_frame = clk_buf[k];
+// //           
+// //           int n = k;
+// //           for(int i = clk_fifo_sz - 1; i >= 0; --i)
+// //           {
+// //             if(clk_buf[i] > last_frame)
+// //             {
+// //               n = i;
+// //               fprintf(stderr, 
+// //                 "Error: Audio::process(): extClockHistory event out of order! last clk frame:%u index:%d clock frame:%u index:%d\n", 
+// //                 last_frame, k, clk_buf[i], i);
+// //             }
+// //           }
+// //           _extClockHistory[k] = clk_buf[n];
+// //           clk_buf[n] = 0;
+// //         }
+//       }
+      
       if (isPlaying()) {
             if (!freewheel())
                   MusEGlobal::audioPrefetch->msgTick(isRecording(), true);
@@ -491,9 +613,24 @@ void Audio::process(unsigned frames)
             
             if(MusEGlobal::extSyncFlag.value())        // p3.3.25
             {
-              nextTickPos = curTickPos + MusEGlobal::midiExtSyncTicks;
-              // Probably not good - interfere with midi thread.
-              MusEGlobal::midiExtSyncTicks = 0;
+// REMOVE Tim. autoconnect. Changed.
+//               nextTickPos = curTickPos + MusEGlobal::midiExtSyncTicks;
+//               // Probably not good - interfere with midi thread.
+//               MusEGlobal::midiExtSyncTicks = 0;
+//               
+              // Advance the tick position by the number of clock events times the division.
+              const int div = MusEGlobal::config.division / 24;
+//               nextTickPos = curTickPos + _extClockHistorySize * div;
+              // Advance the tick position by the number of clock tick events.
+              //nextTickPos = curTickPos + _extClockHistorySize;
+              int tcks = 0;
+              for(int i = 0; i < _extClockHistorySize; ++i)
+              {
+//                 if(_extClockHistory[i]._playing)
+                if(_extClockHistory[i].isPlaying())
+                  ++tcks;
+              }
+              nextTickPos = curTickPos + tcks * div;
             }
             else
             {
@@ -512,12 +649,15 @@ void Audio::process(unsigned frames)
               }
             }
           }
-      //
-      // resync with audio interface
-      //
-      syncFrame   = MusEGlobal::audioDevice->framePos();
-      syncTime    = curTime();
-      frameOffset = syncFrame - samplePos;
+// REMOVE Tim. autoconnect. Removed. Moved above.
+//       //
+//       // resync with audio interface
+//       //
+// // REMOVE Tim. autoconnect. Changed.
+// //       syncFrame   = MusEGlobal::audioDevice->framePos();
+//       syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
+//       syncTime    = curTime();
+// //       frameOffset = syncFrame - samplePos;
 
       process1(samplePos, offset, frames);
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
@@ -532,6 +672,17 @@ void Audio::process(unsigned frames)
             //  set curTickPos (above) from the reported current tick.
             curTickPos = nextTickPos; 
             }
+      
+      // REMOVE Tim. autoconnect. Added.
+      // Keep track of the most recent clock's frame, for the next cycle to use.
+//       if(_extClockHistorySize != 0)
+//         _extClockLastFrame = _extClockHistory[_extClockHistorySize - 1];
+      // If external sync has started but the transport has not started yet,
+      //  don't reset the clock history yet, just let it pile up until the transport starts.
+      // It's because curTickPos does not advance yet until transport is running, so we
+      //  can't rely on curTickPos as a base just yet...
+      if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiSyncContainer.isPlaying() || isPlaying())
+        _extClockHistorySize = 0;
       }
 
 //---------------------------------------------------------
@@ -762,6 +913,7 @@ void Audio::processMsg(AudioMsg* msg)
 //   seek
 //    - called before start play
 //    - initiated from gui
+//    To be called from audio thread only.
 //---------------------------------------------------------
 
 void Audio::seek(const Pos& p)
@@ -779,8 +931,10 @@ void Audio::seek(const Pos& p)
 #endif
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
-      syncFrame   = MusEGlobal::audioDevice->framePos();
-      frameOffset = syncFrame - _pos.frame();
+// REMOVE Tim. autoconnect. Changed.
+//       syncFrame   = MusEGlobal::audioDevice->framePos();
+      syncFrame   = MusEGlobal::audioDevice->framesAtCycleStart();
+//       frameOffset = syncFrame - _pos.frame();
       
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_
       unsigned curr_jt_tick;
@@ -801,28 +955,69 @@ void Audio::seek(const Pos& p)
 
       // TODO: TEST: What about that initDevices thing above? Was that incorporated before into handleSeek()?
 
-      // Seek the ALSA devices...
-      if(MusEGlobal::midiSeq)
-        MusEGlobal::midiSeq->msgSeek();  // FIXME: This waits!
-
-      // Seek any non-ALSA devices...
-      for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
-      {
-        MidiDevice* md = *i;
-        const MidiDevice::MidiDeviceType type = md->deviceType();
-        // Only for non-ALSA devices.
-        switch(type)
-        {
-          case MidiDevice::ALSA_MIDI:
-          break;
-
-          case MidiDevice::JACK_MIDI:
-          case MidiDevice::SYNTH_MIDI:
-            md->handleSeek();
-          break;
-        }
-      }
-
+      // REMOVE Tim. autoconnect. Changed.
+//       // Seek the ALSA devices...
+//       if(MusEGlobal::midiSeq)
+//         MusEGlobal::midiSeq->msgSeek();  // FIXME: This waits!
+//       // Seek any non-ALSA devices...
+//       for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+//       {
+//         MidiDevice* md = *i;
+//         const MidiDevice::MidiDeviceType type = md->deviceType();
+//         // Only for non-ALSA devices.
+//         switch(type)
+//         {
+//           case MidiDevice::ALSA_MIDI:
+//           break;
+// 
+//           case MidiDevice::JACK_MIDI:
+//           case MidiDevice::SYNTH_MIDI:
+//             md->handleSeek();
+//           break;
+//         }
+//       }
+      //for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+      //  (*i)->handleSeek();
+      
+      seekMidi();
+      
+//       std::set<int> used_ports;
+//       MidiTrackList* tl = MusEGlobal::song->midis();
+//       for(ciMidiTrack it = tl->begin(); it != tl->end(); ++it)
+//       {
+// #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+//         const int port = (*it)->outPort();
+//         if(port >= 0 && port < MIDI_PORTS)
+//           used_ports.insert(port);
+// #else
+//         MusECore::RouteList* rl = (*it)->outRoutes();
+//         for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+//         {
+//           switch(ir->type)
+//           {
+//             case MusECore::Route::MIDI_PORT_ROUTE:
+//             {
+//               const int port = ir->midiPort;
+//               if(port >= 0 && port < MIDI_PORTS)
+//                 used_ports.insert(port);
+//             }
+//             break;  
+//             
+//             case MusECore::Route::TRACK_ROUTE:
+//             case MusECore::Route::JACK_ROUTE:
+//             case MusECore::Route::MIDI_DEVICE_ROUTE:
+//             break;  
+//           }
+//         }
+// #endif
+//       }
+//       
+//       for(std::set<int>::iterator iup = used_ports.begin(); iup != used_ports.end(); ++iup)
+//       {
+//         const int port = *iup;
+//         MusEGlobal::midiPorts[port];
+//       }
+      
       if (state != LOOP2 && !freewheel())
       {
             // We need to force prefetch to update, to ensure the most recent data. 
@@ -968,7 +1163,9 @@ void Audio::stopRolling()
       //
 
       // Clear the special sync play state (separate from audio play state).
-      MusEGlobal::midiSyncContainer.setExternalPlayState(false); // Not playing.   Moved here from MidiSeq::processStop()
+// REMOVE Tim. autoconnect. Changed.
+//       MusEGlobal::midiSyncContainer.setExternalPlayState(false); // Not playing.   Moved here from MidiSeq::processStop()
+      MusEGlobal::midiSyncContainer.setExternalPlayState(ExtMidiClock::ExternStopped); // Not playing.   Moved here from MidiSeq::processStop()
 
       // Stop the ALSA devices...
       if(MusEGlobal::midiSeq)
@@ -1105,6 +1302,7 @@ unsigned Audio::framesSinceCycleStart() const
 //---------------------------------------------------------
 //   curFramePos()
 //    Current play position frame. Estimated to single-frame resolution while in play mode.
+//    This can be called from outside process thread.
 //---------------------------------------------------------
 
 unsigned Audio::curFramePos() const
@@ -1118,30 +1316,89 @@ unsigned Audio::curFramePos() const
 //    Estimated to single-frame resolution.
 //    This is an always-increasing number. Good for timestamps, and 
 //     handling them during process when referenced to syncFrame.
+//    This is meant to be called from threads other than the process thread.
 //---------------------------------------------------------
 
 unsigned int Audio::curFrame() const
       {
       //return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
-      return framesSinceCycleStart() + syncFrame; 
+// REMOVE Tim. autoconnect. Changed.
+      //return framesSinceCycleStart() + syncFrame; 
+      return MusEGlobal::audioDevice->framePos();  
+//       const unsigned int sync_frame = syncFrame;
+//       unsigned int frame = MusEGlobal::audioDevice->framePos();
+//       // Observed slight errors - sometimes reported frame is AFTER 
+//       //  the last frame of the cycle or BEFORE the beginning. 
+//       // For safety, limit the frame to segment size.
+//       if(frame < sync_frame)
+//       {
+//         // REMOVE Tim. autoconnect. Added.
+//         fprintf(stderr, "Error: Audio::curFrame(): frame:%u < sync_frame:%u\n", frame, sync_frame);
+//         frame = 0;
+//       }
+//       else if(frame >= sync_frame && (frame - sync_frame) >= MusEGlobal::segmentSize)
+//       {
+//         // REMOVE Tim. autoconnect. Added.
+//         fprintf(stderr, "Error: Audio::curFrame(): frame:%u - sync_frame:%u (== %u) >= segmentSize:%u\n", 
+//                 frame, sync_frame, frame - sync_frame, MusEGlobal::segmentSize);
+//         frame = sync_frame + (MusEGlobal::segmentSize - 1);
+//       }
+//       return frame;
       
       // REMOVE Tim. Or keep? (During midi_engine_fixes.) 
       // Can't use this since for the Jack driver, jack_frames_since_cycle_start is designed to be called ONLY from inside process.
       //return framesAtCycleStart() + framesSinceCycleStart(); 
       }
 
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   timestamp
+// //    Estimated to single-frame resolution.
+// //    This is an always-increasing number in play mode, but in stop mode
+// //     it is circular (about the cur pos, width = segment size).
+// //---------------------------------------------------------
+// 
+// unsigned Audio::timestamp() const
+//       {
+//       unsigned t = curFrame() - frameOffset;
+//       return t;
+//       }
+
+
+// REMOVE Tim. autoconnect. Added.
 //---------------------------------------------------------
-//   timestamp
-//    Estimated to single-frame resolution.
-//    This is an always-increasing number in play mode, but in stop mode
-//     it is circular (about the cur pos, width = segment size).
+//   midiQueueTimeStamp
+// Converts ticks to frames, and adds a forward frame offset, for the 
+//  purpose of scheduling a midi event to play in the near future.
+// If external midi clock sync is off, it uses the tempo map as usual.
+// If external sync is on, it uses the clock history list - see the 
+//  CAUTION for extClockHistoryTick2Frame(): There must be at least 
+//  one valid clock in the history list, and don't pass a tick 
+//  greater than or equal to the next tick.
 //---------------------------------------------------------
 
-unsigned Audio::timestamp() const
-      {
-      unsigned t = curFrame() - frameOffset;
-      return t;
-      }
+unsigned int Audio::midiQueueTimeStamp(unsigned int tick) const
+{
+  unsigned int frame = 0;
+  if(MusEGlobal::extSyncFlag.value())
+  {
+    unsigned int cur_tick = tickPos();
+    if(tick < cur_tick)
+      tick = cur_tick;
+    frame = MusEGlobal::audio->extClockHistoryTick2Frame(tick - cur_tick) + MusEGlobal::segmentSize;
+  }
+  else
+  {
+// REMOVE Tim. autoconnect. Changed.
+//     frame = MusEGlobal::tempomap.tick2frame(tick) + frameOffset;
+    const unsigned int fr = MusEGlobal::tempomap.tick2frame(tick);
+    const unsigned int pos_fr = pos().frame();
+    frame = (fr < pos_fr) ? 0 : fr - pos_fr;
+    frame += syncFrame;
+  }
+
+  return frame;
+}
 
 //---------------------------------------------------------
 //   sendMsgToGui

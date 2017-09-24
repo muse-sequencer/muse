@@ -326,8 +326,9 @@ class SynthI : public AudioTrack, public MidiDevice,
             _sif->setNativeGeometry(x, y, w, h);
             }
 
-      bool putEvent(const MidiPlayEvent& ev);
-      virtual void processMidi();
+// REMOVE Tim. autoconnect. Removed.
+//       bool putEvent(const MidiPlayEvent& ev);
+      virtual void processMidi(unsigned int /*curFrame*/ = 0);
 
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }

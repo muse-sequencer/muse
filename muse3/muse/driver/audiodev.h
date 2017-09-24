@@ -54,6 +54,8 @@ class AudioDevice {
       virtual void start(int priority) = 0;
       
       virtual void stop () = 0;
+      // Estimated current frame.
+      // This is meant to be called from threads other than the process thread.
       virtual int framePos() const = 0;
       virtual unsigned frameTime() const = 0;
       virtual double systemTime() const = 0;

@@ -63,9 +63,12 @@ class MidiJackDevice : public MidiDevice {
       virtual void close();
       //bool putEvent(int*);
       
-      bool processEvent(const MidiPlayEvent&);
+      // Return true if successful
+      // evBuffer is the Jack buffer.
+      bool processEvent(const MidiPlayEvent&, void* evBuffer);
       // Port is not midi port, it is the port(s) created for MusE.
-      bool queueEvent(const MidiPlayEvent&);
+      // evBuffer is the Jack buffer.
+      bool queueEvent(const MidiPlayEvent&, void* evBuffer);
       
       //virtual bool putMidiEvent(const MidiPlayEvent&);  // REMOVE Tim.
       //bool sendEvent(const MidiPlayEvent&);
@@ -82,11 +85,12 @@ class MidiJackDevice : public MidiDevice {
       
       //virtual void handleStop();  
       //virtual void handleSeek();
-      virtual void processMidi();
+      virtual void processMidi(unsigned int curFrame = 0);
       
       virtual void recordEvent(MidiRecordEvent&);
       
-      virtual bool putEvent(const MidiPlayEvent&);
+// REMOVE Tim. autoconnect. Removed.
+//       virtual bool putEvent(const MidiPlayEvent&);
       virtual void collectMidiEvents();
       
       // The meaning of the returned pointer depends on the driver.

@@ -220,6 +220,64 @@ bool MEvent::operator<(const MEvent& e) const
       }
 
 //---------------------------------------------------------
+//  translateCtrlNum
+//---------------------------------------------------------
+
+int MEvent::translateCtrlNum() const
+{
+  const int da = dataA();
+  int ctrl = -1;
+
+  switch(type())
+  {
+    case ME_CONTROLLER:
+      switch(da)
+      {
+        case CTRL_HBANK:
+          ctrl = CTRL_PROGRAM;
+        break;
+
+        case CTRL_LBANK:
+          ctrl = CTRL_PROGRAM;
+        break;
+
+        case CTRL_PROGRAM:
+          ctrl = CTRL_PROGRAM;
+        break;
+        
+        default:
+          ctrl = da;
+        break;
+      }
+    break;
+    
+    case ME_POLYAFTER:
+    {
+      const int pitch = da & 0x7f;
+      ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
+    }
+    break;
+    
+    case ME_AFTERTOUCH:
+      ctrl = CTRL_AFTERTOUCH;
+    break;
+    
+    case ME_PITCHBEND:
+      ctrl = CTRL_PITCH;
+    break;
+    
+    case ME_PROGRAM:
+      ctrl = CTRL_PROGRAM;
+    break;
+    
+    default:
+    break;
+  }
+  
+  return ctrl;
+}
+
+//---------------------------------------------------------
 //   add
 //    Optimize to eliminate duplicate events at the SAME time.
 //    It will not handle duplicate events at DIFFERENT times.

@@ -1773,9 +1773,13 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
                           //case ME_SONGSEL:
                           //case ME_TUNE_REQ:
                           //case ME_SENSE:
+                          //      return;
 
 // TODO: Hm, need the last frame time... Isn't that the same as audio->pos().frame() like above?
 //                           case ME_CLOCK:
+//                                     const jack_nframes_t abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+//                                     midiClockInput(abs_ft);
+//                                 return;
 //                           case ME_TICK:
 //                           case ME_START:
 //                           case ME_CONTINUE:
@@ -2713,7 +2717,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
@@ -2723,8 +2727,10 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
   vst_events->numEvents = 0;
   vst_events->reserved  = 0;
 
-  const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
-  const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+// REMOVE Tim. autoconnect. Removed.
+//   const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+// REMOVE Tim. autoconnect. Changed.
+  const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef VST_NATIVE_DEBUG_PROCESS
   fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
@@ -3007,38 +3013,54 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
         for(; start_event != el->end(); ++start_event)
         {
           #ifdef VST_NATIVE_DEBUG
-          fprintf(stderr, "VstNativeSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+// REMOVE Tim. autoconnect. Changed.
+//           fprintf(stderr, "VstNativeSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", 
+//                   start_event->time(), pos, sample, nsamp, frameOffset);
+          fprintf(stderr, "VstNativeSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu syncFrame:%u\n", 
+                  start_event->time(), pos, sample, nsamp, syncFrame);
           #endif
 
-          if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+// REMOVE Tim. autoconnect. Changed.
+//           if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+          if(start_event->time() >= (sample + nsamp + syncFrame))
           {
             #ifdef VST_NATIVE_DEBUG
-            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+//             fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - syncFrame - sample);
             #endif
             break;
           }
 
-          // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-          // Same code as in MidiPort::sendEvent()
-          if(mp && !mp->sendHwCtrlState(*start_event, false))
-            continue;
+// REMOVE Tim. autoconnect. Removed.
+//           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//           // Same code as in MidiPort::sendEvent()
+//           if(mp && !mp->sendHwCtrlState(*start_event, false))
+//             continue;
 
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(*start_event, &events[nevents]))
           {
             // Time-stamp the event.
-            int ft = start_event->time() - frameOffset - pos - sample;
-            if(ft < 0)
-              ft = 0;
+// REMOVE Tim. autoconnect. Changed.
+//             int ft = start_event->time() - frameOffset - pos - sample;
+//             if(ft < 0)
+//               ft = 0;
+            unsigned int ft = (start_event->time() < syncFrame) ? 0 : start_event->time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
 
-            if (ft >= int(nsamp))
+//             if (ft >= int(nsamp))
+            if (ft >= nsamp)
             {
-                fprintf(stderr, "VstNativeSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%ld ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+//                 fprintf(stderr, "VstNativeSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%ld ft:%d sample:%lu nsamp:%lu\n", 
+//                         start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "VstNativeSynthIF::getData: eventlist event time:%d out of range. pos:%d syncFrame:%u ft:%u sample:%lu nsamp:%lu\n", 
+                        start_event->time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
 
             #ifdef VST_NATIVE_DEBUG
-            fprintf(stderr, "VstNativeSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
+//             fprintf(stderr, "VstNativeSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
+            fprintf(stderr, "VstNativeSynthIF::getData eventlist: ft:%u current nevents:%lu\n", ft, nevents);
             #endif
 
             vst_events->events[nevents] = (VstEvent*)&events[nevents];
@@ -3057,7 +3079,9 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
         fprintf(stderr, "VstNativeSynthIF::getData eventFifo event time:%d\n", e.time());
         #endif
 
-        if(e.time() >= (pos + sample + nsamp + frameOffset))
+// REMOVE Tim. autoconnect. Changed.
+//         if(e.time() >= (pos + sample + nsamp + frameOffset))
+        if(e.time() >= (sample + nsamp + syncFrame))
           break;
 
         synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
@@ -3067,12 +3091,20 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start
           if(processEvent(e, &events[nevents]))
           {
             // Time-stamp the event.
-            long ft = e.time() - frameOffset - pos  - sample;
-            if(ft < 0)
-              ft = 0;
-            if (ft >= long(nsamp))
+// REMOVE Tim. autoconnect. Changed.
+//             long ft = e.time() - frameOffset - pos  - sample;
+//             if(ft < 0)
+//               ft = 0;
+            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
+
+//             if (ft >= long(nsamp))
+            if (ft >= nsamp)
             {
-                fprintf(stderr, "VstNativeSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%ld ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+//                 fprintf(stderr, "VstNativeSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%ld ft:%ld sample:%lu nsamp:%lu\n", 
+//                         e.time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "VstNativeSynthIF::getData: eventFifo event time:%d out of range. pos:%d syncFrame:%u ft:%u sample:%lu nsamp:%lu\n", 
+                        e.time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
             vst_events->events[nevents] = (VstEvent*)&events[nevents];

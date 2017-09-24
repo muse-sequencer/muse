@@ -10,7 +10,7 @@ configuration dialog</comment>
     <x>0</x>
     <y>0</y>
     <width>655</width>
-    <height>445</height>
+    <height>534</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,16 @@ configuration dialog</comment>
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -79,8 +88,17 @@ configuration dialog</comment>
       <property name="spacing">
        <number>6</number>
       </property>
-      <property name="margin">
-       <number>11</number>
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
       </property>
       <item>
        <layout class="QHBoxLayout">
@@ -88,6 +106,9 @@ configuration dialog</comment>
          <widget class="QLabel" name="textLabel2">
           <property name="text">
            <string>Type:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
           <property name="wordWrap">
            <bool>false</bool>
@@ -125,29 +146,12 @@ configuration dialog</comment>
          </widget>
         </item>
         <item>
-         <spacer name="spacer4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout">
-        <item>
          <widget class="QLabel" name="textLabel1">
           <property name="text">
            <string>Offset:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
           <property name="wordWrap">
            <bool>false</bool>
@@ -280,7 +284,7 @@ configuration dialog</comment>
  including stop, start and position.</string>
         </property>
         <property name="text">
-         <string>Use Jack transport</string>
+         <string>Use Jack Transport</string>
         </property>
         <property name="checked">
          <bool>false</bool>
@@ -304,7 +308,7 @@ MusE will try to become master, but other
 You can always click here again for Master.</string>
         </property>
         <property name="text">
-         <string>Jack transport Timebase Master</string>
+         <string>Make Muse the Jack Transport timebase master</string>
         </property>
         <property name="checked">
          <bool>true</bool>

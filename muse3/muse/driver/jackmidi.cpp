@@ -549,10 +549,21 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
 
 void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       {
+      if(ev->size == 0)
+        return;
+      
       MidiRecordEvent event;
       event.setB(0);
       event.setPort(_port);
-      
+      jack_nframes_t abs_ft = 0;
+//       double abs_ev_t = 0.0;
+//       jack_client_t* jc = 0;
+//       if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)
+//       {
+//         MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//         jc = jad->jackClient();
+//       }
+
       // NOTE: From muse_qt4_evolution. Not done here in Muse-2 (yet).
       // move all events 2*MusEGlobal::segmentSize into the future to get
       // jitterfree playback
@@ -570,44 +581,65 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
 #ifdef _AUDIO_USE_TRUE_FRAME_
-      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->time);
+      abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
 #else
-      event.setTime(MusEGlobal::audio->pos().frame() + ev->time);
+// REMOVE Tim. autoconnect. Changed.
+//       event.setTime(MusEGlobal::audio->pos().frame() + ev->time);
+      // The events arrived in the previous cycle, not this one. Adjust.
+      //if(jc)
+      //  abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+      abs_ft = MusEGlobal::audio->curSyncFrame() + ev->time;
+      if(abs_ft >= MusEGlobal::segmentSize)
+        abs_ft -= MusEGlobal::segmentSize;
 #endif
+      event.setTime(abs_ft);
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
       event.setChannel(*(ev->buffer) & 0xf);
-      int type = *(ev->buffer) & 0xf0;
-      int a    = *(ev->buffer + 1) & 0x7f;
-      int b    = *(ev->buffer + 2) & 0x7f;
+      const int type = *(ev->buffer) & 0xf0;
       event.setType(type);
 
+//       if(jc)
+//         abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+      
       switch(type) {
             case ME_NOTEON:
+            {
+                 if(ev->size < 3)
+                   return;
                  // REMOVE Tim. Noteoff. Added.
                  // Convert zero-velocity note ons to note offs as per midi spec.
-                 if(b == 0)
+                 if(*(ev->buffer + 2) == 0)
                    event.setType(ME_NOTEOFF);
-                 // Fall through.
-                 
+            }
+            // Fall through.
+                
             case ME_NOTEOFF:
             case ME_CONTROLLER:
             case ME_POLYAFTER:
-                  event.setA(*(ev->buffer + 1));
-                  event.setB(*(ev->buffer + 2));
+                  if(ev->size < 3)
+                    return;
+                  event.setA(*(ev->buffer + 1) & 0x7f);
+                  event.setB(*(ev->buffer + 2) & 0x7f);
                   break;
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
-                  event.setA(*(ev->buffer + 1));
+                  if(ev->size < 2)
+                    return;
+                  event.setA(*(ev->buffer + 1) & 0x7f);
                   break;
 
             case ME_PITCHBEND:
-                  event.setA(((b << 7) + a) - 8192);
+                  if(ev->size < 3)
+                    return;
+                  event.setA(( ((*(ev->buffer + 2) & 0x7f) << 7) + 
+                                (*(ev->buffer + 1) & 0x7f) )
+                              - 8192);
                   break;
 
             case ME_SYSEX:
                   {
-                    int type = *(ev->buffer) & 0xff;
+                    const int type = *(ev->buffer) & 0xff;
                     switch(type) 
                     {
                           case ME_SYSEX:
@@ -641,22 +673,57 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           //case ME_TUNE_REQ:   
                           //case ME_SENSE:
                           case ME_CLOCK:      
+                          // REMOVE Tim. autoconnect. Added.
+                          {
+//                                 if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+//                                 {
+//                                   MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//                                   jack_client_t* jc = jad->jackClient();
+//                                   if(jc)
+//                                   {
+                                    //const jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+                                    // The events arrived in the previous cycle, not this one. Adjust.
+                                    //const jack_nframes_t abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+//                                     MusEGlobal::midiSyncContainer.midiClockInput(_port, abs_ft);
+                                    midiClockInput(abs_ft);
+//                                   }
+//                                 }
+                                return;
+                          }
+                          case ME_START:
+                          {
+                            // REMOVE Tim. autoconnect. Added.
+//                             MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//                             jack_client_t* jc = jad->jackClient();
+//                             if(jc)
+//                             {
+                              //const jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+                              // The events arrived in the previous cycle, not this one. Adjust.
+//                               const jack_nframes_t abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+                              // REMOVE Tim. autoconnect. Added.
+                              fprintf(stderr, "MidiJackDevice::eventReceived: START port:%d time:%u\n", _port, abs_ft);
+//                             }
+                          }
+                            // FALLTHROUGH
+
                           case ME_TICK:       
-                          case ME_START:      
                           case ME_CONTINUE:   
                           case ME_STOP:       
                           {
-                                if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
-                                {
-                                  MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
-                                  jack_client_t* jc = jad->jackClient();
-                                  if(jc)
-                                  {
-                                    jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
-                                    double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
-                                    MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
-                                  }
-                                }
+//                                 if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+//                                 {
+//                                   MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//                                   jack_client_t* jc = jad->jackClient();
+//                                   if(jc)
+//                                   {
+//                                     //jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+//                                     // The events arrived in the previous cycle, not this one. Adjust.
+//                                     const jack_nframes_t abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+//                                     double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+//                                     MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
+                                    MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, 0.0);
+//                                   }
+//                                 }
                                 return;
                           }
                           //case ME_SYSEX_END:  
@@ -712,33 +779,34 @@ void MidiJackDevice::collectMidiEvents()
   }
 }
 
-//---------------------------------------------------------
-//   putEvent
-//    return true if event cannot be delivered
-//---------------------------------------------------------
-
-bool MidiJackDevice::putEvent(const MidiPlayEvent& ev)
-{
-  if(!_writeEnable || !_out_client_jackport)  
-    return false;
-    
-  #ifdef JACK_MIDI_DEBUG
-  printf("MidiJackDevice::putEvent time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
-  #endif  
-      
-  bool rv = eventFifo.put(ev);
-  if(rv)
-    printf("MidiJackDevice::putEvent: port overflow\n");
-  
-  return rv;
-}
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   putEvent
+// //    return true if event cannot be delivered
+// //---------------------------------------------------------
+// 
+// bool MidiJackDevice::putEvent(const MidiPlayEvent& ev)
+// {
+//   if(!_writeEnable || !_out_client_jackport)  
+//     return false;
+//     
+//   #ifdef JACK_MIDI_DEBUG
+//   printf("MidiJackDevice::putEvent time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
+//   #endif  
+//       
+//   bool rv = eventFifo.put(ev);
+//   if(rv)
+//     printf("MidiJackDevice::putEvent: port overflow\n");
+//   
+//   return rv;
+// }
 
 //---------------------------------------------------------
 //   queueEvent
 //   return true if successful
 //---------------------------------------------------------
 
-bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
+bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
 {
       // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
       // No big deal if not. Not used for now.
@@ -747,24 +815,38 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       //if(port >= JACK_MIDI_CHANNELS)
       //  return false;
         
-      if(!_writeEnable || !_out_client_jackport)   
+//       if(!_writeEnable || !_out_client_jackport || !evBuffer)   
+      if(!_writeEnable || !evBuffer)   
         return false;
-      void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
-    
-      //unsigned frameCounter = ->frameTime();
-      int frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned pos = MusEGlobal::audio->pos().frame();
-      int ft = e.time() - frameOffset - pos;
-      
-      if (ft < 0)
-            ft = 0;
-      if (ft >= (int)MusEGlobal::segmentSize) {
-            printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
+// REMOVE Tim. autoconnect. Removed.
+//       void* evBuffer = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
+
+// REMOVE Tim. autoconnect. Changed.
+//       //unsigned frameCounter = ->frameTime();
+//       int frameOffset = MusEGlobal::audio->getFrameOffset();
+//       unsigned pos = MusEGlobal::audio->pos().frame();
+//       int ft = e.time() - frameOffset - pos;
+//       if (ft < 0)
+//             ft = 0;
+//       if (ft >= (int)MusEGlobal::segmentSize) {
+// //             printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
+//             fprintf(stderr, "MidiJackDevice::queueEvent: Event time:%d out of range. syncFrame:%d ft:%d (seg=%d)\n", 
+//                     e.time(), syncFrame, ft, MusEGlobal::segmentSize);
+//             ft = MusEGlobal::segmentSize - 1;
+//             }
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+      if (ft >= MusEGlobal::segmentSize) {
+//             printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
+            fprintf(stderr, "MidiJackDevice::queueEvent: Event time:%d out of range. syncFrame:%d ft:%d (seg=%d)\n", 
+                    e.time(), syncFrame, ft, MusEGlobal::segmentSize);
             ft = MusEGlobal::segmentSize - 1;
             }
       
       #ifdef JACK_MIDI_DEBUG
-      printf("MidiJackDevice::queueEvent pos:%d fo:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", pos, frameOffset, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
+//       printf("MidiJackDevice::queueEvent pos:%d fo:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", pos, frameOffset, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
+      fprintf(stderr, "MidiJackDevice::queueEvent pos:%d syncFrame:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+              pos, syncFrame, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
       #endif  
       
       if (MusEGlobal::midiOutputTrace) {
@@ -785,7 +867,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent note on/off polyafter controller or pitch\n");
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 3);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent NOTE CTL PAT or PB: buffer overflow, stopping until next cycle\n");  
@@ -805,7 +887,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent program or aftertouch\n");
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 2);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent PROG or AT: buffer overflow, stopping until next cycle\n");  
@@ -824,7 +906,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   
                   const unsigned char* data = e.data();
                   int len = e.len();
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, len+2);
                   if (p == 0) {
                         fprintf(stderr, "MidiJackDevice::queueEvent ME_SYSEX: buffer overflow, sysex too big, event lost\n");
                         
@@ -848,7 +930,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent songpos %d\n", e.dataA());
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 3);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent songpos: buffer overflow, stopping until next cycle\n");  
@@ -870,7 +952,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent realtime %x\n", e.type());
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 1);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 1);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent realtime: buffer overflow, stopping until next cycle\n");  
@@ -894,7 +976,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 //    return true if successful
 //---------------------------------------------------------
 
-bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
+bool MidiJackDevice::processEvent(const MidiPlayEvent& event, void* evBuffer)
 {    
   int chn    = event.channel();
   unsigned t = event.time();
@@ -903,16 +985,18 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
   // No big deal if not. Not used for now.
   int port   = event.port();
-  
-  // TODO: No sub-tick playback resolution yet, with external sync.
-  // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
-  // Does require relatively short audio buffers, in order to catch the resolution, but buffer <= 256 should be OK... 
-  // Tested OK so far with 128. 
-  // Or, is the event marked to be played immediately?
+
+// REMOVE Tim. autoconnect. Changed.  
+//   // TODO: No sub-tick playback resolution yet, with external sync.
+//   // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
+//   // Does require relatively short audio buffers, in order to catch the resolution, but buffer <= 256 should be OK... 
+//   // Tested OK so far with 128. 
+//   // Or, is the event marked to be played immediately?
   // Nothing to do but stamp the event to be queued for frame 0+.
-  if(t == 0 || MusEGlobal::extSyncFlag.value())    
-    t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
-    //t = frameOffset + pos;
+// //   if(t == 0 || MusEGlobal::extSyncFlag.value())    
+//   if(t == 0)
+//     t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
+//     //t = frameOffset + pos;
       
   #ifdef JACK_MIDI_DEBUG
   //printf("MidiJackDevice::processEvent time:%d type:%d ch:%d A:%d B:%d\n", t, event.type(), chn, a, b);  
@@ -941,18 +1025,18 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       {
         // Instrument uses note offs. Convert to zero-vel note off.
         case MidiInstrument::NoteOffAll:
-          return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEOFF, a, 0));
+          return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEOFF, a, 0), evBuffer);
         break;
         
         // Instrument uses no note offs at all. Send as-is.
         case MidiInstrument::NoteOffNone:
         // Instrument converts all note offs to zero-vel note ons. Send as-is.
         case MidiInstrument::NoteOffConvertToZVNoteOn:
-          return queueEvent(event);
+          return queueEvent(event, evBuffer);
         break;
       }
     }
-    return queueEvent(event);
+    return queueEvent(event, evBuffer);
   }
   else if(event.type() == ME_NOTEOFF)
   {
@@ -960,7 +1044,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     {
       // Instrument uses note offs. Send as-is.
       case MidiInstrument::NoteOffAll:
-        return queueEvent(event);
+        return queueEvent(event, evBuffer);
       break;
       
       // Instrument uses no note offs at all. Send nothing. Eat up the event - return true.
@@ -969,10 +1053,10 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
         
       // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
       case MidiInstrument::NoteOffConvertToZVNoteOn:
-        return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEON, a, 0));
+        return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEON, a, 0), evBuffer);
       break;
     }
-    return queueEvent(event);
+    return queueEvent(event, evBuffer);
   }
   
   else if(event.type() == ME_PROGRAM) 
@@ -982,7 +1066,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
           _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
           _curOutParamNums[chn].setPROG(a);
-          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0)))
+          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0), evBuffer))
             return false;
           
     //      }
@@ -991,13 +1075,13 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   {
       int v = a + 8192;
       //printf("MidiJackDevice::processEvent ME_PITCHBEND v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f), evBuffer))
         return false;
   }
   else if(event.type() == ME_SYSEX)
   {
     resetCurOutParamNums();  // Probably best to reset all.
-    if(!queueEvent(event))
+    if(!queueEvent(event, evBuffer))
       return false;
   }
   else if(event.type() == ME_CONTROLLER)
@@ -1009,20 +1093,20 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     if((a | 0xff) == CTRL_POLYAFTER) 
     {
       //printf("MidiJackDevice::processEvent CTRL_POLYAFTER v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f), evBuffer))
         return false;
     }
     else if(a == CTRL_AFTERTOUCH) 
     {
       //printf("MidiJackDevice::processEvent CTRL_AFTERTOUCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0), evBuffer))
         return false;
     }
     else if(a == CTRL_PITCH) 
     {
       int v = b + 8192;
       //printf("MidiJackDevice::processEvent CTRL_PITCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f), evBuffer))
         return false;
     }
     else if (a == CTRL_PROGRAM) 
@@ -1039,17 +1123,17 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
             _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
             if (hb != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb), evBuffer))
                     return false;
             }
             if (lb != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb), evBuffer))
                     return false;
             }
             if (pr != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0), evBuffer))
                     return false;
             }
               
@@ -1063,7 +1147,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       //sysex[1] = deviceId(); TODO FIXME p4.0.15 Grab the ID from midi port sync info.
       sysex[4] = b & 0x7f;
       sysex[5] = (b >> 7) & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t, port, ME_SYSEX, sysex, 6)))
+      if(!queueEvent(MidiPlayEvent(t, port, ME_SYSEX, sysex, 6), evBuffer))
         return false;
     }
     else if (a < CTRL_14_OFFSET) 
@@ -1090,7 +1174,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
         _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
 
       //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
-      if(!queueEvent(event))
+      if(!queueEvent(event, evBuffer))
         return false;
     }
     else if (a < CTRL_RPN_OFFSET) 
@@ -1099,9 +1183,9 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH)))
+      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH), evBuffer))
         return false;
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL), evBuffer))
         return false;
     }
     else if (a < CTRL_NRPN_OFFSET) 
@@ -1112,19 +1196,19 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL), evBuffer))
           return false;
       }
       if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(data);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data), evBuffer))
           return false;
       }
       
@@ -1132,11 +1216,11 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1148,30 +1232,30 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL), evBuffer))
           return false;
       }
       if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(data);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data), evBuffer))
           return false;
       }
                   
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setNRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setNRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1186,36 +1270,36 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL), evBuffer))
           return false;
       }
       if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(dataH);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH), evBuffer))
           return false;
       }
       if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAL(dataL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL), evBuffer))
           return false;
       }
       
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1228,36 +1312,36 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL), evBuffer))
           return false;
       }
       if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(dataH);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH), evBuffer))
           return false;
       }
       if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAL(dataL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL), evBuffer))
           return false;
       }
     
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setNRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setNRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f), evBuffer))
          return false;
       }
     }
@@ -1271,7 +1355,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   else 
   {
     //queueEvent(MidiPlayEvent(t, port, chn, event));
-    if(!queueEvent(event))
+    if(!queueEvent(event, evBuffer))
       return false;
   }
   
@@ -1283,13 +1367,14 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 //    Called from audio thread only.
 //---------------------------------------------------------
 
-void MidiJackDevice::processMidi()
+void MidiJackDevice::processMidi(unsigned int curFrame)
 {
   //bool stop = stopPending;  // Snapshots
   //bool seek = seekPending;  //
   //seekPending = stopPending = false;
 
-  processStuckNotes();       
+// REMOVE Tim. autoconnect. Removed.
+//   processStuckNotes();
   
   // Don't process if the device is not assigned to a port.
   //if(_port == -1)
@@ -1302,8 +1387,8 @@ void MidiJackDevice::processMidi()
     jack_midi_clear_buffer(port_buf);
   }  
   
-  int port = midiPort();
-  MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
+//   int port = midiPort();
+//   MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
 
   /*
   bool is_playing = MusEGlobal::audio->isPlaying();  // TODO Check this. It includes LOOP1 and LOOP2 besides PLAY.
@@ -1429,35 +1514,119 @@ void MidiJackDevice::processMidi()
   }
   */
   
-  while(!eventFifo.isEmpty())
-  {
-    MidiPlayEvent e(eventFifo.peek()); 
-    //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+  
+  
+  
+//   if(!_playEvents.empty())
+//   {  
+//     iMPEvent i = _playEvents.begin();     
+//     for(; i != _playEvents.end(); ++i) 
+//     {
+//       //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
+//       
+// // REMOVE Tim. autoconnect. Added.
+//       const MidiPlayEvent ev(*i);
+//       if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+//       {
+//         #ifdef JACK_MIDI_DEBUG
+//         fprintf(stderr, "MusE: Jack midi: play event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+//         #endif
+//         break;
+//       }
+// 
+//   // REMOVE Tim. autoconnect. Removed.
+//   //     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
+//   //     if(mp && !mp->sendHwCtrlState(*i, false)) 
+//   //       continue;
+//     
+//       // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
+// //       if(port_buf && !processEvent(*i, port_buf)) 
+// //         break;
+//       // If processEvent fails, although we would like to not miss events by keeping them
+//       //  until next cycle and trying again, that can lead to a large backup of events
+//       //  over a long time. So we'll just... miss them.
+//       processEvent(*i, port_buf);
+//     }
+//     _playEvents.erase(_playEvents.begin(), i);
+//   }
+//   
+//   
+//   while(!eventFifo.isEmpty())
+// //   const int evfifo_sz = eventFifo.getSize(); // Get snapshot of current size.
+// //   for(int i = 0; i < evfifo_sz; ++i)
+//   {
+//     const MidiPlayEvent ev(eventFifo.peek()); 
+//     
+// // REMOVE Tim. autoconnect. Added.
+//       if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+//       {
+//         #ifdef JACK_MIDI_DEBUG
+//         fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+//         #endif
+//         break;
+//       }
+// 
+//     //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB()); 
+//     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
+// //     if(port_buf && !processEvent(ev, port_buf))  
+// //       return;            // Give up. The Jack buffer is full. Nothing left to do.  
+//     // If processEvent fails, although we would like to not miss events by keeping them
+//     //  until next cycle and trying again, that can lead to a large backup of events
+//     //  over a long time. So we'll just... miss them.
+//     processEvent(ev, port_buf);
+//     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
+//   }
+
+  
+  const int sz = _eventFifos->getSize();
+  for(int i = 0; i < sz; ++i)
+  {  
+    const MidiPlayEvent ev(_eventFifos->peek()); 
+    
+// REMOVE Tim. autoconnect. Added.
+      if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+      {
+        #ifdef JACK_MIDI_DEBUG
+        fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+        #endif
+        break;
+      }
+
+    //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB()); 
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
-    if(port_buf && !processEvent(e))  
-      return;            // Give up. The Jack buffer is full. Nothing left to do.  
-    eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
+//     if(port_buf && !processEvent(ev, port_buf))  
+//       return;            // Give up. The Jack buffer is full. Nothing left to do.  
+    // If processEvent fails, although we would like to not miss events by keeping them
+    //  until next cycle and trying again, that can lead to a large backup of events
+    //  over a long time. So we'll just... miss them.
+    processEvent(ev, port_buf);
+//     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
+    _eventFifos->remove();  // Successfully processed event. Remove it from FIFO.
   }
+  
   
   //if(!(stop || (seek && is_playing)))
   //  processStuckNotes();  
   
-  if(_playEvents.empty())
-    return;
-  
-  iMPEvent i = _playEvents.begin();     
-  for(; i != _playEvents.end(); ++i) 
-  {
-    //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
-    // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    if(mp && !mp->sendHwCtrlState(*i, false)) 
-      continue;
-  
-    // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
-    if(port_buf && !processEvent(*i)) 
-      break;
-  }
-  _playEvents.erase(_playEvents.begin(), i);
+// REMOVE Tim. autoconnect. Removed. Moved above.
+//   if(_playEvents.empty())
+//     return;
+//   
+//   iMPEvent i = _playEvents.begin();     
+//   for(; i != _playEvents.end(); ++i) 
+//   {
+//     //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
+//     
+// // REMOVE Tim. autoconnect. Removed.
+// //     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
+// //     if(mp && !mp->sendHwCtrlState(*i, false)) 
+// //       continue;
+//   
+//     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
+//     if(port_buf && !processEvent(*i)) 
+//       break;
+//   }
+//   _playEvents.erase(_playEvents.begin(), i);
 }
 
 /*

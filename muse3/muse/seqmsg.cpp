@@ -633,6 +633,35 @@ void Audio::msgPlay(bool val)
       }
 
 
+// REMOVE Tim. autoconnect. Added.
+//---------------------------------------------------------
+//   msgExternalPlay
+//---------------------------------------------------------
+
+void Audio::msgExternalPlay(bool val, bool doRewind)
+      {
+      if (val) {
+            // Force the state to play immediately.
+            state = PLAY;
+            if (MusEGlobal::audioDevice)
+            {
+                //unsigned sfr = MusEGlobal::song->cPos().frame();
+                //unsigned dcfr = MusEGlobal::audioDevice->getCurFrame();
+                //if(dcfr != sfr)
+                if(doRewind)
+                  MusEGlobal::audioDevice->seekTransport(0);
+                MusEGlobal::audioDevice->startTransport();
+            }
+              
+      }else {
+            state = STOP;
+            if (MusEGlobal::audioDevice)
+                MusEGlobal::audioDevice->stopTransport();
+            _bounce = false;
+            }
+      }
+
+
 
 //---------------------------------------------------------
 //   msgRemoveTrack

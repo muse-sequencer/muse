@@ -45,8 +45,10 @@ class MidiCtrlValList;
 class MidiInstrument;
 
 struct Gui2AudioFifoStruct {
+  unsigned int _time;
   int _type;
   int _chan;
+  int _port;
   union
   {
     int _ctlnum;
@@ -58,13 +60,14 @@ struct Gui2AudioFifoStruct {
     double _dataB;
   };
   bool _incremental;
-
+  
   Gui2AudioFifoStruct()
-    : _type(0), _chan(0), _ctlnum(0), _val(0.0), _incremental(false) { }
-  Gui2AudioFifoStruct(int type, int chan, int ctlnum, double val, bool incremental)
-    : _type(type), _chan(chan), _ctlnum(ctlnum), _val(val), _incremental(incremental) { }
+    : _time(0), _type(0), _chan(0), _port(0), _dataA(0), _dataB(0.0), _incremental(false) { }
+  Gui2AudioFifoStruct(unsigned int time, int type, int chan, int port, int dataA, double dataB, bool incremental)
+    : _time(time), _type(type), _chan(chan), _port(port), _dataA(dataA), _dataB(dataB), _incremental(incremental) { }
   Gui2AudioFifoStruct(const MidiPlayEvent& ev)
-    : _type(ev.type()), _chan(ev.channel()), _ctlnum(ev.dataA()), _val(ev.dataB()), _incremental(false) { }
+    : _time(ev.time()), _type(ev.type()), _chan(ev.channel()), _port(ev.port()), 
+      _dataA(ev.dataA()), _dataB(ev.dataB()), _incremental(false) { }
 };
 
 //---------------------------------------------------------
@@ -88,19 +91,39 @@ class MidiPort {
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
 
+      // REMOVE Tim. autoconnect. Added.
       // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
       LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
+      // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
+      LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
+      // Fifo for midi events sent from OSC to our gui (ex. updating hardware knobs/sliders):
+      LockFreeBuffer<MidiPlayEvent> *_osc2GuiFifo;
 
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
 
+      // Creates a controller in this port's controller list.
+      // Returns true if the controller was created.
+      // To be called by gui thread only.
+      bool createController(int chan, int ctrl);
+
+      // REMOVE Tim. autoconnect. Changed.
       // Prepares an event for putting into the gui2audio fifo.
       // To be called from gui thread only. Returns true if the event was staged.
-      bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
+      //bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
+      //MidiPlayEvent stageEvent(const MidiPlayEvent& src);
+      // Prepares an event for putting into the gui2audio fifo.
+      // To be called from gui thread only. 
+      // Returns a valid source controller number (above zero), for the purpose of
+      //  the caller creating the controller with createController() if necessary. 
+      // Otherwise returns -1.
+//       int stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
+      MidiPlayEvent stageEvent(const MidiPlayEvent& ev);
       // To be called from audio thread only. Returns true if event cannot be delivered.
       //bool handleGui2AudioEvent(const MidiPlayEvent&);
-      bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
+      //bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
+      MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 
    public:
       MidiPort();
@@ -223,6 +246,13 @@ class MidiPort {
       // Process the gui2AudioFifo. Called from audio thread only.
       bool processGui2AudioEvents();
 
+//       // Put an OSC event into the osc2audio fifo for playback. Calls stageEvent().
+//       // Called from OSC handler only. Returns true if event cannot be delivered.
+//       bool putOSCHwCtrlEvent(const MidiPlayEvent&);
+      // Put an OSC event into both the device and the osc2audio fifo for playback. Calls stageEvent().
+      // Called from OSC handler only. Returns true if event cannot be delivered.
+      bool putOSCEvent(const MidiPlayEvent&);
+
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
@@ -231,6 +261,8 @@ class MidiPort {
             _automationType[channel] = t;
             }
       MidiSyncInfo& syncInfo() { return _syncInfo; }
+// REMOVE Tim. autoconnect. Added.
+//       void handleSeek();
       };
 
 extern void initMidiPorts();

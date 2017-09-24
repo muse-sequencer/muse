@@ -608,7 +608,9 @@ void CtrlPanel::ctrlChanged(double val)
         {
           if(curval != MusECore::CTRL_VAL_UNKNOWN)
           {
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       MusECore::CTRL_PROGRAM,
                                                       MusECore::CTRL_VAL_UNKNOWN));
@@ -616,7 +618,9 @@ void CtrlPanel::ctrlChanged(double val)
         }
         else
         {
-          MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
+          MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
           mp->putEvent(ev);
         }
       }
@@ -625,7 +629,9 @@ void CtrlPanel::ctrlChanged(double val)
       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
       {
         if(curval != MusECore::CTRL_VAL_UNKNOWN)
-          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
                                                      MusECore::ME_CONTROLLER,
                                                      _dnum,
                                                      MusECore::CTRL_VAL_UNKNOWN));

@@ -107,9 +107,16 @@ MidiDevice* MidiAlsaDevice::createAlsaMidiDevice(QString name, int rwflags) // 1
 MidiAlsaDevice::MidiAlsaDevice(const snd_seq_addr_t& a, const QString& n)
    : MidiDevice(n)
       {
+      _playEventFifo = new LockFreeBuffer<MidiPlayEvent>(8192);
       adr = a;
       init();
       }
+
+MidiAlsaDevice::~MidiAlsaDevice()
+{
+  if(_playEventFifo)
+    delete _playEventFifo;
+}
 
 //---------------------------------------------------------
 //   selectWfd
@@ -377,27 +384,616 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
       }
 }
     
+// REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   putEvent
+// //    return true if event cannot be delivered
+// //    TODO: retry on controller putMidiEvent
+// //    (Note: Since putEvent is virtual and there are different versions,
+// //     a retry facility is now found in putEventWithRetry. )
+// //---------------------------------------------------------
+// 
+// bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
+//       {
+//       if(!_writeEnable)
+//         //return true;
+//         return false;
+// 
+//       if (MusEGlobal::midiOutputTrace) {
+//             fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
+//             ev.dump();
+//             }
+//             
+//       if(!alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+//         return true;
+//       
+//       int chn = ev.channel();
+//       int a   = ev.dataA();
+//       int b   = ev.dataB();
+// 
+//       snd_seq_event_t event;
+//       memset(&event, 0, sizeof(event));
+//       event.queue   = SND_SEQ_QUEUE_DIRECT;
+//       event.source  = musePort;
+//       event.dest    = adr;
+// 
+//       // REMOVE Tim. Noteoff. Added.
+//       MidiInstrument::NoteOffMode nom = MidiInstrument::NoteOffAll; // Default to NoteOffAll in case of no port.
+//       const int mport = midiPort();
+//       if(mport != -1)
+//       {
+//         if(MidiInstrument* mi = MusEGlobal::midiPorts[mport].instrument())
+//           nom = mi->noteOffMode();
+//       }
+//       
+//       switch(ev.type())
+//       {
+//         case ME_NOTEON:
+//           
+//               // REMOVE Tim. Noteoff. Added.
+//               if(b == 0)
+//               {
+//                 // Handle zero-velocity note ons. Technically this is an error because internal midi paths
+//                 //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
+//                 // Nothing should be setting a Note type Event's on velocity to zero.
+//                 // But just in case... If we get this warning, it means there is still code to change.
+//                 fprintf(stderr, "MidiAlsaDevice::putEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", ev.time(), ev.type(), chn, a, b);  
+//                 switch(nom)
+//                 {
+//                   // Instrument uses note offs. Convert to zero-vel note off.
+//                   case MidiInstrument::NoteOffAll:
+//                     if(MusEGlobal::midiOutputTrace)
+//                       fprintf(stderr, "MidiOut: Alsa: Following event will be converted to zero-velocity note off:\n");
+//                     snd_seq_ev_set_noteoff(&event, chn, a, 0);
+//                   break;
+//                   
+//                   // Instrument uses no note offs at all. Send as-is.
+//                   case MidiInstrument::NoteOffNone:
+//                   // Instrument converts all note offs to zero-vel note ons. Send as-is.
+//                   case MidiInstrument::NoteOffConvertToZVNoteOn:
+//                     snd_seq_ev_set_noteon(&event, chn, a, b);
+//                   break;
+//                 }
+//               }
+//               else
+//                 
+//                 snd_seq_ev_set_noteon(&event, chn, a, b);
+//               break;
+//         case ME_NOTEOFF:
+//           
+//               // REMOVE Tim. Noteoff. Added.
+//               switch(nom)
+//               {
+//                 // Instrument uses note offs. Send as-is.
+//                 case MidiInstrument::NoteOffAll:
+//                   snd_seq_ev_set_noteoff(&event, chn, a, b);
+//                 break;
+//                 
+//                 // Instrument uses no note offs at all. Send nothing. Eat up the event - return false.
+//                 case MidiInstrument::NoteOffNone:
+//                   return false;
+//                   
+//                 // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
+//                 case MidiInstrument::NoteOffConvertToZVNoteOn:
+//                   if(MusEGlobal::midiOutputTrace)
+//                     fprintf(stderr, "MidiOut: Alsa: Following event will be converted to zero-velocity note on:\n");
+//                   snd_seq_ev_set_noteon(&event, chn, a, 0);
+//                 break;
+//               }
+//               // REMOVE Tim. Noteoff. Removed.
+// //                   snd_seq_ev_set_noteoff(&event, chn, a, 0);
+//               break;
+//         case ME_PROGRAM:
+//               {
+//                 _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+//                 _curOutParamNums[chn].setPROG(a);
+//                 snd_seq_ev_set_pgmchange(&event, chn, a);
+//               }
+//               break;
+//         case ME_PITCHBEND:
+//               snd_seq_ev_set_pitchbend(&event, chn, a);
+//               break;
+//         case ME_POLYAFTER:
+//               snd_seq_ev_set_keypress(&event, chn, a, b);
+//               break;
+//         case ME_AFTERTOUCH:
+//               snd_seq_ev_set_chanpress(&event, chn, a);
+//               break;
+//         case ME_SYSEX:
+//               {
+//                 const unsigned char* p = ev.data();
+//                 int n = ev.len();
+// // REMOVE Tim. autoconnect. Added.
+// //                 if(n == 4)
+// //                 {
+// //                   if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
+// //                   {
+// //                     if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_PANIC_ID)
+// //                     {
+// //                       const unsigned opts = p[3];
+// //                       if(opts & (MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF | MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL))
+// //                       {
+// //                         for(int i = 0; i < MIDI_CHANNELS; ++i)
+// //                         {
+// //                           if(opts & MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF)
+// //                           {
+// //                             // Tell the device to turn off all sounds on this channel.
+// //                             snd_seq_ev_set_controller(&event, i, CTRL_ALL_SOUNDS_OFF, 0);
+// //                             putAlsaEvent(&event);
+// //                           }
+// //                           if(opts & MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL)
+// //                           {
+// //                             // Tell the device to reset all controllers on this channel to its own default values.
+// //                             snd_seq_ev_set_controller(&event, i, CTRL_RESET_ALL_CTRL, 0);
+// //                             putAlsaEvent(&event);
+// //                             // The device (presumably) has now reset all its controllers on this channel
+// //                             //  to its own default values. Thus the state of all the controllers is unknown.
+// //                             // So we must reset all our cached values now.
+// //                             _curOutParamNums[i].reset();
+// //                           }
+// //                         }
+// //                         // Don't send this sysex, it's for internal use.
+// //                         return false;
+// //                       }
+// //                     }
+// //                   }
+// //                 }
+//                 
+//                 resetCurOutParamNums();  // Probably best to reset all.
+//                 int len                = n + sizeof(event) + 2;
+//                 char buf[len];
+//                 event.type             = SND_SEQ_EVENT_SYSEX;
+//                 event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+//                 event.data.ext.len     = n + 2;
+//                 event.data.ext.ptr  = (void*)(buf + sizeof(event));
+//                 memcpy(buf, &event, sizeof(event));
+//                 char* pp = buf + sizeof(event);
+//                 *pp++ = 0xf0;
+//                 memcpy(pp, p, n);
+//                 pp += n;
+//                 *pp = 0xf7;
+//                 // REMOVE Tim. Noteoff. Changed.
+// //                     return putAlsaEvent(&event);
+//               }
+//               break;
+//         case ME_SONGPOS:
+//               event.data.control.value = a;
+//               event.type = SND_SEQ_EVENT_SONGPOS;
+//               break;
+//         case ME_CLOCK:
+//               event.type = SND_SEQ_EVENT_CLOCK;
+//               break;
+//         case ME_START:
+//               event.type = SND_SEQ_EVENT_START;
+//               break;
+//         case ME_CONTINUE:
+//               event.type = SND_SEQ_EVENT_CONTINUE;
+//               break;
+//         case ME_STOP:
+//               event.type = SND_SEQ_EVENT_STOP;
+//               break;
+//         case ME_CONTROLLER:
+//         {
+//             int a = ev.dataA();
+//             int b = ev.dataB();
+//             int chn = ev.channel();
+// 
+//             if(a == CTRL_PITCH)
+//               snd_seq_ev_set_pitchbend(&event, chn, b);
+//             else if((a | 0xff) == CTRL_POLYAFTER)
+//               snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
+//             else if(a == CTRL_AFTERTOUCH)
+//               snd_seq_ev_set_chanpress(&event, chn, b);
+//             else if(a == CTRL_PROGRAM) {
+//                         _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+//                         int hb = (b >> 16) & 0xff;
+//                         int lb = (b >> 8) & 0xff;
+//                         int pr = b & 0xff;
+//                         _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
+//                         if(hb != 0xff)
+//                         {
+//                           snd_seq_ev_set_controller(&event, chn, CTRL_HBANK, hb);
+//                           if(putAlsaEvent(&event))
+//                             return true;
+//                         }
+//                         if(lb != 0xff)
+//                         {
+//                           snd_seq_ev_set_controller(&event, chn, CTRL_LBANK, lb);
+//                           if(putAlsaEvent(&event))
+//                             return true;
+//                         }
+//                         if(pr != 0xff)
+//                         {
+//                           snd_seq_ev_set_pgmchange(&event, chn, pr);
+//                           if(putAlsaEvent(&event))
+//                             return true;
+//                         }
+//                         return false;
+//                   }
+// 
+// // Set this to 1 if ALSA cannot handle RPN NRPN etc.
+// // NOTE: Although ideally it should be 0, there are problems with
+// //        letting ALSA do the 'composition' of the messages in putMidiEvent() -
+// //        chiefly that ALSA does not handle 7-bit (N)RPN controllers.
+// //       This define is kept because it is important to understand, try, and see
+// //        the difference between the two techniques, and possibly make it work...
+// //       Also see the corresponding define in MidiAlsaDevice::putMidiEvent().
+// #if 0
+//                   snd_seq_ev_set_controller(&event, chn, a, b);
+// #else
+// 
+//             else if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
+//                   if(a == CTRL_HRPN)
+//                     _curOutParamNums[chn].setRPNH(b);
+//                   else if(a == CTRL_LRPN)
+//                     _curOutParamNums[chn].setRPNL(b);
+//                   else if(a == CTRL_HNRPN)
+//                     _curOutParamNums[chn].setNRPNH(b);
+//                   else if(a == CTRL_LNRPN)
+//                     _curOutParamNums[chn].setNRPNL(b);
+//                   else if(a == CTRL_HBANK)
+//                   {
+//                     _curOutParamNums[chn].setBANKH(b);
+//                     _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+//                   }
+//                   else if(a == CTRL_LBANK)
+//                   {
+//                     _curOutParamNums[chn].setBANKH(b);
+//                     _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+//                   }
+//                   else if(a == CTRL_RESET_ALL_CTRL)
+//                     _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+//                     
+//                   snd_seq_ev_set_controller(&event, chn, a, b);
+//                   }
+//             else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
+//                   int ctrlH = (a >> 8) & 0x7f;
+//                   int ctrlL = a & 0x7f;
+// #if 0                  
+//                   int dataH = (b >> 7) & 0x7f;
+//                   int dataL = b & 0x7f;
+//                   snd_seq_ev_set_controller(&event, chn, ctrlH, dataH);
+//                   if(putAlsaEvent(&event))
+//                     return true;
+//                   snd_seq_ev_set_controller(&event, chn, ctrlL, dataL);
+//                   return putAlsaEvent(&event);
+// #else
+//                   snd_seq_event_t ev;
+//                   memset(&ev, 0, sizeof(ev));
+//                   ev.queue   = SND_SEQ_QUEUE_DIRECT;
+//                   ev.source  = musePort;
+//                   ev.dest    = adr;
+//                   int n = (ctrlH << 7) + ctrlL;
+//                   snd_seq_ev_set_controller(&ev, chn, n, b);
+//                   ev.type = SND_SEQ_EVENT_CONTROL14;
+//                   return putAlsaEvent(&ev);
+// #endif
+//                   
+//                   }
+//             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+//                   int ctrlH = (a >> 8) & 0x7f;
+//                   int ctrlL = a & 0x7f;
+//                   int data = b & 0x7f;
+//                   if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setRPNL(ctrlL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setRPNH(ctrlH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAH(data);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, data);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+// 
+//                   // Select null parameters so that subsequent data controller
+//                   //  events do not upset the last *RPN controller.  Tim.
+//                   if(MusEGlobal::config.midiSendNullParameters)
+//                   {
+//                     _curOutParamNums[chn].setRPNH(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                     
+//                     _curOutParamNums[chn].setRPNL(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   return false;
+//                 }
+//             else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+//                   int ctrlH = (a >> 8) & 0x7f;
+//                   int ctrlL = a & 0x7f;
+//                   int data = b & 0x7f;
+//                   if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setNRPNL(ctrlL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setNRPNH(ctrlH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAH(data);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, data);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+// 
+//                   if(MusEGlobal::config.midiSendNullParameters)
+//                   {
+//                     _curOutParamNums[chn].setNRPNH(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                     
+//                     _curOutParamNums[chn].setNRPNL(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   return false;
+//                   }
+//             else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+//                   return true;
+//             else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+//                   int ctrlH = (a >> 8) & 0x7f;
+//                   int ctrlL = a & 0x7f;
+//                   int dataH = (b >> 7) & 0x7f;
+//                   int dataL = b & 0x7f;
+//                   if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setRPNL(ctrlL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setRPNH(ctrlH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAH(dataH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+//                     if(putAlsaEvent(&event))
+//                         return true;
+//                   }
+//                   if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAL(dataL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+//                     if(putAlsaEvent(&event))
+//                         return true;
+//                   }
+// 
+//                   if(MusEGlobal::config.midiSendNullParameters)
+//                   {
+//                     _curOutParamNums[chn].setRPNH(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                     
+//                     _curOutParamNums[chn].setRPNL(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   return false;
+//                   }
+//             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+//                   int ctrlH = (a >> 8) & 0x7f;
+//                   int ctrlL = a & 0x7f;
+// #if 0
+//                   int dataH = (b >> 7) & 0x7f;
+//                   int dataL = b & 0x7f;
+//                   if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setNRPNL(ctrlL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setNRPNH(ctrlH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAH(dataH);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
+//                   {
+//                     _curOutParamNums[chn].setDATAL(dataL);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+// 
+// #else                  
+//                   int n = (ctrlH << 7) + ctrlL;
+//                   snd_seq_ev_set_controller(&event, chn, n, b);
+//                   event.type = SND_SEQ_EVENT_NONREGPARAM;
+//                   if(putAlsaEvent(&event))
+//                     return true;
+// #endif
+//                   
+//                   if(MusEGlobal::config.midiSendNullParameters)
+//                   {
+//                     _curOutParamNums[chn].setNRPNH(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                     
+//                     _curOutParamNums[chn].setNRPNL(0x7f);
+//                     snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, 0x7f);
+//                     if(putAlsaEvent(&event))
+//                       return true;
+//                   }
+//                   return false;
+//                   }
+//             else {
+//                   fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
+//                   return true;
+//                   }
+// #endif
+//         }
+//         break;  // ME_CONTROLLER
+//         
+//             default:
+//                   if(MusEGlobal::debugMsg)
+//                     fprintf(stderr, "MidiAlsaDevice::putEvent(): event type %d not implemented\n", ev.type());
+//                   return true;
+//             }
+//             
+//       return putAlsaEvent(&event);
+//       }
+
+
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   putEvent
+// //    return true if event cannot be delivered
+// //    TODO: retry on controller putMidiEvent
+// //    (Note: Since putEvent is virtual and there are different versions,
+// //     a retry facility is now found in putEventWithRetry. )
+// //---------------------------------------------------------
+// 
+// bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
+// {
+// // REMOVE Tim. autoconnect. Removed.
+// //   if(!_writeEnable || !alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+// //     return true;
+//       
+//   #ifdef ALSA_DEBUG
+//   printf("MidiAlsaDevice::putEvent time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
+//   #endif  
+//       
+//   bool rv = eventFifo.put(ev);
+//   if(rv)
+//     printf("MidiAlsaDevice::putEvent: port overflow\n");
+//   
+//   return rv;
+// }
+
 //---------------------------------------------------------
-//   putEvent
-//    return true if event cannot be delivered
-//    TODO: retry on controller putMidiEvent
-//    (Note: Since putEvent is virtual and there are different versions,
-//     a retry facility is now found in putEventWithRetry. )
+//   putAlsaEvent
+//    return false if event is delivered
 //---------------------------------------------------------
 
-bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
+bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       {
-      if(!_writeEnable)
-        //return true;
-        return false;
+      if (MusEGlobal::midiOutputTrace) {
+            fprintf(stderr, "ALSA MidiOut driver: <%s>: ", name().toLatin1().constData());
+            dump(event);
+            }
+            
+//       if(!alsaSeq)
+      if(!_writeEnable || !alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+        return true;
+        
+      int error;
+
+#ifdef ALSA_DEBUG
+      fprintf(stderr, "MidiAlsaDevice::putAlsaEvent\n");  
+#endif
+
+      do {
+            error   = snd_seq_event_output_direct(alsaSeq, event);
+            int len = snd_seq_event_length(event);
+            if (error == len) {
+//                  printf(".");fflush(stdout);
+                  return false;
+                  }
+            if (error < 0) {
+                  if (error == -12) {
+//                        printf("?");fflush(stdout);
+                        return true;
+                        }
+                  else {
+                        fprintf(stderr, "MidiAlsaDevice::%p putAlsaEvent(): midi write error: %s\n",
+                           this, snd_strerror(error));
+                        fprintf(stderr, "  dst %d:%d\n", adr.client, adr.port);
+                        //exit(-1);
+                        }
+                  }
+            else
+                  fprintf(stderr, "MidiAlsaDevice::putAlsaEvent(): midi write returns %d, expected %d: %s\n",
+                     error, len, snd_strerror(error));
+            } while (error == -12);
+      return true;
+      }
+
+// REMOVE Tim. autoconnect. Added.
+// To be called from audio thread only.
+void MidiAlsaDevice::preparePlayEventFifo()
+{
+  // First make sure to call the ancestor, to transfer all fifos into the play events list.
+  MidiDevice::preparePlayEventFifo();
+  
+  // Transfer the events in the list to the fifo.
+  for(ciMPEvent impe = _playEvents.begin(); impe != _playEvents.end(); ++impe)
+    _playEventFifo->put(*impe);
+  // Clear the list.
+  _playEvents.clear();
+}
+
+// REMOVE Tim. autoconnect. Added.
+// void MidiAlsaDevice::clearPlayEventFifo()
+// {
+//   _playEventFifo->clearWrite();
+// }
+
+//---------------------------------------------------------
+//    processEvent
+//    return false if event is delivered
+//---------------------------------------------------------
+
+bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
+{
+//       if(!_writeEnable)
+//         //return true;
+//         return false;
 
       if (MusEGlobal::midiOutputTrace) {
+            //fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
             fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
             ev.dump();
             }
             
-      if(!alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
-        return true;
+//       if(!alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+//         return true;
+      
+      //if(!_writeEnable || !alsaSeq || adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+      //if(!_writeEnable)
+      //  return true;
       
       int chn = ev.channel();
       int a   = ev.dataA();
@@ -429,7 +1025,8 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                 //  are now all 'note-off' without zero-vel note ons - they're converted to note offs.
                 // Nothing should be setting a Note type Event's on velocity to zero.
                 // But just in case... If we get this warning, it means there is still code to change.
-                fprintf(stderr, "MidiAlsaDevice::putEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", ev.time(), ev.type(), chn, a, b);  
+                fprintf(stderr, "MidiAlsaDevice::processEvent: Warning: Zero-vel note on: time:%d type:%d (ME_NOTEON) ch:%d A:%d B:%d\n", 
+                        ev.time(), ev.type(), chn, a, b);  
                 switch(nom)
                 {
                   // Instrument uses note offs. Convert to zero-vel note off.
@@ -493,25 +1090,62 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
               break;
         case ME_SYSEX:
               {
-              resetCurOutParamNums();  // Probably best to reset all.
-              const unsigned char* p = ev.data();
-              int n                  = ev.len();
-              int len                = n + sizeof(event) + 2;
-              char buf[len];
-              event.type             = SND_SEQ_EVENT_SYSEX;
-              event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
-              event.data.ext.len     = n + 2;
-              event.data.ext.ptr  = (void*)(buf + sizeof(event));
-              memcpy(buf, &event, sizeof(event));
-              char* pp = buf + sizeof(event);
-              *pp++ = 0xf0;
-              memcpy(pp, p, n);
-              pp += n;
-              *pp = 0xf7;
-              // REMOVE Tim. Noteoff. Changed.
-//               return putAlsaEvent(&event);
-              break;
+                const unsigned char* p = ev.data();
+                int n = ev.len();
+// REMOVE Tim. autoconnect. Added.
+//                 if(n == 4)
+//                 {
+//                   if(p[0] == MUSE_SYNTH_SYSEX_MFG_ID)
+//                   {
+//                     if(p[1] == MUSE_SYSEX_SYSTEM_ID && p[2] == MUSE_SYSEX_SYSTEM_PANIC_ID)
+//                     {
+//                       const unsigned opts = p[3];
+//                       if(opts & (MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF | MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL))
+//                       {
+//                         for(int i = 0; i < MIDI_CHANNELS; ++i)
+//                         {
+//                           if(opts & MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF)
+//                           {
+//                             // Tell the device to turn off all sounds on this channel.
+//                             snd_seq_ev_set_controller(&event, i, CTRL_ALL_SOUNDS_OFF, 0);
+//                             putAlsaEvent(&event);
+//                           }
+//                           if(opts & MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL)
+//                           {
+//                             // Tell the device to reset all controllers on this channel to its own default values.
+//                             snd_seq_ev_set_controller(&event, i, CTRL_RESET_ALL_CTRL, 0);
+//                             putAlsaEvent(&event);
+//                             // The device (presumably) has now reset all its controllers on this channel
+//                             //  to its own default values. Thus the state of all the controllers is unknown.
+//                             // So we must reset all our cached values now.
+//                             _curOutParamNums[i].reset();
+//                           }
+//                         }
+//                         // Don't send this sysex, it's for internal use.
+//                         return false;
+//                       }
+//                     }
+//                   }
+//                 }
+                
+                resetCurOutParamNums();  // Probably best to reset all.
+                int len                = n + sizeof(event) + 2;
+                // FIXME: Ugly. Could be a really long sysex. Need to break up sysexes.
+                char buf[len];
+                event.type             = SND_SEQ_EVENT_SYSEX;
+                event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+                event.data.ext.len     = n + 2;
+                event.data.ext.ptr  = (void*)(buf + sizeof(event));
+                memcpy(buf, &event, sizeof(event));
+                char* pp = buf + sizeof(event);
+                *pp++ = 0xf0;
+                memcpy(pp, p, n);
+                pp += n;
+                *pp = 0xf7;
+                // REMOVE Tim. Noteoff. Changed.
+//                     return putAlsaEvent(&event);
               }
+              break;
         case ME_SONGPOS:
               event.data.control.value = a;
               event.type = SND_SEQ_EVENT_SONGPOS;
@@ -594,7 +1228,7 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                   }
                   else if(a == CTRL_LBANK)
                   {
-                    _curOutParamNums[chn].setBANKH(b);
+                    _curOutParamNums[chn].setBANKL(b);
                     _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
                   }
                   else if(a == CTRL_RESET_ALL_CTRL)
@@ -816,7 +1450,7 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                   return false;
                   }
             else {
-                  fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
+                  fprintf(stderr, "MidiAlsaDevice::processEvent: unknown controller type 0x%x\n", a);
                   return true;
                   }
 #endif
@@ -825,67 +1459,19 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
         
             default:
                   if(MusEGlobal::debugMsg)
-                    fprintf(stderr, "MidiAlsaDevice::putEvent(): event type %d not implemented\n", ev.type());
+                    fprintf(stderr, "MidiAlsaDevice::processEvent(): event type %d not implemented\n", ev.type());
                   return true;
             }
             
       return putAlsaEvent(&event);
-      }
-
-      
-//---------------------------------------------------------
-//   putAlsaEvent
-//    return false if event is delivered
-//---------------------------------------------------------
-
-bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
-      {
-      if (MusEGlobal::midiOutputTrace) {
-            fprintf(stderr, "ALSA MidiOut driver: <%s>: ", name().toLatin1().constData());
-            dump(event);
-            }
-            
-      if(!alsaSeq)
-        return true;
-        
-      int error;
-
-#ifdef ALSA_DEBUG
-      fprintf(stderr, "MidiAlsaDevice::putAlsaEvent\n");  
-#endif
-
-      do {
-            error   = snd_seq_event_output_direct(alsaSeq, event);
-            int len = snd_seq_event_length(event);
-            if (error == len) {
-//                  printf(".");fflush(stdout);
-                  return false;
-                  }
-            if (error < 0) {
-                  if (error == -12) {
-//                        printf("?");fflush(stdout);
-                        return true;
-                        }
-                  else {
-                        fprintf(stderr, "MidiAlsaDevice::%p putAlsaEvent(): midi write error: %s\n",
-                           this, snd_strerror(error));
-                        fprintf(stderr, "  dst %d:%d\n", adr.client, adr.port);
-                        //exit(-1);
-                        }
-                  }
-            else
-                  fprintf(stderr, "MidiAlsaDevice::putAlsaEvent(): midi write returns %d, expected %d: %s\n",
-                     error, len, snd_strerror(error));
-            } while (error == -12);
-      return true;
-      }
-
+}
+    
 //---------------------------------------------------------
 //   processMidi
 //   Called from ALSA midi sequencer thread only.
 //---------------------------------------------------------
 
-void MidiAlsaDevice::processMidi()
+void MidiAlsaDevice::processMidi(unsigned int curFrame)
 {
   //bool stop = stopPending;  // Snapshots
   //bool seek = seekPending;  //
@@ -903,10 +1489,10 @@ void MidiAlsaDevice::processMidi()
   //bool is_playing = MusEGlobal::audio->isPlaying();  
   // We're in the ALSA midi thread. audio->isPlaying() might not be true during seek right now. Include START_PLAY state...
   //bool is_playing = MusEGlobal::audio->isPlaying() || MusEGlobal::audio->isStarting(); // TODO Check this. It includes LOOP1 and LOOP2 besides PLAY.
-  int pos = MusEGlobal::audio->tickPos();
-  int port = midiPort();
-  MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
-  bool ext_sync = MusEGlobal::extSyncFlag.value();
+//   int pos = MusEGlobal::audio->tickPos();
+//   int port = midiPort();
+//   MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
+//   bool ext_sync = MusEGlobal::extSyncFlag.value();
 
   /*
   if(mp)
@@ -1057,31 +1643,154 @@ void MidiAlsaDevice::processMidi()
       _stuckNotes.erase(_stuckNotes.begin(), k);
     }
     */
-    processStuckNotes();  
+    
+// REMOVE Tim. autoconnect. Removed.
+//     processStuckNotes();  
   }
   
-  if(_playEvents.empty())
-    return;
+// REMOVE Tim. autoconnect. Removed.
+//   if(_playEvents.empty())
+//     return;
   
-  unsigned curFrame = MusEGlobal::audio->curFrame();
+//   unsigned curFrame = MusEGlobal::audio->curFrame();
   
-  // Play all events up to current frame.
-  iMPEvent i = _playEvents.begin();            
-  for (; i != _playEvents.end(); ++i) {
-        if (i->time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
-          break; 
-        if(mp){
-          if (mp->sendEvent(*i, true))  // Force the event to be sent.
-            break;
-              }
-        else
-          // REMOVE Tim. This could not possibly work properly with given ALSA putEvent code
-          //  unless the code was switched to the alternate ALSA specific calls.
-          //if(putMidiEvent(*i))  
-          if(putEvent(*i))
-            break;
-        }
-  _playEvents.erase(_playEvents.begin(), i);
+// REMOVE Tim. autoconnect. Removed.
+// //   // Play all events up to current frame.
+// //   iMPEvent i = _playEvents.begin();            
+// //   for (; i != _playEvents.end(); ++i) {
+// //         if (i->time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+// //           break; 
+// // // REMOVE Tim. autoconnect. Removed.
+// // //         if(mp){
+// // //           if (mp->sendEvent(*i, true))  // Force the event to be sent.
+// // //             break;
+// // //               }
+// // //         else
+// //           // REMOVE Tim. This could not possibly work properly with given ALSA putEvent code
+// //           //  unless the code was switched to the alternate ALSA specific calls.
+// //           //if(putMidiEvent(*i))  
+// //           if(putEvent(*i))
+// //             break;
+// //         }
+// //   _playEvents.erase(_playEvents.begin(), i);
+  
+  //bool valid_client = alsaSeq && adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN;
+
+  
+  
+//   // Play all events up to current frame...
+//   while(!_playEventFifo->isEmpty())
+// //   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
+// //   for(int i = 0; i < pl_evfifo_sz; ++i)
+//   {
+//     const MidiPlayEvent e(_playEventFifo->peek()); 
+//     // Event is meant for next cycle?
+// // REMOVE Tim. autoconnect. Changed.
+// //     if(e.time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+//     if(e.time() > curFrame)
+//     {
+// #ifdef ALSA_DEBUG
+//       fprintf(stderr, " alsa play event is for future:%lu, breaking loop now\n", e.time());
+// //       fprintf(stderr, " alsa play event is for future:%lu, processing now\n", e.time());
+// #endif
+//       break; 
+//     }
+//     //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+//     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
+// //     if(processEvent(e))  // Returns true on error.
+// //       break;            
+//     // If processEvent fails, although we would like to not miss events by keeping them
+//     //  until next cycle and trying again, that can lead to a large backup of events
+//     //  over a long time. So we'll just... miss them.
+//     processEvent(e);
+//     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
+//   }
+// 
+//   
+//   // Process putEvent events up to current frame...
+//   while(!eventFifo.isEmpty())
+// //   const int evfifo_sz = eventFifo.getSize(); // Get snapshot of current size.
+// //   for(int i = 0; i < evfifo_sz; ++i)
+//   {
+//     const MidiPlayEvent e(eventFifo.peek());
+// 
+//     // Event is meant for next cycle?
+// // REMOVE Tim. autoconnect. Removed. These events are meant for immediate delivery. Do not pay attention to the event time.
+// // REMOVE Tim. autoconnect. Changed.
+// //     if(e.time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+//     if(e.time() > curFrame)
+//     {
+// #ifdef ALSA_DEBUG
+//       fprintf(stderr, " alsa putted event is for future:%lu, breaking loop now\n", e.time());
+// //       fprintf(stderr, " alsa putted event is for future:%lu, processing now\n", e.time());
+// #endif
+//       break; 
+//     }
+//     
+//     //fprintf(stderr, "MidiAlsaDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+//     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
+// //     if(processEvent(e))  // Returns true on error.
+// //       break;
+//     // If processEvent fails, although we would like to not miss events by keeping them
+//     //  until next cycle and trying again, that can lead to a large backup of events
+//     //  over a long time. So we'll just... miss them.
+//     processEvent(e);
+//     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
+//   }
+
+  // Play all events up to current frame...
+//   while(!_playEventFifo->isEmpty())
+  const int sz = _eventFifos->getSize();
+  for(int i = 0; i < sz; ++i)
+//   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
+//   for(int i = 0; i < pl_evfifo_sz; ++i)
+  {
+//     const MidiPlayEvent e(_playEventFifo->peek()); 
+    const MidiPlayEvent e(_eventFifos->peek()); 
+    // Event is meant for next cycle?
+// REMOVE Tim. autoconnect. Changed.
+//     if(e.time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+    if(e.time() > curFrame)
+    {
+#ifdef ALSA_DEBUG
+      fprintf(stderr, " alsa play event is for future:%lu, breaking loop now\n", e.time());
+//       fprintf(stderr, " alsa play event is for future:%lu, processing now\n", e.time());
+#endif
+      break; 
+    }
+    //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+    // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
+//     if(processEvent(e))  // Returns true on error.
+//       break;            
+    // If processEvent fails, although we would like to not miss events by keeping them
+    //  until next cycle and trying again, that can lead to a large backup of events
+    //  over a long time. So we'll just... miss them.
+    processEvent(e);
+//     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
+    _eventFifos->remove();  // Successfully processed event. Remove it from FIFO.
+  }
+
+
+// //   // Play all events up to current frame...
+// //   while(!_playEventFifo->isEmpty())
+// //   {
+// //     MidiPlayEvent e(_playEventFifo->peek()); 
+// //     // Event is meant for next cycle?
+// // // REMOVE Tim. autoconnect. Changed.
+// // //     if(e.time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+// //     if(e.time() > curFrame)
+// //     {
+// // #ifdef ALSA_DEBUG
+// //       fprintf(stderr, " alsa play event is for future:%lu, breaking loop now\n", e.time());
+// // #endif
+// //       break; 
+// //     }
+// //     //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+// //     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
+// //     if(!processEvent(e))  
+// //       break;            
+// //     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
+// //   }
 }
 
 /*
@@ -1878,6 +2587,9 @@ int alsaSelectWfd()
 
 void alsaProcessMidiInput()
 {
+      const unsigned frame_ts = MusEGlobal::audio->curFrame();
+      const double time_ts = curTime();
+      
       DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
               
       if(!alsaSeq)
@@ -1896,8 +2608,17 @@ void alsaProcessMidiInput()
                   }
                   
             if (MusEGlobal::midiInputTrace) {
-                  fprintf(stderr, "ALSA MidiIn driver: ");
-                  MidiAlsaDevice::dump(ev);
+                  switch(ev->type)
+                  {
+                    // Ignore some flooding events like clock.
+                    case SND_SEQ_EVENT_CLOCK:
+                    break;
+                    
+                    default:
+                      fprintf(stderr, "ALSA MidiIn driver: ");
+                      MidiAlsaDevice::dump(ev);
+                    break;
+                  }
                   }
                   
             switch(ev->type) {
@@ -2121,24 +2842,31 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CLOCK, curTime());
+// REMOVE Tim. autoconnect. Changed.
+//                         MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CLOCK, curTime());
+                        if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
+//                           MusEGlobal::midiSyncContainer.midiClockInput(curPort, frame_ts);
+                          mdev->midiClockInput(frame_ts);
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, curTime());
+                        // REMOVE Tim. autoconnect. Added.
+                        if(MusEGlobal::midiInputTrace)
+                          fprintf(stderr, "alsaProcessMidiInput: start port:%d curFrame:%u\n", curPort, frame_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, time_ts);
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, time_ts);
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, time_ts);
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, curTime());
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, time_ts);
                         //mdev->syncInfo().trigTickDetect();
                         break;
 
@@ -2203,11 +2931,17 @@ void alsaProcessMidiInput()
             {
               // Moved here from MidiDevice. Devices now must set time before calling.
               // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
-              unsigned frame_ts = MusEGlobal::audio->timestamp();
-#ifndef _AUDIO_USE_TRUE_FRAME_
-              if(MusEGlobal::audio->isPlaying())
-              frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
-#endif
+// REMOVE Tim. autoconnect. Changed.
+//               unsigned frame_ts = MusEGlobal::audio->timestamp();
+// #ifndef _AUDIO_USE_TRUE_FRAME_
+//               if(MusEGlobal::audio->isPlaying())
+//               frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+// #endif
+//               unsigned frame_ts = MusEGlobal::audio->curFrame();
+// #ifndef _AUDIO_USE_TRUE_FRAME_
+//               if(MusEGlobal::audio->isPlaying() || (MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.externalPlayState()))
+//                 frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+// #endif
               event.setTime(frame_ts);
               event.setTick(MusEGlobal::lastExtMidiSyncTick);
 

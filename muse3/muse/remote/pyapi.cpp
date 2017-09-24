@@ -1084,8 +1084,10 @@ bool Song::event(QEvent* _e)
 
                   int num = e->getP1();
                   int val = e->getP2();
-                  int tick = MusEGlobal::song->cpos();
-                  MidiPlayEvent ev(tick, track->outPort(), chan, ME_CONTROLLER, num, val);
+// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+//                   int tick = MusEGlobal::song->cpos();
+//                   MidiPlayEvent ev(tick, track->outPort(), chan, ME_CONTROLLER, num, val);
+                  MidiPlayEvent ev(0, track->outPort(), chan, ME_CONTROLLER, num, val);
                   MusEGlobal::audio->msgPlayMidiEvent(&ev);
                   break;
                   }

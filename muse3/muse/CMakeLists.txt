@@ -115,7 +115,7 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
-      lock_free_buffer.h
+      lock_free_buffer.cpp
       memory.cpp
       midi.cpp
       midictrl.cpp

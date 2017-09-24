@@ -61,6 +61,10 @@ typedef std::list<Poll>::iterator iPoll;
 
 struct ThreadMsg {
       int id;
+// REMOVE Tim. autoconnect. Added.
+      // Whether we want to wait until the message is delivered. 
+      // Not all inheritors or scenarios might use this.
+      bool waitForCompletion;
       };
 
 //---------------------------------------------------------

@@ -206,6 +206,7 @@ MusEGlobal::GlobalConfigValues config = {
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks
+      0,                            // curMidiSyncInPort The currently selected midi sync input port.
       true,                         // midiSendInit Send instrument initialization sequences
       true,                         // warnInitPending Warn instrument initialization sequences pending
       false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song

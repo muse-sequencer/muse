@@ -55,6 +55,7 @@ class SynthI;
 class Track;
 class Undo;
 class PendingOperationList;
+class ExtMidiClock;
 
 //---------------------------------------------------------
 //   AudioMsgId
@@ -147,9 +148,29 @@ class Audio {
 #ifdef _AUDIO_USE_TRUE_FRAME_
       Pos _previousPos;       // previous play position
 #endif
-      
+
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
+      
+      // REMOVE Tim. autoconnect. Added.
+      // Holds a brief temporary array of sorted FRAMES of clock history, filled from the external clock history fifo.
+      ExtMidiClock *_extClockHistory;
+      // Holds the total capacity of the clock history list.
+      static const int _extClockHistoryCapacity;
+      // Holds the current size of the temporary clock history array.
+      int _extClockHistorySize;
+      // Holds the frame of the last processed clock (from the previous audio cycle).
+//       unsigned int _extClockLastFrame;
+      // Convert tick to frame using the external clock history list.
+      // The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
+      // The returned clock frames occured during the previous audio cycle(s), so you may want to shift 
+      //  the frames forward by one audio segment size for scheduling purposes.
+      // CAUTION: There must be at least one valid clock in the history, otherwise it returns zero. 
+      //          Don't feed this a tick greater than or equal to the next tick, it will simply return the 
+      //           very last frame, which is not very useful since that will just bunch the events 
+      //           together at the last frame.
+      unsigned int extClockHistoryTick2Frame(unsigned int tick) const;
+      unsigned int extClockHistoryFrame2Tick(unsigned int frame) const;
 
       //metronome values
       unsigned midiClick;
@@ -159,7 +180,8 @@ class Audio {
 
       double syncTime;  // wall clock at last sync point
       unsigned syncFrame;    // corresponding frame no. to syncTime
-      unsigned long frameOffset;  // offset to free running hw frame counter
+// REMOVE Tim. autoconnect. Removed.
+//       unsigned long frameOffset;  // offset to free running hw frame counter
 
       State state;
 
@@ -188,10 +210,13 @@ class Audio {
       void process1(unsigned samplePos, unsigned offset, unsigned samples);
 
       void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick);
+      
+// REMOVE Tim. autoconnect. Added.
+      void seekMidi();
 
    public:
       Audio();
-      virtual ~Audio() { } 
+      virtual ~Audio();
 
       // Access to message pipe (like from gui namespace), otherwise audio would need to depend on gui.
       int getFromThreadFdw() { return sigFd; } 
@@ -200,11 +225,13 @@ class Audio {
       void process(unsigned frames);
       bool sync(int state, unsigned frame);
       // Called whenever the audio needs to re-sync, such as after any tempo changes.
+      // To be called from audio thread only.
       void reSyncAudio();
       void shutdown();
       void writeTick();
 
       // transport:
+      // To be called from audio thread only.
       bool start();
       void stop(bool);
       void seek(const Pos& pos);
@@ -222,6 +249,11 @@ class Audio {
 
       void msgSeek(const Pos&);
       void msgPlay(bool val);
+// REMOVE Tim. autoconnect. Added.
+      // For starting the transport in external sync mode.
+      // Starts the transport immediately, bypassing waiting for transport sync,
+      //  although sync is still handled.
+      void msgExternalPlay(bool val, bool doRewind = false);
 
       void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3
       void msgRevertOperationGroup(Undo&); // similar.
@@ -299,20 +331,38 @@ class Audio {
 
       unsigned tickPos() const    { return curTickPos; }
       unsigned nextTick() const   { return nextTickPos; }
-      unsigned timestamp() const;
+// REMOVE Tim. autoconnect. Removed.
+//       unsigned timestamp() const;
       void processMidi();
+      // Extrapolates current play frame on syncTime/syncFrame
+      // Estimated to single-frame resolution.
+      // This is an always-increasing number. Good for timestamps, and 
+      //  handling them during process when referenced to syncFrame.
+      // This is meant to be called from threads other than the process thread.
       unsigned curFrame() const;
       unsigned curSyncFrame() const { return syncFrame; }
+      // Current play position frame. Estimated to single-frame resolution while in play mode.
+      // This can be called from outside process thread.
       unsigned curFramePos() const;
       // This is meant to be called from inside process thread only.      
       unsigned framesAtCycleStart() const;
       // This can be called from outside process thread. 
       unsigned framesSinceCycleStart() const;   
+// REMOVE Tim. autoconnect. Added.
+      // Converts ticks to frames, and adds a forward frame offset, for the 
+      //  purpose of scheduling a midi event to play in the near future.
+      // If external midi clock sync is off, it uses the tempo map as usual.
+      // If external sync is on, it uses the clock history list - see the 
+      //  CAUTION for extClockHistoryTick2Frame(): There must be at least 
+      //  one valid clock in the history list, and don't pass a tick 
+      //  greater than or equal to the next tick.
+      unsigned int midiQueueTimeStamp(unsigned int tick) const;
       
       void recordStop(bool restart = false, Undo* operations = NULL);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
-      unsigned long getFrameOffset() const   { return frameOffset; }
+// REMOVE Tim. autoconnect. Removed.
+//       unsigned long getFrameOffset() const   { return frameOffset; }
       void initDevices(bool force = true);
 
       void sendMsgToGui(char c);

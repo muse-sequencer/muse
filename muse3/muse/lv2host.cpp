@@ -3593,8 +3593,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    //unsigned long prop_buf_sz = el->size() + synti->eventFifo.getSize();
    //const unsigned long ev_buf_sz = (prop_buf_sz == 0) ? 1024 : prop_buf_sz;
 
-   const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
-   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+// REMOVE Tim. autoconnect. Removed.
+//    const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+// REMOVE Tim. autoconnect. Changed.
+//    const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+   const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
    const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);;
@@ -3886,87 +3889,102 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             for(; start_event != el->end(); ++start_event)
             {
 #ifdef LV2_DEBUG
-               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%lu\n", start_event->time(), pos, sample, nsamp, frameOffset);
+// REMOVE Tim. autoconnect. Changed.
+//                fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%lu\n", 
+//                        start_event->time(), pos, sample, nsamp, frameOffset);
+               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu syncFrame:%u\n", 
+                       start_event->time(), pos, sample, nsamp, syncFrame);
 #endif
 
-               if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+// REMOVE Tim. autoconnect. Changed.
+//                if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+               if(start_event->time() >= (sample + nsamp + syncFrame))
                {
 #ifdef LV2_DEBUG
-                  fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+//                   fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+                  fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - syncFrame - sample);
 #endif
                   break;
                }
 
-               // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-               // Same code as in MidiPort::sendEvent()
-               if(synti->midiPort() != -1)
-               {
-                  MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-
-                  if(start_event->type() == ME_CONTROLLER)
-                  {
-                     int da = start_event->dataA();
-                     int db = start_event->dataB();
-                     if(da != CTRL_PROGRAM) //for programs setHwCtrlState is called from processEvent
-                     {
-                        db = mp->limitValToInstrCtlRange(da, db);
-
-                        if(!mp->setHwCtrlState(start_event->channel(), da, db))
-                        {
-                           continue;
-                        }
-                     }
-                  }
-                  else if(start_event->type() == ME_PITCHBEND)
-                  {
-                     int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-                     {
-                        continue;
-                     }
-                  }
-                  else if(start_event->type() == ME_AFTERTOUCH)
-                  {
-                     int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-                     {
-                        continue;
-                     }
-                  }
-                  else if(start_event->type() == ME_POLYAFTER)
-                  {
-                     int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-                     int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-                     {
-                        continue;
-                     }
-                  }
-//                  else if(start_event->type() == ME_PROGRAM)
-//                  {
-//                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
-//                     {
-//                        continue;
-//                     }
-//                  }
-               }
+// REMOVE Tim. autoconnect. Removed.
+//                // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//                // Same code as in MidiPort::sendEvent()
+//                if(synti->midiPort() != -1)
+//                {
+//                   MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
+// 
+//                   if(start_event->type() == ME_CONTROLLER)
+//                   {
+//                      int da = start_event->dataA();
+//                      int db = start_event->dataB();
+//                      if(da != CTRL_PROGRAM) //for programs setHwCtrlState is called from processEvent
+//                      {
+//                         db = mp->limitValToInstrCtlRange(da, db);
+// 
+//                         if(!mp->setHwCtrlState(start_event->channel(), da, db))
+//                         {
+//                            continue;
+//                         }
+//                      }
+//                   }
+//                   else if(start_event->type() == ME_PITCHBEND)
+//                   {
+//                      int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
+// 
+//                      if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
+//                      {
+//                         continue;
+//                      }
+//                   }
+//                   else if(start_event->type() == ME_AFTERTOUCH)
+//                   {
+//                      int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
+// 
+//                      if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
+//                      {
+//                         continue;
+//                      }
+//                   }
+//                   else if(start_event->type() == ME_POLYAFTER)
+//                   {
+//                      int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+//                      int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+// 
+//                      if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
+//                      {
+//                         continue;
+//                      }
+//                   }
+// //                  else if(start_event->type() == ME_PROGRAM)
+// //                  {
+// //                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
+// //                     {
+// //                        continue;
+// //                     }
+// //                  }
+//                }
 
                // Returns false if the event was not filled. It was handled, but some other way.
                // Time-stamp the event.
-               long ft = start_event->time() - frameOffset - pos - sample;
-               
-               if(ft < 0)
+// REMOVE Tim. autoconnect. Changed.
+//                long ft = start_event->time() - frameOffset - pos - sample;
+//                
+//                if(ft < 0)
+//                {
+//                   //fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+//                   //        start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
+//                  ft = 0;
+//                }
+               unsigned int ft = (start_event->time() < syncFrame) ? 0 : start_event->time() - syncFrame;
+               ft = (ft < sample) ? 0 : ft - sample;
+//                if(ft >= (long)nsamp)
+               if(ft >= nsamp)
                {
-                  //fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
-                  //        start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
-                 ft = 0;
-               }
-               if(ft >= (long)nsamp)
-               {
-                  fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+//                   fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+//                           start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                  fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u syncFrame:%u ft:%u sample:%lu nsamp:%lu\n", 
+                          start_event->time(), pos, syncFrame, ft, sample, nsamp);
                   ft = nsamp - 1;
                }
                
@@ -3980,39 +3998,43 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          // Now process putEvent events...
          while(!synti->eventFifo.isEmpty())
          {
-            MidiPlayEvent e = synti->eventFifo.peek();
+// REMOVE Tim. autoconnect. Changed. These events are meant for immediate delivery. Do not pay attention to the event time.
+//             MidiPlayEvent e = synti->eventFifo.peek();
+            MidiPlayEvent e = synti->eventFifo.get(); // Get and remove the ring buffer's event.
 
 #ifdef LV2_DEBUG
             fprintf(stderr, "LV2SynthIF::getData eventFifo event time:%d\n", e.time());
 #endif
 
-            if(e.time() >= (pos + sample + nsamp + frameOffset))
-            {
-               break;
-            }
-
-            synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
+//             if(e.time() >= (pos + sample + nsamp + frameOffset))
+//             {
+//                break;
+//             }
+// 
+//             synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
 
             if(ports != 0)  // Don't bother if not 'running'.
             {
 
-               // Returns false if the event was not filled. It was handled, but some other way.
-               // Time-stamp the event.
-               long ft = e.time() - frameOffset - pos  - sample;
-
-               if(ft < 0)
-               {
-                 //fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
-                 //        e.time(), pos, frameOffset, ft, sample, nsamp); // REMOVE Tim. yoshimi. Added.
-                 ft = 0;
-               }
-               if(ft >= (long)nsamp)
-               {
-                 fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-                 ft = nsamp - 1;
-               }
-               
-               processEvent(e, evBuf, ft);
+// REMOVE Tim. autoconnect. Changed. These events are meant for immediate delivery. Do not pay attention to the event time.
+//                // Returns false if the event was not filled. It was handled, but some other way.
+//                // Time-stamp the event.
+//                long ft = e.time() - frameOffset - pos  - sample;
+// 
+//                if(ft < 0)
+//                {
+//                  //fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
+//                  //        e.time(), pos, frameOffset, ft, sample, nsamp); // REMOVE Tim. yoshimi. Added.
+//                  ft = 0;
+//                }
+//                if(ft >= (long)nsamp)
+//                {
+//                  fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+//                  ft = nsamp - 1;
+//                }
+//                
+//                processEvent(e, evBuf, ft);
+               processEvent(e, evBuf, 0);
             }
          }
 

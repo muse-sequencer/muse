@@ -1115,6 +1115,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")
                               MusEGlobal::config.rtcTicks = xml.parseInt();
+                        else if (tag == "curMidiSyncInPort")
+                              MusEGlobal::config.curMidiSyncInPort = xml.parseInt();
                         else if (tag == "midiSendInit")
                               MusEGlobal::config.midiSendInit = xml.parseInt();
                         else if (tag == "warnInitPending")
@@ -1678,6 +1680,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
+      xml.intTag(level, "curMidiSyncInPort", MusEGlobal::config.curMidiSyncInPort);
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
       xml.intTag(level, "warnInitPending", MusEGlobal::config.warnInitPending);
       xml.intTag(level, "midiSendCtlDefaults", MusEGlobal::config.midiSendCtlDefaults);

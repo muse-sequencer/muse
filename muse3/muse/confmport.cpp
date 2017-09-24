@@ -277,7 +277,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         {
           MusECore::MidiTrack* mt = *it;
           MusECore::RouteList* rl = mt->outRoutes();
-          for(MusECore::ciRoute ir = rl->begin(); ir != rl.end(); ++ir)
+          for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
           {
             switch(ir->type)
             {

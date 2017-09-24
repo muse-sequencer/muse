@@ -205,6 +205,7 @@ struct GlobalConfigValues {
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
       int rtcTicks;
+      int curMidiSyncInPort;     // The currently selected midi sync input port.
       bool midiSendInit;         // Send instrument initialization sequences
       bool warnInitPending;      // Warn instrument initialization sequences pending
       bool midiSendCtlDefaults;  // Send instrument controller defaults at position 0 if none in song

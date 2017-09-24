@@ -30,6 +30,9 @@
 #include "mpevent.h"
 #include "route.h"
 #include "globaldefs.h"
+// REMOVE Tim. autoconnect. Added.
+#include "lock_free_buffer.h"
+#include "sync.h"
 
 #include <QString>
 
@@ -75,6 +78,26 @@ struct MidiOutputParams {
 //---------------------------------------------------------
 
 class MidiDevice {
+   public:
+      // Types of MusE midi devices.
+      enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
+      
+      // IDs for the various IPC FIFOs that are used.
+      enum EventFifoIds
+      {
+        // Playback queued events put by the audio process thread.
+        PlayFifo=0,
+        // Gui events put by our gui thread.
+        GuiFifo=1,
+        // OSC events put by the OSC thread.
+        OSCFifo=2,
+        // Monitor input passthrough events put by Jack devices (audio process thread).
+        JackFifo=3,
+        // Monitor input passthrough events put by ALSA devices (midi seq thread).
+        ALSAFifo=4
+      };
+      
+   private:
       // Used for multiple reads of fifos during process.
       int _tmpRecordCount[MIDI_CHANNELS + 1];
       bool _sysexFIFOProcessed;
@@ -95,6 +118,12 @@ class MidiDevice {
       
       // Fifo for midi events sent from gui direct to midi port:
       MidiFifo eventFifo;  
+      // REMOVE Tim. autoconnect. Added.
+      // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
+      //LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
+      // Various IPC FIFOs.
+      LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
+      
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
 
@@ -106,18 +135,25 @@ class MidiDevice {
       
       RouteList _inRoutes, _outRoutes;
       
-      void init();
-      virtual void processStuckNotes();
-
-   public:
-      enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
+// REMOVE Tim. autoconnect. Added.
+      // Fifo holds brief history of incoming external clock messages.
+      // Timestamped with both tick and frame so that pending play events can
+      //  be scheduled by frame.
+      // The audio thread processes this fifo and clears it.
+      LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
+      //ExtMidiClock::ExternState _playStateExt;   // used for keeping play state in sync functions
       
+      void init();
+// REMOVE Tim. autoconnect. Removed. Made public.
+//       virtual void processStuckNotes();
+      
+   public:
       MidiDevice();
       MidiDevice(const QString& name);
-      virtual ~MidiDevice() {}
+      virtual ~MidiDevice();
 
       virtual MidiDeviceType deviceType() const = 0;
-      virtual QString deviceTypeString();
+      virtual QString deviceTypeString() const;
       
       // The meaning of the returned pointer depends on the driver.
       // For Jack it returns the address of a Jack port, for ALSA it return the address of a snd_seq_addr_t.
@@ -184,7 +220,8 @@ class MidiDevice {
       // Add a stuck note. Returns false if event cannot be delivered.
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
       // Put an event for immediate playback. Returns true if event cannot be delivered.
-      virtual bool putEvent(const MidiPlayEvent&) = 0;
+//       virtual bool putEvent(const MidiPlayEvent&) = 0;
+      virtual bool putEvent(const MidiPlayEvent& ev);
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads.
       bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
@@ -194,9 +231,33 @@ class MidiDevice {
       virtual void handleStop();  
       virtual void handleSeek();
       
+// REMOVE Tim. autoconnect. Added.
+      // This allows a device which processes in another thread (like ALSA) to 
+      //  drain the playEvents list into a fifo that the other thread reads.
+      // If the device processes in the audio thread, it is not required to use a fifo,
+      //  the device can use the playEvents list directly as long as it drains the list.
+      // To be called from audio thread only.
+      virtual void preparePlayEventFifo() { }
+      // This clears the 'write' side of any fifo the device may have (like ALSA),
+      //  by setting the size to zero and the write pointer equal to the read pointer.
+//       virtual void clearPlayEventFifo() {}
+      
+// REMOVE Tim. autoconnect. Added. Moved from protected.
+      virtual void processStuckNotes();
+      
       virtual void collectMidiEvents() {}   
-      virtual void processMidi() {}
+      // Process midi events. The frame is used by devices such as ALSA 
+      //  that require grabbing a timestamp as early as possible and
+      //  passing it along to all the devices. The other devices don't
+      //  require the frame since they 'compose' a buffer based on the 
+      //  frame at cycle start.
+      virtual void processMidi(unsigned int /*curFrame*/ = 0) {}
 
+// REMOVE Tim. autoconnect. Added.
+//       // If playing, clears all notes and flushes out any
+//       //  stuck notes which were put directly to the device
+//       virtual void flushMidiEvents();
+      
       void beforeProcess();
       void afterProcess();
       int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
@@ -205,6 +266,11 @@ class MidiDevice {
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       bool sysexReadingChunks() { return _sysexReadingChunks; }
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
+      
+// REMOVE Tim. autoconnect. Added.
+      static const int extClockHistoryCapacity;
+      LockFreeBuffer<ExtMidiClock> *extClockHistory() { return _extClockHistoryFifo; }
+      void midiClockInput(unsigned int frame); // REMOVE Tim. autoconnect. Added.
       };
 
 //---------------------------------------------------------

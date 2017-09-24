@@ -430,32 +430,34 @@ void SynthI::close()
   _state = QString("Closed");
 }
 
-//---------------------------------------------------------
-//   putMidiEvent
-//---------------------------------------------------------
-
-bool SynthI::putEvent(const MidiPlayEvent& ev)
-{
-  if(_writeEnable)
-  {
-    if (MusEGlobal::midiOutputTrace)
-    {
-          fprintf(stderr, "MidiOut: Synth: <%s>: ", name().toLatin1().constData());
-          ev.dump();
-    }
-    return _sif->putEvent(ev);
-  }
-
-  return false;
-}
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   putMidiEvent
+// //---------------------------------------------------------
+// 
+// bool SynthI::putEvent(const MidiPlayEvent& ev)
+// {
+//   if(_writeEnable)
+//   {
+//     if (MusEGlobal::midiOutputTrace)
+//     {
+//           fprintf(stderr, "MidiOut: Synth: <%s>: ", name().toLatin1().constData());
+//           ev.dump();
+//     }
+//     return _sif->putEvent(ev);
+//   }
+// 
+//   return false;
+// }
 
 //---------------------------------------------------------
 //   processMidi
 //---------------------------------------------------------
 
-void SynthI::processMidi()
+void SynthI::processMidi(unsigned int /*curFrame*/)
 {
-    processStuckNotes();
+// REMOVE Tim. autoconnect. Removed.
+//     processStuckNotes();
 }
 
 //---------------------------------------------------------
@@ -1186,15 +1188,24 @@ void SynthI::preProcessAlways()
   //  of 2048 note-off events, one for each note in each channel! Each time, the 2048, 4096, 8192 etc.
   //  events remain in the list.
   // Variation: Maybe allow certain types, or groups, of events through, especially bulk init or note offs.
-  if(off())
+// REMOVE Tim. autoconnect. Changed.
+//   if(off())
+//   {
+//     // Clear any accumulated play events.
+//     //playEvents()->clear(); DELETETHIS
+//     _playEvents.clear();
+//     // Eat up any fifo events.
+//     //while(!eventFifo.isEmpty())  DELETETHIS
+//     //  eventFifo.get();
+//     eventFifo.clear();  // Clear is the same but faster AND safer, right?
+//   }
+  if(off() || midiPort() < 0 || midiPort() >= MIDI_PORTS)
   {
     // Clear any accumulated play events.
-    //playEvents()->clear(); DELETETHIS
     _playEvents.clear();
     // Eat up any fifo events.
-    //while(!eventFifo.isEmpty())  DELETETHIS
-    //  eventFifo.get();
-    eventFifo.clear();  // Clear is the same but faster AND safer, right?
+    eventFifo.clearRead();
+//     _osc2AudioFifo->clearRead();
   }
 }
 
@@ -1231,56 +1242,88 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       return true;
       }
 
-iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
 {
       //prevent compiler warning: comparison of signed/unsigned
-      unsigned curPos      = pos;
-      unsigned endPos      = pos + n;
-      unsigned off         = pos;
-      unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+// REMOVE Tim. autoconnect. Changed.
+//       unsigned curPos      = pos;
+//       unsigned endPos      = pos + n;
+//       unsigned off         = pos;
+//       unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned int curPos      = 0;
+      unsigned int endPos      = n;
+      unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
 
       for (; i != el->end(); ++i) {
-          unsigned evTime = i->time();
-          if (evTime == 0)
-                evTime=frameOffset; // will cause frame to be zero, problem?
+//           unsigned evTime = i->time();
+          const MidiPlayEvent ev = *i;
+          unsigned evTime = ev.time();
+//           if (evTime == 0)
+//                 evTime=frameOffset; // will cause frame to be zero, problem?
 
-          unsigned frame = evTime - frameOffset;
+//           unsigned frame = evTime - frameOffset;
+          //unsigned frame = (evTime < syncFrame) ? 0 : evTime - syncFrame;
+          unsigned frame;
+          if(evTime < syncFrame)
+          {
+                fprintf(stderr, "evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                        evTime, syncFrame, curPos);
+                frame = 0;
+          }
+          else
+          {
+            frame = evTime - syncFrame;
+          }
 
             if (frame >= endPos) {
-                fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
+//                 fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", 
+//                         frame, endPos, i->time(), frameOffset,curPos);
+                fprintf(stderr, "frame > endPos!! frame = %u >= endPos %d, evTime %u, syncFrame %u curPos=%d\n", 
+                        frame, endPos, evTime, syncFrame, curPos);
                 continue;
                 }
 
             if (frame > curPos) {
-                  if (frame < pos)
-                        fprintf(stderr, "should not happen: missed event %d\n", pos -frame);
-                  else
-                  {
+//                   if (frame < pos)
+//                   if (evTime < syncFrame)
+//                         fprintf(stderr, "should not happen: missed event %d\n", evTime);
+//                   else
+//                   {
                         if (!_mess)
                               fprintf(stderr, "should not happen - no _mess\n");
                         else
                         {
-                                _mess->process(pos, buffer, curPos-pos, frame - curPos);
+//                                 _mess->process(pos, buffer, curPos-pos, frame - curPos);
+                                _mess->process(pos, buffer, curPos, frame - curPos);
                         }
-                  }
+//                   }
                   curPos = frame;
             }
 
-            if (mp)
-                  mp->sendEvent(*i);
-            else {
-                  if (putEvent(*i))
-                        break;
-            }
+// //             if (mp)
+// //                   mp->sendEvent(*i);
+// //             else {
+// //                   if (putEvent(*i))
+// //                         break;
+//             //ev.setTime(frame);
+//             if (mp)
+//                   mp->sendEvent(ev);
+//             else {
+//                   if (putEvent(ev))
+//                         break;
+//             }
+            putEvent(ev);
       }
 
-      if (endPos - curPos)
+//       if (endPos - curPos)
+      if (endPos > curPos)
       {
             if (!_mess)
                   fprintf(stderr, "should not happen - no _mess\n");
             else
             {
-                    _mess->process(pos, buffer, curPos - off, endPos - curPos);
+//                     _mess->process(pos, buffer, curPos - off, endPos - curPos);
+                    _mess->process(pos, buffer, curPos, endPos - curPos);
             }
       }
       return i;
@@ -1320,7 +1363,9 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
               hb = 0;
             if(lb > 127)
               lb = 0;
-            int full_prog = (hb >> 16) | (lb >> 8) | pr;
+            // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+            //int full_prog = (hb >> 16) | (lb >> 8) | pr;
+            const int full_prog = (hb << 16) | (lb << 8) | pr;
             return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
           }
           break;
@@ -1352,7 +1397,9 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
                 lb = 0;
               if(pr > 127)
                 pr = 0;
-              int full_prog = (hb << 16) | (lb >> 8) | pr;
+              // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+              //int full_prog = (hb << 16) | (lb >> 8) | pr;
+              const int full_prog = (hb << 16) | (lb << 8) | pr;
               return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
             }
             else if(a == CTRL_LBANK)
@@ -1366,7 +1413,9 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
               if(pr > 127)
                 pr = 0;
               synti->setCurrentProg(chn, pr, lb, hb);
-              int full_prog = (hb >> 16) | (lb << 8) | pr;
+              // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+              //int full_prog = (hb >> 16) | (lb << 8) | pr;
+              const int full_prog = (hb << 16) | (lb << 8) | pr;
               return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
             }
           }

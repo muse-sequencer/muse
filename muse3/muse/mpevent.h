@@ -58,11 +58,11 @@ class MEvent {
       int _loopNum; // The loop count when the note was recorded.
 
    public:
-      MEvent() { _loopNum = 0; }
+      MEvent() : _time(0), _port(0), _channel(0), _type(0), _a(0), _b(0), _loopNum(0) { }
       MEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b) { _loopNum = 0; }
+        : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
       MEvent(unsigned t, int p, int type, const unsigned char* data, int len);
-      MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe) { _loopNum = 0; }
+      MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
       MEvent(unsigned t, int port, int channel, const Event& e);
 
       ~MEvent()         {}
@@ -106,6 +106,19 @@ class MEvent {
       bool isNote() const      { return _type == 0x90; }
       bool isNoteOff() const   { return (_type == 0x80)||(_type == 0x90 && _b == 0); }
       bool operator<(const MEvent&) const;
+      bool isValid() const { return _type != 0; }
+      
+      // Returns a valid source controller number (above zero), 
+      //  translated from the event to proper internal control type.
+      // For example 
+      //  ME_CONTROLLER + Data(A = CTRL_HBANK) = CTRL_PROGRAM
+      //  ME_CONTROLLER + Data(A = CTRL_LBANK) = CTRL_PROGRAM
+      //  ME_PROGRAM                           = CTRL_PROGRAM
+      //  ME_PITCHBEND                         = CTRL_PITCH
+      //  ME_CONTROLLER + Data(A = ctrl)       = ctrl
+      // Otherwise returns -1 if the event is not translatable to a controller, 
+      //  or an error occurred.
+      int translateCtrlNum() const;
       };
 
 //---------------------------------------------------------
@@ -207,7 +220,14 @@ class MidiFifo {
       const MidiPlayEvent& peek(int = 0);
       void remove();
       bool isEmpty() const { return size == 0; }
+      // This is not thread-safe.
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      // Clear the 'read' side of the ring buffer, which also clears the size.
+      // NOTE: A corresponding clearWrite() is not provided because
+      //  it is dangerous to reset the size from the sender side -
+      //  the receiver might cache the size, briefly. The sender should 
+      //  only grow the size while the receiver should only shrink it.
+      void clearRead()     { size = 0; rIndex = wIndex; }
       int getSize() const  { return size; }
       };
 

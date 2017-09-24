@@ -53,7 +53,8 @@
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq = NULL;
-volatile bool midiBusy=false;
+// REMOVE Tim. autoconnect. Removed.
+// volatile bool midiBusy=false;
 }
 
 namespace MusECore {
@@ -88,6 +89,18 @@ static void readMsg(void* p, void*)
       at->readMsg();
       }
 
+// REMOVE Tim. autoconnect. Added.      
+//---------------------------------------------------------
+//   readMsgNonWait
+//   Non-waiting version
+//---------------------------------------------------------
+
+static void readMsgNonWait(void* p, void*)
+      {
+      MidiSeq* at = (MidiSeq*)p;
+      at->readMsg1(sizeof(MusECore::AudioMsg));
+      }
+
 //---------------------------------------------------------
 //   processMsg
 //---------------------------------------------------------
@@ -118,7 +131,44 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   idle = msg->a;
                   break;
             default:
-                  printf("MidiSeq::processMsg() unknown id %d\n", msg->id);
+                  fprintf(stderr, "MidiSeq::processMsg() unknown id %d\n", msg->id);
+                  break;
+            }
+      }
+
+// REMOVE Tim. autoconnect. Added.      
+//---------------------------------------------------------
+//   processMsg1
+//   Non-waiting version
+//---------------------------------------------------------
+
+void MidiSeq::processMsg1(const void* m)
+      {
+      MusECore::AudioMsg* msg = (MusECore::AudioMsg*)m;
+      switch(msg->id) {
+            
+            case MusECore::SEQM_SEEK:
+                  processSeek();
+                  break;
+            case MusECore::MS_STOP:
+                  processStop();
+                  break;
+            
+//             case MusECore::MS_SET_RTC:
+//                   MusEGlobal::doSetuid();
+//                   setRtcTicks();
+//                   MusEGlobal::undoSetuid();
+//                   break;
+//             case MusECore::MS_UPDATE_POLL_FD:
+//                   updatePollFd();
+//                   break;
+//                   
+//                   
+//             case MusECore::SEQM_IDLE:
+//                   idle = msg->a;
+//                   break;
+            default:
+                  fprintf(stderr, "MidiSeq::processMsg1() unknown id %d\n", msg->id);
                   break;
             }
       }
@@ -192,6 +242,16 @@ MidiSeq::MidiSeq(const char* name)
       timerFd=selectTimer();
 
       MusEGlobal::undoSetuid();
+
+// REMOVE Tim. autoconnect. Added.      
+      // create message channels
+      int filedes[2];         // 0 - reading   1 - writing
+      if (pipe(filedes) == -1) {
+            perror("MidiSeq thread: creating pipe");
+            exit(-1);
+            }
+      toThreadFdrNonWait = filedes[0];
+      toThreadFdwNonWait = filedes[1];
       }
 
 //---------------------------------------------------------
@@ -338,6 +398,9 @@ void MidiSeq::updatePollFd()
 
       addPollFd(toThreadFdr, POLLIN, MusECore::readMsg, this, 0);
 
+// REMOVE Tim. autoconnect. Added.
+      addPollFd(toThreadFdrNonWait, POLLIN, MusECore::readMsgNonWait, this, 0);
+      
       //---------------------------------------------------
       //  midi ports
       //---------------------------------------------------
@@ -533,11 +596,12 @@ void MidiSeq::processTimerTick()
       if (idle)
             return;
 
-      if (MusEGlobal::midiBusy) {
-            // we hit MusEGlobal::audio: MusEGlobal::midiSeq->msgProcess (actually this has been MusEGlobal::audio->processMidi for some time now - Tim)
-            // miss this timer tick
-            return;
-            }
+// REMOVE Tim. autoconnect. Removed.
+//       if (MusEGlobal::midiBusy) {
+//             // we hit MusEGlobal::audio: MusEGlobal::midiSeq->msgProcess (actually this has been MusEGlobal::audio->processMidi for some time now - Tim)
+//             // miss this timer tick
+//             return;
+//             }
 
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
@@ -587,7 +651,9 @@ void MidiSeq::processTimerTick()
         switch(type)
         {
           case MidiDevice::ALSA_MIDI:
-              md->processMidi();
+// REMOVE Tim. autoconnect. Changed.
+//               md->processMidi();
+              md->processMidi(curFrame);
           break;
 
           case MidiDevice::JACK_MIDI:

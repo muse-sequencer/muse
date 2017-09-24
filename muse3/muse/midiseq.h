@@ -42,6 +42,10 @@ class Timer;
 
 class MidiSeq : public Thread {
       int timerFd;
+// REMOVE Tim. autoconnect. Added.      
+      int toThreadFdwNonWait; // Non-waiting message to thread (app write)
+      int toThreadFdrNonWait; // Non-waiting message to thread (seq read)
+      
       int idle;
       int prio;   // realtime priority
       static int ticker;
@@ -53,6 +57,8 @@ class MidiSeq : public Thread {
       void processSeek();
       void processStop();
       virtual void processMsg(const ThreadMsg*);
+// REMOVE Tim. autoconnect. Added.      
+      virtual void processMsg1(const void*);
       void updatePollFd();
 
    public:
@@ -88,7 +94,8 @@ extern void exitMidiSequencer();
 
 namespace MusEGlobal {
 extern MusECore::MidiSeq* midiSeq;
-extern volatile bool midiBusy;
+// REMOVE Tim. autoconnect. Removed.
+// extern volatile bool midiBusy;
 } // namespace MusEGlobal
 
 #endif
