@@ -96,7 +96,7 @@ class MidiAlsaDevice : public MidiDevice {
       // If the device processes in the audio thread, it is not required to use a fifo,
       //  the device can use the playEvents list directly as long as it drains the list.
       // To be called from audio thread only.
-      virtual void preparePlayEventFifo();
+//       virtual void preparePlayEventFifo();
       // This clears the 'write' side of any fifo the device may have (like ALSA),
       //  by setting the size to zero and the write pointer equal to the read pointer.
 //       virtual void clearPlayEventFifo();

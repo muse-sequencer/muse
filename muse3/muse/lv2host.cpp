@@ -4312,19 +4312,20 @@ void LV2SynthIF::preProcessAlways()
 
 }
 
-bool LV2SynthIF::putEvent(const MidiPlayEvent &ev)
-{
-#ifdef DEBUG_LV2
-   fprintf(stderr, "LV2SynthIF::putEvent midi event time:%u chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
-#endif
-
-   if(MusEGlobal::midiOutputTrace)
-   {
-      ev.dump();
-   }
-
-   return synti->eventFifo.put(ev);
-}
+// REMOVE Tim. autoconnect. Removed.
+// bool LV2SynthIF::putEvent(const MidiPlayEvent &ev)
+// {
+// #ifdef DEBUG_LV2
+//    fprintf(stderr, "LV2SynthIF::putEvent midi event time:%u chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
+// #endif
+// 
+//    if(MusEGlobal::midiOutputTrace)
+//    {
+//       ev.dump();
+//    }
+// 
+//    return synti->eventFifo.put(ev);
+// }
 
 MidiPlayEvent LV2SynthIF::receiveEvent()
 {

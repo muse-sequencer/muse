@@ -20,6 +20,8 @@
 //
 //=========================================================
 
+#include <stdio.h>
+
 #include "audio.h"
 #include "ticksynth.h"
 #include "default_click.h"
@@ -34,6 +36,11 @@
 //#define METRONOME_UNIQUE_ID      7
 
 //#define METRONOME_DEBUG
+
+// For debugging output: Uncomment the fprintf section.
+// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
+//#define DEBUG_TICKSYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
+#define DEBUG_TICKSYNTH(dev, format, args...)  fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -88,6 +95,9 @@ class MetronomeSynthIF : public SynthIF
       float *accent2Samples;
       int    accent2Len;
 
+// REMOVE Tim. autoconnect. Added.
+      bool processEvent(const MidiPlayEvent& ev);
+      
    public:
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
@@ -112,7 +122,8 @@ class MetronomeSynthIF : public SynthIF
       virtual void setNativeGeometry(int, int, int, int) {}
       virtual void preProcessAlways() { }
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
+// REMOVE Tim. autoconnect. Removed.
+//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
       
@@ -131,61 +142,123 @@ class MetronomeSynthIF : public SynthIF
       // Methods for PluginIBase:
       //-------------------------
 
-      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, double /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 //---------------------------------------------------------
 //   getData
 //---------------------------------------------------------
 
-iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
+//       {
+//       // Added by Tim. p3.3.18
+//       #ifdef METRONOME_DEBUG
+//       printf("MusE: MetronomeSynthIF::getData\n");
+//       #endif
+// 
+//       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
+//           initMetronome();
+//       }
+// 
+//       //set type to unsigned , due to compiler warning: comparison signed/unsigned
+// // REMOVE Tim. autoconnect. Changed.
+// //       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
+// //       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
+// //       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
+//       unsigned int curPos      = 0;
+//       unsigned int endPos      = n;
+// // REMOVE Tim. autoconnect. Changed.
+// //       int frameOffset = MusEGlobal::audio->getFrameOffset();
+//       unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+// 
+//       for (; i != el->end(); ++i) {
+// // REMOVE Tim. autoconnect. Changed.
+// //             unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
+// //             if (frame >= endPos)
+//             unsigned int frame = (i->time() < syncFrame) ? 0 : i->time() - syncFrame;
+//             if (frame >= n)
+//                   break;
+//             if (frame > curPos) {
+// //                   if (frame < pos)
+// //                         printf("should not happen: missed event %d\n", pos -frame);
+//                   if(i->time() < syncFrame)
+//                         fprintf(stderr, "MetronomeSynthIF: should not happen: missed event %u\n", i->time());
+//                   else
+// //                         process(buffer, curPos-pos, frame - curPos);
+//                         process(buffer, curPos, frame - curPos);
+//                   curPos = frame;
+//                   }
+//             putEvent(*i);
+//             }
+// //       if (endPos - curPos)
+// //             process(buffer, curPos - off, endPos - curPos);
+//       if (endPos > curPos)
+//             process(buffer, curPos, endPos - curPos);
+//       return el->end();
+//       }
+
+iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
       {
-      // Added by Tim. p3.3.18
       #ifdef METRONOME_DEBUG
-      printf("MusE: MetronomeSynthIF::getData\n");
+      fprintf(stderr, "MusE: MetronomeSynthIF::getData\n");
       #endif
 
       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
           initMetronome();
       }
 
-      //set type to unsigned , due to compiler warning: comparison signed/unsigned
-// REMOVE Tim. autoconnect. Changed.
-//       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
-//       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
-//       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
-      unsigned int curPos      = 0;
-      unsigned int endPos      = n;
-// REMOVE Tim. autoconnect. Changed.
-//       int frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      unsigned int curPos = 0;
+      unsigned int frame = 0;
 
-      for (; i != el->end(); ++i) {
-// REMOVE Tim. autoconnect. Changed.
-//             unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
-//             if (frame >= endPos)
-            unsigned int frame = (i->time() < syncFrame) ? 0 : i->time() - syncFrame;
-            if (frame >= n)
-                  break;
-            if (frame > curPos) {
-//                   if (frame < pos)
-//                         printf("should not happen: missed event %d\n", pos -frame);
-                  if(i->time() < syncFrame)
-                        fprintf(stderr, "MetronomeSynthIF: should not happen: missed event %u\n", i->time());
-                  else
-//                         process(buffer, curPos-pos, frame - curPos);
-                        process(buffer, curPos, frame - curPos);
-                  curPos = frame;
-                  }
-            putEvent(*i);
-            }
-//       if (endPos - curPos)
-//             process(buffer, curPos - off, endPos - curPos);
-      if (endPos > curPos)
-            process(buffer, curPos, endPos - curPos);
-      return el->end();
+      const int sz = synti->eventFifos()->getSize();
+      for(int i = 0; i < sz; ++i)
+      {  
+        const MidiPlayEvent ev(synti->eventFifos()->peek()); 
+        const unsigned int evTime = ev.time();
+        if(evTime < syncFrame)
+        {
+          fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                  evTime, syncFrame, curPos);
+          frame = 0;
+        }
+        else
+          frame = evTime - syncFrame;
+
+        // Event is for future?
+        if(frame >= n) 
+        {
+          DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
+                  frame, n, evTime, syncFrame, curPos);
+          //continue;
+          break;
+        }
+
+        // Done with ring buffer event. Remove it from FIFO.
+        synti->eventFifos()->remove();
+        
+        if(frame > curPos)
+        {
+          process(buffer, curPos, frame - curPos);
+          curPos = frame;
+        }
+        
+        // If putEvent fails, although we would like to not miss events by keeping them
+        //  until next cycle and trying again, that can lead to a large backup of events
+        //  over a long time. So we'll just... miss them.
+        //putEvent(ev);
+        //synti->putEvent(ev);
+        processEvent(ev);
       }
 
+      if(curPos < n)
+        process(buffer, curPos, n - curPos);
+      
+      return i;
+      //return el->end();
+      }
+      
 //---------------------------------------------------------
 //   initSamples
 //---------------------------------------------------------
@@ -241,7 +314,9 @@ void MetronomeSynthIF::initSamples()
 //   putEvent
 //---------------------------------------------------------
 
-bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
+// REMOVE Tim. autoconnect. Changed.
+//bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
+bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
 {
     if(ev.type() != MusECore::ME_NOTEON)
       return false;

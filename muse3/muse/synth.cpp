@@ -58,6 +58,11 @@
 #include "midiitransform.h"
 #include "mitplugin.h"
 
+// For debugging output: Uncomment the fprintf section.
+// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
+//#define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
+#define DEBUG_SYNTH(dev, format, args...)  fprintf(dev, format, ##args);
+
 namespace MusEGlobal {
 std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
 }
@@ -692,7 +697,10 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                   }
 
                   MidiPlayEvent pev(0, 0, 0, ev);
-                  if (_sif->putEvent(pev))
+// REMOVE Tim. autoconnect. Changed.
+//                   if (_sif->putEvent(pev))
+                  //if(!addScheduledEvent(pev))
+                  if(!_eventFifos->put(PlayFifo, pev))
                         break;   // try later
                   }
             iel->clear();
@@ -1201,11 +1209,13 @@ void SynthI::preProcessAlways()
 //   }
   if(off() || midiPort() < 0 || midiPort() >= MIDI_PORTS)
   {
-    // Clear any accumulated play events.
-    _playEvents.clear();
+//     // Clear any accumulated play events.
+//     _playEvents.clear();
+//     // Eat up any fifo events.
+//     eventFifo.clearRead();
+// //     _osc2AudioFifo->clearRead();
     // Eat up any fifo events.
-    eventFifo.clearRead();
-//     _osc2AudioFifo->clearRead();
+    _eventFifos->clearRead();
   }
 }
 
@@ -1227,9 +1237,11 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
 
-      iMPEvent ie = _playEvents.begin();
-
-      ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
+//       iMPEvent ie = _playEvents.begin();
+//       ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
+      MPEventList dummy_mpel;
+      iMPEvent ie = dummy_mpel.begin();
+      ie = _sif->getData(mp, &dummy_mpel, ie, pos, ports, n, buffer);
 
       // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
       // That way we can simply set the next play event to the beginning.
@@ -1237,96 +1249,234 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions.
       // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
       // The erasure in Audio::processMidi was missing some events because of that.
-      _playEvents.erase(_playEvents.begin(), ie);
+// REMOVE Tim. autoconnect. Removed.
+//       _playEvents.erase(_playEvents.begin(), ie);
 
       return true;
       }
 
-iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
-{
-      //prevent compiler warning: comparison of signed/unsigned
 // REMOVE Tim. autoconnect. Changed.
-//       unsigned curPos      = pos;
-//       unsigned endPos      = pos + n;
-//       unsigned off         = pos;
-//       unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned int curPos      = 0;
-      unsigned int endPos      = n;
-      unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
-
-      for (; i != el->end(); ++i) {
-//           unsigned evTime = i->time();
-          const MidiPlayEvent ev = *i;
-          unsigned evTime = ev.time();
-//           if (evTime == 0)
-//                 evTime=frameOffset; // will cause frame to be zero, problem?
-
-//           unsigned frame = evTime - frameOffset;
-          //unsigned frame = (evTime < syncFrame) ? 0 : evTime - syncFrame;
-          unsigned frame;
-          if(evTime < syncFrame)
-          {
-                fprintf(stderr, "evTime:%u < syncFrame:%u!! curPos=%d\n", 
-                        evTime, syncFrame, curPos);
-                frame = 0;
-          }
-          else
-          {
-            frame = evTime - syncFrame;
-          }
-
-            if (frame >= endPos) {
-//                 fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", 
-//                         frame, endPos, i->time(), frameOffset,curPos);
-                fprintf(stderr, "frame > endPos!! frame = %u >= endPos %d, evTime %u, syncFrame %u curPos=%d\n", 
-                        frame, endPos, evTime, syncFrame, curPos);
-                continue;
-                }
-
-            if (frame > curPos) {
-//                   if (frame < pos)
-//                   if (evTime < syncFrame)
-//                         fprintf(stderr, "should not happen: missed event %d\n", evTime);
-//                   else
-//                   {
-                        if (!_mess)
-                              fprintf(stderr, "should not happen - no _mess\n");
-                        else
-                        {
-//                                 _mess->process(pos, buffer, curPos-pos, frame - curPos);
-                                _mess->process(pos, buffer, curPos, frame - curPos);
-                        }
-//                   }
-                  curPos = frame;
-            }
-
-// //             if (mp)
-// //                   mp->sendEvent(*i);
-// //             else {
-// //                   if (putEvent(*i))
-// //                         break;
-//             //ev.setTime(frame);
-//             if (mp)
-//                   mp->sendEvent(ev);
-//             else {
-//                   if (putEvent(ev))
-//                         break;
+// iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+// {
+//       //prevent compiler warning: comparison of signed/unsigned
+// // REMOVE Tim. autoconnect. Changed.
+// //       unsigned curPos      = pos;
+// //       unsigned endPos      = pos + n;
+// //       unsigned off         = pos;
+// //       unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+//       unsigned int curPos      = 0;
+//       unsigned int endPos      = n;
+//       unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+// 
+//       for (; i != el->end(); ++i) {
+// //           unsigned evTime = i->time();
+//           const MidiPlayEvent ev = *i;
+//           unsigned evTime = ev.time();
+// //           if (evTime == 0)
+// //                 evTime=frameOffset; // will cause frame to be zero, problem?
+// 
+// //           unsigned frame = evTime - frameOffset;
+//           //unsigned frame = (evTime < syncFrame) ? 0 : evTime - syncFrame;
+//           unsigned frame;
+//           if(evTime < syncFrame)
+//           {
+//                 fprintf(stderr, "evTime:%u < syncFrame:%u!! curPos=%d\n", 
+//                         evTime, syncFrame, curPos);
+//                 frame = 0;
+//           }
+//           else
+//           {
+//             frame = evTime - syncFrame;
+//           }
+// 
+//             if (frame >= endPos) {
+// //                 fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", 
+// //                         frame, endPos, i->time(), frameOffset,curPos);
+//                 fprintf(stderr, "frame > endPos!! frame = %u >= endPos %d, evTime %u, syncFrame %u curPos=%d\n", 
+//                         frame, endPos, evTime, syncFrame, curPos);
+//                 continue;
+//                 }
+// 
+//             if (frame > curPos) {
+// //                   if (frame < pos)
+// //                   if (evTime < syncFrame)
+// //                         fprintf(stderr, "should not happen: missed event %d\n", evTime);
+// //                   else
+// //                   {
+//                         if (!_mess)
+//                               fprintf(stderr, "should not happen - no _mess\n");
+//                         else
+//                         {
+// //                                 _mess->process(pos, buffer, curPos-pos, frame - curPos);
+//                                 _mess->process(pos, buffer, curPos, frame - curPos);
+//                         }
+// //                   }
+//                   curPos = frame;
 //             }
-            putEvent(ev);
+// 
+// // //             if (mp)
+// // //                   mp->sendEvent(*i);
+// // //             else {
+// // //                   if (putEvent(*i))
+// // //                         break;
+// //             //ev.setTime(frame);
+// //             if (mp)
+// //                   mp->sendEvent(ev);
+// //             else {
+// //                   if (putEvent(ev))
+// //                         break;
+// //             }
+//             putEvent(ev);
+//       }
+// 
+// //       if (endPos - curPos)
+//       if (endPos > curPos)
+//       {
+//             if (!_mess)
+//                   fprintf(stderr, "should not happen - no _mess\n");
+//             else
+//             {
+// //                     _mess->process(pos, buffer, curPos - off, endPos - curPos);
+//                     _mess->process(pos, buffer, curPos, endPos - curPos);
+//             }
+//       }
+//       return i;
+// }
+
+iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+{
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      unsigned int curPos = 0;
+      unsigned int frame = 0;
+
+      const int sz = synti->eventFifos()->getSize();
+      for(int i = 0; i < sz; ++i)
+      {  
+        const MidiPlayEvent ev(synti->eventFifos()->peek()); 
+        const unsigned int evTime = ev.time();
+        if(evTime < syncFrame)
+        {
+          fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                  evTime, syncFrame, curPos);
+          frame = 0;
+        }
+        else
+          frame = evTime - syncFrame;
+
+        // Event is for future?
+        if(frame >= n) 
+        {
+          DEBUG_SYNTH(stderr, "MessSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
+                  frame, n, evTime, syncFrame, curPos);
+          //continue;
+          break;
+        }
+
+        // Done with ring buffer event. Remove it from FIFO.
+        synti->eventFifos()->remove();
+        
+        if(frame > curPos)
+        {
+          if (!_mess)
+            fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
+          else
+            _mess->process(pos, buffer, curPos, frame - curPos);
+          curPos = frame;
+        }
+        
+        // If putEvent fails, although we would like to not miss events by keeping them
+        //  until next cycle and trying again, that can lead to a large backup of events
+        //  over a long time. So we'll just... miss them.
+        //putEvent(ev);
+        //synti->putEvent(ev);
+        processEvent(ev);
       }
 
-//       if (endPos - curPos)
-      if (endPos > curPos)
+      if(curPos < n)
       {
-            if (!_mess)
-                  fprintf(stderr, "should not happen - no _mess\n");
-            else
-            {
-//                     _mess->process(pos, buffer, curPos - off, endPos - curPos);
-                    _mess->process(pos, buffer, curPos, endPos - curPos);
-            }
+        if (!_mess)
+          fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
+        else
+          _mess->process(pos, buffer, curPos, n - curPos);
       }
+      
       return i;
+      
+
+
+//       for (; i != el->end(); ++i) {
+// //           unsigned evTime = i->time();
+//           const MidiPlayEvent ev = *i;
+//           unsigned evTime = ev.time();
+// //           if (evTime == 0)
+// //                 evTime=frameOffset; // will cause frame to be zero, problem?
+// 
+// //           unsigned frame = evTime - frameOffset;
+//           //unsigned frame = (evTime < syncFrame) ? 0 : evTime - syncFrame;
+//           unsigned frame;
+//           if(evTime < syncFrame)
+//           {
+//                 fprintf(stderr, "evTime:%u < syncFrame:%u!! curPos=%d\n", 
+//                         evTime, syncFrame, curPos);
+//                 frame = 0;
+//           }
+//           else
+//           {
+//             frame = evTime - syncFrame;
+//           }
+// 
+//             if (frame >= endPos) {
+// //                 fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", 
+// //                         frame, endPos, i->time(), frameOffset,curPos);
+//                 fprintf(stderr, "frame > endPos!! frame = %u >= endPos %d, evTime %u, syncFrame %u curPos=%d\n", 
+//                         frame, endPos, evTime, syncFrame, curPos);
+//                 continue;
+//                 }
+// 
+//             if (frame > curPos) {
+// //                   if (frame < pos)
+// //                   if (evTime < syncFrame)
+// //                         fprintf(stderr, "should not happen: missed event %d\n", evTime);
+// //                   else
+// //                   {
+//                         if (!_mess)
+//                               fprintf(stderr, "should not happen - no _mess\n");
+//                         else
+//                         {
+// //                                 _mess->process(pos, buffer, curPos-pos, frame - curPos);
+//                                 _mess->process(pos, buffer, curPos, frame - curPos);
+//                         }
+// //                   }
+//                   curPos = frame;
+//             }
+// 
+// // //             if (mp)
+// // //                   mp->sendEvent(*i);
+// // //             else {
+// // //                   if (putEvent(*i))
+// // //                         break;
+// //             //ev.setTime(frame);
+// //             if (mp)
+// //                   mp->sendEvent(ev);
+// //             else {
+// //                   if (putEvent(ev))
+// //                         break;
+// //             }
+//             putEvent(ev);
+//       }
+// 
+// //       if (endPos - curPos)
+//       if (endPos > curPos)
+//       {
+//             if (!_mess)
+//                   fprintf(stderr, "should not happen - no _mess\n");
+//             else
+//             {
+// //                     _mess->process(pos, buffer, curPos - off, endPos - curPos);
+//                     _mess->process(pos, buffer, curPos, endPos - curPos);
+//             }
+//       }
+//       return i;
 }
 
 //---------------------------------------------------------
@@ -1334,7 +1484,9 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
 //    return true on error (busy)
 //---------------------------------------------------------
 
-bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
+// REMOVE Tim. autoconnect. Changed.
+//bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
+bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
 {
       //if (MusEGlobal::midiOutputTrace) DELETETHIS or re-enable?
       //{

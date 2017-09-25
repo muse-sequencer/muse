@@ -952,18 +952,18 @@ bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       }
 
 // REMOVE Tim. autoconnect. Added.
-// To be called from audio thread only.
-void MidiAlsaDevice::preparePlayEventFifo()
-{
-  // First make sure to call the ancestor, to transfer all fifos into the play events list.
-  MidiDevice::preparePlayEventFifo();
-  
-  // Transfer the events in the list to the fifo.
-  for(ciMPEvent impe = _playEvents.begin(); impe != _playEvents.end(); ++impe)
-    _playEventFifo->put(*impe);
-  // Clear the list.
-  _playEvents.clear();
-}
+// // To be called from audio thread only.
+// void MidiAlsaDevice::preparePlayEventFifo()
+// {
+//   // First make sure to call the ancestor, to transfer all fifos into the play events list.
+//   MidiDevice::preparePlayEventFifo();
+//   
+//   // Transfer the events in the list to the fifo.
+//   for(ciMPEvent impe = _playEvents.begin(); impe != _playEvents.end(); ++impe)
+//     _playEventFifo->put(*impe);
+//   // Clear the list.
+//   _playEvents.clear();
+// }
 
 // REMOVE Tim. autoconnect. Added.
 // void MidiAlsaDevice::clearPlayEventFifo()

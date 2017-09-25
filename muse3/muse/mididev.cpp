@@ -49,7 +49,9 @@
 #include "operations.h"
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
+// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
+//#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
+#define DEBUG_MIDI_DEVICE(dev, format, args...)  fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -770,14 +772,14 @@ void MidiDevice::resetCurOutParamNums(int chan)
 //    return true if event cannot be delivered
 //---------------------------------------------------------
 
-bool MidiDevice::putEvent(const MidiPlayEvent& ev)
+bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id)
 {
 // TODO: Decide whether we want the driver cached values always updated like this,
 //        even if not writeable or if error.
 //   if(!_writeEnable)
 //     return true;
       
-  DEBUG_MIDI_DEVICE("MidiDevice::putEvent dev:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+  DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putEvent dev:%d time:%d type:%d ch:%d A:%d B:%d\n", 
                     deviceType(), ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
@@ -786,9 +788,10 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
   }
   
 //   bool rv = eventFifo.put(ev);
-  bool rv = _eventFifos->put(GuiFifo, ev);
+//   bool rv = _eventFifos->put(GuiFifo, ev);
+  bool rv = _eventFifos->put(id, ev);
   if(rv)
-    printf("MidiDevice::putEvent: FIFO overflow\n");
+    printf("MidiDevice::putEvent: FIFO id:%d overflow\n", id);
   
   return rv;
 }
@@ -832,6 +835,21 @@ bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long dela
 //   //  _playEvents.add(_osc2AudioFifo->get());
 // }
       
+// REMOVE Tim. autoconnect. Added.
+// To be called from audio thread only.
+void MidiDevice::preparePlayEventFifo()
+{
+//   // First make sure to call the ancestor, to transfer all fifos into the play events list.
+//   MidiDevice::preparePlayEventFifo();
+  
+  // Transfer the events in the list to the fifo.
+  for(ciMPEvent impe = _playEvents.begin(); impe != _playEvents.end(); ++impe)
+//     _playEventFifo->put(*impe);
+    _eventFifos->put(PlayFifo, *impe);
+  // Clear the list.
+  _playEvents.clear();
+}
+
 //---------------------------------------------------------
 //   processStuckNotes
 //---------------------------------------------------------

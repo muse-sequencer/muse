@@ -221,7 +221,15 @@ class MidiDevice {
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
       // Put an event for immediate playback. Returns true if event cannot be delivered.
 //       virtual bool putEvent(const MidiPlayEvent&) = 0;
-      virtual bool putEvent(const MidiPlayEvent& ev);
+      // Put an event for playback. Returns true if event cannot be delivered.
+      // The id parameter is of the desired FIFO. A separate FIFO is required for EACH
+      //  DIFFERENT thread that sends events to the device. See the enum for possible ids.
+      // In each FIFO, the event times should be frame-stamped and sorted. But if ASAP delivery 
+      //  is desired, earlier event time frames (say 0) can be inter-mixed with sorted events.
+      // NOTE: Avoid putting events with time >> current cycle start frame + segment size,
+      //  because that will stall all processing of FIFOs until that frame has come -
+      //  ie. don't accidentally put a event with frame time waaaay in the future !
+      virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id = GuiFifo);
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads.
       bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
@@ -237,10 +245,13 @@ class MidiDevice {
       // If the device processes in the audio thread, it is not required to use a fifo,
       //  the device can use the playEvents list directly as long as it drains the list.
       // To be called from audio thread only.
-      virtual void preparePlayEventFifo() { }
+//       virtual void preparePlayEventFifo() { }
+      virtual void preparePlayEventFifo();
       // This clears the 'write' side of any fifo the device may have (like ALSA),
       //  by setting the size to zero and the write pointer equal to the read pointer.
 //       virtual void clearPlayEventFifo() {}
+      // Various IPC FIFOs.
+      LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
       
 // REMOVE Tim. autoconnect. Added. Moved from protected.
       virtual void processStuckNotes();

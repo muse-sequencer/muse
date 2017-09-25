@@ -3165,20 +3165,21 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   return start_event;
 }
 
-//---------------------------------------------------------
-//   putEvent
-//---------------------------------------------------------
-
-bool VstNativeSynthIF::putEvent(const MidiPlayEvent& ev)
-      {
-      #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::putEvent midi event time:%d chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
-      #endif
-      
-      if (MusEGlobal::midiOutputTrace)
-            ev.dump();
-      return synti->eventFifo.put(ev);
-      }
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   putEvent
+// //---------------------------------------------------------
+// 
+// bool VstNativeSynthIF::putEvent(const MidiPlayEvent& ev)
+//       {
+//       #ifdef VST_NATIVE_DEBUG
+//       fprintf(stderr, "VstNativeSynthIF::putEvent midi event time:%d chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
+//       #endif
+//       
+//       if (MusEGlobal::midiOutputTrace)
+//             ev.dump();
+//       return synti->eventFifo.put(ev);
+//       }
 
 
 //--------------------------------

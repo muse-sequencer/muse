@@ -151,7 +151,8 @@ class SynthIF : public PluginIBase {
       virtual void setNativeGeometry(int, int, int, int) = 0;
       virtual void preProcessAlways() = 0;
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
-      virtual bool putEvent(const MidiPlayEvent& ev) = 0;
+// REMOVE Tim. autoconnect. Removed.
+//       virtual bool putEvent(const MidiPlayEvent& ev) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
 
@@ -250,7 +251,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       friend class SynthIF;
       friend class MessSynthIF;
       friend class DssiSynthIF;
-	  friend class LV2SynthIF;
+	    friend class LV2SynthIF;
       friend class VstSynthIF;
       friend class VstNativeSynthIF;
 
@@ -354,6 +355,9 @@ class SynthI : public AudioTrack, public MidiDevice,
 class MessSynthIF : public SynthIF {
       Mess* _mess;
 
+      // REMOVE Tim. autoconnect. Added.
+      bool processEvent(const MidiPlayEvent& ev);
+      
    public:
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
@@ -375,7 +379,8 @@ class MessSynthIF : public SynthIF {
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways();
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
+// REMOVE Tim. autoconnect. Removed.
+//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const;
       bool init(Synth* s, SynthI* si);

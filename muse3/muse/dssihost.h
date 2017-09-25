@@ -172,7 +172,8 @@ class DssiSynthIF : public SynthIF
       
       virtual void preProcessAlways();
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
+// REMOVE Tim. autoconnect. Removed.
+//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
       
