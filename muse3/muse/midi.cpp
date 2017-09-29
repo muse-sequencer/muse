@@ -2930,12 +2930,16 @@ void Audio::processMidi()
         }
       }
 
-      //
-      // Receive events sent from our gui thread to this audio thread.
-      // Update hardware controller gui knobs, sliders etc.
-      //
-      for(int igmp = 0; igmp < MIDI_PORTS; ++igmp)
-        MusEGlobal::midiPorts[igmp].processGui2AudioEvents();
+//       //
+//       // Receive events sent from our gui thread to this audio thread.
+//       // Update hardware controller gui knobs, sliders etc.
+//       //
+//       for(int igmp = 0; igmp < MIDI_PORTS; ++igmp)
+//         MusEGlobal::midiPorts[igmp].processGui2AudioEvents();
+      // Receive hardware state events sent from various threads to this audio thread.
+      // Update hardware state so gui controls are updated.
+      // Static.
+      MidiPort::processGui2AudioEvents();
 
 // REMOVE Tim. autoconnect. Removed.
 //       MusEGlobal::midiBusy=false;

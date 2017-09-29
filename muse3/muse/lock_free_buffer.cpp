@@ -180,7 +180,7 @@ bool LockFreeMultiBuffer<T>::put(int id, const T& item)
 
 // This is only for the reader.
 template <class T>
-T LockFreeMultiBuffer<T>::get()
+T LockFreeMultiBuffer<T>::get(bool useSizeSnapshot)
 {
   T temp_val;
   iLockFreeMultiBuffer least_i = vlist::end();
@@ -188,9 +188,9 @@ T LockFreeMultiBuffer<T>::get()
   for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
   {
     LockFreeBuffer<T>* buf = i->second;
-    if(!buf || buf->isEmpty())
+    if(!buf || buf->isEmpty(useSizeSnapshot))
       continue;
-    temp_val = buf->peek();
+    temp_val = buf->peek(useSizeSnapshot);
     if(is_first)
     {
       is_first = false;
@@ -203,14 +203,14 @@ T LockFreeMultiBuffer<T>::get()
 
   if(least_i != vlist::end())
   {
-    return least_i->second->get();
+    return least_i->second->get(useSizeSnapshot);
   }
   return T();
 }
 
 // This is only for the reader.
 template <class T>
-const T& LockFreeMultiBuffer<T>::peek(int n)
+const T& LockFreeMultiBuffer<T>::peek(bool useSizeSnapshot, int n)
 {
   T temp_val;
   iLockFreeMultiBuffer least_i = vlist::end();
@@ -223,10 +223,10 @@ const T& LockFreeMultiBuffer<T>::peek(int n)
       const LockFreeBuffer<T>* buf = i->second;
       if(!buf)
         continue;
-      buf_sz = buf->getSize();
+      buf_sz = buf->getSize(useSizeSnapshot);
       if(buf_sz == 0 || n >= buf_sz)
         continue;
-      temp_val = buf->peek();
+      temp_val = buf->peek(useSizeSnapshot);
       if(is_first)
       {
         is_first = false;
@@ -250,14 +250,14 @@ const T& LockFreeMultiBuffer<T>::peek(int n)
   }
 
   if(least_i != vlist::end())
-    return least_i->second->peek();
+    return least_i->second->peek(useSizeSnapshot);
   
   return T();
 }
     
 // This is only for the reader.
 template <class T>
-void LockFreeMultiBuffer<T>::remove()
+void LockFreeMultiBuffer<T>::remove(bool useSizeSnapshot)
 {
   T temp_val;
   iLockFreeMultiBuffer least_i = vlist::end();
@@ -265,9 +265,9 @@ void LockFreeMultiBuffer<T>::remove()
   for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
   {
     LockFreeBuffer<T>* buf = i->second;
-    if(!buf || buf->isEmpty())
+    if(!buf || buf->isEmpty(useSizeSnapshot))
       continue;
-    temp_val = buf->peek();
+    temp_val = buf->peek(useSizeSnapshot);
     if(is_first)
     {
       is_first = false;
@@ -279,12 +279,12 @@ void LockFreeMultiBuffer<T>::remove()
   }
 
   if(least_i != vlist::end())
-    least_i->second->remove();
+    least_i->second->remove(useSizeSnapshot);
 }
 
 // This is only for the reader.
 template <class T>
-int LockFreeMultiBuffer<T>::getSize() const
+int LockFreeMultiBuffer<T>::getSize(bool useSizeSnapshot) const
 {
   int sz = 0;
   // Hm, maybe not so accurate, sizes may be susceptable to
@@ -292,14 +292,14 @@ int LockFreeMultiBuffer<T>::getSize() const
   for(ciLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
   {
     if(const LockFreeBuffer<T>* buf = i->second)
-      sz += buf->getSize();
+      sz += buf->getSize(useSizeSnapshot);
   }
   return sz;
 }
     
 // This is only for the reader.
 template <class T>
-bool LockFreeMultiBuffer<T>::isEmpty() const
+bool LockFreeMultiBuffer<T>::isEmpty(bool useSizeSnapshot) const
 { 
   // Hm, maybe not so accurate, sizes may be susceptable to
   //  asynchronous change as we iterate here...
@@ -307,7 +307,7 @@ bool LockFreeMultiBuffer<T>::isEmpty() const
   {
     if(const LockFreeBuffer<T>* buf = i->second)
     {
-      if(buf->getSize() > 0)
+      if(!buf->isEmpty(useSizeSnapshot))
         return false;
     }
   }

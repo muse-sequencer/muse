@@ -116,8 +116,9 @@ class MidiDevice {
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
       MPEventList _playEvents;
       
-      // Fifo for midi events sent from gui direct to midi port:
-      MidiFifo eventFifo;  
+// REMOVE Tim. autoconnect. Removed.
+//       // Fifo for midi events sent from gui direct to midi port:
+//       MidiFifo eventFifo;  
       // REMOVE Tim. autoconnect. Added.
       // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
       //LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;

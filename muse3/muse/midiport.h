@@ -75,6 +75,23 @@ struct Gui2AudioFifoStruct {
 //---------------------------------------------------------
 
 class MidiPort {
+  public:
+      // IDs for the various IPC FIFOs that are used.
+      enum EventFifoIds
+      {
+        // Playback queued events put by the audio process thread.
+        PlayFifo=0,
+        // Gui events put by our gui thread.
+        GuiFifo=1,
+        // OSC events put by the OSC thread.
+        OSCFifo=2,
+        // Monitor input passthrough events put by Jack devices (audio process thread).
+        JackFifo=3,
+        // Monitor input passthrough events put by ALSA devices (midi seq thread).
+        ALSAFifo=4
+      };
+      
+  private:    
       MidiCtrlValListList* _controller;
       MidiDevice* _device;
       QString _state;               // result of device open
@@ -92,12 +109,16 @@ class MidiPort {
       bool _initializationsSent; 
 
       // REMOVE Tim. autoconnect. Added.
-      // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
-      LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
-      // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
-      LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
-      // Fifo for midi events sent from OSC to our gui (ex. updating hardware knobs/sliders):
-      LockFreeBuffer<MidiPlayEvent> *_osc2GuiFifo;
+//       // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
+//       LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
+//       // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
+//       LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
+//       // Fifo for midi events sent from OSC to our gui (ex. updating hardware knobs/sliders):
+//       LockFreeBuffer<MidiPlayEvent> *_osc2GuiFifo;
+      // Various IPC FIFOs.
+      // One single multi-buffer for ALL midi ports.
+//       LockFreeMultiBuffer<Gui2AudioFifoStruct> *_eventFifos;
+      static LockFreeMultiBuffer<Gui2AudioFifoStruct> _eventFifos;
 
       RouteList _inRoutes, _outRoutes;
       
@@ -241,18 +262,26 @@ class MidiPort {
       //        to change in the audio thread before calling again, especially rapidly.
       //       This method looks at the current value, so the current value must be up to date.
       //       It will not call Audio::msgAudioWait(), to allow caller to optimize multiple calls.
-      bool putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb);
+// TODO: An increment method seems possible: Wait for gui2audio to increment, then send to driver,
+//        which incurs up to one extra segment delay (if Jack midi).
+      //bool putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb);
       bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
       // Process the gui2AudioFifo. Called from audio thread only.
-      bool processGui2AudioEvents();
+//       bool processGui2AudioEvents();
+      static bool processGui2AudioEvents();
+//       // To be called from audio thread only. Returns true if event cannot be delivered.
+//       MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 
+// REMOVE Tim. autoconnect. Added.
 //       // Put an OSC event into the osc2audio fifo for playback. Calls stageEvent().
 //       // Called from OSC handler only. Returns true if event cannot be delivered.
 //       bool putOSCHwCtrlEvent(const MidiPlayEvent&);
-      // Put an OSC event into both the device and the osc2audio fifo for playback. Calls stageEvent().
-      // Called from OSC handler only. Returns true if event cannot be delivered.
-      bool putOSCEvent(const MidiPlayEvent&);
-
+//       // Put an OSC event into both the device and the osc2audio fifo for playback. Calls stageEvent().
+//       // Called from OSC handler only. Returns true if event cannot be delivered.
+//       bool putOSCEvent(const MidiPlayEvent&);
+      // Various IPC FIFOs.
+//       LockFreeMultiBuffer<Gui2AudioFifoStruct> *eventFifos() { return _eventFifos; } 
+      static LockFreeMultiBuffer<Gui2AudioFifoStruct> &eventFifos() { return _eventFifos; } 
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );

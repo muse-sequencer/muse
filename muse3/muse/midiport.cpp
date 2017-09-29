@@ -63,6 +63,13 @@ MidiControllerList defaultManagedMidiController;
 
 void initMidiPorts()
       {
+      // REMOVE Tim. autoconnect. Added.
+      MidiPort::eventFifos().createBuffer(MidiPort::PlayFifo, 4096);
+      MidiPort::eventFifos().createBuffer(MidiPort::GuiFifo, 4096);
+      MidiPort::eventFifos().createBuffer(MidiPort::OSCFifo, 4096);
+      MidiPort::eventFifos().createBuffer(MidiPort::JackFifo, 4096);
+      MidiPort::eventFifos().createBuffer(MidiPort::ALSAFifo, 4096);
+      
       defaultManagedMidiController.add(&pitchCtrl);
       defaultManagedMidiController.add(&programCtrl);
       defaultManagedMidiController.add(&volumeCtrl);
@@ -99,9 +106,16 @@ MidiPort::MidiPort()
    : _state("not configured")
       {
       // REMOVE Tim. autoconnect. Added.
-      _gui2AudioFifo = new LockFreeBuffer<Gui2AudioFifoStruct>(512);
-      _osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
-      _osc2GuiFifo = new LockFreeBuffer<MidiPlayEvent>(512);
+//       _gui2AudioFifo = new LockFreeBuffer<Gui2AudioFifoStruct>(512);
+//       _osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
+//       _osc2GuiFifo = new LockFreeBuffer<MidiPlayEvent>(512);
+//       _eventFifos = new LockFreeMultiBuffer<Gui2AudioFifoStruct>();
+//       _eventFifos->createBuffer(PlayFifo, 512);
+//       _eventFifos->createBuffer(GuiFifo, 512);
+//       _eventFifos->createBuffer(OSCFifo, 512);
+//       _eventFifos->createBuffer(JackFifo, 512);
+//       _eventFifos->createBuffer(ALSAFifo, 512);
+      
       _initializationsSent = false;  
       _defaultInChannels  = 0;
       _defaultOutChannels = 0;
@@ -117,9 +131,11 @@ MidiPort::MidiPort()
 
 MidiPort::~MidiPort()
       {
-      delete _osc2GuiFifo;
-      delete _osc2AudioFifo;
-      delete _gui2AudioFifo;
+//       if(_eventFifos)
+//         delete _eventFifos;
+//       delete _osc2GuiFifo;
+//       delete _osc2AudioFifo;
+//       delete _gui2AudioFifo;
       delete _controller;
       }
 
@@ -1867,7 +1883,8 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
   createController(chan, ctrl);
   
 //   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
-  if(_gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
+//   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
+  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
@@ -1904,10 +1921,14 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
     // FIXME: Concurrency with putOSCEvent(). Need putOSCEvent() etc.
 //     res = _device->putEvent(ev);
 //     res = _device->putEvent(staged_ev);
-    res = _device->putEvent(stageEvent(ev));
+//     res = _device->putEvent(stageEvent(ev));
+    res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
-  if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
-    fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
+//   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
+//   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
+    fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
   return res;
 }
 
@@ -1917,61 +1938,65 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //   Returns true if event cannot be delivered.
 //---------------------------------------------------------
 
-bool MidiPort::putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb)
-{
-  iMidiCtrlValList imcvl = _controller->find(chan, ctlnum);
-  if(imcvl == _controller->end())
-    return true;
-  MidiCtrlValList* mcvl = imcvl->second;
+// TODO: An increment method seems possible: Wait for gui2audio to increment, then send to driver,
+//        which incurs up to one extra segment delay (if Jack midi).
 
-  MusECore::MidiController* mc = midiController(ctlnum, false);
-  if(!mc)
-    return true;
-  const int max = mc->maxVal();
-
-  double d_prev_val = mcvl->hwDVal();
-  if(mcvl->hwValIsUnknown())
-    d_prev_val = mcvl->lastValidHWDVal();
-  if(mcvl->lastHwValIsUnknown())
-  {
-    if(mc->initValIsUnknown())
-      d_prev_val = 0.0;
-    else
-      d_prev_val = double(mc->initVal());
-  }
-
-//   const int i_prev_val = int(d_prev_val);
-
-  if(isDb)
-    d_prev_val = muse_val2dbr(d_prev_val / double(max)) * 2.0;
-
-  double d_new_val = d_prev_val + incVal;
-
-  if(isDb)
-    d_new_val = double(max) * muse_db2val(d_new_val / 2.0);
-
-  const int i_new_val = MidiController::dValToInt(d_new_val);
-//   const bool i_val_changed = i_new_val != i_prev_val;
-
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//   MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
-  MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
-  // Send the event to the device first so that current parameters could be updated on process.
-  MidiPlayEvent staged_ev;
-  const bool stage_res = stageEvent(staged_ev, ev);
-  bool res = false;
-  if(_device)
-//   if(_device && i_val_changed)
-    res = _device->putEvent(ev);
-
-  d_new_val = limitValToInstrCtlRange(ctlnum, d_new_val);
-
-  // False = direct not increment because we are doing the increment here.
-  Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), d_new_val, false);
-  if(stage_res && _gui2AudioFifo->put(g2as))
-    fprintf(stderr, "MidiPort::putControllerIncrement: Error: gui2AudioFifo fifo overflow\n");
-  return res;
-}
+// REMOVE Tim. autoconnect. 
+// bool MidiPort::putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb)
+// {
+//   iMidiCtrlValList imcvl = _controller->find(chan, ctlnum);
+//   if(imcvl == _controller->end())
+//     return true;
+//   MidiCtrlValList* mcvl = imcvl->second;
+// 
+//   MusECore::MidiController* mc = midiController(ctlnum, false);
+//   if(!mc)
+//     return true;
+//   const int max = mc->maxVal();
+// 
+//   double d_prev_val = mcvl->hwDVal();
+//   if(mcvl->hwValIsUnknown())
+//     d_prev_val = mcvl->lastValidHWDVal();
+//   if(mcvl->lastHwValIsUnknown())
+//   {
+//     if(mc->initValIsUnknown())
+//       d_prev_val = 0.0;
+//     else
+//       d_prev_val = double(mc->initVal());
+//   }
+// 
+// //   const int i_prev_val = int(d_prev_val);
+// 
+//   if(isDb)
+//     d_prev_val = muse_val2dbr(d_prev_val / double(max)) * 2.0;
+// 
+//   double d_new_val = d_prev_val + incVal;
+// 
+//   if(isDb)
+//     d_new_val = double(max) * muse_db2val(d_new_val / 2.0);
+// 
+//   const int i_new_val = MidiController::dValToInt(d_new_val);
+// //   const bool i_val_changed = i_new_val != i_prev_val;
+// 
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //   MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
+//   MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
+//   // Send the event to the device first so that current parameters could be updated on process.
+//   MidiPlayEvent staged_ev;
+//   const bool stage_res = stageEvent(staged_ev, ev);
+//   bool res = false;
+//   if(_device)
+// //   if(_device && i_val_changed)
+//     res = _device->putEvent(ev);
+// 
+//   d_new_val = limitValToInstrCtlRange(ctlnum, d_new_val);
+// 
+//   // False = direct not increment because we are doing the increment here.
+//   Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), d_new_val, false);
+//   if(stage_res && _gui2AudioFifo->put(g2as))
+//     fprintf(stderr, "MidiPort::putControllerIncrement: Error: gui2AudioFifo fifo overflow\n");
+//   return res;
+// }
 
 //---------------------------------------------------------
 //   putControllerValue
@@ -1985,6 +2010,7 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
   if(imcvl == _controller->end())
     return true;
 
+  // Don't create if not found.
   MusECore::MidiController* mc = midiController(ctlnum, false);
   if(!mc)
     return true;
@@ -2011,21 +2037,25 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 
 // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
 //   MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
-  MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
-  // Send the event to the device first so that current parameters could be updated on process.
-  MidiPlayEvent staged_ev;
-  const bool stage_res = stageEvent(staged_ev, ev);
+        // Time-stamp the event.
+  MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, chan, MusECore::ME_CONTROLLER, ctlnum, i_new_val);
+//   // Send the event to the device first so that current parameters could be updated on process.
+//   MidiPlayEvent staged_ev;
+//   const bool stage_res = stageEvent(staged_ev, ev);
   bool res = false;
   if(_device)
 //   if(_device && i_val_changed)
-    res = _device->putEvent(ev);
+//     res = _device->putEvent(ev);
+    res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
 
-  val = limitValToInstrCtlRange(ctlnum, val);
+//   val = limitValToInstrCtlRange(ctlnum, val);
 
   // False = direct not increment because we are doing the increment here.
-  Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), val, false);
-  if(stage_res && _gui2AudioFifo->put(g2as))
-    fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
+//   Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), val, false);
+//   if(stage_res && _gui2AudioFifo->put(g2as))
+  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//     fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
+    fprintf(stderr, "MidiPort::putControllerValue: Error: GuiFifo fifo overflow\n");
   return res;
 }
 
@@ -2524,40 +2554,64 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
 //   Return true if error.
 //---------------------------------------------------------
 
+// bool MidiPort::processGui2AudioEvents()
+// {
+//   const int gui_sz = _gui2AudioFifo->getSize();
+//   const int osc_sz = _osc2AudioFifo->getSize();
+//   // Receive events sent from our gui thread to this audio thread.
+//   //while(!_gui2AudioFifo->isEmpty())
+//   for(int i = 0; i < gui_sz; ++i)
+//     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//     handleGui2AudioEvent(_gui2AudioFifo->get()); // Don't care about return value.
+// 
+//   // REMOVE Tim. autoconnect. Added.
+//   // Receive events sent from OSC to this audio thread.
+//   // FIXME: The two fifos' processing needs to be interleaved and sorted according to time.
+//   // FIXME: Unlike our own gui thread, for the OSC thread we cannot allocate a controller
+//   //         if it does not exist, either from the OSC thread or here. For that, the OSC thread
+//   //         needs to instead inform our gui thread and then our gui thread sends the allocation
+//   //         message to the audio thread. (That is, our required way of gui-to-audio communication.)
+//   //        We can't have two different threads (our gui and OSC) messaging the audio thread like that.
+//   //while(!_osc2AudioFifo->isEmpty())
+//   for(int i = 0; i < osc_sz; ++i)
+//   {
+//     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+//     //const MidiPlayEvent ev = _osc2AudioFifo->get();
+//     //handleGui2AudioEvent(ev); // Don't care about return value. Oops, wrong structure - this fifo doesn't take MPE's.
+//     //sendHwCtrlState(ev); // Don't care about return value.
+//     //const MidiPlayEvent staged_ev = handleGui2AudioEvent(ev);
+//     //const MidiPlayEvent staged_ev = handleGui2AudioEvent(Gui2AudioFifoStruct(_osc2AudioFifo->get()));
+//     const MidiPlayEvent ev = _osc2AudioFifo->get();
+//     handleGui2AudioEvent(Gui2AudioFifoStruct(ev));
+//     
+//     // Send to the device as well.
+//     if(device())
+//       //device()->addScheduledEvent(ev);
+//       device()->addScheduledEvent(stageEvent(ev));
+//   }
+//   return false;
+// }
+
+//---------------------------------------------------------
+//   processGui2AudioEvents
+//   To be called from audio thread only.
+//   Return true if error.
+//---------------------------------------------------------
+
+// Static.
 bool MidiPort::processGui2AudioEvents()
 {
-  const int gui_sz = _gui2AudioFifo->getSize();
-  const int osc_sz = _osc2AudioFifo->getSize();
-  // Receive events sent from our gui thread to this audio thread.
-  //while(!_gui2AudioFifo->isEmpty())
-  for(int i = 0; i < gui_sz; ++i)
-    // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-    handleGui2AudioEvent(_gui2AudioFifo->get()); // Don't care about return value.
-
-  // REMOVE Tim. autoconnect. Added.
-  // Receive events sent from OSC to this audio thread.
-  // FIXME: The two fifos' processing needs to be interleaved and sorted according to time.
-  // FIXME: Unlike our own gui thread, for the OSC thread we cannot allocate a controller
-  //         if it does not exist, either from the OSC thread or here. For that, the OSC thread
-  //         needs to instead inform our gui thread and then our gui thread sends the allocation
-  //         message to the audio thread. (That is, our required way of gui-to-audio communication.)
-  //        We can't have two different threads (our gui and OSC) messaging the audio thread like that.
-  //while(!_osc2AudioFifo->isEmpty())
-  for(int i = 0; i < osc_sz; ++i)
+  // Receive hardware state events sent from various threads to this audio thread.
+  // Update hardware state so gui controls are updated.
+  const int sz = eventFifos().getSize();
+  for(int i = 0; i < sz; ++i)
   {
-    // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-    //const MidiPlayEvent ev = _osc2AudioFifo->get();
-    //handleGui2AudioEvent(ev); // Don't care about return value. Oops, wrong structure - this fifo doesn't take MPE's.
-    //sendHwCtrlState(ev); // Don't care about return value.
-    //const MidiPlayEvent staged_ev = handleGui2AudioEvent(ev);
-    //const MidiPlayEvent staged_ev = handleGui2AudioEvent(Gui2AudioFifoStruct(_osc2AudioFifo->get()));
-    const MidiPlayEvent ev = _osc2AudioFifo->get();
-    handleGui2AudioEvent(Gui2AudioFifoStruct(ev));
-    
-    // Send to the device as well.
-    if(device())
-      //device()->addScheduledEvent(ev);
-      device()->addScheduledEvent(stageEvent(ev));
+    // True = use the size snapshot.
+    const Gui2AudioFifoStruct g2as = eventFifos().get(true);
+    const int port = g2as._port;
+    if(port < 0 || port >= MIDI_PORTS)
+      continue;
+    MusEGlobal::midiPorts[port].handleGui2AudioEvent(g2as);
   }
   return false;
 }
@@ -2581,40 +2635,40 @@ bool MidiPort::processGui2AudioEvents()
 //   return false;
 // }
 
-//---------------------------------------------------------
-//   putOSCEvent
-//   To be called from OSC handler only.
-//   Returns true if event cannot be delivered.
-//---------------------------------------------------------
-
-bool MidiPort::putOSCEvent(const MidiPlayEvent& ev)
-{
-//   // Send the event to the device first so that current parameters could be updated on process.
-//   MidiPlayEvent staged_ev;
-//   const bool stage_res = stageEvent(staged_ev, ev);
-//   bool res = false;
-//   if(_device)
-//     // FIXME: Concurrency with putEvent(). Need putOSCEvent() etc.
-//     res = _device->putEvent(ev);
-//   if(stage_res && _osc2AudioFifo->put(staged_ev))
-//     fprintf(stderr, "MidiPort::putOSCEvent: Error: osc2AudioFifo fifo overflow\n");
-//   return res;
-
-//   MidiPlayEvent staged_ev;
-//   const int stage_ctrl = stageEvent(staged_ev, ev);
-//   if(stage_ctrl < 0)
+// //---------------------------------------------------------
+// //   putOSCEvent
+// //   To be called from OSC handler only.
+// //   Returns true if event cannot be delivered.
+// //---------------------------------------------------------
+// 
+// bool MidiPort::putOSCEvent(const MidiPlayEvent& ev)
+// {
+// //   // Send the event to the device first so that current parameters could be updated on process.
+// //   MidiPlayEvent staged_ev;
+// //   const bool stage_res = stageEvent(staged_ev, ev);
+// //   bool res = false;
+// //   if(_device)
+// //     // FIXME: Concurrency with putEvent(). Need putOSCEvent() etc.
+// //     res = _device->putEvent(ev);
+// //   if(stage_res && _osc2AudioFifo->put(staged_ev))
+// //     fprintf(stderr, "MidiPort::putOSCEvent: Error: osc2AudioFifo fifo overflow\n");
+// //   return res;
+// 
+// //   MidiPlayEvent staged_ev;
+// //   const int stage_ctrl = stageEvent(staged_ev, ev);
+// //   if(stage_ctrl < 0)
+// //     return true;
+// //   stageEvent(staged_ev, ev);
+//   
+// //   if(_osc2AudioFifo->put(staged_ev))
+//   if(_osc2AudioFifo->put(ev))
+//   {
+//     fprintf(stderr, "MidiPort::putOSCHwCtrlEvent: Error: osc2AudioFifo fifo overflow\n");
 //     return true;
-//   stageEvent(staged_ev, ev);
-  
-//   if(_osc2AudioFifo->put(staged_ev))
-  if(_osc2AudioFifo->put(ev))
-  {
-    fprintf(stderr, "MidiPort::putOSCHwCtrlEvent: Error: osc2AudioFifo fifo overflow\n");
-    return true;
-  }
-  
-  return false;
-}
+//   }
+//   
+//   return false;
+// }
 
 //---------------------------------------------------------
 //   sendHwCtrlState

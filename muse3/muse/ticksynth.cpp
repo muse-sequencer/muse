@@ -212,10 +212,12 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, u
       unsigned int curPos = 0;
       unsigned int frame = 0;
 
+      // This also takes an internal snapshot of the size for use later...
       const int sz = synti->eventFifos()->getSize();
       for(int i = 0; i < sz; ++i)
       {  
-        const MidiPlayEvent ev(synti->eventFifos()->peek()); 
+        // True = use the size snapshot.
+        const MidiPlayEvent ev(synti->eventFifos()->peek(true)); 
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
@@ -236,7 +238,8 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, u
         }
 
         // Done with ring buffer event. Remove it from FIFO.
-        synti->eventFifos()->remove();
+        // True = use the size snapshot.
+        synti->eventFifos()->remove(true);
         
         if(frame > curPos)
         {

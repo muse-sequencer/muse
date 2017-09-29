@@ -44,6 +44,7 @@ class LockFreeBuffer
       volatile int _size;
       int _wIndex;
       int _rIndex;
+      int _sizeSnapshot;
 
    public:
       // Start simple with just 2, like a flipping buffer for example.
@@ -103,17 +104,27 @@ class LockFreeBuffer
 //       }
 
       // This is only for the reader.
-      int  getSize() const { return _size; }
+      // Returns the number of items in the buffer.
+      // If NOT requesting the size snapshot, this conveniently stores a snapshot (cached) version 
+      //  of the size for consistent behaviour later. If requesting the size snapshot, it does not 
+      //  update the snapshot itself.
+      int getSize(bool useSizeSnapshot = false)
+      { 
+        const int sz = useSizeSnapshot ? _sizeSnapshot : _size; 
+        if(!useSizeSnapshot)
+          _sizeSnapshot = sz; 
+        return sz;
+      }
       // This is only for the reader.
-      bool isEmpty() const { return _size == 0; }
+      bool isEmpty(bool useSizeSnapshot = false) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
       // This is not thread safe, call it only when it is safe to do so.
-      void clear()         { _size = 0; _wIndex = 0; _rIndex = 0; }
+      void clear()         { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
       // Clear the 'read' side of the ring buffer, which also clears the size.
       // NOTE: A corresponding clearWrite() is not provided because
       //  it is dangerous to reset the size from the sender side -
       //  the receiver might cache the size, briefly. The sender should 
       //  only grow the size while the receiver should only shrink it.
-      void clearRead()     { _size = 0; _rIndex = _wIndex; }
+      void clearRead()     { _size = 0; _sizeSnapshot = 0; _rIndex = _wIndex; }
 };
 
 // // template <class T>
@@ -244,7 +255,7 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
 //     }
 
     // This is only for the reader.
-    T get();
+    T get(bool useSizeSnapshot = false);
 //     {
 //       T temp_val;
 //       iLockFreeMultiBuffer least_i = vlist::end();
@@ -273,7 +284,7 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
 //     }
 
     // This is only for the reader.
-    const T& peek(int n = 0);
+    const T& peek(bool useSizeSnapshot = false, int n = 0);
 //     {
 //       T temp_val;
 //       iLockFreeMultiBuffer least_i = vlist::end();
@@ -319,7 +330,7 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
 //     }
     
     // This is only for the reader.
-    void remove();
+    void remove(bool useSizeSnapshot = false);
 //     {
 //       T temp_val;
 //       iLockFreeMultiBuffer least_i = vlist::end();
@@ -345,7 +356,9 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
 //     }
 
     // This is only for the reader.
-    int getSize() const;
+    // Returns the total number of items in the buffers.
+    // Also conveniently stores a cached version of the size for consistent behaviour later.
+    int getSize(bool useSizeSnapshot = false) const;
 //     {
 //       int sz = 0;
 //       // Hm, maybe not so accurate, sizes may be susceptable to
@@ -359,7 +372,7 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
 //     }
     
     // This is only for the reader.
-    bool isEmpty() const;
+    bool isEmpty(bool useSizeSnapshot = false) const;
 //     { 
 //       // Hm, maybe not so accurate, sizes may be susceptable to
 //       //  asynchronous change as we iterate here...
