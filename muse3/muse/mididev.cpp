@@ -779,11 +779,11 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id)
 //   if(!_writeEnable)
 //     return true;
       
-  DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putEvent dev:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+  DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
                     deviceType(), ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
-    fprintf(stderr, "MidiOut: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
     ev.dump();
   }
   
@@ -852,6 +852,7 @@ void MidiDevice::preparePlayEventFifo()
 
 //---------------------------------------------------------
 //   processStuckNotes
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiDevice::processStuckNotes() 
@@ -893,6 +894,7 @@ void MidiDevice::processStuckNotes()
 
 //---------------------------------------------------------
 //   handleStop
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiDevice::handleStop()
@@ -959,8 +961,12 @@ void MidiDevice::handleStop()
       if((*i).port() != _port)
         continue;
       MidiPlayEvent ev(*i);
-      ev.setTime(0);
-      putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+      ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+// REMOVE Tim. autoconnect. Changed.
+//       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+      //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+      addScheduledEvent(ev);
+            
       mel.erase(i);
     }
   }
@@ -1253,6 +1259,7 @@ void MidiDevice::handleStop()
 //   }
 // }
 
+// To be called by audio thread only.
 void MidiDevice::handleSeek()
 {
   //---------------------------------------------------
@@ -1268,7 +1275,10 @@ void MidiDevice::handleSeek()
     {
       MidiPlayEvent ev(*i);
       ev.setTime(0);
-      putEvent(ev);  // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+// REMOVE Tim. autoconnect. Changed.
+//       putEvent(ev);  // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+      //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+      addScheduledEvent(ev);
     }
     _stuckNotes.clear();
   }

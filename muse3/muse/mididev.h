@@ -33,6 +33,7 @@
 // REMOVE Tim. autoconnect. Added.
 #include "lock_free_buffer.h"
 #include "sync.h"
+#include "evdata.h"
 
 #include <QString>
 
@@ -112,6 +113,7 @@ class MidiDevice {
       QString _state;
       
       bool _sysexReadingChunks;
+      SysExInputProcessor _sysExInProcessor;
       
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
       MPEventList _playEvents;
@@ -143,6 +145,14 @@ class MidiDevice {
       // The audio thread processes this fifo and clears it.
       LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
       //ExtMidiClock::ExternState _playStateExt;   // used for keeping play state in sync functions
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
+      //  although its requirement is a result of the latency.
+      // For any driver running in the audio thread (Jack midi, synth, metro etc) this value typically 
+      //  will equal one segment size.
+      // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
+      //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
+      //unsigned int _pbForwardShiftFrames;
       
       void init();
 // REMOVE Tim. autoconnect. Removed. Made public.
@@ -153,6 +163,8 @@ class MidiDevice {
       MidiDevice(const QString& name);
       virtual ~MidiDevice();
 
+      SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
+      
       virtual MidiDeviceType deviceType() const = 0;
       virtual QString deviceTypeString() const;
       
@@ -248,6 +260,14 @@ class MidiDevice {
       // To be called from audio thread only.
 //       virtual void preparePlayEventFifo() { }
       virtual void preparePlayEventFifo();
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
+      //  although its requirement is a result of the latency.
+      // For any driver running in the audio thread (Jack midi, synth, metro etc) this value typically 
+      //  will equal one segment size.
+      // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
+      //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
+      //virtual unsigned int pbForwardShiftFrames() const = 0;
       // This clears the 'write' side of any fifo the device may have (like ALSA),
       //  by setting the size to zero and the write pointer equal to the read pointer.
 //       virtual void clearPlayEventFifo() {}

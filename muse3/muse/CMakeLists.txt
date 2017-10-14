@@ -104,6 +104,7 @@ file (GLOB core_source_files
       dialogs.cpp
       dssihost.cpp
       lv2host.cpp
+      evdata.cpp
       event.cpp
       eventlist.cpp
       exportmidi.cpp
@@ -115,7 +116,6 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
-      lock_free_buffer.cpp
       memory.cpp
       midi.cpp
       midictrl.cpp

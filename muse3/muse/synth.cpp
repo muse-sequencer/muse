@@ -1350,11 +1350,12 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i,
       unsigned int frame = 0;
 
       // This also takes an internal snapshot of the size for use later...
-      const int sz = synti->eventFifos()->getSize();
+      // False = don't use the size snapshot, but update it.
+      const int sz = synti->eventFifos()->getSize(false);
       for(int i = 0; i < sz; ++i)
       {  
         // True = use the size snapshot.
-        const MidiPlayEvent ev(synti->eventFifos()->peek(true)); 
+        const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
@@ -1374,9 +1375,9 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i,
           break;
         }
 
-        // Done with ring buffer event. Remove it from FIFO.
-        // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         // Done with ring buffer event. Remove it from FIFO.
+//         // True = use the size snapshot.
+//         synti->eventFifos()->remove(true);
         
         if(frame > curPos)
         {
@@ -1393,6 +1394,10 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i,
         //putEvent(ev);
         //synti->putEvent(ev);
         processEvent(ev);
+        
+        // Done with ring buffer event. Remove it from FIFO.
+        // True = use the size snapshot.
+        synti->eventFifos()->remove(true);
       }
 
       if(curPos < n)
@@ -1491,14 +1496,19 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i,
 //bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
 bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
 {
-      //if (MusEGlobal::midiOutputTrace) DELETETHIS or re-enable?
-      //{
-      //      printf("MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
-      //      ev.dump();
-      //}
       if (!_mess)
         return true;
+      
+      if (MusEGlobal::midiOutputTrace)
+      {
+           fprintf(stderr, "MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
+           ev.dump();
+      }
+      
       int chn = ev.channel();
+      int a = ev.dataA();
+      int b = ev.dataB();
+      
       switch(ev.type())
       {
         // Special for program, hi bank, and lo bank: Virtually all synths encapsulate banks and program together
@@ -1512,66 +1522,96 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
             int hb;
             int lb;
             synti->currentProg(chn, NULL, &lb, &hb);
-            int pr = ev.dataA() & 0x7f;
-            synti->setCurrentProg(chn, pr, lb, hb);
-            if(hb > 127) // Map "dont care" to 0
-              hb = 0;
-            if(lb > 127)
-              lb = 0;
-            // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
-            //int full_prog = (hb >> 16) | (lb >> 8) | pr;
-            const int full_prog = (hb << 16) | (lb << 8) | pr;
-            return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            synti->setCurrentProg(chn, a & 0xff, lb, hb);
+            // Only if there's something to change...
+            //if(hb < 128 || lb < 128 || a < 128)
+            //{
+              if(hb > 127) // Map "dont care" to 0
+                hb = 0;
+              if(lb > 127)
+                lb = 0;
+              if(a > 127)
+                a = 0;
+              // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+              //int full_prog = (hb >> 16) | (lb >> 8) | pr;
+              const int full_prog = (hb << 16) | (lb << 8) | a;
+              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            //}
+            //return false;
           }
           break;
         case ME_CONTROLLER:
           {
-            int a = ev.dataA();
-            int b = ev.dataB();
+            // Our internal hwCtrl controllers support the 'unknown' value.
+            // Don't send 'unknown' values to the driver. Ignore and return no error.
+            if(b == CTRL_VAL_UNKNOWN)
+              return false;
+            
             if(a == CTRL_PROGRAM)
             {
               int hb = (b >> 16) & 0xff;
               int lb = (b >> 8)  & 0xff;
-              int pr = b & 0x7f;
+              int pr = b & 0xff;
               synti->setCurrentProg(chn, pr, lb, hb);
-              if(hb > 127)
-                hb = 0;
-              if(lb > 127)
-                lb = 0;
-              int full_prog = (hb << 16) | (lb << 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              // Only if there's something to change...
+              //if(hb < 128 || lb < 128 || pr < 128)
+              //{
+                if(hb > 127)
+                  hb = 0;
+                if(lb > 127)
+                  lb = 0;
+                if(pr > 127)
+                  pr = 0;
+                const int full_prog = (hb << 16) | (lb << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
-            else if(a == CTRL_HBANK)
+            
+            if(a == CTRL_HBANK)
             {
               int lb;
               int pr;
               synti->currentProg(chn, &pr, &lb, NULL);
-              int hb = ev.dataB() & 0x7f;
-              synti->setCurrentProg(chn, pr, lb, hb);
-              if(lb > 127)
-                lb = 0;
-              if(pr > 127)
-                pr = 0;
-              // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
-              //int full_prog = (hb << 16) | (lb >> 8) | pr;
-              const int full_prog = (hb << 16) | (lb << 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              synti->setCurrentProg(chn, pr, lb, b & 0xff);
+              // Only if there's something to change...
+              //if(b < 128 || lb < 128 || pr < 128)
+              //{
+                if(b > 127)
+                  b = 0;
+                if(lb > 127)
+                  lb = 0;
+                if(pr > 127)
+                  pr = 0;
+                // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+                //int full_prog = (hb << 16) | (lb >> 8) | pr;
+                const int full_prog = (b << 16) | (lb << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
-            else if(a == CTRL_LBANK)
+            
+            if(a == CTRL_LBANK)
             {
               int hb;
               int pr;
               synti->currentProg(chn, &pr, NULL, &hb);
-              int lb = ev.dataB() & 0x7f;
-              if(hb > 127)
-                hb = 0;
-              if(pr > 127)
-                pr = 0;
-              synti->setCurrentProg(chn, pr, lb, hb);
-              // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
-              //int full_prog = (hb >> 16) | (lb << 8) | pr;
-              const int full_prog = (hb << 16) | (lb << 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              synti->setCurrentProg(chn, pr, b & 0xff, hb);
+              // Only if there's something to change...
+              //if(hb < 128 || b < 128 || pr < 128)
+              //{
+                if(hb > 127)
+                  hb = 0;
+                if(b > 127)
+                  b = 0;
+                if(pr > 127)
+                  pr = 0;
+                // REMOVE Tim. autoconnect. Changed. Oops! Wrong direction!
+                //int full_prog = (hb >> 16) | (lb << 8) | pr;
+                const int full_prog = (hb << 16) | (b << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
           }
           break;

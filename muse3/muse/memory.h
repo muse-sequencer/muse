@@ -41,11 +41,18 @@ class Pool {
             Verweis* next;
             };
       struct Chunk {
-            enum { size = 4 * 1024 };
+// REMOVE Tim. autoconnect. Changed.
+            // Gives about 160 bytes maximum request @ 8 bytes item size.
+//             enum { size = 4 * 1024 };
+            enum { size = 4 * 2048 };
             Chunk* next;
             char mem[size];
             };
-      enum { dimension = 21 };
+// REMOVE Tim. autoconnect. Changed.
+      // Gives about 160 bytes maximum request @ 8 bytes item size.
+//       enum { dimension = 21 };
+      // Gives about 300 bytes maximum request @ 8 bytes item size.
+      enum { dimension = 40 };
       Chunk* chunks[dimension];
       Verweis* head[dimension];
       Pool(Pool&);
@@ -191,6 +198,67 @@ template <class T> class midiRTalloc
       };
 
 template <class T> midiRTalloc<T>::midiRTalloc() {}
+
+
+
+
+// REMOVE Tim. autoconnect. Added.
+
+//---------------------------------------------------------
+//   MemoryQueue
+//   An efficient queue which grows by fixed chunk sizes,
+//    for single threads only.
+//---------------------------------------------------------
+
+class MemoryQueue {
+      struct Chunk
+      {
+        //size_t _size;
+        //enum { ChunkSize = 8 * 1024 };
+        enum { ChunkSize = 8 * 16 };
+        Chunk* _next;
+        char _mem[ChunkSize];
+        //char* _mem;
+        // TODO: Hm, will this cause a double call to new if new Chunk() is called?
+        // Maybe have to go back to static enum...
+        //Chunk(size_t size) { _size = size; _mem = new char[_size]; }
+      };
+      //size_t _chunkSize;
+      Chunk* _startChunk;
+      Chunk* _endChunk;
+      Chunk* _curWriteChunk;
+      size_t _curSize;
+      size_t _curOffest;
+      
+      MemoryQueue(MemoryQueue&);
+      void operator=(MemoryQueue&);
+      void grow();
+
+   public:
+      MemoryQueue();
+      //MemoryQueue(size_t chunkSize);
+      ~MemoryQueue();
+
+      // Static. Returns whether the given length in bytes needs to be chunked.
+      static bool chunkable(size_t len) { return len > Chunk::ChunkSize; }
+      
+      // Returns capacity in bytes.
+      //size_t capacity() const { return _chunkSize; }
+      // Returns current size in bytes.
+      size_t curSize() const { return _curSize; }
+      // Deletes all chunks except the first (to avoid a preallocation), and calls reset.
+      void clear();
+      // Resets the size and current write position, but does not clear.
+      // Existing chunks will be used, and new ones will be created (allocated) if required.
+      // This saves having to clear (which deletes) before every use, at the expense
+      //  of keeping what could be an ever increasing memory block alive. 
+      void reset();
+      // Return true if successful.
+      bool add(const unsigned char* src, size_t len);
+      // Copies the queue to a character buffer.
+      // Returns number of bytes copied.
+      size_t copy(unsigned char* dst, size_t len) const;
+      };
 
 #endif
 

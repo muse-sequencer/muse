@@ -61,8 +61,6 @@
 //#include <QMenu>
 #include "popupmenu.h"
 
-#include "lock_free_buffer.h"
-
 #endif // DSSI_SUPPORT
 
 namespace MusECore {
@@ -132,12 +130,9 @@ class DssiSynthIF : public SynthIF
       OscDssiIF _oscif;
       #endif
 
-      // Fifo for midi events sent from OSC to audio thread (ex. updating hardware knobs/sliders):
-      LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
-      
       std::vector<DSSI_Program_Descriptor> programs;
       void queryPrograms();
-      void doSelectProgram(LADSPA_Handle handle, int bank, int prog); 
+      void doSelectProgram(LADSPA_Handle handle, int bankH, int bankL, int prog); 
       bool processEvent(const MidiPlayEvent&, snd_seq_event_t*);
       
       float** _audioInBuffers;

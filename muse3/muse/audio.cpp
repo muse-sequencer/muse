@@ -32,6 +32,7 @@
 #include "node.h"
 #include "audiodev.h"
 #include "mididev.h"
+#include "midiport.h"
 #include "alsamidi.h"
 #include "synth.h"
 #include "audioprefetch.h"
@@ -460,7 +461,8 @@ void Audio::process(unsigned frames)
         //  included in the count.
         if(port >= 0 && port < MIDI_PORTS && port == MusEGlobal::config.curMidiSyncInPort)
         {
-          const int clk_fifo_sz = md->extClockHistory()->getSize();
+          // False = don't use the size snapshot.
+          const int clk_fifo_sz = md->extClockHistory()->getSize(false);
           if(clk_fifo_sz != 0)
           {
             for(int i = 0; i < clk_fifo_sz; ++i)
@@ -872,7 +874,12 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_PLAY_MIDI_EVENT:
                   {
                   MidiPlayEvent* ev = (MidiPlayEvent*)(msg->p1);
-                  MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
+// REMOVE Tim. autoconnect. Changed.
+//                   MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
+                  
+                  MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
+                  if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
+                    md->addScheduledEvent(*ev);
                   // Record??
                   }
                   break;

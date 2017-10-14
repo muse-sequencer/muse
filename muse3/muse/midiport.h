@@ -44,31 +44,33 @@ class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
 
-struct Gui2AudioFifoStruct {
-  unsigned int _time;
-  int _type;
-  int _chan;
-  int _port;
-  union
-  {
-    int _ctlnum;
-    int _dataA;
-  };
-  union
-  {
-    double _val;
-    double _dataB;
-  };
-  bool _incremental;
-  
-  Gui2AudioFifoStruct()
-    : _time(0), _type(0), _chan(0), _port(0), _dataA(0), _dataB(0.0), _incremental(false) { }
-  Gui2AudioFifoStruct(unsigned int time, int type, int chan, int port, int dataA, double dataB, bool incremental)
-    : _time(time), _type(type), _chan(chan), _port(port), _dataA(dataA), _dataB(dataB), _incremental(incremental) { }
-  Gui2AudioFifoStruct(const MidiPlayEvent& ev)
-    : _time(ev.time()), _type(ev.type()), _chan(ev.channel()), _port(ev.port()), 
-      _dataA(ev.dataA()), _dataB(ev.dataB()), _incremental(false) { }
-};
+// struct Gui2AudioFifoStruct {
+//   unsigned int _time;
+//   int _type;
+//   int _chan;
+//   int _port;
+//   union
+//   {
+//     int _ctlnum;
+//     int _dataA;
+//   };
+//   union
+//   {
+//     double _val;
+//     double _dataB;
+//   };
+//   bool _incremental;
+//   
+//   Gui2AudioFifoStruct()
+//     : _time(0), _type(0), _chan(0), _port(0), _dataA(0), _dataB(0.0), _incremental(false) { }
+//   Gui2AudioFifoStruct(unsigned int time, int type, int chan, int port, int dataA, double dataB, bool incremental)
+//     : _time(time), _type(type), _chan(chan), _port(port), _dataA(dataA), _dataB(dataB), _incremental(incremental) { }
+//   Gui2AudioFifoStruct(const MidiPlayEvent& ev)
+//     : _time(ev.time()), _type(ev.type()), _chan(ev.channel()), _port(ev.port()), 
+//       _dataA(ev.dataA()), _dataB(ev.dataB()), _incremental(false) { }
+//       
+//   //bool operator<(const Gui2AudioFifoStruct&) const;
+// };
 
 //---------------------------------------------------------
 //   MidiPort
@@ -118,7 +120,8 @@ class MidiPort {
       // Various IPC FIFOs.
       // One single multi-buffer for ALL midi ports.
 //       LockFreeMultiBuffer<Gui2AudioFifoStruct> *_eventFifos;
-      static LockFreeMultiBuffer<Gui2AudioFifoStruct> _eventFifos;
+//       static LockFreeMultiBuffer<Gui2AudioFifoStruct> _eventFifos;
+      static LockFreeMultiBuffer<MidiPlayEvent> _eventFifos;
 
       RouteList _inRoutes, _outRoutes;
       
@@ -144,7 +147,8 @@ class MidiPort {
       // To be called from audio thread only. Returns true if event cannot be delivered.
       //bool handleGui2AudioEvent(const MidiPlayEvent&);
       //bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
-      MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
+//       MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
+      MidiPlayEvent handleGui2AudioEvent(const MidiPlayEvent&);
 
    public:
       MidiPort();
@@ -281,10 +285,12 @@ class MidiPort {
 //       bool putOSCEvent(const MidiPlayEvent&);
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<Gui2AudioFifoStruct> *eventFifos() { return _eventFifos; } 
-      static LockFreeMultiBuffer<Gui2AudioFifoStruct> &eventFifos() { return _eventFifos; } 
+//       static LockFreeMultiBuffer<Gui2AudioFifoStruct> &eventFifos() { return _eventFifos; } 
+      static LockFreeMultiBuffer<MidiPlayEvent> &eventFifos() { return _eventFifos; } 
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
-      bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
+// REMOVE Tim. autoconnect. Removed.
+//       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }
       void setAutomationType(int channel, AutomationType t) {
             _automationType[channel] = t;

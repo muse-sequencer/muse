@@ -644,12 +644,21 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                     {
                           case ME_SYSEX:
                                 
+                                // REMOVE Tim. autoconnect. Added.
+                                fprintf(stderr, "MidiJackDevice::eventReceived SYSEX len:%u data: ", (unsigned int)ev->size);
+                                for(unsigned int i = 0; i < ev->size && i < 16; ++i)
+                                  fprintf(stderr, "%0x ", ((unsigned char*)ev->buffer)[i]);
+                                if(ev->size >= 16) 
+                                  fprintf(stderr, "..."); 
+                                fprintf(stderr, "\n"); 
+      
                                 // TODO: Deal with large sysex, which are broken up into chunks!
                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
                                 {
-                                  if(MusEGlobal::debugMsg)
-                                    printf("MidiJackDevice::eventReceived sysex chunks not supported!\n");
+                                  // REMOVE Tim. autoconnect. Removed.
+                                  //if(MusEGlobal::debugMsg)
+                                    fprintf(stderr, "MidiJackDevice::eventReceived sysex chunks not supported!\n");
                                   return;
                                 }
                                 
@@ -835,6 +844,8 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
 //             ft = MusEGlobal::segmentSize - 1;
 //             }
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      if(e.time() < syncFrame)
+        fprintf(stderr, "MidiJackDevice::queueEvent() evTime:%u < syncFrame:%u!!\n", e.time(), syncFrame);
       unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
       if (ft >= MusEGlobal::segmentSize) {
 //             printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
@@ -920,8 +931,8 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
                         return true;
                         }
                   p[0] = 0xf0;
-                  p[len+1] = 0xf7;
                   memcpy(p+1, data, len);
+                  p[len+1] = 0xf7;
                   }
                   break;
             case ME_SONGPOS:
@@ -1578,19 +1589,21 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //   }
 
   
-  const int sz = _eventFifos->getSize();
+  // False = don't use the size snapshot, but update it.
+  const int sz = _eventFifos->getSize(false);
   for(int i = 0; i < sz; ++i)
   {  
-    const MidiPlayEvent ev(_eventFifos->peek()); 
+    // True = use the size snapshot.
+    const MidiPlayEvent& ev(_eventFifos->peek(true)); 
     
 // REMOVE Tim. autoconnect. Added.
-      if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
-      {
-        #ifdef JACK_MIDI_DEBUG
-        fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
-        #endif
-        break;
-      }
+    if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+    {
+      #ifdef JACK_MIDI_DEBUG
+      fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+      #endif
+      break;
+    }
 
     //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB()); 
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
@@ -1601,7 +1614,9 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
     //  over a long time. So we'll just... miss them.
     processEvent(ev, port_buf);
 //     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
-    _eventFifos->remove();  // Successfully processed event. Remove it from FIFO.
+    // Successfully processed event. Remove it from FIFO.
+    // True = use the size snapshot.
+    _eventFifos->remove(true);
   }
   
   

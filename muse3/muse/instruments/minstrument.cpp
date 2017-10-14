@@ -567,6 +567,7 @@ MType MidiInstrument::midiType() const
 //---------------------------------------------------------
 //   reset
 //    send note off to all channels
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiInstrument::reset(int portNo)
@@ -578,7 +579,8 @@ void MidiInstrument::reset(int portNo)
       MusECore::MidiPlayEvent ev;
       ev.setType(0x90);
       ev.setPort(portNo);
-      ev.setTime(0);
+      ev.setTime(0);  // Immediate processing. TODO: Use curFrame?
+      ev.setB(0);
 
       for (int chan = 0; chan < MIDI_CHANNELS; ++chan)
       {
@@ -586,9 +588,13 @@ void MidiInstrument::reset(int portNo)
             for (int pitch = 0; pitch < 128; ++pitch)
             {
                   ev.setA(pitch);
-                  ev.setB(0);
+//                   ev.setB(0);
 
-                  port->sendEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//                   port->sendEvent(ev);
+                  
+                  //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+                  port->device()->addScheduledEvent(ev);
             }
       }
 }

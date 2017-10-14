@@ -62,6 +62,7 @@
 #include "globaldefs.h"
 #include "gconfig.h"
 #include "popupmenu.h"
+#include "lock_free_buffer.h"
 
 namespace MusECore {
 
@@ -776,7 +777,6 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::DssiSynthIF\n");
       #endif
-      _osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
       _synth = 0;
       _handle = NULL;
       _controls = 0;
@@ -869,9 +869,6 @@ DssiSynthIF::~DssiSynthIF()
         
       if(_controlsOut)
         delete[] _controlsOut;
-      
-      if(_osc2AudioFifo)
-        delete _osc2AudioFifo;
 }
 
 int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const 
@@ -1106,15 +1103,16 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
   int chn = e.channel();
   int a   = e.dataA();
   int b   = e.dataB();
-  
-  int len = e.len();
-  char ca[len + 2];
-  
-  ca[0] = 0xF0;
-  memcpy(ca + 1, (const char*)e.data(), len);
-  ca[len + 1] = 0xF7;
 
-  len += 2;
+// REMOVE Tim. autoconnect. Removed. Moved below.  
+//   int len = e.len();
+//   char ca[len + 2];
+//   
+//   ca[0] = 0xF0;
+//   memcpy(ca + 1, (const char*)e.data(), len);
+//   ca[len + 1] = 0xF7;
+// 
+//   len += 2;
 
   #ifdef DSSI_DEBUG 
   fprintf(stderr, "DssiSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
@@ -1205,21 +1203,10 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
 
-      int cur_hb, cur_lb;
-      synti->currentProg(chn, NULL, &cur_lb, &cur_hb);
-      synti->setCurrentProg(chn, a & 0xff, cur_lb, cur_hb);
-      
-      // Only if there's something to change...
-      //if(dssi->select_program && (hb < 128 || lb < 128 || a < 128))
-      {
-        if(cur_hb > 127) // Map "dont care" to 0
-          cur_hb = 0;
-        if(cur_lb > 127)
-          cur_lb = 0;
-        if(a > 127)
-          a = 0;
-        doSelectProgram(_handle, (cur_hb << 8) + cur_lb, a);
-      }
+      int hb, lb;
+      synti->currentProg(chn, NULL, &lb, &hb);
+      synti->setCurrentProg(chn, a & 0xff, lb, hb);
+      doSelectProgram(_handle, hb, lb, a);
       // Event pointer not filled. Return false.
       return false;
     }
@@ -1230,9 +1217,11 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_CONTROLLER\n");
       #endif
       
-      if((a == 0) || (a == 32))
+      // Our internal hwCtrl controllers support the 'unknown' value.
+      // Don't send 'unknown' values to the driver. Ignore and return no error.
+      if(b == CTRL_VAL_UNKNOWN)
         return false;
-        
+            
       if(a == CTRL_PROGRAM)
       {
         #ifdef DSSI_DEBUG 
@@ -1242,24 +1231,32 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int hb = (b >> 16) & 0xff;
         int lb = (b >> 8) & 0xff;
         int pr = b & 0xff;
-        
         synti->setCurrentProg(chn, pr, lb, hb);
-        
-        // Only if there's something to change...
-        //if(dssi->select_program && (hb < 128 || lb < 128 || pr < 128))
-        {
-          if(hb > 127) // Map "dont care" to 0
-            hb = 0;
-          if(lb > 127)
-            lb = 0;
-          if(pr > 127)
-            pr = 0;
-          doSelectProgram(_handle, (hb << 8) + lb, pr);
-        }
+        doSelectProgram(_handle, hb, lb, pr);
         // Event pointer not filled. Return false.
         return false;
       }
           
+      if(a == CTRL_HBANK)
+      {
+        int lb, pr;
+        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->setCurrentProg(chn, pr, lb, b & 0xff);
+        doSelectProgram(_handle, b, lb, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
+      if(a == CTRL_LBANK)
+      {
+        int hb, pr;
+        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->setCurrentProg(chn, pr, b & 0xff, hb);
+        doSelectProgram(_handle, hb, b, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+            
       if(a == CTRL_PITCH)
       {
         #ifdef DSSI_DEBUG 
@@ -1508,10 +1505,21 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           // "DssiSynthIF::processEvent midi event is ME_SYSEX"
           // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
           // That might be ALSA doing that.
+          
+          const int len = e.len();
+          char buf[len + 2];
+          
+          buf[0] = 0xF0;
+          memcpy(buf + 1, e.data(), len);
+          buf[len + 1] = 0xF7;
+
           snd_seq_ev_clear(event); 
+          snd_seq_ev_set_sysex(event, len + 2, buf);
           event->queue = SND_SEQ_QUEUE_DIRECT;
-          snd_seq_ev_set_sysex(event, len,
-            (unsigned char*)ca);
+          
+          // NOTE: Don't move this out, 'buf' would go out of scope.
+          // Event was filled. Return true.
+          return true;
         }
       }  
     break;
@@ -1543,7 +1551,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
 //   const unsigned long ev_buf_sz = ev_list_sz + ev_fifo_sz + ev_osc_fifo_sz;
 //   snd_seq_event_t events[ev_buf_sz];
   // This also takes an internal snapshot of the size for use later...
-  const unsigned long ev_fifo_sz = synti->eventFifos()->getSize();
+  // False = don't use the size snapshot, but update it.
+  const unsigned long ev_fifo_sz = synti->eventFifos()->getSize(false);
   snd_seq_event_t events[ev_fifo_sz];
 
 // REMOVE Tim. autoconnect. Removed.
@@ -1751,7 +1760,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
     // Get all control ring buffer items valid for this time period...
     while(!_controlFifo.isEmpty())
     {
-      ControlEvent v = _controlFifo.peek();
+      const ControlEvent& v = _controlFifo.peek();
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
@@ -1777,10 +1786,13 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
           || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
           || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
         break;
-      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+//       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= in_ctrls) // Sanity check.
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         break;
+      }
 
       found = true;
       frame = evframe;
@@ -1800,6 +1812,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
+      
+      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
@@ -1984,7 +1998,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
       for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
       {
         // True = use the size snapshot.
-        MidiPlayEvent e = synti->eventFifos()->peek(true);
+        const MidiPlayEvent& e = synti->eventFifos()->peek(true);
 
         #ifdef DSSI_DEBUG
         fprintf(stderr, "DssiSynthIF::getData eventFifos event time:%d\n", e.time());
@@ -1993,9 +2007,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
         if(e.time() >= (syncFrame + sample + nsamp))
           break;
 
-        // Done with ring buffer's event. Remove it.
-        // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         // Done with ring buffer's event. Remove it.
+//         // True = use the size snapshot.
+//         synti->eventFifos()->remove(true);
         if(ports != 0)  // Don't bother if not 'running'.
         {
           // Returns false if the event was not filled. It was handled, but some other way.
@@ -2017,6 +2031,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
             ++nevents;
           }
         }
+        // Done with ring buffer's event. Remove it.
+        // True = use the size snapshot.
+        synti->eventFifos()->remove(true);
       }
 
       
@@ -2220,13 +2237,17 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       if(port != -1)
       {
         // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-        MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (lb << 8) | program);
+        const MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (lb << 8) | program);
       
         #ifdef DSSI_DEBUG 
         fprintf(stderr, "DssiSynthIF::oscProgram midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());
         #endif
         
-        MusEGlobal::midiPorts[port].sendEvent(event);
+//         MusEGlobal::midiPorts[port].sendEvent(event);
+        
+        MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
+        if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+          md->eventFifos()->put(MidiDevice::OSCFifo, event);
       }
       
       //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
@@ -2351,7 +2372,8 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         // Put an OSC event into the mid port's OSC fifo.
 //         MusEGlobal::midiPorts[port].putOSCEvent(event);
         
-        MidiPort::eventFifos().put(MidiPort::OSCFifo, Gui2AudioFifoStruct(event));
+//         MidiPort::eventFifos().put(MidiPort::OSCFifo, Gui2AudioFifoStruct(event));
+        MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
         
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
           md->eventFifos()->put(MidiDevice::OSCFifo, event);
@@ -2450,8 +2472,21 @@ void DssiSynthIF::queryPrograms()
             }
       }
 
-void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
+void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bankH, int bankL, int prog)
 {
+//   // Only if there's something to change...
+//   if(bankH >= 128 && bankL >= 128 && prog >= 128)
+//     return;
+   
+  if(bankH > 127) // Map "dont care" to 0
+    bankH = 0;
+  if(bankL > 127)
+    bankL = 0;
+  if(prog > 127)
+    prog = 0;
+    
+  const int bank = (bankH << 8) | bankL;
+  
   const DSSI_Descriptor* dssi = _synth->dssi;
   dssi->select_program(handle, bank, prog);
   

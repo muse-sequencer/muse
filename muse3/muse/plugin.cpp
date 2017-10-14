@@ -2876,7 +2876,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
     // Get all control ring buffer items valid for this time period...
     while(!_controlFifo.isEmpty())
     {
-      ControlEvent v = _controlFifo.peek();
+      const ControlEvent& v = _controlFifo.peek();
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + n) ? 0 : v.frame - syncFrame + n;
@@ -2902,10 +2902,13 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
           || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
           || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
         break;
-      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+//       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= in_ctrls) // Sanity check
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         break;
+      }
 
       found = true;
       frame = evframe;
@@ -2939,6 +2942,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
       }
 #endif
 
+      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.

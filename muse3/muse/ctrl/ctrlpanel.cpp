@@ -58,6 +58,7 @@
 #include "lcd_widgets.h"
 #include "utils.h"
 
+#include "audio.h"
 #include "midi.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
@@ -600,49 +601,71 @@ void CtrlPanel::ctrlChanged(double val)
       }
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
-      int curval = mp->hwCtrlState(chan, _dnum);
+//       int curval = mp->hwCtrlState(chan, _dnum);
 
-      if(_dnum == MusECore::CTRL_PROGRAM)
-      {
-        if(val == MusECore::CTRL_VAL_UNKNOWN || (val < _ctrl->minVal()) || (val > _ctrl->maxVal()))
-        {
-          if(curval != MusECore::CTRL_VAL_UNKNOWN)
-          {
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
-                                                      MusECore::ME_CONTROLLER,
-                                                      MusECore::CTRL_PROGRAM,
-                                                      MusECore::CTRL_VAL_UNKNOWN));
-          }
-        }
-        else
-        {
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
-          MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
-          mp->putEvent(ev);
-        }
-      }
-      else
-      // Shouldn't happen, but...
-      if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
-      {
-        if(curval != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
-                                                     MusECore::ME_CONTROLLER,
-                                                     _dnum,
-                                                     MusECore::CTRL_VAL_UNKNOWN));
-      }
-      else
-      {
-        // Auto bias...
-        ival += _ctrl->bias();
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+//       if(_dnum == MusECore::CTRL_PROGRAM)
+//       {
+// // REMOVE Tim. autoconnect. Changed.
+// //         if(val == MusECore::CTRL_VAL_UNKNOWN || (val < _ctrl->minVal()) || (val > _ctrl->maxVal()))
+// //         {
+// //           if(curval != MusECore::CTRL_VAL_UNKNOWN)
+// //           {
+// // // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// // //             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+// //             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
+// //                                                       MusECore::ME_CONTROLLER,
+// //                                                       MusECore::CTRL_PROGRAM,
+// //                                                       MusECore::CTRL_VAL_UNKNOWN));
+// //           }
+// //         }
+// //         else
+// //         {
+// // // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// // //           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
+// //           MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
+// //           mp->putEvent(ev);
+// //         }
+//         
+//         if(ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+//           ival = MusECore::CTRL_VAL_UNKNOWN;
+//         MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, ival);
+//         mp->putEvent(ev);
+//         
+//       }
+// REMOVE Tim. autoconnect. Changed.
+//       else
+//       // Shouldn't happen, but...
+//       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
+//       {
+//         if(curval != MusECore::CTRL_VAL_UNKNOWN)
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+//           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
+//                                                      MusECore::ME_CONTROLLER,
+//                                                      _dnum,
+//                                                      MusECore::CTRL_VAL_UNKNOWN));
+//       }
+//       else
+//       {
+//         // Auto bias...
+//         ival += _ctrl->bias();
+//         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+//         mp->putEvent(ev);
+//       }
+      //else
+      //{
+        // Shouldn't happen, but...
+        if(ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+          ival = MusECore::CTRL_VAL_UNKNOWN;
+       
+        if(ival != MusECore::CTRL_VAL_UNKNOWN)
+          // Auto bias...
+          ival += _ctrl->bias();
+
+        MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         mp->putEvent(ev);
-      }
+      //}
+      
     }
 
 //---------------------------------------------------------

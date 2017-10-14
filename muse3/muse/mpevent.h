@@ -29,6 +29,8 @@
 #include <list>
 #include "evdata.h"
 #include "memory.h"
+// REMOVE Tim. autoconnect. Added.
+//#include "sysex_processor.h"
 
 // Play events ring buffer size
 #define MIDI_FIFO_SIZE    4096         
@@ -65,7 +67,7 @@ class MEvent {
       MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
       MEvent(unsigned t, int port, int channel, const Event& e);
 
-      ~MEvent()         {}
+      virtual ~MEvent()         {}
 
       MEvent& operator=(const MEvent& ed) {
             _time    = ed._time;
@@ -102,6 +104,9 @@ class MEvent {
       int len() const                 { return edata.dataLen; }
       void setData(const EvData& e)   { edata = e; }
       void setData(const unsigned char* p, int len) { edata.setData(p, len); }
+      // REMOVE Tim. autoconnect. Added.
+      //void setData(const SysExInputProcessor* p) { edata.setData(p); }
+      
       void dump() const;
       bool isNote() const      { return _type == 0x90; }
       bool isNoteOff() const   { return (_type == 0x80)||(_type == 0x90 && _b == 0); }
@@ -138,7 +143,7 @@ class MidiRecordEvent : public MEvent {
         : MEvent(t, p, tpe, data, len) {}
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
-      ~MidiRecordEvent() {}
+      virtual ~MidiRecordEvent() {}
       
       unsigned int tick() {return _tick;}
       void setTick(unsigned int tick) {_tick = tick;}
@@ -161,7 +166,7 @@ class MidiPlayEvent : public MEvent {
         : MEvent(t, p, type, data) {}
       MidiPlayEvent(unsigned t, int port, int channel, const Event& e)
         : MEvent(t, port, channel, e) {}
-      ~MidiPlayEvent() {}
+      virtual ~MidiPlayEvent() {}
       };
 
 //---------------------------------------------------------

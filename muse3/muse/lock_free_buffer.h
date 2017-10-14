@@ -45,70 +45,85 @@ class LockFreeBuffer
       int _wIndex;
       int _rIndex;
       int _sizeSnapshot;
+      T _dummyRetValue;
 
    public:
       // Start simple with just 2, like a flipping buffer for example.
-      LockFreeBuffer(int capacity = 2, int id = 0);
-//       : _capacity(capacity), _id(id);
-//       //LockFreeBuffer(int capacity = 2) : _capacity(capacity)
-//       {
-//         _fifo = new T[_capacity];
-//         clear();
-//       }
-      ~LockFreeBuffer();
-//       {
-//         if(_fifo)
-//           delete[] _fifo;
-//       }
+      LockFreeBuffer(int capacity = 2, int id = 0)
+      : _capacity(capacity), _id(id)
+      {
+        _dummyRetValue = T();
+        _fifo = new T[_capacity];
+        clear();
+      }
+      
+      ~LockFreeBuffer()
+      {
+        if(_fifo)
+          delete[] _fifo;
+      }
 
       int id() const { return _id; }
       
-      void setCapacity(int capacity = 2);
-//       {
-//         if(_fifo)
-//           delete _fifo;
-//         _fifo = 0;
-//         _capacity = capacity;
-//         _fifo = new T[_capacity];
-//       }
+      void setCapacity(int capacity = 2)
+      {
+        if(_fifo)
+          delete _fifo;
+        _fifo = 0;
+        _capacity = capacity;
+        _fifo = new T[_capacity];
+      }
 
-      bool put(const T& item);   // returns true on fifo overflow
-//       {
-//         if (_size < _capacity) {
-//               _fifo[_wIndex] = item;
-//               _wIndex = (_wIndex + 1) % _capacity;
-//               // q_atomic_increment(&_size);
-//               ++_size;
-//               return false;
-//               }
-//         return true;
-//       }
+      // This is only for the writer.
+      // Returns true on fifo overflow
+      bool put(const T& item)
+      {
+        if (_size < _capacity) 
+        {
+          _fifo[_wIndex] = item;
+          _wIndex = (_wIndex + 1) % _capacity;
+          // q_atomic_increment(&_size);
+          ++_size;
+          return false;
+        }
+        return true;
+      }
 
-      T get();
-//       {
-//         T item(_fifo[_rIndex]);
-//         _rIndex = (_rIndex + 1) % _capacity;
-//         --_size;
-//         return item;
-//       }
+      // This is only for the reader.
+      T get()
+      {
+        if(_size <= 0)
+          return _dummyRetValue;
+        T item(_fifo[_rIndex]);
+        _rIndex = (_rIndex + 1) % _capacity;
+        --_size;
+        return item;
+      }
 
-      const T& peek(int n = 0);
-//       {
-//         const int idx = (_rIndex + n) % _capacity;
-//         return _fifo[idx];
-//       }
-      void remove();
-//       {
-//         _rIndex = (_rIndex + 1) % _capacity;
-//         --_size;
-//       }
+      // This is only for the reader.
+      const T& peek(int n = 0)
+      {
+        const int idx = (_rIndex + n) % _capacity;
+        return _fifo[idx];
+      }
+      
+      // This is only for the reader.
+      // Returns true if error (nothing to remove).
+      bool remove()
+      {
+        if(_size <= 0)
+          return true;
+        _rIndex = (_rIndex + 1) % _capacity;
+        --_size;
+        return false;
+      }
 
       // This is only for the reader.
       // Returns the number of items in the buffer.
       // If NOT requesting the size snapshot, this conveniently stores a snapshot (cached) version 
       //  of the size for consistent behaviour later. If requesting the size snapshot, it does not 
       //  update the snapshot itself.
-      int getSize(bool useSizeSnapshot = false)
+      int getSize(bool useSizeSnapshot/* = false*/)
       { 
         const int sz = useSizeSnapshot ? _sizeSnapshot : _size; 
         if(!useSizeSnapshot)
@@ -116,7 +131,7 @@ class LockFreeBuffer
         return sz;
       }
       // This is only for the reader.
-      bool isEmpty(bool useSizeSnapshot = false) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
+      bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
       // This is not thread safe, call it only when it is safe to do so.
       void clear()         { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
       // Clear the 'read' side of the ring buffer, which also clears the size.
@@ -169,249 +184,251 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
     typedef typename vlist::iterator iLockFreeMultiBuffer;
     typedef typename vlist::const_iterator ciLockFreeMultiBuffer;
     
-//   private:
+  private:
 //     int _curId;
+    T _dummyRetValue;
 
   public:
     //LockFreeMultiBuffer() : _curId(0) { }
-    LockFreeMultiBuffer() { }
-    ~LockFreeMultiBuffer();
-//     {
-//       for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         if(i->second)
-//           delete i->second;
-//       }
-//     }
+    LockFreeMultiBuffer() { _dummyRetValue = T(); }
+    ~LockFreeMultiBuffer()
+    {
+      for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        if(i->second)
+          delete i->second;
+      }
+    }
 
     // Returns new buffer or zero if duplicate id or other error.
     // Start simple with just 2, like a flipping buffer for example.
-    LockFreeBuffer<T>* createBuffer(int capacity = 2, int id = 0);
-//     {
-//       LockFreeBuffer<T>* buf = new LockFreeBuffer<T>(capacity, id);
-//       std::pair < iLockFreeMultiBuffer, bool > res = 
-//         vlist::insert(std::pair < const int, LockFreeBuffer<T>* >(buf->id(), buf));
-// //       if(res.second)
-// //       {
-// //         const int c_id = _curId;
-// //         ++_curId;
-// //         return c_id;
-// //       }
-// //       return -1;
-//         
+    LockFreeBuffer<T>* createBuffer(int id, int capacity = 2)
+    {
+      LockFreeBuffer<T>* buf = new LockFreeBuffer<T>(capacity, id);
+      std::pair < iLockFreeMultiBuffer, bool > res = 
+        vlist::insert(std::pair < const int, LockFreeBuffer<T>* >(buf->id(), buf));
 //       if(res.second)
-//         return buf;
-//       
-//       delete buf;
-//       return 0;
-//     }
+//       {
+//         const int c_id = _curId;
+//         ++_curId;
+//         return c_id;
+//       }
+//       return -1;
+        
+      if(res.second)
+        return buf;
+      
+      delete buf;
+      return 0;
+    }
 
     // Returns true on error.
-    bool deleteBuffer(int id);
-//     {
-//       //if(id < 0)
-//       //  return true;
-//       iLockFreeMultiBuffer i = vlist::find(id);
-//       if(i == vlist::end())
-//         return true;
-//       if(i->second)
-//         delete i->second;
-//       vlist::erase(i);
-//       return false;
-//     }
+    bool deleteBuffer(int id)
+    {
+      //if(id < 0)
+      //  return true;
+      iLockFreeMultiBuffer i = vlist::find(id);
+      if(i == vlist::end())
+        return true;
+      if(i->second)
+        delete i->second;
+      vlist::erase(i);
+      return false;
+    }
     
-    LockFreeBuffer<T>* findBuffer(int id);
-//     {
-//       //if(id < 0)
-//       //  return 0;
-//       iLockFreeMultiBuffer i = vlist::find(id);
-//       if(i == vlist::end())
-//         return 0;
-//       return i->second;
-//     }
+    LockFreeBuffer<T>* findBuffer(int id)
+    {
+      //if(id < 0)
+      //  return 0;
+      iLockFreeMultiBuffer i = vlist::find(id);
+      if(i == vlist::end())
+        return 0;
+      return i->second;
+    }
     
     // Returns true on invalid id.
-    bool setCapacity(int id, int capacity = 2);
-//     {
-//       //if(id < 0)
-//       //  return true;
-//       iLockFreeMultiBuffer i = vlist::find(id);
-//       if(i == vlist::end())
-//         return true;
-//       i->second->setCapacity(capacity);
-//       return false;
-//     }
+    bool setCapacity(int id, int capacity = 2)
+    {
+      //if(id < 0)
+      //  return true;
+      iLockFreeMultiBuffer i = vlist::find(id);
+      if(i == vlist::end())
+        return true;
+      i->second->setCapacity(capacity);
+      return false;
+    }
 
     // This is only for the writer.
     // Returns true on invalid id, or on fifo overflow of that id's buffer.
-    bool put(int id, const T& item);
-//     {
-//       //if(id < 0)
-//       //  return true;
-//       iLockFreeMultiBuffer i = vlist::find(id);
-//       if(i == vlist::end())
-//         return true;
-//       return i->second->put(item);
-//     }
+    bool put(int id, const T& item)
+    {
+      //if(id < 0)
+      //  return true;
+      iLockFreeMultiBuffer i = vlist::find(id);
+      if(i == vlist::end())
+        return true;
+      return i->second->put(item);
+    }
 
     // This is only for the reader.
-    T get(bool useSizeSnapshot = false);
-//     {
-//       T temp_val;
-//       iLockFreeMultiBuffer least_i = vlist::end();
-//       bool is_first = true;
-//       for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         LockFreeBuffer<T>* buf = i->second;
-//         if(!buf || buf->isEmpty())
-//           continue;
-//         temp_val = buf->peek();
-//         if(is_first)
-//         {
-//           is_first = false;
-//           least_i = i;
-//           continue;
-//         }
-//         else if(temp_val < least_i->second)
-//           least_i = i;
-//       }
-// 
-//       if(least_i != vlist::end())
-//       {
-//         return least_i->second->get();
-//       }
-//       return T();
-//     }
+    T get(bool useSizeSnapshot/* = false*/)
+    {
+      iLockFreeMultiBuffer least_i = vlist::end();
+      bool is_first = true;
+      for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        LockFreeBuffer<T>* buf = i->second;
+        if(!buf || buf->isEmpty(useSizeSnapshot))
+          continue;
+        const T& temp_val = buf->peek();
+        if(is_first)
+        {
+          is_first = false;
+          least_i = i;
+          //least_t = temp_val;
+          continue;
+        }
+        else if(temp_val < least_i->second->peek())
+          least_i = i;
+      }
+      
+      if(least_i != vlist::end())
+        return least_i->second->get();
+      
+      return _dummyRetValue;
+    }
 
     // This is only for the reader.
-    const T& peek(bool useSizeSnapshot = false, int n = 0);
-//     {
-//       T temp_val;
-//       iLockFreeMultiBuffer least_i = vlist::end();
-//       bool is_first = true;
-//       int buf_sz;
-//       for(int idx = 0; idx <= n; ++idx)  // Yes, that's <=
-//       {
-//         for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//         {
-//           const LockFreeBuffer<T>* buf = i->second;
-//           if(!buf)
-//             continue;
-//           buf_sz = buf->getSize();
-//           if(buf_sz == 0 || n >= buf_sz)
-//             continue;
-//           temp_val = buf->peek();
-//           if(is_first)
-//           {
-//             is_first = false;
-//             least_i = i;
-//             //if(idx == n)
-//             //  break;
-//             //++idx;
-//             continue;
-//           }
-//           else if(temp_val < least_i->second)
-//           {
-//             least_i = i;
-//             //if(idx == n)
-//             //  break;
-//             //++idx;
-//           }
-//         }
-//         if(idx == n)
-//           break;
-//         ++idx;
-//       }
-// 
-//       if(least_i != vlist::end())
-//         return least_i->second->peek();
-//       
-//       return T();
-//     }
+    const T& peek(bool useSizeSnapshot/* = false*/, int n = 0) // const
+    {
+      iLockFreeMultiBuffer least_i = vlist::end();
+      bool is_first = true;
+      int buf_sz;
+      for(int idx = 0; idx <= n; ++idx)  // Yes, that's <=
+      {
+        for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+        {
+          LockFreeBuffer<T>* buf = i->second;
+          if(!buf)
+            continue;
+          buf_sz = buf->getSize(useSizeSnapshot);
+          if(buf_sz == 0 || n >= buf_sz)
+            continue;
+          const T& temp_val = buf->peek();
+          if(is_first)
+          {
+            is_first = false;
+            least_i = i;
+            
+            //if(idx == n)
+            //  break;
+            //++idx;
+            continue;
+          }
+          else if(temp_val < least_i->second->peek())
+          {
+            least_i = i;
+            
+            //if(idx == n)
+            //  break;
+            //++idx;
+          }
+        }
+        if(idx == n)
+          break;
+        ++idx;
+      }
+
+      if(least_i != vlist::end())
+        return least_i->second->peek();
+      
+      return _dummyRetValue;
+    }
     
     // This is only for the reader.
-    void remove(bool useSizeSnapshot = false);
-//     {
-//       T temp_val;
-//       iLockFreeMultiBuffer least_i = vlist::end();
-//       bool is_first = true;
-//       for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         LockFreeBuffer<T>* buf = i->second;
-//         if(!buf || buf->isEmpty())
-//           continue;
-//         temp_val = buf->peek();
-//         if(is_first)
-//         {
-//           is_first = false;
-//           least_i = i;
-//           continue;
-//         }
-//         else if(temp_val < least_i->second)
-//           least_i = i;
-//       }
-// 
-//       if(least_i != vlist::end())
-//         least_i->second->remove();
-//     }
+    // Returns true if error (nothing to remove).
+    bool remove(bool useSizeSnapshot/* = false*/)
+    {
+      iLockFreeMultiBuffer least_i = vlist::end();
+      bool is_first = true;
+      for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        LockFreeBuffer<T>* buf = i->second;
+        if(!buf || buf->isEmpty(useSizeSnapshot))
+          continue;
+        const T& temp_val = buf->peek();
+        if(is_first)
+        {
+          is_first = false;
+          least_i = i;
+          continue;
+        }
+        else if(temp_val < least_i->second->peek())
+          least_i = i;
+      }
+
+      if(least_i != vlist::end())
+        return least_i->second->remove();
+      
+      return true;
+    }
 
     // This is only for the reader.
     // Returns the total number of items in the buffers.
     // Also conveniently stores a cached version of the size for consistent behaviour later.
-    int getSize(bool useSizeSnapshot = false) const;
-//     {
-//       int sz = 0;
-//       // Hm, maybe not so accurate, sizes may be susceptable to
-//       //  asynchronous change as we iterate here...
-//       for(ciLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         if(const LockFreeBuffer<T>* buf = i->second)
-//           sz += buf->getSize();
-//       }
-//       return sz;
-//     }
+    int getSize(bool useSizeSnapshot/* = false*/) const
+    {
+      int sz = 0;
+      // Hm, maybe not so accurate, sizes may be susceptable to
+      //  asynchronous change as we iterate here...
+      for(ciLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        if(LockFreeBuffer<T>* buf = i->second)
+          sz += buf->getSize(useSizeSnapshot);
+      }
+      return sz;
+    }
     
     // This is only for the reader.
-    bool isEmpty(bool useSizeSnapshot = false) const;
-//     { 
-//       // Hm, maybe not so accurate, sizes may be susceptable to
-//       //  asynchronous change as we iterate here...
-//       for(ciLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         if(const LockFreeBuffer<T>* buf = i->second)
-//         {
-//           if(buf->getSize() > 0)
-//             return false;
-//         }
-//       }
-//       return true;
-//     }
+    bool isEmpty(bool useSizeSnapshot/* = false*/) const
+    { 
+      // Hm, maybe not so accurate, sizes may be susceptable to
+      //  asynchronous change as we iterate here...
+      for(ciLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        if(const LockFreeBuffer<T>* buf = i->second)
+        {
+          if(!buf->isEmpty(useSizeSnapshot))
+            return false;
+        }
+      }
+      return true;
+    }
 
     // This is not thread safe, call it only when it is safe to do so.
-    void clear();
-//     { 
-//       for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         if(LockFreeBuffer<T>* buf = i->second)
-//           buf->clear();
-//       }
-//     }
+    void clear()
+    { 
+      for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        if(LockFreeBuffer<T>* buf = i->second)
+          buf->clear();
+      }
+    }
     
     // Clear the 'read' side of the ring buffer, which also clears the size.
     // NOTE: A corresponding clearWrite() is not provided because
     //  it is dangerous to reset the size from the sender side -
     //  the receiver might cache the size, briefly. The sender should 
     //  only grow the size while the receiver should only shrink it.
-    void clearRead();
-//     {
-//       for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
-//       {
-//         if(LockFreeBuffer<T>* buf = i->second)
-//           buf->clearRead();
-//       }
-//     }
+    void clearRead()
+    {
+      for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+      {
+        if(LockFreeBuffer<T>* buf = i->second)
+          buf->clearRead();
+      }
+    }
 };
-
 
 } // namespace MusECore
 

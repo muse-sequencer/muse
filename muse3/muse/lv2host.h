@@ -395,7 +395,7 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-    void doSelectProgram(unsigned char channel, int bank, int prog);
+    void doSelectProgram(unsigned char channel, int bankH, int bankL, int prog);
     inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b = 0, uint8_t c = 0);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );

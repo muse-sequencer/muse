@@ -54,8 +54,9 @@ MusECore::MidiPort midiPorts[MIDI_PORTS];
 
 namespace MusECore {
 
-
 MidiControllerList defaultManagedMidiController;
+
+LockFreeMultiBuffer<MidiPlayEvent> MidiPort::_eventFifos;
 
 //---------------------------------------------------------
 //   initMidiPorts
@@ -1884,7 +1885,8 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
   
 //   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
 //   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
-  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+  if(eventFifos().put(GuiFifo, ev))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
@@ -1892,6 +1894,47 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
   
   return false;
 }
+
+// REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   putEvent
+// //   To be called from gui thread only.
+// //   Returns true if event cannot be delivered.
+// //---------------------------------------------------------
+// 
+// bool MidiPort::putEvent(const MidiPlayEvent& ev)
+// {
+//   const int chan = ev.channel();
+// 
+//   // Stage the event.
+//   //MidiPlayEvent staged_ev;
+// //   const int ctrl = stageEvent(staged_ev, ev);
+//   const int ctrl = ev.translateCtrlNum();
+//   // Event translatable to a controller?
+//   if(ctrl >= 0)
+//     // Make sure to create the controller if necessary.
+//     createController(chan, ctrl);
+//   
+//   
+//   // Send the event to the device first so that current parameters could be updated on process.
+// //   MidiPlayEvent staged_ev;
+// //   const bool stage_res = stageEvent(staged_ev, ev);
+//   bool res = false;
+//   if(_device)
+//     // FIXME: Concurrency with putOSCEvent(). Need putOSCEvent() etc.
+// //     res = _device->putEvent(ev);
+// //     res = _device->putEvent(staged_ev);
+// //     res = _device->putEvent(stageEvent(ev));
+//     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
+// //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
+// //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
+// //   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+// //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//   if(eventFifos().put(GuiFifo, ev))
+// //     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
+//     fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
+//   return res;
+// }
 
 //---------------------------------------------------------
 //   putEvent
@@ -1926,7 +1969,8 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
 //   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
-  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+  if(eventFifos().put(GuiFifo, ev))
 //     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
     fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
   return res;
@@ -2053,7 +2097,8 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
   // False = direct not increment because we are doing the increment here.
 //   Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), val, false);
 //   if(stage_res && _gui2AudioFifo->put(g2as))
-  if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+//   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
+  if(eventFifos().put(GuiFifo, ev))
 //     fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
     fprintf(stderr, "MidiPort::putControllerValue: Error: GuiFifo fifo overflow\n");
   return res;
@@ -2182,25 +2227,28 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 // 
 //   return false;
 // }
-MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
-{
-  const int chn = g2as._chan;
-  const int type = g2as._type;
-  
-  const int i_dataA = g2as._dataA;
-  
-  const double d_dataB = g2as._dataB;
-  const int i_dataB = MidiController::dValToInt(d_dataB);
 
+// MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
+MidiPlayEvent MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev)
+{
+//   const int chn = g2as._chan;
+//   const int type = g2as._type;
+//   const int i_dataA = g2as._dataA;
+//   const double d_dataB = g2as._dataB;
+//   const int i_dataB = MidiController::dValToInt(d_dataB);
+
+  const unsigned int time = ev.time();
+  const int port = ev.port();
+  const int chn = ev.channel();
+  const int type = ev.type();
+  const int i_dataA = ev.dataA();
+  const double d_dataB = ev.dataB();
+  const int i_dataB = MidiController::dValToInt(d_dataB);
+  
 //   int ctrl = -1;
 //   int i_fin_val = 0;
 
 
-  //const int type = ev.type();
-  //const int chn = ev.channel();
-  //const int da = ev.dataA();
-  //int fin_da = i_dataA;
-  //const int db = ev.dataB();
   int fin_db = i_dataB;
   switch(type)
   {
@@ -2243,7 +2291,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
           if(mcvl->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
           
-          return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
           //return false;
         }
         break;
@@ -2284,7 +2333,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
           if(mcvl->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
           
-          return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
           //return false;
         }
         break;
@@ -2305,7 +2355,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
           if(imcvl->second->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
           
-          return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
           //return false;
         }
         break;
@@ -2323,7 +2374,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
           // Set the value.
           imcvl->second->setHwVal(fin_db);
           
-          return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, i_dataA, fin_db);
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, i_dataA, fin_db);
+          return MidiPlayEvent(time, port, chn, ME_CONTROLLER, i_dataA, fin_db);
           //return false;
         }
         break;
@@ -2346,7 +2398,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
       // Set the value.
       imcvl->second->setHwVal(fin_db);
       
-      return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, fin_da, fin_db);
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, fin_da, fin_db);
+      return MidiPlayEvent(time, port, chn, ME_CONTROLLER, fin_da, fin_db);
       //return false;
     }
     break;
@@ -2364,7 +2417,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
       // Set the value.
       imcvl->second->setHwVal(fin_db);
       
-      return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+      return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
       //return false;
     }
     break;
@@ -2382,7 +2436,8 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
       // Set the value.
       imcvl->second->setHwVal(fin_db);
       
-      return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+      return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
       //return false;
     }
     break;
@@ -2423,19 +2478,21 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
       if(mcvl->setHwVal(fin_db))
         updateDrumMaps(chn, fin_db);
       
-      return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+      return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
       //return false;
     }
     break;
     
     default:
       // For all other event types, just return true.
-      //return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
+      //return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
       //return true;
     break;
   }
   
-  return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
+//   return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
+  return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
   //return true;
       
 
@@ -2603,15 +2660,20 @@ bool MidiPort::processGui2AudioEvents()
 {
   // Receive hardware state events sent from various threads to this audio thread.
   // Update hardware state so gui controls are updated.
-  const int sz = eventFifos().getSize();
+  // False = don't use the size snapshot, but update it.
+  const int sz = eventFifos().getSize(false);
   for(int i = 0; i < sz; ++i)
   {
+//     // True = use the size snapshot.
+//     const Gui2AudioFifoStruct g2as = eventFifos().get(true);
+//     const int port = g2as._port;
     // True = use the size snapshot.
-    const Gui2AudioFifoStruct g2as = eventFifos().get(true);
-    const int port = g2as._port;
+    const MidiPlayEvent ev = eventFifos().get(true);
+    const int port = ev.port();
     if(port < 0 || port >= MIDI_PORTS)
       continue;
-    MusEGlobal::midiPorts[port].handleGui2AudioEvent(g2as);
+//     MusEGlobal::midiPorts[port].handleGui2AudioEvent(g2as);
+    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev);
   }
   return false;
 }
@@ -2785,7 +2847,7 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
       const int da = ev.dataA();
       int fin_da = da;
       const int db = ev.dataB();
-      int fin_db = db;
+//       int fin_db = db;
       
       switch(type)
       {
@@ -2815,10 +2877,10 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
               
               if((hb != 0xff || lb != 0xff) && pr == 0xff)
                 pr = 0x01;
-              if(hb == 0xff && lb == 0xff && pr == 0xff)
-                fin_db = CTRL_VAL_UNKNOWN;
-              else
-                fin_db = (hb << 16) | (lb << 8) | pr;
+//               if(hb == 0xff && lb == 0xff && pr == 0xff)
+//                 fin_db = CTRL_VAL_UNKNOWN;
+//               else
+//                 fin_db = (hb << 16) | (lb << 8) | pr;
             }
             break;
 
@@ -2845,10 +2907,10 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
               
               if((hb != 0xff || lb != 0xff) && pr == 0xff)
                 pr = 0x01;
-              if(hb == 0xff && lb == 0xff && pr == 0xff)
-                fin_db = CTRL_VAL_UNKNOWN;
-              else
-                fin_db = (hb << 16) | (lb << 8) | pr;
+//               if(hb == 0xff && lb == 0xff && pr == 0xff)
+//                 fin_db = CTRL_VAL_UNKNOWN;
+//               else
+//                 fin_db = (hb << 16) | (lb << 8) | pr;
             }
             break;
 
@@ -2864,7 +2926,7 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
               // This will create a new value list if necessary, otherwise it returns the existing list.
               // FIXME: This is not realtime safe because it may allocate.
               addManagedController(chn, da);
-              fin_db = limitValToInstrCtlRange(da, db);
+//               fin_db = limitValToInstrCtlRange(da, db);
             break;
           }
         break;
@@ -2876,7 +2938,7 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
           // This will create a new value list if necessary, otherwise it returns the existing list.
           // FIXME: This is not realtime safe because it may allocate.
           addManagedController(chn, fin_da);
-          fin_db = limitValToInstrCtlRange(fin_da, db);
+//           fin_db = limitValToInstrCtlRange(fin_da, db);
         }
         break;
         
@@ -2886,7 +2948,7 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
           // This will create a new value list if necessary, otherwise it returns the existing list.
           // FIXME: This is not realtime safe because it may allocate.
           addManagedController(chn, fin_da);
-          fin_db = limitValToInstrCtlRange(fin_da, da);
+//           fin_db = limitValToInstrCtlRange(fin_da, da);
         }
         break;
         
@@ -2896,7 +2958,7 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
           // This will create a new value list if necessary, otherwise it returns the existing list.
           // FIXME: This is not realtime safe because it may allocate.
           addManagedController(chn, fin_da);
-          fin_db = limitValToInstrCtlRange(fin_da, da);
+//           fin_db = limitValToInstrCtlRange(fin_da, da);
         }
         break;
         
@@ -2923,10 +2985,10 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
           
           if((hb != 0xff || lb != 0xff) && pr == 0xff)
             pr = 0x01;
-          if(hb == 0xff && lb == 0xff && pr == 0xff)
-            fin_db = CTRL_VAL_UNKNOWN;
-          else
-            fin_db = (hb << 16) | (lb << 8) | pr;
+//           if(hb == 0xff && lb == 0xff && pr == 0xff)
+//             fin_db = CTRL_VAL_UNKNOWN;
+//           else
+//             fin_db = (hb << 16) | (lb << 8) | pr;
         }
         break;
         
@@ -3058,23 +3120,24 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
       return true;*/
       }
 
-//---------------------------------------------------------
-//   sendEvent
-//    return true, if event cannot be delivered
-//---------------------------------------------------------
-
-bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
-      {
-      if(!sendHwCtrlState(ev, forceSend))
-        return false;
-
-      if (!_device) {
-          if (MusEGlobal::debugMsg)
-            printf("no device for this midi port\n");
-          return true;
-          }
-      return _device->putEvent(ev);
-      }
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   sendEvent
+// //    return true, if event cannot be delivered
+// //---------------------------------------------------------
+// 
+// bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
+//       {
+//       if(!sendHwCtrlState(ev, forceSend))
+//         return false;
+// 
+//       if (!_device) {
+//           if (MusEGlobal::debugMsg)
+//             printf("no device for this midi port\n");
+//           return true;
+//           }
+//       return _device->putEvent(ev);
+//       }
 
 // REMOVE Tim. autoconnect. Added.
 // //---------------------------------------------------------

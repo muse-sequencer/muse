@@ -576,7 +576,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   bool noteon_found = false;
                   bool noteoff_found = false;
                   bool ctrlval_found = false;
-                  bool other_ctrlval_found = false;
+                  //bool other_ctrlval_found = false;
                   if(i != el.begin())
                   {
                     iMPEvent k = i;
@@ -643,7 +643,10 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   // Accept the event only if no duplicate was found. // TODO: Other types!
                   if((midi_noteon && !noteon_found) ||
                     (midi_noteoff && !noteoff_found) ||
-                    (midi_controller && (other_ctrlval_found || !ctrlval_found)))
+                    //(midi_controller && (other_ctrlval_found || !ctrlval_found)))
+                    (midi_controller && !ctrlval_found) ||
+                    // Accept any other type of event.
+                    (!midi_noteon && !midi_noteoff && !midi_controller) )
                     mel.add(e);
                   }
             }  // i != el.end()
@@ -739,35 +742,57 @@ void Audio::midiPortsChanged()
 
 //---------------------------------------------------------
 //   sendLocalOff
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
+// REMOVE Tim. autoconnect. Changed.
+// void Audio::sendLocalOff()
+//       {
+//       for (int k = 0; k < MIDI_PORTS; ++k) {
+//             for (int i = 0; i < MIDI_CHANNELS; ++i)
+//                   MusEGlobal::midiPorts[k].sendEvent(MusECore::MidiPlayEvent(0, k, i, MusECore::ME_CONTROLLER, MusECore::CTRL_LOCAL_OFF, 0), true);
+//             }
+//       }
 void Audio::sendLocalOff()
       {
+      MidiPlayEvent ev;
+      ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+      ev.setType(MusECore::ME_CONTROLLER);
+      ev.setA(MusECore::CTRL_LOCAL_OFF);
+      ev.setB(0);
       for (int k = 0; k < MIDI_PORTS; ++k) {
             for (int i = 0; i < MIDI_CHANNELS; ++i)
-                  MusEGlobal::midiPorts[k].sendEvent(MusECore::MidiPlayEvent(0, k, i, MusECore::ME_CONTROLLER, MusECore::CTRL_LOCAL_OFF, 0), true);
+            {
+                  ev.setPort(k);
+                  ev.setChannel(i);
+                  MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+                  if(MusEGlobal::midiPorts[k].device())
+                    //MusEGlobal::midiPorts[k].device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
+                    MusEGlobal::midiPorts[k].device()->addScheduledEvent(ev);
+            }
             }
       }
 
 //---------------------------------------------------------
 //   panic
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 // REMOVE Tim. autoconnect. Changed.
-void Audio::panic()
-      {
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            if (port == 0)   // ??
-                  continue;
-            for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
-                  if (MusEGlobal::debugMsg)
-                    fprintf(stderr, "send all sound of to midi port %d channel %d\n", i, chan);
-                  port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_ALL_SOUNDS_OFF, 0), true);
-                  port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_RESET_ALL_CTRL, 0), true);
-                  }
-            }
-      }
+// void Audio::panic()
+//       {
+//       for (int i = 0; i < MIDI_PORTS; ++i) {
+//             MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
+//             if (port == 0)   // ??
+//                   continue;
+//             for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
+//                   if (MusEGlobal::debugMsg)
+//                     fprintf(stderr, "send all sound of to midi port %d channel %d\n", i, chan);
+//                   port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_ALL_SOUNDS_OFF, 0), true);
+//                   port->sendEvent(MusECore::MidiPlayEvent(0, i, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_RESET_ALL_CTRL, 0), true);
+//                   }
+//             }
+//       }
 // void Audio::panic()
 // {
 //       const int l = 4;
@@ -784,6 +809,37 @@ void Audio::panic()
 //         port->sendEvent(panic_event, true);
 //       }
 // }
+void Audio::panic()
+      {
+      MidiPlayEvent ev;
+      ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+      ev.setType(MusECore::ME_CONTROLLER);
+      ev.setB(0);
+
+      // TODO Reset those controllers back to unknown!
+      for (int i = 0; i < MIDI_PORTS; ++i) {
+            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
+            for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
+                  if (MusEGlobal::debugMsg)
+                    fprintf(stderr, "send all sound of to midi port %d channel %d\n", i, chan);
+                  
+                  ev.setPort(i);
+                  ev.setChannel(chan);
+
+                  ev.setA(MusECore::CTRL_ALL_SOUNDS_OFF);
+                  MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+                  if(port->device())
+                    //port->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
+                    port->device()->addScheduledEvent(ev);
+                  
+                  ev.setA(MusECore::CTRL_RESET_ALL_CTRL);
+                  MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+                  if(port->device())
+                    //port->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
+                    port->device()->addScheduledEvent(ev);
+                  }
+            }
+      }
 
 //---------------------------------------------------------
 //   initDevices
@@ -843,8 +899,12 @@ void Audio::seekMidi()
       const int ev_port = ev.port();
       if(ev_port >= 0 && ev_port < MIDI_PORTS)
       {
-        ev.setTime(0);
-        MusEGlobal::midiPorts[ev_port].putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+        MidiPort* mp = &MusEGlobal::midiPorts[ev_port];
+        ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+//         MusEGlobal::midiPorts[ev_port].putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+        if(mp->device())
+          //mp->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
+          mp->device()->addScheduledEvent(ev);
       }
       mel.erase(i);
     }
@@ -1099,7 +1159,11 @@ void Audio::seekMidi()
           // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
           //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
           //fprintf(stderr, "MidiDevice::handleSeek: found_value: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, imcv->second.val);
-          fin_mp->sendEvent(MidiPlayEvent(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val), false); //, imcv->first == pos);
+//           fin_mp->sendEvent(MidiPlayEvent(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val), false); //, imcv->first == pos);
+          const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
+          MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+          if(fin_mp->device())
+            fin_mp->device()->addScheduledEvent(ev);
           //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
         }
       }
@@ -1120,7 +1184,11 @@ void Audio::seekMidi()
           {
             //fprintf(stderr, "Audio::handleSeek: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
             // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
-            mp->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
+//             mp->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
+            const MidiPlayEvent ev(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias());
+            MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+            if(mp->device())
+              mp->device()->addScheduledEvent(ev);
           }
         }
       }
@@ -1134,7 +1202,10 @@ void Audio::seekMidi()
         if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
         {
           const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-          mp->putEvent(ev);
+//           mp->putEvent(ev);
+          MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
+          if(mp->device())
+            mp->device()->addScheduledEvent(ev);
         }
       }
       
@@ -1836,11 +1907,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     MidiPort* mpAlt = &MusEGlobal::midiPorts[port];
                                     // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                     //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                    if(mpAlt->sendHwCtrlState(mpeAlt, true))
-                                    {
+//                                     if(mpAlt->sendHwCtrlState(mpeAlt, true))
+                                    MidiPort::eventFifos().put(MidiPort::PlayFifo, mpeAlt);
+//                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
                                         mdAlt->addScheduledEvent(mpeAlt);
-                                    }
+//                                     }
                                     
 //                                     MidiDevice* mdAlt = mpAlt->device();
 //                                     if(mdAlt)
@@ -1888,11 +1960,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     MidiPort* mpAlt = &MusEGlobal::midiPorts[port];
                                     // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                     //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                    if(mpAlt->sendHwCtrlState(mpeAlt, true))
-                                    {
+//                                     if(mpAlt->sendHwCtrlState(mpeAlt, true))
+                                    MidiPort::eventFifos().put(MidiPort::PlayFifo, mpeAlt);
+//                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
                                         mdAlt->addScheduledEvent(mpeAlt);
-                                    }
+//                                     }
                                     
 //                                     MidiDevice* mdAlt = mpAlt->device();
 //                                     if(mdAlt)
@@ -1916,11 +1989,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                 MusECore::MidiPlayEvent mpe(frame, port, channel, ev);
                                 // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                 //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                if(mp->sendHwCtrlState(mpe, true))
-                                {
+//                                 if(mp->sendHwCtrlState(mpe, true))
+                                MidiPort::eventFifos().put(MidiPort::PlayFifo, mpe);
+//                                 {
                                   if(md)
                                     md->addScheduledEvent(mpe);
-                                }
+//                                 }
                                 
 //                                 if(MusEGlobal::extSyncFlag.value())  // p3.3.25
 //                                 {
@@ -2032,7 +2106,9 @@ void Audio::processMidi()
             // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
             // Same code as in MidiPort::sendEvent()
             if(!intercepted && port != -1)
-              MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
+// REMOVE Tim. autoconnect. Changed.
+//               MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
+              MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
           }
         }
 
@@ -2056,7 +2132,7 @@ void Audio::processMidi()
           int count = md->tmpRecordCount(chan);
           for(int i = 0; i < count; ++i)
           {
-            MusECore::MidiRecordEvent event(rf.peek(i));
+            const MusECore::MidiRecordEvent& event(rf.peek(i));
 
             int etype = event.type();
             if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
@@ -2270,6 +2346,7 @@ void Audio::processMidi()
                                 }
                               }
 
+                              unsigned int et = event.time();
                               // Make sure the event is recorded in units of ticks.
                               if(extsync)
                               {
@@ -2282,11 +2359,29 @@ void Audio::processMidi()
                                 event.setTime(xt);
                               }
                               else
+                              {
 // REMOVE Tim. autoconnect. Changed.
 //                                 event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
-                                // The events arrived in the previous period. 
-                                // The events are already biased with the last frame time.
-                                event.setTime(MusEGlobal::tempomap.frame2tick(event.time() - syncFrame));
+                                // All recorded events arrived in the previous period. Shift into this period for record.
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else
+                                unsigned int t = et + MusEGlobal::segmentSize;
+                                // Protection from slight errors in estimated frame time.
+                                if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                {
+                                  // REMOVE Tim. autoconnect. Added.
+                                  fprintf(stderr, "Error: Audio::processMidi(): record sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                          t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                  t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                }
+#endif
+                                // Be sure to allow for some (very) late events, such as
+                                //  the first chunk's time in a multi-chunk sysex.
+                                const unsigned int a_fr = pos().frame() + t;
+                                const unsigned int fin_fr = syncFrame > a_fr ? 0 : a_fr - syncFrame;
+                                event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+                              }
 
 // REMOVE Tim. autoconnect. Changed.
 //                               if(recording && track_rec_flag)
@@ -2295,6 +2390,8 @@ void Audio::processMidi()
                                  (MusEGlobal::song->record() && extsync && MusEGlobal::midiSyncContainer.isPlaying())) 
                                  && track_rec_flag)
                                 rl.add(event);
+                              
+                              event.setTime(et);  // Restore.
                             }
                             dev->setSysexFIFOProcessed(true);
                           }
@@ -2472,7 +2569,7 @@ void Audio::processMidi()
                                   if(t >= (syncFrame + MusEGlobal::segmentSize))
                                   {
                                     // REMOVE Tim. autoconnect. Added.
-                                    fprintf(stderr, "Audio::processMidi(): t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                    fprintf(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
                                             t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
@@ -2527,7 +2624,8 @@ void Audio::processMidi()
 // REMOVE Tim. autoconnect. Changed / added.
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                              if(MusEGlobal::midiPorts[port].sendHwCtrlState(event), true)
+//                                               if(MusEGlobal::midiPorts[port].sendHwCtrlState(event), true)
+                                              MidiPort::eventFifos().put(MidiPort::PlayFifo, event);
                                                 md->addScheduledEvent(event);
 
 //                                               md->addScheduledEvent(event);
@@ -2587,7 +2685,8 @@ void Audio::processMidi()
 // REMOVE Tim. autoconnect. Changed / added.
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
-                                              if(MusEGlobal::midiPorts[devport].sendHwCtrlState(event), true)
+//                                               if(MusEGlobal::midiPorts[devport].sendHwCtrlState(event), true)
+                                              MidiPort::eventFifos().put(MidiPort::PlayFifo, event);
                                                 mdAlt->addScheduledEvent(event);
                                               
 //                                               mdAlt->addScheduledEvent(event);
@@ -2611,6 +2710,7 @@ void Audio::processMidi()
                                  (MusEGlobal::song->record() && extsync && MusEGlobal::midiSyncContainer.isPlaying())) 
                                  && track_rec_flag)
                               {
+                                    unsigned int et = event.time();
                                     // Make sure the event is recorded in units of ticks.
                                     if(extsync)
                                     {
@@ -2623,11 +2723,29 @@ void Audio::processMidi()
                                       event.setTime(xt);
                                     }
                                     else
+                                    {
 // REMOVE Tim. autoconnect. Changed.
 //                                       event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
-                                      // The events arrived in the previous period. 
-                                      // The events are already biased with the last frame time.
-                                      event.setTime(MusEGlobal::tempomap.frame2tick(event.time() - syncFrame));
+                                      // All recorded events arrived in the previous period. Shift into this period for record.
+      #ifdef _AUDIO_USE_TRUE_FRAME_
+                                      unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+      #else
+                                      unsigned int t = et + MusEGlobal::segmentSize;
+                                      // Protection from slight errors in estimated frame time.
+                                      if(t >= (syncFrame + MusEGlobal::segmentSize))
+                                      {
+                                        // REMOVE Tim. autoconnect. Added.
+                                        fprintf(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                                t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                        t = syncFrame + (MusEGlobal::segmentSize - 1);
+                                      }
+      #endif
+                                      // Be sure to allow for some (very) late events, such as
+                                      //  the first chunk's time in a multi-chunk sysex.
+                                      const unsigned int a_fr = pos().frame() + t;
+                                      const unsigned int fin_fr = syncFrame > a_fr ? 0 : a_fr - syncFrame;
+                                      event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+                                    }
 
                                     // In these next steps, it is essential to set the recorded event's port
                                     //  to the track port so buildMidiEventList will accept it. Even though
@@ -2671,6 +2789,8 @@ void Audio::processMidi()
 
                                           track->mpevents.add(recEvent);
                                     }
+                                    // Restore. Not required.
+                                    //event.setTime(et);
                               }
                         }
                   }

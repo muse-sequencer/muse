@@ -43,6 +43,9 @@
 #include "track.h"
 #include "song.h"
 #include "muse_atomic.h"
+#include "lock_free_buffer.h"
+// REMOVE Tim. autoconnect. Added.
+#include "evdata.h"
 
 #include <QApplication>
 
@@ -107,15 +110,15 @@ MidiDevice* MidiAlsaDevice::createAlsaMidiDevice(QString name, int rwflags) // 1
 MidiAlsaDevice::MidiAlsaDevice(const snd_seq_addr_t& a, const QString& n)
    : MidiDevice(n)
       {
-      _playEventFifo = new LockFreeBuffer<MidiPlayEvent>(8192);
+//       _playEventFifo = new LockFreeBuffer<MidiPlayEvent>(8192);
       adr = a;
       init();
       }
 
 MidiAlsaDevice::~MidiAlsaDevice()
 {
-  if(_playEventFifo)
-    delete _playEventFifo;
+//   if(_playEventFifo)
+//     delete _playEventFifo;
 }
 
 //---------------------------------------------------------
@@ -1000,7 +1003,8 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
       int b   = ev.dataB();
 
       snd_seq_event_t event;
-      memset(&event, 0, sizeof(event));
+      snd_seq_ev_clear(&event);
+      
       event.queue   = SND_SEQ_QUEUE_DIRECT;
       event.source  = musePort;
       event.dest    = adr;
@@ -1090,8 +1094,8 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
               break;
         case ME_SYSEX:
               {
-                const unsigned char* p = ev.data();
-                int n = ev.len();
+//                 const unsigned char* p = ev.data();
+//                 int n = ev.len();
 // REMOVE Tim. autoconnect. Added.
 //                 if(n == 4)
 //                 {
@@ -1128,22 +1132,55 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 //                   }
 //                 }
                 
-                resetCurOutParamNums();  // Probably best to reset all.
-                int len                = n + sizeof(event) + 2;
+// REMOVE Tim. autoconnect. Changed. Oops! What is this? Bad data sent...
+//                 resetCurOutParamNums();  // Probably best to reset all.
+//                 int len                = n + sizeof(event) + 2;
+//                 // FIXME: Ugly. Could be a really long sysex. Need to break up sysexes.
+//                 char buf[len];
+//                 event.type             = SND_SEQ_EVENT_SYSEX;
+//                 event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+//                 event.data.ext.len     = n + 2;
+//                 event.data.ext.ptr  = (void*)(buf + sizeof(event));
+//                 memcpy(buf, &event, sizeof(event));
+//                 char* pp = buf + sizeof(event);
+//                 *pp++ = 0xf0;
+//                 memcpy(pp, p, n);
+//                 pp += n;
+//                 *pp = 0xf7;
+//                 // REMOVE Tim. Noteoff. Changed.
+// //                     return putAlsaEvent(&event);
+//                 
                 // FIXME: Ugly. Could be a really long sysex. Need to break up sysexes.
-                char buf[len];
-                event.type             = SND_SEQ_EVENT_SYSEX;
-                event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
-                event.data.ext.len     = n + 2;
-                event.data.ext.ptr  = (void*)(buf + sizeof(event));
-                memcpy(buf, &event, sizeof(event));
-                char* pp = buf + sizeof(event);
-                *pp++ = 0xf0;
-                memcpy(pp, p, n);
-                pp += n;
-                *pp = 0xf7;
+                
+                // Probably best to reset all.
+                resetCurOutParamNums();
+//                 const int len = n + 2;
+//                 char buf[len];
+                const int len = ev.len();
+                unsigned char buf[len + 2];
+//                 event.type = SND_SEQ_EVENT_SYSEX;
+//                 event.flags = SND_SEQ_EVENT_LENGTH_VARIABLE;
+//                 event.data.ext.len = n + 2;
+//                 event.data.ext.ptr = (void*)buf;
+                
+// //                 memcpy(buf, &event, sizeof(event));
+//                 char* pp = buf;
+//                 *pp++ = 0xf0;
+//                 memcpy(pp, p, n);
+//                 pp += n;
+//                 *pp = 0xf7;
+                
+                
+                buf[0] = 0xf0;
+                memcpy(buf + 1, ev.data(), len);
+                buf[len + 1] = 0xf7;
+                
+                snd_seq_ev_set_sysex(&event, len + 2, buf);
+                
                 // REMOVE Tim. Noteoff. Changed.
 //                     return putAlsaEvent(&event);
+                // NOTE: Don't move this out, 'buf' would go out of scope.
+                return putAlsaEvent(&event);
               }
               break;
         case ME_SONGPOS:
@@ -1249,7 +1286,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                   return putAlsaEvent(&event);
 #else
                   snd_seq_event_t ev;
-                  memset(&ev, 0, sizeof(ev));
+                  snd_seq_ev_clear(&ev);
                   ev.queue   = SND_SEQ_QUEUE_DIRECT;
                   ev.source  = musePort;
                   ev.dest    = adr;
@@ -1740,13 +1777,19 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 
   // Play all events up to current frame...
 //   while(!_playEventFifo->isEmpty())
-  const int sz = _eventFifos->getSize();
+  // False = don't use the size snapshot, but update it.
+  const int sz = _eventFifos->getSize(false);
   for(int i = 0; i < sz; ++i)
 //   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
 //   for(int i = 0; i < pl_evfifo_sz; ++i)
   {
 //     const MidiPlayEvent e(_playEventFifo->peek()); 
-    const MidiPlayEvent e(_eventFifos->peek()); 
+    // True = use the size snapshot.
+    const MidiPlayEvent& e(_eventFifos->peek(true)); 
+    
+// REMOVE Tim. autoconnect. Added. Diagnostics.
+    fprintf(stderr, "INFO: MidiAlsaDevice::processMidi() evTime:%u curFrame:%u\n", e.time(), curFrame);
+    
     // Event is meant for next cycle?
 // REMOVE Tim. autoconnect. Changed.
 //     if(e.time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
@@ -1767,7 +1810,9 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     //  over a long time. So we'll just... miss them.
     processEvent(e);
 //     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
-    _eventFifos->remove();  // Successfully processed event. Remove it from FIFO.
+    // Successfully processed event. Remove it from FIFO.
+    // True = use the size snapshot.
+    _eventFifos->remove(true);
   }
 
 
@@ -2587,7 +2632,7 @@ int alsaSelectWfd()
 
 void alsaProcessMidiInput()
 {
-      const unsigned frame_ts = MusEGlobal::audio->curFrame();
+      unsigned frame_ts = MusEGlobal::audio->curFrame();
       const double time_ts = curTime();
       
       DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
@@ -2871,20 +2916,42 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_SYSEX:
-                        // TODO: Deal with large sysex, which are broken up into chunks!
-                        // For now, do not accept if the first byte is not SYSEX or the last byte is not EOX, 
-                        //  meaning it's a chunk, possibly with more chunks to follow.
-                        if((*((unsigned char*)ev->data.ext.ptr) != ME_SYSEX) ||
-                           (*(((unsigned char*)ev->data.ext.ptr) + ev->data.ext.len - 1) != ME_SYSEX_END))
                         {
-                          fprintf(stderr, "MusE: alsaProcessMidiInput sysex chunks not supported!\n");
-                          break;
+// REMOVE Tim. autoconnect. Changed.
+//                           // TODO: Deal with large sysex, which are broken up into chunks!
+//                           // For now, do not accept if the first byte is not SYSEX or the last byte is not EOX, 
+//                           //  meaning it's a chunk, possibly with more chunks to follow.
+//                           if((*((unsigned char*)ev->data.ext.ptr) != ME_SYSEX) ||
+//                             (*(((unsigned char*)ev->data.ext.ptr) + ev->data.ext.len - 1) != ME_SYSEX_END))
+//                           {
+//                             fprintf(stderr, "MusE: alsaProcessMidiInput sysex chunks not supported!\n");
+//                             break;
+//                           }
+//                           
+//   // REMOVE Tim. autoconnect. Removed.
+//   //                         event.setTime(0);      // mark as used
+//                           event.setType(ME_SYSEX);
+//                           event.setData((unsigned char*)(ev->data.ext.ptr)+1,
+//                             ev->data.ext.len-2);
+
+                          EvData ed;
+                          const unsigned char* p = (unsigned char*)ev->data.ext.ptr;
+                          
+                          // Process the input. Create the event data only if finished.
+                          if(mdev->sysExInProcessor()->processInput(
+                             &ed, p, ev->data.ext.len, frame_ts) != SysExInputProcessor::Finished)
+                            break;
+
+                          // REMOVE Tim. autoconnect. Added.
+                          fprintf(stderr, "alsaProcessMidiInput: SysEx: frame_ts:%u startFrame:%u\n", 
+                                  frame_ts, (unsigned int)mdev->sysExInProcessor()->startFrame());
+                          
+                          // Finished composing the sysex data.
+                          // Mark the frame timestamp as the frame at which the sysex started.
+                          frame_ts = mdev->sysExInProcessor()->startFrame();
+                          event.setType(ME_SYSEX);
+                          event.setData(ed);
                         }
-                        
-                        event.setTime(0);      // mark as used
-                        event.setType(ME_SYSEX);
-                        event.setData((unsigned char*)(ev->data.ext.ptr)+1,
-                           ev->data.ext.len-2);
                         break;
                   case SND_SEQ_EVENT_PORT_SUBSCRIBED:
                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:  // write port is released
@@ -3056,13 +3123,19 @@ void MidiAlsaDevice::dump(const snd_seq_event_t* ev)
     break;
 
     case SND_SEQ_EVENT_SYSEX:
-      if(ev->data.ext.len >= 2)
-      fprintf(stderr, "SND_SEQ_EVENT_SYSEX len:%u hex: f0 %0x ...\n", 
-              ev->data.ext.len, ((unsigned char*)ev->data.ext.ptr)[1]);
-      else
-      fprintf(stderr, "SND_SEQ_EVENT_SYSEX len:%u\n", 
-              ev->data.ext.len);
-      
+      // REMOVE Tim. autoconnect. Changed.
+//       if(ev->data.ext.len >= 2)
+//       fprintf(stderr, "SND_SEQ_EVENT_SYSEX len:%u hex: f0 %0x ...\n", 
+//               ev->data.ext.len, ((unsigned char*)ev->data.ext.ptr)[1]);
+//       else
+//       fprintf(stderr, "SND_SEQ_EVENT_SYSEX len:%u\n", 
+//               ev->data.ext.len);
+      fprintf(stderr, "SND_SEQ_EVENT_SYSEX len:%u data: ", ev->data.ext.len);
+      for(unsigned int i = 0; i < ev->data.ext.len && i < 16; ++i)
+        fprintf(stderr, "%0x ", ((unsigned char*)ev->data.ext.ptr)[i]);
+      if(ev->data.ext.len >= 16) 
+        fprintf(stderr, "..."); 
+      fprintf(stderr, "\n"); 
     break;
     
     case SND_SEQ_EVENT_SONGPOS:

@@ -32,7 +32,7 @@
 
 #include "mpevent.h"
 #include "mididev.h"
-#include "lock_free_buffer.h"
+//#include "lock_free_buffer.h"
 
 #endif // ALSA_SUPPORT
 
@@ -60,7 +60,7 @@ class MidiAlsaDevice : public MidiDevice {
       // The audio thread will gather the events in _playEvents for the 
       //  convenience of its sorting, then dump them to this FIFO so that 
       //  a driver or device may read it, possibly from another thread (ALSA driver).
-      LockFreeBuffer<MidiPlayEvent> *_playEventFifo;
+//       LockFreeBuffer<MidiPlayEvent> *_playEventFifo;
      
       // Return false if event is delivered.
       bool processEvent(const MidiPlayEvent& ev);

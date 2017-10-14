@@ -1932,6 +1932,10 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   fprintf(stderr, "VstNativeSynthIF::doSelectProgram bankH:%d bankL:%d prog:%d\n", bankH, bankL, prog);
 #endif
 
+//    // Only if there's something to change...
+//    if(bankH >= 128 && bankL >= 128 && prog >= 128)
+//      return;
+  
   if(bankH > 127) // Map "dont care" to 0
     bankH = 0;
   if(bankL > 127)
@@ -2404,7 +2408,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 
       int hb, lb;
       synti->currentProg(chn, NULL, &lb, &hb);
-      synti->setCurrentProg(chn, a, lb, hb);
+      synti->setCurrentProg(chn, a & 0xff, lb, hb);
       doSelectProgram(hb, lb, a);
       return false;  // Event pointer not filled. Return false.
     }
@@ -2415,9 +2419,11 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER\n");
       #endif
 
-      if((a == 0) || (a == 32))
+      // Our internal hwCtrl controllers support the 'unknown' value.
+      // Don't send 'unknown' values to the driver. Ignore and return no error.
+      if(b == CTRL_VAL_UNKNOWN)
         return false;
-
+            
       if(a == CTRL_PROGRAM)
       {
         #ifdef VST_NATIVE_DEBUG
@@ -2432,6 +2438,26 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         return false; // Event pointer not filled. Return false.
       }
 
+      if(a == CTRL_HBANK)
+      {
+        int lb, pr;
+        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->setCurrentProg(chn, pr, lb, b & 0xff);
+        doSelectProgram(b, lb, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
+      if(a == CTRL_LBANK)
+      {
+        int hb, pr;
+        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->setCurrentProg(chn, pr, b & 0xff, hb);
+        doSelectProgram(hb, b, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
       if(a == CTRL_PITCH)
       {
         #ifdef VST_NATIVE_DEBUG
@@ -2723,7 +2749,8 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
 // REMOVE Tim. autoconnect. Changed.
 //   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
   // This also takes an internal snapshot of the size for use later...
-  const unsigned long ev_buf_sz = synti->eventFifos()->getSize();
+  // False = don't use the size snapshot, but update it.
+  const unsigned long ev_buf_sz = synti->eventFifos()->getSize(false);
   VstMidiEvent events[ev_buf_sz];
   char evbuf[sizeof(VstMidiEvent*) * ev_buf_sz + sizeof(VstEvents)];
   VstEvents *vst_events = (VstEvents*)evbuf;
@@ -2933,7 +2960,7 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
     // Get all control ring buffer items valid for this time period...
     while(!_controlFifo.isEmpty())
     {
-      ControlEvent v = _controlFifo.peek();
+      const ControlEvent& v = _controlFifo.peek();
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
@@ -2959,10 +2986,13 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
           || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
           || (usefixedrate && found && v.unique && v.idx == index))                 // Fixed rate and must reply to all.
         break;
-      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+//       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= in_ctrls) // Sanity check.
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         break;
+      }
 
       found = true;
       frame = evframe;
@@ -2997,6 +3027,8 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
+      
+      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
@@ -3123,18 +3155,19 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
       for(long unsigned int rb_idx = 0; rb_idx < ev_buf_sz; ++rb_idx)
       {
         // True = use the size snapshot.
-        MidiPlayEvent e = synti->eventFifos()->peek(true);
+        const MidiPlayEvent& e = synti->eventFifos()->peek(true);
 
         #ifdef VST_NATIVE_DEBUG
         fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
         #endif
 
+        // Event is for future?
         if(e.time() >= (sample + nsamp + syncFrame))
           break;
 
-        // Done with ring buffer's event. Remove it.
-        // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         // Done with ring buffer's event. Remove it.
+//         // True = use the size snapshot.
+//         synti->eventFifos()->remove(true);
         if(ports != 0)  // Don't bother if not 'running'.
         {
           // Returns false if the event was not filled. It was handled, but some other way.
@@ -3156,6 +3189,9 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
             ++nevents;
           }
         }
+        // Done with ring buffer's event. Remove it.
+        // True = use the size snapshot.
+        synti->eventFifos()->remove(true);
       }
       
       #ifdef VST_NATIVE_DEBUG_PROCESS

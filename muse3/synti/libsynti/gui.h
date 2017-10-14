@@ -27,7 +27,9 @@
 
 #include "mpevent.h"
 
-const int EVENT_FIFO_SIZE = 256;
+// REMOVE Tim. autoconnect. Changed. A bit too low, getting some overflow errors at the end of long init seq.
+//const int EVENT_FIFO_SIZE = 256;
+const int EVENT_FIFO_SIZE = 4096;
 class QWidget;
 
 //---------------------------------------------------------

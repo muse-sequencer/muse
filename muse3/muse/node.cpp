@@ -508,7 +508,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
     unsigned long evframe;
     while(!_controlFifo.isEmpty())
     {
-      ControlEvent v = _controlFifo.peek();
+      const ControlEvent& v = _controlFifo.peek();
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
@@ -528,10 +528,13 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
           || (!found && !v.unique && (evframe - sample >= nsamp))      // Next events are for a later run in this period. (Autom took prio.)
           || (found && !v.unique && (evframe - sample >= min_per)))    // Eat up events within minimum slice - they're too close.
         break;
-      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+//       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= _controlPorts) // Sanity check
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         break;
+      }
 
       found = true;
       frame = evframe;
@@ -546,6 +549,8 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
 
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       setPluginCtrlVal(v.idx, v.value);
+      
+      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && trackChans != 0 && !_prefader)    // If a control FIFO item was found, takes priority over automation controller stream.

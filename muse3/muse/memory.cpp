@@ -22,6 +22,7 @@
 //=========================================================
 
 #include "memory.h"
+#include <string.h>
 
 Pool audioRTmemoryPool;
 Pool midiRTmemoryPool;
@@ -78,6 +79,181 @@ void Pool::grow(int idx)
       head[idx] = reinterpret_cast<Verweis*>(start);
       }
 
+
+      
+      
+//---------------------------------------------------------
+//   MemoryQueue
+//---------------------------------------------------------
+
+MemoryQueue::MemoryQueue()
+//MemoryQueue::MemoryQueue(size_t chunkSize)
+{
+  //_chunkSize = chunkSize;
+  _endChunk = 0;
+  _curSize = 0;
+  _curOffest = 0;
+  
+  // Preallocate.
+  grow();
+  // Remember the very first chunk.
+  _startChunk = _endChunk;
+  // Start writing from the first chunk.
+  _curWriteChunk = _startChunk;
+}
+
+//---------------------------------------------------------
+//   ~MemoryQueue
+//---------------------------------------------------------
+
+MemoryQueue::~MemoryQueue()
+{
+  // Delete all chunks.
+  Chunk* n = _startChunk;
+  while(n) 
+  {
+    Chunk* p = n;
+    n = n->_next;
+    delete p;
+  }
+}
+
+//---------------------------------------------------------
+//   clear
+//---------------------------------------------------------
+
+void MemoryQueue::clear()
+{
+  // Delete all chunks except the first one, keep it around. That avoids an initial grow.
+  if(_startChunk)
+  {
+    Chunk* n = _startChunk->_next;
+    while(n) 
+    {
+      Chunk* p = n;
+      n = n->_next;
+      delete p;
+    }
+  }
+  _endChunk = _startChunk;
+  // Reset the writer.
+  reset();
+}
+
+//---------------------------------------------------------
+//   reset
+//---------------------------------------------------------
+
+void MemoryQueue::reset()
+{
+  // Start writing from the first chunk.
+  _curWriteChunk = _startChunk;
+  _curSize = 0;
+  _curOffest = 0;
+}
+
+//---------------------------------------------------------
+//   grow
+//---------------------------------------------------------
+
+void MemoryQueue::grow()
+{
+  Chunk* n = new Chunk();
+  //Chunk* n = new Chunk(_chunkSize);
+  n->_next = 0;
+  if(_endChunk)
+    _endChunk->_next = n;
+  _endChunk = n;
+}
+      
+//---------------------------------------------------------
+//   add
+//   Return true if successful.
+//---------------------------------------------------------
+
+bool MemoryQueue::add(const unsigned char* src, size_t len)
+{
+  if(!src || len == 0 || !_curWriteChunk)
+    return false;
+  const unsigned char* pp = src;
+  size_t remain = len;
+  size_t bytes; 
+  while(true)
+  {
+    bytes = Chunk::ChunkSize - _curOffest;
+    //bytes = _chunkSize - _curOffest;
+    if(remain < bytes)
+      bytes = remain;
+    memcpy(_curWriteChunk->_mem + _curOffest, pp, bytes);
+    _curSize += bytes;
+    _curOffest += bytes;
+    if(_curOffest == Chunk::ChunkSize)
+    //if(_curOffest == _chunkSize)
+    {
+      _curOffest = 0;
+      // Does the next chunk exist?
+      if(_endChunk->_next)
+      {
+        // Advance the current write chunk to the next existing chunk.
+        _curWriteChunk = _endChunk->_next;
+      }
+      else
+      {
+        // Create a new chunk.
+        grow();
+        // The _endChunk changed. Advance the current write chunk to it.
+        _curWriteChunk = _endChunk;
+      }
+    }
+    remain -= bytes;
+    // No more remaining? Done.
+    if(remain == 0)
+      break;
+    // Advance the source read pointer.
+    pp += bytes;
+  }
+  return true;
+}
+
+//---------------------------------------------------------
+//   copy
+//   Return true if successful.
+//---------------------------------------------------------
+
+// Return true if successful.
+size_t MemoryQueue::copy(unsigned char* dst, size_t len) const
+{
+  if(!dst || len == 0 || _curSize == 0 || !_startChunk)
+    return 0;
+  // Limit number of requested bytes to actual available size.
+  if(len > _curSize)
+    len = _curSize;
+  unsigned char* pp = dst;
+  size_t remain = len;
+  size_t bytes; 
+  // Start reading at the very first chunk.
+  Chunk* read_chunk = _startChunk;
+  while(true)
+  {
+    bytes = Chunk::ChunkSize;
+    //bytes = _chunkSize;
+    if(remain < bytes)
+      bytes = remain;
+    memcpy(pp, read_chunk->_mem, bytes);
+    remain -= bytes;
+    // No more remaining? Done.
+    if(remain == 0)
+      break;
+    // The next chunk must already exist.
+    if(!read_chunk->_next)
+      break;
+    // Advance the read chunk to the next existing chunk.
+    read_chunk = read_chunk->_next;
+    // Advance the destination write pointer.
+    pp += bytes;
+  }
+  return len - remain;
+}
 
 #ifdef TEST
 //=========================================================
