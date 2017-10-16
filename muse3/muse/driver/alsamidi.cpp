@@ -1150,37 +1150,58 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 //                 // REMOVE Tim. Noteoff. Changed.
 // //                     return putAlsaEvent(&event);
 //                 
-                // FIXME: Ugly. Could be a really long sysex. Need to break up sysexes.
+                
+                
+                
+// REMOVE Tim. autoconnect. Changed.
+//                 // FIXME: Ugly. Could be a really long sysex. Need to break up sysexes.
+//                 
+//                 // Probably best to reset all.
+//                 resetCurOutParamNums();
+// //                 const int len = n + 2;
+// //                 char buf[len];
+//                 const int len = ev.len();
+//                 unsigned char buf[len + 2];
+// //                 event.type = SND_SEQ_EVENT_SYSEX;
+// //                 event.flags = SND_SEQ_EVENT_LENGTH_VARIABLE;
+// //                 event.data.ext.len = n + 2;
+// //                 event.data.ext.ptr = (void*)buf;
+//                 
+// // //                 memcpy(buf, &event, sizeof(event));
+// //                 char* pp = buf;
+// //                 *pp++ = 0xf0;
+// //                 memcpy(pp, p, n);
+// //                 pp += n;
+// //                 *pp = 0xf7;
+//                 
+//                 
+//                 buf[0] = 0xf0;
+//                 memcpy(buf + 1, ev.data(), len);
+//                 buf[len + 1] = 0xf7;
+//                 
+//                 snd_seq_ev_set_sysex(&event, len + 2, buf);
+//                 
+//                 // REMOVE Tim. Noteoff. Changed.
+// //                     return putAlsaEvent(&event);
+//                 // NOTE: Don't move this out, 'buf' would go out of scope.
+//                 return putAlsaEvent(&event);
+
                 
                 // Probably best to reset all.
                 resetCurOutParamNums();
-//                 const int len = n + 2;
-//                 char buf[len];
-                const int len = ev.len();
-                unsigned char buf[len + 2];
-//                 event.type = SND_SEQ_EVENT_SYSEX;
-//                 event.flags = SND_SEQ_EVENT_LENGTH_VARIABLE;
-//                 event.data.ext.len = n + 2;
-//                 event.data.ext.ptr = (void*)buf;
                 
-// //                 memcpy(buf, &event, sizeof(event));
-//                 char* pp = buf;
-//                 *pp++ = 0xf0;
-//                 memcpy(pp, p, n);
-//                 pp += n;
-//                 *pp = 0xf7;
-                
-                
-                buf[0] = 0xf0;
-                memcpy(buf + 1, ev.data(), len);
-                buf[len + 1] = 0xf7;
-                
-                snd_seq_ev_set_sysex(&event, len + 2, buf);
-                
-                // REMOVE Tim. Noteoff. Changed.
-//                     return putAlsaEvent(&event);
-                // NOTE: Don't move this out, 'buf' would go out of scope.
-                return putAlsaEvent(&event);
+                // Stage the event data - is it OK to proceed? Time is passed but not used yet...
+                if(size_t len = sysExOutProcessor()->stageEvData(ev.eventData(), ev.time()) > 0)
+                {
+                  unsigned char buf[len];
+                  if(sysExOutProcessor()->getCurChunk(buf))
+                  {
+                    snd_seq_ev_set_sysex(&event, len, buf);
+                    // NOTE: Don't move this out, 'buf' would go out of scope.
+                    return putAlsaEvent(&event);
+                  }
+                }
+                return true;
               }
               break;
         case ME_SONGPOS:
@@ -1775,6 +1796,25 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
 //   }
 
+
+
+  if(sysExOutProcessor()->state() == SysExOutputProcessor::Sending)
+  {
+    // Stage the event data - is it OK to proceed? Time is passed but not used yet...
+    if(size_t len = sysExOutProcessor()->curChunkSize() > 0)
+    {
+      unsigned char buf[len];
+      if(sysExOutProcessor()->getCurChunk(buf))
+      {
+        snd_seq_ev_set_sysex(&event, len, buf);
+        // NOTE: Don't move this out, 'buf' would go out of scope.
+        return putAlsaEvent(&event);
+      }
+    }
+  }
+    
+
+
   // Play all events up to current frame...
 //   while(!_playEventFifo->isEmpty())
   // False = don't use the size snapshot, but update it.
@@ -1801,6 +1841,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 #endif
       break; 
     }
+    
     //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
 //     if(processEvent(e))  // Returns true on error.

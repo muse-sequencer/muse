@@ -110,6 +110,180 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
   return _state;
 }
 
+//---------------------------------------------------------
+//   SysExOutputProcessor
+//    Special processing of system exclusive chunks.
+//---------------------------------------------------------
+
+size_t SysExOutputProcessor::dataSize() const
+{
+  return _evData.dataLen;
+}
+
+size_t SysExOutputProcessor::curChunkSize() const
+{
+  switch(_state)
+  {
+    case Clear:
+    case Finished:
+      fprintf(stderr, "SysExOutputProcessor: curChunkSize called while State is not Sending.\n");
+      return 0;
+    break;
+
+    case Sending:
+    {
+      // The remaining number of data bytes (minus any start/end byte).
+      size_t sz = 0;
+      if((int)_curPos < _evData.dataLen)
+        sz = _evData.dataLen - _curPos;
+
+      // Are we on the first chunk? Leave room for the start byte.
+      if(_curPos == 0)
+        ++sz;
+      
+      // Should there be more chunks? That is, will the data so far -
+      //  plus an end byte - not fit into a chunk?
+      if(sz > (_chunkSize - 1))
+        // Limit the final size.
+        sz = _chunkSize;
+      else
+        // Leave room for the end byte.
+        ++sz;
+      
+      return sz;
+    }
+    break;
+  }
+  
+  return 0;
+}
+
+void SysExOutputProcessor::clear()
+{
+  // Release any reference to the data.
+  _evData = EvData();
+  _state = Clear;
+  _curPos = 0;
+}
+
+void SysExOutputProcessor::reset()
+{
+  _state = Clear;
+  _curPos = 0;
+}
+
+SysExOutputProcessor::State SysExOutputProcessor::setEvData(const EvData& src, size_t frame)
+{
+  if(!src.data || src.dataLen == 0)
+    return _state;
+
+  switch(_state)
+  {
+    case Clear:
+    case Finished:
+      // Keep a reference to the data so that it doesn't disappear between calls,
+      //  so that we can step through the data block.
+      _evData = src;
+      
+      _curPos = 0;
+      
+      // Mark the starting frame as the given frame.
+      _startFrame = frame;
+      
+      _state = Sending;
+    break;
+
+    case Sending:
+      fprintf(stderr, "SysExOutputProcessor: processOutput called while State is Sending.\n");
+    break;
+  }
+  
+  return _state;
+}
+
+bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
+{
+  if(!dst)
+    return false;
+  
+  switch(_state)
+  {
+    case Clear:
+    case Finished:
+      fprintf(stderr, "SysExOutputProcessor: getCurChunk called while State is not Sending.\n");
+      return false;
+    break;
+
+    case Sending:
+    {
+      unsigned char* p = dst;
+      bool is_chunk = false;
+      
+      // The remaining number of data bytes (minus any start/end byte).
+      size_t sz = 0;
+      if((int)_curPos < _evData.dataLen)
+        sz = _evData.dataLen - _curPos;
+
+      // Are we on the first chunk? Leave room for the start byte.
+      if(_curPos == 0)
+        ++sz;
+      
+      // Should there be more chunks? That is, will the data so far -
+      //  plus an end byte - not fit into a chunk?
+      if(sz > (_chunkSize - 1))
+      {
+        // Limit the final size.
+        sz = _chunkSize;
+        is_chunk = true;
+      }
+        
+      // Are we on the first chunk?
+      if(_curPos == 0)
+      {
+        // Add the start byte.
+        *p++ = ME_SYSEX;
+        --sz;
+      }
+      
+      // Besides any start byte, is there any actual data to copy?
+      if(sz != 0)
+      {
+        // Copy the data to the destination.
+        memcpy(p, _evData.data + _curPos, sz);
+        // Advance the pointer.
+        p += sz;
+        // Advance the current position.
+        _curPos += sz;
+      }
+      
+      // Is it the last (or only) chunk?
+      if(!is_chunk)
+      {
+        // Add the end byte.
+        *p = ME_SYSEX_END;
+        // We are finished.
+        _state = Finished;
+        // Release any reference to the data.
+        _evData = EvData();
+      }
+    }
+    break;
+  }
+  
+  return true;
+}
+
+size_t SysExOutputProcessor::stageEvData(const EvData& evData, unsigned int frame)
+{
+  // Cannot do if already sending.
+  if(_state == SysExOutputProcessor::Sending)
+    return 0;
+  // Set the event data, and proceed only if state changed to Sending.
+  if(setEvData(evData, frame) != SysExOutputProcessor::Sending)
+    return 0;
+  // Return the current (first) chunk size.
+  return curChunkSize();
+}
 
 //---------------------------------------------------------
 //   EvData

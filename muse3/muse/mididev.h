@@ -113,7 +113,10 @@ class MidiDevice {
       QString _state;
       
       bool _sysexReadingChunks;
+      // For processing system exclusive input chunks.
       SysExInputProcessor _sysExInProcessor;
+      // For processing system exclusive output chunks.
+      SysExOutputProcessor _sysExOutProcessor;
       
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
       MPEventList _playEvents;
@@ -164,6 +167,7 @@ class MidiDevice {
       virtual ~MidiDevice();
 
       SysExInputProcessor* sysExInProcessor() { return &_sysExInProcessor; }
+      SysExOutputProcessor* sysExOutProcessor() { return &_sysExOutProcessor; }
       
       virtual MidiDeviceType deviceType() const = 0;
       virtual QString deviceTypeString() const;
