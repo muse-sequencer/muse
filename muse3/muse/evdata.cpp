@@ -23,6 +23,7 @@
 
 #include "evdata.h"
 #include "midi.h"
+#include "globals.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -45,10 +46,6 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
     case Finished:
       if(*src == ME_SYSEX)
       {
-        // Reset or clear the queue (prefer simple reset but memory may grow - clear later).
-        _q.reset();
-        //_q.clear();
-
         // Mark the starting frame as the given frame.
         _startFrame = frame;
         
@@ -68,6 +65,10 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
         }
         else
         {
+          // Reset or clear the queue (prefer simple reset but memory may grow - clear later).
+          //_q.reset();
+          _q.clear();
+
           _state = Filling;
           // It's one chunk of others, queue it. Don't include the start byte - 
           //  our EvData is designed to strip the start/end bytes out.
@@ -89,6 +90,9 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
         // Finish what we got.
         _state = Finished;
         dst->setData(this);
+        // Reset or clear the queue (prefer simple reset but memory may grow - clear later).
+        //_q.reset();
+        _q.clear();
       }
       else if((*(src + len - 1) == ME_SYSEX_END))
       {
@@ -98,6 +102,9 @@ SysExInputProcessor::State SysExInputProcessor::processInput(EvData* dst, const 
           _q.add(src, len - 1);
         _state = Finished;
         dst->setData(this);
+        // Reset or clear the queue (prefer simple reset but memory may grow - clear later).
+        //_q.reset();
+        _q.clear();
       }
       else
       {
@@ -188,7 +195,7 @@ SysExOutputProcessor::State SysExOutputProcessor::setEvData(const EvData& src, s
       _curPos = 0;
       
       // Mark the starting frame as the given frame.
-      _startFrame = frame;
+      _curChunkFrame = frame;
       
       _state = Sending;
     break;
@@ -256,7 +263,7 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
         _curPos += sz;
       }
       
-      // Is it the last (or only) chunk?
+      // Are there no more chunks to follow?
       if(!is_chunk)
       {
         // Add the end byte.
@@ -266,6 +273,20 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
         // Release any reference to the data.
         _evData = EvData();
       }
+      
+      // Midi transmission characters per second, based on standard fixed bit rate of 31250 Hz.
+      // According to ALSA (aplaymidi.c), although the midi standard says one stop bit,
+      //  two are commonly used. We will use two just to be sure.
+      const size_t midi_cps = 31250 / (1 + 8 + 2);
+      // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
+      size_t frames = (sz * MusEGlobal::sampleRate) / midi_cps;
+      // Let's be realistic, spread by at least one frame.
+      if(frames == 0)
+        frames = 1;
+      // Advance the current chunk frame so that the driver can schedule the next chunk. 
+      // Do it even if the state has Finished, so the driver can wait until the last chunk is done
+      //  before calling Clear() or Reset() (setting the state to Clear).
+      _curChunkFrame += frames;
     }
     break;
   }

@@ -1190,7 +1190,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                 // Probably best to reset all.
                 resetCurOutParamNums();
                 
-                // Stage the event data - is it OK to proceed? Time is passed but not used yet...
+                // Stage the event data - is it OK to proceed?
                 if(size_t len = sysExOutProcessor()->stageEvData(ev.eventData(), ev.time()) > 0)
                 {
                   unsigned char buf[len];
@@ -1797,23 +1797,70 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //   }
 
 
-
-  if(sysExOutProcessor()->state() == SysExOutputProcessor::Sending)
+  //--------------------------------------------------------------------------------
+  // For now we stop ALL ring buffer processing until any sysex transmission is finished.
+  // TODO FIXME Some realtime events ARE allowed while sending a sysex. Let that happen below... 
+  //--------------------------------------------------------------------------------
+  
+  SysExOutputProcessor* sop = sysExOutProcessor();
+  switch(sop->state())
   {
-    // Stage the event data - is it OK to proceed? Time is passed but not used yet...
-    if(size_t len = sysExOutProcessor()->curChunkSize() > 0)
-    {
-      unsigned char buf[len];
-      if(sysExOutProcessor()->getCurChunk(buf))
-      {
-        snd_seq_ev_set_sysex(&event, len, buf);
-        // NOTE: Don't move this out, 'buf' would go out of scope.
-        return putAlsaEvent(&event);
-      }
-    }
-  }
+    case SysExOutputProcessor::Clear:
+      // Proceed with normal ring buffer processing, below...
+    break;
     
+    case SysExOutputProcessor::Sending:
+    {
+      // Current chunk is meant for a future cycle?
+      if(sop->curChunkFrame() > curFrame)
+        return; 
 
+      snd_seq_event_t event;
+      snd_seq_ev_clear(&event);
+      
+      event.queue   = SND_SEQ_QUEUE_DIRECT;
+      event.source  = musePort;
+      event.dest    = adr;
+      
+      if(size_t len = sop->curChunkSize() > 0)
+      {
+        unsigned char buf[len];
+        if(sop->getCurChunk(buf))
+        {
+          snd_seq_ev_set_sysex(&event, len, buf);
+          // NOTE: Don't move this out, 'buf' would go out of scope.
+          putAlsaEvent(&event);
+          // State is still Sending?
+          //if(sop->state() == SysExOutputProcessor::Sending)
+          //  return; 
+        }
+      }
+      else
+      {
+        fprintf(stderr, "Error: MidiAlsaDevice::processMidi(): curChunkSize is zero while state is Sending\n");
+        // Should not happen. Protection against accidental zero chunk size while sending.
+        // Let's just clear the thing.
+        sop->clear();
+      }
+      // Always return here, we'll let the next cycle can handle any Finished state, below.
+      return; 
+    }
+    break;
+    
+    case SysExOutputProcessor::Finished:
+    {
+      // Wait for the last chunk to transmit.
+      if(sop->curChunkFrame() > curFrame)
+        return;
+      // Now we are truly done. Clear or reset the processor, which
+      //  sets the state to Clear. Prefer reset for speed but clear is OK,
+      //  the EvData reference will already have been released.
+      //sop->reset();
+      sop->clear();
+    }
+    break;
+  }
+  
 
   // Play all events up to current frame...
 //   while(!_playEventFifo->isEmpty())

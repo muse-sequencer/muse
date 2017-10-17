@@ -227,22 +227,22 @@ class SysExOutputProcessor
   private:
     size_t _chunkSize;
     State _state;
-    size_t _startFrame;
+    size_t _curChunkFrame;
     EvData _evData;
     size_t _curPos;
 
   public:
-    SysExOutputProcessor() : _chunkSize(256), _state(Clear), _startFrame(0), _curPos(0) { }
+    SysExOutputProcessor() : _chunkSize(256), _state(Clear), _curChunkFrame(0), _curPos(0) { }
     // Returns the state of the queue.
     State state() const { return _state; }
     // Sets the chunk size to be used. Default is 256.
     // It may be necessary to adjust the size depending on the driver and its limits.
     void setChunkSize(size_t sz = 256) { _chunkSize = sz; }
-    // Returns the frame that the sysex started at.
-    size_t startFrame() const { return _startFrame; }
+    // Returns the frame that the current chunk should be scheduled at.
+    size_t curChunkFrame() const { return _curChunkFrame; }
     // Returns the size of the data (minus any start/end bytes).
     size_t dataSize() const;
-    // Returns the size of the current chunk.
+    // Returns the size of the current chunk (including any start/end bytes).
     size_t curChunkSize() const;
     // Clears the processor. Releases any reference to data in _evData. Sets state to Clear.
     void clear();

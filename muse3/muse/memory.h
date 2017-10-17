@@ -214,8 +214,7 @@ class MemoryQueue {
       struct Chunk
       {
         //size_t _size;
-        //enum { ChunkSize = 8 * 1024 };
-        enum { ChunkSize = 8 * 16 };
+        enum { ChunkSize = 8 * 1024 };
         Chunk* _next;
         char _mem[ChunkSize];
         //char* _mem;
