@@ -111,11 +111,16 @@ void MidiDevice::init()
 // REMOVE Tim. autoconnect. Added.
       _extClockHistoryFifo = new LockFreeBuffer<ExtMidiClock>(extClockHistoryCapacity);
       _eventFifos = new LockFreeMultiBuffer<MidiPlayEvent>();
+      // TODO: Scale these according to the current audio segment size.
       _eventFifos->createBuffer(PlayFifo, 512);
       _eventFifos->createBuffer(GuiFifo, 512);
       _eventFifos->createBuffer(OSCFifo, 512);
       _eventFifos->createBuffer(JackFifo, 512);
       _eventFifos->createBuffer(ALSAFifo, 512);
+      _sysExOutDelayedEvents = new std::vector<MidiPlayEvent>;
+      // Initially reserve a fair sized amount to hold potentially a lot 
+      //  of messages when the sysex processor is busy (in the Sending state).
+      _sysExOutDelayedEvents->reserve(_eventFifos->size() * 512);
 
       //_osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
       //_playStateExt = ExtMidiClock::ExternStopped;
@@ -161,6 +166,8 @@ MidiDevice::MidiDevice(const QString& n)
 // REMOVE Tim. autoconnect. Added.
 MidiDevice::~MidiDevice() 
 {
+    if(_sysExOutDelayedEvents)
+      delete _sysExOutDelayedEvents;
     if(_extClockHistoryFifo)
       delete _extClockHistoryFifo;
     //if(_osc2AudioFifo)

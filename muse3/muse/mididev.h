@@ -31,6 +31,7 @@
 #include "route.h"
 #include "globaldefs.h"
 // REMOVE Tim. autoconnect. Added.
+#include <vector>
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
@@ -117,6 +118,9 @@ class MidiDevice {
       SysExInputProcessor _sysExInProcessor;
       // For processing system exclusive output chunks.
       SysExOutputProcessor _sysExOutProcessor;
+      // Holds all non-realtime events while the sysex processor is in the Sending state.
+      // The official midi specs say only realtime messages can be mingled in the middle of a sysex.
+      std::vector<MidiPlayEvent> *_sysExOutDelayedEvents;
       
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
       MPEventList _playEvents;

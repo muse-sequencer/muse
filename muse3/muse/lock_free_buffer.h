@@ -107,6 +107,14 @@ class LockFreeBuffer
         return _fifo[idx];
       }
       
+//       // This is only for the reader.
+//       // A non-constant version of peek so that we can modify the items in-place.
+//       T& peekNonConst(int n = 0)
+//       {
+//         const int idx = (_rIndex + n) % _capacity;
+//         return _fifo[idx];
+//       }
+      
       // This is only for the reader.
       // Returns true if error (nothing to remove).
       bool remove()
@@ -344,6 +352,54 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
       
       return _dummyRetValue;
     }
+    
+//     // This is only for the reader.
+//     // A non-constant version of peek so that we can modify the items in-place.
+//     T& peekNonConst(bool useSizeSnapshot/* = false*/, int n = 0) // const
+//     {
+//       iLockFreeMultiBuffer least_i = vlist::end();
+//       bool is_first = true;
+//       int buf_sz;
+//       for(int idx = 0; idx <= n; ++idx)  // Yes, that's <=
+//       {
+//         for(iLockFreeMultiBuffer i = vlist::begin(); i != vlist::end(); ++i)
+//         {
+//           LockFreeBuffer<T>* buf = i->second;
+//           if(!buf)
+//             continue;
+//           buf_sz = buf->getSize(useSizeSnapshot);
+//           if(buf_sz == 0 || n >= buf_sz)
+//             continue;
+//           T& temp_val = buf->peekNonConst();
+//           if(is_first)
+//           {
+//             is_first = false;
+//             least_i = i;
+//             
+//             //if(idx == n)
+//             //  break;
+//             //++idx;
+//             continue;
+//           }
+//           else if(temp_val < least_i->second->peekNonConst())
+//           {
+//             least_i = i;
+//             
+//             //if(idx == n)
+//             //  break;
+//             //++idx;
+//           }
+//         }
+//         if(idx == n)
+//           break;
+//         ++idx;
+//       }
+// 
+//       if(least_i != vlist::end())
+//         return least_i->second->peekNonConst();
+//       
+//       return _dummyRetValue;
+//     }
     
     // This is only for the reader.
     // Returns true if error (nothing to remove).

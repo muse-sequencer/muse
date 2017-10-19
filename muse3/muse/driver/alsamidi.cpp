@@ -1842,7 +1842,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
         // Let's just clear the thing.
         sop->clear();
       }
-      // Always return here, we'll let the next cycle can handle any Finished state, below.
+      // Always return here, we'll let the next cycle handle any Finished state, below.
       return; 
     }
     break;
@@ -1888,15 +1888,54 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 #endif
       break; 
     }
+
+    // Is the sysex processor in a Sending state?
+    // Only realtime events are allowed to be sent while a sysex is in progress.
+    // The delayed events list is pre-allocated with reserve().
+    // According to http://en.cppreference.com/w/cpp/container/vector/clear,
+    //  clear() shall not change the capacity. That statement references here:
+    // https://stackoverflow.com/questions/18467624/what-does-the-standard-say-
+    //  about-how-calling-clear-on-a-vector-changes-the-capac/18467916#18467916
+    // But http://www.cplusplus.com/reference/vector/vector/clear
+    //  has not been updated to clarify this situation.
+    if(sop->state() == SysExOutputProcessor::Sending)
+    {
+      // Is it a realtime message?
+      if(e.type() >= 0xf8 || e.type() <= 0xff)
+        // Process it now.
+        processEvent(e);
+      else
+        // Store it for later.
+        _sysExOutDelayedEvents->push_back(e);
+    }
+    else
+    {
+      // Process any delayed events.
+      const unsigned int sz = _sysExOutDelayedEvents->size();
+      for(unsigned int i = 0; i < sz; ++i)
+        processEvent(_sysExOutDelayedEvents->at(i));
+      
+      // Let's check that capacity out of curiosity...
+      const unsigned int cap = _sysExOutDelayedEvents->capacity();
+      // Done with the delayed event list. Clear it.
+      _sysExOutDelayedEvents->clear();
+      
+      // Throw up a developer warning if things are fishy.
+      if(_sysExOutDelayedEvents->capacity() != cap)
+        fprintf(stderr, "WARNING: MidiAlsaDevice::processMidi() delayed events vector "
+                "capacity:%u is not the same as before clear:%u\n", 
+                (unsigned int)_sysExOutDelayedEvents->capacity(), cap);
+      
+      //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
+      // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
+  //     if(processEvent(e))  // Returns true on error.
+  //       break;            
+      // If processEvent fails, although we would like to not miss events by keeping them
+      //  until next cycle and trying again, that can lead to a large backup of events
+      //  over a long time. So we'll just... miss them.
+      processEvent(e);
+    }
     
-    //printf(stderr, "MidiAlsaDevice::processMidi FIFO play event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
-    // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.
-//     if(processEvent(e))  // Returns true on error.
-//       break;            
-    // If processEvent fails, although we would like to not miss events by keeping them
-    //  until next cycle and trying again, that can lead to a large backup of events
-    //  over a long time. So we'll just... miss them.
-    processEvent(e);
 //     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
     // Successfully processed event. Remove it from FIFO.
     // True = use the size snapshot.
