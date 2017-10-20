@@ -1905,7 +1905,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     if(sop->state() != SysExOutputProcessor::Clear)
     {
       // Is it a realtime message?
-      if(e.type() >= 0xf8 || e.type() <= 0xff)
+      if(e.type() >= 0xf8 && e.type() <= 0xff)
         // Process it now.
         processEvent(e);
       else
