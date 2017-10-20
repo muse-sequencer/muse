@@ -280,6 +280,8 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
       const size_t midi_cps = 31250 / (1 + 8 + 2);
       // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
       size_t frames = (sz * MusEGlobal::sampleRate) / midi_cps;
+      // Add a slight delay between chunks just to be sure there's no overlap, rather a small space, and let devices catch up.
+      frames += MusEGlobal::sampleRate / 200;
       // Let's be realistic, spread by at least one frame.
       if(frames == 0)
         frames = 1;

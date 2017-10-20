@@ -1191,7 +1191,8 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                 resetCurOutParamNums();
                 
                 // Stage the event data - is it OK to proceed?
-                if(size_t len = sysExOutProcessor()->stageEvData(ev.eventData(), ev.time()) > 0)
+                const size_t len = sysExOutProcessor()->stageEvData(ev.eventData(), ev.time());
+                if(len > 0)
                 {
                   unsigned char buf[len];
                   if(sysExOutProcessor()->getCurChunk(buf))
@@ -1813,7 +1814,8 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     {
       // Current chunk is meant for a future cycle?
       if(sop->curChunkFrame() > curFrame)
-        return; 
+        //return;
+        break; 
 
       snd_seq_event_t event;
       snd_seq_ev_clear(&event);
@@ -1822,7 +1824,8 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
       event.source  = musePort;
       event.dest    = adr;
       
-      if(size_t len = sop->curChunkSize() > 0)
+      const size_t len = sop->curChunkSize();
+      if(len > 0)
       {
         unsigned char buf[len];
         if(sop->getCurChunk(buf))
@@ -1843,7 +1846,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
         sop->clear();
       }
       // Always return here, we'll let the next cycle handle any Finished state, below.
-      return; 
+      //return; 
     }
     break;
     
@@ -1851,7 +1854,8 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     {
       // Wait for the last chunk to transmit.
       if(sop->curChunkFrame() > curFrame)
-        return;
+        //return;
+        break;
       // Now we are truly done. Clear or reset the processor, which
       //  sets the state to Clear. Prefer reset for speed but clear is OK,
       //  the EvData reference will already have been released.
@@ -1889,7 +1893,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
       break; 
     }
 
-    // Is the sysex processor in a Sending state?
+    // Is the sysex processor not in a Clear state?
     // Only realtime events are allowed to be sent while a sysex is in progress.
     // The delayed events list is pre-allocated with reserve().
     // According to http://en.cppreference.com/w/cpp/container/vector/clear,
@@ -1898,7 +1902,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     //  about-how-calling-clear-on-a-vector-changes-the-capac/18467916#18467916
     // But http://www.cplusplus.com/reference/vector/vector/clear
     //  has not been updated to clarify this situation.
-    if(sop->state() == SysExOutputProcessor::Sending)
+    if(sop->state() != SysExOutputProcessor::Clear)
     {
       // Is it a realtime message?
       if(e.type() >= 0xf8 || e.type() <= 0xff)
