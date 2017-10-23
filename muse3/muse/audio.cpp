@@ -602,8 +602,10 @@ void Audio::process(unsigned frames)
                             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                                 if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                                     const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                                    // may cause problems, called from audio thread
-                                    mp->device()->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//                                     // may cause problems, called from audio thread
+//                                     mp->device()->putEvent(ev);
+                                    mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
                                     }
                                 }
                             }
@@ -1148,7 +1150,9 @@ void Audio::startRolling()
           for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
               if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                         const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
-                        mp->device()->putEvent(ev);    
+// REMOVE Tim. autoconnect. Changed.
+//                         mp->device()->putEvent(ev);    
+                        mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
                   }
               }
           }

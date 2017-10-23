@@ -121,9 +121,15 @@ extern const unsigned int mmcStopMsgLen;
 extern const unsigned int mmcLocateMsgLen;
 
 class MidiInstrument;
-QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-QString midiMetaName(int);
+extern QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
+extern QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
+extern QString midiMetaName(int meta);
+// Expected duration in frames, at the current sample rate, of the 
+//  given length of sysex data. Based on 31250Hz midi baud rate in
+//  1-8-2 format. (Midi specs say 1 stop bit, but ALSA says
+//  2 stop bits are common.) A small gap time is added as well.
+// If the data includes any start/end bytes, len should also include them.
+extern unsigned int sysexDuration(unsigned int len);
 
 // Use these in all the synths and their guis.
 // NOTE: Some synths and hosts might not use this scheme. For example, MESS requires it for IPC,

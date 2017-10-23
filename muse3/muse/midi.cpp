@@ -252,6 +252,27 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
       }
 
 //---------------------------------------------------------
+//    sysexDuration
+//    static
+//---------------------------------------------------------
+
+unsigned int sysexDuration(unsigned int len)
+{
+  // Midi transmission characters per second, based on standard fixed bit rate of 31250 Hz.
+  // According to ALSA (aplaymidi.c), although the midi standard says one stop bit,
+  //  two are commonly used. We will use two just to be sure.
+  const unsigned int midi_cps = 31250 / (1 + 8 + 2);
+  // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
+  unsigned int frames = (len * MusEGlobal::sampleRate) / midi_cps;
+  // Add a slight delay between chunks just to be sure there's no overlap, rather a small space, and let devices catch up.
+  frames += MusEGlobal::sampleRate / 200; // 1 / 200 = 5 milliseconds.
+  // Let's be realistic, spread by at least one frame.
+  if(frames == 0)
+    frames = 1;
+  return frames;
+}
+
+//---------------------------------------------------------
 //   buildMidiEventList
 //    TODO:
 //      parse data increment/decrement controller
@@ -2826,7 +2847,9 @@ void Audio::processMidi()
                 if(!mdev)
                   continue;
                 ev.setTime(0);   // Mark for immediate delivery.
-                mdev->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//                 mdev->putEvent(ev);
+                mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
               }
               mel.clear();
             }
@@ -2899,7 +2922,9 @@ void Audio::processMidi()
                 if(!mdev)
                   continue;
                 ev.setTime(0);   // Mark for immediate delivery.
-                mdev->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//                 mdev->putEvent(ev);
+                mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
               }
               mel.clear();
             }

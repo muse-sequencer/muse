@@ -99,6 +99,24 @@ class MidiDevice {
         ALSAFifo=4
       };
       
+      // Describes latency of events passed to putEvent().
+      enum LatencyType
+      {
+        // The given event's time will be used 'as is' without modification.
+        NotLate = 0, 
+        // The given event's time has some latency. Automatically compensate
+        //  by adding an appropriate number of frames, depending on device type.
+        // For example, events sent from a GUI control to the GuiFifo are usually 
+        //  time-stamped in the past. For Synths and Jack midi (buffer-based systems) 
+        //  we add a forward offset (one segment size). For ALSA (a poll-based system), 
+        //  no offset is required. Similarly, events sent from OSC handlers to the 
+        //  OSCFifo are also usually time-stamped in the past. 
+        // Another example, events sent by the play scheduler to the PlayFifo are 
+        //  /already/ scheduled properly for the future and need /no/ further compensation
+        //  for either Jack midi or ALSA devices.
+        Late = 1
+      };
+      
    private:
       // Used for multiple reads of fifos during process.
       int _tmpRecordCount[MIDI_CHANNELS + 1];
@@ -113,7 +131,8 @@ class MidiDevice {
       bool _writeEnable; //
       QString _state;
       
-      bool _sysexReadingChunks;
+// REMOVE Tim. autoconnect. Removed.
+//       bool _sysexReadingChunks;
       // For processing system exclusive input chunks.
       SysExInputProcessor _sysExInProcessor;
       // For processing system exclusive output chunks.
@@ -160,6 +179,15 @@ class MidiDevice {
       // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
       //unsigned int _pbForwardShiftFrames;
+      
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
+      //  although its requirement is a result of the latency.
+      // For any driver running in the audio thread (Jack midi, synth, metro etc) this value typically 
+      //  will equal one segment size.
+      // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
+      //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
+      virtual unsigned int pbForwardShiftFrames() const { return 0; }
       
       void init();
 // REMOVE Tim. autoconnect. Removed. Made public.
@@ -249,11 +277,12 @@ class MidiDevice {
       //  is desired, earlier event time frames (say 0) can be inter-mixed with sorted events.
       // NOTE: Avoid putting events with time >> current cycle start frame + segment size,
       //  because that will stall all processing of FIFOs until that frame has come -
-      //  ie. don't accidentally put a event with frame time waaaay in the future !
-      virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id = GuiFifo);
-      // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
-      // Since it waits, it should not be used in RT or other time-sensitive threads.
-      bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
+      //  ie. don't accidentally put an event with frame time waaaay in the future !
+      virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
+// REMOVE Tim. autoconnect. Removed.
+//       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
+//       // Since it waits, it should not be used in RT or other time-sensitive threads.
+//       bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
       MidiOutputParams* curOutParamNums(int chan) { return &_curOutParamNums[chan]; }
       void resetCurOutParamNums(int chan = -1); // Reset channel's current parameter numbers to -1. All channels if chan = -1.
       
@@ -268,14 +297,6 @@ class MidiDevice {
       // To be called from audio thread only.
 //       virtual void preparePlayEventFifo() { }
       virtual void preparePlayEventFifo();
-      // Returns the number of frames to shift forward output event scheduling times when putting events
-      //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
-      //  although its requirement is a result of the latency.
-      // For any driver running in the audio thread (Jack midi, synth, metro etc) this value typically 
-      //  will equal one segment size.
-      // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
-      //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
-      //virtual unsigned int pbForwardShiftFrames() const = 0;
       // This clears the 'write' side of any fifo the device may have (like ALSA),
       //  by setting the size to zero and the write pointer equal to the read pointer.
 //       virtual void clearPlayEventFifo() {}
@@ -304,8 +325,9 @@ class MidiDevice {
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
-      bool sysexReadingChunks() { return _sysexReadingChunks; }
-      void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
+// REMOVE Tim. autoconnect. Removed.
+//       bool sysexReadingChunks() { return _sysexReadingChunks; }
+//       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
       
 // REMOVE Tim. autoconnect. Added.
       static const int extClockHistoryCapacity;

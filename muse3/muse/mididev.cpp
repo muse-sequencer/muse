@@ -146,7 +146,8 @@ MidiDevice::MidiDevice()
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      _sysexReadingChunks = false;
+// REMOVE Tim. autoconnect. Removed.
+//       _sysexReadingChunks = false;
       
       init();
       }
@@ -158,7 +159,8 @@ MidiDevice::MidiDevice(const QString& n)
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      _sysexReadingChunks = false;
+// REMOVE Tim. autoconnect. Removed.
+//       _sysexReadingChunks = false;
       
       init();
       }
@@ -779,52 +781,65 @@ void MidiDevice::resetCurOutParamNums(int chan)
 //    return true if event cannot be delivered
 //---------------------------------------------------------
 
-bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id)
+bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id, LatencyType latencyType)
 {
 // TODO: Decide whether we want the driver cached values always updated like this,
 //        even if not writeable or if error.
 //   if(!_writeEnable)
 //     return true;
-      
+  
+  // Automatically shift the time forward if specified.
+  MidiPlayEvent fin_ev = ev;
+  switch(latencyType)
+  {
+    case NotLate:
+    break;
+    
+    case Late:
+      fin_ev.setTime(fin_ev.time() + pbForwardShiftFrames());
+    break;
+  }
+  
   DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
-                    deviceType(), ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
+                    deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
     fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
-    ev.dump();
+    fin_ev.dump();
   }
   
 //   bool rv = eventFifo.put(ev);
 //   bool rv = _eventFifos->put(GuiFifo, ev);
-  bool rv = _eventFifos->put(id, ev);
+  bool rv = _eventFifos->put(id, fin_ev);
   if(rv)
     printf("MidiDevice::putEvent: FIFO id:%d overflow\n", id);
   
   return rv;
 }
 
-//---------------------------------------------------------
-//   putEventWithRetry
-//    return true if event cannot be delivered
-//    This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
-//    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. 
-//---------------------------------------------------------
-
-bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long delayUs)
-{
-  // TODO: Er, probably not the best way to do this.
-  //       Maybe try to correlate with actual audio buffer size instead of blind time delay.
-  for( ; tries > 0; --tries)
-  { 
-    if(!putEvent(ev))  // Returns true if event cannot be delivered.
-      return false;
-      
-    int sleepOk = -1;
-    while(sleepOk == -1)
-      sleepOk = usleep(delayUs);   // FIXME: usleep is supposed to be depricated!
-  }  
-  return true;
-}
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   putEventWithRetry
+// //    return true if event cannot be delivered
+// //    This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
+// //    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. 
+// //---------------------------------------------------------
+// 
+// bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long delayUs)
+// {
+//   // TODO: Er, probably not the best way to do this.
+//   //       Maybe try to correlate with actual audio buffer size instead of blind time delay.
+//   for( ; tries > 0; --tries)
+//   { 
+//     if(!putEvent(ev))  // Returns true if event cannot be delivered.
+//       return false;
+//       
+//     int sleepOk = -1;
+//     while(sleepOk == -1)
+//       sleepOk = usleep(delayUs);   // FIXME: usleep is supposed to be depricated!
+//   }  
+//   return true;
+// }
 
 // REMOVE Tim. autoconnect. Added.
 // //---------------------------------------------------------
@@ -949,7 +964,9 @@ void MidiDevice::handleStop()
   {
     MidiPlayEvent ev(*i);
     ev.setTime(0);
-    putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//     putEvent(ev);
+    putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
   }
   _stuckNotes.clear();
   
@@ -987,7 +1004,9 @@ void MidiDevice::handleStop()
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {
       const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-      putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//       putEvent(ev);
+      putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
     }
   }
 }

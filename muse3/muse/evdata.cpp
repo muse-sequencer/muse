@@ -274,21 +274,11 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
         _evData = EvData();
       }
       
-      // Midi transmission characters per second, based on standard fixed bit rate of 31250 Hz.
-      // According to ALSA (aplaymidi.c), although the midi standard says one stop bit,
-      //  two are commonly used. We will use two just to be sure.
-      const size_t midi_cps = 31250 / (1 + 8 + 2);
       // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
-      size_t frames = (sz * MusEGlobal::sampleRate) / midi_cps;
-      // Add a slight delay between chunks just to be sure there's no overlap, rather a small space, and let devices catch up.
-      frames += MusEGlobal::sampleRate / 200;
-      // Let's be realistic, spread by at least one frame.
-      if(frames == 0)
-        frames = 1;
       // Advance the current chunk frame so that the driver can schedule the next chunk. 
       // Do it even if the state has Finished, so the driver can wait until the last chunk is done
       //  before calling Clear() or Reset() (setting the state to Clear).
-      _curChunkFrame += frames;
+      _curChunkFrame += sysexDuration(sz);
     }
     break;
   }

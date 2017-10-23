@@ -723,6 +723,15 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       }
 
 //---------------------------------------------------------
+//   pbForwardShiftFrames
+//---------------------------------------------------------
+
+unsigned int SynthI::pbForwardShiftFrames() const
+{
+  return MusEGlobal::segmentSize;
+}
+      
+//---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
 

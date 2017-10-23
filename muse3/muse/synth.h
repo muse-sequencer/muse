@@ -242,6 +242,9 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos.
+      virtual unsigned int pbForwardShiftFrames() const;
 
       virtual QString open();
       virtual void close();

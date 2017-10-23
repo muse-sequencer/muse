@@ -340,12 +340,13 @@ class Audio {
       //  handling them during process when referenced to syncFrame.
       // This is meant to be called from threads other than the process thread.
       unsigned curFrame() const;
-      unsigned curSyncFrame() const { return syncFrame; }
       // Current play position frame. Estimated to single-frame resolution while in play mode.
       // This can be called from outside process thread.
       unsigned curFramePos() const;
       // This is meant to be called from inside process thread only.      
       unsigned framesAtCycleStart() const;
+      // Same as framesAtCycleStart(), but can be called from outside process thread.
+      unsigned curSyncFrame() const { return syncFrame; }
       // This can be called from outside process thread. 
       unsigned framesSinceCycleStart() const;   
 // REMOVE Tim. autoconnect. Added.

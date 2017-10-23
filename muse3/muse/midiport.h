@@ -202,6 +202,7 @@ class MidiPort {
       void changeInstrument(MidiInstrument* i);
       MidiController* midiController(int num, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
+      // To be called from realtime audio thread only.
       void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val);
       double limitValToInstrCtlRange(int ctl, double val);
@@ -246,7 +247,8 @@ class MidiPort {
       void sendMMCStop(int devid = -1);
       void sendMMCDeferredPlay(int devid = -1);
 
-      // Send Instrument Init sequences and controller defaults etc.
+      // Send Instrument Init sequences and controller defaults etc. Return true if success.
+      // To be called from realtime audio thread only.
       bool sendPendingInitializations(bool force = true);  // Per port
       // Send initial controller values. Called by above method, and elsewhere.
       bool sendInitialControllers(unsigned start_time = 0);

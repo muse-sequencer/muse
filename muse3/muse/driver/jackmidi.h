@@ -75,6 +75,11 @@ class MidiJackDevice : public MidiDevice {
       
       void eventReceived(jack_midi_event_t*);
 
+   protected:
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos.
+      virtual unsigned int pbForwardShiftFrames() const;
+     
    public:
       MidiJackDevice(const QString& name); 
       virtual ~MidiJackDevice(); 

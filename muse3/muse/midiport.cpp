@@ -65,6 +65,9 @@ LockFreeMultiBuffer<MidiPlayEvent> MidiPort::_eventFifos;
 void initMidiPorts()
       {
       // REMOVE Tim. autoconnect. Added.
+      // Create the ring buffers needed for the various threads
+      //  wishing to communicate changes to the underlying data 
+      //  structures such as controllers.
       MidiPort::eventFifos().createBuffer(MidiPort::PlayFifo, 4096);
       MidiPort::eventFifos().createBuffer(MidiPort::GuiFifo, 4096);
       MidiPort::eventFifos().createBuffer(MidiPort::OSCFifo, 4096);
@@ -240,6 +243,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
 //---------------------------------------------------------
 //   sendPendingInitializations
 //   Return true if success.
+//   To be called from realtime audio thread only.
 //---------------------------------------------------------
 
 bool MidiPort::sendPendingInitializations(bool force)
@@ -254,7 +258,8 @@ bool MidiPort::sendPendingInitializations(bool force)
   // test for explicit instrument initialization
   //
 
-  unsigned last_tick = 0;
+//   unsigned last_tick = 0;
+  unsigned last_frame = 0;
   MusECore::MidiInstrument* instr = instrument();
   if(instr && MusEGlobal::config.midiSendInit && (force || !_initializationsSent))
   {
@@ -264,20 +269,36 @@ bool MidiPort::sendPendingInitializations(bool force)
     {
       for(iEvent ie = events->begin(); ie != events->end(); ++ie) 
       {
-        unsigned tick = ie->second.tick();
-        if(tick > last_tick)
-          last_tick = tick;
-        MusECore::MidiPlayEvent ev(tick, port, 0, ie->second);
-        _device->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.                  
+//         const unsigned tick = ie->second.tick();
+//         if(tick > last_tick)
+//           last_tick = tick;
+        //const unsigned int frame = MusEGlobal::tempomap.tick2frame(ie->second.tick()) + MusEGlobal::audio->curSyncFrame();
+        //if(frame > last_frame)
+        //  last_frame = frame;
+        
+        if(ie->second.type() == Sysex)
+          last_frame += sysexDuration(ie->second.dataLen());
+        
+// REMOVE Tim. autoconnect. Changed.
+//         MusECore::MidiPlayEvent ev(tick, port, 0, ie->second);
+//         _device->putEvent(ev);
+        //MusECore::MidiPlayEvent ev(frame, port, 0, ie->second);
+        MusECore::MidiPlayEvent ev(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0, ie->second);
+        //_device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+        // Let the play events list sort it to be safe.
+        _device->addScheduledEvent(ev);
       }
       // Give a bit of time for the last Init sysex to settle?
-      last_tick += 100;
+//       last_tick += 100;
+      last_frame += 100;
     }
     _initializationsSent = true; // Mark as having been sent.
   }
     
   // Send the Instrument controller default values.
-  sendInitialControllers(last_tick);
+//   sendInitialControllers(last_tick);
+  sendInitialControllers(last_frame);
 
   return rv;
 }
@@ -389,9 +410,12 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
           {
             int ctl = mc->num();
             // Note the addition of bias!
-            // Retry added. Use default attempts and delay. 
-            _device->putEventWithRetry(MidiPlayEvent(start_time, port, chan,  
-              ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
+// REMOVE Tim. autoconnect. Changed.
+//             // Retry added. Use default attempts and delay. 
+//             _device->putEventWithRetry(MidiPlayEvent(start_time, port, chan,  
+//               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
+            _device->putEvent(MidiPlayEvent(start_time, port, chan,  
+              ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::PlayFifo, MidiDevice::NotLate);
             // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
             // Set it again so that control labels show 'off'...
             setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, mc->initVal() + mc->bias());
@@ -411,9 +435,12 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
       int val     = i->second->hwVal();
       if (val != CTRL_VAL_UNKNOWN) 
       {
-        // Retry added. Use default attempts and delay. 
-        _device->putEventWithRetry(MidiPlayEvent(start_time, port, channel,
-          ME_CONTROLLER, cntrl, val));                          
+// REMOVE Tim. autoconnect. Changed.
+//         // Retry added. Use default attempts and delay. 
+//         _device->putEventWithRetry(MidiPlayEvent(start_time, port, channel,
+//           ME_CONTROLLER, cntrl, val));                          
+        _device->putEvent(MidiPlayEvent(start_time, port, channel,
+          ME_CONTROLLER, cntrl, val), MidiDevice::PlayFifo, MidiDevice::NotLate);                          
         // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
         setHwCtrlState(channel, cntrl, val);
       }
@@ -558,6 +585,7 @@ const QString& MidiPort::portname() const
 
 //---------------------------------------------------------
 //   tryCtrlInitVal
+//   To be called from realtime audio thread only.
 //---------------------------------------------------------
 
 void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
@@ -570,7 +598,9 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
     if(v != CTRL_VAL_UNKNOWN)
     {
       if(_device)
-        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v));                          
+// REMOVE Tim. autoconnect. Changed.
+//         _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v));
+        _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::PlayFifo, MidiDevice::NotLate);
         
       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
       setHwCtrlState(chan, ctl, v);
@@ -595,7 +625,9 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
         if(_device)
         {
           MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
-          _device->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//           _device->putEvent(ev);
+        _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
           // Retry added. Use default attempts and delay. p4.0.15
           //_device->putEventWithRetry(ev);
         }  
@@ -610,7 +642,9 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
   if(_device)
   {
     MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, val);
-    _device->putEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//     _device->putEvent(ev);
+    _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
   }  
   setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, val);
 }      
@@ -714,7 +748,9 @@ void MidiPort::sendSysex(const unsigned char* p, int n)
       {
       if (_device) {
             MidiPlayEvent event(0, 0, ME_SYSEX, p, n);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 
@@ -776,7 +812,9 @@ void MidiPort::sendStart()
       {
       if (_device) {
             MidiPlayEvent event(0, 0, 0, ME_START, 0, 0);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 
@@ -788,7 +826,9 @@ void MidiPort::sendStop()
       {
       if (_device) {
             MidiPlayEvent event(0, 0, 0, ME_STOP, 0, 0);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 
@@ -800,7 +840,9 @@ void MidiPort::sendClock()
       {
       if (_device) {
             MidiPlayEvent event(0, 0, 0, ME_CLOCK, 0, 0);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 
@@ -812,7 +854,9 @@ void MidiPort::sendContinue()
       {
       if (_device) {
             MidiPlayEvent event(0, 0, 0, ME_CONTINUE, 0, 0);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 
@@ -824,7 +868,9 @@ void MidiPort::sendSongpos(int pos)
       {
       if (_device) {
             MidiPlayEvent event(0, 0, 0, ME_SONGPOS, pos, 0);
-           _device->putEvent(event);
+// REMOVE Tim. autoconnect. Changed.
+//            _device->putEvent(event);
+           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
             }
       }
 

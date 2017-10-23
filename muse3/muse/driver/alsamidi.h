@@ -70,7 +70,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectWfd();
 
       bool putAlsaEvent(snd_seq_event_t*);
-      
+
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice();

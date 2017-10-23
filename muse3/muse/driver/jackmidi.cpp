@@ -445,6 +445,15 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
 }
 
 //---------------------------------------------------------
+//   pbForwardShiftFrames
+//---------------------------------------------------------
+
+unsigned int MidiJackDevice::pbForwardShiftFrames() const
+{
+  return MusEGlobal::segmentSize;
+}
+      
+//---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
 
