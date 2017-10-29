@@ -2743,7 +2743,9 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
 // REMOVE Tim. autoconnect. Changed.
@@ -3241,7 +3243,9 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEve
   // Inform the host callback we will be no longer in the audio thread.
   _inProcess = false;
 
-  return start_event;
+// REMOVE Tim. autoconnect. Changed.
+//   return start_event;
+  return true;
 }
 
 // REMOVE Tim. autoconnect. Removed.

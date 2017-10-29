@@ -335,16 +335,106 @@ void MPEventList::add(const MidiPlayEvent& ev)
         // If length is zero there's no point in adding this sysex. Just return.
         if(len == 0)
           return;
-        // If the two sysexes are the same, ignore the event to be added.
-        // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
-        //  happen to be identical, they should not be at the same time anyway - they
-        //  should be serialized.
-        // REMOVE Tim. autoconnect. Fix this.
-        // FIXME That's not necessarily true - should be able to schedule in order at
-        //        the same time but the device does the serialization.
-        // Currently we don't support chunks anyway, so we are safe for now...
-        if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
+//         // If the two sysexes are the same, ignore the event to be added.
+//         // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
+//         //  happen to be identical, they should not be at the same time anyway - they
+//         //  should be serialized.
+//         // REMOVE Tim. autoconnect. Fix this.
+//         // FIXME That's not necessarily true - should be able to schedule in order at
+//         //        the same time but the device does the serialization.
+//         // Currently we don't support chunks anyway, so we are safe for now...
+//         if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
+//           return;
+      }
+      break;
+
+      case ME_CLOCK:
+      case ME_START:
+      case ME_CONTINUE:
+      case ME_STOP:
+      case ME_SYSEX_END:
+      case ME_TUNE_REQ:
+      case ME_TICK:
+      case ME_SENSE:
+        // Event already exists. Ignore the event to be added.
+        return;
+      break;
+
+      case ME_META: // TODO: This could be reset, or might be a meta, depending on MPEventList usage.
+      break;
+    }
+  }
+  insert(ev);
+}
+
+//---------------------------------------------------------
+//   add
+//    Optimize to eliminate duplicate events at the SAME time.
+//    It will not handle duplicate events at DIFFERENT times.
+//    Replaces event if it already exists.
+//---------------------------------------------------------
+
+void SeqMPEventList::add(const MidiPlayEvent& ev)
+{
+  SeqMPEventListRangePair_t range = equal_range(ev);
+
+  for(iSeqMPEvent impe = range.first; impe != range.second; ++impe)
+  {
+    // Note that (multi)set iterators are constant and can't be modified.
+    // The only option is to erase the old item(s), then insert a new item.
+    const MidiPlayEvent& l_ev = *impe;
+
+    // The type, time, port, and channel should already be equal, according to the operator< method.
+    switch(ev.type())
+    {
+      case ME_NOTEON:
+      case ME_NOTEOFF:
+      case ME_CONTROLLER:
+      case ME_POLYAFTER:
+        // Are the notes or controller numbers the same?
+        if(l_ev.dataA() == ev.dataA())
+        {
+          // If the velocities or values are the same, just ignore.
+          if(l_ev.dataB() == ev.dataB())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
           return;
+        }
+      break;
+
+      case ME_PROGRAM:
+      case ME_AFTERTOUCH:
+      case ME_PITCHBEND:
+      case ME_SONGPOS:
+      case ME_MTC_QUARTER:
+      case ME_SONGSEL:
+          // If the values are the same, just ignore.
+          if(l_ev.dataA() == ev.dataA())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
+          return;
+      break;
+
+      case ME_SYSEX:
+      {
+        const int len = ev.len();
+        // If length is zero there's no point in adding this sysex. Just return.
+        if(len == 0)
+          return;
+//         // If the two sysexes are the same, ignore the event to be added.
+//         // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
+//         //  happen to be identical, they should not be at the same time anyway - they
+//         //  should be serialized.
+//         // REMOVE Tim. autoconnect. Fix this.
+//         // FIXME That's not necessarily true - should be able to schedule in order at
+//         //        the same time but the device does the serialization.
+//         // Currently we don't support chunks anyway, so we are safe for now...
+//         if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
+//           return;
       }
       break;
 
@@ -464,5 +554,78 @@ void MidiRecFifo::remove()
       rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
       --size;
       }
+      
+      
+// REMOVE Tim. autoconnect. Added.
+//---------------------------------------------------------
+//   MPEventPool
+//---------------------------------------------------------
+
+//MPEventPool audioMPEventRTmemoryPool;
+//MPEventPool seqMPEventRTmemoryPool;
+//MPEventPool<MidiPlayEvent> audioMPEventRTmemoryPool;
+//MPEventPool<MidiPlayEvent> seqMPEventRTmemoryPool;
+//template <typename T> MPEventPool<T> audioMPEventRTalloc::pool;
+template <typename T> MPEventPool<T> audioMPEventRTalloc<T>::pool;
+template <typename T> MPEventPool<T> seqMPEventRTalloc<T>::pool;
+
+// MPEventPool::MPEventPool()
+// {
+// //   for (int idx = 0; idx < dimension; ++idx) 
+// //   {
+// //     head[idx]   = 0;
+// //     chunks[idx] = 0;
+// //     grow(idx);  // preallocate
+//     head   = 0;
+//     chunks = 0;
+//     grow();  // preallocate
+// //   }
+// }
+
+// //---------------------------------------------------------
+// //   ~MPEventPool
+// //---------------------------------------------------------
+// 
+// MPEventPool::~MPEventPool()
+// {
+// //   for (int i = 0; i < dimension; ++i) 
+// //   {
+// //     Chunk* n = chunks[i];
+//     Chunk* n = chunks;
+//     while (n) {
+//           Chunk* p = n;
+//           n = n->next;
+//           delete p;
+//           }
+// //   }
+// }
+
+// //---------------------------------------------------------
+// //   grow
+// //---------------------------------------------------------
+// 
+// // void MPEventPool::grow(int idx)
+// void MPEventPool::grow()
+//       {
+// //       int esize = (idx+1) * sizeof(unsigned long);
+//       const int esize = sizeof(MidiPlayEvent);
+// 
+//       Chunk* n    = new Chunk;
+// //       n->next     = chunks[idx];
+//       n->next     = chunks;
+// //       chunks[idx] = n;
+//       chunks = n;
+// 
+//       const int nelem = Chunk::size / esize;
+//       char* start     = n->mem;
+//       char* last      = &start[(nelem-1) * esize];
+// 
+//       for (char* p = start; p < last; p += esize)
+//             reinterpret_cast<Verweis*>(p)->next =
+//                reinterpret_cast<Verweis*>(p + esize);
+//       reinterpret_cast<Verweis*>(last)->next = 0;
+// //       head[idx] = reinterpret_cast<Verweis*>(start);
+//       head = reinterpret_cast<Verweis*>(start);
+//       }
 
 } // namespace MusECore

@@ -121,7 +121,9 @@ class MetronomeSynthIF : public SynthIF
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       virtual void preProcessAlways() { }
-      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+// REMOVE Tim. autoconnect. Changed.
+//       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
 // REMOVE Tim. autoconnect. Removed.
 //       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
@@ -198,15 +200,19 @@ class MetronomeSynthIF : public SynthIF
 //       return el->end();
 //       }
 
-iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
+bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
       {
       #ifdef METRONOME_DEBUG
       fprintf(stderr, "MusE: MetronomeSynthIF::getData\n");
       #endif
 
-      if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
-          initMetronome();
-      }
+// REMOVE Tim. autoconnect. Removed.
+// FIXME Not realtime safe
+//       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
+//           initMetronome();
+//       }
 
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
       unsigned int curPos = 0;
@@ -263,7 +269,9 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, u
       if(curPos < n)
         process(buffer, curPos, n - curPos);
       
-      return i;
+// REMOVE Tim. autoconnect. Changed.
+//       return i;
+      return true;
       //return el->end();
       }
       

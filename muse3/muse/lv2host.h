@@ -420,7 +420,9 @@ public:
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
     virtual void setNativeGeometry (int x, int y, int, int);
     virtual void preProcessAlways();
-    virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
+// REMOVE Tim. autoconnect. Changed.
+//     virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
+    virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer );
 // REMOVE Tim. autoconnect. Removed.
 //     virtual bool putEvent ( const MidiPlayEvent &ev );
     virtual MidiPlayEvent receiveEvent();

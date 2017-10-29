@@ -3599,7 +3599,9 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 }
 
 
-iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList */*el*/, iMPEvent  start_event, unsigned int pos, int ports, unsigned int nframes, float **buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList */*el*/, iMPEvent  start_event, unsigned int pos, int ports, unsigned int nframes, float **buffer)
+bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int nframes, float **buffer)
 {
    // We may not be using ev_buf_sz all at once - this will be just the maximum.
    //unsigned long prop_buf_sz = el->size() + synti->eventFifo.getSize();
@@ -4173,7 +4175,9 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList */*el*/, iMPEvent  start_ev
 
 
 
-   return start_event;
+// REMOVE Tim. autoconnect. Changed.
+//    return start_event;
+   return true;
 }
 
 

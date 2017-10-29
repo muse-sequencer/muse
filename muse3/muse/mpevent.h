@@ -25,12 +25,17 @@
 #ifndef __MPEVENT_H__
 #define __MPEVENT_H__
 
+// #include <set>
 #include <set>
-#include <list>
+// #include <list>
 #include "evdata.h"
-#include "memory.h"
+// #include "memory.h"
 // REMOVE Tim. autoconnect. Added.
 //#include "sysex_processor.h"
+#include <stdio.h>
+#include <stdlib.h>
+// #include <cstddef>
+// #include <map>
 
 // Play events ring buffer size
 #define MIDI_FIFO_SIZE    4096         
@@ -169,24 +174,24 @@ class MidiPlayEvent : public MEvent {
       virtual ~MidiPlayEvent() {}
       };
 
-//---------------------------------------------------------
-//   MPEventList
-//    memory allocation in audio thread domain
-//---------------------------------------------------------
-
-typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
-
-struct MPEventList : public MPEL {
-  public:
-      // Optimize to eliminate duplicate events at the SAME time.
-      // It will not handle duplicate events at DIFFERENT times.
-      // Replaces event if it already exists.
-      void add(const MidiPlayEvent& ev);
-};
-
-typedef MPEventList::iterator iMPEvent;
-typedef MPEventList::const_iterator ciMPEvent;
-typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
+// //---------------------------------------------------------
+// //   MPEventList
+// //    memory allocation in audio thread domain
+// //---------------------------------------------------------
+// 
+// typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
+// 
+// struct MPEventList : public MPEL {
+//   public:
+//       // Optimize to eliminate duplicate events at the SAME time.
+//       // It will not handle duplicate events at DIFFERENT times.
+//       // Replaces event if it already exists.
+//       void add(const MidiPlayEvent& ev);
+// };
+// 
+// typedef MPEventList::iterator iMPEvent;
+// typedef MPEventList::const_iterator ciMPEvent;
+// typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
 
 /* DELETETHIS 20 ??
 //---------------------------------------------------------
@@ -256,6 +261,371 @@ class MidiRecFifo {
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
       int getSize() const  { return size; }
       };
+      
+      
+//---------------------------------------------------------
+//   MPEventPool
+//   Most of the following code is based on examples
+//    from Bjarne Stroustrup: "Die C++ Programmiersprache"
+//---------------------------------------------------------
+
+// class MPEventPool {
+//template <class T> class MPEventPool 
+template <typename T> class MPEventPool 
+{
+      struct Verweis {
+            Verweis* next;
+            };
+      struct Chunk {
+            //enum { size = 2048 * sizeof(MidiPlayEvent) };
+            enum { size = 2048 * sizeof(T) };
+            Chunk* next;
+            char mem[size];
+            };
+      Chunk* chunks;
+      Verweis* head;
+      MPEventPool(MPEventPool&);
+      void operator=(MPEventPool&);
+      
+      //void grow(int idx);
+      void grow()
+      {
+        //const int esize = sizeof(MidiPlayEvent);
+        const int esize = sizeof(T);
+        Chunk* n    = new Chunk;
+        n->next     = chunks;
+        chunks = n;
+        const int nelem = Chunk::size / esize;
+        char* start     = n->mem;
+        char* last      = &start[(nelem-1) * esize];
+        for(char* p = start; p < last; p += esize)
+          reinterpret_cast<Verweis*>(p)->next =
+            reinterpret_cast<Verweis*>(p + esize);
+        reinterpret_cast<Verweis*>(last)->next = 0;
+        head = reinterpret_cast<Verweis*>(start);
+      }
+
+   public:
+      MPEventPool()
+      {
+        head   = 0;
+        chunks = 0;
+        grow();  // preallocate
+      }
+      
+      ~MPEventPool()
+      {
+        Chunk* n = chunks;
+        while (n)
+        {
+          Chunk* p = n;
+          n = n->next;
+          delete p;
+        }
+      }
+      
+//       void* alloc(size_t n)
+//       {
+//         if(n == 0)
+//           return 0;
+//         //if(n != sizeof(MidiPlayEvent))
+//         if(n != sizeof(T))
+//         {
+//           //printf("panic: MPEventPool::alloc requested:%u != sizeof(MidiPlayEvent):%u\n", 
+//           //      (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+//           printf("panic: MPEventPool::alloc requested:%u != sizeof(T):%u\n", 
+//                 (unsigned int)n, (unsigned int)sizeof(T));
+//           exit(-1);
+//         }
+//         if(head == 0)
+//           grow();
+//         Verweis* p = head;
+//         head = p->next;
+//         return p;
+//       }
+      void* alloc(size_t items)
+      {
+        // REMOVE Tim. autoconnect. Added.
+        fprintf(stderr, "MPEventPool::alloc: sizeof T:%u\n", (unsigned int)sizeof(T));
+        if(items == 0)
+          return 0;
+        if(items != 1)
+        {
+          //printf("panic: MPEventPool::alloc requested:%u != sizeof(MidiPlayEvent):%u\n", 
+          //      (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+          printf("panic: MPEventPool::alloc items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        if(head == 0)
+          grow();
+        Verweis* p = head;
+        head = p->next;
+        return p;
+      }
+      
+      
+//       void free(void* b, size_t n)
+//       {
+//         if (b == 0)
+//               return;
+//         //if(n != sizeof(MidiPlayEvent))
+//         if(n != sizeof(T))
+//         {
+//           //printf("panic: MPEventPool::free requested:%u != sizeof(MidiPlayEvent):%u\n", 
+//           //      (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+//           printf("panic: MPEventPool::free requested:%u != sizeof(T):%u\n", 
+//                 (unsigned int)n, (unsigned int)sizeof(T));
+//           exit(-1);
+//         }
+//         Verweis* p = static_cast<Verweis*>(b);
+//         p->next = head;
+//         head = p;
+//       }
+      void free(void* b, size_t items)
+      {
+        // REMOVE Tim. autoconnect. Added.
+        fprintf(stderr, "MPEventPool::free: p:%p sizeof T:%u\n", b, (unsigned int)sizeof(T));
+        if(b == 0 || items == 0)
+          return;
+        if(items != 1)
+        {
+          //printf("panic: MPEventPool::free requested:%u != sizeof(MidiPlayEvent):%u\n", 
+          //      (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+          printf("panic: MPEventPool::free items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        Verweis* p = static_cast<Verweis*>(b);
+        p->next = head;
+        head = p;
+      }
+};
+
+// //---------------------------------------------------------
+// //   alloc
+// //---------------------------------------------------------
+// 
+// inline void* MPEventPool::alloc(size_t n)
+//       {
+//       if(n == 0)
+//         return 0;
+// //       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
+// //       if (idx >= dimension) {
+// //             printf("panic: alloc %zd %d %d\n", n, idx, dimension);
+// //             exit(-1);
+// //             }
+//       if(n != sizeof(MidiPlayEvent))
+//       {
+//         printf("panic: MPEventPool::alloc requested:%u != sizeof(MidiPlayEvent):%u\n", 
+//                (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+//         exit(-1);
+//       }
+// //       if (head[idx] == 0)
+// //             grow(idx);
+//       if(head == 0)
+//         grow();
+// //       Verweis* p = head[idx];
+// //       head[idx] = p->next;
+//       Verweis* p = head;
+//       head = p->next;
+//       return p;
+//       }
+
+// //---------------------------------------------------------
+// //   free
+// //---------------------------------------------------------
+// 
+// inline void MPEventPool::free(void* b, size_t n)
+//       {
+// //       if (b == 0 || n == 0)
+//       if (b == 0)
+//             return;
+// //       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
+// //       if (idx >= dimension) {
+// //             printf("panic: free %zd %d %d\n", n, idx, dimension);
+// //             exit(-1);
+// //             }
+//       if(n != sizeof(MidiPlayEvent))
+//       {
+//         printf("panic: MPEventPool::free requested:%u != sizeof(MidiPlayEvent):%u\n", 
+//                (unsigned int)n, (unsigned int)sizeof(MidiPlayEvent));
+//         exit(-1);
+//       }
+//       Verweis* p = static_cast<Verweis*>(b);
+// //       p->next = head[idx];
+// //       head[idx] = p;
+//       p->next = head;
+//       head = p;
+//       }
+
+//extern MPEventPool audioMPEventRTmemoryPool;
+//extern MPEventPool seqMPEventRTmemoryPool;
+//extern MPEventPool<MidiPlayEvent> audioMPEventRTmemoryPool;
+//extern MPEventPool<MidiPlayEvent> seqMPEventRTmemoryPool;
+      
+
+//---------------------------------------------------------
+//   audioMPEventRTalloc
+//---------------------------------------------------------
+
+//template <class T> class audioMPEventRTalloc
+template <typename T> class audioMPEventRTalloc
+{
+  private:
+    static MPEventPool<T> pool;
+    
+  public:
+    typedef T         value_type;
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+
+    typedef T&        reference;
+    typedef const T&  const_reference;
+
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    audioMPEventRTalloc() 
+    { 
+      // REMOVE Tim. autoconnect. Added.
+      fprintf(stderr, "audioMPEventRTalloc ctor: sizeof T:%u\n", (unsigned int)sizeof(T));
+    } 
+    //template <class U> audioMPEventRTalloc(const audioMPEventRTalloc<U>&) {}
+    template <typename U> audioMPEventRTalloc(const audioMPEventRTalloc<U>&) {}
+    ~audioMPEventRTalloc() {}
+
+    pointer allocate(size_type n, void * = 0) {
+          //return static_cast<T*>(audioMPEventRTmemoryPool.alloc(n * sizeof(T)));
+          //return static_cast<T*>(audioMPEventRTmemoryPool.alloc(n));
+          return static_cast<T*>(pool.alloc(n));
+          }
+    void deallocate(pointer p, size_type n) {
+          //audioMPEventRTmemoryPool.free(p, n * sizeof(T));
+          //audioMPEventRTmemoryPool.free(p, n);
+          pool.free(p, n);
+          }
+
+    audioMPEventRTalloc<T>&  operator=(const audioMPEventRTalloc&) { return *this; }
+    void construct(pointer p, const T& val) {
+          new ((T*) p) T(val);
+          }
+    void destroy(pointer p) {
+          p->~T();
+          }
+    size_type max_size() const { return size_t(-1); }
+
+//       template <class U> struct rebind { typedef audioMPEventRTalloc<U> other; };
+//       template <class U> audioMPEventRTalloc& operator=(const audioMPEventRTalloc<U>&) { return *this; }
+    template <typename U> struct rebind { typedef audioMPEventRTalloc<U> other; };
+    template <typename U> audioMPEventRTalloc& operator=(const audioMPEventRTalloc<U>&) { return *this; }
+};
+
+// //template <class T> audioMPEventRTalloc<T>::audioMPEventRTalloc() {}
+// template <typename T> audioMPEventRTalloc<T>::audioMPEventRTalloc() {
+//             // REMOVE Tim. autoconnect. Added.
+//             fprintf(stderr, "audioMPEventRTalloc ctor: sizeof T:%u\n", (unsigned int)sizeof(T));
+  
+//---------------------------------------------------------
+//   seqMPEventRTalloc
+//---------------------------------------------------------
+
+//template <class T> class seqMPEventRTalloc
+template <typename T> class seqMPEventRTalloc
+{
+  private:
+    static MPEventPool<T> pool;
+    
+  public:
+    typedef T         value_type;
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+
+    typedef T&        reference;
+    typedef const T&  const_reference;
+
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    seqMPEventRTalloc() { }
+//       template <class U> seqMPEventRTalloc(const seqMPEventRTalloc<U>&) {}
+    template <typename U> seqMPEventRTalloc(const seqMPEventRTalloc<U>&) {}
+    ~seqMPEventRTalloc() {}
+
+    pointer allocate(size_type n, void * = 0) {
+          //return static_cast<T*>(seqMPEventRTmemoryPool.alloc(n * sizeof(T)));
+          //return static_cast<T*>(seqMPEventRTmemoryPool.alloc(n));
+          return static_cast<T*>(pool.alloc(n));
+          }
+    void deallocate(pointer p, size_type n) {
+          //seqMPEventRTmemoryPool.free(p, n * sizeof(T));
+          //seqMPEventRTmemoryPool.free(p, n);
+          pool.free(p, n);
+          }
+
+    seqMPEventRTalloc<T>&  operator=(const seqMPEventRTalloc&) { return *this; }
+    void construct(pointer p, const T& val) {
+          new ((T*) p) T(val);
+          }
+    void destroy(pointer p) {
+          p->~T();
+          }
+    size_type max_size() const { return size_t(-1); }
+
+//       template <class U> struct rebind { typedef seqMPEventRTalloc<U> other; };
+//       template <class U> seqMPEventRTalloc& operator=(const seqMPEventRTalloc<U>&) { return *this; }
+    template <typename U> struct rebind { typedef seqMPEventRTalloc<U> other; };
+    template <typename U> seqMPEventRTalloc& operator=(const seqMPEventRTalloc<U>&) { return *this; }
+};
+
+//template <class T> seqMPEventRTalloc<T>::seqMPEventRTalloc() {}
+//template <typename T> seqMPEventRTalloc<T>::seqMPEventRTalloc() {}
+
+
+//---------------------------------------------------------
+//   MPEventList
+//    memory allocation in audio thread domain
+//---------------------------------------------------------
+
+typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioMPEventRTalloc<MidiPlayEvent> > MPEL;
+
+struct MPEventList : public MPEL {
+  public:
+      // Optimize to eliminate duplicate events at the SAME time.
+      // It will not handle duplicate events at DIFFERENT times.
+      // Replaces event if it already exists.
+      void add(const MidiPlayEvent& ev);
+};
+
+typedef MPEventList::iterator iMPEvent;
+typedef MPEventList::const_iterator ciMPEvent;
+typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
+
+//---------------------------------------------------------
+//   SeqMPEventList
+//    memory allocation in sequencer thread domain
+//---------------------------------------------------------
+
+typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, seqMPEventRTalloc<MidiPlayEvent> > SMPEL;
+
+struct SeqMPEventList : public SMPEL {
+  public:
+      // Optimize to eliminate duplicate events at the SAME time.
+      // It will not handle duplicate events at DIFFERENT times.
+      // Replaces event if it already exists.
+      void add(const MidiPlayEvent& ev);
+};
+
+typedef SeqMPEventList::iterator iSeqMPEvent;
+typedef SeqMPEventList::const_iterator ciSeqMPEvent;
+typedef std::pair<iSeqMPEvent, iSeqMPEvent> SeqMPEventListRangePair_t;
+
 
 } // namespace MusECore
 

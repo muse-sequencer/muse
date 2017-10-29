@@ -1246,11 +1246,13 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
 
+// REMOVE Tim. autoconnect. Changed.
 //       iMPEvent ie = _playEvents.begin();
 //       ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
-      MPEventList dummy_mpel;
-      iMPEvent ie = dummy_mpel.begin();
-      ie = _sif->getData(mp, &dummy_mpel, ie, pos, ports, n, buffer);
+      //MPEventList dummy_mpel;
+      //iMPEvent ie = dummy_mpel.begin();
+      //ie = _sif->getData(mp, &dummy_mpel, ie, pos, ports, n, buffer);
+      _sif->getData(mp, pos, ports, n, buffer);
 
       // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
       // That way we can simply set the next play event to the beginning.
@@ -1352,7 +1354,9 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
 //       return i;
 // }
 
-iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigned n, float** buffer)
 {
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
       unsigned int curPos = 0;
@@ -1417,7 +1421,9 @@ iMPEvent MessSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent i,
           _mess->process(pos, buffer, curPos, n - curPos);
       }
       
-      return i;
+// REMOVE Tim. autoconnect. Changed.
+//       return i;
+      return true;
       
 
 

@@ -1539,7 +1539,9 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+// REMOVE Tim. autoconnect. Changed.
+// iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
 // REMOVE Tim. autoconnect. Changed.  
@@ -2085,7 +2087,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* /*el*/, iMPEvent st
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
 
-  return start_event;
+// REMOVE Tim. autoconnect. Changed.
+//   return start_event;
+  return true;
 }
 
 // REMOVE Tim. autoconnect. Removed.
