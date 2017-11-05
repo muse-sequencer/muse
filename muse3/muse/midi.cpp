@@ -567,7 +567,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   bool noteon_found = false;
                   bool noteoff_found = false;
                   bool ctrlval_found = false;
-                  bool other_ctrlval_found = false;
+                  //bool other_ctrlval_found = false;
                   if(i != el.begin())
                   {
                     iMPEvent k = i;
@@ -634,7 +634,10 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   // Accept the event only if no duplicate was found. // TODO: Other types!
                   if((midi_noteon && !noteon_found) ||
                     (midi_noteoff && !noteoff_found) ||
-                    (midi_controller && (other_ctrlval_found || !ctrlval_found)))
+                    //(midi_controller && (other_ctrlval_found || !ctrlval_found)))
+                    (midi_controller && !ctrlval_found) ||
+                    // Accept any other type of event.
+                    (!midi_noteon && !midi_noteoff && !midi_controller) )
                     mel.add(e);
                   }
             }  // i != el.end()
