@@ -287,7 +287,8 @@ bool MidiPort::sendPendingInitializations(bool force)
         MusECore::MidiPlayEvent ev(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0, ie->second);
         //_device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
         // Let the play events list sort it to be safe.
-        _device->addScheduledEvent(ev);
+//         _device->addScheduledEvent(ev);
+        _device->putEvent(ev, MidiDevice::NotLate);
       }
       // Give a bit of time for the last Init sysex to settle?
 //       last_tick += 100;
@@ -414,8 +415,10 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 //             // Retry added. Use default attempts and delay. 
 //             _device->putEventWithRetry(MidiPlayEvent(start_time, port, chan,  
 //               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
-            _device->putEvent(MidiPlayEvent(start_time, port, chan,  
-              ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::PlayFifo, MidiDevice::NotLate);
+//             _device->putEvent(MidiPlayEvent(start_time, port, chan,  
+//               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::PlayFifo, MidiDevice::NotLate);
+            _device->putEvent(MidiPlayEvent(start_time, port, chan,
+              ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::NotLate);
             // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
             // Set it again so that control labels show 'off'...
             setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, mc->initVal() + mc->bias());
@@ -439,8 +442,10 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 //         // Retry added. Use default attempts and delay. 
 //         _device->putEventWithRetry(MidiPlayEvent(start_time, port, channel,
 //           ME_CONTROLLER, cntrl, val));                          
+//         _device->putEvent(MidiPlayEvent(start_time, port, channel,
+//           ME_CONTROLLER, cntrl, val), MidiDevice::PlayFifo, MidiDevice::NotLate);                          
         _device->putEvent(MidiPlayEvent(start_time, port, channel,
-          ME_CONTROLLER, cntrl, val), MidiDevice::PlayFifo, MidiDevice::NotLate);                          
+          ME_CONTROLLER, cntrl, val), MidiDevice::NotLate);
         // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
         setHwCtrlState(channel, cntrl, val);
       }
@@ -600,7 +605,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
       if(_device)
 // REMOVE Tim. autoconnect. Changed.
 //         _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v));
-        _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::PlayFifo, MidiDevice::NotLate);
+//         _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::PlayFifo, MidiDevice::NotLate);
+        _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::NotLate);
         
       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
       setHwCtrlState(chan, ctl, v);
@@ -627,7 +633,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
           MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
 // REMOVE Tim. autoconnect. Changed.
 //           _device->putEvent(ev);
-        _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//         _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+        _device->putEvent(ev, MidiDevice::NotLate);
           // Retry added. Use default attempts and delay. p4.0.15
           //_device->putEventWithRetry(ev);
         }  
@@ -644,7 +651,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
     MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, val);
 // REMOVE Tim. autoconnect. Changed.
 //     _device->putEvent(ev);
-    _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//     _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+    _device->putEvent(ev, MidiDevice::NotLate);
   }  
   setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, val);
 }      
@@ -750,7 +758,8 @@ void MidiPort::sendSysex(const unsigned char* p, int n)
             MidiPlayEvent event(0, 0, ME_SYSEX, p, n);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -814,7 +823,8 @@ void MidiPort::sendStart()
             MidiPlayEvent event(0, 0, 0, ME_START, 0, 0);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -828,7 +838,8 @@ void MidiPort::sendStop()
             MidiPlayEvent event(0, 0, 0, ME_STOP, 0, 0);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -842,7 +853,8 @@ void MidiPort::sendClock()
             MidiPlayEvent event(0, 0, 0, ME_CLOCK, 0, 0);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -856,7 +868,8 @@ void MidiPort::sendContinue()
             MidiPlayEvent event(0, 0, 0, ME_CONTINUE, 0, 0);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -870,7 +883,8 @@ void MidiPort::sendSongpos(int pos)
             MidiPlayEvent event(0, 0, 0, ME_SONGPOS, pos, 0);
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
-           _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -2007,11 +2021,16 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //   const bool stage_res = stageEvent(staged_ev, ev);
   bool res = false;
   if(_device)
+  {
     // FIXME: Concurrency with putOSCEvent(). Need putOSCEvent() etc.
 //     res = _device->putEvent(ev);
 //     res = _device->putEvent(staged_ev);
 //     res = _device->putEvent(stageEvent(ev));
-    res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
+//     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
+    res = !_device->eventBuffers()->put(ev);
+    if(res)
+      fprintf(stderr, "MidiPort::putEvent: Error: Device buffer overflow\n");
+  }
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
 //   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
@@ -2134,9 +2153,14 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 //   const bool stage_res = stageEvent(staged_ev, ev);
   bool res = false;
   if(_device)
+  {
 //   if(_device && i_val_changed)
 //     res = _device->putEvent(ev);
-    res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
+//     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
+    res = !_device->eventBuffers()->put(ev);
+    if(res)
+      fprintf(stderr, "MidiPort::putControllerValue: Error: Device buffer overflow\n");
+  }
 
 //   val = limitValToInstrCtlRange(ctlnum, val);
 

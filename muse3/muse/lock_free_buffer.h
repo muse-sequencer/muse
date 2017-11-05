@@ -26,6 +26,7 @@
 #define __LOCK_FREE_BUFFER_H__
 
 #include <map>
+#include <atomic>
 
 namespace MusECore {
 
@@ -484,6 +485,125 @@ class LockFreeMultiBuffer : public std::map<int, LockFreeBuffer<T>*, std::less<i
           buf->clearRead();
       }
     }
+};
+
+//---------------------------------------------------------
+//   LockFreeMPSCBuffer
+//   A lock-free Multi-Producer Single-Consumer buffer.
+//   Similar to a FIFO or Ring Buffer, but uses a fixed number of 'bins'.
+//   There are no position counters or modulo operations.
+//   There is no size or peek method.
+//   It is intended to be fully consumed at reading time.
+//---------------------------------------------------------
+
+template <class T, unsigned int capacity>
+class LockFreeMPSCBuffer
+{
+      T _array[capacity];
+      std::atomic<bool> _inUse[capacity];
+      std::atomic<bool> _hasData[capacity];
+
+   public:
+      LockFreeMPSCBuffer() { clear(); }
+      
+      // Returns the buffer capacity.
+      unsigned int bufferCapacity() const { return capacity; }
+      
+      // This is only for the writer.
+      // Returns true on success, false if buffer overflow.
+      bool put(const T& item)
+      {
+        bool expected;
+        for(unsigned int i = 0; i < capacity; ++i)
+        {
+          // Expecting a not-in-use bin. Must reset expected each time.
+          expected = false;
+          // Safely check and set the bin's inUse flag.
+          if(_inUse[i].compare_exchange_strong(expected, true))
+          {
+            // Bin was not in use, now safely marked as in use. Now set the item.
+            _array[i] = item;
+            // Safely set the hasData flag for the reader to examine.
+            _hasData[i].store(true);
+            // Success.
+            return true;
+          }
+        }
+        // Sorry, all bins were full. A buffer overflow condition.
+        return false;
+      }
+
+      // This is only for the reader.
+      // Returns true on success, false if there was no data 
+      //  available at the bin index or other error.
+      bool get(T& dst, unsigned int index)
+      {
+        if(index >= capacity)
+          return false;
+        
+        // Expecting hasData true.
+        bool expected = true;
+        // Safely check if there is data in the bin, and reset the 
+        //  bin's hasData and inUse flags. Clear the hasData flag first !!!
+        if(_hasData[index].compare_exchange_strong(expected, false))
+        {
+          // It is safe to store the value in the destination.
+          dst = _array[index];
+          // Now clear the inUse flag !!!
+          _inUse[index].store(false);
+          // Success.
+          return true;
+        }
+        // Sorry, there was no data available in that bin.
+        return false;
+      }
+
+      // This is only for the reader.
+      // Returns true on success.
+      bool remove(unsigned int index)
+      {
+        if(index >= capacity)
+          return false;
+        
+        // Expecting hasData true.
+        bool expected = true;
+        // Safely check and reset the bin's hasData and inUse flags.
+        if(_hasData[index].compare_exchange_strong(expected, false))
+        {
+          _inUse[index].store(false); 
+          // Success.
+          return true;
+        }
+        // Sorry, there was no data available in that bin.
+        return false;
+      }
+      
+      // Not thread safe. Only call when safe to do so,
+      //  like constructor etc.
+      void clear() 
+      { 
+        for(unsigned int i = 0; i < capacity; ++i) 
+        { 
+          // Clear the hasData flag first !!!
+          _hasData[i].store(false);
+          // Now clear the inUse flag !!!
+          _inUse[i].store(false);
+        } 
+      }
+      
+      // This is only for the reader.
+      void clearRead() 
+      { 
+        bool expected;
+        for(unsigned int i = 0; i < capacity; ++i) 
+        { 
+          // Expecting hasData true. Must reset expected each time.
+          expected = true;
+          // Safely check and reset the bin's hasData and inUse flags.
+          if(_hasData[i].compare_exchange_strong(expected, false))
+            _inUse[i].store(false); 
+        } 
+      }
 };
 
 } // namespace MusECore

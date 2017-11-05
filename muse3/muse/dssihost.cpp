@@ -1554,15 +1554,16 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 //   snd_seq_event_t events[ev_buf_sz];
   // This also takes an internal snapshot of the size for use later...
   // False = don't use the size snapshot, but update it.
-  const unsigned long ev_fifo_sz = synti->eventFifos()->getSize(false);
-  snd_seq_event_t events[ev_fifo_sz];
+//   const unsigned long ev_fifo_sz = synti->eventFifos()->getSize(false);
+//   snd_seq_event_t events[ev_fifo_sz];
 
 // REMOVE Tim. autoconnect. Removed.
 //   const int frameOffset = MusEGlobal::audio->getFrameOffset();
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef DSSI_DEBUG_PROCESS
-  fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
+//   fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
+  fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu\n", pos, ports, nframes, syncFrame);
   #endif
 
   // All ports must be connected to something!
@@ -1995,12 +1996,34 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 // 
 // 
       
+      // Transfer the lock-free buffer events to the sorted multi-set.
+      MidiPlayEvent buf_ev; 
+      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < buf_sz; ++i)
+      {
+        if(synti->eventBuffers()->get(buf_ev, i))
+          synti->_outEvents.add(buf_ev);
+      }
       
-      // Process all event FIFOs...
-      for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
+      // Count how many events we need.
+      for(ciMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
+      {
+        const MidiPlayEvent& e = *impe;
+        if(e.time() >= (syncFrame + sample + nsamp))
+          break;
+        ++nevents;
+      }
+      
+      snd_seq_event_t events[nevents];
+      
+//       // Process all event FIFOs...
+//       for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
+      unsigned long event_counter = 0;
+      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end() && event_counter <= nevents; )
       {
         // True = use the size snapshot.
-        const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+//         const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+        const MidiPlayEvent& e = *impe;
 
         #ifdef DSSI_DEBUG
         fprintf(stderr, "DssiSynthIF::getData eventFifos event time:%d\n", e.time());
@@ -2015,7 +2038,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         if(ports != 0)  // Don't bother if not 'running'.
         {
           // Returns false if the event was not filled. It was handled, but some other way.
-          if(processEvent(e, &events[nevents]))
+          if(processEvent(e, &events[event_counter]))
           {
             // Time-stamp the event.
             unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
@@ -2028,16 +2051,23 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
             }
             // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
             //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-            events[nevents].time.tick = ft;
+//             events[nevents].time.tick = ft;
+            events[event_counter].time.tick = ft;
 
-            ++nevents;
+//             ++nevents;
+            ++event_counter;
           }
         }
         // Done with ring buffer's event. Remove it.
         // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         synti->eventFifos()->remove(true);
+        
+        // C++11.
+        impe = synti->_outEvents.erase(impe);
       }
 
+      if(event_counter < nevents)
+        nevents = event_counter;
       
       
       
@@ -2251,7 +2281,8 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         
         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
-          md->eventFifos()->put(MidiDevice::OSCFifo, event);
+//           md->eventFifos()->put(MidiDevice::OSCFifo, event);
+          md->eventBuffers()->put(event);
       }
       
       //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
@@ -2380,7 +2411,8 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
         
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
-          md->eventFifos()->put(MidiDevice::OSCFifo, event);
+//           md->eventFifos()->put(MidiDevice::OSCFifo, event);
+          md->eventBuffers()->put(event);
       }
       
       return 0;

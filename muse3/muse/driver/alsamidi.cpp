@@ -1797,6 +1797,8 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
 //   }
 
+  // Get the state of the clear flag.
+  const bool do_clear = clearFlag();
 
   //--------------------------------------------------------------------------------
   // For now we stop ALL ring buffer processing until any sysex transmission is finished.
@@ -1817,21 +1819,18 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
         //return;
         break; 
 
-      snd_seq_event_t event;
-      snd_seq_ev_clear(&event);
-      
-      event.queue   = SND_SEQ_QUEUE_DIRECT;
-      event.source  = musePort;
-      event.dest    = adr;
-      
       const size_t len = sop->curChunkSize();
       if(len > 0)
       {
         unsigned char buf[len];
         if(sop->getCurChunk(buf))
         {
+          snd_seq_event_t event;
+          snd_seq_ev_clear(&event);
+          event.queue   = SND_SEQ_QUEUE_DIRECT;
+          event.source  = musePort;
+          event.dest    = adr;
           snd_seq_ev_set_sysex(&event, len, buf);
-          // NOTE: Don't move this out, 'buf' would go out of scope.
           putAlsaEvent(&event);
           // State is still Sending?
           //if(sop->state() == SysExOutputProcessor::Sending)
@@ -1869,14 +1868,28 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
   // Play all events up to current frame...
 //   while(!_playEventFifo->isEmpty())
   // False = don't use the size snapshot, but update it.
-  const int sz = _eventFifos->getSize(false);
-  for(int i = 0; i < sz; ++i)
-//   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
-//   for(int i = 0; i < pl_evfifo_sz; ++i)
+  
+//   const int sz = _eventFifos->getSize(false);
+//   for(int i = 0; i < sz; ++i)
+// //   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
+// //   for(int i = 0; i < pl_evfifo_sz; ++i)
+   
+  // Transfer the lock-free buffer events to the sorted multi-set.
+  MidiPlayEvent buf_ev; 
+  const unsigned int buf_sz = eventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < buf_sz; ++i)
+  {
+    if(eventBuffers()->get(buf_ev, i))
+      _outEvents.add(buf_ev);
+  }
+  
+//   for(int i = 0; i < sz; ++i)
+  for(iMPEvent impe = _outEvents.begin(); impe != _outEvents.end(); )
   {
 //     const MidiPlayEvent e(_playEventFifo->peek()); 
     // True = use the size snapshot.
-    const MidiPlayEvent& e(_eventFifos->peek(true)); 
+//     const MidiPlayEvent& e(_eventFifos->peek(true)); 
+    const MidiPlayEvent& e = *impe;
     
 // REMOVE Tim. autoconnect. Added. Diagnostics.
     fprintf(stderr, "INFO: MidiAlsaDevice::processMidi() evTime:%u curFrame:%u\n", e.time(), curFrame);
@@ -1943,7 +1956,10 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //     _playEventFifo->remove();  // Successfully processed event. Remove it from FIFO.
     // Successfully processed event. Remove it from FIFO.
     // True = use the size snapshot.
-    _eventFifos->remove(true);
+//     _eventFifos->remove(true);
+
+    // C++11.
+    impe = _outEvents.erase(impe);
   }
 
 

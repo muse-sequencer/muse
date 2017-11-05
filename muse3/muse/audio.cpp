@@ -605,7 +605,8 @@ void Audio::process(unsigned frames)
 // REMOVE Tim. autoconnect. Changed.
 //                                     // may cause problems, called from audio thread
 //                                     mp->device()->putEvent(ev);
-                                    mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//                                     mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+                                    mp->device()->putEvent(ev, MidiDevice::NotLate);
                                     }
                                 }
                             }
@@ -881,7 +882,8 @@ void Audio::processMsg(AudioMsg* msg)
                   
                   MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
                   if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
-                    md->addScheduledEvent(*ev);
+//                     md->addScheduledEvent(*ev);
+                    md->putEvent(*ev, MidiDevice::NotLate);
                   // Record??
                   }
                   break;
@@ -1152,7 +1154,8 @@ void Audio::startRolling()
                         const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
 // REMOVE Tim. autoconnect. Changed.
 //                         mp->device()->putEvent(ev);    
-                        mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//                         mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+                        mp->device()->putEvent(ev, MidiDevice::NotLate);
                   }
               }
           }

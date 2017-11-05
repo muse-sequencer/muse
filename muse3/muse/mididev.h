@@ -32,9 +32,11 @@
 #include "globaldefs.h"
 // REMOVE Tim. autoconnect. Added.
 #include <vector>
+#include <atomic>
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
+//#include <boost/lockfree/queue.hpp>
 
 #include <QString>
 
@@ -130,6 +132,7 @@ class MidiDevice {
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
       QString _state;
+      std::atomic<bool> _clearFlag;
       
 // REMOVE Tim. autoconnect. Removed.
 //       bool _sysexReadingChunks;
@@ -142,7 +145,7 @@ class MidiDevice {
       std::vector<MidiPlayEvent> *_sysExOutDelayedEvents;
       
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
-      MPEventList _playEvents;
+//       MPEventList _playEvents;
       
 // REMOVE Tim. autoconnect. Removed.
 //       // Fifo for midi events sent from gui direct to midi port:
@@ -151,7 +154,9 @@ class MidiDevice {
       // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
       //LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
       // Various IPC FIFOs.
-      LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
+//       LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
+      //boost::lockfree::queue<MEvent, boost::lockfree::fixed_sized<true>, boost::lockfree::capacity<1024> > q;
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _eventBuffers;
       
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
@@ -188,6 +193,9 @@ class MidiDevice {
       // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
       virtual unsigned int pbForwardShiftFrames() const { return 0; }
+
+//       // Clears the device's output events list, unique to each device.
+//       virtual void clearOutEvents() = 0;
       
       void init();
 // REMOVE Tim. autoconnect. Removed. Made public.
@@ -265,7 +273,8 @@ class MidiDevice {
       virtual void recordEvent(MidiRecordEvent&);
 
       // Schedule an event for playback. Returns false if event cannot be delivered.
-      virtual bool addScheduledEvent(const MidiPlayEvent& ev) { _playEvents.add(ev); return true; }
+//       virtual bool addScheduledEvent(const MidiPlayEvent& ev) { _playEvents.add(ev); return true; }
+//       virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return _eventBuffers.put(ev); }
       // Add a stuck note. Returns false if event cannot be delivered.
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
       // Put an event for immediate playback. Returns true if event cannot be delivered.
@@ -278,7 +287,8 @@ class MidiDevice {
       // NOTE: Avoid putting events with time >> current cycle start frame + segment size,
       //  because that will stall all processing of FIFOs until that frame has come -
       //  ie. don't accidentally put an event with frame time waaaay in the future !
-      virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
+      //virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
+      virtual bool putEvent(const MidiPlayEvent& ev, LatencyType latencyType);
 // REMOVE Tim. autoconnect. Removed.
 //       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
 //       // Since it waits, it should not be used in RT or other time-sensitive threads.
@@ -296,12 +306,13 @@ class MidiDevice {
       //  the device can use the playEvents list directly as long as it drains the list.
       // To be called from audio thread only.
 //       virtual void preparePlayEventFifo() { }
-      virtual void preparePlayEventFifo();
+//       virtual void preparePlayEventFifo();
       // This clears the 'write' side of any fifo the device may have (like ALSA),
       //  by setting the size to zero and the write pointer equal to the read pointer.
 //       virtual void clearPlayEventFifo() {}
       // Various IPC FIFOs.
-      LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
+//       LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers() { return &_eventBuffers; } 
       
 // REMOVE Tim. autoconnect. Added. Moved from protected.
       virtual void processStuckNotes();
@@ -325,6 +336,12 @@ class MidiDevice {
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
+      // Informs the device to clear (flush) the outEvents and event buffers. 
+      // To be called by audio thread only. Typically from the device's handleStop routine.
+      void setClearFlag() { _clearFlag.store(true); }
+      // Returns whether the device is flagged to clear (flush) the outEvents and event buffers.
+      // To be called from the device's thread in the process routine.
+      bool clearFlag() const { return _clearFlag.load(); }
 // REMOVE Tim. autoconnect. Removed.
 //       bool sysexReadingChunks() { return _sysexReadingChunks; }
 //       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }

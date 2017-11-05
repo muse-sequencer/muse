@@ -218,13 +218,24 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
       unsigned int curPos = 0;
       unsigned int frame = 0;
 
-      // This also takes an internal snapshot of the size for use later...
-      // False = don't use the size snapshot, but update it.
-      const int sz = synti->eventFifos()->getSize(false);
-      for(int i = 0; i < sz; ++i)
+      // Transfer the lock-free buffer events to the sorted multi-set.
+      MidiPlayEvent buf_ev; 
+      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < buf_sz; ++i)
+      {
+        if(synti->eventBuffers()->get(buf_ev, i))
+          synti->_outEvents.add(buf_ev);
+      }
+      
+//       // This also takes an internal snapshot of the size for use later...
+//       // False = don't use the size snapshot, but update it.
+//       const int sz = synti->eventFifos()->getSize(false);
+//       for(int i = 0; i < sz; ++i)
+      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
       {  
-        // True = use the size snapshot.
-        const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
+//         // True = use the size snapshot.
+//         const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
+        const MidiPlayEvent& ev = *impe;
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
@@ -263,7 +274,10 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         
         // Done with ring buffer event. Remove it from FIFO.
         // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         synti->eventFifos()->remove(true);
+        
+        // C++11.
+        impe = synti->_outEvents.erase(impe);
       }
 
       if(curPos < n)

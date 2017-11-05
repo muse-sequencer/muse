@@ -24,65 +24,66 @@
 #include "memory.h"
 #include <string.h>
 
+// NOTE: Keep this code in case we need a dimensioned pool!
 // REMOVE Tim. autoconnect. Removed.
-// Pool audioRTmemoryPool;
-// Pool midiRTmemoryPool;
-// 
-// //---------------------------------------------------------
-// //   Pool
-// //---------------------------------------------------------
-// 
-// Pool::Pool()
-//       {
-//       for (int idx = 0; idx < dimension; ++idx) {
-//             head[idx]   = 0;
-//             chunks[idx] = 0;
-//             grow(idx);  // preallocate
-//             }
-//       }
-// 
-// //---------------------------------------------------------
-// //   ~Pool
-// //---------------------------------------------------------
-// 
-// Pool::~Pool()
-//       {
-//       for (int i = 0; i < dimension; ++i) {
-//             Chunk* n = chunks[i];
-//             while (n) {
-//                   Chunk* p = n;
-//                   n = n->next;
-//                   delete p;
-//                   }
-//             }
-//       }
-// 
-// //---------------------------------------------------------
-// //   grow
-// //---------------------------------------------------------
-// 
-// void Pool::grow(int idx)
-//       {
-//       int esize = (idx+1) * sizeof(unsigned long);
-// 
-//       Chunk* n    = new Chunk;
-//       n->next     = chunks[idx];
-//       chunks[idx] = n;
-// 
-//       const int nelem = Chunk::size / esize;
-//       char* start     = n->mem;
-//       char* last      = &start[(nelem-1) * esize];
-// 
-//       for (char* p = start; p < last; p += esize)
-//             reinterpret_cast<Verweis*>(p)->next =
-//                reinterpret_cast<Verweis*>(p + esize);
-//       reinterpret_cast<Verweis*>(last)->next = 0;
-//       head[idx] = reinterpret_cast<Verweis*>(start);
-//       }
+#if 0
+Pool audioRTmemoryPool;
+Pool midiRTmemoryPool;
 
+//---------------------------------------------------------
+//   Pool
+//---------------------------------------------------------
 
-      
-      
+Pool::Pool()
+      {
+      for (int idx = 0; idx < dimension; ++idx) {
+            head[idx]   = 0;
+            chunks[idx] = 0;
+            grow(idx);  // preallocate
+            }
+      }
+
+//---------------------------------------------------------
+//   ~Pool
+//---------------------------------------------------------
+
+Pool::~Pool()
+      {
+      for (int i = 0; i < dimension; ++i) {
+            Chunk* n = chunks[i];
+            while (n) {
+                  Chunk* p = n;
+                  n = n->next;
+                  delete p;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   grow
+//---------------------------------------------------------
+
+void Pool::grow(int idx)
+      {
+      int esize = (idx+1) * sizeof(unsigned long);
+
+      Chunk* n    = new Chunk;
+      n->next     = chunks[idx];
+      chunks[idx] = n;
+
+      const int nelem = Chunk::size / esize;
+      char* start     = n->mem;
+      char* last      = &start[(nelem-1) * esize];
+
+      for (char* p = start; p < last; p += esize)
+            reinterpret_cast<Verweis*>(p)->next =
+               reinterpret_cast<Verweis*>(p + esize);
+      reinterpret_cast<Verweis*>(last)->next = 0;
+      head[idx] = reinterpret_cast<Verweis*>(start);
+      }
+
+#endif
+
 //---------------------------------------------------------
 //   MemoryQueue
 //---------------------------------------------------------

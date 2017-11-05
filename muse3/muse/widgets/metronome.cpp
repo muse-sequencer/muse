@@ -206,7 +206,9 @@ void MetronomeConfig::apply()
 
       MusECore::MidiPlayEvent ev(0, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
       ev.setA(MusECore::reloadClickSounds);
-      MusECore::metronome->addScheduledEvent(ev);
+// REMOVE Tim. autoconnect. Changed.
+//       MusECore::metronome->addScheduledEvent(ev);
+      MusECore::metronome->putEvent(ev, MusECore::MidiDevice::NotLate);
 
 }
 

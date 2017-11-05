@@ -61,6 +61,7 @@ class MidiAlsaDevice : public MidiDevice {
       //  convenience of its sorting, then dump them to this FIFO so that 
       //  a driver or device may read it, possibly from another thread (ALSA driver).
 //       LockFreeBuffer<MidiPlayEvent> *_playEventFifo;
+      SeqMPEventList _outEvents;
      
       // Return false if event is delivered.
       bool processEvent(const MidiPlayEvent& ev);
@@ -70,6 +71,9 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectWfd();
 
       bool putAlsaEvent(snd_seq_event_t*);
+      
+//       // Clears the device's output events list, unique to each device.
+//       virtual void clearOutEvents() { _outEvents.clear(); };
 
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);

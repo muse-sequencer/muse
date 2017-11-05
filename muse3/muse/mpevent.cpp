@@ -34,6 +34,13 @@
 
 namespace MusECore {
 
+
+template <typename T> TypedMemoryPool<T, 2048> audioMPEventRTalloc<T>::pool;
+template <typename T> TypedMemoryPool<T, 2048> seqMPEventRTalloc<T>::pool;
+
+//template <typename T, MPEventRTallocID aid> TypedMemoryPool<T, 2048> MPEventRTalloc<T, aid>::audio_pool;
+//template <typename T, MPEventRTallocID aid> TypedMemoryPool<T, 2048> MPEventRTalloc<T, aid>::seq_pool;
+
 //---------------------------------------------------------
 //   MEvent
 //---------------------------------------------------------
@@ -457,54 +464,55 @@ void SeqMPEventList::add(const MidiPlayEvent& ev)
   insert(ev);
 }
 
-//---------------------------------------------------------
-//   put
-//    return true on fifo overflow
-//---------------------------------------------------------
-
-bool MidiFifo::put(const MidiPlayEvent& event)
-      {
-      if (size < MIDI_FIFO_SIZE) {
-            fifo[wIndex] = event;
-            wIndex = (wIndex + 1) % MIDI_FIFO_SIZE;
-            // q_atomic_increment(&size);
-            ++size;
-            return false;
-            }
-      return true;
-      }
-
-//---------------------------------------------------------
-//   get
-//---------------------------------------------------------
-
-MidiPlayEvent MidiFifo::get()
-      {
-      MidiPlayEvent event(fifo[rIndex]);
-      rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      --size;
-      return event;
-      }
-
-//---------------------------------------------------------
-//   peek
-//---------------------------------------------------------
-
-const MidiPlayEvent& MidiFifo::peek(int n)
-      {
-      int idx = (rIndex + n) % MIDI_FIFO_SIZE;
-      return fifo[idx];
-      }
-
-//---------------------------------------------------------
-//   remove
-//---------------------------------------------------------
-
-void MidiFifo::remove()
-      {
-      rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      --size;
-      }
+// REMOVE Tim. autoconnect. Removed. Replaced with template-ized version.
+// //---------------------------------------------------------
+// //   put
+// //    return true on fifo overflow
+// //---------------------------------------------------------
+// 
+// bool MidiFifo::put(const MidiPlayEvent& event)
+//       {
+//       if (size < MIDI_FIFO_SIZE) {
+//             fifo[wIndex] = event;
+//             wIndex = (wIndex + 1) % MIDI_FIFO_SIZE;
+//             // q_atomic_increment(&size);
+//             ++size;
+//             return false;
+//             }
+//       return true;
+//       }
+// 
+// //---------------------------------------------------------
+// //   get
+// //---------------------------------------------------------
+// 
+// MidiPlayEvent MidiFifo::get()
+//       {
+//       MidiPlayEvent event(fifo[rIndex]);
+//       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
+//       --size;
+//       return event;
+//       }
+// 
+// //---------------------------------------------------------
+// //   peek
+// //---------------------------------------------------------
+// 
+// const MidiPlayEvent& MidiFifo::peek(int n)
+//       {
+//       int idx = (rIndex + n) % MIDI_FIFO_SIZE;
+//       return fifo[idx];
+//       }
+// 
+// //---------------------------------------------------------
+// //   remove
+// //---------------------------------------------------------
+// 
+// void MidiFifo::remove()
+//       {
+//       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
+//       --size;
+//       }
 
 
 //---------------------------------------------------------
@@ -555,77 +563,4 @@ void MidiRecFifo::remove()
       --size;
       }
       
-      
-// REMOVE Tim. autoconnect. Added.
-//---------------------------------------------------------
-//   MPEventPool
-//---------------------------------------------------------
-
-//MPEventPool audioMPEventRTmemoryPool;
-//MPEventPool seqMPEventRTmemoryPool;
-//MPEventPool<MidiPlayEvent> audioMPEventRTmemoryPool;
-//MPEventPool<MidiPlayEvent> seqMPEventRTmemoryPool;
-//template <typename T> MPEventPool<T> audioMPEventRTalloc::pool;
-template <typename T> MPEventPool<T> audioMPEventRTalloc<T>::pool;
-template <typename T> MPEventPool<T> seqMPEventRTalloc<T>::pool;
-
-// MPEventPool::MPEventPool()
-// {
-// //   for (int idx = 0; idx < dimension; ++idx) 
-// //   {
-// //     head[idx]   = 0;
-// //     chunks[idx] = 0;
-// //     grow(idx);  // preallocate
-//     head   = 0;
-//     chunks = 0;
-//     grow();  // preallocate
-// //   }
-// }
-
-// //---------------------------------------------------------
-// //   ~MPEventPool
-// //---------------------------------------------------------
-// 
-// MPEventPool::~MPEventPool()
-// {
-// //   for (int i = 0; i < dimension; ++i) 
-// //   {
-// //     Chunk* n = chunks[i];
-//     Chunk* n = chunks;
-//     while (n) {
-//           Chunk* p = n;
-//           n = n->next;
-//           delete p;
-//           }
-// //   }
-// }
-
-// //---------------------------------------------------------
-// //   grow
-// //---------------------------------------------------------
-// 
-// // void MPEventPool::grow(int idx)
-// void MPEventPool::grow()
-//       {
-// //       int esize = (idx+1) * sizeof(unsigned long);
-//       const int esize = sizeof(MidiPlayEvent);
-// 
-//       Chunk* n    = new Chunk;
-// //       n->next     = chunks[idx];
-//       n->next     = chunks;
-// //       chunks[idx] = n;
-//       chunks = n;
-// 
-//       const int nelem = Chunk::size / esize;
-//       char* start     = n->mem;
-//       char* last      = &start[(nelem-1) * esize];
-// 
-//       for (char* p = start; p < last; p += esize)
-//             reinterpret_cast<Verweis*>(p)->next =
-//                reinterpret_cast<Verweis*>(p + esize);
-//       reinterpret_cast<Verweis*>(last)->next = 0;
-// //       head[idx] = reinterpret_cast<Verweis*>(start);
-//       head = reinterpret_cast<Verweis*>(start);
-//       }
-
 } // namespace MusECore

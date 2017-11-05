@@ -699,9 +699,11 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                   MidiPlayEvent pev(0, 0, 0, ev);
 // REMOVE Tim. autoconnect. Changed.
 //                   if (_sif->putEvent(pev))
-                  //if(!addScheduledEvent(pev))
-                  if(!_eventFifos->put(PlayFifo, pev))
-                        break;   // try later
+//                   //if(!addScheduledEvent(pev))
+//                   if(!_eventFifos->put(PlayFifo, pev))
+//                   if(!_eventBuffers.put(pev))
+//                         break;   // try later
+                  _eventBuffers.put(pev);
                   }
             iel->clear();
             }
@@ -1216,15 +1218,18 @@ void SynthI::preProcessAlways()
 //     //  eventFifo.get();
 //     eventFifo.clear();  // Clear is the same but faster AND safer, right?
 //   }
-  if(off() || midiPort() < 0 || midiPort() >= MIDI_PORTS)
+//   if(off() || midiPort() < 0 || midiPort() >= MIDI_PORTS)
+  if(off())
   {
 //     // Clear any accumulated play events.
 //     _playEvents.clear();
 //     // Eat up any fifo events.
 //     eventFifo.clearRead();
 // //     _osc2AudioFifo->clearRead();
-    // Eat up any fifo events.
-    _eventFifos->clearRead();
+//     // Eat up any fifo events.
+//     _eventFifos->clearRead();
+    // Eat up any buffer events.
+    _eventBuffers.clearRead();
   }
 }
 
@@ -1362,13 +1367,25 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
       unsigned int curPos = 0;
       unsigned int frame = 0;
 
-      // This also takes an internal snapshot of the size for use later...
-      // False = don't use the size snapshot, but update it.
-      const int sz = synti->eventFifos()->getSize(false);
-      for(int i = 0; i < sz; ++i)
+      // Transfer the lock-free buffer events to the sorted multi-set.
+      MidiPlayEvent buf_ev; 
+      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < buf_sz; ++i)
+      {
+        if(synti->eventBuffers()->get(buf_ev, i))
+          synti->_outEvents.add(buf_ev);
+      }
+      
+//       // This also takes an internal snapshot of the size for use later...
+//       // False = don't use the size snapshot, but update it.
+//       const int sz = synti->eventFifos()->getSize(false);
+//       for(int i = 0; i < sz; ++i)
+      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
       {  
-        // True = use the size snapshot.
-        const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
+//         // True = use the size snapshot.
+//         const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
+        const MidiPlayEvent& ev = *impe;
+        
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
@@ -1408,9 +1425,12 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
         //synti->putEvent(ev);
         processEvent(ev);
         
-        // Done with ring buffer event. Remove it from FIFO.
-        // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         // Done with ring buffer event. Remove it from FIFO.
+//         // True = use the size snapshot.
+//         synti->eventFifos()->remove(true);
+        
+        // C++11.
+        impe = synti->_outEvents.erase(impe);
       }
 
       if(curPos < n)

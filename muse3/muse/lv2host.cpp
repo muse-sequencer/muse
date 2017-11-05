@@ -3608,7 +3608,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    //const unsigned long ev_buf_sz = (prop_buf_sz == 0) ? 1024 : prop_buf_sz;
    // This also takes an internal snapshot of the size for use later...
    // False = don't use the size snapshot, but update it.
-   const unsigned long ev_fifo_sz = synti->eventFifos()->getSize(false);
+//    const unsigned long ev_fifo_sz = synti->eventFifos()->getSize(false);
 
 // REMOVE Tim. autoconnect. Removed.
 //    const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
@@ -4062,11 +4062,22 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 //          }
          
          
-        // Now process putEvent events...
-        for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
+        // Transfer the lock-free buffer events to the sorted multi-set.
+        MidiPlayEvent buf_ev; 
+        const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
+        for(unsigned int i = 0; i < buf_sz; ++i)
+        {
+          if(synti->eventBuffers()->get(buf_ev, i))
+            synti->_outEvents.add(buf_ev);
+        }
+      
+//         // Now process putEvent events...
+//         for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
+        for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
         {
           // True = use the size snapshot.
-          const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+//           const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+          const MidiPlayEvent& e = *impe;
 
           #ifdef LV2_DEBUG
           fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
@@ -4097,7 +4108,10 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
           }
           // Done with ring buffer's event. Remove it.
           // True = use the size snapshot.
-          synti->eventFifos()->remove(true);
+//           synti->eventFifos()->remove(true);
+          
+          // C++11.
+          impe = synti->_outEvents.erase(impe);
         }
          
 

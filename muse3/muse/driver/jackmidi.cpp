@@ -1598,12 +1598,23 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //   }
 
   
+  // Transfer the lock-free buffer events to the sorted multi-set.
+  MidiPlayEvent buf_ev;
+  const unsigned int buf_sz = eventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < buf_sz; ++i)
+  {
+    if(eventBuffers()->get(buf_ev, i))
+      _outEvents.add(buf_ev);
+  }
+  
   // False = don't use the size snapshot, but update it.
-  const int sz = _eventFifos->getSize(false);
-  for(int i = 0; i < sz; ++i)
+//   const int sz = _eventFifos->getSize(false);
+//   for(int i = 0; i < sz; ++i)
+  for(iMPEvent impe = _outEvents.begin(); impe != _outEvents.end(); )
   {  
     // True = use the size snapshot.
-    const MidiPlayEvent& ev(_eventFifos->peek(true)); 
+//     const MidiPlayEvent& ev(_eventFifos->peek(true)); 
+    const MidiPlayEvent& ev = *impe;
     
 // REMOVE Tim. autoconnect. Added.
     if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
@@ -1625,7 +1636,10 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
     // Successfully processed event. Remove it from FIFO.
     // True = use the size snapshot.
-    _eventFifos->remove(true);
+//     _eventFifos->remove(true);
+    
+    // C++11.
+    impe = _outEvents.erase(impe);
   }
   
   

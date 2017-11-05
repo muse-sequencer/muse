@@ -2752,12 +2752,12 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 //   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
   // This also takes an internal snapshot of the size for use later...
   // False = don't use the size snapshot, but update it.
-  const unsigned long ev_buf_sz = synti->eventFifos()->getSize(false);
-  VstMidiEvent events[ev_buf_sz];
-  char evbuf[sizeof(VstMidiEvent*) * ev_buf_sz + sizeof(VstEvents)];
-  VstEvents *vst_events = (VstEvents*)evbuf;
-  vst_events->numEvents = 0;
-  vst_events->reserved  = 0;
+//   const unsigned long ev_buf_sz = synti->eventFifos()->getSize(false);
+//   VstMidiEvent events[ev_buf_sz];
+//   char evbuf[sizeof(VstMidiEvent*) * ev_buf_sz + sizeof(VstEvents)];
+//   VstEvents *vst_events = (VstEvents*)evbuf;
+//   vst_events->numEvents = 0;
+//   vst_events->reserved  = 0;
 
 // REMOVE Tim. autoconnect. Removed.
 //   const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
@@ -2765,7 +2765,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef VST_NATIVE_DEBUG_PROCESS
-  fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
+//   fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
+  fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu\n", pos, ports, nframes, syncFrame);
   #endif
 
   // All ports must be connected to something!
@@ -3153,11 +3154,38 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 //         }
 //       }
 
-      // Now process putEvent events...
-      for(long unsigned int rb_idx = 0; rb_idx < ev_buf_sz; ++rb_idx)
+      // Transfer the lock-free buffer events to the sorted multi-set.
+      MidiPlayEvent buf_ev; 
+      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < buf_sz; ++i)
       {
-        // True = use the size snapshot.
-        const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+        if(synti->eventBuffers()->get(buf_ev, i))
+          synti->_outEvents.add(buf_ev);
+      }
+      
+      // Count how many events we need.
+      for(ciMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
+      {
+        const MidiPlayEvent& e = *impe;
+        if(e.time() >= (syncFrame + sample + nsamp))
+          break;
+        ++nevents;
+      }
+      
+      VstMidiEvent events[nevents];
+      char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+      VstEvents *vst_events = (VstEvents*)evbuf;
+      vst_events->numEvents = 0;
+      vst_events->reserved  = 0;
+  
+//       // Now process putEvent events...
+//       for(long unsigned int rb_idx = 0; rb_idx < ev_buf_sz; ++rb_idx)
+      unsigned long event_counter = 0;
+      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end() && event_counter <= nevents; )
+      {
+//         // True = use the size snapshot.
+//         const MidiPlayEvent& e = synti->eventFifos()->peek(true);
+        const MidiPlayEvent& e = *impe;
 
         #ifdef VST_NATIVE_DEBUG
         fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
@@ -3173,7 +3201,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         if(ports != 0)  // Don't bother if not 'running'.
         {
           // Returns false if the event was not filled. It was handled, but some other way.
-          if(processEvent(e, &events[nevents]))
+//           if(processEvent(e, &events[nevents]))
+          if(processEvent(e, &events[event_counter]))
           {
             // Time-stamp the event.
             unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
@@ -3185,16 +3214,25 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
                         e.time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
-            vst_events->events[nevents] = (VstEvent*)&events[nevents];
-            events[nevents].deltaFrames = ft;
+//             vst_events->events[nevents] = (VstEvent*)&events[nevents];
+            vst_events->events[event_counter] = (VstEvent*)&events[event_counter];
+//             events[nevents].deltaFrames = ft;
+            events[event_counter].deltaFrames = ft;
 
-            ++nevents;
+//             ++nevents;
+            ++event_counter;
           }
         }
         // Done with ring buffer's event. Remove it.
         // True = use the size snapshot.
-        synti->eventFifos()->remove(true);
+//         synti->eventFifos()->remove(true);
+        
+        // C++11.
+        impe = synti->_outEvents.erase(impe);
       }
+      
+      if(event_counter < nevents)
+        nevents = event_counter;
       
       #ifdef VST_NATIVE_DEBUG_PROCESS
       fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);

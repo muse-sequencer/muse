@@ -789,7 +789,8 @@ void Audio::sendLocalOff()
                   MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
                   if(MusEGlobal::midiPorts[k].device())
                     //MusEGlobal::midiPorts[k].device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
-                    MusEGlobal::midiPorts[k].device()->addScheduledEvent(ev);
+//                     MusEGlobal::midiPorts[k].device()->addScheduledEvent(ev);
+                    MusEGlobal::midiPorts[k].device()->putEvent(ev, MidiDevice::NotLate);
             }
             }
       }
@@ -851,13 +852,15 @@ void Audio::panic()
                   MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
                   if(port->device())
                     //port->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
-                    port->device()->addScheduledEvent(ev);
+//                     port->device()->addScheduledEvent(ev);
+                    port->device()->putEvent(ev, MidiDevice::NotLate);
                   
                   ev.setA(MusECore::CTRL_RESET_ALL_CTRL);
                   MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
                   if(port->device())
                     //port->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
-                    port->device()->addScheduledEvent(ev);
+//                     port->device()->addScheduledEvent(ev);
+                    port->device()->putEvent(ev, MidiDevice::NotLate);
                   }
             }
       }
@@ -925,7 +928,8 @@ void Audio::seekMidi()
 //         MusEGlobal::midiPorts[ev_port].putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
         if(mp->device())
           //mp->device()->eventFifos()->put(MidiDevice::PlayFifo, ev);
-          mp->device()->addScheduledEvent(ev);
+//           mp->device()->addScheduledEvent(ev);
+          mp->device()->putEvent(ev, MidiDevice::NotLate);
       }
       mel.erase(i);
     }
@@ -1184,7 +1188,8 @@ void Audio::seekMidi()
           const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
           MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
           if(fin_mp->device())
-            fin_mp->device()->addScheduledEvent(ev);
+//             fin_mp->device()->addScheduledEvent(ev);
+            fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
           //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
         }
       }
@@ -1209,7 +1214,8 @@ void Audio::seekMidi()
             const MidiPlayEvent ev(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias());
             MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
             if(mp->device())
-              mp->device()->addScheduledEvent(ev);
+//               mp->device()->addScheduledEvent(ev);
+              mp->device()->putEvent(ev, MidiDevice::NotLate);
           }
         }
       }
@@ -1226,7 +1232,8 @@ void Audio::seekMidi()
 //           mp->putEvent(ev);
           MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
           if(mp->device())
-            mp->device()->addScheduledEvent(ev);
+//             mp->device()->addScheduledEvent(ev);
+            mp->device()->putEvent(ev, MidiDevice::NotLate);
         }
       }
       
@@ -1872,7 +1879,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 //                                         if(MusEGlobal::extSyncFlag.value())
 //                                           md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
 //                                         else
-                                          md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
+//                                           md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
+                                          md->putEvent(MusECore::MidiPlayEvent(
+                                            frame, port, channel, MusECore::ME_NOTEON, pitch, velo), MidiDevice::NotLate);
                                         track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
                                           MusECore::ME_NOTEOFF, pitch, veloOff));
                                       }
@@ -1884,7 +1893,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 //                                         if(MusEGlobal::extSyncFlag.value())  // p3.3.25
 //                                           mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
 //                                         else
-                                          mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
+//                                           mdAlt->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo));
+                                          mdAlt->putEvent(MusECore::MidiPlayEvent(
+                                            frame, port, channel, MusECore::ME_NOTEON, pitch, velo), MidiDevice::NotLate);
                                         track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
                                           MusECore::ME_NOTEOFF, pitch, veloOff));
                                       }
@@ -1932,7 +1943,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     MidiPort::eventFifos().put(MidiPort::PlayFifo, mpeAlt);
 //                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
-                                        mdAlt->addScheduledEvent(mpeAlt);
+//                                         mdAlt->addScheduledEvent(mpeAlt);
+                                        mdAlt->putEvent(mpeAlt, MidiDevice::NotLate);
 //                                     }
                                     
 //                                     MidiDevice* mdAlt = mpAlt->device();
@@ -1985,7 +1997,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     MidiPort::eventFifos().put(MidiPort::PlayFifo, mpeAlt);
 //                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
-                                        mdAlt->addScheduledEvent(mpeAlt);
+//                                         mdAlt->addScheduledEvent(mpeAlt);
+                                        mdAlt->putEvent(mpeAlt, MidiDevice::NotLate);
 //                                     }
                                     
 //                                     MidiDevice* mdAlt = mpAlt->device();
@@ -2014,7 +2027,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                 MidiPort::eventFifos().put(MidiPort::PlayFifo, mpe);
 //                                 {
                                   if(md)
-                                    md->addScheduledEvent(mpe);
+//                                     md->addScheduledEvent(mpe);
+                                    md->putEvent(mpe, MidiDevice::NotLate);
 //                                 }
                                 
 //                                 if(MusEGlobal::extSyncFlag.value())  // p3.3.25
@@ -2036,7 +2050,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 //                                 // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames. p3.3.25
 //                                 md->addScheduledEvent(MusECore::MidiPlayEvent(
 //                                     MusEGlobal::extSyncFlag.value() ? tick : frame,
-                                 md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, ev));
+//                                  md->addScheduledEvent(MusECore::MidiPlayEvent(frame, port, channel, ev));
+                                 md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, ev), MidiDevice::NotLate);
                                 
 //                                 if(MusEGlobal::extSyncFlag.value())  // p3.3.25
 //                                   md->addScheduledEvent(MusECore::MidiPlayEvent(tick, port, channel, ev));
@@ -2362,7 +2377,8 @@ void Audio::processMidi()
                                   }
   #endif
                                   event.setTime(t);
-                                  md->addScheduledEvent(event);
+//                                   md->addScheduledEvent(event);
+                                  md->putEvent(event, MidiDevice::NotLate);
                                   event.setTime(et);  // Restore for recording.
                                 }
                               }
@@ -2615,14 +2631,16 @@ void Audio::processMidi()
                                               if(event.isNoteOff())
                                                 // Try to remove any corresponding stuck live note.
                                                 track->removeStuckLiveNote(port, event.channel(), event.dataA());
-                                              md->addScheduledEvent(event);
+//                                               md->addScheduledEvent(event);
+                                              md->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
                                               if(track->removeStuckLiveNote(port, event.channel(), event.dataA()))
-                                                md->addScheduledEvent(event);
+//                                                 md->addScheduledEvent(event);
+                                                md->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNote())
                                             {
@@ -2637,7 +2655,8 @@ void Audio::processMidi()
                                               if(it_other == mtl->end())
                                               {
                                                 if(track->addStuckLiveNote(port, event.channel(), event.dataA()))
-                                                  md->addScheduledEvent(event);
+//                                                   md->addScheduledEvent(event);
+                                                  md->putEvent(event, MidiDevice::NotLate);
                                               }
                                             }
                                             else
@@ -2647,7 +2666,8 @@ void Audio::processMidi()
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                               if(MusEGlobal::midiPorts[port].sendHwCtrlState(event), true)
                                               MidiPort::eventFifos().put(MidiPort::PlayFifo, event);
-                                                md->addScheduledEvent(event);
+//                                                 md->addScheduledEvent(event);
+                                                md->putEvent(event, MidiDevice::NotLate);
 
 //                                               md->addScheduledEvent(event);
 //                                               //else
@@ -2676,14 +2696,16 @@ void Audio::processMidi()
                                               if(event.isNoteOff())
                                                 // Try to remove any corresponding stuck live note.
                                                 track->removeStuckLiveNote(event.port(), event.channel(), event.dataA());
-                                              mdAlt->addScheduledEvent(event);
+//                                               mdAlt->addScheduledEvent(event);
+                                              mdAlt->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
                                               if(track->removeStuckLiveNote(event.port(), event.channel(), event.dataA()))
-                                                mdAlt->addScheduledEvent(event);
+//                                                 mdAlt->addScheduledEvent(event);
+                                                mdAlt->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNote())
                                             {
@@ -2698,7 +2720,8 @@ void Audio::processMidi()
                                               if(it_other == mtl->end())
                                               {
                                                 if(track->addStuckLiveNote(event.port(), event.channel(), event.dataA()))
-                                                  mdAlt->addScheduledEvent(event);
+//                                                   mdAlt->addScheduledEvent(event);
+                                                  mdAlt->putEvent(event, MidiDevice::NotLate);
                                               }
                                             }
                                             else
@@ -2708,7 +2731,8 @@ void Audio::processMidi()
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                               if(MusEGlobal::midiPorts[devport].sendHwCtrlState(event), true)
                                               MidiPort::eventFifos().put(MidiPort::PlayFifo, event);
-                                                mdAlt->addScheduledEvent(event);
+//                                                 mdAlt->addScheduledEvent(event);
+                                                mdAlt->putEvent(event, MidiDevice::NotLate);
                                               
 //                                               mdAlt->addScheduledEvent(event);
 //                                               //else
@@ -2849,7 +2873,8 @@ void Audio::processMidi()
                 ev.setTime(0);   // Mark for immediate delivery.
 // REMOVE Tim. autoconnect. Changed.
 //                 mdev->putEvent(ev);
-                mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//                 mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+                mdev->putEvent(ev, MidiDevice::NotLate);
               }
               mel.clear();
             }
@@ -2889,7 +2914,8 @@ void Audio::processMidi()
                 if(!mdev)
                   continue;
                 //_playEvents.add(ev);
-                mdev->addScheduledEvent(ev);
+//                 mdev->addScheduledEvent(ev);
+                mdev->putEvent(ev, MidiDevice::NotLate);
               }
               mel.erase(mel.begin(), k);
             }
@@ -2924,7 +2950,8 @@ void Audio::processMidi()
                 ev.setTime(0);   // Mark for immediate delivery.
 // REMOVE Tim. autoconnect. Changed.
 //                 mdev->putEvent(ev);
-                mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//                 mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+                mdev->putEvent(ev, MidiDevice::NotLate);
               }
               mel.clear();
             }
@@ -2997,7 +3024,8 @@ void Audio::processMidi()
                   }
                   if (md) {
                     MusECore::MidiPlayEvent evmidi = ev;
-                    md->addScheduledEvent(evmidi);
+//                     md->addScheduledEvent(evmidi);
+                    md->putEvent(evmidi, MidiDevice::NotLate);
                     // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
                     // Ticksynth has been modified too.
                     evmidi.setType(MusECore::ME_NOTEOFF);
@@ -3007,7 +3035,8 @@ void Audio::processMidi()
                   }
                   if (MusEGlobal::audioClickFlag) {
                     ev.setA(audioTickSound);
-                    metronome->addScheduledEvent(ev);
+//                     metronome->addScheduledEvent(ev);
+                    metronome->putEvent(ev, MidiDevice::NotLate);
                     // Built-in metronome synth does not use stuck notes...
                   }
 // REMOVE Tim. autoconnect. Changed.
@@ -3055,7 +3084,7 @@ void Audio::processMidi()
         pl_md->processStuckNotes();
         // Tell devices which process in another thread (like ALSA) to prepare if necessary,
         //  for example transfer the play events list to a fifo for the other thread to read.
-        pl_md->preparePlayEventFifo();
+//         pl_md->preparePlayEventFifo();
         
         // ALSA devices handled by another thread.
         const MidiDevice::MidiDeviceType typ = pl_md->deviceType();

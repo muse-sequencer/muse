@@ -232,6 +232,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synthesizer;
       // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
 
+      MPEventList _outEvents;
+      
       // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
       std::vector<double> initParams;
@@ -259,6 +261,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 	    friend class LV2SynthIF;
       friend class VstSynthIF;
       friend class VstNativeSynthIF;
+      friend class MetronomeSynthIF;
 
       SynthI();
       SynthI(const SynthI& si, int flags);

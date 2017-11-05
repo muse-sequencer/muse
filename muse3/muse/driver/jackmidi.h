@@ -33,6 +33,7 @@
 
 #include "mididev.h"
 #include "route.h"
+#include "mpevent.h"
 
 class QString;
 //class MidiFifo;
@@ -56,6 +57,8 @@ class MidiJackDevice : public MidiDevice {
       
       jack_port_t* _in_client_jackport;
       jack_port_t* _out_client_jackport;
+      
+      MPEventList _outEvents;
       
       //RouteList _routes;
       

@@ -24,92 +24,91 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-#include <stddef.h>
+//#include <cstddef>
+#include <stdio.h>
+#include <stdlib.h>
 // REMOVE Tim. autoconnect. Removed.
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <cstddef>
 // #include <map>
 
+// NOTE: Keep this code in case we need a dimensioned pool!
 // REMOVE Tim. autoconnect. Removed.
-// // most of the following code is based on examples
-// // from Bjarne Stroustrup: "Die C++ Programmiersprache"
-// 
-// //---------------------------------------------------------
-// //   Pool
-// //---------------------------------------------------------
-// 
-// class Pool {
-//       struct Verweis {
-//             Verweis* next;
-//             };
-//       struct Chunk {
-// // REMOVE Tim. autoconnect. Changed.
-//             // Gives about 160 bytes maximum request @ 8 bytes item size.
-// //             enum { size = 4 * 1024 };
-//             enum { size = 4 * 2048 };
-//             Chunk* next;
-//             char mem[size];
-//             };
-// // REMOVE Tim. autoconnect. Changed.
-//       // Gives about 160 bytes maximum request @ 8 bytes item size.
-// //       enum { dimension = 21 };
-//       // Gives about 300 bytes maximum request @ 8 bytes item size.
-//       enum { dimension = 40 };
-//       Chunk* chunks[dimension];
-//       Verweis* head[dimension];
-//       Pool(Pool&);
-//       void operator=(Pool&);
-//       void grow(int idx);
-// 
-//    public:
-//       Pool();
-//       ~Pool();
-//       void* alloc(size_t n);
-//       void free(void* b, size_t n);
-//       };
-// 
-// //---------------------------------------------------------
-// //   alloc
-// //---------------------------------------------------------
-// 
-// inline void* Pool::alloc(size_t n)
-//       {
-//       if (n == 0)
-//             return 0;
-//       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
-//       if (idx >= dimension) {
-//             printf("panic: alloc %zd %d %d\n", n, idx, dimension);
-//             exit(-1);
-//             }
-//       if (head[idx] == 0)
-//             grow(idx);
-//       Verweis* p = head[idx];
-//       head[idx] = p->next;
-//       return p;
-//       }
-// 
-// //---------------------------------------------------------
-// //   free
-// //---------------------------------------------------------
-// 
-// inline void Pool::free(void* b, size_t n)
-//       {
-//       if (b == 0 || n == 0)
-//             return;
-//       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
-//       if (idx >= dimension) {
-//             printf("panic: free %zd %d %d\n", n, idx, dimension);
-//             exit(-1);
-//             }
-//       Verweis* p = static_cast<Verweis*>(b);
-//       p->next = head[idx];
-//       head[idx] = p;
-//       }
-// 
-// extern Pool audioRTmemoryPool;
-// extern Pool midiRTmemoryPool;
-// 
+#if 0
+// most of the following code is based on examples
+// from Bjarne Stroustrup: "Die C++ Programmiersprache"
+
+//---------------------------------------------------------
+//   Pool
+//---------------------------------------------------------
+
+class Pool {
+      struct Verweis {
+            Verweis* next;
+            };
+      struct Chunk {
+            enum { size = 4 * 2048 };
+            Chunk* next;
+            char mem[size];
+            };
+      // Gives about 300 bytes maximum request @ 8 bytes item size.
+      enum { dimension = 40 };
+      Chunk* chunks[dimension];
+      Verweis* head[dimension];
+      Pool(Pool&);
+      void operator=(Pool&);
+      void grow(int idx);
+
+   public:
+      Pool();
+      ~Pool();
+      void* alloc(size_t n);
+      void free(void* b, size_t n);
+      };
+
+//---------------------------------------------------------
+//   alloc
+//---------------------------------------------------------
+
+inline void* Pool::alloc(size_t n)
+      {
+      if (n == 0)
+            return 0;
+      int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
+      if (idx >= dimension) {
+            printf("panic: alloc %zd %d %d\n", n, idx, dimension);
+            exit(-1);
+            }
+      if (head[idx] == 0)
+            grow(idx);
+      Verweis* p = head[idx];
+      head[idx] = p->next;
+      return p;
+      }
+
+//---------------------------------------------------------
+//   free
+//---------------------------------------------------------
+
+inline void Pool::free(void* b, size_t n)
+      {
+      if (b == 0 || n == 0)
+            return;
+      int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
+      if (idx >= dimension) {
+            printf("panic: free %zd %d %d\n", n, idx, dimension);
+            exit(-1);
+            }
+      Verweis* p = static_cast<Verweis*>(b);
+      p->next = head[idx];
+      head[idx] = p;
+      }
+
+extern Pool audioRTmemoryPool;
+extern Pool midiRTmemoryPool;
+
+#endif
+
+
+// REMOVE Tim. autoconnect. Removed. Moved into mpevent.h
 // //---------------------------------------------------------
 // //   audioRTalloc
 // //---------------------------------------------------------
@@ -206,6 +205,99 @@
 
 
 // REMOVE Tim. autoconnect. Added.
+
+//---------------------------------------------------------
+//   TypedMemoryPool
+//   Most of the following code is based on examples
+//    from Bjarne Stroustrup: "Die C++ Programmiersprache"
+//---------------------------------------------------------
+
+template <typename T, int itemsPerChunk> class TypedMemoryPool
+{
+      struct Verweis {
+            Verweis* next;
+            };
+      struct Chunk {
+            enum { size = itemsPerChunk * sizeof(T) };
+            Chunk* next;
+            char mem[size];
+            };
+      Chunk* chunks;
+      Verweis* head;
+      TypedMemoryPool(TypedMemoryPool&);
+      void operator=(TypedMemoryPool&);
+      
+      void grow()
+      {
+        const int esize = sizeof(T);
+        Chunk* n    = new Chunk;
+        n->next     = chunks;
+        chunks = n;
+        const int nelem = Chunk::size / esize;
+        char* start     = n->mem;
+        char* last      = &start[(nelem-1) * esize];
+        for(char* p = start; p < last; p += esize)
+          reinterpret_cast<Verweis*>(p)->next =
+            reinterpret_cast<Verweis*>(p + esize);
+        reinterpret_cast<Verweis*>(last)->next = 0;
+        head = reinterpret_cast<Verweis*>(start);
+      }
+
+   public:
+      TypedMemoryPool()
+      {
+        head   = 0;
+        chunks = 0;
+        grow();  // preallocate
+      }
+      
+      ~TypedMemoryPool()
+      {
+        Chunk* n = chunks;
+        while (n)
+        {
+          Chunk* p = n;
+          n = n->next;
+          delete p;
+        }
+      }
+      
+      void* alloc(size_t items)
+      {
+        // REMOVE Tim. autoconnect. Added.
+        fprintf(stderr, "TypedMemoryPool::alloc: sizeof T:%u\n", (unsigned int)sizeof(T));
+        if(items == 0)
+          return 0;
+        if(items != 1)
+        {
+          printf("panic: TypedMemoryPool::alloc items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        if(head == 0)
+          grow();
+        Verweis* p = head;
+        head = p->next;
+        return p;
+      }
+      
+      void free(void* b, size_t items)
+      {
+        // REMOVE Tim. autoconnect. Added.
+        fprintf(stderr, "TypedMemoryPool::free: p:%p sizeof T:%u\n", b, (unsigned int)sizeof(T));
+        if(b == 0 || items == 0)
+          return;
+        if(items != 1)
+        {
+          printf("panic: TypedMemoryPool::free items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        Verweis* p = static_cast<Verweis*>(b);
+        p->next = head;
+        head = p;
+      }
+};
 
 //---------------------------------------------------------
 //   MemoryQueue
