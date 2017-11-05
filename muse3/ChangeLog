@@ -1,3 +1,5 @@
+11.05.2017
+         - Fix #592 MusE doesn't record some controllers. (Tim)
 08.06.2017
          - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 
             QString::arg usage or similar code, or snprintf. Compiler warned of some suspicous 
