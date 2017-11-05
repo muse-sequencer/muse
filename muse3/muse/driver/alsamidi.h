@@ -61,7 +61,8 @@ class MidiAlsaDevice : public MidiDevice {
       //  convenience of its sorting, then dump them to this FIFO so that 
       //  a driver or device may read it, possibly from another thread (ALSA driver).
 //       LockFreeBuffer<MidiPlayEvent> *_playEventFifo;
-      SeqMPEventList _outEvents;
+      SeqMPEventList _outPlaybackEvents;
+      SeqMPEventList _outUserEvents;
      
       // Return false if event is delivered.
       bool processEvent(const MidiPlayEvent& ev);

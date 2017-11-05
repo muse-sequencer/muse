@@ -606,7 +606,7 @@ void Audio::process(unsigned frames)
 //                                     // may cause problems, called from audio thread
 //                                     mp->device()->putEvent(ev);
 //                                     mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-                                    mp->device()->putEvent(ev, MidiDevice::NotLate);
+                                    mp->device()->putUserEvent(ev, MidiDevice::NotLate);
                                     }
                                 }
                             }
@@ -883,7 +883,7 @@ void Audio::processMsg(AudioMsg* msg)
                   MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
                   if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
 //                     md->addScheduledEvent(*ev);
-                    md->putEvent(*ev, MidiDevice::NotLate);
+                    md->putUserEvent(*ev, MidiDevice::NotLate);
                   // Record??
                   }
                   break;
@@ -1155,7 +1155,7 @@ void Audio::startRolling()
 // REMOVE Tim. autoconnect. Changed.
 //                         mp->device()->putEvent(ev);    
 //                         mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-                        mp->device()->putEvent(ev, MidiDevice::NotLate);
+                        mp->device()->putUserEvent(ev, MidiDevice::NotLate);
                   }
               }
           }

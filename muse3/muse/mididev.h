@@ -132,7 +132,7 @@ class MidiDevice {
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
       QString _state;
-      std::atomic<bool> _clearFlag;
+      std::atomic<bool> _stopFlag;
       
 // REMOVE Tim. autoconnect. Removed.
 //       bool _sysexReadingChunks;
@@ -156,7 +156,10 @@ class MidiDevice {
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
       //boost::lockfree::queue<MEvent, boost::lockfree::fixed_sized<true>, boost::lockfree::capacity<1024> > q;
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _eventBuffers;
+      // Playback IPC buffers. For playback events ONLY. Any thread can use this.
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _playbackEventBuffers;
+      // Various IPC buffers. NOT for playback events. Any thread can use this.
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _userEventBuffers;
       
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
@@ -288,7 +291,8 @@ class MidiDevice {
       //  because that will stall all processing of FIFOs until that frame has come -
       //  ie. don't accidentally put an event with frame time waaaay in the future !
       //virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
-      virtual bool putEvent(const MidiPlayEvent& ev, LatencyType latencyType);
+      virtual bool putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType);
+      virtual bool putUserEvent(const MidiPlayEvent& ev, LatencyType latencyType);
 // REMOVE Tim. autoconnect. Removed.
 //       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
 //       // Since it waits, it should not be used in RT or other time-sensitive threads.
@@ -312,7 +316,11 @@ class MidiDevice {
 //       virtual void clearPlayEventFifo() {}
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers() { return &_eventBuffers; } 
+      
+      // Playback IPC buffers. For playback events ONLY. Any thread can use this.
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
+      // Various IPC buffers. NOT for playback events. Any thread can use this.
+      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *userEventBuffers() { return &_userEventBuffers; } 
       
 // REMOVE Tim. autoconnect. Added. Moved from protected.
       virtual void processStuckNotes();
@@ -338,10 +346,10 @@ class MidiDevice {
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       // Informs the device to clear (flush) the outEvents and event buffers. 
       // To be called by audio thread only. Typically from the device's handleStop routine.
-      void setClearFlag() { _clearFlag.store(true); }
-      // Returns whether the device is flagged to clear (flush) the outEvents and event buffers.
+      void setStopFlag(bool flag) { _stopFlag.store(flag); }
+      // Returns whether the device is flagged to clear the outEvents and event buffers.
       // To be called from the device's thread in the process routine.
-      bool clearFlag() const { return _clearFlag.load(); }
+      bool stopFlag() const { return _stopFlag.load(); }
 // REMOVE Tim. autoconnect. Removed.
 //       bool sysexReadingChunks() { return _sysexReadingChunks; }
 //       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }

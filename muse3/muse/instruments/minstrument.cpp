@@ -595,7 +595,7 @@ void MidiInstrument::reset(int portNo)
                   
                   //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
 //                   port->device()->addScheduledEvent(ev);
-                  port->device()->putEvent(ev, MidiDevice::NotLate);
+                  port->device()->putUserEvent(ev, MidiDevice::NotLate);
             }
       }
 }

@@ -1797,8 +1797,8 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
 //   }
 
-  // Get the state of the clear flag.
-  const bool do_clear = clearFlag();
+  // Get the state of the stop flag.
+  const bool do_stop = stopFlag();
 
   //--------------------------------------------------------------------------------
   // For now we stop ALL ring buffer processing until any sysex transmission is finished.
@@ -1874,17 +1874,40 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 // //   const int pl_evfifo_sz = _playEventFifo->getSize(); // Get snapshot of current size.
 // //   for(int i = 0; i < pl_evfifo_sz; ++i)
    
-  // Transfer the lock-free buffer events to the sorted multi-set.
-  MidiPlayEvent buf_ev; 
-  const unsigned int buf_sz = eventBuffers()->bufferCapacity();
-  for(unsigned int i = 0; i < buf_sz; ++i)
+  MidiPlayEvent buf_ev;
+  
+  // Transfer the user lock-free buffer events to the user sorted multi-set.
+  const unsigned int usr_buf_sz = userEventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < usr_buf_sz; ++i)
   {
-    if(eventBuffers()->get(buf_ev, i))
-      _outEvents.add(buf_ev);
+    if(userEventBuffers()->get(buf_ev, i))
+      _outUserEvents.add(buf_ev);
+  }
+  
+  // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+  // Don't bother adding to the set if we're stopping, but do get the buffer item.
+  const unsigned int pb_buf_sz = playbackEventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < pb_buf_sz; ++i)
+    if(playbackEventBuffers()->get(buf_ev, i) && !do_stop)
+      _outPlaybackEvents.add(buf_ev);
+
+  // Are we stopping?
+  if(do_stop)
+  {
+    // Transport has stopped, purge ALL further scheduled playback events now.
+    _outPlaybackEvents.clear();
+    // Reset the flag.
+    setStopFlag(false);
+  }
+  else
+  {
+    // For convenience, simply transfer all playback events into the other user list. 
+    for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
+      _outUserEvents.add(*impe);
   }
   
 //   for(int i = 0; i < sz; ++i)
-  for(iMPEvent impe = _outEvents.begin(); impe != _outEvents.end(); )
+  for(iMPEvent impe = _outUserEvents.begin(); impe != _outUserEvents.end(); )
   {
 //     const MidiPlayEvent e(_playEventFifo->peek()); 
     // True = use the size snapshot.
@@ -1959,7 +1982,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 //     _eventFifos->remove(true);
 
     // C++11.
-    impe = _outEvents.erase(impe);
+    impe = _outUserEvents.erase(impe);
   }
 
 

@@ -58,7 +58,8 @@ class MidiJackDevice : public MidiDevice {
       jack_port_t* _in_client_jackport;
       jack_port_t* _out_client_jackport;
       
-      MPEventList _outEvents;
+      MPEventList _outPlaybackEvents;
+      MPEventList _outUserEvents;
       
       //RouteList _routes;
       

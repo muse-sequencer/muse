@@ -208,7 +208,7 @@ void MetronomeConfig::apply()
       ev.setA(MusECore::reloadClickSounds);
 // REMOVE Tim. autoconnect. Changed.
 //       MusECore::metronome->addScheduledEvent(ev);
-      MusECore::metronome->putEvent(ev, MusECore::MidiDevice::NotLate);
+      MusECore::metronome->putUserEvent(ev, MusECore::MidiDevice::NotLate);
 
 }
 

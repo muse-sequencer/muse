@@ -1598,19 +1598,45 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //   }
 
   
-  // Transfer the lock-free buffer events to the sorted multi-set.
+  // Get the state of the stop flag.
+  const bool do_stop = stopFlag();
+
   MidiPlayEvent buf_ev;
-  const unsigned int buf_sz = eventBuffers()->bufferCapacity();
-  for(unsigned int i = 0; i < buf_sz; ++i)
+  
+  // Transfer the user lock-free buffer events to the user sorted multi-set.
+  const unsigned int usr_buf_sz = userEventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < usr_buf_sz; ++i)
   {
-    if(eventBuffers()->get(buf_ev, i))
-      _outEvents.add(buf_ev);
+    if(userEventBuffers()->get(buf_ev, i))
+      _outUserEvents.add(buf_ev);
+  }
+  
+  // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+  // Don't bother adding to the set if we're stopping, but do get the buffer item.
+  const unsigned int pb_buf_sz = playbackEventBuffers()->bufferCapacity();
+  for(unsigned int i = 0; i < pb_buf_sz; ++i)
+    if(playbackEventBuffers()->get(buf_ev, i) && !do_stop)
+      _outPlaybackEvents.add(buf_ev);
+
+  // Are we stopping?
+  if(do_stop)
+  {
+    // Transport has stopped, purge ALL further scheduled playback events now.
+    _outPlaybackEvents.clear();
+    // Reset the flag.
+    setStopFlag(false);
+  }
+  else
+  {
+    // For convenience, simply transfer all playback events into the other user list. 
+    for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
+      _outUserEvents.add(*impe);
   }
   
   // False = don't use the size snapshot, but update it.
 //   const int sz = _eventFifos->getSize(false);
 //   for(int i = 0; i < sz; ++i)
-  for(iMPEvent impe = _outEvents.begin(); impe != _outEvents.end(); )
+  for(iMPEvent impe = _outUserEvents.begin(); impe != _outUserEvents.end(); )
   {  
     // True = use the size snapshot.
 //     const MidiPlayEvent& ev(_eventFifos->peek(true)); 
@@ -1639,7 +1665,7 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //     _eventFifos->remove(true);
     
     // C++11.
-    impe = _outEvents.erase(impe);
+    impe = _outUserEvents.erase(impe);
   }
   
   

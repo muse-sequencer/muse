@@ -1996,17 +1996,43 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 // 
 // 
       
-      // Transfer the lock-free buffer events to the sorted multi-set.
-      MidiPlayEvent buf_ev; 
-      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
-      for(unsigned int i = 0; i < buf_sz; ++i)
+      // Get the state of the stop flag.
+      const bool do_stop = synti->stopFlag();
+
+      MidiPlayEvent buf_ev;
+      
+      // Transfer the user lock-free buffer events to the user sorted multi-set.
+      const unsigned int usr_buf_sz = synti->userEventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        if(synti->eventBuffers()->get(buf_ev, i))
-          synti->_outEvents.add(buf_ev);
+        if(synti->userEventBuffers()->get(buf_ev, i))
+          synti->_outUserEvents.add(buf_ev);
+      }
+      
+      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+      // Don't bother adding to the set if we're stopping, but do get the buffer item.
+      const unsigned int pb_buf_sz = synti->playbackEventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
+        if(synti->playbackEventBuffers()->get(buf_ev, i) && !do_stop)
+          synti->_outPlaybackEvents.add(buf_ev);
+
+      // Are we stopping?
+      if(do_stop)
+      {
+        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->_outPlaybackEvents.clear();
+        // Reset the flag.
+        synti->setStopFlag(false);
+      }
+      else
+      {
+        // For convenience, simply transfer all playback events into the other user list. 
+        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+          synti->_outUserEvents.add(*impe);
       }
       
       // Count how many events we need.
-      for(ciMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
+      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
       {
         const MidiPlayEvent& e = *impe;
         if(e.time() >= (syncFrame + sample + nsamp))
@@ -2019,7 +2045,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 //       // Process all event FIFOs...
 //       for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
       unsigned long event_counter = 0;
-      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end() && event_counter <= nevents; )
+      for(iMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end() && event_counter <= nevents; )
       {
         // True = use the size snapshot.
 //         const MidiPlayEvent& e = synti->eventFifos()->peek(true);
@@ -2063,14 +2089,11 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 //         synti->eventFifos()->remove(true);
         
         // C++11.
-        impe = synti->_outEvents.erase(impe);
+        impe = synti->_outUserEvents.erase(impe);
       }
 
       if(event_counter < nevents)
         nevents = event_counter;
-      
-      
-      
       
       #ifdef DSSI_DEBUG_PROCESS
       fprintf(stderr, "DssiSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
@@ -2282,7 +2305,7 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
 //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-          md->eventBuffers()->put(event);
+          md->userEventBuffers()->put(event);
       }
       
       //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
@@ -2412,7 +2435,7 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
 //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-          md->eventBuffers()->put(event);
+          md->userEventBuffers()->put(event);
       }
       
       return 0;

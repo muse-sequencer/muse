@@ -218,20 +218,46 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
       unsigned int curPos = 0;
       unsigned int frame = 0;
 
-      // Transfer the lock-free buffer events to the sorted multi-set.
-      MidiPlayEvent buf_ev; 
-      const unsigned int buf_sz = synti->eventBuffers()->bufferCapacity();
-      for(unsigned int i = 0; i < buf_sz; ++i)
+      // Get the state of the stop flag.
+      const bool do_stop = synti->stopFlag();
+
+      MidiPlayEvent buf_ev;
+      
+      // Transfer the user lock-free buffer events to the user sorted multi-set.
+      const unsigned int usr_buf_sz = synti->userEventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        if(synti->eventBuffers()->get(buf_ev, i))
-          synti->_outEvents.add(buf_ev);
+        if(synti->userEventBuffers()->get(buf_ev, i))
+          synti->_outUserEvents.add(buf_ev);
       }
       
+      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+      // Don't bother adding to the set if we're stopping, but do get the buffer item.
+      const unsigned int pb_buf_sz = synti->playbackEventBuffers()->bufferCapacity();
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
+        if(synti->playbackEventBuffers()->get(buf_ev, i) && !do_stop)
+          synti->_outPlaybackEvents.add(buf_ev);
+
+      // Are we stopping?
+      if(do_stop)
+      {
+        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->_outPlaybackEvents.clear();
+        // Reset the flag.
+        synti->setStopFlag(false);
+      }
+      else
+      {
+        // For convenience, simply transfer all playback events into the other user list. 
+        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+          synti->_outUserEvents.add(*impe);
+      }
+        
 //       // This also takes an internal snapshot of the size for use later...
 //       // False = don't use the size snapshot, but update it.
 //       const int sz = synti->eventFifos()->getSize(false);
 //       for(int i = 0; i < sz; ++i)
-      for(iMPEvent impe = synti->_outEvents.begin(); impe != synti->_outEvents.end(); )
+      for(iMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
       {  
 //         // True = use the size snapshot.
 //         const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
@@ -277,7 +303,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
 //         synti->eventFifos()->remove(true);
         
         // C++11.
-        impe = synti->_outEvents.erase(impe);
+        impe = synti->_outUserEvents.erase(impe);
       }
 
       if(curPos < n)

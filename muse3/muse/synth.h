@@ -232,7 +232,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synthesizer;
       // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
 
-      MPEventList _outEvents;
+      MPEventList _outPlaybackEvents;
+      MPEventList _outUserEvents;
       
       // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
