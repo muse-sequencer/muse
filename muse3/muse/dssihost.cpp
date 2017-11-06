@@ -2018,18 +2018,21 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 
       // Are we stopping?
       if(do_stop)
-      {
+      //{
         // Transport has stopped, purge ALL further scheduled playback events now.
-        synti->_outPlaybackEvents.clear();
+        //synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
-      }
+      //}
       else
-      {
+      //{
         // For convenience, simply transfer all playback events into the other user list. 
-        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
-          synti->_outUserEvents.add(*impe);
-      }
+        //for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+        //  synti->_outUserEvents.add(*impe);
+        synti->_outUserEvents.insert(synti->_outPlaybackEvents.begin(), synti->_outPlaybackEvents.end());
+      //}
+      // Done with playback event list. Clear it.  
+      synti->_outPlaybackEvents.clear();
       
       // Count how many events we need.
       for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )

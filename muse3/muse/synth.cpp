@@ -1389,18 +1389,21 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
 
       // Are we stopping?
       if(do_stop)
-      {
+      //{
         // Transport has stopped, purge ALL further scheduled playback events now.
-        synti->_outPlaybackEvents.clear();
+        //synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
-      }
+      //}
       else
-      {
+      //{
         // For convenience, simply transfer all playback events into the other user list. 
-        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
-          synti->_outUserEvents.add(*impe);
-      }
+        //for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+        //  synti->_outUserEvents.add(*impe);
+        synti->_outUserEvents.insert(synti->_outPlaybackEvents.begin(), synti->_outPlaybackEvents.end());
+      //}
+      // Done with playback event list. Clear it.  
+      synti->_outPlaybackEvents.clear();
       
 //       // This also takes an internal snapshot of the size for use later...
 //       // False = don't use the size snapshot, but update it.

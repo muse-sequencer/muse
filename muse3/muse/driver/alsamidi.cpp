@@ -1893,18 +1893,21 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 
   // Are we stopping?
   if(do_stop)
-  {
+  //{
     // Transport has stopped, purge ALL further scheduled playback events now.
-    _outPlaybackEvents.clear();
+    //_outPlaybackEvents.clear();
     // Reset the flag.
     setStopFlag(false);
-  }
+  //}
   else
-  {
+  //{
     // For convenience, simply transfer all playback events into the other user list. 
-    for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
-      _outUserEvents.add(*impe);
-  }
+    //for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
+    //  _outUserEvents.add(*impe);
+    _outUserEvents.insert(_outPlaybackEvents.begin(), _outPlaybackEvents.end());
+  //}
+  // Done with playback event list. Clear it.  
+  _outPlaybackEvents.clear();
   
 //   for(int i = 0; i < sz; ++i)
   for(iMPEvent impe = _outUserEvents.begin(); impe != _outUserEvents.end(); )
