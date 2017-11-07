@@ -199,6 +199,12 @@ class MidiDevice {
 
 //       // Clears the device's output events list, unique to each device.
 //       virtual void clearOutEvents() = 0;
+      // Informs the device to clear (flush) the outEvents and event buffers. 
+      // To be called by audio thread only. Typically from the device's handleStop routine.
+      void setStopFlag(bool flag) { _stopFlag.store(flag); }
+      // Returns whether the device is flagged to clear the outEvents and event buffers.
+      // To be called from the device's thread in the process routine.
+      bool stopFlag() const { return _stopFlag.load(); }
       
       void init();
 // REMOVE Tim. autoconnect. Removed. Made public.
@@ -344,12 +350,12 @@ class MidiDevice {
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
-      // Informs the device to clear (flush) the outEvents and event buffers. 
-      // To be called by audio thread only. Typically from the device's handleStop routine.
-      void setStopFlag(bool flag) { _stopFlag.store(flag); }
-      // Returns whether the device is flagged to clear the outEvents and event buffers.
-      // To be called from the device's thread in the process routine.
-      bool stopFlag() const { return _stopFlag.load(); }
+//       // Informs the device to clear (flush) the outEvents and event buffers. 
+//       // To be called by audio thread only. Typically from the device's handleStop routine.
+//       void setStopFlag(bool flag) { _stopFlag.store(flag); }
+//       // Returns whether the device is flagged to clear the outEvents and event buffers.
+//       // To be called from the device's thread in the process routine.
+//       bool stopFlag() const { return _stopFlag.load(); }
 // REMOVE Tim. autoconnect. Removed.
 //       bool sysexReadingChunks() { return _sysexReadingChunks; }
 //       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }

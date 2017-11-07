@@ -4071,41 +4071,62 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
         for(unsigned int i = 0; i < usr_buf_sz; ++i)
         {
           if(synti->userEventBuffers()->get(buf_ev, i))
-            synti->_outUserEvents.add(buf_ev);
+            //synti->_outUserEvents.add(buf_ev);
+            synti->_outUserEvents.insert(buf_ev);
         }
         
         // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-        // Don't bother adding to the set if we're stopping, but do get the buffer item.
         const unsigned int pb_buf_sz = synti->playbackEventBuffers()->bufferCapacity();
         for(unsigned int i = 0; i < pb_buf_sz; ++i)
-          if(synti->playbackEventBuffers()->get(buf_ev, i) && !do_stop)
-            synti->_outPlaybackEvents.add(buf_ev);
+        {
+          // Are we stopping? Just remove the item.
+          if(do_stop)
+            synti->playbackEventBuffers()->remove(i);
+          // Otherwise get the item.
+          else if(synti->playbackEventBuffers()->get(buf_ev, i))
+            //synti->_outPlaybackEvents.add(buf_ev);
+            synti->_outPlaybackEvents.insert(buf_ev);
+        }
 
         // Are we stopping?
         if(do_stop)
-        //{
+        {
           // Transport has stopped, purge ALL further scheduled playback events now.
-          //synti->_outPlaybackEvents.clear();
+          synti->_outPlaybackEvents.clear();
           // Reset the flag.
           synti->setStopFlag(false);
-        //}
-        else
-        //{
-          // For convenience, simply transfer all playback events into the other user list. 
-          //for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
-          //  synti->_outUserEvents.add(*impe);
-          synti->_outUserEvents.insert(synti->_outPlaybackEvents.begin(), synti->_outPlaybackEvents.end());
-        //}
-        // Done with playback event list. Clear it.  
-        synti->_outPlaybackEvents.clear();
+        }
+//         else
+//         //{
+//           // For convenience, simply transfer all playback events into the other user list. 
+//           //for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+//           //  synti->_outUserEvents.add(*impe);
+//           synti->_outUserEvents.insert(synti->_outPlaybackEvents.begin(), synti->_outPlaybackEvents.end());
+//         //}
+//         // Done with playback event list. Clear it.  
+//         //synti->_outPlaybackEvents.clear();
         
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+    
 //         // Now process putEvent events...
 //         for(long unsigned int rb_idx = 0; rb_idx < ev_fifo_sz; ++rb_idx)
-        for(iMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
+        //for(iMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
+        while(1)
         {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+          
           // True = use the size snapshot.
 //           const MidiPlayEvent& e = synti->eventFifos()->peek(true);
-          const MidiPlayEvent& e = *impe;
+//           const MidiPlayEvent& e = *impe;
+          const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
 
           #ifdef LV2_DEBUG
           fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
@@ -4139,7 +4160,11 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 //           synti->eventFifos()->remove(true);
           
           // C++11.
-          impe = synti->_outUserEvents.erase(impe);
+          //impe = synti->_outUserEvents.erase(impe);
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
         }
          
 

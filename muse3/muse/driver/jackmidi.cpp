@@ -1608,42 +1608,63 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
   for(unsigned int i = 0; i < usr_buf_sz; ++i)
   {
     if(userEventBuffers()->get(buf_ev, i))
-      _outUserEvents.add(buf_ev);
+      //_outUserEvents.add(buf_ev);
+      _outUserEvents.insert(buf_ev);
   }
   
   // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-  // Don't bother adding to the set if we're stopping, but do get the buffer item.
   const unsigned int pb_buf_sz = playbackEventBuffers()->bufferCapacity();
   for(unsigned int i = 0; i < pb_buf_sz; ++i)
-    if(playbackEventBuffers()->get(buf_ev, i) && !do_stop)
-      _outPlaybackEvents.add(buf_ev);
+  {
+    // Are we stopping? Just remove the item.
+    if(do_stop)
+      playbackEventBuffers()->remove(i);
+    // Otherwise get the item.
+    else if(playbackEventBuffers()->get(buf_ev, i))
+      //_outPlaybackEvents.add(buf_ev);
+      _outPlaybackEvents.insert(buf_ev);
+  }
 
   // Are we stopping?
   if(do_stop)
-  //{
+  {
     // Transport has stopped, purge ALL further scheduled playback events now.
-    //_outPlaybackEvents.clear();
+    _outPlaybackEvents.clear();
     // Reset the flag.
     setStopFlag(false);
-  //}
-  else
-  //{
-    // For convenience, simply transfer all playback events into the other user list. 
-    //for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
-    //  _outUserEvents.add(*impe);
-    _outUserEvents.insert(_outPlaybackEvents.begin(), _outPlaybackEvents.end());
-  //}
-  // Done with playback event list. Clear it.  
-  _outPlaybackEvents.clear();
+  }
+//   else
+//   //{
+//     // For convenience, simply transfer all playback events into the other user list. 
+//     //for(ciMPEvent impe = _outPlaybackEvents.begin(); impe != _outPlaybackEvents.end(); ++impe)
+//     //  _outUserEvents.add(*impe);
+//     _outUserEvents.insert(_outPlaybackEvents.begin(), _outPlaybackEvents.end());
+//   //}
+//   // Done with playback event list. Clear it.  
+//   //_outPlaybackEvents.clear();
+  
+  iMPEvent impe_pb = _outPlaybackEvents.begin();
+  iMPEvent impe_us = _outUserEvents.begin();
+  bool using_pb;
   
   // False = don't use the size snapshot, but update it.
 //   const int sz = _eventFifos->getSize(false);
 //   for(int i = 0; i < sz; ++i)
-  for(iMPEvent impe = _outUserEvents.begin(); impe != _outUserEvents.end(); )
+//   for(iMPEvent impe = _outUserEvents.begin(); impe != _outUserEvents.end(); )
+  while(1)
   {  
+    if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
+      using_pb = *impe_pb < *impe_us;
+    else if(impe_pb != _outPlaybackEvents.end())
+      using_pb = true;
+    else if(impe_us != _outUserEvents.end())
+      using_pb = false;
+    else break;
+    
     // True = use the size snapshot.
 //     const MidiPlayEvent& ev(_eventFifos->peek(true)); 
-    const MidiPlayEvent& ev = *impe;
+//     const MidiPlayEvent& ev = *impe;
+    const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
     
 // REMOVE Tim. autoconnect. Added.
     if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
@@ -1668,7 +1689,11 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
 //     _eventFifos->remove(true);
     
     // C++11.
-    impe = _outUserEvents.erase(impe);
+//     impe = _outUserEvents.erase(impe);
+    if(using_pb)
+      impe_pb = _outPlaybackEvents.erase(impe_pb);
+    else
+      impe_us = _outUserEvents.erase(impe_us);
   }
   
   

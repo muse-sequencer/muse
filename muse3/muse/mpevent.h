@@ -36,7 +36,7 @@
 //#include "sysex_processor.h"
 //#include <stdio.h>
 //#include <stdlib.h>
-// #include <cstddef>
+#include <cstddef>
 // #include <map>
 
 // Play events ring buffer size
