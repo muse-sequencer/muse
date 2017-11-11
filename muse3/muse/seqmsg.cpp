@@ -596,6 +596,8 @@ void Audio::msgRevertOperationGroup(Undo& operations)
 
 void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate, SongChangedFlags_t extraFlags)
 {
+        if(operations.empty())
+          return;
         AudioMsg msg;
         msg.id = SEQM_EXECUTE_PENDING_OPERATIONS;
         msg.pendingOps=&operations;

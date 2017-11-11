@@ -1876,24 +1876,30 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
    
   MidiPlayEvent buf_ev;
   
+//   const unsigned int usr_buf_sz = eventBuffers(UserBuffer)->bufferCapacity();
   // Transfer the user lock-free buffer events to the user sorted multi-set.
-  const unsigned int usr_buf_sz = userEventBuffers()->bufferCapacity();
+  // False = don't use the size snapshot, but update it.
+  const unsigned int usr_buf_sz = eventBuffers(UserBuffer)->getSize(false);
   for(unsigned int i = 0; i < usr_buf_sz; ++i)
   {
-    if(userEventBuffers()->get(buf_ev, i))
+//     if(eventBuffers(UserBuffer)->get(buf_ev, i))
+    if(eventBuffers(UserBuffer)->get(buf_ev))
       //_outUserEvents.add(buf_ev);
       _outUserEvents.insert(buf_ev);
   }
   
   // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-  const unsigned int pb_buf_sz = playbackEventBuffers()->bufferCapacity();
+//   const unsigned int pb_buf_sz = eventBuffers(PlaybackBuffer)->bufferCapacity();
+  const unsigned int pb_buf_sz = eventBuffers(PlaybackBuffer)->getSize(false);
   for(unsigned int i = 0; i < pb_buf_sz; ++i)
   {
     // Are we stopping? Just remove the item.
     if(do_stop)
-      playbackEventBuffers()->remove(i);
+//       eventBuffers(PlaybackBuffer)->remove(i);
+      eventBuffers(PlaybackBuffer)->remove();
     // Otherwise get the item.
-    else if(playbackEventBuffers()->get(buf_ev, i))
+//     else if(eventBuffers(PlaybackBuffer)->get(buf_ev, i))
+    else if(eventBuffers(PlaybackBuffer)->get(buf_ev))
       //_outPlaybackEvents.add(buf_ev);
       _outPlaybackEvents.insert(buf_ev);
   }

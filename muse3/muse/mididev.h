@@ -101,6 +101,15 @@ class MidiDevice {
         ALSAFifo=4
       };
       
+      // The desired event buffer when putting an event.
+      enum EventBufferType
+      {
+        // Playback queue for events that are scheduled by the playback engine.
+        PlaybackBuffer=0,
+        // User queue for non-playback events such as from GUI controls or external hw.
+        UserBuffer=1
+      };
+      
       // Describes latency of events passed to putEvent().
       enum LatencyType
       {
@@ -156,10 +165,14 @@ class MidiDevice {
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
       //boost::lockfree::queue<MEvent, boost::lockfree::fixed_sized<true>, boost::lockfree::capacity<1024> > q;
+//       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
+//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> _playbackEventBuffers;
+//       // Various IPC buffers. NOT for playback events. Any thread can use this.
+//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> _userEventBuffers;
       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _playbackEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_playbackEventBuffers;
       // Various IPC buffers. NOT for playback events. Any thread can use this.
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> _userEventBuffers;
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *_userEventBuffers;
       
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
@@ -167,8 +180,9 @@ class MidiDevice {
       // To hold current output program, and RPN/NRPN parameter numbers and values.
       MidiOutputParams _curOutParamNums[MIDI_CHANNELS];
       
-      volatile bool stopPending;         
-      volatile bool seekPending;
+// REMOVE Tim. autoconnect. Removed.
+//       volatile bool stopPending;         
+//       volatile bool seekPending;
       
       RouteList _inRoutes, _outRoutes;
       
@@ -197,6 +211,24 @@ class MidiDevice {
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
       virtual unsigned int pbForwardShiftFrames() const { return 0; }
 
+      // Playback IPC buffers. For playback events ONLY. Any thread can use this.
+      //LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
+      // Various IPC buffers. NOT for playback events. Any thread can use this.
+      //LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers() { return &_userEventBuffers; } 
+//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers(EventBufferType bufferType) 
+      LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
+      { 
+        switch(bufferType)
+        {
+          case PlaybackBuffer:
+            return _playbackEventBuffers;
+            
+          case UserBuffer:
+            return _userEventBuffers;
+        }
+        return _userEventBuffers;
+      } 
+      
 //       // Clears the device's output events list, unique to each device.
 //       virtual void clearOutEvents() = 0;
       // Informs the device to clear (flush) the outEvents and event buffers. 
@@ -297,8 +329,10 @@ class MidiDevice {
       //  because that will stall all processing of FIFOs until that frame has come -
       //  ie. don't accidentally put an event with frame time waaaay in the future !
       //virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
-      virtual bool putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType);
-      virtual bool putUserEvent(const MidiPlayEvent& ev, LatencyType latencyType);
+      //virtual bool putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType);
+      virtual bool putEvent(const MidiPlayEvent& ev, 
+                                LatencyType latencyType, 
+                                EventBufferType bufferType = UserBuffer);
 // REMOVE Tim. autoconnect. Removed.
 //       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
 //       // Since it waits, it should not be used in RT or other time-sensitive threads.
@@ -323,10 +357,10 @@ class MidiDevice {
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
       
-      // Playback IPC buffers. For playback events ONLY. Any thread can use this.
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
-      // Various IPC buffers. NOT for playback events. Any thread can use this.
-      LockFreeMPSCBuffer<MidiPlayEvent, 1024> *userEventBuffers() { return &_userEventBuffers; } 
+//       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
+//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
+//       // Various IPC buffers. NOT for playback events. Any thread can use this.
+//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *userEventBuffers() { return &_userEventBuffers; } 
       
 // REMOVE Tim. autoconnect. Added. Moved from protected.
       virtual void processStuckNotes();

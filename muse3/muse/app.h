@@ -251,6 +251,7 @@ class MusE : public QMainWindow
       QSignalMapper *windowsMapper;
       QTimer *saveTimer;
       QTimer *blinkTimer;
+      QTimer *messagePollTimer;
       int saveIncrement;
 
    signals:
@@ -261,6 +262,7 @@ class MusE : public QMainWindow
       void heartBeat();
       void blinkTimerSlot();
       void saveTimerSlot();
+      void messagePollTimerSlot();
       void loadProject();
       bool save();
       void configGlobalSettings();

@@ -30,6 +30,7 @@
 #include "route.h"
 #include "mpevent.h"
 #include "lock_free_buffer.h"
+#include "mididev.h"
 
 class QMenu;
 class QWidget;
@@ -121,7 +122,9 @@ class MidiPort {
       // One single multi-buffer for ALL midi ports.
 //       LockFreeMultiBuffer<Gui2AudioFifoStruct> *_eventFifos;
 //       static LockFreeMultiBuffer<Gui2AudioFifoStruct> _eventFifos;
-      static LockFreeMultiBuffer<MidiPlayEvent> _eventFifos;
+//       static LockFreeMultiBuffer<MidiPlayEvent> _eventFifos;
+//       static LockFreeMPSCBuffer<MidiPlayEvent, 16384> _eventBuffers;
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_eventBuffers;
 
       RouteList _inRoutes, _outRoutes;
       
@@ -288,7 +291,9 @@ class MidiPort {
       // Various IPC FIFOs.
 //       LockFreeMultiBuffer<Gui2AudioFifoStruct> *eventFifos() { return _eventFifos; } 
 //       static LockFreeMultiBuffer<Gui2AudioFifoStruct> &eventFifos() { return _eventFifos; } 
-      static LockFreeMultiBuffer<MidiPlayEvent> &eventFifos() { return _eventFifos; } 
+//       static LockFreeMultiBuffer<MidiPlayEvent> &eventFifos() { return _eventFifos; } 
+//       static LockFreeMPSCBuffer<MidiPlayEvent, 16384> &eventBuffers() { return _eventBuffers; } 
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers() { return _eventBuffers; } 
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
 // REMOVE Tim. autoconnect. Removed.

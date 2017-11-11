@@ -174,6 +174,10 @@ class Song : public QObject {
       float _fDspLoad;
       long _xRunsCount;
 
+      // Receives events from any threads. For now, specifically for creating new
+      //  controllers in the gui thread and adding them safely to the controller lists.
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      
       bool _masterFlag;
       bool loopFlag;
       bool punchinFlag;
@@ -405,6 +409,7 @@ public:
       void connectMidiPorts();
       void connectAllPorts() { connectAudioPorts(); connectMidiPorts(); }
       void updateSoloStates();
+      bool processIpcInEventBuffers();
 
       //-----------------------------------------
       //   undo, redo, operation groups

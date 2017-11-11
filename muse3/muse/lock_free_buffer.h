@@ -606,6 +606,162 @@ class LockFreeMPSCBuffer
       }
 };
 
+//---------------------------------------------------------
+//   LockFreeBuffer
+//---------------------------------------------------------
+
+template <class T>
+
+class LockFreeMPSCRingBuffer
+{
+      unsigned int _capacity;
+      T *_fifo;
+      std::atomic<unsigned int> _size;
+      std::atomic<unsigned int> _wIndex;
+      std::atomic<unsigned int> _rIndex;
+      unsigned int _capacityMask;
+      unsigned int _sizeSnapshot;
+      
+      // Rounds to the nearest or equal power of 2.
+      // For 0, 1, and 2, always returns 2.
+      unsigned int roundCapacity(unsigned int reqCap) const
+      {
+        unsigned int i;
+        for(i = 1; (1 << i) < reqCap; i++);
+        return 1 << i;
+      }
+
+   public:
+      // Start simple with just 2, like a flipping buffer for example.
+      LockFreeMPSCRingBuffer(unsigned int capacity = 2)
+      {
+        _capacity = roundCapacity(capacity);
+        _capacityMask = _capacity - 1;
+        _fifo = new T[_capacity];
+        clear();
+      }
+      
+      ~LockFreeMPSCRingBuffer()
+      {
+        if(_fifo)
+          delete[] _fifo;
+      }
+
+      void setCapacity(unsigned int capacity = 2)
+      {
+        if(_fifo)
+          delete _fifo;
+        _fifo = 0;
+        _capacity = roundCapacity(capacity);
+        _capacityMask = _capacity - 1;
+        _fifo = new T[_capacity];
+      }
+
+      // This is only for the writer.
+      // Returns true on success, false on fifo overflow or other error.
+      bool put(const T& item)
+      {
+        // Buffer full? Overflow condition.
+        if(_size >= _capacity) 
+          return false;
+        
+        // Safely read, then increment, the current write position.
+        //std::atomic<unsigned int> pos = _wIndex++;
+        unsigned int pos = _wIndex++;
+        // Mask the position for a circular effect.
+        pos &= _capacityMask;
+        // Store the item in that position.
+        _fifo[pos] = item;
+        // Now safely increment the size.
+        _size++;
+        // Success.
+        return true;
+      }
+
+      // This is only for the reader.
+      // Returns true on success, false if nothing to read or other error.
+      // NOTE: This is not multi-reader safe. Yet.
+      bool get(T& dst)
+      {
+        // Nothing to read?
+        if(_size == 0)
+          return false;
+        
+        // Safely read, then increment, the current read position.
+        //std::atomic<unsigned int> pos = _rIndex++;
+        unsigned int pos = _rIndex++;
+        // Mask the position for a circular effect.
+        pos &= _capacityMask;
+        // Store the item in that position into the destination.
+        dst = _fifo[pos];
+        // Now safely decrement the size.
+        _size--;
+        // Success.
+        return true;
+      }
+
+      // This is only for the reader.
+      // NOTE: This is not multi-reader safe. Yet.
+      const T& peek(unsigned int n = 0)
+      {
+        // Safely read the current read position.
+        //std::atomic<unsigned int> pos = _rIndex.load();
+        unsigned int pos = _rIndex;
+        // Add the desired position.
+        pos += n;
+        // Mask the position for a circular effect.
+        pos &= _capacityMask;
+        return _fifo[pos];
+      }
+      
+//       // This is only for the reader.
+//       // A non-constant version of peek so that we can modify the items in-place.
+//       T& peekNonConst(int n = 0)
+//       {
+//         const int idx = (_rIndex + n) % _capacity;
+//         return _fifo[idx];
+//       }
+      
+      // This is only for the reader.
+      // Returns true on success or false if nothing to remove or other error.
+      bool remove()
+      {
+        // Nothing to read?
+        if(_size == 0)
+          return false;
+        
+        // Safely increment the current read position.
+        _rIndex++;
+        // Now safely decrement the size.
+        _size--;
+        // Success.
+        return true;
+      }
+
+      // This is only for the reader.
+      // Returns the number of items in the buffer.
+      // If NOT requesting the size snapshot, this conveniently stores a snapshot (cached) version 
+      //  of the size for consistent behaviour later. If requesting the size snapshot, it does not 
+      //  update the snapshot itself.
+      unsigned int getSize(bool useSizeSnapshot/* = false*/)
+      { 
+        const unsigned int sz = useSizeSnapshot ? _sizeSnapshot : _size.load();
+        if(!useSizeSnapshot)
+          _sizeSnapshot = sz; 
+        return sz;
+      }
+      // This is only for the reader.
+      bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
+      // This is not thread safe, call it only when it is safe to do so.
+      void clear() { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
+      // This is only for the reader.
+      // Clear the 'read' side of the ring buffer, which also clears the size.
+      // NOTE: A corresponding clearWrite() is not provided because it is dangerous to reset 
+      //  the size from the sender side - the receiver might cache the size, briefly. 
+      // The sender should only grow the size while the receiver should only shrink it.
+      void clearRead() { _size = 0; _sizeSnapshot = 0; _rIndex = _wIndex; }
+};
+
 } // namespace MusECore
 
 #endif

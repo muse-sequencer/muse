@@ -49,9 +49,7 @@
 #include "operations.h"
 
 // For debugging output: Uncomment the fprintf section.
-// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
 //#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
-#define DEBUG_MIDI_DEVICE(dev, format, args...)  fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -110,6 +108,7 @@ void MidiDevice::init()
       {
 // REMOVE Tim. autoconnect. Added.
       _extClockHistoryFifo = new LockFreeBuffer<ExtMidiClock>(extClockHistoryCapacity);
+      
 //       _eventFifos = new LockFreeMultiBuffer<MidiPlayEvent>();
 //       // TODO: Scale these according to the current audio segment size.
 //       _eventFifos->createBuffer(PlayFifo, 512);
@@ -117,6 +116,11 @@ void MidiDevice::init()
 //       _eventFifos->createBuffer(OSCFifo, 512);
 //       _eventFifos->createBuffer(JackFifo, 512);
 //       _eventFifos->createBuffer(ALSAFifo, 512);
+      
+      // TODO: Scale these according to the current audio segment size.
+      _playbackEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(1024);
+      _userEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(1024);
+      
       _sysExOutDelayedEvents = new std::vector<MidiPlayEvent>;
       // Initially reserve a fair number of items to hold potentially a lot 
       //  of messages when the sysex processor is busy (in the Sending state).
@@ -127,8 +131,9 @@ void MidiDevice::init()
       //_osc2AudioFifo = new LockFreeBuffer<MidiPlayEvent>(512);
       //_playStateExt = ExtMidiClock::ExternStopped;
       
-      stopPending    = false;         
-      seekPending    = false;
+// REMOVE Tim. autoconnect. Removed.
+//       stopPending    = false;         
+//       seekPending    = false;
       
       _state         = QString("Closed");
       _readEnable    = false;
@@ -178,6 +183,10 @@ MidiDevice::~MidiDevice()
     //  delete _osc2AudioFifo;
 //     if(_eventFifos)
 //       delete _eventFifos;
+    if(_userEventBuffers)
+      delete _userEventBuffers;
+    if(_playbackEventBuffers)
+      delete _playbackEventBuffers;
 }
 
 QString MidiDevice::deviceTypeString() const
@@ -783,7 +792,7 @@ void MidiDevice::resetCurOutParamNums(int chan)
 //---------------------------------------------------------
 
 //bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id, LatencyType latencyType)
-bool MidiDevice::putUserEvent(const MidiPlayEvent& ev, LatencyType latencyType)
+bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, EventBufferType bufferType)
 {
 // TODO: Decide whether we want the driver cached values always updated like this,
 //        even if not writeable or if error.
@@ -802,66 +811,78 @@ bool MidiDevice::putUserEvent(const MidiPlayEvent& ev, LatencyType latencyType)
     break;
   }
   
-  DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
-                    deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
+  //DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putUserEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+  //                  deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
-    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+    fprintf(stderr, "MidiDevice::putUserEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
     fin_ev.dump();
   }
   
 //   bool rv = eventFifo.put(ev);
 //   bool rv = _eventFifos->put(GuiFifo, ev);
 //   bool rv = _eventFifos->put(id, fin_ev);
-  bool rv = !_userEventBuffers.put(fin_ev);
-  if(rv)
-    printf("MidiDevice::putEvent: Error: Device buffer overflow\n");
-  
-  return rv;
-}
-
-//---------------------------------------------------------
-//   putPlaybackEvent
-//    return true if event cannot be delivered
-//---------------------------------------------------------
-
-//bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id, LatencyType latencyType)
-bool MidiDevice::putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType)
-{
-// TODO: Decide whether we want the driver cached values always updated like this,
-//        even if not writeable or if error.
-//   if(!_writeEnable)
-//     return true;
-  
-  // Automatically shift the time forward if specified.
-  MidiPlayEvent fin_ev = ev;
-  switch(latencyType)
+//   bool rv = !_userEventBuffers.put(fin_ev);
+  bool rv = true;
+  switch(bufferType)
   {
-    case NotLate:
+    case PlaybackBuffer:
+      rv = !_playbackEventBuffers->put(fin_ev);
     break;
     
-    case Late:
-      fin_ev.setTime(fin_ev.time() + pbForwardShiftFrames());
+    case UserBuffer:
+      rv = !_userEventBuffers->put(fin_ev);
     break;
   }
   
-  DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putPlaybackEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
-                    deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
-  if (MusEGlobal::midiOutputTrace)
-  {
-    fprintf(stderr, "MidiDevice::putPlaybackEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
-    fin_ev.dump();
-  }
-  
-//   bool rv = eventFifo.put(ev);
-//   bool rv = _eventFifos->put(GuiFifo, ev);
-//   bool rv = _eventFifos->put(id, fin_ev);
-  bool rv = !_playbackEventBuffers.put(fin_ev);
   if(rv)
-    printf("MidiDevice::putPlaybackEvent: Error: Device buffer overflow\n");
+    fprintf(stderr, "MidiDevice::putUserEvent: Error: Device buffer overflow. bufferType:%d\n", bufferType);
   
   return rv;
 }
+
+// //---------------------------------------------------------
+// //   putPlaybackEvent
+// //    return true if event cannot be delivered
+// //---------------------------------------------------------
+// 
+// //bool MidiDevice::putEvent(const MidiPlayEvent& ev, EventFifoIds id, LatencyType latencyType)
+// bool MidiDevice::putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType)
+// {
+// // TODO: Decide whether we want the driver cached values always updated like this,
+// //        even if not writeable or if error.
+// //   if(!_writeEnable)
+// //     return true;
+//   
+//   // Automatically shift the time forward if specified.
+//   MidiPlayEvent fin_ev = ev;
+//   switch(latencyType)
+//   {
+//     case NotLate:
+//     break;
+//     
+//     case Late:
+//       fin_ev.setTime(fin_ev.time() + pbForwardShiftFrames());
+//     break;
+//   }
+//   
+//   //DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putPlaybackEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+//   //                  deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
+//   if (MusEGlobal::midiOutputTrace)
+//   {
+//     fprintf(stderr, "MidiDevice::putPlaybackEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+//     fin_ev.dump();
+//   }
+//   
+// //   bool rv = eventFifo.put(ev);
+// //   bool rv = _eventFifos->put(GuiFifo, ev);
+// //   bool rv = _eventFifos->put(id, fin_ev);
+//   bool rv = !_playbackEventBuffers.put(fin_ev);
+//   if(rv)
+//     fprintf(stderr, "MidiDevice::putPlaybackEvent: Error: Device buffer overflow\n");
+//   
+//   return rv;
+// }
 
 // REMOVE Tim. autoconnect. Removed.
 // //---------------------------------------------------------
@@ -1016,7 +1037,7 @@ void MidiDevice::handleStop()
 // REMOVE Tim. autoconnect. Changed.
 //     putEvent(ev);
 //     putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-        putUserEvent(ev, MidiDevice::NotLate);
+        putEvent(ev, MidiDevice::NotLate);
   }
   _stuckNotes.clear();
   
@@ -1040,7 +1061,7 @@ void MidiDevice::handleStop()
 //       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
       //addScheduledEvent(ev);
-            putUserEvent(ev, MidiDevice::NotLate);
+            putEvent(ev, MidiDevice::NotLate);
             
       mel.erase(i);
     }
@@ -1058,7 +1079,7 @@ void MidiDevice::handleStop()
 // REMOVE Tim. autoconnect. Changed.
 //       putEvent(ev);
 //       putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-            putUserEvent(ev, MidiDevice::NotLate);
+            putEvent(ev, MidiDevice::NotLate);
     }
   }
 }
@@ -1359,7 +1380,7 @@ void MidiDevice::handleSeek()
 //       putEvent(ev);  // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
 //       addScheduledEvent(ev);
-            putUserEvent(ev, MidiDevice::NotLate);
+            putEvent(ev, MidiDevice::NotLate);
     }
     _stuckNotes.clear();
   }

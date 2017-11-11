@@ -265,7 +265,7 @@ template <typename T, int itemsPerChunk> class TypedMemoryPool
       void* alloc(size_t items)
       {
         // REMOVE Tim. autoconnect. Added.
-        fprintf(stderr, "TypedMemoryPool::alloc: sizeof T:%u\n", (unsigned int)sizeof(T));
+        //fprintf(stderr, "TypedMemoryPool::alloc: sizeof T:%u\n", (unsigned int)sizeof(T));
         if(items == 0)
           return 0;
         if(items != 1)
@@ -284,7 +284,7 @@ template <typename T, int itemsPerChunk> class TypedMemoryPool
       void free(void* b, size_t items)
       {
         // REMOVE Tim. autoconnect. Added.
-        fprintf(stderr, "TypedMemoryPool::free: p:%p sizeof T:%u\n", b, (unsigned int)sizeof(T));
+        //fprintf(stderr, "TypedMemoryPool::free: p:%p sizeof T:%u\n", b, (unsigned int)sizeof(T));
         if(b == 0 || items == 0)
           return;
         if(items != 1)

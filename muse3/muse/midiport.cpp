@@ -56,7 +56,10 @@ namespace MusECore {
 
 MidiControllerList defaultManagedMidiController;
 
-LockFreeMultiBuffer<MidiPlayEvent> MidiPort::_eventFifos;
+//LockFreeMultiBuffer<MidiPlayEvent> MidiPort::_eventFifos;
+//LockFreeMPSCBuffer<MidiPlayEvent, 16384> MidiPort::_eventBuffers;
+LockFreeMPSCRingBuffer<MidiPlayEvent> *MidiPort::_eventBuffers = 
+  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
 
 //---------------------------------------------------------
 //   initMidiPorts
@@ -68,11 +71,11 @@ void initMidiPorts()
       // Create the ring buffers needed for the various threads
       //  wishing to communicate changes to the underlying data 
       //  structures such as controllers.
-      MidiPort::eventFifos().createBuffer(MidiPort::PlayFifo, 4096);
-      MidiPort::eventFifos().createBuffer(MidiPort::GuiFifo, 4096);
-      MidiPort::eventFifos().createBuffer(MidiPort::OSCFifo, 4096);
-      MidiPort::eventFifos().createBuffer(MidiPort::JackFifo, 4096);
-      MidiPort::eventFifos().createBuffer(MidiPort::ALSAFifo, 4096);
+//       MidiPort::eventFifos().createBuffer(MidiPort::PlayFifo, 4096);
+//       MidiPort::eventFifos().createBuffer(MidiPort::GuiFifo, 4096);
+//       MidiPort::eventFifos().createBuffer(MidiPort::OSCFifo, 4096);
+//       MidiPort::eventFifos().createBuffer(MidiPort::JackFifo, 4096);
+//       MidiPort::eventFifos().createBuffer(MidiPort::ALSAFifo, 4096);
       
       defaultManagedMidiController.add(&pitchCtrl);
       defaultManagedMidiController.add(&programCtrl);
@@ -2027,9 +2030,10 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //     res = _device->putEvent(staged_ev);
 //     res = _device->putEvent(stageEvent(ev));
 //     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
-    res = !_device->userEventBuffers()->put(ev);
-    if(res)
-      fprintf(stderr, "MidiPort::putEvent: Error: Device buffer overflow\n");
+//     res = !_device->userEventBuffers()->put(ev);
+    res = _device->putUserEvent(ev, MidiDevice::Late);
+    //if(res)
+    //  fprintf(stderr, "MidiPort::putEvent: Error: Device buffer overflow\n");
   }
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
@@ -2157,9 +2161,10 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 //   if(_device && i_val_changed)
 //     res = _device->putEvent(ev);
 //     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
-    res = !_device->userEventBuffers()->put(ev);
-    if(res)
-      fprintf(stderr, "MidiPort::putControllerValue: Error: Device buffer overflow\n");
+//     res = !_device->userEventBuffers()->put(ev);
+    res = _device->putUserEvent(ev, MidiDevice::Late);
+//     if(res)
+//       fprintf(stderr, "MidiPort::putControllerValue: Error: Device buffer overflow\n");
   }
 
 //   val = limitValToInstrCtlRange(ctlnum, val);

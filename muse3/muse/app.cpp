@@ -347,6 +347,11 @@ MusE::MusE() : QMainWindow()
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
       saveTimer->start( 60 * 1000 ); // every minute
 
+      messagePollTimer = new QTimer(this);
+      messagePollTimer->setObjectName("messagePollTimer");
+      connect(messagePollTimer, SIGNAL(timeout()), SLOT(messagePollTimerSlot()));
+      messagePollTimer->start(); // A zero-millisecond poll timer.
+
       //init cpuload stuff
       clock_gettime(CLOCK_REALTIME, &lastSysTime);
       lastCpuTime.tv_sec = 0;
@@ -1010,6 +1015,12 @@ void MusE::heartBeat()
 void MusE::blinkTimerSlot()
 {
   MusEGlobal::blinkTimerPhase = !MusEGlobal::blinkTimerPhase;
+}
+
+void MusE::messagePollTimerSlot()
+{
+  if(MusEGlobal::song)
+    MusEGlobal::song->processIpcInEventBuffers();
 }
 
 //---------------------------------------------------------

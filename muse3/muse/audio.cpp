@@ -606,7 +606,7 @@ void Audio::process(unsigned frames)
 //                                     // may cause problems, called from audio thread
 //                                     mp->device()->putEvent(ev);
 //                                     mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-                                    mp->device()->putUserEvent(ev, MidiDevice::NotLate);
+                                    mp->device()->putEvent(ev, MidiDevice::NotLate);
                                     }
                                 }
                             }
@@ -876,15 +876,17 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             case SEQM_PLAY_MIDI_EVENT:
                   {
-                  MidiPlayEvent* ev = (MidiPlayEvent*)(msg->p1);
-// REMOVE Tim. autoconnect. Changed.
-//                   MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
-                  
-                  MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
-                  if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
-//                     md->addScheduledEvent(*ev);
-                    md->putUserEvent(*ev, MidiDevice::NotLate);
-                  // Record??
+//                   MidiPlayEvent* ev = (MidiPlayEvent*)(msg->p1);
+// // REMOVE Tim. autoconnect. Changed.
+// //                   MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
+//                   
+// //                   MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
+//       // TODO TODO TODO
+// //                   MidiPort::eventBuffers().put(*ev);
+// //                   if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
+// // //                     md->addScheduledEvent(*ev);
+// //                     md->putUserEvent(*ev, MidiDevice::NotLate);
+//                   // Record??
                   }
                   break;
             case SEQM_SET_HW_CTRL_STATE:
@@ -1155,7 +1157,7 @@ void Audio::startRolling()
 // REMOVE Tim. autoconnect. Changed.
 //                         mp->device()->putEvent(ev);    
 //                         mp->device()->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-                        mp->device()->putUserEvent(ev, MidiDevice::NotLate);
+                        mp->device()->putEvent(ev, MidiDevice::NotLate);
                   }
               }
           }

@@ -2001,28 +2001,34 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 
       MidiPlayEvent buf_ev;
       
+      //const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->bufferCapacity();
       // Transfer the user lock-free buffer events to the user sorted multi-set.
-      const unsigned int usr_buf_sz = synti->userEventBuffers()->bufferCapacity();
+      // False = don't use the size snapshot, but update it.
+      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
       for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        if(synti->userEventBuffers()->get(buf_ev, i))
+        //if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev, i))
+        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
           //synti->_outUserEvents.add(buf_ev);
           synti->_outUserEvents.insert(buf_ev);
       }
       
       // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      const unsigned int pb_buf_sz = synti->playbackEventBuffers()->bufferCapacity();
+      //const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->bufferCapacity();
+      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
       for(unsigned int i = 0; i < pb_buf_sz; ++i)
       {
         // Are we stopping? Just remove the item.
         if(do_stop)
-          synti->playbackEventBuffers()->remove(i);
+          //synti->eventBuffers(PlaybackBuffer)->remove(i);
+          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
         // Otherwise get the item.
-        else if(synti->playbackEventBuffers()->get(buf_ev, i))
+        //else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev, i))
+        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
           //synti->_outPlaybackEvents.add(buf_ev);
           synti->_outPlaybackEvents.insert(buf_ev);
       }
-
+  
       // Are we stopping?
       if(do_stop)
       {
@@ -2340,7 +2346,10 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
 //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-          md->userEventBuffers()->put(event);
+//           md->userEventBuffers()->put(event);
+          md->putUserEvent(event, MidiDevice::Late);
+          
+        //MusEGlobal::midiPorts[port].putEvent(event);
       }
       
       //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
@@ -2470,7 +2479,8 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
 //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-          md->userEventBuffers()->put(event);
+//           md->userEventBuffers()->put(event);
+          md->putUserEvent(event, MidiDevice::Late);
       }
       
       return 0;

@@ -204,11 +204,12 @@ void MetronomeConfig::apply()
       MusEGlobal::config.accent1Sample = accent1SampleCombo->currentText();
       MusEGlobal::config.accent2Sample = accent2SampleCombo->currentText();
 
+      // REMOVE Tim. autoconnect. FIXME This is not realtime safe. Add an audio command to do it.
       MusECore::MidiPlayEvent ev(0, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
       ev.setA(MusECore::reloadClickSounds);
 // REMOVE Tim. autoconnect. Changed.
 //       MusECore::metronome->addScheduledEvent(ev);
-      MusECore::metronome->putUserEvent(ev, MusECore::MidiDevice::NotLate);
+      MusECore::metronome->putEvent(ev, MusECore::MidiDevice::NotLate);
 
 }
 

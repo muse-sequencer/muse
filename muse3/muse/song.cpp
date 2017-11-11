@@ -78,6 +78,9 @@ MusECore::Song* song = 0;
 
 namespace MusECore {
 
+LockFreeMPSCRingBuffer<MidiPlayEvent> *Song::_ipcInEventBuffers = 
+  new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+  
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
 
@@ -2754,6 +2757,67 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   }
   
   return sel;
+}
+
+bool Song::processIpcInEventBuffers()
+{
+  PendingOperationList operations;
+  MidiPlayEvent buf_ev;
+  int port, chan, ctrl;
+  iMidiCtrlValList imcvl;
+  MidiCtrlValListList* mcvll;
+  MidiCtrlValList* mcvl;
+  
+  // False = don't use the size snapshot, but update it.
+  const unsigned int sz = _ipcInEventBuffers->getSize(false);
+  for(unsigned int i = 0; i < sz; ++i)
+  {
+    if(!_ipcInEventBuffers->get(buf_ev))
+      continue;
+    
+    port = buf_ev.port();
+    if(port < 0 || port >= MIDI_PORTS)
+      continue;
+    chan = buf_ev.channel();
+    if(chan < 0 || chan >= MIDI_CHANNELS)
+      continue;
+    
+    switch(buf_ev.type())
+    {
+      case ME_CONTROLLER:
+        ctrl = buf_ev.dataA();
+        mcvll = MusEGlobal::midiPorts[port].controller();
+        imcvl = mcvll->find(chan, ctrl);
+        if(imcvl == mcvll->end())
+        {
+          PendingOperationItem poi(mcvll, 0, chan, ctrl, PendingOperationItem::AddMidiCtrlValList);
+          
+          // This step is intended in case we ever pass an operations list to this function.
+          if(operations.findAllocationOp(poi) != operations.end())
+            continue;
+          
+          mcvl = new MidiCtrlValList(ctrl);
+          poi._mcvl = mcvl;
+          operations.add(poi);
+        }
+        else
+        {
+          mcvl = imcvl->second;
+        }
+        
+        
+      break;
+      
+      default:
+      break;
+    }
+  }
+
+  // This waits for audio process thread to execute it.
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  
+  return true;
 }
 
 //---------------------------------------------------------
