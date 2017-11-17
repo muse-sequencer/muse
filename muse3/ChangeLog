@@ -1,4 +1,7 @@
-11.05.2017
+16.11.2017
+         - LV2: Fix bug #587 All Gtk-based guis crashing on close. (Tim)
+           Rewrote how we delete things on close.
+05.11.2017
          - Fix #592 MusE doesn't record some controllers. (Tim)
 08.06.2017
          - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 

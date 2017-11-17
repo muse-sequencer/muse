@@ -67,6 +67,8 @@
 #include <QSemaphore>
 #include <QThread>
 #include <QTimer>
+#include <QWindow>
+
 #include <assert.h>
 #include <algorithm>
 #include "midictrl.h"
@@ -76,6 +78,9 @@
 #include "plugin.h"
 
 #endif
+
+// Define to use QWidget instead of QMainWindow for the plugin gui container.
+// #define LV2_GUI_USE_QWIDGET ;
 
 namespace MusECore
 {
@@ -542,6 +547,8 @@ struct LV2PluginWrapper_State {
       uiCurrent(NULL),
       uiX11Size(0, 0),
       pluginWindow(NULL),
+      pluginQWindow(NULL),
+      
       prgIface(NULL),
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
@@ -617,6 +624,7 @@ struct LV2PluginWrapper_State {
     LV2UI_Resize uiResize;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
+    QWindow *pluginQWindow;
     LV2_MIDI_PORTS midiInPorts;
     LV2_MIDI_PORTS midiOutPorts;
     size_t inPortsMidi;
@@ -665,8 +673,11 @@ public:
 };
 
 
-
+#ifdef LV2_GUI_USE_QWIDGET
+class LV2PluginWrapper_Window : public QWidget
+#else
 class LV2PluginWrapper_Window : public QMainWindow
+#endif
 {
    Q_OBJECT
 protected:
@@ -677,7 +688,9 @@ private:
    QTimer updateTimer;
    void stopUpdateTimer();
 public:
-   explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
+   explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state, 
+                                      QWidget *parent = Q_NULLPTR, 
+                                      Qt::WindowFlags flags = Qt::WindowFlags());
    ~LV2PluginWrapper_Window();
    void startNextTime();
    void stopNextTime();
