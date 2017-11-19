@@ -5175,7 +5175,23 @@ void LV2PluginWrapper_Worker::makeWork()
 LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
-   _buffer.resize(LV2_EVBUF_SIZE);
+   if(_isInput)
+   {
+     // Resize and fill with initial value.
+     _buffer.resize(LV2_EVBUF_SIZE, 0);
+   }
+   else
+   {
+     // Reserve the space.
+     _buffer.reserve(LV2_EVBUF_SIZE);
+     // Add one item, the first item.
+     _buffer.assign(sizeof(LV2_Atom_Sequence), 0);
+   }
+   
+#ifdef LV2_DEBUG
+   std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
+#endif
+
    resetBuffer();
 }
 

@@ -1,3 +1,11 @@
+19.11.2017
+         - LV2: Fix continuous "LV2SimpleRTFifo:put(): fifo is full" messages. (Tim)
+           Rewrote LV2EvBuf ctor: Can't just always call _buffer.resize() here, 
+            which fills with items. Use reserve + assign(1) item for an output buffer,
+            and resize for an input buffer. Some plugins expose midi output sequence 
+            ports even though they do NOT use them at all. This fix cures an oversight 
+            which caused our receiving buffer to always be full in such cases, never 
+            having a chance to be cleared by the plugin.
 16.11.2017
          - LV2: Fix bug #587 All Gtk-based guis crashing on close. (Tim)
            Rewrote how we delete things on close.
