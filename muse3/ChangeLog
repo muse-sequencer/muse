@@ -6,6 +6,7 @@
             ports even though they do NOT use them at all. This fix cures an oversight 
             which caused our receiving buffer to always be full in such cases, never 
             having a chance to be cleared by the plugin.
+         - Bug #572: Fix Alt+P crash with unselected regions. (Tim)
 16.11.2017
          - LV2: Fix bug #587 All Gtk-based guis crashing on close. (Tim)
            Rewrote how we delete things on close.
