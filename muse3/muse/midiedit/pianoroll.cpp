@@ -79,10 +79,13 @@
 #include "cmd.h"
 #include "shortcuts.h"
 
-#include "mtrackinfo.h"
 #include "mstrip.h"
 #include "widget_stack.h"
 #include "trackinfo_layout.h"
+
+#ifdef _USE_TRACKINFO_ALT
+#include "mtrackinfo.h"
+#endif
 
 namespace MusEGui {
 
@@ -358,6 +361,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
+#ifdef _USE_TRACKINFO_ALT
 //       midiTrackInfo       = new MusEGui::MidiTrackInfo(mainw);
 //       int mtiw = midiTrackInfo->width(); // Save this.
 //       midiTrackInfo->setMinimumWidth(100);   
@@ -365,6 +369,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 //       midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
 //       int mtiw = 0;
       midiTrackInfo = 0;
+#endif
       
       midiStrip = 0;
 
@@ -471,11 +476,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       connect(info, SIGNAL(returnPressed()),          SLOT(focusCanvas()));
       connect(info, SIGNAL(escapePressed()),          SLOT(focusCanvas()));
+#ifdef _USE_TRACKINFO_ALT
       if(midiTrackInfo)
       {
         connect(midiTrackInfo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
         connect(midiTrackInfo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       }
+#endif
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       piano->setYPos(KH * 30);
@@ -546,7 +553,11 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
         // We must catch this first and be sure to update the strips.
         if(bits & SC_TRACK_REMOVED)
         {
+#ifdef _USE_TRACKINFO_ALT
           const int idx = midiTrackInfo ? 2 : 1;
+#else
+          const int idx = 1;
+#endif
           {
             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(idx));
             if(w)
@@ -623,16 +634,18 @@ void PianoRoll::genTrackInfo(TrackInfoWidget* trackInfo)
 //       midiTrackInfo = new MidiTrackInfo(trackInfo);
       
       trackInfo->addWidget(noTrackInfo,   0);
+#ifdef _USE_TRACKINFO_ALT
       if(midiTrackInfo)
       {
         trackInfo->addWidget(midiTrackInfo, 1);
         trackInfo->addWidget(0, 2);
       }
       else
+#endif
         trackInfo->addWidget(0, 1);
       }
 
-void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
+void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t /*flags*/)
 {
       MusECore::Part* part = curCanvasPart();
       if(part)
@@ -647,6 +660,7 @@ void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
       if (selected->isMidiTrack()) 
       {
             switchInfo(1);
+#ifdef _USE_TRACKINFO_ALT
             if(midiTrackInfo)
             {
               // If a different part was selected
@@ -657,6 +671,7 @@ void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
                 // Otherwise just regular update with specific flags.
                 midiTrackInfo->updateTrackInfo(flags);
             }
+#endif
       }
 }
 
@@ -666,7 +681,11 @@ void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t flags)
 
 void PianoRoll::switchInfo(int n)
       {
+#ifdef _USE_TRACKINFO_ALT
       const int idx = midiTrackInfo ? 2 : 1;
+#else
+      const int idx = 1;
+#endif
       if(n == idx) {
             MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
             if (w == 0 || selected != w->getTrack()) {
@@ -715,6 +734,7 @@ void PianoRoll::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
   
   if(selected->isMidiTrack()) 
   {
+#ifdef _USE_TRACKINFO_ALT
     if(midiTrackInfo) // && showTrackinfoAltFlag)
     {
       MidiTrackInfo* w = static_cast<MidiTrackInfo*>(trackInfoWidget->getWidget(1));
@@ -722,6 +742,7 @@ void PianoRoll::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
         w->songChanged(flags);
     }
     else
+#endif
     {
       MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(1));
       if(w)

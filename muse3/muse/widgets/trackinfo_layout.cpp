@@ -245,15 +245,19 @@ ArrangerHScrollLayout::ArrangerHScrollLayout(QWidget *parent,
     _trackinfoButton(trackinfoButton),
     _trackinfoAltButton(trackinfoAltButton),
     _sb(sb), 
-    _editor(editor)
+    _editor(editor),
+    _trackinfoButtonLi(0),
+    _trackinfoAltButtonLi(0)
 { 
   _trackinfoButtonLi = new QWidgetItem(_trackinfoButton);
-  _trackinfoAltButtonLi = new QWidgetItem(_trackinfoAltButton);
+  if(_trackinfoAltButton)
+    _trackinfoAltButtonLi = new QWidgetItem(_trackinfoAltButton);
   _spacerLi = new QSpacerItem(0, 0);
   _sbLi = new QWidgetItem(_sb);
   
   addItem(_trackinfoButtonLi);
-  addItem(_trackinfoAltButtonLi);
+  if(_trackinfoAltButtonLi)
+    addItem(_trackinfoAltButtonLi);
   addItem(_spacerLi);
   addItem(_sbLi);
 };
@@ -269,13 +273,14 @@ void ArrangerHScrollLayout::setGeometry(const QRect &rect)
                                         _trackinfoButton->sizeHint().width(), 
                                         rect.height()));
   
-  _trackinfoAltButtonLi->setGeometry(QRect(_trackinfoButton->sizeHint().width() + spacing(), 
+  if(_trackinfoAltButtonLi)
+    _trackinfoAltButtonLi->setGeometry(QRect(_trackinfoButton->sizeHint().width() + spacing(), 
                                            rect.y(), 
                                            _trackinfoAltButton->sizeHint().width(), 
                                            rect.height()));
   
   const int ti_w = _trackinfoButtonLi->sizeHint().width() + spacing() + 
-                   _trackinfoAltButtonLi->sizeHint().width() + spacing();
+                   (_trackinfoAltButtonLi ? (_trackinfoAltButtonLi->sizeHint().width() + spacing()) : 0);
                    
   if(_editor->width() > 0)
   {
