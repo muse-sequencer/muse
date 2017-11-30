@@ -36,6 +36,10 @@
             from after muse->show to just after QApplication is created - now the only 
             place allowed to set them, except for hacks if 'Fix frozen windows' setting is on.
            Note: Setting a stylesheet may still cause it to freeze. Working on the issue...
+         -------------------------------------------------------------------------------
+         [EDIT]: 29/11/2017 The 'frozen MDI sub window' thing was a KDE Breeze/Oxygen style bug. 
+                 Fixed upstream in recent versions with help from that team.
+         -------------------------------------------------------------------------------
 03.06.2017
       * GCC 7 fixes: (Tim)
          - LV2 GTK2 support is now optional, due to a current exception breakage in gtkmm.
