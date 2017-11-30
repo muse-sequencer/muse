@@ -203,18 +203,6 @@ int MessSynthIF::eventsPending() const
       return 0;
       }
 
-void MessSynthIF::getGeometry(int* x, int* y, int* w, int* h) const
-      {
-      if (_mess)
-            _mess->getGeometry(x, y, w, h);
-      }
-
-void MessSynthIF::setGeometry(int x, int y, int w, int h)
-      {
-      if (_mess)
-            _mess->setGeometry(x, y, w, h);
-      }
-
 void MessSynthIF::getNativeGeometry(int* x, int* y, int* w, int* h) const
       {
       if (_mess)

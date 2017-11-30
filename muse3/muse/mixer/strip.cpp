@@ -829,7 +829,7 @@ void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 //   Strip
 //---------------------------------------------------------
 
-const int Strip::FIXED_METER_WIDTH = 10;
+const int Strip::FIXED_METER_WIDTH = 7;
 
 //---------------------------------------------------------
 //   setRecordFlag

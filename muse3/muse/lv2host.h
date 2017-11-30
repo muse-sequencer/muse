@@ -412,16 +412,11 @@ public:
     virtual ~LV2SynthIF();
 
     //virtual methods from SynthIF
-    virtual bool initGui();
     virtual void guiHeartBeat();
-    virtual bool guiVisible() const;
-    virtual void showGui ( bool v );
     virtual bool hasGui() const;
     virtual bool nativeGuiVisible() const;
     virtual void showNativeGui ( bool v );
     virtual bool hasNativeGui() const;
-    virtual void getGeometry ( int *, int *, int *, int * ) const;
-    virtual void setGeometry (int x, int y, int w, int h);
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
     virtual void setNativeGeometry (int x, int y, int, int);
     virtual void preProcessAlways();

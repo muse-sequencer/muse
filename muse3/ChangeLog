@@ -1,3 +1,11 @@
+29.11.2017
+         - Bug #571 Plugin GUIs are too narrow: Fixed. (Tim)
+           Fixed generic GUI windows' initial position/size.
+           Fixed saving/restoring pos/size of generic GUIs. 
+           Reported a Qt BUG #64773 regarding ignoring setting of position upon show()!
+           For said bug, wrote a MusE workaround. Tested all generic GUIs OK. 
+           TODO: Similar fix for 'native' synth GUIs (where it supports it...)
+           TODO: Similar check and fix other non-QDialog usages for pos/size settings.
 20.11.2017
          - Removed: Arranger 'Alt' button (and hidden Pianoroll) midi Trackinfo. (Tim)
 19.11.2017

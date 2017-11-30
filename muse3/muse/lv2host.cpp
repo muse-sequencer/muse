@@ -4149,23 +4149,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    return start_event;
 }
 
-
-void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
-{
-   if(!_gui)
-   {
-     *x=0;*y=0;*w=0;*h=0;
-     return;
-   }
-
-   *x = _gui->x();
-   *y = _gui->y();
-   *w = _gui->width();
-   *h = _gui->height();
-
-   return;
-}
-
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
    *x = *y = *w = *h = 0;
@@ -4251,13 +4234,6 @@ void LV2SynthIF::guiHeartBeat()
 
 }
 
-
-bool LV2SynthIF::guiVisible() const
-{
-   return _gui && _gui->isVisible();
-}
-
-
 bool LV2SynthIF::hasGui() const
 {
    return true;
@@ -4266,12 +4242,6 @@ bool LV2SynthIF::hasGui() const
 bool LV2SynthIF::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
-}
-
-bool LV2SynthIF::initGui()
-{
-   //TODO: implement this
-   return true;
 }
 
 bool LV2SynthIF::nativeGuiVisible() const
@@ -4366,15 +4336,6 @@ MidiPlayEvent LV2SynthIF::receiveEvent()
 
 }
 
-void LV2SynthIF::setGeometry(int x, int y, int w, int h)
-{
-   if(!_gui)
-     return;
-
-   _gui->setGeometry(x, y, w, h);
-
-}
-
 void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
 {
    if(_state->pluginWindow && !_state->hasExternalGui)
@@ -4389,21 +4350,6 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
    addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
-}
-
-void LV2SynthIF::showGui(bool v)
-{
-   if (v)
-   {
-      if (_gui == 0)
-         makeGui();
-      _gui->show();
-   }
-   else
-   {
-      if (_gui)
-         _gui->hide();
-   }
 }
 
 void LV2SynthIF::showNativeGui(bool bShow)

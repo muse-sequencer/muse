@@ -39,6 +39,9 @@
 #include <QSignalMapper>
 #include <QToolBar>
 #include <QMessageBox>
+#include <QShowEvent>
+#include <QHideEvent>
+#include <QEvent>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -76,6 +79,15 @@
 
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS
+
+// BUG I have filed a Qt bug report 64773. If we do NOT
+//  set a position on a new QWidget, Qt seems to take control
+//  of the position management such that it will NOT accept
+//  any new position after that! It seems to decide to
+//  remain in 'auto-placement' mode forever.
+// If the bug is ever fixed by Qt, this define should then
+//  become version-sensitive.         2017/11/28 Tim.
+#define QT_SHOW_POS_BUG_WORKAROUND 1;
 
 namespace MusEGlobal {
 MusECore::PluginList plugins;
@@ -1691,6 +1703,131 @@ PluginIBase::~PluginIBase()
 }
 
 //---------------------------------------------------------
+//   showGui
+//---------------------------------------------------------
+
+void PluginIBase::showGui()
+{
+  if(_gui == 0)
+    makeGui();
+  _gui->setWindowTitle(titlePrefix() + name());
+  if(_gui->isVisible())
+    _gui->hide();
+  else
+    _gui->show();
+}
+
+void PluginIBase::showGui(bool flag)
+{
+  if(flag)
+  {
+    if(_gui == 0)
+      makeGui();
+    _gui->show();
+  }
+  else
+  {
+    if(_gui)
+      _gui->hide();
+  }
+}
+
+//---------------------------------------------------------
+//   guiVisible
+//---------------------------------------------------------
+
+bool PluginIBase::guiVisible() const
+{
+  return _gui && _gui->isVisible();
+}
+
+void PluginIBase::setGeometry(int x, int y, int w, int h)
+{
+  _guiGeometry = QRect(x, y, w, h);
+  if(_gui)
+  {
+    
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+    // Because of the bug, no matter what we must supply a position,
+    //  even upon first showing...
+    
+    // Check sane size.
+    if(w == 0 || h == 0)
+    {
+      w = _gui->sizeHint().width();
+      h = _gui->sizeHint().height();
+    }
+
+    // Fallback.
+    if(w == 0)
+      w = 200;
+    if(h == 0)
+      h = 200;
+    
+    _gui->setGeometry(x, y, w, h);
+    
+#else    
+    
+    // If the saved geometry is valid, use it.
+    // Otherwise this is probably the first time showing,
+    //  so do not set a geometry - let Qt pick one 
+    //  (using auto-placement and sizeHint).
+    if(!(x == 0 && y == 0 && w == 0 && h == 0))
+    {
+      // Check sane size.
+      if(w == 0)
+        w = _gui->sizeHint().width();
+      if(h == 0)
+        h = _gui->sizeHint().height();
+      
+      // Fallback.
+      if(w == 0)
+        w = 200;
+      if(h == 0)
+        h = 200;
+      
+      _gui->setGeometry(x, y, w, h);
+    }
+#endif
+    
+  }
+}
+
+void PluginIBase::getGeometry(int *x, int *y, int *w, int *h) const
+{
+  // If gui does not exist return the saved geometry.
+  if(!_gui)
+  {
+    if(x) *x = _guiGeometry.x();
+    if(y) *y = _guiGeometry.y();
+    if(w) *w = _guiGeometry.width();
+    if(h) *h = _guiGeometry.height();
+    return;
+  }
+
+  // Return the actual gui geometry.
+  if(x) *x = _gui->geometry().x();
+  if(y) *y = _gui->geometry().y();
+  if(w) *w = _gui->geometry().width();
+  if(h) *h = _gui->geometry().height();
+}
+
+// Saves the current gui geometry.
+void PluginIBase::saveGeometry(int x, int y, int w, int h)
+{
+  _guiGeometry = QRect(x, y, w, h);
+}
+
+// Returns the saved gui geometry.
+void PluginIBase::savedGeometry(int *x, int *y, int *w, int *h) const
+{
+  if(x) *x = _guiGeometry.x();
+  if(y) *y = _guiGeometry.y();
+  if(w) *w = _guiGeometry.width();
+  if(h) *h = _guiGeometry.height();
+}
+      
+//---------------------------------------------------------
 //   addScheduledControlEvent
 //   i is the specific index of the control input port
 //   Returns true if event cannot be delivered
@@ -1807,7 +1944,6 @@ void PluginI::init()
       _audioOutDummyBuf  = 0;
       _hasLatencyOutPort = false;
       _latencyOutPort = 0;
-      //_gui              = 0;
       _on               = true;
       initControlValues = false;
       _showNativeGuiPending = false;
@@ -2353,10 +2489,13 @@ void PluginI::writeConfiguration(int level, Xml& xml)
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
-      if (guiVisible()) {
-            xml.intTag(level, "gui", 1);
-            xml.geometryTag(level, "geometry", _gui);
-            }
+      if(guiVisible())
+        xml.intTag(level, "gui", 1);
+      int x, y, w, h;
+      getGeometry(&x, &y, &w, &h);
+      QRect r(x, y, w, h);
+      xml.qrectTag(level, "geometry", r);
+      
       if (nativeGuiVisible())
             xml.intTag(level, "nativegui", 1);
 
@@ -2481,10 +2620,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               }
                         else if (tag == "geometry") {
                               QRect r(readGeometry(xml, tag));
-                              if (_gui) {
-                                    _gui->resize(r.size());
-                                    _gui->move(r.topLeft());
-                                    }
+                              setGeometry(r.x(), r.y(), r.width(), r.height());
                               }
                         else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
                               QString customData = xml.parse1();
@@ -2560,41 +2696,16 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
 //---------------------------------------------------------
 
 void PluginI::showGui()
-      {
-      if (_plugin) {
-            if (_gui == 0)
-                    makeGui();
-            _gui->setWindowTitle(titlePrefix() + name());
-            if (_gui->isVisible())
-                    _gui->hide();
-            else
-                    _gui->show();
-            }
-      }
+{
+  if(_plugin)
+    PluginIBase::showGui();
+}
 
 void PluginI::showGui(bool flag)
-      {
-      if (_plugin) {
-            if (flag) {
-                    if (_gui == 0)
-                        makeGui();
-                    _gui->show();
-                    }
-            else {
-                    if (_gui)
-                        _gui->hide();
-                    }
-            }
-      }
-
-//---------------------------------------------------------
-//   guiVisible
-//---------------------------------------------------------
-
-bool PluginI::guiVisible()
-      {
-      return _gui && _gui->isVisible();
-      }
+{
+  if(_plugin)
+    PluginIBase::showGui(flag);
+}
 
 //---------------------------------------------------------
 //   showNativeGui
@@ -3043,17 +3154,12 @@ value
       if(!_plugin)
         return 0;
 
-      // This is pretty much the simplest legal implementation of
-      // configure in a DSSI host.
-
-      // The host has the option to remember the set of (key,value)
-      // pairs associated with a particular instance, so that if it
-      // wants to restore the "same" instance on another occasion it can
-      // just call configure() on it for each of those pairs and so
-      // restore state without any input from a GUI.  Any real-world GUI
-      // host will probably want to do that.  This host doesn't have any
-      // concept of restoring an instance from one run to the next, so
-      // we don't bother remembering these at all.
+      // "The host has the option to remember the set of (key,value)
+      //   pairs associated with a particular instance, so that if it
+      //   wants to restore the "same" instance on another occasion it can
+      //   just call configure() on it for each of those pairs and so
+      //   restore state without any input from a GUI.  Any real-world GUI
+      //   host will probably want to do that."
 
       #ifdef PLUGIN_DEBUGIN
       printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n", _name.toLatin1().constData(), _label.toLatin1().constData(), key, value);
@@ -3155,11 +3261,11 @@ int PluginI::oscControl(unsigned long port, float value)
   // p3.3.39 Set the DSSI control input port's value.
   // Observations: With a native DSSI synth like LessTrivialSynth, the native GUI's controls do not change the sound at all
   //  ie. they don't update the DSSI control port values themselves.
-  // Hence in response to the call to this oscControl, sent by the native GUI, it is required to that here.
+  // Hence in response to the call to this oscControl, sent by the native GUI, it is required to do that here.
 ///  controls[cport].val = value;
   // DSSI-VST synths however, unlike DSSI synths, DO change their OWN sound in response to their gui controls.
   // AND this function is called !
-  // Despite the descrepency we are STILL required to update the DSSI control port values here
+  // Despite the descrepancy we are STILL required to update the DSSI control port values here
   //  because dssi-vst is WAITING FOR A RESPONSE! (A CHANGE in the control port value).
   // It will output something like "...4 events expected..." and count that number down as 4 actual control port value CHANGES
   //  are done here in response. Normally it says "...0 events expected..." when MusE is the one doing the DSSI control changes.
@@ -3227,7 +3333,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       paramsOut = 0;
       plugin = p;
       setWindowTitle(plugin->titlePrefix() + plugin->name());
-
+      
       QToolBar* tools = addToolBar(tr("File Buttons"));
 
       QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
@@ -3356,6 +3462,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         fnt.setHintingPreference(QFont::PreferVerticalHinting);
                         s->setFont(fnt);
                         s->setStyleSheet(MusECore::font2StyleSheet(fnt));
+                        s->setSizeHint(200, 8);
 
                         for(unsigned long i = 0; i < nobj; i++)
                         {
@@ -3596,6 +3703,72 @@ PluginGui::~PluginGui()
             delete[] paramsOut;
       }
 
+void PluginGui::hideEvent(QHideEvent *e)
+{
+  if(plugin)
+    plugin->saveGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  
+  e->ignore();
+  QMainWindow::hideEvent(e);
+}
+      
+void PluginGui::showEvent(QShowEvent *e)
+{
+  int x = 0, y = 0, w = 0, h = 0;
+  if(plugin)
+    plugin->savedGeometry(&x, &y, &w, &h);
+  
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+  // Because of the bug, no matter what we must supply a position,
+  //  even upon first showing...
+  
+  // Check sane size.
+  if(w == 0 || h == 0)
+  {
+    w = sizeHint().width();
+    h = sizeHint().height();
+  }
+
+  // Fallback.
+  if(w == 0)
+    w = 200;
+  if(h == 0)
+    h = 200;
+  
+  setGeometry(x, y, w, h);
+  
+#else    
+  
+  // If the saved geometry is valid, use it.
+  // Otherwise this is probably the first time showing,
+  //  so do not set a geometry - let Qt pick one 
+  //  (using auto-placement and sizeHint).
+  if(!(x == 0 && y == 0 && w == 0 && h == 0))
+  {
+    // Check sane size.
+    if(w == 0)
+      w = sizeHint().width();
+    if(h == 0)
+      h = sizeHint().height();
+    
+    // Fallback.
+    if(w == 0)
+      w = 200;
+    if(h == 0)
+      h = 200;
+    
+    setGeometry(x, y, w, h);
+  }
+#endif
+    
+  // Convenience: If the window was minimized, restore it.
+  if(isMinimized())
+    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  
+  e->ignore();
+  QMainWindow::showEvent(e);
+}
+    
 void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
                           double &lower, double &upper, double &dlower, double &dupper, double &dval)
 {
@@ -3627,10 +3800,7 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
 
 void PluginGui::heartBeat()
 {
-  updateControls(); // FINDMICHJETZT TODO: this is not good. we have concurrent
-                    // access from the audio thread (possibly writing control values)
-                    // while reading them from some GUI thread. this will lead
-                    // to problems if writing floats is non-atomic
+  updateControls();
 }
 
 //---------------------------------------------------------
