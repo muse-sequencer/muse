@@ -54,6 +54,15 @@
 #include <dssi.h>
 #endif
 
+// BUG I have filed a Qt bug report 64773. If we do NOT
+//  set a position on a new QWidget, Qt seems to take control
+//  of the position management such that it will NOT accept
+//  any new position after that! It seems to decide to
+//  remain in 'auto-placement' mode forever.
+// If the bug is ever fixed by Qt, this define should then
+//  become version-sensitive.         2017/11/28 Tim.
+#define QT_SHOW_POS_BUG_WORKAROUND 1;
+
 class QAbstractButton;
 class QComboBox;
 class QRadioButton;
@@ -282,6 +291,7 @@ class PluginIBase
       ControlFifo _controlFifo;
       MusEGui::PluginGui* _gui;
       QRect _guiGeometry;
+      QRect _nativeGuiGeometry;
 
       void makeGui();
 
@@ -338,7 +348,6 @@ class PluginIBase
       virtual void showGui();
       virtual void showGui(bool);
       virtual bool guiVisible() const;
-      
       // Sets the gui's geometry. Also updates the saved geometry.
       virtual void setGeometry(int x, int y, int w, int h);
       // Returns the current geometry of the gui, or if the gui does not exist, 
@@ -348,6 +357,19 @@ class PluginIBase
       virtual void saveGeometry(int x, int y, int w, int h);
       // Returns the saved gui geometry.
       virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
+      
+      virtual void showNativeGui() { }
+      virtual void showNativeGui(bool) { }
+      virtual bool nativeGuiVisible() const { return false; }
+      // Sets the gui's geometry. Also updates the saved geometry.
+      virtual void setNativeGeometry(int x, int y, int w, int h);
+      // Returns the current geometry of the gui, or if the gui does not exist, 
+      //  the saved gui geometry.
+      virtual void getNativeGeometry(int *x, int *y, int *w, int *h) const;
+      // Saves the current gui geometry.
+      virtual void saveNativeGeometry(int x, int y, int w, int h);
+      // Returns the saved gui geometry.
+      virtual void savedNativeGeometry(int *x, int *y, int *w, int *h) const;
 };
 
 //---------------------------------------------------------
@@ -456,7 +478,7 @@ class PluginI : public PluginIBase {
       void showNativeGui();
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
-      bool nativeGuiVisible();
+      bool nativeGuiVisible() const;
 
       unsigned long parameters() const           { return controlPorts; }
       unsigned long parametersOut() const           { return controlOutPorts; }

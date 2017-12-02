@@ -3540,7 +3540,7 @@ CtrlList::Mode VstNativePluginWrapper::ctrlMode(unsigned long) const
    return CtrlList::INTERPOLATE;
 }
 
-bool VstNativePluginWrapper::hasNativeGui()
+bool VstNativePluginWrapper::hasNativeGui() const
 {
    return _synth->_hasGui;
 }
@@ -3583,7 +3583,7 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
    state->guiVisible = bShow;
 }
 
-bool VstNativePluginWrapper::nativeGuiVisible(PluginI *p)
+bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
 {
    assert(p->instances > 0);
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];

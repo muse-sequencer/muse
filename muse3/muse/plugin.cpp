@@ -80,15 +80,6 @@
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS
 
-// BUG I have filed a Qt bug report 64773. If we do NOT
-//  set a position on a new QWidget, Qt seems to take control
-//  of the position management such that it will NOT accept
-//  any new position after that! It seems to decide to
-//  remain in 'auto-placement' mode forever.
-// If the bug is ever fixed by Qt, this define should then
-//  become version-sensitive.         2017/11/28 Tim.
-#define QT_SHOW_POS_BUG_WORKAROUND 1;
-
 namespace MusEGlobal {
 MusECore::PluginList plugins;
 MusECore::PluginGroups plugin_groups;
@@ -1752,11 +1743,16 @@ void PluginIBase::setGeometry(int x, int y, int w, int h)
     //  even upon first showing...
     
     // Check sane size.
-    if(w == 0 || h == 0)
-    {
+    if(w == 0)
       w = _gui->sizeHint().width();
+    if(h == 0)
       h = _gui->sizeHint().height();
-    }
+
+    // No size hint? Try minimum size.
+    if(w == 0)
+      w = _gui->minimumSize().width();
+    if(h == 0)
+      h = _gui->minimumSize().height();
 
     // Fallback.
     if(w == 0)
@@ -1780,6 +1776,12 @@ void PluginIBase::setGeometry(int x, int y, int w, int h)
       if(h == 0)
         h = _gui->sizeHint().height();
       
+      // No size hint? Try minimum size.
+      if(w == 0)
+        w = _gui->minimumSize().width();
+      if(h == 0)
+        h = _gui->minimumSize().height();
+
       // Fallback.
       if(w == 0)
         w = 200;
@@ -1793,6 +1795,8 @@ void PluginIBase::setGeometry(int x, int y, int w, int h)
   }
 }
 
+// Returns the current geometry of the gui, or if the gui does not exist, 
+//  the saved gui geometry.
 void PluginIBase::getGeometry(int *x, int *y, int *w, int *h) const
 {
   // If gui does not exist return the saved geometry.
@@ -1825,6 +1829,38 @@ void PluginIBase::savedGeometry(int *x, int *y, int *w, int *h) const
   if(y) *y = _guiGeometry.y();
   if(w) *w = _guiGeometry.width();
   if(h) *h = _guiGeometry.height();
+}
+
+
+// Sets the gui's geometry. Also updates the saved geometry.
+void PluginIBase::setNativeGeometry(int x, int y, int w, int h)
+{ 
+  _nativeGuiGeometry = QRect(x, y, w, h);
+}
+      
+// Returns the current geometry of the gui, or if the gui does not exist, 
+//  the saved gui geometry.
+void PluginIBase::getNativeGeometry(int *x, int *y, int *w, int *h) const
+{
+  if(x) *x = 0;
+  if(y) *y = 0;
+  if(w) *w = 0;
+  if(h) *h = 0;
+}
+
+// Saves the current gui geometry.
+void PluginIBase::saveNativeGeometry(int x, int y, int w, int h)
+{
+  _nativeGuiGeometry = QRect(x, y, w, h);
+}
+
+// Returns the saved gui geometry.
+void PluginIBase::savedNativeGeometry(int *x, int *y, int *w, int *h) const
+{
+  if(x) *x = _nativeGuiGeometry.x();
+  if(y) *y = _nativeGuiGeometry.y();
+  if(w) *w = _nativeGuiGeometry.width();
+  if(h) *h = _nativeGuiGeometry.height();
 }
       
 //---------------------------------------------------------
@@ -2498,6 +2534,9 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       
       if (nativeGuiVisible())
             xml.intTag(level, "nativegui", 1);
+      getNativeGeometry(&x, &y, &w, &h);
+      QRect nr(x, y, w, h);
+      xml.qrectTag(level, "nativeGeometry", nr);
 
       xml.tag(level--, "/plugin");
       }
@@ -2621,6 +2660,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         else if (tag == "geometry") {
                               QRect r(readGeometry(xml, tag));
                               setGeometry(r.x(), r.y(), r.width(), r.height());
+                              }
+                        else if (tag == "nativeGeometry") {
+                              QRect r(readGeometry(xml, tag));
+                              setNativeGeometry(r.x(), r.y(), r.width(), r.height());
                               }
                         else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
                               QString customData = xml.parse1();
@@ -2777,7 +2820,7 @@ void PluginI::showNativeGui(bool flag)
 //   nativeGuiVisible
 //---------------------------------------------------------
 
-bool PluginI::nativeGuiVisible()
+bool PluginI::nativeGuiVisible() const
 {
 #ifdef LV2_SUPPORT
     if(plugin() && plugin()->isLV2Plugin())
@@ -3723,11 +3766,16 @@ void PluginGui::showEvent(QShowEvent *e)
   //  even upon first showing...
   
   // Check sane size.
-  if(w == 0 || h == 0)
-  {
+  if(w == 0)
     w = sizeHint().width();
+  if(h == 0)
     h = sizeHint().height();
-  }
+
+  // No size hint? Try minimum size.
+  if(w == 0)
+    w = minimumSize().width();
+  if(h == 0)
+    h = minimumSize().height();
 
   // Fallback.
   if(w == 0)
@@ -3751,6 +3799,12 @@ void PluginGui::showEvent(QShowEvent *e)
     if(h == 0)
       h = sizeHint().height();
     
+    // No size hint? Try minimum size.
+    if(w == 0)
+      w = minimumSize().width();
+    if(h == 0)
+      h = minimumSize().height();
+
     // Fallback.
     if(w == 0)
       w = 200;

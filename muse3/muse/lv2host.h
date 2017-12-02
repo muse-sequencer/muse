@@ -418,7 +418,7 @@ public:
     virtual void showNativeGui ( bool v );
     virtual bool hasNativeGui() const;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry (int x, int y, int, int);
+    virtual void setNativeGeometry (int x, int y, int w, int h);
     virtual void preProcessAlways();
     virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
     virtual bool putEvent ( const MidiPlayEvent &ev );
@@ -677,6 +677,8 @@ class LV2PluginWrapper_Window : public QMainWindow
    Q_OBJECT
 protected:
    void closeEvent ( QCloseEvent *event );
+   void showEvent(QShowEvent *e);
+   void hideEvent(QHideEvent *e);
 private:
    LV2PluginWrapper_State *_state;
    bool _closing;
@@ -729,9 +731,9 @@ public:
     virtual const char *portName ( unsigned long i );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
-    virtual bool hasNativeGui();
+    virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
-    virtual bool nativeGuiVisible ( PluginI *p );
+    virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);

@@ -365,9 +365,9 @@ public:
     virtual const char *portName (unsigned long port );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
-    virtual bool hasNativeGui();
+    virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
-    virtual bool nativeGuiVisible ( PluginI *p );
+    virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 

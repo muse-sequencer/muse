@@ -1,3 +1,8 @@
+01.12.2017
+         - Further to 29.11.2017: Fixed LV2 synths position/size. (Tim)
+           NOTE: AFAIK we have no control over LV2 synth plugin 'external' windows,
+            only the ones where we create the window.
+           TODO: Same fix for MESS synths...
 29.11.2017
          - Bug #571 Plugin GUIs are too narrow: Fixed. (Tim)
            Fixed generic GUI windows' initial position/size.

@@ -156,18 +156,6 @@ class MidiDevice {
       const QString& state() const     { return _state; }
       void setState(const QString& s)  { _state = s; }
 
-      virtual bool guiVisible() const { return false; }
-      virtual void showGui(bool)    { }
-      virtual bool hasGui() const     { return false; }
-      virtual bool nativeGuiVisible() const { return false; }
-      virtual void showNativeGui(bool)    { }
-      virtual bool hasNativeGui() const     { return false; }
-      virtual void getGeometry(int* x, int* y, int* w, int* h) const { *x = 0; *y = 0; *w = 0; *h = 0; }
-      virtual void setGeometry(int /*x*/, int /*y*/, int /*w*/, int /*h*/) { }
-      virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const { *x = 0; *y = 0; *w = 0; *h = 0; }
-      virtual void setNativeGeometry(int /*x*/, int /*y*/, int /*w*/, int /*h*/) { }
-
-      
       virtual bool isSynti() const     { return false; }
       virtual int selectRfd()          { return -1; }
       virtual int selectWfd()          { return -1; }

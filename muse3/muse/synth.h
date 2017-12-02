@@ -140,11 +140,7 @@ class SynthIF : public PluginIBase {
       virtual void guiHeartBeat() = 0;
       virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
-      virtual bool nativeGuiVisible() const = 0;
-      virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
-      virtual void setNativeGeometry(int, int, int, int) = 0;
       virtual void preProcessAlways() = 0;
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool putEvent(const MidiPlayEvent& ev) = 0;

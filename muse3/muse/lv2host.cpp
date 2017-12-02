@@ -4151,18 +4151,18 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
-   *x = *y = *w = *h = 0;
    if(_state->pluginWindow != NULL && !_state->hasExternalGui)
    {
-      QSize sz = _state->pluginWindow->size();
-      *w = sz.width();
-      *h = sz.height();
-      QPoint pos = _state->pluginWindow->pos();
-      *x = pos.x();
-      *y = pos.y();
+      QRect g = _state->pluginWindow->geometry();
+      if(x) *x = g.x();
+      if(y) *y = g.y();
+      if(w) *w = g.width();
+      if(h) *h = g.height();
+      return;
    }
 
-   return;
+   // Fall back to blank geometry.
+   SynthIF::getNativeGeometry(x, y, w, h);
 }
 
 double LV2SynthIF::getParameter(long unsigned int n) const
@@ -4336,15 +4336,71 @@ MidiPlayEvent LV2SynthIF::receiveEvent()
 
 }
 
-void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
+void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 {
+   // Store the native geometry.
+   SynthIF::setNativeGeometry(x, y, w, h);
+  
    if(_state->pluginWindow && !_state->hasExternalGui)
    {
-      _state->pluginWindow->move(x, y);
+      //_state->pluginWindow->move(x, y);
       //don't resize lv2 uis - this is handles at plugin level
       //_uiState->pluginWindow->resize(w, h);
-   }
+      
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+      // Because of the bug, no matter what we must supply a position,
+      //  even upon first showing...
+      
+      // Check sane size.
+      if(w == 0)
+        w = _state->pluginWindow->sizeHint().width();
+      if(h == 0)
+        h = _state->pluginWindow->sizeHint().height();
 
+      // No size hint? Try minimum size.
+      if(w == 0)
+        w = _state->pluginWindow->minimumSize().width();
+      if(h == 0)
+        h = _state->pluginWindow->minimumSize().height();
+
+      // Fallback.
+      if(w == 0)
+        w = 400;
+      if(h == 0)
+        h = 300;
+      
+      _state->pluginWindow->setGeometry(x, y, w, h);
+      
+#else    
+      
+      // If the saved geometry is valid, use it.
+      // Otherwise this is probably the first time showing,
+      //  so do not set a geometry - let Qt pick one 
+      //  (using auto-placement and sizeHint).
+      if(!(x == 0 && y == 0 && w == 0 && h == 0))
+      {
+        // Check sane size.
+        if(w == 0)
+          w = _state->pluginWindow->sizeHint().width();
+        if(h == 0)
+          h = _state->pluginWindow->sizeHint().height();
+        
+        // No size hint? Try minimum size.
+        if(w == 0)
+          w = _state->pluginWindow->minimumSize().width();
+        if(h == 0)
+          h = _state->pluginWindow->minimumSize().height();
+
+        // Fallback.
+        if(w == 0)
+          w = 400;
+        if(h == 0)
+          h = 300;
+        
+        _state->pluginWindow->setGeometry(x, y, w, h);
+      }
+#endif
+   }
 }
 
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
@@ -4531,6 +4587,87 @@ void LV2SynthIF::writeConfiguration(int level, Xml &xml)
 bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
 {
    return MusECore::SynthIF::readConfiguration(xml, readPreset);
+}
+
+void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
+{
+  if(_state->plugInst != NULL)
+    _state->plugInst->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  else if(_state->sif != NULL)
+    _state->sif->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  
+  e->ignore();
+  QMainWindow::hideEvent(e);
+}
+      
+void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
+{
+  int x = 0, y = 0, w = 0, h = 0;
+  if(_state->plugInst != NULL)
+    _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
+  else if(_state->sif != NULL)
+    _state->sif->savedNativeGeometry(&x, &y, &w, &h);
+  
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+  // Because of the bug, no matter what we must supply a position,
+  //  even upon first showing...
+  
+  // Check sane size.
+  if(w == 0)
+    w = sizeHint().width();
+  if(h == 0)
+    h = sizeHint().height();
+  
+  // No size hint? Try minimum size.
+  if(w == 0)
+    w = minimumSize().width();
+  if(h == 0)
+    h = minimumSize().height();
+
+  // Fallback.
+  if(w == 0)
+    w = 400;
+  if(h == 0)
+    h = 300;
+  
+  setGeometry(x, y, w, h);
+  
+#else    
+  
+  // If the saved geometry is valid, use it.
+  // Otherwise this is probably the first time showing,
+  //  so do not set a geometry - let Qt pick one 
+  //  (using auto-placement and sizeHint).
+  if(!(x == 0 && y == 0 && w == 0 && h == 0))
+  {
+    // Check sane size.
+    if(w == 0)
+      w = sizeHint().width();
+    if(h == 0)
+      h = sizeHint().height();
+    
+    // No size hint? Try minimum size.
+    if(w == 0)
+      w = minimumSize().width();
+    if(h == 0)
+      h = minimumSize().height();
+    
+    // Fallback.
+    if(w == 0)
+      w = 400;
+    if(h == 0)
+      h = 300;
+    
+    setGeometry(x, y, w, h);
+  }
+#endif
+    
+  // Convenience: If the window was minimized, restore it.
+  if(isMinimized())
+    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  
+  e->ignore();
+  QMainWindow::showEvent(e);
 }
 
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
@@ -4989,7 +5126,7 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
    return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
-bool LV2PluginWrapper::hasNativeGui()
+bool LV2PluginWrapper::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
 }
@@ -5012,7 +5149,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
   LV2Synth::lv2ui_ShowNativeGui(state, bShow);
 }
 
-bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
+bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
 {
    assert(p->instances > 0);
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
