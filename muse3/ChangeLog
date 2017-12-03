@@ -1,3 +1,5 @@
+02.12.2017 
+         - Clear 'recently opened' file list upon MusE self-restarting. (Tim)
 01.12.2017
          - Further to 29.11.2017: Fixed LV2 synths + rack plugins position/size. (Tim)
            NOTE: AFAIK we have no control over LV2 plugin 'external' windows,
