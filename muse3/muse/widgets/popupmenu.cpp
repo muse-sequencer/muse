@@ -392,17 +392,17 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 //------------------------------------------
 PopupMenu* PopupMenu::getMenu()
 {  
+   if(!_cur_menu)
+     return 0;
+   
    // We want the whole thing if multiple monitors.
    // Resonable to assume if X can show this desktop, it can show a menu with the same width?
-   QList<QAction*> _actions = _cur_menu->actions();
-   int _cnt_actions = _actions.size();
-   if(_max_items_in_breakup == 0 && _cnt_actions > 0)
-   {
-      int dw = QApplication::desktop()->height();
-      int _act_height = _cur_menu->actionGeometry(_actions [0]).height();
-      if(_act_height > 0)
-         _max_items_in_breakup = dw / _act_height - 10;
-   }
+   int dh = QApplication::desktop()->height();
+   // [danvd] Due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
+   // [Tim]  It seems that sizeHint() is only slightly more costly, use it instead.
+   //int _act_height = _cur_menu->actionGeometry(_actions [0]).height();
+   int mh = _cur_menu->sizeHint().height();
+   
    // If we're still only at one column, not much we can do - some item(s) must have had reeeeally long text.
    // Not to worry. Hopefully the auto-scroll will handle it!
    // Use columnCount() + 2 to catch well BEFORE it widens beyond the edge, and leave room for many <More...>
@@ -412,14 +412,13 @@ PopupMenu* PopupMenu::getMenu()
    //         Apparently there is a limit on the number of columns - whatever, it made the col count limit necessary:
    //if((_cur_col_count > 1 && ((_cur_col_count + 2) * _cur_item_width) >= dw) || _cur_col_count >= 8)
 
-
-   if((_cnt_actions >= _max_items_in_breakup) && _max_items_in_breakup > 0) //due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
+   if((mh + 100) >= dh)
    {
       // This menu is too wide. So make a new one...
       QString s(tr("<More...> %1").arg(_cur_menu_count));
       _cur_menu = cloneMenu(s, this, _stayOpen);
       ++_cur_menu_count;
-      addMenu(_cur_menu);
+      QMenu::addMenu(_cur_menu);
    }
    return _cur_menu;
 }
@@ -475,6 +474,33 @@ void PopupMenu::addAction(QAction* action)
       return QMenu::addAction(action);
    }
    static_cast<QMenu*>(getMenu())->addAction(action);
+}
+
+QAction* PopupMenu::addMenu(QMenu* menu)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addMenu(menu);
+   }
+   return static_cast<QMenu*>(getMenu())->addMenu(menu);
+}
+
+QMenu* PopupMenu::addMenu(const QString &title)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addMenu(title);
+   }
+   return static_cast<QMenu*>(getMenu())->addMenu(title);
+}
+
+QMenu* PopupMenu::addMenu(const QIcon &icon, const QString &title)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addMenu(icon, title);
+   }
+   return static_cast<QMenu*>(getMenu())->addMenu(icon, title);
 }
 
 //----------------

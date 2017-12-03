@@ -1,3 +1,8 @@
+03.12.2017
+         - PopupMenu and RoutePopupMenu fixes and touchups. (Tim)
+           Fix problems with <More...> submenus.
+           Sort and present midi device items by device type.
+           Slight rearrangement of title items etc.
 02.12.2017 
          - Clear 'recently opened' file list upon MusE self-restarting. (Tim)
 01.12.2017

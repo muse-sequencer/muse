@@ -114,6 +114,9 @@ Q_OBJECT
     QAction* addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
     QAction* addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
     void     addAction(QAction* action);
+    QAction* addMenu(QMenu* menu);
+    QMenu*   addMenu(const QString &title);
+    QMenu*   addMenu(const QIcon &icon, const QString &title);
 };
 
 // A handy structure for use with PopupMenu context menu action data.
