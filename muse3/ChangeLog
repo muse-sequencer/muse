@@ -1,3 +1,10 @@
+04.12.2017
+         - Fixes to instruments, idf files, and sysexes. (Tim)
+           Fix error in Yamaha 9000pro idf file causing
+            "Cannot convert string to sysex r ct bn bt f7".
+           Several submitted idf files have F0...F7 enclosing sysexes, which was not 
+            allowed, so to avoid changing them all, MusE is now more forgiving and 
+            accepts enclosing F0...F7 in idf files and when editing sysex events.
 03.12.2017
          - PopupMenu and RoutePopupMenu fixes and touchups. (Tim)
            Fix problems with <More...> submenus.

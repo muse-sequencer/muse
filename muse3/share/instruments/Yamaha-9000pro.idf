@@ -3895,7 +3895,7 @@ bt = Bass Type
   Same as Chord Type
   0x7F: No Bass Chord
             </comment>
-            <data>f0 43 7e 02 cr ct bn bt f7</data>
+            <data>f0 43 7e 02 31 00 31 00 f7</data>
         </SysEx>
 
         <SysEx name="Chord Control (Type 2: Individual Notes)">
