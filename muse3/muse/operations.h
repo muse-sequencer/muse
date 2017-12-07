@@ -198,7 +198,7 @@ struct PendingOperationItem
                               ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
                               AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
                               SetTrackRecord,    SetTrackMute, SetTrackSolo,
-                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,
+                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
                               AddPart,           DeletePart,   MovePart, ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
@@ -308,6 +308,9 @@ struct PendingOperationItem
   PendingOperationItem(DrumMapTrackPatchReplaceOperation* operation, PendingOperationType type = ReplaceTrackDrumMapPatchList)
     { _type = type; _drum_map_track_patch_replace_operation = operation; }
 
+  PendingOperationItem(MidiPort* mp, PendingOperationType type = UpdateDrumMaps)
+    { _type = type; _midi_port = mp; }
+    
   PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
     { _type = type; _track_list = tl; }
   

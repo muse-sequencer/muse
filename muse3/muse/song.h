@@ -48,14 +48,14 @@ class QMenu;
 namespace MusECore {
 
 class SynthI;
-struct MidiMsg;
+//struct MidiMsg;
 class Event;
 class Xml;
 class Sequencer;
 class Track;
 class Part;
 class PartList;
-struct MPEventList;
+class MPEventList;
 class EventList;
 class MarkerList;
 class Marker;
@@ -409,6 +409,13 @@ public:
       void connectMidiPorts();
       void connectAllPorts() { connectAudioPorts(); connectMidiPorts(); }
       void updateSoloStates();
+      // Put an event into the IPC event ring buffer for the gui thread to process. Returns true on success.
+      // NOTE: Although the ring buffer is multi-writer, call this from audio thread only for now, unless
+      //  you know what you are doing because the thread needs to ask whether the controller exists before
+      //  calling, and that may not be safe from threads other than gui or audio.
+      bool putIpcInEvent(const MidiPlayEvent& ev);
+      // Process any special IPC audio thread - to - gui thread messages. Called by gui thread only.
+      // Returns true on success.
       bool processIpcInEventBuffers();
 
       //-----------------------------------------

@@ -291,7 +291,8 @@ bool MidiPort::sendPendingInitializations(bool force)
         //_device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
         // Let the play events list sort it to be safe.
 //         _device->addScheduledEvent(ev);
-        _device->putUserEvent(ev, MidiDevice::NotLate);
+//         _device->putUserEvent(ev, MidiDevice::NotLate);
+        _device->putEvent(ev, MidiDevice::NotLate);
       }
       // Give a bit of time for the last Init sysex to settle?
 //       last_tick += 100;
@@ -420,7 +421,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 //               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
 //             _device->putEvent(MidiPlayEvent(start_time, port, chan,  
 //               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::PlayFifo, MidiDevice::NotLate);
-            _device->putUserEvent(MidiPlayEvent(start_time, port, chan,
+            _device->putEvent(MidiPlayEvent(start_time, port, chan,
               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::NotLate);
             // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
             // Set it again so that control labels show 'off'...
@@ -447,7 +448,8 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 //           ME_CONTROLLER, cntrl, val));                          
 //         _device->putEvent(MidiPlayEvent(start_time, port, channel,
 //           ME_CONTROLLER, cntrl, val), MidiDevice::PlayFifo, MidiDevice::NotLate);                          
-        _device->putUserEvent(MidiPlayEvent(start_time, port, channel,
+        //_device->putUserEvent(MidiPlayEvent(start_time, port, channel,
+        _device->putEvent(MidiPlayEvent(start_time, port, channel,
           ME_CONTROLLER, cntrl, val), MidiDevice::NotLate);
         // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
         setHwCtrlState(channel, cntrl, val);
@@ -609,7 +611,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 // REMOVE Tim. autoconnect. Changed.
 //         _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v));
 //         _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::PlayFifo, MidiDevice::NotLate);
-        _device->putUserEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::NotLate);
+        //_device->putUserEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::NotLate);
+        _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::NotLate);
         
       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
       setHwCtrlState(chan, ctl, v);
@@ -637,7 +640,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 // REMOVE Tim. autoconnect. Changed.
 //           _device->putEvent(ev);
 //         _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-        _device->putUserEvent(ev, MidiDevice::NotLate);
+        //_device->putUserEvent(ev, MidiDevice::NotLate);
+        _device->putEvent(ev, MidiDevice::NotLate);
           // Retry added. Use default attempts and delay. p4.0.15
           //_device->putEventWithRetry(ev);
         }  
@@ -655,7 +659,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 // REMOVE Tim. autoconnect. Changed.
 //     _device->putEvent(ev);
 //     _device->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-    _device->putUserEvent(ev, MidiDevice::NotLate);
+    //_device->putUserEvent(ev, MidiDevice::NotLate);
+    _device->putEvent(ev, MidiDevice::NotLate);
   }  
   setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, val);
 }      
@@ -762,7 +767,8 @@ void MidiPort::sendSysex(const unsigned char* p, int n)
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           //_device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -827,7 +833,8 @@ void MidiPort::sendStart()
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           //_device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -842,7 +849,8 @@ void MidiPort::sendStop()
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           //_device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -857,7 +865,7 @@ void MidiPort::sendClock()
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -872,7 +880,7 @@ void MidiPort::sendContinue()
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -887,7 +895,7 @@ void MidiPort::sendSongpos(int pos)
 // REMOVE Tim. autoconnect. Changed.
 //            _device->putEvent(event);
 //            _device->putEvent(event, MidiDevice::PlayFifo, MidiDevice::NotLate);
-           _device->putUserEvent(event, MidiDevice::NotLate);
+           _device->putEvent(event, MidiDevice::NotLate);
             }
       }
 
@@ -1927,10 +1935,10 @@ bool MidiPort::createController(int chan, int ctrl)
 
 bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
 {
-  const int chan = ev.channel();
-  if(chan < 0 || chan >= MIDI_CHANNELS)
-    return true;
-  
+//   const int chan = ev.channel();
+//   if(chan < 0 || chan >= MIDI_CHANNELS)
+//     return true;
+//   
 //   // Stage the event.
 //   MidiPlayEvent staged_ev;
 //   const int ctrl = stageEvent(staged_ev, ev);
@@ -1943,13 +1951,28 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
   if(ctrl < 0)
     return true;
 
-  // Make sure to create the controller if necessary.
-  createController(chan, ctrl);
+//   // Make sure to create the controller if necessary.
+//   createController(chan, ctrl);
+  
+  // Make sure the controller exists, create it if not.
+  const int chan = ev.channel();
+  ciMidiCtrlValList cl = _controller->find(chan, ctrl);
+  // Controller does not exist?
+  if(cl == _controller->end())
+  {
+    // Tell the gui thread to create and add a new controller.
+    // It will store and re-deliver the events directly to the buffers
+    //  after the controller is created.
+    MusEGlobal::song->putIpcInEvent(ev);
+    // Technically the event is being delivered.
+    return false;
+  }
   
 //   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(staged_ev)))
 //   if(_gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
 //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
-  if(eventFifos().put(GuiFifo, ev))
+//   if(eventFifos().put(GuiFifo, ev))
+  if(!eventBuffers()->put(ev))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
@@ -2007,16 +2030,16 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
 
 bool MidiPort::putEvent(const MidiPlayEvent& ev)
 {
-  const int chan = ev.channel();
-
-  // Stage the event.
-  //MidiPlayEvent staged_ev;
-//   const int ctrl = stageEvent(staged_ev, ev);
-  const int ctrl = ev.translateCtrlNum();
-  // Event translatable to a controller?
-  if(ctrl >= 0)
-    // Make sure to create the controller if necessary.
-    createController(chan, ctrl);
+//   const int chan = ev.channel();
+// 
+//   // Stage the event.
+//   //MidiPlayEvent staged_ev;
+// //   const int ctrl = stageEvent(staged_ev, ev);
+//   const int ctrl = ev.translateCtrlNum();
+//   // Event translatable to a controller?
+//   if(ctrl >= 0)
+//     // Make sure to create the controller if necessary.
+//     createController(chan, ctrl);
   
   
   // Send the event to the device first so that current parameters could be updated on process.
@@ -2031,7 +2054,8 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //     res = _device->putEvent(stageEvent(ev));
 //     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
 //     res = !_device->userEventBuffers()->put(ev);
-    res = _device->putUserEvent(ev, MidiDevice::Late);
+//     res = _device->putUserEvent(ev, MidiDevice::Late);
+    res = !_device->putEvent(ev, MidiDevice::Late);
     //if(res)
     //  fprintf(stderr, "MidiPort::putEvent: Error: Device buffer overflow\n");
   }
@@ -2039,7 +2063,8 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //   if(ctrl >= 0 && _gui2AudioFifo->put(Gui2AudioFifoStruct(ev)))
 //   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
 //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
-  if(eventFifos().put(GuiFifo, ev))
+//   if(eventFifos().put(GuiFifo, ev))
+  if(!eventBuffers()->put(ev))
 //     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
     fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
   return res;
@@ -2162,7 +2187,8 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 //     res = _device->putEvent(ev);
 //     res = _device->eventFifos()->put(MidiDevice::GuiFifo, ev);
 //     res = !_device->userEventBuffers()->put(ev);
-    res = _device->putUserEvent(ev, MidiDevice::Late);
+//     res = _device->putUserEvent(ev, MidiDevice::Late);
+    res = !_device->putEvent(ev, MidiDevice::Late);
 //     if(res)
 //       fprintf(stderr, "MidiPort::putControllerValue: Error: Device buffer overflow\n");
   }
@@ -2173,7 +2199,8 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 //   Gui2AudioFifoStruct g2as(staged_ev.time(), staged_ev.type(), staged_ev.channel(), staged_ev.dataA(), val, false);
 //   if(stage_res && _gui2AudioFifo->put(g2as))
 //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
-  if(eventFifos().put(GuiFifo, ev))
+//   if(eventFifos().put(GuiFifo, ev))
+  if(!eventBuffers()->put(ev))
 //     fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
     fprintf(stderr, "MidiPort::putControllerValue: Error: GuiFifo fifo overflow\n");
   return res;
@@ -2302,6 +2329,395 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 // 
 //   return false;
 // }
+
+// //---------------------------------------------------------
+// //   handleGui2AudioEvent
+// //   To be called from audio thread only.
+// //   Returns true if event cannot be delivered.
+// //---------------------------------------------------------
+// 
+// // MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
+// MidiPlayEvent MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev)
+// {
+// //   const int chn = g2as._chan;
+// //   const int type = g2as._type;
+// //   const int i_dataA = g2as._dataA;
+// //   const double d_dataB = g2as._dataB;
+// //   const int i_dataB = MidiController::dValToInt(d_dataB);
+// 
+//   const unsigned int time = ev.time();
+//   const int port = ev.port();
+//   const int chn = ev.channel();
+//   const int type = ev.type();
+//   const int i_dataA = ev.dataA();
+//   const double d_dataB = ev.dataB();
+//   const int i_dataB = MidiController::dValToInt(d_dataB);
+//   
+// //   int ctrl = -1;
+// //   int i_fin_val = 0;
+// 
+// 
+//   int fin_db = i_dataB;
+//   switch(type)
+//   {
+//     case ME_CONTROLLER:
+//       switch(i_dataA)
+//       {
+//         case CTRL_HBANK:
+//         {
+//           int hb = 0xff;
+//           if(!MidiController::iValIsUnknown(i_dataB))
+//             hb = i_dataB & 0xff;
+//           if(hb != 0xff)
+//             hb = limitValToInstrCtlRange(i_dataA, hb);
+//           int lb = 0xff;
+//           int pr = 0xff;
+//           
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+//           MidiCtrlValList* mcvl = imcvl->second;
+//           if(!mcvl->hwValIsUnknown())
+//           {
+//             const int hw_val = mcvl->hwVal();
+//             lb = (hw_val >> 8) & 0xff;
+//             pr = hw_val & 0xff;
+//           }
+//           
+//           if((hb != 0xff || lb != 0xff) && pr == 0xff)
+//             pr = 0x01;
+//           if(hb == 0xff && lb == 0xff && pr == 0xff)
+//             fin_db = CTRL_VAL_UNKNOWN;
+//           else
+//             fin_db = (hb << 16) | (lb << 8) | pr;
+//           
+//           // Set the value. Be sure to update drum maps (and inform the gui).
+//           if(mcvl->setHwVal(fin_db))
+//             updateDrumMaps(chn, fin_db);
+//           
+// //           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           //return false;
+//         }
+//         break;
+// 
+//         case CTRL_LBANK:
+//         {
+//           int hb = 0xff;
+//           int lb = 0xff;
+//           if(!MidiController::iValIsUnknown(i_dataB))
+//             lb = i_dataB & 0xff;
+//           if(lb != 0xff)
+//             lb = limitValToInstrCtlRange(i_dataA, lb);
+//           int pr = 0xff;
+//           
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+//           MidiCtrlValList* mcvl = imcvl->second;
+//           if(!mcvl->hwValIsUnknown())
+//           {
+//             const int hw_val = mcvl->hwVal();
+//             hb = (hw_val >> 16) & 0xff;
+//             pr = hw_val & 0xff;
+//           }
+//           
+//           if((hb != 0xff || lb != 0xff) && pr == 0xff)
+//             pr = 0x01;
+//           if(hb == 0xff && lb == 0xff && pr == 0xff)
+//             fin_db = CTRL_VAL_UNKNOWN;
+//           else
+//             fin_db = (hb << 16) | (lb << 8) | pr;
+//           
+//           // Set the value. Be sure to update drum maps (and inform the gui).
+//           if(mcvl->setHwVal(fin_db))
+//             updateDrumMaps(chn, fin_db);
+//           
+// //           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           //return false;
+//         }
+//         break;
+// 
+//         case CTRL_PROGRAM:
+//         {
+//           // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+//           //        defined by the user in the controller list.
+//             
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+//           // Set the value. Be sure to update drum maps (and inform the gui).
+//           if(imcvl->second->setHwVal(fin_db))
+//             updateDrumMaps(chn, fin_db);
+//           
+// //           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           //return false;
+//         }
+//         break;
+//         
+//         default:
+//         {
+//           iMidiCtrlValList imcvl = _controller->find(chn, i_dataA);
+//           // Does the controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+// 
+//           fin_db = limitValToInstrCtlRange(i_dataA, i_dataB);
+//           // Set the value.
+//           imcvl->second->setHwVal(fin_db);
+//           
+// //           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, i_dataA, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, i_dataA, fin_db);
+//           //return false;
+//         }
+//         break;
+//       }
+//     break;
+//     
+//     case ME_POLYAFTER:
+//     {
+//       const int pitch = i_dataA & 0x7f;
+//       const int fin_da = (CTRL_POLYAFTER & ~0xff) | pitch;
+//       iMidiCtrlValList imcvl = _controller->find(chn, fin_da);
+//       
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+// 
+//       fin_db = limitValToInstrCtlRange(fin_da, i_dataB);
+//       // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+//       
+// //       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, fin_da, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, fin_da, fin_db);
+//       //return false;
+//     }
+//     break;
+//     
+//     case ME_AFTERTOUCH:
+//     {
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_AFTERTOUCH);
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+//       
+//       fin_db = limitValToInstrCtlRange(CTRL_AFTERTOUCH, i_dataA);
+//       // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+//       
+// //       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+//       //return false;
+//     }
+//     break;
+//     
+//     case ME_PITCHBEND:
+//     {
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PITCH);
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+//       
+//       fin_db = limitValToInstrCtlRange(CTRL_PITCH, i_dataA);
+//       // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+//       
+// //       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+//       //return false;
+//     }
+//     break;
+//     
+//     case ME_PROGRAM:
+//     {
+//       int hb = 0xff;
+//       int lb = 0xff;
+//       int pr = 0xff;
+//       if(!MidiController::iValIsUnknown(i_dataA))
+//         pr = i_dataA & 0xff;
+//       //if(pr != 0xff)
+//       //  pr = limitValToInstrCtlRange(da, pr);
+//       
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//       // Does the CTRL_PROGRAM controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+//       
+//       MidiCtrlValList* mcvl = imcvl->second;
+//       if(!mcvl->hwValIsUnknown())
+//       {
+//         const int hw_val = mcvl->hwVal();
+//         hb = (hw_val >> 16) & 0xff;
+//         lb = (hw_val >> 8) & 0xff;
+//       }
+//       
+//       if((hb != 0xff || lb != 0xff) && pr == 0xff)
+//         pr = 0x01;
+//       if(hb == 0xff && lb == 0xff && pr == 0xff)
+//         fin_db = CTRL_VAL_UNKNOWN;
+//       else
+//         fin_db = (hb << 16) | (lb << 8) | pr;
+//       
+//       // Set the value. Be sure to update drum maps (and inform the gui).
+//       if(mcvl->setHwVal(fin_db))
+//         updateDrumMaps(chn, fin_db);
+//       
+// //       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//       //return false;
+//     }
+//     break;
+//     
+//     default:
+//       // For all other event types, just return true.
+//       //return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
+//       //return true;
+//     break;
+//   }
+//   
+// //   return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
+//   return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
+//   //return true;
+//       
+// 
+// 
+// /*
+//   
+//   if (g2as._type == ME_CONTROLLER)
+//   {
+//     ctrl = i_dataA;
+//     i_fin_val = i_dataB;
+// 
+//     // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+//     //        defined by the user in the controller list.
+//     if(ctrl == CTRL_HBANK)
+//     {
+//       int hb = i_dataB & 0xff;
+//       int lb = 0xff;
+//       int pr = 0xff;
+//       if(_device)
+//       {
+//         _device->curOutParamNums(chn)->currentProg(&pr, &lb, NULL);
+//         _device->curOutParamNums(chn)->BANKH = hb;
+//       }
+//       i_fin_val = (hb << 16) | (lb << 8) | pr;
+//       ctrl = CTRL_PROGRAM;
+//     }
+//     else if(ctrl == CTRL_LBANK)
+//     {
+//       int hb = 0xff;
+//       int lb = i_dataB & 0xff;
+//       int pr = 0xff;
+//       if(_device)
+//       {
+//         _device->curOutParamNums(chn)->currentProg(&pr, NULL, &hb);
+//         _device->curOutParamNums(chn)->BANKL = lb;
+//       }
+//       i_fin_val = (hb << 16) | (lb << 8) | pr;
+//       ctrl = CTRL_PROGRAM;
+//     }
+//     else if(ctrl == CTRL_PROGRAM)
+//     {
+//       // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+//       //        defined by the user in the controller list.
+//     }
+//     else
+//     {
+//     }
+//   }
+//   else
+//   if (g2as._type == ME_POLYAFTER)
+//   {
+//     const int pitch = i_dataA & 0x7f;
+//     ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
+//     //const int db = limitValToInstrCtlRange(ctrl, ev.dataB());  // Already done by sender !
+//     i_fin_val = i_dataB;
+//   }
+//   else
+//   if (g2as._type == ME_AFTERTOUCH)  // ... Same
+//   {
+//     ctrl = CTRL_AFTERTOUCH;
+//     //const int da = limitValToInstrCtlRange(ctrl, ev.dataA());  // Already done by sender !
+//     i_fin_val = i_dataA;
+//   }
+//   else
+//   if (g2as._type == ME_PITCHBEND)
+//   {
+//     ctrl = CTRL_PITCH;
+//     //const int da = limitValToInstrCtlRange(ctrl, ev.dataA()); // Already done by sender !
+//     i_fin_val = i_dataA;
+//   }
+//   else
+//   if (g2as._type == ME_PROGRAM)
+//   {
+//     ctrl = CTRL_PROGRAM;
+//     int hb = 0xff;
+//     int lb = 0xff;
+//     int pr = i_dataA & 0xff;
+//     if(_device)
+//     {
+//       _device->curOutParamNums(chn)->currentProg(NULL, &lb, &hb);
+//       _device->curOutParamNums(chn)->PROG = pr;
+//     }
+//     i_fin_val = (hb << 16) | (lb << 8) | pr;
+//   }
+//   else
+//   {
+// 
+//   }
+// 
+//   // For now we are only interested in controllers not notes etc.
+//   if(ctrl == -1)
+//     return false;
+// 
+//   iMidiCtrlValList imcvl = _controller->find(chn, ctrl);
+//   if(imcvl == _controller->end())
+//   {
+//     fprintf(stderr, "MidiPort::handleGui2AudioEvent Error: Controller:%d on chan:%d does not exist. Sender should have created it!\n", ctrl, chn);
+//     return true;
+//   }
+// 
+//   const double d_fin_val = double(i_fin_val);
+//   
+//   MidiCtrlValList* mcvl = imcvl->second;
+//   const bool res = mcvl->setHwVal(d_fin_val);
+//   // If program controller be sure to update drum maps (and inform the gui).
+//   if(res && ctrl == CTRL_PROGRAM)
+//     updateDrumMaps(chn, i_fin_val);
+//   //return res;
+// 
+//   return false;*/
+// }
+
+//---------------------------------------------------------
+//   handleGui2AudioEvent
+//   To be called from audio thread only.
+//   Returns true if event cannot be delivered.
+//---------------------------------------------------------
 
 // MidiPlayEvent MidiPort::handleGui2AudioEvent(const Gui2AudioFifoStruct& g2as)
 MidiPlayEvent MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev)
@@ -2569,115 +2985,284 @@ MidiPlayEvent MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev)
 //   return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
   return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
   //return true;
-      
+}
 
+//---------------------------------------------------------
+//   processAudio2GuiEvent
+//   To be called from gui thread only.
+//   Returns true if event cannot be delivered.
+//---------------------------------------------------------
 
-/*
+bool MidiPort::processAudio2GuiEvent(MidiCtrlValList* mcvl, const MidiPlayEvent& ev)
+{
+//   const int chn = g2as._chan;
+//   const int type = g2as._type;
+//   const int i_dataA = g2as._dataA;
+//   const double d_dataB = g2as._dataB;
+//   const int i_dataB = MidiController::dValToInt(d_dataB);
+
+//   const unsigned int time = ev.time();
+//   const int port = ev.port();
+  const int chn = ev.channel();
+  const int type = ev.type();
+  const int i_dataA = ev.dataA();
+  const double d_dataB = ev.dataB();
+  const int i_dataB = MidiController::dValToInt(d_dataB);
   
-  if (g2as._type == ME_CONTROLLER)
-  {
-    ctrl = i_dataA;
-    i_fin_val = i_dataB;
+//   int ctrl = -1;
+//   int i_fin_val = 0;
 
-    // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
-    //        defined by the user in the controller list.
-    if(ctrl == CTRL_HBANK)
-    {
-      int hb = i_dataB & 0xff;
-      int lb = 0xff;
-      int pr = 0xff;
-      if(_device)
+
+  int fin_db = i_dataB;
+  switch(type)
+  {
+    case ME_CONTROLLER:
+      switch(i_dataA)
       {
-        _device->curOutParamNums(chn)->currentProg(&pr, &lb, NULL);
-        _device->curOutParamNums(chn)->BANKH = hb;
+        case CTRL_HBANK:
+        {
+          int hb = 0xff;
+          if(!MidiController::iValIsUnknown(i_dataB))
+            hb = i_dataB & 0xff;
+          if(hb != 0xff)
+            hb = limitValToInstrCtlRange(i_dataA, hb);
+          int lb = 0xff;
+          int pr = 0xff;
+          
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+//           MidiCtrlValList* mcvl = imcvl->second;
+          if(!mcvl->hwValIsUnknown())
+          {
+            const int hw_val = mcvl->hwVal();
+            lb = (hw_val >> 8) & 0xff;
+            pr = hw_val & 0xff;
+          }
+          
+          if((hb != 0xff || lb != 0xff) && pr == 0xff)
+            pr = 0x01;
+          if(hb == 0xff && lb == 0xff && pr == 0xff)
+            fin_db = CTRL_VAL_UNKNOWN;
+          else
+            fin_db = (hb << 16) | (lb << 8) | pr;
+          
+          // Set the value. Be sure to update drum maps (and inform the gui).
+          if(mcvl->setHwVal(fin_db))
+            updateDrumMaps(chn, fin_db);
+          
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return false;
+        }
+        break;
+
+        case CTRL_LBANK:
+        {
+          int hb = 0xff;
+          int lb = 0xff;
+          if(!MidiController::iValIsUnknown(i_dataB))
+            lb = i_dataB & 0xff;
+          if(lb != 0xff)
+            lb = limitValToInstrCtlRange(i_dataA, lb);
+          int pr = 0xff;
+          
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+//           MidiCtrlValList* mcvl = imcvl->second;
+          if(!mcvl->hwValIsUnknown())
+          {
+            const int hw_val = mcvl->hwVal();
+            hb = (hw_val >> 16) & 0xff;
+            pr = hw_val & 0xff;
+          }
+          
+          if((hb != 0xff || lb != 0xff) && pr == 0xff)
+            pr = 0x01;
+          if(hb == 0xff && lb == 0xff && pr == 0xff)
+            fin_db = CTRL_VAL_UNKNOWN;
+          else
+            fin_db = (hb << 16) | (lb << 8) | pr;
+          
+          // Set the value. Be sure to update drum maps (and inform the gui).
+          if(mcvl->setHwVal(fin_db))
+            updateDrumMaps(chn, fin_db);
+          
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return false;
+        }
+        break;
+
+        case CTRL_PROGRAM:
+        {
+          // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+          //        defined by the user in the controller list.
+            
+//           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//           // Does the CTRL_PROGRAM controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+//           
+          // Set the value. Be sure to update drum maps (and inform the gui).
+//           if(imcvl->second->setHwVal(fin_db))
+          if(mcvl->setHwVal(fin_db))
+            updateDrumMaps(chn, fin_db);
+          
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+          return false;
+        }
+        break;
+        
+        default:
+        {
+//           iMidiCtrlValList imcvl = _controller->find(chn, i_dataA);
+//           // Does the controller exist?
+//           if(imcvl == _controller->end())
+//             //return MidiPlayEvent();
+//             //return true;
+//             break;
+
+          fin_db = limitValToInstrCtlRange(i_dataA, i_dataB);
+          // Set the value.
+//           imcvl->second->setHwVal(fin_db);
+          mcvl->setHwVal(fin_db);
+          
+//           return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, i_dataA, fin_db);
+//           return MidiPlayEvent(time, port, chn, ME_CONTROLLER, i_dataA, fin_db);
+          return false;
+        }
+        break;
       }
-      i_fin_val = (hb << 16) | (lb << 8) | pr;
-      ctrl = CTRL_PROGRAM;
+    break;
+    
+    case ME_POLYAFTER:
+    {
+      const int pitch = i_dataA & 0x7f;
+      const int fin_da = (CTRL_POLYAFTER & ~0xff) | pitch;
+//       iMidiCtrlValList imcvl = _controller->find(chn, fin_da);
+//       
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+
+      fin_db = limitValToInstrCtlRange(fin_da, i_dataB);
+      // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+      mcvl->setHwVal(fin_db);
+      
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, fin_da, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, fin_da, fin_db);
+      return false;
     }
-    else if(ctrl == CTRL_LBANK)
+    break;
+    
+    case ME_AFTERTOUCH:
+    {
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_AFTERTOUCH);
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+      
+      fin_db = limitValToInstrCtlRange(CTRL_AFTERTOUCH, i_dataA);
+      // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+      mcvl->setHwVal(fin_db);
+      
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_AFTERTOUCH, fin_db);
+      return false;
+    }
+    break;
+    
+    case ME_PITCHBEND:
+    {
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PITCH);
+//       // Does the controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+      
+      fin_db = limitValToInstrCtlRange(CTRL_PITCH, i_dataA);
+      // Set the value.
+//       imcvl->second->setHwVal(fin_db);
+      mcvl->setHwVal(fin_db);
+      
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PITCH, fin_db);
+      return false;
+    }
+    break;
+    
+    case ME_PROGRAM:
     {
       int hb = 0xff;
-      int lb = i_dataB & 0xff;
+      int lb = 0xff;
       int pr = 0xff;
-      if(_device)
+      if(!MidiController::iValIsUnknown(i_dataA))
+        pr = i_dataA & 0xff;
+      //if(pr != 0xff)
+      //  pr = limitValToInstrCtlRange(da, pr);
+      
+//       iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
+//       // Does the CTRL_PROGRAM controller exist?
+//       if(imcvl == _controller->end())
+//         //return MidiPlayEvent();
+//         //return true;
+//         break;
+//       
+//       MidiCtrlValList* mcvl = imcvl->second;
+      if(!mcvl->hwValIsUnknown())
       {
-        _device->curOutParamNums(chn)->currentProg(&pr, NULL, &hb);
-        _device->curOutParamNums(chn)->BANKL = lb;
+        const int hw_val = mcvl->hwVal();
+        hb = (hw_val >> 16) & 0xff;
+        lb = (hw_val >> 8) & 0xff;
       }
-      i_fin_val = (hb << 16) | (lb << 8) | pr;
-      ctrl = CTRL_PROGRAM;
+      
+      if((hb != 0xff || lb != 0xff) && pr == 0xff)
+        pr = 0x01;
+      if(hb == 0xff && lb == 0xff && pr == 0xff)
+        fin_db = CTRL_VAL_UNKNOWN;
+      else
+        fin_db = (hb << 16) | (lb << 8) | pr;
+      
+      // Set the value. Be sure to update drum maps (and inform the gui).
+      if(mcvl->setHwVal(fin_db))
+        updateDrumMaps(chn, fin_db);
+      
+//       return MidiPlayEvent(g2as._time, g2as._port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+//       return MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_PROGRAM, fin_db);
+      return false;
     }
-    else if(ctrl == CTRL_PROGRAM)
-    {
-      // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
-      //        defined by the user in the controller list.
-    }
-    else
-    {
-    }
+    break;
+    
+    default:
+      // For all other event types, just return true.
+      //return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
+      //return true;
+    break;
   }
-  else
-  if (g2as._type == ME_POLYAFTER)
-  {
-    const int pitch = i_dataA & 0x7f;
-    ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
-    //const int db = limitValToInstrCtlRange(ctrl, ev.dataB());  // Already done by sender !
-    i_fin_val = i_dataB;
-  }
-  else
-  if (g2as._type == ME_AFTERTOUCH)  // ... Same
-  {
-    ctrl = CTRL_AFTERTOUCH;
-    //const int da = limitValToInstrCtlRange(ctrl, ev.dataA());  // Already done by sender !
-    i_fin_val = i_dataA;
-  }
-  else
-  if (g2as._type == ME_PITCHBEND)
-  {
-    ctrl = CTRL_PITCH;
-    //const int da = limitValToInstrCtlRange(ctrl, ev.dataA()); // Already done by sender !
-    i_fin_val = i_dataA;
-  }
-  else
-  if (g2as._type == ME_PROGRAM)
-  {
-    ctrl = CTRL_PROGRAM;
-    int hb = 0xff;
-    int lb = 0xff;
-    int pr = i_dataA & 0xff;
-    if(_device)
-    {
-      _device->curOutParamNums(chn)->currentProg(NULL, &lb, &hb);
-      _device->curOutParamNums(chn)->PROG = pr;
-    }
-    i_fin_val = (hb << 16) | (lb << 8) | pr;
-  }
-  else
-  {
-
-  }
-
-  // For now we are only interested in controllers not notes etc.
-  if(ctrl == -1)
-    return false;
-
-  iMidiCtrlValList imcvl = _controller->find(chn, ctrl);
-  if(imcvl == _controller->end())
-  {
-    fprintf(stderr, "MidiPort::handleGui2AudioEvent Error: Controller:%d on chan:%d does not exist. Sender should have created it!\n", ctrl, chn);
-    return true;
-  }
-
-  const double d_fin_val = double(i_fin_val);
   
-  MidiCtrlValList* mcvl = imcvl->second;
-  const bool res = mcvl->setHwVal(d_fin_val);
-  // If program controller be sure to update drum maps (and inform the gui).
-  if(res && ctrl == CTRL_PROGRAM)
-    updateDrumMaps(chn, i_fin_val);
-  //return res;
-
-  return false;*/
+//   return MidiPlayEvent(g2as._time, g2as._port, chn, type, i_dataA, i_dataB);
+//   return MidiPlayEvent(time, port, chn, type, i_dataA, i_dataB);
+  return true;
 }
 
 //---------------------------------------------------------
@@ -2736,14 +3321,18 @@ bool MidiPort::processGui2AudioEvents()
   // Receive hardware state events sent from various threads to this audio thread.
   // Update hardware state so gui controls are updated.
   // False = don't use the size snapshot, but update it.
-  const int sz = eventFifos().getSize(false);
+//   const int sz = eventFifos().getSize(false);
+  const int sz = eventBuffers()->getSize(false);
+  MidiPlayEvent ev;
   for(int i = 0; i < sz; ++i)
   {
 //     // True = use the size snapshot.
 //     const Gui2AudioFifoStruct g2as = eventFifos().get(true);
 //     const int port = g2as._port;
     // True = use the size snapshot.
-    const MidiPlayEvent ev = eventFifos().get(true);
+//     const MidiPlayEvent ev = eventFifos().get(true);
+    if(!eventBuffers()->get(ev))
+      continue;
     const int port = ev.port();
     if(port < 0 || port >= MIDI_PORTS)
       continue;

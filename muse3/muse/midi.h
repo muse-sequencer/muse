@@ -158,7 +158,7 @@ extern unsigned int sysexDuration(unsigned int len);
 // // The next byte describes what to include in the panic. It is an OR'd combination of these values:
 // enum MUSE_SYSEX_SYSTEM_PANIC_TYPES { MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF = 0x1, MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL = 0x2};
 
-struct MPEventList;
+class MPEventList;
 class MidiTrack;
 extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 

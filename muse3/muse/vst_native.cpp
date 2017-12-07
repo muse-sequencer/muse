@@ -3206,14 +3206,14 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 //       //synti->_outPlaybackEvents.clear();
       
       // Count how many events we need.
-      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); )
+      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
       {
         const MidiPlayEvent& e = *impe;
         if(e.time() >= (syncFrame + sample + nsamp))
           break;
         ++nevents;
       }
-      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
+      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
       {
         const MidiPlayEvent& e = *impe;
         if(e.time() >= (syncFrame + sample + nsamp))

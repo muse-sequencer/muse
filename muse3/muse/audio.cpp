@@ -49,6 +49,7 @@
 #include "ticksynth.h"
 //#include "operations.h"
 #include "undo.h"
+#include "globals.h"
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 

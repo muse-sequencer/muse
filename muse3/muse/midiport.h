@@ -261,7 +261,7 @@ class MidiPort {
       // Put an event into the gui2audio fifo for playback. Calls stageEvent().
       // Called from gui thread only. Returns true if event cannot be delivered.
       bool putHwCtrlEvent(const MidiPlayEvent&);
-      // Put an event into both the device and the gui2audio fifo for playback. Calls stageEvent().
+      // Put an event into both the device and the gui2audio fifos for playback. Calls stageEvent().
       // Called from gui thread only. Returns true if event cannot be delivered.
       bool putEvent(const MidiPlayEvent&);
       // Special method for incrementing a value: Handles getting the current hw value,
@@ -278,6 +278,7 @@ class MidiPort {
       // Process the gui2AudioFifo. Called from audio thread only.
 //       bool processGui2AudioEvents();
       static bool processGui2AudioEvents();
+      bool processAudio2GuiEvent(MidiCtrlValList* mcvl, const MidiPlayEvent& ev);
 //       // To be called from audio thread only. Returns true if event cannot be delivered.
 //       MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 

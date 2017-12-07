@@ -971,7 +971,7 @@ void MidiDevice::processStuckNotes()
 //             ev.setTime(MusEGlobal::tempomap.tick2frame(k->time()) + frameOffset);
           ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
 //           _playEvents.add(ev);
-            _userEventBuffers.put(ev);
+            _userEventBuffers->put(ev);
           }
     _stuckNotes.erase(_stuckNotes.begin(), k);
 

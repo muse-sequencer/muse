@@ -89,6 +89,7 @@ int PendingOperationItem::getIndex() const
     case ModifyTrackDrumMapItem:
     case ReplaceTrackDrumMapPatchList:
     case RemapDrumControllers:
+    case UpdateDrumMaps:
     case SetTrackRecord:
     case SetTrackMute:
     case SetTrackSolo:
@@ -306,6 +307,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case UpdateDrumMaps:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage UpdateDrumMaps: midi_port:%p:\n", _midi_port);
+#endif      
+      if(_midi_port->updateDrumMaps())
+        flags |= SC_DRUMMAP;
+    break;
+    
     case UpdateSoloStates:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
@@ -1401,6 +1410,14 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::UpdateDrumMaps:
+        if(poi._type == PendingOperationItem::UpdateDrumMaps && poi._midi_port == op._midi_port)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double UpdateDrumMaps. Ignoring.\n");
+          return false;  
+        }
+      break;
+      
       case PendingOperationItem::UpdateSoloStates:
         if(poi._type == PendingOperationItem::UpdateSoloStates && poi._track_list == op._track_list)
         {

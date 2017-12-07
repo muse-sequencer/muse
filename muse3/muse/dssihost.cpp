@@ -2048,14 +2048,14 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 //       //synti->_outPlaybackEvents.clear();
       
       // Count how many events we need.
-      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); )
+      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
       {
         const MidiPlayEvent& e = *impe;
         if(e.time() >= (syncFrame + sample + nsamp))
           break;
         ++nevents;
       }
-      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
+      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
       {
         const MidiPlayEvent& e = *impe;
         if(e.time() >= (syncFrame + sample + nsamp))
@@ -2343,13 +2343,13 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         
 //         MusEGlobal::midiPorts[port].sendEvent(event);
         
-        MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
-        if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
-//           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-//           md->userEventBuffers()->put(event);
-          md->putUserEvent(event, MidiDevice::Late);
+//         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
+//         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+// //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
+// //           md->userEventBuffers()->put(event);
+//           md->putUserEvent(event, MidiDevice::Late);
           
-        //MusEGlobal::midiPorts[port].putEvent(event);
+        MusEGlobal::midiPorts[port].putEvent(event);
       }
       
       //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
@@ -2466,21 +2466,23 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         
 // REMOVE Tim. autoconnect. Changed.
 //         MusEGlobal::midiPorts[port].sendEvent(event);
-        //// Send one message to our own gui thread, and one message 
-        ////  to the dssi synth instance.
-        //MusEGlobal::midiPorts[port].putHwCtrlEvent(event);
-        //_osc2AudioFifo->put(event);
-        //MusEGlobal::midiPorts[port].putOSCHwCtrlEvent(event);
-        // Put an OSC event into the mid port's OSC fifo.
-//         MusEGlobal::midiPorts[port].putOSCEvent(event);
-        
-//         MidiPort::eventFifos().put(MidiPort::OSCFifo, Gui2AudioFifoStruct(event));
-        MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
-        
-        if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
-//           md->eventFifos()->put(MidiDevice::OSCFifo, event);
-//           md->userEventBuffers()->put(event);
-          md->putUserEvent(event, MidiDevice::Late);
+//         //// Send one message to our own gui thread, and one message 
+//         ////  to the dssi synth instance.
+//         //MusEGlobal::midiPorts[port].putHwCtrlEvent(event);
+//         //_osc2AudioFifo->put(event);
+//         //MusEGlobal::midiPorts[port].putOSCHwCtrlEvent(event);
+//         // Put an OSC event into the mid port's OSC fifo.
+// //         MusEGlobal::midiPorts[port].putOSCEvent(event);
+//         
+// //         MidiPort::eventFifos().put(MidiPort::OSCFifo, Gui2AudioFifoStruct(event));
+//         MidiPort::eventFifos().put(MidiPort::OSCFifo, event);
+//         
+//         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+// //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
+// //           md->userEventBuffers()->put(event);
+//           md->putUserEvent(event, MidiDevice::Late);
+          
+        MusEGlobal::midiPorts[port].putEvent(event);
       }
       
       return 0;

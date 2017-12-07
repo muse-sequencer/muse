@@ -627,8 +627,8 @@ class LockFreeMPSCRingBuffer
       unsigned int roundCapacity(unsigned int reqCap) const
       {
         unsigned int i;
-        for(i = 1; (1 << i) < reqCap; i++);
-        return 1 << i;
+        for(i = 1; (1U << i) < reqCap; i++);
+        return 1U << i;
       }
 
    public:
@@ -662,7 +662,7 @@ class LockFreeMPSCRingBuffer
       bool put(const T& item)
       {
         // Buffer full? Overflow condition.
-        if(_size >= _capacity) 
+        if(_size.load() >= _capacity) 
           return false;
         
         // Safely read, then increment, the current write position.
@@ -684,7 +684,7 @@ class LockFreeMPSCRingBuffer
       bool get(T& dst)
       {
         // Nothing to read?
-        if(_size == 0)
+        if(_size.load() == 0)
           return false;
         
         // Safely read, then increment, the current read position.
@@ -706,7 +706,7 @@ class LockFreeMPSCRingBuffer
       {
         // Safely read the current read position.
         //std::atomic<unsigned int> pos = _rIndex.load();
-        unsigned int pos = _rIndex;
+        unsigned int pos = _rIndex.load();
         // Add the desired position.
         pos += n;
         // Mask the position for a circular effect.
@@ -727,7 +727,7 @@ class LockFreeMPSCRingBuffer
       bool remove()
       {
         // Nothing to read?
-        if(_size == 0)
+        if(_size.load() == 0)
           return false;
         
         // Safely increment the current read position.
@@ -751,15 +751,16 @@ class LockFreeMPSCRingBuffer
         return sz;
       }
       // This is only for the reader.
-      bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
+      bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size.load() == 0; }
       // This is not thread safe, call it only when it is safe to do so.
-      void clear() { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
+      void clear() { _size.store(0); _sizeSnapshot = 0; _wIndex.store(0); _rIndex.store(0); }
       // This is only for the reader.
       // Clear the 'read' side of the ring buffer, which also clears the size.
       // NOTE: A corresponding clearWrite() is not provided because it is dangerous to reset 
       //  the size from the sender side - the receiver might cache the size, briefly. 
       // The sender should only grow the size while the receiver should only shrink it.
-      void clearRead() { _size = 0; _sizeSnapshot = 0; _rIndex = _wIndex; }
+      //void clearRead() { _size = 0; _sizeSnapshot = 0; _rIndex = _wIndex; }
+      void clearRead() { _size.store(0); _sizeSnapshot = 0; _rIndex.store(_wIndex); }
 };
 
 } // namespace MusECore

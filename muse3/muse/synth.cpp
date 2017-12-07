@@ -703,7 +703,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
 //                   if(!_eventFifos->put(PlayFifo, pev))
 //                   if(!_eventBuffers.put(pev))
 //                         break;   // try later
-                  _userEventBuffers.put(pev);
+                  _userEventBuffers->put(pev);
                   }
             iel->clear();
             }
@@ -1229,7 +1229,8 @@ void SynthI::preProcessAlways()
 //     // Eat up any fifo events.
 //     _eventFifos->clearRead();
     // Eat up any buffer events.
-        _userEventBuffers.clearRead();
+        _playbackEventBuffers->clearRead();
+        _userEventBuffers->clearRead();
   }
 }
 

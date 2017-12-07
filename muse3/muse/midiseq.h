@@ -31,7 +31,7 @@ namespace MusECore {
 
 class MidiDevice;
 class MidiPort;
-struct MPEventList;
+class MPEventList;
 class MTC;
 class SynthI;
 class Timer;
