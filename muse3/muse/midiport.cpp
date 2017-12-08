@@ -2104,9 +2104,10 @@ bool MidiPort::putEvent(const MidiPlayEvent& ev)
 //   if(ctrl >= 0 && eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
 //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
 //   if(eventFifos().put(GuiFifo, ev))
-  if(!eventBuffers()->put(ev))
-//     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
-    fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
+//   if(!eventBuffers()->put(ev))
+// //     fprintf(stderr, "MidiPort::putEvent: Error: gui2AudioFifo fifo overflow\n");
+//     fprintf(stderr, "MidiPort::putEvent: Error: GuiFifo fifo overflow\n");
+  putHwCtrlEvent(ev);
   return res;
 }
 
@@ -2240,9 +2241,10 @@ bool MidiPort::putControllerValue(int port, int chan, int ctlnum, double val, bo
 //   if(stage_res && _gui2AudioFifo->put(g2as))
 //   if(eventFifos().put(GuiFifo, Gui2AudioFifoStruct(ev)))
 //   if(eventFifos().put(GuiFifo, ev))
-  if(!eventBuffers()->put(ev))
-//     fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
-    fprintf(stderr, "MidiPort::putControllerValue: Error: GuiFifo fifo overflow\n");
+//   if(!eventBuffers()->put(ev))
+// //     fprintf(stderr, "MidiPort::putControllerValue: Error: gui2AudioFifo fifo overflow\n");
+//     fprintf(stderr, "MidiPort::putControllerValue: Error: GuiFifo fifo overflow\n");
+  putHwCtrlEvent(ev);
   return res;
 }
 
