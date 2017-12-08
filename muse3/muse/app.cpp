@@ -350,7 +350,9 @@ MusE::MusE() : QMainWindow()
       messagePollTimer = new QTimer(this);
       messagePollTimer->setObjectName("messagePollTimer");
       connect(messagePollTimer, SIGNAL(timeout()), SLOT(messagePollTimerSlot()));
-      messagePollTimer->start(); // A zero-millisecond poll timer.
+      // A zero-millisecond poll timer. Oops, no can't do that in the gui thread,
+      //  it spikes the CPU usage because it eats up all the idle time. Use say, 50Hz 20msec.
+      messagePollTimer->start(20);
 
       //init cpuload stuff
       clock_gettime(CLOCK_REALTIME, &lastSysTime);
