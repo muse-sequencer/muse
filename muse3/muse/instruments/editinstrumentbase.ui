@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>816</width>
-    <height>494</height>
+    <height>505</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -377,7 +377,7 @@ Refer to the instrument manufacturer's
                   <item>
                    <widget class="QRadioButton" name="showPatchInDrumsButton">
                     <property name="text">
-                     <string>Drum</string>
+                     <string>&amp;Drum</string>
                     </property>
                    </widget>
                   </item>
@@ -502,7 +502,7 @@ Refer to the instrument manufacturer's
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
-           <widget class="QWidget" name="">
+           <widget class="QWidget" name="layoutWidget">
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
               <widget class="QLabel" name="label">
@@ -657,7 +657,16 @@ Refer to the instrument manufacturer's
                 <bool>true</bool>
                </property>
                <layout class="QGridLayout" name="gridLayout_">
-                <property name="margin">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>0</number>
                 </property>
                 <item row="0" column="0">
@@ -921,7 +930,7 @@ Refer to the instrument manufacturer's
              <string>Name                  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignLeft|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -929,7 +938,7 @@ Refer to the instrument manufacturer's
              <string>Type       </string>
             </property>
             <property name="textAlignment">
-             <set>AlignLeft|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -937,7 +946,7 @@ Refer to the instrument manufacturer's
              <string>H-Ctrl</string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -945,7 +954,7 @@ Refer to the instrument manufacturer's
              <string>L-Ctrl</string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -953,7 +962,7 @@ Refer to the instrument manufacturer's
              <string>Min  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -961,7 +970,7 @@ Refer to the instrument manufacturer's
              <string>Max  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -969,7 +978,7 @@ Refer to the instrument manufacturer's
              <string>Def  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -977,7 +986,7 @@ Refer to the instrument manufacturer's
              <string>Dr def</string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -985,7 +994,7 @@ Refer to the instrument manufacturer's
              <string>Midi</string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -993,7 +1002,7 @@ Refer to the instrument manufacturer's
              <string>Drum</string>
             </property>
             <property name="textAlignment">
-             <set>AlignRight|AlignVCenter</set>
+             <set>AlignTrailing|AlignVCenter</set>
             </property>
            </column>
           </widget>
@@ -1013,7 +1022,16 @@ Refer to the instrument manufacturer's
             <property name="spacing">
              <number>2</number>
             </property>
-            <property name="margin">
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
              <number>2</number>
             </property>
             <item>
@@ -1866,6 +1884,13 @@ Caution! Watch out for controllers such as
               </widget>
              </item>
              <item>
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Note: The enclosing F0 ... F7 are not required</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QTextEdit" name="sysexData"/>
              </item>
              <item>
@@ -2001,7 +2026,7 @@ Caution! Watch out for controllers such as
      <x>0</x>
      <y>0</y>
      <width>816</width>
-     <height>28</height>
+     <height>30</height>
     </rect>
    </property>
    <property name="defaultUp">

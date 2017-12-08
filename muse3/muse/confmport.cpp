@@ -1470,6 +1470,9 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       int row_cnt = 0;
       for (MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MusECore::MidiDevice* md = *imd;
+            MusECore::SynthI* synth = 0;
+            if(md->isSynti())
+              synth = static_cast<MusECore::SynthI*>(md);
             QTableWidgetItem* iitem = new QTableWidgetItem(md->name());
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             // Is it a Jack midi device? Allow renaming.
@@ -1509,8 +1512,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             iitem->setTextAlignment(Qt::AlignCenter);
             addInstItem(row_cnt, INSTCOL_GUI, iitem, instanceList);
-            if(md->hasNativeGui())
-              iitem->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            if(synth && synth->hasNativeGui())
+              iitem->setIcon(synth->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
               iitem->setIcon(QIcon(QPixmap()));
 
@@ -1738,6 +1741,9 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
       if(!item->data(DeviceRole).canConvert<void*>())
         return;
       MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+      MusECore::SynthI* synth = 0;
+      if(md->isSynti())
+        synth = static_cast<MusECore::SynthI*>(md);
       int rwFlags   = md->rwFlags();
       int openFlags = md->openFlags();
 #endif        
@@ -1769,10 +1775,10 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   return;
         case INSTCOL_GUI:
-                  if(md->hasNativeGui())
+                  if(synth && synth->hasNativeGui())
                   {
-                    md->showNativeGui(!md->nativeGuiVisible());
-                    item->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                    synth->showNativeGui(!synth->nativeGuiVisible());
+                    item->setIcon(synth->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
                   

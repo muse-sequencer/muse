@@ -86,6 +86,9 @@ int string2sysex(const QString& s, unsigned char** data)
             return -1;
           }
           src    = ep;
+          // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+          if(val == MusECore::ME_SYSEX || val == MusECore::ME_SYSEX_END)
+            continue;
           *dst++ = val;
           if (dst - buffer >= 2048) {
             printf("string2sysex: Hex String too long (2048 bytes limit)\n");
@@ -93,6 +96,7 @@ int string2sysex(const QString& s, unsigned char** data)
           }
         }
       }
+      
       int len = dst - buffer;
       if(len > 0)
       {
@@ -119,6 +123,9 @@ QString sysex2string(int len, unsigned char* data)
                   }
             else if (i)
                   d += QString(" ");
+            // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+            if(data[i] == MusECore::ME_SYSEX || data[i] == MusECore::ME_SYSEX_END)
+              continue;
             d += QString("%1").arg(data[i], 2, 16, QLatin1Char('0'));
             }
       return d;

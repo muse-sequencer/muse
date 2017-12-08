@@ -137,18 +137,10 @@ class SynthIF : public PluginIBase {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
-      virtual bool initGui() = 0;
       virtual void guiHeartBeat() = 0;
-      virtual bool guiVisible() const = 0;
-      virtual void showGui(bool v) = 0;
+      virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
-      virtual bool nativeGuiVisible() const = 0;
-      virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      virtual void getGeometry(int*, int*, int*, int*) const = 0;
-      virtual void setGeometry(int, int, int, int) = 0;
-      virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
-      virtual void setNativeGeometry(int, int, int, int) = 0;
       virtual void preProcessAlways() = 0;
 // REMOVE Tim. autoconnect. Changed.
 //       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
@@ -316,7 +308,6 @@ class SynthI : public AudioTrack, public MidiDevice,
            {  _curOutParamNums[chan].setCurrentProg(prog, bankL, bankH);  }
 
       void guiHeartBeat()     { return _sif->guiHeartBeat(); }
-      bool initGui()    const { return _sif->initGui(); }
       bool guiVisible() const { return _sif->guiVisible(); }
       void showGui(bool v)    { _sif->showGui(v); }
       bool hasGui() const     { return _sif->hasGui(); }
@@ -374,16 +365,12 @@ class MessSynthIF : public SynthIF {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
 
-      virtual bool initGui()          { return true; }
       virtual void guiHeartBeat()     { }
       virtual bool guiVisible() const { return false; }
-      virtual void showGui(bool)    { };
       virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool v);
       virtual bool hasNativeGui() const;
-      virtual void getGeometry(int*, int*, int*, int*) const;
-      virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*, int*, int*, int*) const;
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways();

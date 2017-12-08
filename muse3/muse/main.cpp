@@ -105,6 +105,7 @@ void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
 #endif
+extern QStringList projectRecentList;
 }
 
 static QString locale_override;
@@ -975,6 +976,9 @@ int main(int argc, char* argv[])
         //  makes a difference with the MDI freezing problem, above.
         app.setStyleSheet("");
         app.setStyle(MusEGlobal::config.style);
+        
+        // Reset the recently opened list.
+        MusEGui::projectRecentList.clear();
       }
 
       if(MusEGlobal::debugMsg) 

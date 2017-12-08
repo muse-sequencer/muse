@@ -208,18 +208,6 @@ int MessSynthIF::eventsPending() const
       return 0;
       }
 
-void MessSynthIF::getGeometry(int* x, int* y, int* w, int* h) const
-      {
-      if (_mess)
-            _mess->getGeometry(x, y, w, h);
-      }
-
-void MessSynthIF::setGeometry(int x, int y, int w, int h)
-      {
-      if (_mess)
-            _mess->setGeometry(x, y, w, h);
-      }
-
 void MessSynthIF::getNativeGeometry(int* x, int* y, int* w, int* h) const
       {
       if (_mess)
@@ -1108,13 +1096,13 @@ void SynthI::read(Xml& xml)
                               // No, initializing OSC without actually showing the gui doesn't work, at least for
                               //  dssi-vst plugins - without showing the gui they exit after ten seconds.
                               //initGui();
-                              showNativeGui(startngui);
                               setNativeGeometry(nr.x(), nr.y(), nr.width(), nr.height());
+                              showNativeGui(startngui);
 
                               mapRackPluginsToControllers();
 
-                              showGui(startgui);
                               setGeometry(r.x(), r.y(), r.width(), r.height());
+                              showGui(startgui);
 
                               // Now that the track has been added to the lists in insertTrack2(), if it's a dssi synth
                               //  OSC can find the track and its plugins, and start their native guis if required...

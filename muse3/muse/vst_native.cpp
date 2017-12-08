@@ -1499,32 +1499,6 @@ bool VstNativeSynthIF::nativeGuiVisible() const
       }
 
 //---------------------------------------------------------
-//   guiVisible
-//---------------------------------------------------------
-
-bool VstNativeSynthIF::guiVisible() const
-      {
-      return _gui && _gui->isVisible();
-      }
-
-//---------------------------------------------------------
-//   showGui
-//---------------------------------------------------------
-
-void VstNativeSynthIF::showGui(bool v)
-{
-    if (v) {
-            if (_gui == 0)
-                makeGui();
-            _gui->show();
-            }
-    else {
-            if (_gui)
-                _gui->hide();
-            }
-}
-
-//---------------------------------------------------------
 //   showGui
 //---------------------------------------------------------
 
@@ -1562,36 +1536,6 @@ void VstNativeSynthIF::showNativeGui(bool v)
         }
       }
       _guiVisible = v;
-}
-
-//---------------------------------------------------------
-//   getGeometry
-//---------------------------------------------------------
-
-void VstNativeSynthIF::getGeometry(int*x, int*y, int*w, int*h) const
-{
-  if(!_gui)
-  {
-    *x=0;*y=0;*w=0;*h=0;
-    return;
-  }
-
-  *x = _gui->x();
-  *y = _gui->y();
-  *w = _gui->width();
-  *h = _gui->height();
-}
-
-//---------------------------------------------------------
-//   setGeometry
-//---------------------------------------------------------
-
-void VstNativeSynthIF::setGeometry(int x, int y, int w, int h)
-{
-  if(!_gui)
-    return;
-
-  _gui->setGeometry(x, y, w, h);
 }
 
 //---------------------------------------------------------
@@ -3817,7 +3761,7 @@ CtrlList::Mode VstNativePluginWrapper::ctrlMode(unsigned long) const
    return CtrlList::INTERPOLATE;
 }
 
-bool VstNativePluginWrapper::hasNativeGui()
+bool VstNativePluginWrapper::hasNativeGui() const
 {
    return _synth->_hasGui;
 }
@@ -3860,7 +3804,7 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
    state->guiVisible = bShow;
 }
 
-bool VstNativePluginWrapper::nativeGuiVisible(PluginI *p)
+bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
 {
    assert(p->instances > 0);
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];

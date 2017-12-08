@@ -235,16 +235,11 @@ class VstNativeSynthIF : public SynthIF
                   if(_plugin) {return _plugin->dispatcher(_plugin, opcode, index, value, ptr, opt); } return 0;  }
       void idleEditor();
 
-      virtual bool initGui()       { return true; }
       virtual void guiHeartBeat();
-      virtual bool guiVisible() const;
-      virtual void showGui(bool);
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool v);
       virtual bool hasNativeGui() const;
-      virtual void getGeometry(int*x, int*y, int*w, int*h) const;
-      virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways() { }
@@ -373,9 +368,9 @@ public:
     virtual const char *portName (unsigned long port );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
-    virtual bool hasNativeGui();
+    virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
-    virtual bool nativeGuiVisible ( PluginI *p );
+    virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 

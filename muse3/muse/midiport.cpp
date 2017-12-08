@@ -152,7 +152,14 @@ MidiPort::~MidiPort()
 
 bool MidiPort::guiVisible() const
       {
-      return _device ? _device->guiVisible() : false;
+      if(!_device)
+        return false;
+      SynthI* synth = 0;
+      if(_device->isSynti())
+        synth = static_cast<SynthI*>(_device);
+      if(!synth)
+        return false;
+      return synth->guiVisible();
       }
 
 //---------------------------------------------------------
@@ -161,8 +168,14 @@ bool MidiPort::guiVisible() const
 
 void MidiPort::showGui(bool v)
 {
-  if(_device) 
-    _device->showGui(v);
+  if(!_device)
+    return;
+  SynthI* synth = 0;
+  if(_device->isSynti())
+    synth = static_cast<SynthI*>(_device);
+  if(!synth)
+    return;
+  synth->showGui(v);
 }
 
 //---------------------------------------------------------
@@ -171,7 +184,14 @@ void MidiPort::showGui(bool v)
 
 bool MidiPort::hasGui() const
       {
-      return _device ? _device->hasGui() : false;
+      if(!_device)
+        return false;
+      SynthI* synth = 0;
+      if(_device->isSynti())
+        synth = static_cast<SynthI*>(_device);
+      if(!synth)
+        return false;
+      return synth->hasGui();
       }
 
 //---------------------------------------------------------
@@ -180,7 +200,14 @@ bool MidiPort::hasGui() const
 
 bool MidiPort::nativeGuiVisible() const
       {
-      return _device ? _device->nativeGuiVisible() : false;
+      if(!_device)
+        return false;
+      SynthI* synth = 0;
+      if(_device->isSynti())
+        synth = static_cast<SynthI*>(_device);
+      if(!synth)
+        return false;
+      return synth->nativeGuiVisible();
       }
 
 //---------------------------------------------------------
@@ -189,8 +216,14 @@ bool MidiPort::nativeGuiVisible() const
 
 void MidiPort::showNativeGui(bool v)
 {
-  if(_device) 
-    _device->showNativeGui(v);
+  if(!_device)
+    return;
+  SynthI* synth = 0;
+  if(_device->isSynti())
+    synth = static_cast<SynthI*>(_device);
+  if(!synth)
+    return;
+  synth->showNativeGui(v);
 }
 
 //---------------------------------------------------------
@@ -199,7 +232,14 @@ void MidiPort::showNativeGui(bool v)
 
 bool MidiPort::hasNativeGui() const
       {
-      return _device ? _device->hasNativeGui() : false;
+      if(!_device)
+        return false;
+      SynthI* synth = 0;
+      if(_device->isSynti())
+        synth = static_cast<SynthI*>(_device);
+      if(!synth)
+        return false;
+      return synth->hasNativeGui();
       }
 
 //---------------------------------------------------------

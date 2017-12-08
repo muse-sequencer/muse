@@ -46,6 +46,7 @@
 //#include <QX11EmbedWidget>
 #include <QCoreApplication>
 #include <QtGui/QWindow>
+#include <QVBoxLayout>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -81,14 +82,22 @@
 #include <sord/sord.h>
 
 
-//uncomment to print audio process info
+// Uncomment to print audio process info.
 //#define LV2_DEBUG_PROCESS
-//#define LV2_DEBUG // REMOVE Tim. yoshimi. TESTING. Remove.
+
+// Uncomment to print general info.
+// (There is also the CMake option LV2_DEBUG for more output.)
+//#define LV2_DEBUG
 
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
 #endif
 
+// Define to use GtkPlug instead of GtkWindow for a Gtk plugin gui container.
+// This works better than GtkWindow for some plugins.
+// For example with GtkWindow, AMSynth fails to embed into the container window
+//  resulting in two separate windows.
+#define LV2_GUI_USE_GTKPLUG ;
 
 namespace MusECore
 {
@@ -1076,7 +1085,12 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
       }
       else
       {
+#ifdef LV2_GUI_USE_QWIDGET
+         // TODO Check this, maybe wrong widget, maybe need the one contained by it?
+         QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget);
+#else
          QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget)->centralWidget();
+#endif
          if(ewCent != NULL)
          {
             ewCent->resize(width, height);
@@ -1190,7 +1204,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       state->hasExternalGui = false;
    }
 
+#ifdef LV2_GUI_USE_QWIDGET
+   win = new LV2PluginWrapper_Window(state, Q_NULLPTR, Qt::Window);
+#else
    win = new LV2PluginWrapper_Window(state);
+#endif
+   
    state->uiX11Size.setWidth(0);
    state->uiX11Size.setHeight(0);
 
@@ -1211,14 +1230,24 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          bEmbed = true;         
          //ewWin = new QWidget();
          //x11QtWindow = QWindow::fromWinId(ewWin->winId());
-         //ewWin = win->createWindowContainer(x11QtWindow, win);
          x11QtWindow = new QWindow();
          ewWin = QWidget::createWindowContainer(x11QtWindow, win);
-         win->setCentralWidget(ewWin);
+         state->pluginQWindow = x11QtWindow;
          //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
          //(static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
+         
+#ifdef LV2_GUI_USE_QWIDGET
+         QVBoxLayout* layout = new QVBoxLayout();
+         layout->setMargin(0);
+         layout->setSpacing(0);
+         layout->addWidget(ewWin);
+         win->setLayout(layout);
+         
+#else
+         win->setCentralWidget(ewWin);
+#endif
+         
          state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
-
       }
       else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
@@ -1230,10 +1259,15 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          bEmbed = true;
          bGtk = true;
          //ewWin = new QWidget();
-
          //ewWin = new QX11EmbedContainer(win);
          //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+         
+#ifdef LV2_GUI_USE_GTKPLUG
          state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_plug_new(0, state);
+#else
+         state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_window_new(state);
+#endif
+         
          //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
          MusEGui::lv2Gtk2Helper_register_allocate_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
          MusEGui::lv2Gtk2Helper_register_resize_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
@@ -1331,7 +1365,15 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          {            
             if(!bEmbed)
             {
-               win->setCentralWidget(static_cast<QWidget *>(uiW));
+#ifdef LV2_GUI_USE_QWIDGET
+              QVBoxLayout* layout = new QVBoxLayout();
+              layout->setMargin(0);
+              layout->setSpacing(0);
+              layout->addWidget(static_cast<QWidget *>(uiW));
+              win->setLayout(layout);
+#else
+              win->setCentralWidget(static_cast<QWidget *>(uiW));
+#endif
             }
             else
             {               
@@ -1341,12 +1383,26 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 #ifdef HAVE_GTK2
                   MusEGui::lv2Gtk2Helper_gtk_container_add(state->gtk2Plug, uiW);
                   MusEGui::lv2Gtk2Helper_gtk_widget_show_all(state->gtk2Plug);
+                  
+#ifdef LV2_GUI_USE_GTKPLUG
                   unsigned long plugX11Id = MusEGui::lv2Gtk2Helper_gdk_x11_drawable_get_xid(state->gtk2Plug);
+#else
+                  unsigned long plugX11Id = MusEGui::lv2Gtk2Helper_gtk_window_get_xid(state->gtk2Plug);
+#endif                  
                   
                   x11QtWindow = QWindow::fromWinId(plugX11Id);
-                  ewWin = QWidget::createWindowContainer(x11QtWindow);
-                  //ewWin->setParent(win);
+                  ewWin = QWidget::createWindowContainer(x11QtWindow, win);
+                  state->pluginQWindow = x11QtWindow;
+
+#ifdef LV2_GUI_USE_QWIDGET
+                  QVBoxLayout* layout = new QVBoxLayout();
+                  layout->setMargin(0);
+                  layout->setSpacing(0);
+                  layout->addWidget(ewWin);
+                  win->setLayout(layout);
+#else
                   win->setCentralWidget(ewWin);
+#endif                  
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
@@ -4253,37 +4309,20 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
    return true;
 }
 
-
-void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
-{
-   if(!_gui)
-   {
-     *x=0;*y=0;*w=0;*h=0;
-     return;
-   }
-
-   *x = _gui->x();
-   *y = _gui->y();
-   *w = _gui->width();
-   *h = _gui->height();
-
-   return;
-}
-
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
-   *x = *y = *w = *h = 0;
    if(_state->pluginWindow != NULL && !_state->hasExternalGui)
    {
-      QSize sz = _state->pluginWindow->size();
-      *w = sz.width();
-      *h = sz.height();
-      QPoint pos = _state->pluginWindow->pos();
-      *x = pos.x();
-      *y = pos.y();
+      QRect g = _state->pluginWindow->geometry();
+      if(x) *x = g.x();
+      if(y) *y = g.y();
+      if(w) *w = g.width();
+      if(h) *h = g.height();
+      return;
    }
 
-   return;
+   // Fall back to blank geometry.
+   SynthIF::getNativeGeometry(x, y, w, h);
 }
 
 double LV2SynthIF::getParameter(long unsigned int n) const
@@ -4355,13 +4394,6 @@ void LV2SynthIF::guiHeartBeat()
 
 }
 
-
-bool LV2SynthIF::guiVisible() const
-{
-   return _gui && _gui->isVisible();
-}
-
-
 bool LV2SynthIF::hasGui() const
 {
    return true;
@@ -4370,12 +4402,6 @@ bool LV2SynthIF::hasGui() const
 bool LV2SynthIF::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
-}
-
-bool LV2SynthIF::initGui()
-{
-   //TODO: implement this
-   return true;
 }
 
 bool LV2SynthIF::nativeGuiVisible() const
@@ -4471,44 +4497,76 @@ MidiPlayEvent LV2SynthIF::receiveEvent()
 
 }
 
-void LV2SynthIF::setGeometry(int x, int y, int w, int h)
+void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 {
-   if(!_gui)
-     return;
-
-   _gui->setGeometry(x, y, w, h);
-
-}
-
-void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
-{
+   // Store the native geometry.
+   SynthIF::setNativeGeometry(x, y, w, h);
+  
    if(_state->pluginWindow && !_state->hasExternalGui)
    {
-      _state->pluginWindow->move(x, y);
+      //_state->pluginWindow->move(x, y);
       //don't resize lv2 uis - this is handles at plugin level
       //_uiState->pluginWindow->resize(w, h);
-   }
+      
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+      // Because of the bug, no matter what we must supply a position,
+      //  even upon first showing...
+      
+      // Check sane size.
+      if(w == 0)
+        w = _state->pluginWindow->sizeHint().width();
+      if(h == 0)
+        h = _state->pluginWindow->sizeHint().height();
 
+      // No size hint? Try minimum size.
+      if(w == 0)
+        w = _state->pluginWindow->minimumSize().width();
+      if(h == 0)
+        h = _state->pluginWindow->minimumSize().height();
+
+      // Fallback.
+      if(w == 0)
+        w = 400;
+      if(h == 0)
+        h = 300;
+      
+      _state->pluginWindow->setGeometry(x, y, w, h);
+      
+#else    
+      
+      // If the saved geometry is valid, use it.
+      // Otherwise this is probably the first time showing,
+      //  so do not set a geometry - let Qt pick one 
+      //  (using auto-placement and sizeHint).
+      if(!(x == 0 && y == 0 && w == 0 && h == 0))
+      {
+        // Check sane size.
+        if(w == 0)
+          w = _state->pluginWindow->sizeHint().width();
+        if(h == 0)
+          h = _state->pluginWindow->sizeHint().height();
+        
+        // No size hint? Try minimum size.
+        if(w == 0)
+          w = _state->pluginWindow->minimumSize().width();
+        if(h == 0)
+          h = _state->pluginWindow->minimumSize().height();
+
+        // Fallback.
+        if(w == 0)
+          w = 400;
+        if(h == 0)
+          h = 300;
+        
+        _state->pluginWindow->setGeometry(x, y, w, h);
+      }
+#endif
+   }
 }
 
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
    addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
-}
-
-void LV2SynthIF::showGui(bool v)
-{
-   if (v)
-   {
-      if (_gui == 0)
-         makeGui();
-      _gui->show();
-   }
-   else
-   {
-      if (_gui)
-         _gui->hide();
-   }
 }
 
 void LV2SynthIF::showNativeGui(bool bShow)
@@ -4692,6 +4750,87 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
    return MusECore::SynthIF::readConfiguration(xml, readPreset);
 }
 
+void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
+{
+  if(_state->plugInst != NULL)
+    _state->plugInst->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  else if(_state->sif != NULL)
+    _state->sif->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  
+  e->ignore();
+  QMainWindow::hideEvent(e);
+}
+      
+void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
+{
+  int x = 0, y = 0, w = 0, h = 0;
+  if(_state->plugInst != NULL)
+    _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
+  else if(_state->sif != NULL)
+    _state->sif->savedNativeGeometry(&x, &y, &w, &h);
+  
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+  // Because of the bug, no matter what we must supply a position,
+  //  even upon first showing...
+  
+  // Check sane size.
+  if(w == 0)
+    w = sizeHint().width();
+  if(h == 0)
+    h = sizeHint().height();
+  
+  // No size hint? Try minimum size.
+  if(w == 0)
+    w = minimumSize().width();
+  if(h == 0)
+    h = minimumSize().height();
+
+  // Fallback.
+  if(w == 0)
+    w = 400;
+  if(h == 0)
+    h = 300;
+  
+  setGeometry(x, y, w, h);
+  
+#else    
+  
+  // If the saved geometry is valid, use it.
+  // Otherwise this is probably the first time showing,
+  //  so do not set a geometry - let Qt pick one 
+  //  (using auto-placement and sizeHint).
+  if(!(x == 0 && y == 0 && w == 0 && h == 0))
+  {
+    // Check sane size.
+    if(w == 0)
+      w = sizeHint().width();
+    if(h == 0)
+      h = sizeHint().height();
+    
+    // No size hint? Try minimum size.
+    if(w == 0)
+      w = minimumSize().width();
+    if(h == 0)
+      h = minimumSize().height();
+    
+    // Fallback.
+    if(w == 0)
+      w = 400;
+    if(h == 0)
+      h = 300;
+    
+    setGeometry(x, y, w, h);
+  }
+#endif
+    
+  // Convenience: If the window was minimized, restore it.
+  if(isMinimized())
+    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  
+  e->ignore();
+  QMainWindow::showEvent(e);
+}
+
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
    assert(_state != NULL);
@@ -4701,12 +4840,11 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
    if(_state->gtk2Plug != NULL)
    {
-      QWidget *cW = centralWidget();
-      setCentralWidget(NULL);
-      if(cW != NULL)
+      if(_state->pluginQWindow != NULL)
       {
-         cW->setParent(NULL);
-         delete cW;
+        _state->pluginQWindow->setParent(NULL);
+        delete _state->pluginQWindow;
+        _state->pluginQWindow = NULL;
       }
    }
 
@@ -4726,9 +4864,8 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
 
-
-   delete this;
-
+   // The widget is automatically deleted by use of the 
+   //  WA_DeleteOnClose attribute in the constructor.
 }
 
 void LV2PluginWrapper_Window::stopUpdateTimer()
@@ -4742,9 +4879,20 @@ void LV2PluginWrapper_Window::stopUpdateTimer()
 }
 
 
-LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
- : QMainWindow(), _state ( state ), _closing(false)
+#ifdef LV2_GUI_USE_QWIDGET
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state, 
+                                                 QWidget *parent, 
+                                                 Qt::WindowFlags flags)
+ : QWidget(parent, flags), _state ( state ), _closing(false)
+#else
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state, 
+                                                 QWidget *parent, 
+                                                 Qt::WindowFlags flags)
+ : QMainWindow(parent, flags), _state ( state ), _closing(false)
+#endif
 {
+   // Automatically delete the wiget when it closes.
+   setAttribute(Qt::WA_DeleteOnClose, true);
    connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
    connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
    connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
@@ -5139,7 +5287,7 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
    return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
-bool LV2PluginWrapper::hasNativeGui()
+bool LV2PluginWrapper::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
 }
@@ -5162,7 +5310,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
   LV2Synth::lv2ui_ShowNativeGui(state, bShow);
 }
 
-bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
+bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
 {
    assert(p->instances > 0);
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
@@ -5271,7 +5419,23 @@ void LV2PluginWrapper_Worker::makeWork()
 LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
-   _buffer.resize(LV2_EVBUF_SIZE);
+   if(_isInput)
+   {
+     // Resize and fill with initial value.
+     _buffer.resize(LV2_EVBUF_SIZE, 0);
+   }
+   else
+   {
+     // Reserve the space.
+     _buffer.reserve(LV2_EVBUF_SIZE);
+     // Add one item, the first item.
+     _buffer.assign(sizeof(LV2_Atom_Sequence), 0);
+   }
+   
+#ifdef LV2_DEBUG
+   std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
+#endif
+
    resetBuffer();
 }
 

@@ -1072,12 +1072,13 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
   const int lastlboff = last_is_unk || lastlb > 127;
   const int lastproff = last_is_unk || lastpr > 127;
 
-  const QPoint pixelDelta = e->pixelDelta();
+//   const QPoint pixelDelta = e->pixelDelta();
   const QPoint angleDegrees = e->angleDelta() / 8;
   int delta = 0;
-  if(!pixelDelta.isNull())
-    delta = pixelDelta.y();
-  else if(!angleDegrees.isNull())
+//   if(!pixelDelta.isNull())
+//     delta = pixelDelta.y();
+//   else
+  if(!angleDegrees.isNull())
     delta = angleDegrees.y() / 15;
 
   int section = -1;

@@ -101,14 +101,9 @@ class Mess {
       int eventsPending() const;
 
       // GUI interface routines
-      virtual bool hasGui() const { return false; }
-      virtual bool guiVisible() const { return false; }
-      virtual void showGui(bool) {}
       virtual bool hasNativeGui() const { return false; }
       virtual bool nativeGuiVisible() const { return false; }
       virtual void showNativeGui(bool) {}
-      virtual void getGeometry(int* x, int* y, int* w, int* h) const;
-      virtual void setGeometry(int, int, int, int) {}
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int, int, int, int) {}
       };

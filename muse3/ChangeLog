@@ -1,4 +1,45 @@
-11.05.2017
+04.12.2017
+         - Fixes to instruments, idf files, and sysexes. (Tim)
+           Fix error in Yamaha 9000pro idf file causing
+            "Cannot convert string to sysex r ct bn bt f7".
+           Several submitted idf files have F0...F7 enclosing sysexes, which was not 
+            allowed, so to avoid changing them all, MusE is now more forgiving and 
+            accepts enclosing F0...F7 in idf files and when editing sysex events.
+03.12.2017
+         - PopupMenu and RoutePopupMenu fixes and touchups. (Tim)
+           Fix problems with <More...> submenus.
+           Sort and present midi device items by device type.
+           Slight rearrangement of title items etc.
+02.12.2017 
+         - Clear 'recently opened' file list upon MusE self-restarting. (Tim)
+01.12.2017
+         - Further to 29.11.2017: Fixed LV2 synths + rack plugins position/size. (Tim)
+           NOTE: AFAIK we have no control over LV2 plugin 'external' windows,
+            only the ones where we create the window.
+           TODO: Same fix for MESS synths...
+29.11.2017
+         - Bug #571 Plugin GUIs are too narrow: Fixed. (Tim)
+           Fixed generic GUI windows' initial position/size.
+           Fixed saving/restoring pos/size of generic GUIs. 
+           Reported a Qt BUG #64773 regarding ignoring setting of position upon show()!
+           For said bug, wrote a MusE workaround. Tested all generic GUIs OK. 
+           TODO: Similar fix for 'native' synth GUIs (where it supports it...)
+           TODO: Similar check and fix other non-QDialog usages for pos/size settings.
+20.11.2017
+         - Removed: Arranger 'Alt' button (and hidden Pianoroll) midi Trackinfo. (Tim)
+19.11.2017
+         - LV2: Fix continuous "LV2SimpleRTFifo:put(): fifo is full" messages. (Tim)
+           Rewrote LV2EvBuf ctor: Can't just always call _buffer.resize() here, 
+            which fills with items. Use reserve + assign(1) item for an output buffer,
+            and resize for an input buffer. Some plugins expose midi output sequence 
+            ports even though they do NOT use them at all. This fix cures an oversight 
+            which caused our receiving buffer to always be full in such cases, never 
+            having a chance to be cleared by the plugin.
+         - Bug #572: Fix Alt+P crash with unselected regions. (Tim)
+16.11.2017
+         - LV2: Fix bug #587 All Gtk-based guis crashing on close. (Tim)
+           Rewrote how we delete things on close.
+05.11.2017
          - Fix #592 MusE doesn't record some controllers. (Tim)
 08.06.2017
          - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 
@@ -14,6 +55,10 @@
             from after muse->show to just after QApplication is created - now the only 
             place allowed to set them, except for hacks if 'Fix frozen windows' setting is on.
            Note: Setting a stylesheet may still cause it to freeze. Working on the issue...
+         -------------------------------------------------------------------------------
+         [EDIT]: 29/11/2017 The 'frozen MDI sub window' thing was a KDE Breeze/Oxygen style bug. 
+                 Fixed upstream in recent versions with help from that team.
+         -------------------------------------------------------------------------------
 03.06.2017
       * GCC 7 fixes: (Tim)
          - LV2 GTK2 support is now optional, due to a current exception breakage in gtkmm.

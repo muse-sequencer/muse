@@ -152,16 +152,11 @@ class DssiSynthIF : public SynthIF
       virtual DssiSynth* dssiSynth() { return _synth; }
       virtual SynthI* dssiSynthI()   { return synti; }
       
-      virtual bool initGui();
       virtual void guiHeartBeat();
-      virtual bool guiVisible() const;
-      virtual void showGui(bool);
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;                                        
       virtual void showNativeGui(bool);                                              
       virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }    
-      virtual void getGeometry(int*x, int*y, int*w, int*h) const;
-      virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       
