@@ -877,17 +877,26 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             case SEQM_PLAY_MIDI_EVENT:
                   {
+// REMOVE Tim. autoconnect. Changed.
 //                   MidiPlayEvent* ev = (MidiPlayEvent*)(msg->p1);
-// // REMOVE Tim. autoconnect. Changed.
-// //                   MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
-//                   
-// //                   MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
-//       // TODO TODO TODO
-// //                   MidiPort::eventBuffers().put(*ev);
-// //                   if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
-// // //                     md->addScheduledEvent(*ev);
-// //                     md->putUserEvent(*ev, MidiDevice::NotLate);
-//                   // Record??
+//                   MusEGlobal::midiPorts[ev->port()].sendEvent(*ev);
+//                   MidiPort::eventFifos().put(MidiPort::PlayFifo, *ev);
+                    
+                  const MidiPlayEvent ev = *((MidiPlayEvent*)(msg->p1));
+                  const int port = ev.port();
+                  if(port < 0 || port >= MIDI_PORTS)
+                    break;
+//                   MidiPort::eventBuffers().put(*ev);
+//                   if(MidiDevice* md = MusEGlobal::midiPorts[ev->port()].device())
+// //                     md->addScheduledEvent(*ev);
+//                     md->putUserEvent(*ev, MidiDevice::NotLate);
+                  
+                  // This is the audio thread. Just set directly.
+                  MusEGlobal::midiPorts[port].setHwCtrlState(ev);
+                  // Send to the device.
+                  if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+                    md->putEvent(ev, MidiDevice::NotLate);
+                  // Record??
                   }
                   break;
             case SEQM_SET_HW_CTRL_STATE:

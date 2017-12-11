@@ -815,7 +815,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
   //                  deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
-    fprintf(stderr, "MidiDevice::putUserEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
     fin_ev.dump();
   }
   
@@ -836,7 +836,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
   }
   
   if(rv)
-    fprintf(stderr, "MidiDevice::putUserEvent: Error: Device buffer overflow. bufferType:%d\n", bufferType);
+    fprintf(stderr, "MidiDevice::putEvent: Error: Device buffer overflow. bufferType:%d\n", bufferType);
   
   return rv;
 }
@@ -1033,7 +1033,9 @@ void MidiDevice::handleStop()
   for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
   {
     MidiPlayEvent ev(*i);
+// REMOVE Tim. autoconnect. Changed.
     ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+    //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
 // REMOVE Tim. autoconnect. Changed.
 //     putEvent(ev);
 //     putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
@@ -1056,7 +1058,9 @@ void MidiDevice::handleStop()
       if((*i).port() != _port)
         continue;
       MidiPlayEvent ev(*i);
+// REMOVE Tim. autoconnect. Changed.
       ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
 // REMOVE Tim. autoconnect. Changed.
 //       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
@@ -1075,11 +1079,12 @@ void MidiDevice::handleStop()
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {
-      const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0); // Immediate processing. TODO Use curFrame?
 // REMOVE Tim. autoconnect. Changed.
 //       putEvent(ev);
 //       putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
-            putEvent(ev, MidiDevice::NotLate);
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+      putEvent(ev, MidiDevice::NotLate);
     }
   }
 }
@@ -1375,7 +1380,9 @@ void MidiDevice::handleSeek()
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
     {
       MidiPlayEvent ev(*i);
+// REMOVE Tim. autoconnect. Changed.
       ev.setTime(0); // Immediate processing. TODO Use curFrame?
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
 // REMOVE Tim. autoconnect. Changed.
 //       putEvent(ev);  // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
       //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);

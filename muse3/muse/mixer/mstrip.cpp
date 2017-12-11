@@ -1000,29 +1000,42 @@ void MidiComponentRack::controllerChanged(int v, int id)
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-    MusECore::MidiCtrlValList* mcvl = imcvl->second;
+// REMOVE Tim. autoconnect. Changed.
+//     MusECore::MidiCtrlValList* mcvl = imcvl->second;
+// 
+//   //   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
+//     if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
+//     {
+//       if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
+//       {
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
+//                                                   MusECore::ME_CONTROLLER,
+//                                                   id,
+//                                                   MusECore::CTRL_VAL_UNKNOWN));
+//       }
+//     }
+//     else
+//     {
+//       val += mc->bias();
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, val);
+//       MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, val);
+//       mp->putEvent(ev);
+//     }
 
-  //   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-    if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
-    {
-      if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      {
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
-                                                  MusECore::ME_CONTROLLER,
-                                                  id,
-                                                  MusECore::CTRL_VAL_UNKNOWN));
-      }
-    }
-    else
-    {
-      val += mc->bias();
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, val);
-      MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, val);
-      mp->putEvent(ev);
-    }
+    int ival = val;
+    //if(off || ival < mc->minVal() || ival > mc->maxVal())
+    if(ival < mc->minVal() || ival > mc->maxVal())
+      ival = MusECore::CTRL_VAL_UNKNOWN;
+    
+    if(ival != MusECore::CTRL_VAL_UNKNOWN)
+      // Auto bias...
+      ival += mc->bias();
+
+    MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+    mp->putEvent(ev);
   }
 
   emit componentChanged(controllerComponent, v, false, id, 0);
@@ -1047,7 +1060,6 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
     emit componentChanged(controllerComponent, val, off, id, scrollMode);
     return;
   }
-  int ival = lrint(val);
 
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
   
@@ -1062,28 +1074,40 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-    MusECore::MidiCtrlValList* mcvl = imcvl->second;
-
-    if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-    {
-      if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      {
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
-                                                  MusECore::ME_CONTROLLER,
-                                                  id,
-                                                  MusECore::CTRL_VAL_UNKNOWN));
-      }
-    }
-    else
-    {
+// REMOVE Tim. autoconnect. Changed.
+//     MusECore::MidiCtrlValList* mcvl = imcvl->second;
+// 
+//     if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
+//     {
+//       if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
+//       {
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
+//                                                   MusECore::ME_CONTROLLER,
+//                                                   id,
+//                                                   MusECore::CTRL_VAL_UNKNOWN));
+//       }
+//     }
+//     else
+//     {
+//       ival += mc->bias();
+// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
+// //       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+//       MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+//       mp->putEvent(ev);
+//     }
+    
+    int ival = lrint(val);
+    if(off || ival < mc->minVal() || ival > mc->maxVal())
+      ival = MusECore::CTRL_VAL_UNKNOWN;
+    
+    if(ival != MusECore::CTRL_VAL_UNKNOWN)
+      // Auto bias...
       ival += mc->bias();
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, ival);
-      MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
-      mp->putEvent(ev);
-    }
+
+    MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+    mp->putEvent(ev);
   }
 
   emit componentChanged(controllerComponent, val, off, id, scrollMode);

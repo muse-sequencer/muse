@@ -49,6 +49,7 @@
 #include "globals.h"
 #include "midiport.h"
 #include "audio.h"
+#include "midi.h"
 #include "shortcuts.h"
 #include "icons.h"
 #include "functions.h"
@@ -697,22 +698,46 @@ void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 
 void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
       {
-      if(!_playEvents)
-        return;
+// REMOVE Tim. autoconnect. Removed.
+//       if(!_playEvents)
+//         return;
       int index = y2pitch(pos.y());
       int pitch, port, channel;
-      if(index2Note(index, &port, &channel, &pitch))
+// REMOVE Tim. autoconnect. Changed.
+//       if(index2Note(index, &port, &channel, &pitch))
+//       {
+//         if(_playEvents && (port != playedPitchPort || channel != playedPitchChannel || pitch != playedPitch))
+//         {
+//           MusECore::Event e = ((DEvent*)item)->event();
+//           // release note:
+//           stopPlayEvent();  
+//           if (moving.size() <= 1) { // items moving or curItem
+//               // play note:
+//               startPlayEvent(pitch, e.velo(), port, channel);
+//               }
+//         }
+//       }
+      if(!index2Note(index, &port, &channel, &pitch))
       {
-        if(_playEvents && (port != playedPitchPort || channel != playedPitchChannel || pitch != playedPitch))
-        {
-          MusECore::Event e = ((DEvent*)item)->event();
-          // release note:
-          stopPlayEvent();  
-          if (moving.size() <= 1) { // items moving or curItem
-              // play note:
-              startPlayEvent(pitch, e.velo(), port, channel);
-              }
-        }
+        // Stop any playing notes:
+        stopPlayEvent();
+        return;
+      }
+      
+      // Ignore if the note is already playing.
+      if(stuckNoteExists(port, channel, pitch))
+        return;
+        
+      // Stop any playing notes:
+      stopPlayEvent();
+
+      if(_playEvents)
+      {
+        if (moving.size() <= 1) { // items moving or curItem
+            const MusECore::Event e = ((DEvent*)item)->event();
+            // play note:
+            startPlayEvent(pitch, e.velo(), port, channel);
+            }
       }
       }
 

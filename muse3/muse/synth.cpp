@@ -1217,8 +1217,8 @@ void SynthI::preProcessAlways()
 //     // Eat up any fifo events.
 //     _eventFifos->clearRead();
     // Eat up any buffer events.
-        _playbackEventBuffers->clearRead();
-        _userEventBuffers->clearRead();
+        //_playbackEventBuffers->clearRead();
+        //_userEventBuffers->clearRead();
   }
 }
 

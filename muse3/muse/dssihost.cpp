@@ -2383,22 +2383,47 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
 
 int DssiSynthIF::oscMidi(int a, int b, int c)
       {
-      if (a == ME_NOTEOFF) {
-            a = ME_NOTEON;
-            c = 0;
+        // From the DSSI RFC document:
+        // <base path>/midi
+        // "Send an arbitrary MIDI event to the plugin. Takes a four-byte MIDI string.
+        //  This is expected to be used for note data generated from a test panel on the UI,
+        //   for example. It should not be used for program or controller changes, sysex data, etc.
+        //  A host should feel free to drop any values it doesn't wish to pass on.
+        //  No guarantees are provided about timing accuracy, etc, of the MIDI communication."
+
+        // From dssi.h:
+        // " A host must not attempt to switch notes off by sending
+        //    zero-velocity NOTE_ON events.  It should always send true
+        //    NOTE_OFFs.  It is the host's responsibility to remap events in
+        //    cases where an external MIDI source has sent it zero-velocity
+        //    NOTE_ONs."
+        
+// REMOVE Tim. autoconnect. Changed. Oops. Given above I think this is backwards.
+//       if (type == ME_NOTEOFF) {
+//             type = ME_NOTEON;
+//             c = 0;
+//             }
+      int type = a & 0xf0;
+      if (type == ME_NOTEON && c == 0) {
+            type = ME_NOTEOFF;
+            c = 64;
             }
-      int channel = 0;        // TODO: ??
-      int port    = synti->midiPort();        
+            
+// REMOVE Tim. autoconnect. Changed.
+//       int channel = 0;        // TODO: ??
+      const int channel = a & 0x0f;
+      
+      const int port    = synti->midiPort();        
       
       if(port != -1)
       {
 // REMOVE Tim. autoconnect. Changed.
 //         MidiPlayEvent event(0, port, channel, a, b, c);
         // Time-stamp the event.
-        MidiPlayEvent event(MusEGlobal::audio->curFrame(), port, channel, a, b, c);
+        MidiPlayEvent event(MusEGlobal::audio->curFrame(), port, channel, type, b, c);
       
         #ifdef DSSI_DEBUG   
-        printf("DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
+        printf("DssiSynthIF::oscMidi midi event port:%d type:%d chn:%d a:%d b:%d\n", event.port(), event.type(), event.channel(), event.dataA(), event.dataB());  
         #endif
         
 // REMOVE Tim. autoconnect. Changed.
@@ -2418,8 +2443,21 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
 // //           md->eventFifos()->put(MidiDevice::OSCFifo, event);
 // //           md->userEventBuffers()->put(event);
 //           md->putUserEvent(event, MidiDevice::Late);
+
+//         MusEGlobal::midiPorts[port].putEvent(event);
+        
+        // Just in case someone decides to send controllers, sysex, or stuff
+        //  OTHER than "test notes", contrary to the rules...
+        // Since this is a thread other than audio or gui, it may not be safe to
+        //  even ask whether a controller exists, so MidiPort::putEvent or putHwCtrlEvent
+        //  would not be safe here. Ask the gui to do it for us.
+        // Is it a controller message? Send the message to the gui.
+        //if(event.translateCtrlNum() >= 0)
+          MusEGlobal::song->putIpcInEvent(event);
           
-        MusEGlobal::midiPorts[port].putEvent(event);
+        // Send the message to the device.
+        if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+          md->putEvent(event, MidiDevice::Late);
       }
       
       return 0;
@@ -2431,16 +2469,11 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
 
 int DssiSynthIF::oscConfigure(const char *key, const char *value)
       {
-      //"This is pretty much the simplest legal implementation of
-      // configure in a DSSI host. 
-      // The host has the option to remember the set of (key,value)
+      // "The host has the option to remember the set of (key,value)
       // pairs associated with a particular instance, so that if it
       // wants to restore the "same" instance on another occasion it can
       // just call configure() on it for each of those pairs and so
-      // restore state without any input from a GUI.  Any real-world GUI
-      // host will probably want to do that.  This host doesn't have any
-      // concept of restoring an instance from one run to the next, so
-      // we don't bother remembering these at all." 
+      // restore state without any input from a GUI." 
 
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLatin1().constData(), key, value);

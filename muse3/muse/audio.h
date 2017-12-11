@@ -199,7 +199,9 @@ class Audio {
 
       long m_Xruns;
       
+      // Can be called by any thread.
       void sendLocalOff();
+      
       bool filterEvent(const MidiPlayEvent* event, int type, bool thru);
 
       void startRolling();

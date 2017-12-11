@@ -761,12 +761,12 @@ void Audio::midiPortsChanged()
       write(sigFd, "P", 1);
       }
 
-//---------------------------------------------------------
-//   sendLocalOff
-//   To be called by audio thread only.
-//---------------------------------------------------------
-
 // REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   sendLocalOff
+// //   To be called by audio thread only.
+// //---------------------------------------------------------
+// 
 // void Audio::sendLocalOff()
 //       {
 //       for (int k = 0; k < MIDI_PORTS; ++k) {
@@ -774,6 +774,12 @@ void Audio::midiPortsChanged()
 //                   MusEGlobal::midiPorts[k].sendEvent(MusECore::MidiPlayEvent(0, k, i, MusECore::ME_CONTROLLER, MusECore::CTRL_LOCAL_OFF, 0), true);
 //             }
 //       }
+
+//---------------------------------------------------------
+//   sendLocalOff
+//   Can be called by any thread.
+//---------------------------------------------------------
+
 void Audio::sendLocalOff()
       {
       MidiPlayEvent ev;
@@ -797,12 +803,12 @@ void Audio::sendLocalOff()
             }
       }
 
-//---------------------------------------------------------
-//   panic
-//   To be called by audio thread only.
-//---------------------------------------------------------
-
 // REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   panic
+// //   To be called by audio thread only.
+// //---------------------------------------------------------
+// 
 // void Audio::panic()
 //       {
 //       for (int i = 0; i < MIDI_PORTS; ++i) {
@@ -833,6 +839,12 @@ void Audio::sendLocalOff()
 //         port->sendEvent(panic_event, true);
 //       }
 // }
+
+//---------------------------------------------------------
+//   panic
+//   Can be called by any thread.
+//---------------------------------------------------------
+
 void Audio::panic()
       {
       MidiPlayEvent ev;
@@ -1184,7 +1196,9 @@ void Audio::seekMidi()
         const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
         if(fin_ctlnum == CTRL_SUSTAIN && !playing)
           //fin_mp->setHwCtrlState(fin_chan, CTRL_SUSTAIN, imcv->second.val);
-          fin_mp->putHwCtrlEvent(ev);
+          //fin_mp->putHwCtrlEvent(ev);
+          // This is the audio thread. Just set directly.
+          fin_mp->setHwCtrlState(ev);
         else
         {
           // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
@@ -1194,7 +1208,9 @@ void Audio::seekMidi()
           //fprintf(stderr, "MidiDevice::handleSeek: found_value: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, imcv->second.val);
 //           fin_mp->sendEvent(MidiPlayEvent(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val), false); //, imcv->first == pos);
           //const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
-          fin_mp->putHwCtrlEvent(ev);
+          //fin_mp->putHwCtrlEvent(ev);
+          // This is the audio thread. Just set directly.
+          fin_mp->setHwCtrlState(ev);
           if(fin_mp->device())
 //             fin_mp->device()->addScheduledEvent(ev);
             fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
@@ -1220,7 +1236,9 @@ void Audio::seekMidi()
             // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
 //             mp->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
             const MidiPlayEvent ev(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias());
-            mp->putHwCtrlEvent(ev);
+            //mp->putHwCtrlEvent(ev);
+            // This is the audio thread. Just set directly.
+            mp->setHwCtrlState(ev);
             if(mp->device())
 //               mp->device()->addScheduledEvent(ev);
               mp->device()->putEvent(ev, MidiDevice::NotLate);
@@ -1238,7 +1256,9 @@ void Audio::seekMidi()
         {
           const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
 //           mp->putEvent(ev);
-          mp->putHwCtrlEvent(ev);
+          //mp->putHwCtrlEvent(ev);
+          // This is the audio thread. Just set directly.
+          mp->setHwCtrlState(ev);
           if(mp->device())
 //             mp->device()->addScheduledEvent(ev);
             mp->device()->putEvent(ev, MidiDevice::NotLate);
@@ -1956,7 +1976,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                     //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                     if(mpAlt->sendHwCtrlState(mpeAlt, true))
-                                    mpAlt->putHwCtrlEvent(mpeAlt);
+                                    //mpAlt->putHwCtrlEvent(mpeAlt);
+                                    // This is the audio thread. Just set directly.
+                                    mpAlt->setHwCtrlState(mpeAlt);
 //                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
 //                                         mdAlt->addScheduledEvent(mpeAlt);
@@ -2012,7 +2034,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                     //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                     if(mpAlt->sendHwCtrlState(mpeAlt, true))
-                                    mpAlt->putHwCtrlEvent(mpeAlt);
+                                    //mpAlt->putHwCtrlEvent(mpeAlt);
+                                    // This is the audio thread. Just set directly.
+                                    mpAlt->setHwCtrlState(mpeAlt);
 //                                     {
                                       if(MidiDevice* mdAlt = mpAlt->device())
 //                                         mdAlt->addScheduledEvent(mpeAlt);
@@ -2044,7 +2068,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                 // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                 //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                 if(mp->sendHwCtrlState(mpe, true))
-                                mp->putHwCtrlEvent(mpe);
+                                //mp->putHwCtrlEvent(mpe);
+                                // This is the audio thread. Just set directly.
+                                mp->setHwCtrlState(mpe);
 //                                 {
                                   if(md)
 //                                     md->addScheduledEvent(mpe);
@@ -2168,7 +2194,9 @@ void Audio::processMidi()
             if(!intercepted && port != -1)
 // REMOVE Tim. autoconnect. Changed.
 //               MusEGlobal::midiPorts[port].sendHwCtrlState(MidiPlayEvent(ev)); // Don't care about return value.
-              MusEGlobal::midiPorts[port].putHwCtrlEvent(MidiPlayEvent(ev));
+              //MusEGlobal::midiPorts[port].putHwCtrlEvent(MidiPlayEvent(ev));
+              // This is the audio thread. Just set directly.
+              MusEGlobal::midiPorts[port].setHwCtrlState(MidiPlayEvent(ev));
           }
         }
 
@@ -2689,7 +2717,9 @@ void Audio::processMidi()
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                               if(MusEGlobal::midiPorts[port].sendHwCtrlState(event), true)
-                                              MusEGlobal::midiPorts[port].putHwCtrlEvent(event);
+                                              //MusEGlobal::midiPorts[port].putHwCtrlEvent(event);
+                                              // This is the audio thread. Just set directly.
+                                              MusEGlobal::midiPorts[port].setHwCtrlState(event);
 //                                                 md->addScheduledEvent(event);
                                                 md->putEvent(event, MidiDevice::NotLate);
 
@@ -2754,7 +2784,9 @@ void Audio::processMidi()
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
 //                                               if(MusEGlobal::midiPorts[devport].sendHwCtrlState(event), true)
-                                              MusEGlobal::midiPorts[devport].putHwCtrlEvent(event);
+                                              //MusEGlobal::midiPorts[devport].putHwCtrlEvent(event);
+                                              // This is the audio thread. Just set directly.
+                                              MusEGlobal::midiPorts[devport].setHwCtrlState(event);
 //                                                 mdAlt->addScheduledEvent(event);
                                                 mdAlt->putEvent(event, MidiDevice::NotLate);
                                               
@@ -2894,7 +2926,10 @@ void Audio::processMidi()
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
                   continue;
+// REMOVE Tim. autoconnect. Changed.
                 ev.setTime(0);   // Mark for immediate delivery.
+                //ev.setTime(curFrame());   // Mark for immediate delivery.
+                //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
 // REMOVE Tim. autoconnect. Changed.
 //                 mdev->putEvent(ev);
 //                 mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
@@ -2975,7 +3010,9 @@ void Audio::processMidi()
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
                   continue;
+// REMOVE Tim. autoconnect. Changed.
                 ev.setTime(0);   // Mark for immediate delivery.
+                //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
 // REMOVE Tim. autoconnect. Changed.
 //                 mdev->putEvent(ev);
 //                 mdev->putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);

@@ -64,12 +64,13 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _playEvents = true;
       _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
-      playedPitch = -1;
-      playedPitchChannel = -1;
-      playedPitchPort = -1;
-      // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//       playedVelocity = 0;
-      playedVelocity = 1;
+// REMOVE Tim. autoconnect. Removed.
+//       playedPitch = -1;
+//       playedPitchChannel = -1;
+//       playedPitchPort = -1;
+//       // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+// //       playedVelocity = 0;
+//       playedVelocity = 1;
 
       setBg(MusEGlobal::config.midiCanvasBg);
       setAcceptDrops(true);
@@ -154,6 +155,21 @@ void EventCanvas::updateSelection()
       {
       MusEGlobal::song->update(SC_SELECTION);
       }
+
+bool EventCanvas::stuckNoteExists(int port, int channel, int pitch) const
+{
+  const int sz = _stuckNotes.size();
+  for(int i = 0; i < sz; ++i)
+  {
+    MusECore::MidiPlayEvent s_ev(_stuckNotes.at(i));
+    if(s_ev.type() == MusECore::ME_NOTEON &&
+       port == s_ev.port() &&
+       channel == s_ev.channel() &&
+       pitch == s_ev.dataA())
+      return true;
+  }
+  return false;
+}
 
 //---------------------------------------------------------
 //   songChanged(type)
@@ -527,18 +543,34 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       if(!track())
         return;
       
-      playedPitch        = note;
+// REMOVE Tim. autoconnect. Changed.
+//       playedPitch        = note;
+//       // Apply track transposition, but only for midi tracks, not drum tracks.
+//       if(track()->isMidiTrack() && !track()->isDrumTrack())
+//         playedPitch        += track()->transposition;
+// 
+//       playedVelocity     = velocity;
+//       playedPitchPort    = port;
+//       playedPitchChannel = channel;
+
+      int playedPitch        = note;
       // Apply track transposition, but only for midi tracks, not drum tracks.
       if(track()->isMidiTrack() && !track()->isDrumTrack())
-        playedPitch        += track()->transposition;
-
-      playedVelocity     = velocity;
-      playedPitchPort    = port;
-      playedPitchChannel = channel;
+        playedPitch += track()->transposition;
       
       // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, MusECore::ME_NOTEON, playedPitch, velocity);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
+// REMOVE Tim. autoconnect. Changed.
+//       MusECore::MidiPlayEvent e(0, port, channel, MusECore::ME_NOTEON, playedPitch, velocity);
+//       MusEGlobal::audio->msgPlayMidiEvent(&e);
+      if(stuckNoteExists(port, channel, playedPitch))
+        return;
+      const MusECore::MidiPlayEvent e(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_NOTEON, playedPitch, velocity);
+      // Send to the device.
+      //if(MusECore::MidiDevice* md = MusEGlobal::midiPorts[port].device())
+      //  md->putEvent(e, MusECore::MidiDevice::NotLate);
+      _stuckNotes.push_back(e);
+      // Send to the port and device.
+      MusEGlobal::midiPorts[port].putEvent(e);
       }
 
 void EventCanvas::startPlayEvent(int note, int velocity)
@@ -556,15 +588,42 @@ void EventCanvas::startPlayEvent(int note, int velocity)
 
 void EventCanvas::stopPlayEvent()
       {
-      if(playedPitch == -1 || playedPitchPort == -1 || playedPitchChannel == -1)
-        return;
-      // release note:
-      MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      playedPitch = playedPitchPort = playedPitchChannel = -1;
-      // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
-//       playedVelocity = 0;
-      playedVelocity = 1;
+// REMOVE Tim. autoconnect. Changed.
+//       if(playedPitch == -1 || playedPitchPort == -1 || playedPitchChannel == -1)
+//         return;
+//       // release note:
+//       MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
+// // REMOVE Tim. autoconnect. Changed.
+// //       MusEGlobal::audio->msgPlayMidiEvent(&ev);
+//       // Send to the port and device.
+//       MusEGlobal::midiPorts[playedPitchPort].putEvent(ev);
+//       
+//       playedPitch = playedPitchPort = playedPitchChannel = -1;
+//       // REMOVE Tim. Noteoff. Added. Zero note on vel is not allowed now.
+// //       playedVelocity = 0;
+//       playedVelocity = 1;
+      
+      // Stop all currently playing notes.
+      unsigned int frame = MusEGlobal::audio->curFrame();
+      int port;
+      const int sz = _stuckNotes.size();
+      for(int i = 0; i < sz; ++i)
+      {
+        //MusECore::MidiPlayEvent ev(frame, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
+        MusECore::MidiPlayEvent ev(_stuckNotes.at(i));
+        port = ev.port();
+        if(port < 0 || port >= MIDI_PORTS)
+          continue;
+        ev.setType(MusECore::ME_NOTEOFF);
+        ev.setTime(frame);
+        if(ev.dataB() == 0)
+          ev.setB(64);
+        
+        // Send to the port and device.
+        MusEGlobal::midiPorts[port].putEvent(ev);
+      }
+      // Clear the stuck notes list.
+      _stuckNotes.clear();
       }
 
 } // namespace MusEGui

@@ -147,11 +147,15 @@ class MidiPort {
       // Otherwise returns -1.
 //       int stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
       MidiPlayEvent stageEvent(const MidiPlayEvent& ev);
-      // To be called from audio thread only. Returns true if event cannot be delivered.
+      // To be called from audio thread only. Returns true on success.
+      // If createAsNeeded is true, automatically send a message to the gui thread to
+      //  create items such as controllers, and cache the events sent to it and re-put
+      //  them after the controller has been created.
       //bool handleGui2AudioEvent(const MidiPlayEvent&);
       //bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 //       MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
-      MidiPlayEvent handleGui2AudioEvent(const MidiPlayEvent&);
+      //MidiPlayEvent handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
+      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
 
    public:
       MidiPort();
@@ -181,6 +185,7 @@ class MidiPort {
       bool setHwCtrlState(int ch, int ctrl, double val);
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
       bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
+      bool setHwCtrlState(const MidiPlayEvent&);
       void deleteController(int ch, int tick, int ctrl, Part* part);
       void addDefaultControllers();
       
@@ -278,7 +283,7 @@ class MidiPort {
       // Process the gui2AudioFifo. Called from audio thread only.
 //       bool processGui2AudioEvents();
       static bool processGui2AudioEvents();
-      bool processAudio2GuiEvent(MidiCtrlValList* mcvl, const MidiPlayEvent& ev);
+      //bool processAudio2GuiEvent(MidiCtrlValList* mcvl, const MidiPlayEvent& ev);
 //       // To be called from audio thread only. Returns true if event cannot be delivered.
 //       MidiPlayEvent handleGui2AudioEvent(const Gui2AudioFifoStruct&);
 
