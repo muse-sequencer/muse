@@ -90,7 +90,7 @@ class AudioDevice;
 #define SC_TEMPO                      0x400        // tempo map changed
 #define SC_MASTER                     0x800        // master flag changed
 #define SC_SELECTION                  0x1000       // event selection. part and track selection have their own.
-#define SC_MUTE                       0x2000
+#define SC_MUTE                       0x2000       // A track's mute or off state changed.
 #define SC_SOLO                       0x4000
 #define SC_RECFLAG                    0x8000
 #define SC_ROUTE                      0x10000      // A route was added, changed, or deleted. Or a midi track's out channel/port was changed.

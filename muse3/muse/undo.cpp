@@ -68,7 +68,7 @@ const char* UndoOp::typeName()
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
             "ModifyTrackName", "ModifyTrackChannel",
-            "SetTrackRecord", "SetTrackMute", "SetTrackSolo",
+            "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackOff",
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing",
@@ -112,6 +112,9 @@ void UndoOp::dump()
                   printf("%s %d\n", track->name().toLatin1().constData(), a);
                   break;
             case SetTrackSolo:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  break;
+            case SetTrackOff:
                   printf("%s %d\n", track->name().toLatin1().constData(), a);
                   break;
             default:      
@@ -366,6 +369,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::SetTrackSolo:
       fprintf(stderr, "Undo::insert: SetTrackSolo\n");
     break;
+    case UndoOp::SetTrackOff:
+      fprintf(stderr, "Undo::insert: SetTrackOff\n");
+    break;
     
     
     case UndoOp::AddPart:
@@ -580,6 +586,23 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             if(uo.a == n_op.a)
             {
               fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackSolo. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+        
+        case UndoOp::SetTrackOff:
+          if(uo.type == UndoOp::SetTrackOff && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackOff. Ignoring.\n");
               return;
             }
             else
@@ -1397,7 +1420,7 @@ UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, bool value, bool noUndo)
       {
-      assert(type_== SetTrackRecord || type_== SetTrackMute || type_== SetTrackSolo);
+      assert(type_== SetTrackRecord || type_== SetTrackMute || type_== SetTrackSolo || type_== SetTrackOff);
       assert(track_);
       
       type    = type_;
@@ -1911,6 +1934,11 @@ void Song::revertOperationGroup1(Undo& operations)
                   case UndoOp::SetTrackSolo:
                         pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackSolo));
                         updateFlags |= SC_SOLO;
+                        break;
+
+                  case UndoOp::SetTrackOff:
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackOff));
+                        updateFlags |= SC_MUTE;
                         break;
 
                         
@@ -2601,6 +2629,11 @@ void Song::executeOperationGroup1(Undo& operations)
                   case UndoOp::SetTrackSolo:
                         pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackSolo));
                         updateFlags |= SC_SOLO;
+                        break;
+
+                  case UndoOp::SetTrackOff:
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackOff));
+                        updateFlags |= SC_MUTE;
                         break;
 
                         

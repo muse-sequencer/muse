@@ -2332,8 +2332,14 @@ void Audio::processMidi()
       for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t)
       {
             MidiTrack* track = *t;
-            int port = track->outPort();
-            MidiDevice* md = MusEGlobal::midiPorts[port].device();
+            const int port = track->outPort();
+            //const int channel = track->outChannel();
+            MidiPort* mp = 0;
+            if(port >= 0 && port < MIDI_PORTS)
+              mp = &MusEGlobal::midiPorts[port];
+            MidiDevice* md = 0;
+            if(mp)
+              md = mp->device();
 // REMOVE Tim. autoconnect. Removed.
 //             if(md)
             {
@@ -2356,7 +2362,8 @@ void Audio::processMidi()
             if(track_rec_monitor || track_rec_flag)
             {
                   MPEventList& rl = track->mpevents;
-                  MidiPort* tport = &MusEGlobal::midiPorts[port];
+// REMOVE Tim. autoconnect. Removed. Moved above.
+//                   MidiPort* tport = &MusEGlobal::midiPorts[port];
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
                   {
@@ -2496,7 +2503,7 @@ void Audio::processMidi()
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
-                                event.setChannel(track->outChannel());
+                                event.setChannel(channel);
 
                                 if (event.isNote() || event.isNoteOff())
                                 {
@@ -2575,7 +2582,8 @@ void Audio::processMidi()
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event
                                     //  according to the track port's instrument?
-                                    mc = tport->drumController(ctl);
+                                    if(mp)
+                                      mc = mp->drumController(ctl);
                                     if(mc)
                                     {
                                       int pitch = ctl & 0x7f;
@@ -2599,7 +2607,8 @@ void Audio::processMidi()
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event
                                     //  according to the track port's instrument?
-                                    mc = tport->drumController(ctl);
+                                    if(mp)
+                                      mc = mp->drumController(ctl);
                                     if(mc)
                                     {
                                       int pitch = ctl & 0x7f; // pitch is now the incoming pitch
@@ -2862,7 +2871,7 @@ void Audio::processMidi()
                                           // In this case, preVelo is simply the controller value.
                                           drumRecEvent.setB(preVelo);
                                           drumRecEvent.setPort(port); //rec-event to current port
-                                          drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                          drumRecEvent.setChannel(channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                       else
@@ -2873,7 +2882,7 @@ void Audio::processMidi()
                                           // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
                                           //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
                                           drumRecEvent.setPort(port);  //rec-event to current port
-                                          drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                          drumRecEvent.setChannel(channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                     }
@@ -2886,7 +2895,7 @@ void Audio::processMidi()
                                           if (preVelo)
                                                 recEvent.setB(preVelo);
                                           recEvent.setPort(port);
-                                          recEvent.setChannel(track->outChannel());
+                                          recEvent.setChannel(channel);
 
                                           track->mpevents.add(recEvent);
                                     }
@@ -2937,6 +2946,27 @@ void Audio::processMidi()
               }
               mel.clear();
             }
+            
+            // REMOVE Tim. autoconnect. Added.
+            // Nope, can't do this here unless we check if no other track is unmuted on same ch and port.
+//             //---------------------------------------------------
+//             //    Reset this track's sustain
+//             //---------------------------------------------------
+//             
+//             //const int ival = mp->hwCtrlState(channel, CTRL_SUSTAIN);
+//             //if(ival > 0 && ival <= 127)
+//             if(mp && mp->hwCtrlState(channel, CTRL_SUSTAIN) == 127)
+//             {
+//               MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_SUSTAIN, 0); // Immediate processing. TODO Use curFrame?
+//               // putEvent(ev);
+//               // putEvent(ev, MidiDevice::PlayFifo, MidiDevice::NotLate);
+//               //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+//               // This is the audio thread. Just set directly.
+//               mp->setHwCtrlState(ev);
+//               // Send to the device as well.
+//               if(md)
+//                 md->putEvent(ev, MidiDevice::NotLate);
+//             }
           }
           else
           // If not muted and not off, we want to schedule all playback note-offs normally.
