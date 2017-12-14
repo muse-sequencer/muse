@@ -342,8 +342,8 @@ void TList::paint(const QRect& r)
             for (int index = 0; index < header->count(); ++index) {
                   int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
-                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight)); 
-                  QRect svg_r = p.combinedTransform().mapRect(
+                  QRect r = p.transform().mapRect(QRect(x+2, yy, w-4, trackHeight));
+                  QRect svg_r = p.transform().mapRect(
                     QRect(x + w / 2 - svg_sz / 2,
                           yy + trackHeight / 2 - svg_sz / 2,
                           svg_sz,
