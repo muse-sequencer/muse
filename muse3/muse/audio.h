@@ -74,8 +74,9 @@ enum {
       SEQM_SET_TRACK_AUTO_TYPE,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-      AUDIO_RECORD,
-      AUDIO_RECORD_MONITOR,
+// REMOVE Tim. autoconnect. Removed.
+//       AUDIO_RECORD,
+//       AUDIO_RECORD_MONITOR,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
@@ -87,7 +88,8 @@ enum {
       AUDIO_ERASE_RANGE_AC_EVENTS,
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
-      AUDIO_SET_SOLO, AUDIO_SET_MUTE, AUDIO_SET_TRACKOFF,
+// REMOVE Tim. autoconnect. Removed.
+//       AUDIO_SET_SOLO, AUDIO_SET_MUTE, AUDIO_SET_TRACKOFF,
       AUDIO_SET_SEND_METRONOME,
       AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
@@ -291,8 +293,9 @@ class Audio {
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
-      void msgSetRecord(Track*, bool);
-      void msgSetRecMonitor(Track*, bool);
+// REMOVE Tim. autoconnect. Removed.
+//       void msgSetRecord(Track*, bool);
+//       void msgSetRecMonitor(Track*, bool);
       void msgLocalOff();
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
@@ -307,9 +310,10 @@ class Audio {
       void msgEraseRangeACEvents(AudioTrack*, int, int, int);
       void msgAddACEvent(AudioTrack*, int, int, double);
       void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
-      void msgSetSolo(Track*, bool);
-      void msgSetTrackMute(Track*, bool);
-      void msgSetTrackOff(Track*, bool);
+// REMOVE Tim. autoconnect. Removed.
+//       void msgSetSolo(Track*, bool);
+//       void msgSetTrackMute(Track*, bool);
+//       void msgSetTrackOff(Track*, bool);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackAutomationType(Track*, int);

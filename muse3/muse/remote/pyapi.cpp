@@ -1067,7 +1067,11 @@ bool Song::event(QEvent* _e)
 
                   bool muted = e->getP1() == 1;
                   //track->setMute(muted);
-                  MusEGlobal::audio->msgSetTrackMute(track, muted);  // Tim
+// REMOVE Tim. autoconnect. Changed.
+//                   MusEGlobal::audio->msgSetTrackMute(track, muted);  // Tim
+                  // No undo.
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted), false);
+      
                   this->update(SC_MUTE | SC_TRACK_MODIFIED);
                   break;
                   }

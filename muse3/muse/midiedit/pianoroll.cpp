@@ -1268,7 +1268,11 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
 void PianoRoll::soloChanged(bool flag)
       {
       if(canvas->track())
-        MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+// REMOVE Tim. autoconnect. Changed.
+//         MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+        // No undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, canvas->track(), flag), false);
+        
       MusEGlobal::song->update(SC_SOLO);
       }
 

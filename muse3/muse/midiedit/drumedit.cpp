@@ -943,7 +943,11 @@ void DrumEdit::deltaModeChanged(bool delta_on)
 void DrumEdit::soloChanged(bool flag)
       {
       if(canvas->track())
-        MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+// REMOVE Tim. autoconnect. Changed.
+//         MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+        // No undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, canvas->track(), flag), false);
+  
       MusEGlobal::song->update(SC_SOLO);
       }
 

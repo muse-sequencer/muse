@@ -95,8 +95,9 @@ const char* seqMsgList[] = {
       "SEQM_SET_TRACK_AUTO_TYPE",
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
-      "AUDIO_RECORD",
-      "AUDIO_RECORD_MONITOR",
+// REMOVE Tim. autoconnect. Removed.
+//       "AUDIO_RECORD",
+//       "AUDIO_RECORD_MONITOR",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
@@ -108,7 +109,8 @@ const char* seqMsgList[] = {
       "AUDIO_ERASE_RANGE_AC_EVENTS",
       "AUDIO_ADD_AC_EVENT",
       "AUDIO_CHANGE_AC_EVENT",
-      "AUDIO_SET_SOLO", "AUDIO_SET_MUTE", "AUDIO_SET_TRACKOFF",
+// REMOVE Tim. autoconnect. Removed.
+//       "AUDIO_SET_SOLO", "AUDIO_SET_MUTE", "AUDIO_SET_TRACKOFF",
       "AUDIO_SET_SEND_METRONOME", 
       "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
@@ -786,12 +788,13 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
 void Audio::processMsg(AudioMsg* msg)
       {
       switch(msg->id) {
-            case AUDIO_RECORD:
-                  msg->track->setRecordFlag2AndCheckMonitor(msg->ival);
-                  break;
-            case AUDIO_RECORD_MONITOR:
-                  msg->track->setRecMonitor(msg->ival);
-                  break;
+// REMOVE Tim. autoconnect. Removed.
+//             case AUDIO_RECORD:
+//                   msg->track->setRecordFlag2AndCheckMonitor(msg->ival);
+//                   break;
+//             case AUDIO_RECORD_MONITOR:
+//                   msg->track->setRecMonitor(msg->ival);
+//                   break;
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);
                   break;
@@ -837,15 +840,16 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_CHANGE_AC_EVENT:
                   msg->snode->changeACEvent(msg->ival, msg->a, msg->b, msg->dval);
                   break;
-            case AUDIO_SET_SOLO:
-                  msg->track->setSolo((bool)msg->ival);
-                  break;
-            case AUDIO_SET_MUTE:
-                  msg->track->setMute((bool)msg->ival);
-                  break;
-            case AUDIO_SET_TRACKOFF:
-                  msg->track->setOff((bool)msg->ival);
-                  break;
+// REMOVE Tim. autoconnect. Removed.
+//             case AUDIO_SET_SOLO:
+//                   msg->track->setSolo((bool)msg->ival);
+//                   break;
+//             case AUDIO_SET_MUTE:
+//                   msg->track->setMute((bool)msg->ival);
+//                   break;
+//             case AUDIO_SET_TRACKOFF:
+//                   msg->track->setOff((bool)msg->ival);
+//                   break;
 
             case AUDIO_SET_SEND_METRONOME:
                   msg->snode->setSendMetronome((bool)msg->ival);

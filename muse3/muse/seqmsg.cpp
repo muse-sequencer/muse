@@ -155,31 +155,33 @@ void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
       sendMsg(&msg);
       }
 
-//---------------------------------------------------------
-//   msgSetRecord
-//---------------------------------------------------------
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   msgSetRecord
+// //---------------------------------------------------------
+// 
+// void Audio::msgSetRecord(Track* track, bool val)
+//       {
+//       AudioMsg msg;
+//       msg.id     = AUDIO_RECORD;
+//       msg.track  = track;
+//       msg.ival   = int(val);
+//       sendMsg(&msg);
+//       }
 
-void Audio::msgSetRecord(Track* track, bool val)
-      {
-      AudioMsg msg;
-      msg.id     = AUDIO_RECORD;
-      msg.track  = track;
-      msg.ival   = int(val);
-      sendMsg(&msg);
-      }
-
-//---------------------------------------------------------
-//   msgSetRecMonitor
-//---------------------------------------------------------
-
-void Audio::msgSetRecMonitor(Track* track, bool val)
-      {
-      AudioMsg msg;
-      msg.id     = AUDIO_RECORD_MONITOR;
-      msg.track  = track;
-      msg.ival   = int(val);
-      sendMsg(&msg);
-      }
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   msgSetRecMonitor
+// //---------------------------------------------------------
+// 
+// void Audio::msgSetRecMonitor(Track* track, bool val)
+//       {
+//       AudioMsg msg;
+//       msg.id     = AUDIO_RECORD_MONITOR;
+//       msg.track  = track;
+//       msg.ival   = int(val);
+//       sendMsg(&msg);
+//       }
 
 //---------------------------------------------------------
 //   msgSetPrefader
@@ -506,44 +508,47 @@ void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame
       sendMsg(&msg);
 }
 
-//---------------------------------------------------------
-//   msgSetTrackMute
-//---------------------------------------------------------
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   msgSetTrackMute
+// //---------------------------------------------------------
+// 
+// void Audio::msgSetTrackMute(Track* track, bool val)
+// {
+//       AudioMsg msg;
+//       msg.id     = AUDIO_SET_MUTE;
+//       msg.track  = track;
+//       msg.ival   = int(val);
+//       sendMsg(&msg);
+// }
 
-void Audio::msgSetTrackMute(Track* track, bool val)
-{
-      AudioMsg msg;
-      msg.id     = AUDIO_SET_MUTE;
-      msg.track  = track;
-      msg.ival   = int(val);
-      sendMsg(&msg);
-}
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   msgSetTrackOff
+// //---------------------------------------------------------
+// 
+// void Audio::msgSetTrackOff(Track* track, bool val)
+// {
+//       AudioMsg msg;
+//       msg.id     = AUDIO_SET_TRACKOFF;
+//       msg.track  = track;
+//       msg.ival   = int(val);
+//       sendMsg(&msg);
+// }
 
-//---------------------------------------------------------
-//   msgSetTrackOff
-//---------------------------------------------------------
-
-void Audio::msgSetTrackOff(Track* track, bool val)
-{
-      AudioMsg msg;
-      msg.id     = AUDIO_SET_TRACKOFF;
-      msg.track  = track;
-      msg.ival   = int(val);
-      sendMsg(&msg);
-}
-
-//---------------------------------------------------------
-//   msgSetSolo
-//---------------------------------------------------------
-
-void Audio::msgSetSolo(Track* track, bool val)
-{
-      AudioMsg msg;
-      msg.id     = AUDIO_SET_SOLO;
-      msg.track  = track;
-      msg.ival   = int(val);
-      sendMsg(&msg);
-}
+// REMOVE Tim. autoconnect. Removed.
+// //---------------------------------------------------------
+// //   msgSetSolo
+// //---------------------------------------------------------
+// 
+// void Audio::msgSetSolo(Track* track, bool val)
+// {
+//       AudioMsg msg;
+//       msg.id     = AUDIO_SET_SOLO;
+//       msg.track  = track;
+//       msg.ival   = int(val);
+//       sendMsg(&msg);
+// }
 
 
 //---------------------------------------------------------
