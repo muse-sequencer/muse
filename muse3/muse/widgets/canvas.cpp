@@ -456,7 +456,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       }
 }
 
-#define WHEEL_STEPSIZE 40
+#define WHEEL_STEPSIZE 2
 #define WHEEL_DELTA   120
 
 //---------------------------------------------------------
@@ -466,33 +466,54 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 {
     int keyState = ev->modifiers();
 
+    QPoint delta       = ev->angleDelta();  // WHEEL_DELTA;
+
+    printf("delta x:%d y:%d\n", delta.x(),delta.y());
+
     bool shift      = keyState & Qt::ShiftModifier;
     bool ctrl       = keyState & Qt::ControlModifier;
 
-    if (shift) { // scroll horizontally
-        int delta       = -ev->delta() / WHEEL_DELTA;
+    if (ctrl) {  // zoom horizontally
+
+      emit horizontalZoom(ev->delta()>0, ev->globalPos());
+      return;
+    }
+
+    if (shift || delta.x() != 0) { // scroll horizontally
+
+        int scrolldelta = - delta.x() /2;
+         if (shift)
+           scrolldelta = - delta.x() /2;
+
         int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
         if (xpixelscale <= 0)
               xpixelscale = 1;
-        int scrollstep = WHEEL_STEPSIZE * (delta);
+        int scrollstep = WHEEL_STEPSIZE * (scrolldelta);
         scrollstep = scrollstep / 10;
         int newXpos = xpos + xpixelscale * scrollstep;
+
         if (newXpos < 0)
               newXpos = 0;
+
         emit horizontalScroll((unsigned)newXpos);
 
-    } else if (ctrl) {  // zoom horizontally
-      emit horizontalZoom(ev->delta()>0, ev->globalPos());
-    } else { // scroll vertically
-        int delta       = ev->delta() / WHEEL_DELTA;
+    }
+
+    if (!shift && delta.y() != 0) { // scroll vertically
+
+        int scrolldelta = delta.y() /2;
         int ypixelscale = rmapyDev(1);
+
         if (ypixelscale <= 0)
               ypixelscale = 1;
-        int scrollstep = WHEEL_STEPSIZE * (-delta);
+
+        int scrollstep = WHEEL_STEPSIZE * (-scrolldelta);
         scrollstep = scrollstep / 2;
         int newYpos = ypos + ypixelscale * scrollstep;
+
         if (newYpos < 0)
               newYpos = 0;
+
         emit verticalScroll((unsigned)newYpos);
     }
 }
