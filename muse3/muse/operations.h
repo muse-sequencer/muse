@@ -197,7 +197,7 @@ struct PendingOperationItem
                               AddMidiDevice,     DeleteMidiDevice,       
                               ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
                               AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
-                              SetTrackRecord,    SetTrackMute, SetTrackSolo,                SetTrackOff,
+                              SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
                               ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
                               AddPart,           DeletePart,   MovePart, ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
@@ -366,7 +366,8 @@ struct PendingOperationItem
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
     
-  PendingOperationItem(Track* track, bool v, PendingOperationType type) // type is SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackOff
+   // type is SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff
+  PendingOperationItem(Track* track, bool v, PendingOperationType type)
     { _type = type; _track = track; _boolA = v; }
     
     

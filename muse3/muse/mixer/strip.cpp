@@ -1015,9 +1015,14 @@ void Strip::setLabelText()
 void Strip::muteToggled(bool val)
       {
       if(track)
-        MusEGlobal::audio->msgSetTrackMute(track, val);
+// REMOVE Tim. autoconnect. Changed.
+//         MusEGlobal::audio->msgSetTrackMute(track, val);
+        // No undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, val), false);
+        
       updateMuteIcon();
       MusEGlobal::song->update(SC_MUTE);
+      
       }
 
 //---------------------------------------------------------
@@ -1029,7 +1034,10 @@ void Strip::soloToggled(bool val)
       solo->setIconSetB(track && track->internalSolo());
       if(!track)
         return;
-      MusEGlobal::audio->msgSetSolo(track, val);
+// REMOVE Tim. autoconnect. Changed.
+//       MusEGlobal::audio->msgSetSolo(track, val);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, track, val), false);
+      
       MusEGlobal::song->update(SC_SOLO);
       }
 

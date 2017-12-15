@@ -60,7 +60,7 @@ struct UndoOp {
             AddSig,   DeleteSig,   ModifySig,
             AddKey,   DeleteKey,   ModifyKey,
             ModifyTrackName, ModifyTrackChannel,
-            SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackOff,
+            SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
             MoveTrack,
             ModifyClip,
             ModifyMarker,

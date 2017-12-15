@@ -527,7 +527,7 @@ void Song::duplicateTracks()
     --trackno;
   }
   
-  MusEGlobal::song->applyOperationGroup(operations);
+  applyOperationGroup(operations);
 }          
       
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
@@ -980,11 +980,13 @@ void Song::clearTrackRec()
   for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
 //     setRecordFlag(*it,false);
     operations.push_back(UndoOp(UndoOp::SetTrackRecord, *it, false));
+    // No undo.
+    //operations.push_back(UndoOp(UndoOp::SetTrackRecord, *it, false, true));
   if(!operations.empty())
   {
-    applyOperationGroup(operations);
+    //applyOperationGroup(operations);
     // No undo.
-    //applyOperationGroup(operations, false);
+    applyOperationGroup(operations, false);
     update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
   }
 }
@@ -1040,7 +1042,9 @@ void Song::setRecord(bool f, bool autoRecEnable)
                         setRecordFlag(t, true, &operations);
                       if(!operations.empty())
                       {
-                        applyOperationGroup(operations);
+                        //applyOperationGroup(operations);
+                        // No undo.
+                        applyOperationGroup(operations, false);
                         update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
                       }
                       
@@ -1821,6 +1825,7 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
   // No undo.
   opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
+  //opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, true));
 //   MusEGlobal::audio->msgSetRecord(track, val);
 //   update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
   
@@ -1828,9 +1833,9 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
   {
     if(!ops.empty())
     {
-      applyOperationGroup(ops);
+      //applyOperationGroup(ops);
       // No undo.
-      //applyOperationGroup(ops, false);
+      applyOperationGroup(ops, false);
       update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
     }
   }

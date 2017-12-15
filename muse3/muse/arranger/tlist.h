@@ -41,7 +41,8 @@ class QWheelEvent;
 namespace MusECore {
 class Track;
 class Xml;
-class PendingOperationList;
+//class PendingOperationList;
+class Undo;
 }
 
 namespace MusEGui {
@@ -120,7 +121,8 @@ class TList : public QWidget {
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 // REMOVE Tim. autoconnect. Changed.
 //       void toggleMute(MusECore::Track *t, bool turnOff);
-      void toggleMute(MusECore::PendingOperationList& operations, MusECore::Track *t, bool turnOff);
+      //void toggleMute(MusECore::PendingOperationList& operations, MusECore::Track *t, bool turnOff);
+      void toggleMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff);
       void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
       void editTrackName(MusECore::Track *t);
       void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);

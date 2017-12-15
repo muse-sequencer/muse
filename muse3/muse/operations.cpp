@@ -93,6 +93,7 @@ int PendingOperationItem::getIndex() const
     case SetTrackRecord:
     case SetTrackMute:
     case SetTrackSolo:
+    case SetTrackRecMonitor:
     case SetTrackOff:
     case ModifyPartName:
     case ModifySongLength:
@@ -916,6 +917,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       flags |= SC_SOLO;
     break;
     
+    case SetTrackRecMonitor:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackRecMonitor track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setRecMonitor(_boolA);
+      flags |= SC_TRACK_REC_MONITOR;
+    break;
+    
     case SetTrackOff:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackOff track:%p new_val:%d\n", _track, _boolA);
@@ -1645,6 +1654,24 @@ bool PendingOperationList::add(PendingOperationItem op)
           if(poi._boolA == op._boolA)  
           {
             fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackSolo. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetTrackRecMonitor:
+        if(poi._type == PendingOperationItem::SetTrackRecMonitor && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackRecMonitor. Ignoring.\n");
             return false;  
           }
           else

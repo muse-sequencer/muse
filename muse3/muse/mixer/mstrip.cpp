@@ -2356,7 +2356,11 @@ void MidiStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  MusEGlobal::audio->msgSetRecMonitor(track, v);
+// REMOVE Tim. autoconnect. Changed.
+//   MusEGlobal::audio->msgSetRecMonitor(track, v);
+  // No undo.
+  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
+  
   MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
@@ -2419,7 +2423,11 @@ void MidiStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      MusEGlobal::audio->msgSetTrackOff(track, val);
+// REMOVE Tim. autoconnect. Changed.
+//       MusEGlobal::audio->msgSetTrackOff(track, val);
+      // No undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
+      
       MusEGlobal::song->update(SC_MUTE);
       }
 
