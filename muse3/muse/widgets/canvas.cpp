@@ -457,7 +457,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 }
 
 #define WHEEL_STEPSIZE 2
-#define WHEEL_DELTA   120
+//#define WHEEL_DELTA   120
 
 //---------------------------------------------------------
 //   wheelEvent
@@ -466,7 +466,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 {
     int keyState = ev->modifiers();
 
-    QPoint delta       = ev->angleDelta();  // WHEEL_DELTA;
+    QPoint delta       = ev->pixelDelta();  // WHEEL_DELTA;
 
     printf("delta x:%d y:%d\n", delta.x(),delta.y());
 
