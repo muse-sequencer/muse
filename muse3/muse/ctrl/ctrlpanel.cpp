@@ -220,7 +220,9 @@ void CtrlPanel::buildPanel()
       _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-    connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+// REMOVE Tim. autoconnect. Changed.
+//     connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
     kbox->addWidget(_knob);
@@ -250,7 +252,9 @@ void CtrlPanel::buildPanel()
       _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-    connect(_slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+// REMOVE Tim. autoconnect. Changed.
+//     connect(_slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
     kbox->addWidget(_slider);
@@ -556,14 +560,18 @@ void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 
 void CtrlPanel::patchCtrlChanged(int val)
 {
-  ctrlChanged(double(val));
+// REMOVE Tim. autoconnect. Changed.
+//   ctrlChanged(double(val));
+  ctrlChanged(double(val), false, _dnum, 0);
 }
 
 //---------------------------------------------------------
 //   ctrlChanged
 //---------------------------------------------------------
 
-void CtrlPanel::ctrlChanged(double val)
+// REMOVE Tim. autoconnect. Changed.
+// void CtrlPanel::ctrlChanged(double val)
+void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/)
     {
       if (inHeartBeat)
             return;
@@ -655,7 +663,7 @@ void CtrlPanel::ctrlChanged(double val)
       //else
       //{
         // Shouldn't happen, but...
-        if(ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+        if(off || ival < _ctrl->minVal() || ival > _ctrl->maxVal())
           ival = MusECore::CTRL_VAL_UNKNOWN;
        
         if(ival != MusECore::CTRL_VAL_UNKNOWN)

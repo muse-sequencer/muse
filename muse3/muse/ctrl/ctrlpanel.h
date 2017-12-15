@@ -83,7 +83,9 @@ class CtrlPanel: public QWidget {
 
    private slots:
       void patchCtrlChanged(int val);
-      void ctrlChanged(double val);
+// REMOVE Tim. autoconnect. Changed.
+//       void ctrlChanged(double val);
+      void ctrlChanged(double val, bool off, int id, int scrollMode);
       void ctrlRightClicked(const QPoint& p, int id);
       void ctrlPopupTriggered(QAction* act);
       void velPerNoteClicked();
