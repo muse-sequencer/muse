@@ -755,15 +755,20 @@ void TList::muteSelectedTracksSlot()
 {
   bool stateDefined=false;
   bool setTo;
+  MusECore::PendingOperationList operations;
   MusECore::TrackList* tracks = MusEGlobal::song->tracks();
   for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
   {
     if ((*t)->selected()){
       if (!stateDefined)
+      {
         setTo = !(*t)->isMute();
-      (*t)->setMute(setTo);
+        stateDefined = true;
+      }
+      operations.add(MusECore::PendingOperationItem((*t), setTo, MusECore::PendingOperationItem::SetTrackMute));
     }
   }
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
   update();
 }
 
@@ -771,15 +776,20 @@ void TList::soloSelectedTracksSlot()
 {
   bool stateDefined=false;
   bool setTo;
+  MusECore::PendingOperationList operations;
   MusECore::TrackList* tracks = MusEGlobal::song->tracks();
   for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
   {
     if ((*t)->selected()){
       if (!stateDefined)
+      {
         setTo = !(*t)->soloMode();
-      (*t)->setSolo(setTo);
+        stateDefined = true;
+      }
+      operations.add(MusECore::PendingOperationItem((*t), setTo, MusECore::PendingOperationItem::SetTrackSolo));
     }
   }
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
   update();
 }
 

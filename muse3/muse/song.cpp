@@ -37,6 +37,7 @@
 #include <QProcess>
 #include <QByteArray>
 #include <QProgressDialog>
+#include <QList>
 
 #include "app.h"
 #include "driver/jackmidi.h"
@@ -960,13 +961,32 @@ void Song::setLoop(bool f)
             }
       }
 
+// REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   clearTrackRec
+// //---------------------------------------------------------
+// void Song::clearTrackRec()
+// {
+//     for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
+//         setRecordFlag(*it,false);
+// }
+
 //---------------------------------------------------------
 //   clearTrackRec
 //---------------------------------------------------------
 void Song::clearTrackRec()
 {
-    for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
-        setRecordFlag(*it,false);
+  Undo operations;
+  for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
+//     setRecordFlag(*it,false);
+    operations.push_back(UndoOp(UndoOp::SetTrackRecord, *it, false));
+  if(!operations.empty())
+  {
+    applyOperationGroup(operations);
+    // No undo.
+    //applyOperationGroup(operations, false);
+    update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+  }
 }
 
 //---------------------------------------------------------
@@ -1011,8 +1031,19 @@ void Song::setRecord(bool f, bool autoRecEnable)
                             }
                       }
                 if (!alreadyRecEnabled && selectedTracks.size() >0) {
+                  
+// REMOVE Tim. autoconnect. Changed.
+//                       foreach (Track *t, selectedTracks)
+//                         setRecordFlag(t, true);
+                      Undo operations;
                       foreach (Track *t, selectedTracks)
-                        setRecordFlag(t, true);
+                        setRecordFlag(t, true, &operations);
+                      if(!operations.empty())
+                      {
+                        applyOperationGroup(operations);
+                        update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+                      }
+                      
                       }
                 else if (alreadyRecEnabled)  {
                       // do nothing
@@ -1763,16 +1794,46 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
       }
 
 
+// REMOVE Tim. autoconnect. Changed.
+// //---------------------------------------------------------
+// //   setRecordFlag
+// //---------------------------------------------------------
+// 
+// void Song::setRecordFlag(Track* track, bool val)
+// {
+//   if(!track->setRecordFlag1(val))
+//     return;
+//   MusEGlobal::audio->msgSetRecord(track, val);
+//   update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+// }
+
 //---------------------------------------------------------
 //   setRecordFlag
 //---------------------------------------------------------
 
-void Song::setRecordFlag(Track* track, bool val)
+void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 {
   if(!track->setRecordFlag1(val))
     return;
-  MusEGlobal::audio->msgSetRecord(track, val);
-  update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+
+  Undo ops;
+  Undo* opsp = operations ? operations : &ops;
+
+  // No undo.
+  opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
+//   MusEGlobal::audio->msgSetRecord(track, val);
+//   update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+  
+  if(!operations)
+  {
+    if(!ops.empty())
+    {
+      applyOperationGroup(ops);
+      // No undo.
+      //applyOperationGroup(ops, false);
+      update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+    }
+  }
 }
 
 //---------------------------------------------------------
@@ -3876,110 +3937,298 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
       return;
 }
 
+// REMOVE Tim. autoconnect. Changed.
+// FIXME This mixes calls to routines meant for calling from gui and audio threads.
+//       Change this to either all gui thread-safe or all audio thread-safe.
+// void Song::restartRecording(bool discard)
+// {
+//    if(MusEGlobal::audio->isRecording() && MusEGlobal::audio->isRunning())
+//    {
+//       //MusEGlobal::audioDevice->stopTransport();
+//       if(!discard)
+//       {
+//          MusEGlobal::audio->recordStop(true /*restart record*/);
+//          processAutomationEvents();
+//       }
+//       //clear all recorded midi events and wave files
+//       TrackList* tracks = MusEGlobal::song->tracks();
+//       std::vector<Track *> tVec;
+//       for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+//       {
+//          tVec.push_back((*i));
+//       }
+//       for(size_t i = 0; i < tVec.size(); i++)
+//       {
+//          Track *cTrk = tVec [i];
+//          if(!cTrk->recordFlag())
+//             continue;
+//          Track *nTrk = NULL;
+//          if(!discard)
+//          {
+//             nTrk = addTrack(cTrk->type());
+//             cTrk->setMute(true);
+//             MusEGlobal::song->update(SC_MUTE);
+//             setRecordFlag(cTrk, false);
+//             RouteList *inpR = cTrk->inRoutes();
+//             RouteList *outpR = cTrk->inRoutes();
+//             RouteList *innR = nTrk->inRoutes();
+//             RouteList *outnR = nTrk->inRoutes();
+//             innR->clear();
+//             outnR->clear();
+//             RouteList *rcpR = inpR;
+//             RouteList *rcnR = innR;
+//             for(int i = 0; i < 2; i++)
+//             {
+//                for(RouteList::iterator it = rcpR->begin(); it != rcpR->end(); ++it)
+//                {
+//                   Route nR = (*it);
+//                   if(cTrk->isMidiTrack())
+//                      nR.device = it->device;
+//                   else if(cTrk->type() == Track::WAVE)
+//                      nR.track = it->track;
+//                   rcnR->push_back(nR);
+//                   if(nR.type == Route::TRACK_ROUTE)
+//                   {
+//                      Route nbR = nR;
+//                      int ch = nbR.channel;
+//                      nbR.channel = nbR.remoteChannel;
+//                      nbR.remoteChannel = ch;
+//                      nbR.track = nTrk;
+//                      //MusELib::strntcpy(nbR.persistentJackPortName, nbR.name().toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+//                      if(i == 0)
+//                         nR.track->outRoutes()->push_back(nbR);
+//                      else
+//                         nR.track->inRoutes()->push_back(nbR);
+//                   }
+//                }
+//                rcpR = outpR;
+//                rcnR = outnR;
+//             }
+//             setRecordFlag(nTrk, true);
+//          }
+//          if (cTrk->isMidiTrack())
+//          {
+//             if(discard)
+//             {
+//                ((MidiTrack *)cTrk)->mpevents.clear();
+//             }
+//             else
+//             {
+//                ((MidiTrack *)nTrk)->setOutPort(((MidiTrack *)cTrk)->outPort());
+//                ((MidiTrack *)nTrk)->setOutChannel(((MidiTrack *)cTrk)->outChannel());
+//             }
+//          }
+//          else if (cTrk->type() == Track::WAVE)
+//          {
+//             if(discard)
+//             {
+//                ((WaveTrack*)cTrk)->setRecFile(NULL);
+//                ((WaveTrack*)cTrk)->resetMeter();
+//                ((WaveTrack*)cTrk)->prepareRecording();
+//             }
+//             else
+//             {
+//                ((WaveTrack*)nTrk)->setChannels(((WaveTrack*)cTrk)->channels());
+//                ((WaveTrack*)nTrk)->setVolume(((WaveTrack*)cTrk)->volume());
+//                ((WaveTrack*)nTrk)->setPan(((WaveTrack*)cTrk)->pan());
+//                ((WaveTrack*)nTrk)->setGain(((WaveTrack*)cTrk)->gain());
+//                const AuxSendValueList &auxList = ((WaveTrack*)cTrk)->getAuxSendValueList();
+//                for(size_t i = 0; i < auxList.size(); i++)
+//                {
+//                   ((WaveTrack*)nTrk)->setAuxSend(i, auxList [i]);
+//                }
+//                ((WaveTrack*)nTrk)->prepareRecording();
+//             }
+//          }
+//       }
+//       MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+//       //MusEGlobal::audioDevice->startTransport();
+//    }
+// }
+
+//---------------------------------------------------------
+//   restartRecording
+//   Called from gui thread only.
+//---------------------------------------------------------
+
 void Song::restartRecording(bool discard)
 {
-   if(MusEGlobal::audio->isRecording() && MusEGlobal::audio->isRunning())
-   {
-      //MusEGlobal::audioDevice->stopTransport();
+  // FIXME After recording, it never makes it past here because recording has long since stopped.
+  //       Although, it should work WHILE recording.
+  //       We may need a track flag like 'justRecorded' or 'lastRecorded' something...
+  if(!MusEGlobal::audio->isRecording() || !MusEGlobal::audio->isRunning())
+    return;
+
+  // Do not copy parts or controller graphs. When ASSIGN_STD_CTRLS is NOT included, it will
+  //  copy just the standard controller current values, but not the graphs.
+  // FIXME: Although we would like to copy plugins, that may get expensive after a while.
+  //        So instead try to create a group track with the plugins and route the track and all
+  //         the retake tracks through the group track.
+  const int clone_flags = Track::ASSIGN_PROPERTIES | Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES | Track::ASSIGN_DRUMLIST;
+  
+  MusECore::Undo operations;
+  //MusECore::PendingOperationList p_operations;
+  
+  //MusEGlobal::audioDevice->stopTransport();
+  if(!discard)
+  {
+//       MusEGlobal::audio->recordStop(true /*restart record*/);
+      MusEGlobal::audio->recordStop(true /*restart record*/, &operations);
+//       processAutomationEvents();
+      processAutomationEvents(&operations);
+  }
+  //clear all recorded midi events and wave files
+//   TrackList* tracks = tracks();
+//   std::vector<Track *> tVec;
+//   for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
+//   {
+//       tVec.push_back((*i));
+//   }
+  QStringList new_track_names;
+  
+  int idx_cnt = 0;
+//   for(size_t i = 0; i < tVec.size(); i++)
+  for(size_t i = 0; i < _tracks.size(); i++)
+  {
+//       Track *cTrk = tVec [i];
+      Track *cTrk = _tracks[i];
+      if(!cTrk->recordFlag())
+        continue;
+      Track *nTrk = NULL;
       if(!discard)
       {
-         MusEGlobal::audio->recordStop(true /*restart record*/);
-         processAutomationEvents();
-      }
-      //clear all recorded midi events and wave files
-      TrackList* tracks = MusEGlobal::song->tracks();
-      std::vector<Track *> tVec;
-      for (iTrack i = tracks->begin(); i != tracks->end(); ++i)
-      {
-         tVec.push_back((*i));
-      }
-      for(size_t i = 0; i < tVec.size(); i++)
-      {
-         Track *cTrk = tVec [i];
-         if(!cTrk->recordFlag())
+//         nTrk = addTrack(cTrk->type());
+        nTrk = cTrk->clone(clone_flags);
+        
+        //nTrk->setDefaultName(nTrk->name());
+        QString track_name = cTrk->name();
+        int counter=0;
+        int numberIndex=0;
+        // assign new names to copied tracks. there is still a gaping hole in the logic
+        // making multiple duplicates of multiple tracks still does not produce valid results.
+//         if (cp == 0) 
+        { // retrieve the first index for renaming the following tracks
+//           numberIndex = new_track->name().lastIndexOf("#");
+          numberIndex = track_name.lastIndexOf("#");
+          if (numberIndex == -1 || numberIndex > track_name.size()) { // according to Qt doc for lastIndexOf it should return -1 when not found
+            track_name += " #";                                       // apparently it returns str_size+1 ?! Let's catch both
+            numberIndex = track_name.size();
+            counter=1;
+          }
+          else {
+            counter = track_name.right(track_name.size()-numberIndex-1).toInt();
+          }
+        }
+        QString tempName;
+        while(true) {
+          tempName = track_name.left(numberIndex+1) + QString::number(++counter);
+          if(new_track_names.indexOf(tempName) >= 0)
             continue;
-         Track *nTrk = NULL;
-         if(!discard)
-         {
-            nTrk = addTrack(cTrk->type());
-            cTrk->setMute(true);
-            MusEGlobal::song->update(SC_MUTE);
-            setRecordFlag(cTrk, false);
-            RouteList *inpR = cTrk->inRoutes();
-            RouteList *outpR = cTrk->inRoutes();
-            RouteList *innR = nTrk->inRoutes();
-            RouteList *outnR = nTrk->inRoutes();
-            innR->clear();
-            outnR->clear();
-            RouteList *rcpR = inpR;
-            RouteList *rcnR = innR;
-            for(int i = 0; i < 2; i++)
-            {
-               for(RouteList::iterator it = rcpR->begin(); it != rcpR->end(); ++it)
-               {
-                  Route nR = (*it);
-                  if(cTrk->isMidiTrack())
-                     nR.device = it->device;
-                  else if(cTrk->type() == Track::WAVE)
-                     nR.track = it->track;
-                  rcnR->push_back(nR);
-                  if(nR.type == Route::TRACK_ROUTE)
-                  {
-                     Route nbR = nR;
-                     int ch = nbR.channel;
-                     nbR.channel = nbR.remoteChannel;
-                     nbR.remoteChannel = ch;
-                     nbR.track = nTrk;
-                     //MusELib::strntcpy(nbR.persistentJackPortName, nbR.name().toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
-                     if(i == 0)
-                        nR.track->outRoutes()->push_back(nbR);
-                     else
-                        nR.track->inRoutes()->push_back(nbR);
-                  }
-               }
-               rcpR = outpR;
-               rcnR = outnR;
-            }
-            setRecordFlag(nTrk, true);
-         }
-         if (cTrk->isMidiTrack())
-         {
-            if(discard)
-            {
-               ((MidiTrack *)cTrk)->mpevents.clear();
-            }
-            else
-            {
-               ((MidiTrack *)nTrk)->setOutPort(((MidiTrack *)cTrk)->outPort());
-               ((MidiTrack *)nTrk)->setOutChannel(((MidiTrack *)cTrk)->outChannel());
-            }
-         }
-         else if (cTrk->type() == Track::WAVE)
-         {
-            if(discard)
-            {
-               ((WaveTrack*)cTrk)->setRecFile(NULL);
-               ((WaveTrack*)cTrk)->resetMeter();
-               ((WaveTrack*)cTrk)->prepareRecording();
-            }
-            else
-            {
-               ((WaveTrack*)nTrk)->setChannels(((WaveTrack*)cTrk)->channels());
-               ((WaveTrack*)nTrk)->setVolume(((WaveTrack*)cTrk)->volume());
-               ((WaveTrack*)nTrk)->setPan(((WaveTrack*)cTrk)->pan());
-               ((WaveTrack*)nTrk)->setGain(((WaveTrack*)cTrk)->gain());
-               const AuxSendValueList &auxList = ((WaveTrack*)cTrk)->getAuxSendValueList();
-               for(size_t i = 0; i < auxList.size(); i++)
-               {
-                  ((WaveTrack*)nTrk)->setAuxSend(i, auxList [i]);
-               }
-               ((WaveTrack*)nTrk)->prepareRecording();
-            }
-         }
+          Track* track = findTrack(tempName);
+          if(track == 0)
+          {
+//             new_track->setName(tempName);
+            nTrk->setName(tempName);
+            break;
+          }
+        }
+
+        new_track_names.push_back(nTrk->name());
+        
+//         idx = trackno + cp;
+        const unsigned int idx = _tracks.index(cTrk) + idx_cnt++;
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
+        
+//         cTrk->setMute(true);
+//         MusEGlobal::song->update(SC_MUTE);
+        //p_operations.add(MusECore::PendingOperationItem(cTrk, true, MusECore::PendingOperationItem::SetTrackMute));
+        operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true));
+
+//         setRecordFlag(cTrk, false);
+        //p_operations.add(MusECore::PendingOperationItem(cTrk, false, MusECore::PendingOperationItem::SetTrackRecord));
+        operations.push_back(UndoOp(UndoOp::SetTrackRecord, cTrk, false));
+//         RouteList *inpR = cTrk->inRoutes();
+//         RouteList *outpR = cTrk->inRoutes();
+//         RouteList *innR = nTrk->inRoutes();
+//         RouteList *outnR = nTrk->inRoutes();
+//         innR->clear();
+//         outnR->clear();
+//         RouteList *rcpR = inpR;
+//         RouteList *rcnR = innR;
+//         for(int i = 0; i < 2; i++)
+//         {
+//             for(RouteList::iterator it = rcpR->begin(); it != rcpR->end(); ++it)
+//             {
+//               Route nR = (*it);
+//               if(cTrk->isMidiTrack())
+//                   nR.device = it->device;
+//               else if(cTrk->type() == Track::WAVE)
+//                   nR.track = it->track;
+//               rcnR->push_back(nR);
+//               if(nR.type == Route::TRACK_ROUTE)
+//               {
+//                   Route nbR = nR;
+//                   int ch = nbR.channel;
+//                   nbR.channel = nbR.remoteChannel;
+//                   nbR.remoteChannel = ch;
+//                   nbR.track = nTrk;
+//                   //MusELib::strntcpy(nbR.persistentJackPortName, nbR.name().toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+//                   if(i == 0)
+//                     nR.track->outRoutes()->push_back(nbR);
+//                   else
+//                     nR.track->inRoutes()->push_back(nbR);
+//               }
+//             }
+//             rcpR = outpR;
+//             rcnR = outnR;
+//         }
+        setRecordFlag(nTrk, true, &operations);
       }
-      MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
-      //MusEGlobal::audioDevice->startTransport();
-   }
+      if (cTrk->isMidiTrack())
+      {
+        if(discard)
+        {
+            ((MidiTrack *)cTrk)->mpevents.clear();
+        }
+//         else
+//         {
+//             ((MidiTrack *)nTrk)->setOutPort(((MidiTrack *)cTrk)->outPort());
+//             ((MidiTrack *)nTrk)->setOutChannel(((MidiTrack *)cTrk)->outChannel());
+//         }
+      }
+      else if (cTrk->type() == Track::WAVE)
+      {
+        if(discard)
+        {
+            ((WaveTrack*)cTrk)->setRecFile(NULL);
+            ((WaveTrack*)cTrk)->resetMeter();
+            ((WaveTrack*)cTrk)->prepareRecording();
+        }
+        else
+        {
+//             ((WaveTrack*)nTrk)->setChannels(((WaveTrack*)cTrk)->channels());
+//             ((WaveTrack*)nTrk)->setVolume(((WaveTrack*)cTrk)->volume());
+//             ((WaveTrack*)nTrk)->setPan(((WaveTrack*)cTrk)->pan());
+//             ((WaveTrack*)nTrk)->setGain(((WaveTrack*)cTrk)->gain());
+//             const AuxSendValueList &auxList = ((WaveTrack*)cTrk)->getAuxSendValueList();
+//             for(size_t i = 0; i < auxList.size(); i++)
+//             {
+//               ((WaveTrack*)nTrk)->setAuxSend(i, auxList [i]);
+//             }
+            ((WaveTrack*)nTrk)->prepareRecording();
+        }
+      }
+      
+      //if(nTrk)
+        // Insert at end.
+        //operations.push_back(UndoOp(UndoOp::AddTrack, -1, nTrk));
+  }
+  
+  applyOperationGroup(operations);
+  //MusEGlobal::audio->msgExecutePendingOperations(p_operations, true);
+  
+  MusEGlobal::song->setPos(Song::CPOS, MusEGlobal::audio->getStartRecordPos());
+  //MusEGlobal::audioDevice->startTransport();
 }
 
 //---------------------------------------------------------
