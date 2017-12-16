@@ -2299,7 +2299,6 @@ void Song::seqSignal(int fd)
                         update(SC_DRUMMAP);
                         break;
 
-// REMOVE Tim. autoconnect. Added.
 //                   case 'E': // Midi events are available in the ipc event buffer.
 //                         if(MusEGlobal::song)
 //                           MusEGlobal::song->processIpcInEventBuffers();

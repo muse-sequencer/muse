@@ -469,10 +469,9 @@ void Audio::process(unsigned frames)
           md->extClockHistory()->clearRead();
       }
       
-      // REMOVE Tim. autoconnect. Added.
-      if(MusEGlobal::extSyncFlag.value() && (MusEGlobal::midiSyncContainer.isRunning() || isPlaying()))
-        fprintf(stderr, "extSyncFlag:%d  externalPlayState:%d isPlaying:%d\n",
-          MusEGlobal::extSyncFlag.value(), MusEGlobal::midiSyncContainer.externalPlayState(), isPlaying());
+      //if(MusEGlobal::extSyncFlag.value() && (MusEGlobal::midiSyncContainer.isRunning() || isPlaying()))
+      //  fprintf(stderr, "extSyncFlag:%d  externalPlayState:%d isPlaying:%d\n",
+      //    MusEGlobal::extSyncFlag.value(), MusEGlobal::midiSyncContainer.externalPlayState(), isPlaying());
       
       if (isPlaying()) {
             if (!freewheel())

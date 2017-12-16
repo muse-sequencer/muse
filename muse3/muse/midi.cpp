@@ -54,6 +54,8 @@
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_MIDI(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -316,8 +318,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   continue;
             unsigned tick = ev.time();
 
-            // REMOVE Tim. autoconnect. Added.
-            fprintf(stderr, "buildMidiEventList tick:%d dataA:%d dataB:%d\n",
+            DEBUG_MIDI(stderr, "buildMidiEventList tick:%d dataA:%d dataB:%d\n",
                             ev.time(), ev.dataA(), ev.dataB());
             
             if(doLoops)
@@ -1232,9 +1233,9 @@ unsigned int Audio::extClockHistoryFrame2Tick(unsigned int frame) const
   
   for(int i = _extClockHistorySize - 1; i >= 0; --i)
   {
-    // REMOVE Tim. autoconnect. Added.
-    fprintf(stderr, "Audio::extClockHistoryFrame2Tick(): frame:%u i:%d _extClockHistory[i]._frame:%u\n", 
+    DEBUG_MIDI(stderr, "Audio::extClockHistoryFrame2Tick(): frame:%u i:%d _extClockHistory[i]._frame:%u\n", 
             frame, i, _extClockHistory[i].frame());
+    
     if(_extClockHistory[i].frame() <= frame)
     {
       if(!found)
@@ -1828,9 +1829,9 @@ void Audio::processMidi()
                                   // Protection from slight errors in estimated frame time.
                                   if(t >= (syncFrame + MusEGlobal::segmentSize))
                                   {
-                                    // REMOVE Tim. autoconnect. Added.
-                                    fprintf(stderr, "Error: Audio::processMidi(): sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
                                             t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                    
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
   #endif
@@ -1845,9 +1846,9 @@ void Audio::processMidi()
                               if(extsync)
                               {
                                 const unsigned int xt = extClockHistoryFrame2Tick(event.time());
-                                // REMOVE Tim. autoconnect. Added.
-                                fprintf(stderr, "processMidi: event time:%d dataA:%d dataB:%d curTickPos:%u set time:%u\n",
+                                DEBUG_MIDI(stderr, "processMidi: event time:%d dataA:%d dataB:%d curTickPos:%u set time:%u\n",
                                                 event.time(), event.dataA(), event.dataB(), curTickPos, xt);
+                                
                                 event.setTime(xt);
                               }
                               else
@@ -1860,9 +1861,9 @@ void Audio::processMidi()
                                 // Protection from slight errors in estimated frame time.
                                 if(t >= (syncFrame + MusEGlobal::segmentSize))
                                 {
-                                  // REMOVE Tim. autoconnect. Added.
-                                  fprintf(stderr, "Error: Audio::processMidi(): record sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                  DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record sysex: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
                                           t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                  
                                   t = syncFrame + (MusEGlobal::segmentSize - 1);
                                 }
 #endif
@@ -2055,9 +2056,9 @@ void Audio::processMidi()
                                   // Protection from slight errors in estimated frame time.
                                   if(t >= (syncFrame + MusEGlobal::segmentSize))
                                   {
-                                    // REMOVE Tim. autoconnect. Added.
-                                    fprintf(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
                                             t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                    
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
 #endif
@@ -2195,9 +2196,9 @@ void Audio::processMidi()
                                     if(extsync)
                                     {
                                       const unsigned int xt = extClockHistoryFrame2Tick(event.time());
-                                      // REMOVE Tim. autoconnect. Added.
-                                      fprintf(stderr, "processMidi: event time:%d dataA:%d dataB:%d curTickPos:%u set time:%u\n",
+                                      DEBUG_MIDI(stderr, "processMidi: event time:%d dataA:%d dataB:%d curTickPos:%u set time:%u\n",
                                                       event.time(), event.dataA(), event.dataB(), curTickPos, xt);
+                                      
                                       event.setTime(xt);
                                     }
                                     else
@@ -2210,9 +2211,9 @@ void Audio::processMidi()
                                       // Protection from slight errors in estimated frame time.
                                       if(t >= (syncFrame + MusEGlobal::segmentSize))
                                       {
-                                        // REMOVE Tim. autoconnect. Added.
-                                        fprintf(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                        DEBUG_MIDI(stderr, "Error: Audio::processMidi(): record event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
                                                 t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
+                                        
                                         t = syncFrame + (MusEGlobal::segmentSize - 1);
                                       }
       #endif

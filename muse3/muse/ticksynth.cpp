@@ -39,9 +39,7 @@
 //#define METRONOME_DEBUG
 
 // For debugging output: Uncomment the fprintf section.
-// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
-//#define DEBUG_TICKSYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
-#define DEBUG_TICKSYNTH(dev, format, args...)  fprintf(dev, format, ##args);
+#define DEBUG_TICKSYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
 
 namespace MusECore {
 

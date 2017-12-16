@@ -983,8 +983,7 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
   if(port != MusEGlobal::config.curMidiSyncInPort)
     return ExtMidiClock();
 
-  // REMOVE Tim. autoconnect. Added.
-  fprintf(stderr, "MidiSyncContainer::midiClockInput: CLOCK port:%d time:%u\n", port, frame);
+  //fprintf(stderr, "MidiSyncContainer::midiClockInput: CLOCK port:%d time:%u\n", port, frame);
                                     
   // Re-transmit clock to other devices if clock out turned on.
   // Must be careful not to allow more than one clock input at a time.

@@ -637,14 +637,15 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                     switch(type) 
                     {
                           case ME_SYSEX:
-                                
-                                // REMOVE Tim. autoconnect. Added.
+                              #ifdef JACK_MIDI_DEBUG
+                                // ---Diagnostics---:
                                 fprintf(stderr, "MidiJackDevice::eventReceived SYSEX len:%u data: ", (unsigned int)ev->size);
                                 for(unsigned int i = 0; i < ev->size && i < 16; ++i)
                                   fprintf(stderr, "%0x ", ((unsigned char*)ev->buffer)[i]);
                                 if(ev->size >= 16) 
                                   fprintf(stderr, "..."); 
                                 fprintf(stderr, "\n"); 
+                              #endif
       
                                 // TODO: Deal with large sysex, which are broken up into chunks!
                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
@@ -680,8 +681,9 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           }
                           case ME_START:
                           {
-                              // REMOVE Tim. autoconnect. Added.
+                            #ifdef JACK_MIDI_DEBUG
                               fprintf(stderr, "MidiJackDevice::eventReceived: START port:%d time:%u\n", _port, abs_ft);
+                            #endif
                           }
                             // FALLTHROUGH
 
@@ -758,7 +760,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
         return false;
 
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
-      if(e.time() < syncFrame)
+      if(e.time() != 0 && e.time() < syncFrame)
         fprintf(stderr, "MidiJackDevice::queueEvent() evTime:%u < syncFrame:%u!!\n", e.time(), syncFrame);
       unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
       if (ft >= MusEGlobal::segmentSize) {
@@ -1337,7 +1339,6 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
     
     const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
     
-// REMOVE Tim. autoconnect. Added.
     if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
     {
       #ifdef JACK_MIDI_DEBUG

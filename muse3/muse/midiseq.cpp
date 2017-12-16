@@ -87,18 +87,6 @@ static void readMsg(void* p, void*)
       at->readMsg();
       }
 
-// REMOVE Tim. autoconnect. Added.      
-//---------------------------------------------------------
-//   readMsgNonWait
-//   Non-waiting version
-//---------------------------------------------------------
-
-static void readMsgNonWait(void* p, void*)
-      {
-      MidiSeq* at = (MidiSeq*)p;
-      at->readMsg1(sizeof(MusECore::AudioMsg));
-      }
-
 //---------------------------------------------------------
 //   processMsg
 //---------------------------------------------------------
@@ -130,29 +118,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   break;
             default:
                   fprintf(stderr, "MidiSeq::processMsg() unknown id %d\n", msg->id);
-                  break;
-            }
-      }
-
-// REMOVE Tim. autoconnect. Added.      
-//---------------------------------------------------------
-//   processMsg1
-//   Non-waiting version
-//---------------------------------------------------------
-
-void MidiSeq::processMsg1(const void* m)
-      {
-      MusECore::AudioMsg* msg = (MusECore::AudioMsg*)m;
-      switch(msg->id) {
-            
-            case MusECore::SEQM_SEEK:
-                  processSeek();
-                  break;
-            case MusECore::MS_STOP:
-                  processStop();
-                  break;
-            default:
-                  fprintf(stderr, "MidiSeq::processMsg1() unknown id %d\n", msg->id);
                   break;
             }
       }
@@ -226,16 +191,6 @@ MidiSeq::MidiSeq(const char* name)
       timerFd=selectTimer();
 
       MusEGlobal::undoSetuid();
-
-// REMOVE Tim. autoconnect. Added.      
-      // create message channels
-      int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
-            perror("MidiSeq thread: creating pipe");
-            exit(-1);
-            }
-      toThreadFdrNonWait = filedes[0];
-      toThreadFdwNonWait = filedes[1];
       }
 
 //---------------------------------------------------------
@@ -382,9 +337,6 @@ void MidiSeq::updatePollFd()
 
       addPollFd(toThreadFdr, POLLIN, MusECore::readMsg, this, 0);
 
-// REMOVE Tim. autoconnect. Added.
-      addPollFd(toThreadFdrNonWait, POLLIN, MusECore::readMsgNonWait, this, 0);
-      
       //---------------------------------------------------
       //  midi ports
       //---------------------------------------------------

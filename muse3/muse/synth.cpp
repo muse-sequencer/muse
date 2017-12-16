@@ -59,9 +59,7 @@
 #include "mitplugin.h"
 
 // For debugging output: Uncomment the fprintf section.
-// REMOVE Tim. autoconnect. Changed. Enabled. Disable when done.
-//#define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
-#define DEBUG_SYNTH(dev, format, args...)  fprintf(dev, format, ##args);
+#define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
@@ -1258,8 +1256,9 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
-          fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
-                  evTime, syncFrame, curPos);
+          if(evTime != 0)
+            fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                    evTime, syncFrame, curPos);
           frame = 0;
         }
         else

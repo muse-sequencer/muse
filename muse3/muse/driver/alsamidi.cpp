@@ -988,8 +988,9 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     
     const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
     
-// REMOVE Tim. autoconnect. Added. Diagnostics.
+    #ifdef ALSA_DEBUG
     fprintf(stderr, "INFO: MidiAlsaDevice::processMidi() evTime:%u curFrame:%u\n", e.time(), curFrame);
+    #endif
     
     // Event is meant for next cycle?
     if(e.time() > curFrame)
@@ -1922,9 +1923,10 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        // REMOVE Tim. autoconnect. Added.
+                      #ifdef ALSA_DEBUG
                         if(MusEGlobal::midiInputTrace)
                           fprintf(stderr, "alsaProcessMidiInput: start port:%d curFrame:%u\n", curPort, frame_ts);
+                      #endif
                         MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, time_ts);
                         break;
 
@@ -1950,9 +1952,10 @@ void alsaProcessMidiInput()
                              &ed, p, ev->data.ext.len, frame_ts) != SysExInputProcessor::Finished)
                             break;
 
-                          // REMOVE Tim. autoconnect. Added.
+                        #ifdef ALSA_DEBUG
                           fprintf(stderr, "alsaProcessMidiInput: SysEx: frame_ts:%u startFrame:%u\n", 
                                   frame_ts, (unsigned int)mdev->sysExInProcessor()->startFrame());
+                        #endif
                           
                           // Finished composing the sysex data.
                           // Mark the frame timestamp as the frame at which the sysex started.
