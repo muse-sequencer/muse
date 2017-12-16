@@ -1,3 +1,9 @@
+15.12.2017
+         - Added support for track pad horizontal scrolling.
+           Involved adjusting scrolling constants and moving to pixelDelta() for
+           QWheelEvent, may need further adjustment (rj)
+14.12.2017
+         - fixed track info drawing to be drawn correctly when using big fonts (rj)
 04.12.2017
          - Fixes to instruments, idf files, and sysexes. (Tim)
            Fix error in Yamaha 9000pro idf file causing
