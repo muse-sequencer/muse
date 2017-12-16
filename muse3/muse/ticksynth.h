@@ -26,13 +26,16 @@
 #include "synth.h"
 
 namespace MusECore {
+class PendingOperationList;
 
 extern void initMetronome();
 extern void exitMetronome();
 class MetronomeSynthI : public SynthI
 {
    virtual bool hasAuxSend() const  { return false; }
-
+   
+public:
+   void initSamplesOperation(PendingOperationList& operations);
 };
 extern MetronomeSynthI* metronome;
 

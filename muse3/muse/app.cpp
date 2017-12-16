@@ -2556,15 +2556,22 @@ void MusE::changeConfig(bool writeFlag)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
+      {
           // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
           metronomeConfig = new MusEGui::MetronomeConfig;
+          metronomeConfig->show();
+          return;
+      }
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();
           metronomeConfig->activateWindow();
           }
       else
+      {
+          metronomeConfig->updateValues();
           metronomeConfig->show();
+      }
       }
 
 

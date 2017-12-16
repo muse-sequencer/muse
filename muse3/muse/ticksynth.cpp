@@ -29,6 +29,7 @@
 #include "popupmenu.h"
 #include "gconfig.h"
 #include "wave.h"
+#include "operations.h"
 
 // If sysex support is ever added, make sure this number is unique among all the
 //  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
@@ -136,6 +137,8 @@ class MetronomeSynthIF : public SynthIF
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
+      void initSamplesOperation(MusECore::PendingOperationList&);
+       
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
@@ -395,7 +398,64 @@ void MetronomeSynthIF::initSamples()
 
 }
 
+//---------------------------------------------------------
+//   initSamplesOperation
+//---------------------------------------------------------
 
+void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& operations)
+{
+  SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample);
+  if (!beat.openRead(false)) {
+    const sf_count_t newBeatLen = beat.samples();
+    if(newBeatLen != 0)
+    {
+      float* newBeatSamples = new float[newBeatLen];
+      beat.read(1, &newBeatSamples, newBeatLen);
+      operations.add(PendingOperationItem(&beatSamples, newBeatSamples, 
+                                          &beatLen, newBeatLen, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+  
+  SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + MusEGlobal::config.measSample);
+  if (!meas.openRead(false)) {
+    const sf_count_t newMeasLen = meas.samples();
+    if(newMeasLen != 0)
+    {
+      float* newMeasSamples = new float[newMeasLen];
+      meas.read(1, &newMeasSamples, newMeasLen);
+      operations.add(PendingOperationItem(&measSamples, newMeasSamples, 
+                                          &measLen, newMeasLen, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+
+  SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent1Sample);
+  if (!accent1.openRead(false)) {
+    const sf_count_t newAccent1Len = accent1.samples();
+    if(newAccent1Len != 0)
+    {
+      float* newAccent1Samples = new float[newAccent1Len];
+      accent1.read(1, &newAccent1Samples, newAccent1Len);
+      operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples, 
+                                          &accent1Len, newAccent1Len, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+
+  SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent2Sample);
+  if (!accent2.openRead(false)) {
+    const sf_count_t newAccent2Len = accent2.samples();
+    if(newAccent2Len != 0)
+    {
+      float* newAccent2Samples = new float[newAccent2Len];
+      accent2.read(1, &newAccent2Samples, newAccent2Len);
+      operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples, 
+                                          &accent2Len, newAccent2Len, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   putEvent
@@ -486,6 +546,16 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
             data = 0;
       }
 
+//---------------------------------------------------------
+//   MetronomeSynthI
+//---------------------------------------------------------
+
+void MetronomeSynthI::initSamplesOperation(PendingOperationList& operations)
+{ 
+  if(sif()) 
+    dynamic_cast<MetronomeSynthIF*>(sif())->initSamplesOperation(operations);
+}
+   
 //---------------------------------------------------------
 //   initMetronome
 //---------------------------------------------------------

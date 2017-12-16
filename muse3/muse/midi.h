@@ -93,8 +93,9 @@ enum AudioTickSound {
     beatSound,
     measureSound,
     accent1Sound,
-    accent2Sound,
-    reloadClickSounds
+    accent2Sound
+// REMOVE Tim. autoconnect. Removed.
+//     reloadClickSounds
 };
 
 extern const unsigned char gmOnMsg[];

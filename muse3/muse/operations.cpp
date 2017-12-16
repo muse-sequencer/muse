@@ -107,6 +107,7 @@ int PendingOperationItem::getIndex() const
     case ModifyRouteNode:
     case UpdateSoloStates:
     case EnableAllAudioControllers:
+    case ModifyAudioSamples:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -1234,6 +1235,29 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     }
     break;
     
+    case ModifyAudioSamples:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioSamples: "
+                      "audioSamplesPointer:%p newAudioSamples:%p audioSamplesLen:%p newAudioSamplesLen:%d\n",
+              _audioSamplesPointer, _newAudioSamples, _audioSamplesLen, _newAudioSamplesLen);
+#endif      
+      if(_audioSamplesPointer)
+      {
+        float* orig = *_audioSamplesPointer;
+        *_audioSamplesPointer = _newAudioSamples;
+        // Transfer the original pointer back to _audioSamplesPointer so it can be deleted in the non-RT stage.
+        _newAudioSamples = orig;
+      }
+      
+      if(_audioSamplesLen)
+        *_audioSamplesLen = _newAudioSamplesLen;
+      
+      // Currently no flags for this.
+      //flags |= SC_;
+    }
+    break;
+    
     case Uninitialized:
     break;
     
@@ -1326,6 +1350,13 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
 
         delete _midi_ctrl_val_remap_operation;
       }
+    break;
+
+    case ModifyAudioSamples:
+      // At this point _newAudioSamples points to the original memory that was replaced. Delete it now.
+      if(_newAudioSamples)
+        delete _newAudioSamples;
+    break;
 
     default:
     break;
@@ -2215,6 +2246,20 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;  
 
+      case PendingOperationItem::ModifyAudioSamples:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyAudioSamples && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           poi._audioSamplesPointer && op._audioSamplesPointer &&
+//           (*poi._audioSamplesPointer == *op._audioSamplesPointer || poi._newAudioSamples == op._newAudioSamples))
+//         {
+//           // Simply replace the list.
+//           poi._newAudioSamples = op._newAudioSamples; 
+//           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+//           return true;
+//         }
+      break;
+      
       case PendingOperationItem::Uninitialized:
         fprintf(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  

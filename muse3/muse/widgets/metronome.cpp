@@ -35,6 +35,7 @@
 #include "song.h"
 #include "track.h"
 #include "audio.h"
+#include "operations.h"
 
 namespace MusEGui {
 
@@ -42,11 +43,83 @@ namespace MusEGui {
 //   MetronomeConfig
 //---------------------------------------------------------
 
-MetronomeConfig::MetronomeConfig(QDialog* parent)
+MetronomeConfig::MetronomeConfig(QWidget* parent)
    : QDialog(parent)
 {
       setupUi(this);
 
+      updateValues();
+
+      connect(buttonApply, SIGNAL(clicked()), SLOT(apply()));
+      connect(midiClick, SIGNAL(toggled(bool)), SLOT(midiClickChanged(bool)));
+      connect(precountEnable, SIGNAL(toggled(bool)), SLOT(precountEnableChanged(bool)));
+      connect(precountFromMastertrack, SIGNAL(toggled(bool)),
+         SLOT(precountFromMastertrackChanged(bool)));
+      connect(audioBeepRoutesButton, SIGNAL(clicked()), SLOT(audioBeepRoutesClicked()));
+      connect(volumeSlider, SIGNAL(valueChanged(int)), SLOT(volumeChanged(int)));
+      connect(measVolumeSlider, SIGNAL(valueChanged(int)), SLOT(measVolumeChanged(int)));
+      connect(beatVolumeSlider, SIGNAL(valueChanged(int)), SLOT(beatVolumeChanged(int)));
+      connect(accent1VolumeSlider, SIGNAL(valueChanged(int)), SLOT(accent1VolumeChanged(int)));
+      connect(accent2VolumeSlider, SIGNAL(valueChanged(int)), SLOT(accent2VolumeChanged(int)));
+      connect(radioSamples2, SIGNAL(toggled(bool)),SLOT(switchSamples()));
+}
+
+//---------------------------------------------------------
+//    fillSoundFiles
+//---------------------------------------------------------
+
+void MetronomeConfig::fillSoundFiles()
+{
+    QDir metroPath(MusEGlobal::museGlobalShare+"/metronome");
+    QStringList filters;
+    filters.append("*.wav");
+    QStringList klickfiles = metroPath.entryList(filters);
+
+    measSampleCombo->clear();
+    beatSampleCombo->clear();
+    accent1SampleCombo->clear();
+    accent2SampleCombo->clear();
+    
+    measSampleCombo->addItems(klickfiles);
+    beatSampleCombo->addItems(klickfiles);
+    accent1SampleCombo->addItems(klickfiles);
+    accent2SampleCombo->addItems(klickfiles);
+
+    measSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.measSample));
+    beatSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.beatSample));
+    accent1SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent1Sample));
+    accent2SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent2Sample));
+}
+
+void MetronomeConfig::updateValues()
+{
+      volumeSlider->blockSignals(true);
+      measVolumeSlider->blockSignals(true);
+      beatVolumeSlider->blockSignals(true);
+      accent1VolumeSlider->blockSignals(true);
+      accent2VolumeSlider->blockSignals(true);
+      radioSamples2->blockSignals(true);
+      radioSamples4->blockSignals(true);
+
+      measureNote->blockSignals(true);
+      measureVelocity->blockSignals(true);
+      beatNote->blockSignals(true);
+      beatVelocity->blockSignals(true);
+      midiChannel->blockSignals(true);
+      midiPort->blockSignals(true);
+      
+      precountBars->blockSignals(true);
+      precountEnable->blockSignals(true);
+      precountFromMastertrack->blockSignals(true);
+      precountSigZ->blockSignals(true);
+      precountSigN->blockSignals(true);
+      precountPrerecord->blockSignals(true);
+      precountPreroll->blockSignals(true);
+
+      midiClick->blockSignals(true);
+      audioBeep->blockSignals(true);
+
+      
       volumeSlider->setValue(MusEGlobal::audioClickVolume*100);
       measVolumeSlider->setValue(MusEGlobal::measClickVolume*100);
       beatVolumeSlider->setValue(MusEGlobal::beatClickVolume*100);
@@ -65,19 +138,6 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
       beatVolumeLabel->setText(QString::number(int(MusEGlobal::beatClickVolume*99)));
       accent1VolumeLabel->setText(QString::number(int(MusEGlobal::accent1ClickVolume*99)));
       accent2VolumeLabel->setText(QString::number(int(MusEGlobal::accent2ClickVolume*99)));
-
-      connect(buttonApply, SIGNAL(clicked()), SLOT(apply()));
-      connect(midiClick, SIGNAL(toggled(bool)), SLOT(midiClickChanged(bool)));
-      connect(precountEnable, SIGNAL(toggled(bool)), SLOT(precountEnableChanged(bool)));
-      connect(precountFromMastertrack, SIGNAL(toggled(bool)),
-         SLOT(precountFromMastertrackChanged(bool)));
-      connect(audioBeepRoutesButton, SIGNAL(clicked()), SLOT(audioBeepRoutesClicked()));
-      connect(volumeSlider, SIGNAL(valueChanged(int)), SLOT(volumeChanged(int)));
-      connect(measVolumeSlider, SIGNAL(valueChanged(int)), SLOT(measVolumeChanged(int)));
-      connect(beatVolumeSlider, SIGNAL(valueChanged(int)), SLOT(beatVolumeChanged(int)));
-      connect(accent1VolumeSlider, SIGNAL(valueChanged(int)), SLOT(accent1VolumeChanged(int)));
-      connect(accent2VolumeSlider, SIGNAL(valueChanged(int)), SLOT(accent2VolumeChanged(int)));
-      connect(radioSamples2, SIGNAL(toggled(bool)),SLOT(switchSamples()));
 
       measureNote->setValue(MusEGlobal::measureClickNote);
       measureVelocity->setValue(MusEGlobal::measureClickVelo);
@@ -98,28 +158,33 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
 
       midiClick->setChecked(MusEGlobal::midiClickFlag);
       audioBeep->setChecked(MusEGlobal::audioClickFlag);
-}
+      
+      
+      volumeSlider->blockSignals(false);
+      measVolumeSlider->blockSignals(false);
+      beatVolumeSlider->blockSignals(false);
+      accent1VolumeSlider->blockSignals(false);
+      accent2VolumeSlider->blockSignals(false);
+      radioSamples2->blockSignals(false);
+      radioSamples4->blockSignals(false);
 
-//---------------------------------------------------------
-//    fillSoundFiles
-//---------------------------------------------------------
+      measureNote->blockSignals(false);
+      measureVelocity->blockSignals(false);
+      beatNote->blockSignals(false);
+      beatVelocity->blockSignals(false);
+      midiChannel->blockSignals(false);
+      midiPort->blockSignals(false);
+      
+      precountBars->blockSignals(false);
+      precountEnable->blockSignals(false);
+      precountFromMastertrack->blockSignals(false);
+      precountSigZ->blockSignals(false);
+      precountSigN->blockSignals(false);
+      precountPrerecord->blockSignals(false);
+      precountPreroll->blockSignals(false);
 
-void MetronomeConfig::fillSoundFiles()
-{
-    QDir metroPath(MusEGlobal::museGlobalShare+"/metronome");
-    QStringList filters;
-    filters.append("*.wav");
-    QStringList klickfiles = metroPath.entryList(filters);
-
-    measSampleCombo->addItems(klickfiles);
-    beatSampleCombo->addItems(klickfiles);
-    accent1SampleCombo->addItems(klickfiles);
-    accent2SampleCombo->addItems(klickfiles);
-
-    measSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.measSample));
-    beatSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.beatSample));
-    accent1SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent1Sample));
-    accent2SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent2Sample));
+      midiClick->blockSignals(false);
+      audioBeep->blockSignals(false);
 }
 
 //---------------------------------------------------------
@@ -204,13 +269,17 @@ void MetronomeConfig::apply()
       MusEGlobal::config.accent1Sample = accent1SampleCombo->currentText();
       MusEGlobal::config.accent2Sample = accent2SampleCombo->currentText();
 
-      // REMOVE Tim. autoconnect. FIXME This is not realtime safe. Add an audio command to do it.
-      MusECore::MidiPlayEvent ev(0, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
-      ev.setA(MusECore::reloadClickSounds);
 // REMOVE Tim. autoconnect. Changed.
-//       MusECore::metronome->addScheduledEvent(ev);
-      MusECore::metronome->putEvent(ev, MusECore::MidiDevice::NotLate);
-
+//       // REMOVE Tim. autoconnect. FIXME This is not realtime safe. Add an audio command to do it.
+//       MusECore::MidiPlayEvent ev(0, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+//       ev.setA(MusECore::reloadClickSounds);
+// // REMOVE Tim. autoconnect. Changed.
+// //       MusECore::metronome->addScheduledEvent(ev);
+//       MusECore::metronome->putEvent(ev, MusECore::MidiDevice::NotLate);
+      
+      MusECore::PendingOperationList operations;
+      MusECore::metronome->initSamplesOperation(operations);
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
