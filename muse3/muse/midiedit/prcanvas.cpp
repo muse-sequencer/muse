@@ -977,17 +977,6 @@ void PianoCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
       {
       int npitch = y2pitch(pos.y());
-// REMOVE Tim. autoconnect. Changed.
-//       if ((playedPitch != -1) && (playedPitch != npitch)) {
-//             NEvent* nevent   = (NEvent*) item;
-//             MusECore::Event event      = nevent->event();
-//             // release note:
-//             stopPlayEvent();
-//             if (moving.size() <= 1) { // items moving or curItem
-//                 // play note:
-//                 startPlayEvent(npitch, event.velo());
-//                 }
-//             }
       if(!track())
       {
         // Stop any playing notes:

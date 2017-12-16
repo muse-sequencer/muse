@@ -24,9 +24,6 @@
 #ifndef __EVDATA_H__
 #define __EVDATA_H__
 
-//#include <string.h>
-// REMOVE Tim. autoconnect. Added.
-//#include "sysex_processor.h"
 #include "memory.h"
 
 namespace MusECore {
@@ -48,17 +45,12 @@ class EvData {
       EvData()  {
             data     = 0;
             dataLen  = 0;
-// REMOVE Tim. autoconnect. Changed.
-//             refCount = new int(1);
             refCount = 0;
             }
       EvData(const EvData& ed) {
             data     = ed.data;
             dataLen  = ed.dataLen;
             refCount = ed.refCount;
-// REMOVE Tim. autoconnect. Added.
-            //if(!refCount)
-            //  refCount = new int(1);
             if(refCount)
               
             (*refCount)++;
@@ -67,12 +59,6 @@ class EvData {
       EvData& operator=(const EvData& ed) {
             if (data == ed.data)
                   return *this;
-// REMOVE Tim. autoconnect. Changed.
-//             if (--(*refCount) == 0) {
-//                   delete refCount;
-//                   if(data)
-//                     delete[] data;
-//                 }
             if (refCount && (--(*refCount) == 0)) 
             {
               delete refCount;
@@ -83,7 +69,6 @@ class EvData {
             data     = ed.data;
             dataLen  = ed.dataLen;
             refCount = ed.refCount;
-// REMOVE Tim. autoconnect. Added.
             if(refCount)
               
             (*refCount)++;
@@ -91,92 +76,18 @@ class EvData {
             }
 
       ~EvData() {
-// REMOVE Tim. autoconnect. Changed.
-//             if (--(*refCount) == 0) {
             if (refCount && (--(*refCount) == 0)) {
                   if(data)
                   {  
                     delete[] data;
                     data = 0;
                   }  
-// REMOVE Tim. autoconnect. Removed.
-//                   if(refCount)
-//                   {  
-                    delete refCount;
-                    refCount = 0;
-//                   } 
+                  delete refCount;
+                  refCount = 0;
                 }
             }
       void setData(const unsigned char* p, int l);
-//       {
-// // REMOVE Tim. autoconnect. Removed. Moved below.
-// //             if(data)
-// //               delete[] data;
-// //             data = 0;  
-//             
-// // REMOVE Tim. autoconnect. Added.
-//             // Setting the data destroys any reference. Dereference now.
-//             // The data may still be shared. Destroy it only if no more references.
-//             if (refCount && (--(*refCount) == 0)) 
-//             {
-//               delete refCount;
-//               refCount = 0;
-//               
-//               if(data)
-//                 delete[] data;
-//             }
-//             // Clear the data variable.
-//             data = 0;  
-//               
-//             if(l > 0) 
-//             {
-//               data = new unsigned char[l];
-//               memcpy(data, p, l);
-//               
-// // REMOVE Tim. autoconnect. Added.
-//               // Setting the data destroys any reference. Create a new reference now.
-//               refCount = new int(1);
-//             }
-// // REMOVE Tim. autoconnect. Added.
-// //             else if(refCount)
-// //             {  
-// //               delete refCount;
-// //               refCount = 0;
-// //             } 
-//             
-//             dataLen = l;
-//             }
-            
       void setData(const SysExInputProcessor* q);
-//       {
-//             // Let's not risk unterminated data: Accept a queue with a Finished state only.
-//             if(q->state() != SysExInputProcessor::Finished)
-//               return;
-//             // Setting the data destroys any reference. Dereference now.
-//             // The data may still be shared. Destroy it only if no more references.
-//             if (refCount && (--(*refCount) == 0)) 
-//             {
-//               delete refCount;
-//               refCount = 0;
-//               
-//               if(data)
-//                 delete[] data;
-//             }
-//             // Clear the data variable.
-//             data = 0;  
-//               
-//             const size_t l = q->size();
-//             if(l > 0) 
-//             {
-//               // Create a contiguous memory block to hold the data.
-//               data = new unsigned char[l];
-//               // Copy the non-contiguous chunks of data to the contiguous data.
-//               q->copy(data, l);
-//               // Setting the data destroys any reference. Create a new reference now.
-//               refCount = new int(1);
-//             }
-//             dataLen = l;
-//             }
       };
 
 

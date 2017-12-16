@@ -1968,36 +1968,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                     MusECore::Undo operations;
                     const bool val = !(t->recMonitor());
-//                     bool do_upd = false;
                     if (button == Qt::LeftButton)
                     {
-//                       MusEGlobal::audio->msgSetRecMonitor(t, val);
-//                       MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
                       operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, t, val));
-//                       do_upd = true;
                     }
                     else if (button == Qt::RightButton)
                     {
                       // enable or disable ALL tracks of this type
-//                       bool do_upd = false;
                       MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
                       foreach (MusECore::Track *other_t, *all_tl)
                       {
                         if(other_t->type() != t->type())
                           continue;
-//                         MusEGlobal::audio->msgSetRecMonitor(other_t, val);
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, other_t, val));
-//                         do_upd = true;
                       }
-//                       if(do_upd)
-//                         MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
                     }
                     // No Undo.
                     if(!operations.empty())
                     {
                       MusEGlobal::song->applyOperationGroup(operations, false);
-                      //if(do_upd)
-                        MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+                      MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
                     }
                   }
                   break;
@@ -2021,7 +2011,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                 break;
                               }
                         }
-//                         MusEGlobal::song->setRecordFlag(t, val);
                         MusEGlobal::song->setRecordFlag(t, val, &operations);
                       }
                       else if (button == Qt::RightButton) {
@@ -2032,14 +2021,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                     }
                               MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
                               foreach (MusECore::WaveTrack *wt, *wtl) {
-//                                 MusEGlobal::song->setRecordFlag(wt, val);
                                 MusEGlobal::song->setRecordFlag(wt, val, &operations);
                               }
                               }
                         else {
                           MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                           foreach (MusECore::MidiTrack *mt, *mtl) {
-//                             MusEGlobal::song->setRecordFlag(mt, val);
                             MusEGlobal::song->setRecordFlag(mt, val, &operations);
                           }
                         }
@@ -2080,27 +2067,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                   bool turnOff = (button == Qt::RightButton) || shift;
 
-// REMOVE Tim. autoconnect. Changed.
-//                   if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
-//                   {
-//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-//                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-//                         toggleMute(*myt,turnOff);
-//                     }
-//                   }
-//                   else if (ctrl) // toggle ALL tracks
-//                   {
-//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-//                       if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-//                         toggleMute(*myt,turnOff);
-//                     }
-//                   }
-//                   else { // toggle the clicked track
-//                     toggleMute(t,turnOff);
-//                   }
-//                   MusEGlobal::song->update(SC_MUTE);
-
-                  //MusECore::PendingOperationList operations;
                   MusECore::Undo operations;
                   if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                   {
@@ -2119,7 +2085,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   else { // toggle the clicked track
                     toggleMute(operations, t, turnOff);
                   }
-                  //MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                   // No Undo.
                   if(!operations.empty())
                   {
@@ -2131,34 +2096,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                }
             case COL_SOLO:
                   {
-// REMOVE Tim. autoconnect. Changed.
-//                   if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
-//                   {
-//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-//                       if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-//                         MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
-//                     }
-//                   }
-//                   else if (ctrl) // toggle ALL tracks
-//                   {
-//                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-//                       if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-//                         MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
-//                     }
-//                   }
-//                   else { // toggle the clicked track
-//                     MusEGlobal::audio->msgSetSolo(t, !t->solo());
-//                   }
-//                   MusEGlobal::song->update(SC_SOLO);
-                    
-                    //MusECore::PendingOperationList operations;
                     MusECore::Undo operations;
                     if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                     {
                       for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                         if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                          //MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
-                          //operations.add(MusECore::PendingOperationItem(*myt, !(*myt)->solo(), MusECore::PendingOperationItem::SetTrackSolo));
                           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
                       }
                     }
@@ -2166,17 +2108,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     {
                       for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                         if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                          //MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
-                          //operations.add(MusECore::PendingOperationItem(*myt, !(*myt)->solo(), MusECore::PendingOperationItem::SetTrackSolo));
                           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
                       }
                     }
                     else { // toggle the clicked track
-                      //MusEGlobal::audio->msgSetSolo(t, !t->solo());
-                      //operations.add(MusECore::PendingOperationItem(t, !t->solo(), MusECore::PendingOperationItem::SetTrackSolo));
                       operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, t, !t->solo()));
                     }
-                    //MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                     // No Undo.
                     if(!operations.empty())
                     {
@@ -2469,34 +2406,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
       redraw();
 }
 
-// REMOVE Tim. autoconnect. Changed.
-// void TList::toggleMute(MusECore::Track *t, bool turnOff)
-// {
-//   if (turnOff) {
-//     t->setOff(!t->off());
-//   }
-//   else
-//   {
-//     if (t->off())
-//           t->setOff(false);
-//     else
-//           t->setMute(!t->mute());
-// 
-//   }
-// }
-// void TList::toggleMute(MusECore::PendingOperationList& operations, MusECore::Track *t, bool turnOff)
-// {
-//   if (turnOff) {
-//     operations.add(MusECore::PendingOperationItem(t, !t->off(), MusECore::PendingOperationItem::SetTrackOff));
-//   }
-//   else
-//   {
-//     if (t->off())
-//           operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
-//     else
-//           operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
-//   }
-// }
 void TList::toggleMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff)
 {
   if (turnOff) {

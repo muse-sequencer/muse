@@ -74,9 +74,6 @@ enum {
       SEQM_SET_TRACK_AUTO_TYPE,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-// REMOVE Tim. autoconnect. Removed.
-//       AUDIO_RECORD,
-//       AUDIO_RECORD_MONITOR,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
@@ -88,8 +85,6 @@ enum {
       AUDIO_ERASE_RANGE_AC_EVENTS,
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
-// REMOVE Tim. autoconnect. Removed.
-//       AUDIO_SET_SOLO, AUDIO_SET_MUTE, AUDIO_SET_TRACKOFF,
       AUDIO_SET_SEND_METRONOME,
       AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
@@ -154,15 +149,12 @@ class Audio {
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
       
-      // REMOVE Tim. autoconnect. Added.
       // Holds a brief temporary array of sorted FRAMES of clock history, filled from the external clock history fifo.
       ExtMidiClock *_extClockHistory;
       // Holds the total capacity of the clock history list.
       static const int _extClockHistoryCapacity;
       // Holds the current size of the temporary clock history array.
       int _extClockHistorySize;
-      // Holds the frame of the last processed clock (from the previous audio cycle).
-//       unsigned int _extClockLastFrame;
       // Convert tick to frame using the external clock history list.
       // The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
       // The returned clock frames occured during the previous audio cycle(s), so you may want to shift 
@@ -182,8 +174,6 @@ class Audio {
 
       double syncTime;  // wall clock at last sync point
       unsigned syncFrame;    // corresponding frame no. to syncTime
-// REMOVE Tim. autoconnect. Removed.
-//       unsigned long frameOffset;  // offset to free running hw frame counter
 
       State state;
 
@@ -215,7 +205,6 @@ class Audio {
 
       void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick);
       
-// REMOVE Tim. autoconnect. Added.
       void seekMidi();
 
    public:
@@ -253,7 +242,6 @@ class Audio {
 
       void msgSeek(const Pos&);
       void msgPlay(bool val);
-// REMOVE Tim. autoconnect. Added.
       // For starting the transport in external sync mode.
       // Starts the transport immediately, bypassing waiting for transport sync,
       //  although sync is still handled.
@@ -293,9 +281,6 @@ class Audio {
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
-// REMOVE Tim. autoconnect. Removed.
-//       void msgSetRecord(Track*, bool);
-//       void msgSetRecMonitor(Track*, bool);
       void msgLocalOff();
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
@@ -310,10 +295,6 @@ class Audio {
       void msgEraseRangeACEvents(AudioTrack*, int, int, int);
       void msgAddACEvent(AudioTrack*, int, int, double);
       void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
-// REMOVE Tim. autoconnect. Removed.
-//       void msgSetSolo(Track*, bool);
-//       void msgSetTrackMute(Track*, bool);
-//       void msgSetTrackOff(Track*, bool);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackAutomationType(Track*, int);
@@ -337,8 +318,6 @@ class Audio {
 
       unsigned tickPos() const    { return curTickPos; }
       unsigned nextTick() const   { return nextTickPos; }
-// REMOVE Tim. autoconnect. Removed.
-//       unsigned timestamp() const;
       void processMidi();
       // Extrapolates current play frame on syncTime/syncFrame
       // Estimated to single-frame resolution.
@@ -355,7 +334,6 @@ class Audio {
       unsigned curSyncFrame() const { return syncFrame; }
       // This can be called from outside process thread. 
       unsigned framesSinceCycleStart() const;   
-// REMOVE Tim. autoconnect. Added.
       // Converts ticks to frames, and adds a forward frame offset, for the 
       //  purpose of scheduling a midi event to play in the near future.
       // If external midi clock sync is off, it uses the tempo map as usual.
@@ -368,8 +346,6 @@ class Audio {
       void recordStop(bool restart = false, Undo* operations = NULL);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
-// REMOVE Tim. autoconnect. Removed.
-//       unsigned long getFrameOffset() const   { return frameOffset; }
       void initDevices(bool force = true);
 
       void sendMsgToGui(char c);

@@ -98,8 +98,6 @@ class MidiJackDevice : public MidiDevice {
       
       virtual void recordEvent(MidiRecordEvent&);
       
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent&);
       virtual void collectMidiEvents();
       
       // The meaning of the returned pointer depends on the driver.

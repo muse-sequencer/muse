@@ -584,10 +584,10 @@ void MidiInstrument::reset(int portNo)
         return;
 
       MusECore::MidiPlayEvent ev;
-      ev.setType(0x90);
+      ev.setType(ME_NOTEOFF);
       ev.setPort(portNo);
       ev.setTime(0);  // Immediate processing. TODO: Use curFrame?
-      ev.setB(0);
+      ev.setB(64);
 
       for (int chan = 0; chan < MIDI_CHANNELS; ++chan)
       {
@@ -595,13 +595,6 @@ void MidiInstrument::reset(int portNo)
             for (int pitch = 0; pitch < 128; ++pitch)
             {
                   ev.setA(pitch);
-//                   ev.setB(0);
-
-// REMOVE Tim. autoconnect. Changed.
-//                   port->sendEvent(ev);
-                  
-                  //MidiPort::eventFifos().put(MidiPort::PlayFifo, ev);
-//                   port->device()->addScheduledEvent(ev);
                   port->device()->putEvent(ev, MidiDevice::NotLate);
             }
       }

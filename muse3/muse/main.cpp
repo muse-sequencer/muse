@@ -839,11 +839,6 @@ int main(int argc, char* argv[])
         MusECore::initMidiInstruments();
         MusECore::initMidiPorts();
 
-// REMOVE Tim. autoconnect. Removed. Moved below.
-//         // If the sequencer object was created, report timing.
-//         if(MusEGlobal::midiSeq)
-//           MusEGlobal::midiSeq->checkAndReportTimingResolution();
-
         if (MusEGlobal::loadPlugins)
               MusECore::initPlugins();
 

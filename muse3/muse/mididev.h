@@ -30,13 +30,11 @@
 #include "mpevent.h"
 #include "route.h"
 #include "globaldefs.h"
-// REMOVE Tim. autoconnect. Added.
 #include <vector>
 #include <atomic>
 #include "lock_free_buffer.h"
 #include "sync.h"
 #include "evdata.h"
-//#include <boost/lockfree/queue.hpp>
 
 #include <QString>
 
@@ -143,8 +141,6 @@ class MidiDevice {
       QString _state;
       std::atomic<bool> _stopFlag;
       
-// REMOVE Tim. autoconnect. Removed.
-//       bool _sysexReadingChunks;
       // For processing system exclusive input chunks.
       SysExInputProcessor _sysExInProcessor;
       // For processing system exclusive output chunks.
@@ -154,21 +150,7 @@ class MidiDevice {
       std::vector<MidiPlayEvent> *_sysExOutDelayedEvents;
       
       MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
-//       MPEventList _playEvents;
       
-// REMOVE Tim. autoconnect. Removed.
-//       // Fifo for midi events sent from gui direct to midi port:
-//       MidiFifo eventFifo;  
-      // REMOVE Tim. autoconnect. Added.
-      // Fifo for midi events sent from OSC to audio (ex. sending to DSSI synth):
-      //LockFreeBuffer<MidiPlayEvent> *_osc2AudioFifo;
-      // Various IPC FIFOs.
-//       LockFreeMultiBuffer<MidiPlayEvent> *_eventFifos;
-      //boost::lockfree::queue<MEvent, boost::lockfree::fixed_sized<true>, boost::lockfree::capacity<1024> > q;
-//       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
-//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> _playbackEventBuffers;
-//       // Various IPC buffers. NOT for playback events. Any thread can use this.
-//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> _userEventBuffers;
       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_playbackEventBuffers;
       // Various IPC buffers. NOT for playback events. Any thread can use this.
@@ -180,27 +162,13 @@ class MidiDevice {
       // To hold current output program, and RPN/NRPN parameter numbers and values.
       MidiOutputParams _curOutParamNums[MIDI_CHANNELS];
       
-// REMOVE Tim. autoconnect. Removed.
-//       volatile bool stopPending;         
-//       volatile bool seekPending;
-      
       RouteList _inRoutes, _outRoutes;
       
-// REMOVE Tim. autoconnect. Added.
       // Fifo holds brief history of incoming external clock messages.
       // Timestamped with both tick and frame so that pending play events can
       //  be scheduled by frame.
       // The audio thread processes this fifo and clears it.
       LockFreeBuffer<ExtMidiClock> *_extClockHistoryFifo;
-      //ExtMidiClock::ExternState _playStateExt;   // used for keeping play state in sync functions
-      // Returns the number of frames to shift forward output event scheduling times when putting events
-      //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
-      //  although its requirement is a result of the latency.
-      // For any driver running in the audio thread (Jack midi, synth, metro etc) this value typically 
-      //  will equal one segment size.
-      // For drivers running in their own thread (ALSA, OSC input) this will typically be near zero:
-      //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
-      //unsigned int _pbForwardShiftFrames;
       
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos. This is not quite the same as latency (requiring a backwards shift)
@@ -211,11 +179,7 @@ class MidiDevice {
       //  1 ms for ALSA given a standard sequencer timer f = 1000Hz, or near zero for OSC input.
       virtual unsigned int pbForwardShiftFrames() const { return 0; }
 
-      // Playback IPC buffers. For playback events ONLY. Any thread can use this.
-      //LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
-      // Various IPC buffers. NOT for playback events. Any thread can use this.
-      //LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers() { return &_userEventBuffers; } 
-//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *eventBuffers(EventBufferType bufferType) 
+      // Various IPC buffers. Any thread can use this.
       LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers(EventBufferType bufferType) 
       { 
         switch(bufferType)
@@ -229,8 +193,6 @@ class MidiDevice {
         return _userEventBuffers;
       } 
       
-//       // Clears the device's output events list, unique to each device.
-//       virtual void clearOutEvents() = 0;
       // Informs the device to clear (flush) the outEvents and event buffers. 
       // To be called by audio thread only. Typically from the device's handleStop routine.
       void setStopFlag(bool flag) { _stopFlag.store(flag); }
@@ -239,8 +201,6 @@ class MidiDevice {
       bool stopFlag() const { return _stopFlag.load(); }
       
       void init();
-// REMOVE Tim. autoconnect. Removed. Made public.
-//       virtual void processStuckNotes();
       
    public:
       MidiDevice();
@@ -301,56 +261,18 @@ class MidiDevice {
       // Event time and tick must be set by caller beforehand.
       virtual void recordEvent(MidiRecordEvent&);
 
-      // Schedule an event for playback. Returns false if event cannot be delivered.
-//       virtual bool addScheduledEvent(const MidiPlayEvent& ev) { _playEvents.add(ev); return true; }
-//       virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return _eventBuffers.put(ev); }
       // Add a stuck note. Returns false if event cannot be delivered.
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
-      // Put an event for immediate playback. Returns true if event cannot be delivered.
-//       virtual bool putEvent(const MidiPlayEvent&) = 0;
-      // Put an event for playback. Returns true if event cannot be delivered.
-      // The id parameter is of the desired FIFO. A separate FIFO is required for EACH
-      //  DIFFERENT thread that sends events to the device. See the enum for possible ids.
-      // In each FIFO, the event times should be frame-stamped and sorted. But if ASAP delivery 
-      //  is desired, earlier event time frames (say 0) can be inter-mixed with sorted events.
-      // NOTE: Avoid putting events with time >> current cycle start frame + segment size,
-      //  because that will stall all processing of FIFOs until that frame has come -
-      //  ie. don't accidentally put an event with frame time waaaay in the future !
-      //virtual bool putEvent(const MidiPlayEvent& ev, EventFifoIds id/* = GuiFifo*/, LatencyType latencyType);
-      //virtual bool putPlaybackEvent(const MidiPlayEvent& ev, LatencyType latencyType);
+      // Put either a playback or a user event. Returns true if event cannot be delivered.
       virtual bool putEvent(const MidiPlayEvent& ev, 
                                 LatencyType latencyType, 
                                 EventBufferType bufferType = UserBuffer);
-// REMOVE Tim. autoconnect. Removed.
-//       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
-//       // Since it waits, it should not be used in RT or other time-sensitive threads.
-//       bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
       MidiOutputParams* curOutParamNums(int chan) { return &_curOutParamNums[chan]; }
       void resetCurOutParamNums(int chan = -1); // Reset channel's current parameter numbers to -1. All channels if chan = -1.
       
       virtual void handleStop();  
       virtual void handleSeek();
       
-// REMOVE Tim. autoconnect. Added.
-      // This allows a device which processes in another thread (like ALSA) to 
-      //  drain the playEvents list into a fifo that the other thread reads.
-      // If the device processes in the audio thread, it is not required to use a fifo,
-      //  the device can use the playEvents list directly as long as it drains the list.
-      // To be called from audio thread only.
-//       virtual void preparePlayEventFifo() { }
-//       virtual void preparePlayEventFifo();
-      // This clears the 'write' side of any fifo the device may have (like ALSA),
-      //  by setting the size to zero and the write pointer equal to the read pointer.
-//       virtual void clearPlayEventFifo() {}
-      // Various IPC FIFOs.
-//       LockFreeMultiBuffer<MidiPlayEvent> *eventFifos() { return _eventFifos; } 
-      
-//       // Playback IPC buffers. For playback events ONLY. Any thread can use this.
-//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *playbackEventBuffers() { return &_playbackEventBuffers; } 
-//       // Various IPC buffers. NOT for playback events. Any thread can use this.
-//       LockFreeMPSCBuffer<MidiPlayEvent, 1024> *userEventBuffers() { return &_userEventBuffers; } 
-      
-// REMOVE Tim. autoconnect. Added. Moved from protected.
       virtual void processStuckNotes();
       
       virtual void collectMidiEvents() {}   
@@ -361,31 +283,16 @@ class MidiDevice {
       //  frame at cycle start.
       virtual void processMidi(unsigned int /*curFrame*/ = 0) {}
 
-// REMOVE Tim. autoconnect. Added.
-//       // If playing, clears all notes and flushes out any
-//       //  stuck notes which were put directly to the device
-//       virtual void flushMidiEvents();
-      
       void beforeProcess();
       void afterProcess();
       int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
-//       // Informs the device to clear (flush) the outEvents and event buffers. 
-//       // To be called by audio thread only. Typically from the device's handleStop routine.
-//       void setStopFlag(bool flag) { _stopFlag.store(flag); }
-//       // Returns whether the device is flagged to clear the outEvents and event buffers.
-//       // To be called from the device's thread in the process routine.
-//       bool stopFlag() const { return _stopFlag.load(); }
-// REMOVE Tim. autoconnect. Removed.
-//       bool sysexReadingChunks() { return _sysexReadingChunks; }
-//       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
       
-// REMOVE Tim. autoconnect. Added.
       static const int extClockHistoryCapacity;
       LockFreeBuffer<ExtMidiClock> *extClockHistory() { return _extClockHistoryFifo; }
-      void midiClockInput(unsigned int frame); // REMOVE Tim. autoconnect. Added.
+      void midiClockInput(unsigned int frame);
       };
 
 //---------------------------------------------------------

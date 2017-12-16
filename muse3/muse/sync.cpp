@@ -39,10 +39,6 @@
 
 namespace MusEGlobal {
 
-// REMOVE Tim. autoconnect. Changed.
-// int volatile curMidiSyncInPort = -1;
-//int curMidiSyncInPort = 0;
-
 bool debugSync = false;
 
 int mtcType     = 1;
@@ -57,14 +53,9 @@ static bool mtcValid;
 static int mtcLost;
 static bool mtcSync;    // receive complete mtc frame?
 
-// REMOVE Tim. autoconnect. Removed.
-// static bool playPendingFirstClock = false;
 unsigned int syncSendFirstClockDelay = 1; // In milliseconds.
 unsigned int volatile curExtMidiSyncTick = 0;
 unsigned int volatile lastExtMidiSyncTick = 0;
-// REMOVE Tim. autoconnect. Changed.
-// double volatile curExtMidiSyncTime = 0.0;
-// double volatile lastExtMidiSyncTime = 0.0;
 unsigned int volatile curExtMidiSyncFrame = 0;
 unsigned int volatile lastExtMidiSyncFrame = 0;
 MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset = MusECore::MidiSyncInfo::SMALL;
@@ -203,10 +194,6 @@ void MidiSyncInfo::setTime()
   if(_clockDetect && (t - _lastClkTime >= 1.0)) // Set detect indicator timeout to about 1 second.
   {
     _clockDetect = false;
-// REMOVE Tim. autoconnect. Removed.
-//     // Give up the current midi sync in port number if we took it...
-//     if(MusEGlobal::curMidiSyncInPort == _port)
-//       MusEGlobal::curMidiSyncInPort = -1;
   }
 
   if(_tickTrig)
@@ -227,9 +214,6 @@ void MidiSyncInfo::setTime()
   if(_MRTDetect && (t - _lastMRTTime) >= 1.0) // Set detect indicator timeout to about 1 second.
   {
     _MRTDetect = false;
-    // Give up the current midi sync in port number if we took it... DELETETHIS 3
-    //if(MusEGlobal::curMidiSyncInPort == _port)
-    //  MusEGlobal::curMidiSyncInPort = -1;
   }
 
   if(_MMCTrig)
@@ -241,9 +225,6 @@ void MidiSyncInfo::setTime()
   if(_MMCDetect && (t - _lastMMCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
   {
     _MMCDetect = false;
-    // Give up the current midi sync in port number if we took it... DELETETHIS 3
-    //if(MusEGlobal::curMidiSyncInPort == _port)
-    //  MusEGlobal::curMidiSyncInPort = -1;
   }
 
   if(_MTCTrig)
@@ -255,10 +236,6 @@ void MidiSyncInfo::setTime()
   if(_MTCDetect && (t - _lastMTCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
   {
     _MTCDetect = false;
-// REMOVE Tim. autoconnect. Removed.
-//     // Give up the current midi sync in port number if we took it...
-//     if(MusEGlobal::curMidiSyncInPort == _port)
-//       MusEGlobal::curMidiSyncInPort = -1;
   }
 
   for(int i = 0; i < MIDI_CHANNELS; i++)
@@ -284,10 +261,6 @@ void MidiSyncInfo::setTime()
 void MidiSyncInfo::setMCIn(const bool v)
 {
   _recMC = v;
-// REMOVE Tim. autoconnect. Removed.
-//   // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
-//   if(!_recMC && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
-//     MusEGlobal::curMidiSyncInPort = -1;
 }
 
 //---------------------------------------------------------
@@ -297,10 +270,6 @@ void MidiSyncInfo::setMCIn(const bool v)
 void MidiSyncInfo::setMRTIn(const bool v)
 {
   _recMRT = v;
-  // DELETETHIS 4
-  // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
-  //if(!_recMRT && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
-  //  MusEGlobal::curMidiSyncInPort = -1;
 }
 
 //---------------------------------------------------------
@@ -310,10 +279,6 @@ void MidiSyncInfo::setMRTIn(const bool v)
 void MidiSyncInfo::setMMCIn(const bool v)
 {
   _recMMC = v;
-  // DELETETHIS 4
-  // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
-  //if(!_recMMC && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
-  //  MusEGlobal::curMidiSyncInPort = -1;
 }
 
 //---------------------------------------------------------
@@ -323,10 +288,6 @@ void MidiSyncInfo::setMMCIn(const bool v)
 void MidiSyncInfo::setMTCIn(const bool v)
 {
   _recMTC = v;
-// REMOVE Tim. autoconnect. Removed.
-//   // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
-//   if(!_recMTC && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
-//     MusEGlobal::curMidiSyncInPort = -1;
 }
 
 //---------------------------------------------------------
@@ -337,10 +298,6 @@ void MidiSyncInfo::trigMCSyncDetect()
 {
   _clockDetect = true;
   _clockTrig = true;
-// REMOVE Tim. autoconnect. Removed.
-//   // Set the current midi sync in port number if it's not taken...
-//   if(_recMC && MusEGlobal::curMidiSyncInPort == -1)
-//     MusEGlobal::curMidiSyncInPort = _port;
 }
 
 //---------------------------------------------------------
@@ -361,9 +318,6 @@ void MidiSyncInfo::trigMRTDetect()
 {
   _MRTDetect = true;
   _MRTTrig = true;
-  // Set the current midi sync in port number if it's not taken... //DELETETHIS 3
-  //if(_recMRT && MusEGlobal::curMidiSyncInPort == -1)
-  //  MusEGlobal::curMidiSyncInPort = _port;
 }
 
 //---------------------------------------------------------
@@ -374,9 +328,6 @@ void MidiSyncInfo::trigMMCDetect()
 {
   _MMCDetect = true;
   _MMCTrig = true;
-  // Set the current midi sync in port number if it's not taken... DELETETHIS 3
-  //if(_recMMC && MusEGlobal::curMidiSyncInPort == -1)
-  //  MusEGlobal::curMidiSyncInPort = _port;
 }
 
 //---------------------------------------------------------
@@ -387,10 +338,6 @@ void MidiSyncInfo::trigMTCDetect()
 {
   _MTCDetect = true;
   _MTCTrig = true;
-// REMOVE Tim. autoconnect. Removed.
-//   // Set the current midi sync in port number if it's not taken...
-//   if(_recMTC && MusEGlobal::curMidiSyncInPort == -1)
-//     MusEGlobal::curMidiSyncInPort = _port;
 }
 
 //---------------------------------------------------------
@@ -521,21 +468,14 @@ void MidiSyncInfo::write(int level, Xml& xml)
 //   MidiSyncContainer
 //---------------------------------------------------------
 
-// REMOVE Tim. autoconnect. Added.
-// Static.
-//const int MidiSyncContainer::extClockHistoryCapacity = 1024;
-
 MidiSyncContainer::MidiSyncContainer()
 {
-//   _extClockHistoryFifo = new LockFreeBuffer<ExtMidiClock>(extClockHistoryCapacity);
   _midiClock = 0;
   mclock1 = 0.0;
   mclock2 = 0.0;
   songtick1 = songtick2 = 0;
   lastTempo = 0;
   storedtimediffs = 0;
-// REMOVE Tim. autoconnect. Changed.
-//   playStateExt = false; // not playing
   playStateExt = ExtMidiClock::ExternStopped;
   recTick = 0;
   recTick1 = 0;
@@ -559,9 +499,6 @@ MidiSyncContainer::~MidiSyncContainer()
 {
     if(_clockAveragerStages)
       delete[] _clockAveragerStages;
-// REMOVE Tim. autoconnect. Added.
-//     if(_extClockHistoryFifo)
-//       delete _extClockHistoryFifo;
 }
 
 //---------------------------------------------------------
@@ -592,16 +529,14 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: STOP\n");
 
-// REMOVE Tim. autoconnect. Changed.
-//                   MusEGlobal::playPendingFirstClock = false;
-                        playStateExt = ExtMidiClock::ExternStopped;
+                  playStateExt = ExtMidiClock::ExternStopped;
 
                   if (MusEGlobal::audio->isPlaying()) {
                         MusEGlobal::audio->msgPlay(false);
                   }
-// REMOVE Tim. autoconnect. Removed.
-//                         playStateExt = false;
-                        alignAllTicks();
+                  
+                  alignAllTicks();
+                        
                   break;
             case 2:
                   if (MusEGlobal::debugSync)
@@ -616,40 +551,26 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   MusEGlobal::mtcLost  = 0;
                   MusEGlobal::mtcSync  = false;
                   alignAllTicks();
-// REMOVE Tim. autoconnect. Changed.
-//                   MusEGlobal::audio->msgPlay(true);
                   playStateExt = ExtMidiClock::ExternStarting;
                   if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
                     MusEGlobal::audioDevice->startTransport();
                     
-// REMOVE Tim. autoconnect. Removed.
-//                   playStateExt = true;
                   break;
 
             case 4:
                   fprintf(stderr, "MMC: FF not implemented\n");
-// REMOVE Tim. autoconnect. Removed.
-//                   MusEGlobal::playPendingFirstClock = false;
                   break;
             case 5:
                   fprintf(stderr, "MMC: REWIND not implemented\n");
-// REMOVE Tim. autoconnect. Removed.
-//                   MusEGlobal::playPendingFirstClock = false;
                   break;
             case 6:
                   fprintf(stderr, "MMC: REC STROBE not implemented\n");
-// REMOVE Tim. autoconnect. Removed.
-//                   MusEGlobal::playPendingFirstClock = false;
                   break;
             case 7:
                   fprintf(stderr, "MMC: REC EXIT not implemented\n");
-// REMOVE Tim. autoconnect. Removed.
-//                   MusEGlobal::playPendingFirstClock = false;
                   break;
             case 0xd:
                   fprintf(stderr, "MMC: RESET not implemented\n");
-// REMOVE Tim. autoconnect. Removed.
-//                   MusEGlobal::playPendingFirstClock = false;
                   break;
             case 0x44:
                   if (p[5] == 0) {
@@ -927,472 +848,17 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
       // Trigger on any tick, clock, or realtime command.
       if(c == ME_TICK) // Tick
         mp->syncInfo().trigTickDetect();
-//       else
-//       if(c == ME_CLOCK) // Clock
-//         mp->syncInfo().trigMCSyncDetect();
       else
         mp->syncInfo().trigMRTDetect(); // Other
 
       // External sync not on? Clock in not turned on? Otherwise realtime in not turned on?
       if(!MusEGlobal::extSyncFlag.value())
         return;
-//       if(c == ME_CLOCK)
-//       {
-//         if(!mp->syncInfo().MCIn())
-//           return;
-//       }
-//       else
       if(!mp->syncInfo().MRTIn())
         return;
 
 
       switch(c) {
-// REMOVE Tim. autoconnect. Removed. Moved into separate function.
-//             case ME_CLOCK:  // midi clock (24 ticks / quarter note)
-//                   {
-//                   // Not for the current in port? Forget it.
-//                   if(port != MusEGlobal::curMidiSyncInPort)
-//                     break;
-// 
-//                   // Re-transmit clock to other devices if clock out turned on.
-//                   // Must be careful not to allow more than one clock input at a time.
-//                   // Would re-transmit mixture of multiple clocks - confusing receivers.
-//                   // Solution: Added MusEGlobal::curMidiSyncInPort.
-//                   // Maybe in MidiSyncContainer::processTimerTick(), call sendClock for the other devices, instead of here.
-//                   for(int p = 0; p < MIDI_PORTS; ++p)
-//                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
-//                       MusEGlobal::midiPorts[p].sendClock();
-// 
-//                   MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
-//                   MusEGlobal::curExtMidiSyncTime = time;
-// 
-//                   // REMOVE Tim. autoconnect. Added.
-//                   const int div = MusEGlobal::config.division/24;
-//                   // Put a midi clock record event into the clock history fifo. Ignore port and channel.
-//                   // Timestamp with the current frame.
-//                   if(MusEGlobal::midiSyncContainer.extClockHistory())
-//                     //MusEGlobal::midiSyncContainer.extClockHistory()->put(MusEGlobal::audio->curFrame());
-//                     MusEGlobal::midiSyncContainer.extClockHistory()->put(time);
-//                   
-//                   if(MusEGlobal::playPendingFirstClock)
-//                   {
-//                     MusEGlobal::playPendingFirstClock = false;
-//                     // Hopefully the transport will be ready by now, the seek upon start should mean the
-//                     //  audio prefetch has already finished or at least started...
-//                     // Must comfirm that play does not force a complete prefetch again, but don't think so...
-//                     if(!MusEGlobal::audio->isPlaying())
-//                       MusEGlobal::audioDevice->startTransport();
-//                   }
-//                   //else DELETETHIS?
-//                   // This part will be run on the second and subsequent clocks, after start.
-//                   // Can't check audio state, might not be playing yet, we might miss some increments.
-//                   if(playStateExt)
-//                   {
-// // REMOVE Tim. autoconnect. Removed. Moved above.
-// //                     int div = MusEGlobal::config.division/24;
-//                     MusEGlobal::midiExtSyncTicks += div;
-//                     MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
-//                     MusEGlobal::curExtMidiSyncTick += div;
-// 
-//                     if(MusEGlobal::song->record() && MusEGlobal::lastExtMidiSyncTime > 0.0)
-//                     {
-//                       double diff = MusEGlobal::curExtMidiSyncTime - MusEGlobal::lastExtMidiSyncTime;
-//                       if(diff != 0.0)
-//                       {
-//                         if(_clockAveragerPoles == 0)
-//                         {
-//                           double real_tempo = 60.0/(diff * 24.0);
-//                           if(_tempoQuantizeAmount > 0.0)
-//                           {
-//                             double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
-//                             if(f_mod < _tempoQuantizeAmount/2.0)
-//                               real_tempo -= f_mod;
-//                             else
-//                               real_tempo += _tempoQuantizeAmount - f_mod;
-//                           }
-//                           int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
-//                           if(new_tempo != lastTempo)
-//                           {
-//                             lastTempo = new_tempo;
-//                             // Compute tick for this tempo - it is one step back in time.
-//                             int add_tick = MusEGlobal::curExtMidiSyncTick - div;
-//                             if(MusEGlobal::debugSync)
-//                               printf("adding new tempo tick:%d curExtMidiSyncTick:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
-//                             MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
-//                           }
-//                         }
-//                         else
-//                         {
-//                           double avg_diff = diff;
-//                           for(int pole = 0; pole < _clockAveragerPoles; ++pole)
-//                           {
-//                             timediff[pole][_avgClkDiffCounter[pole]] = avg_diff;
-//                             ++_avgClkDiffCounter[pole];
-//                             if(_avgClkDiffCounter[pole] >= _clockAveragerStages[pole])
-//                             {
-//                               _avgClkDiffCounter[pole] = 0;
-//                               _averagerFull[pole] = true;
-//                             }
-// 
-//                             // Each averager needs to be full before we can pass the data to
-//                             //  the next averager or use the data if all averagers are full...
-//                             if(!_averagerFull[pole])
-//                               break;
-//                             else
-//                             {
-//                               avg_diff = 0.0;
-//                               for(int i = 0; i < _clockAveragerStages[pole]; ++i)
-//                                 avg_diff += timediff[pole][i];
-//                               avg_diff /= _clockAveragerStages[pole];
-// 
-//                               int fin_idx = _clockAveragerPoles - 1;
-// 
-//                               // On the first pole? Check for large differences.
-//                               if(_preDetect && pole == 0)
-//                               {
-//                                 double real_tempo = 60.0/(avg_diff * 24.0);
-//                                 double real_tempo_diff = fabs(real_tempo - _lastRealTempo);
-// 
-//                                 // If the tempo changed a large amount, reset.
-//                                 if(real_tempo_diff >= 10.0)  // TODO: User-adjustable?
-//                                 {
-//                                   if(_tempoQuantizeAmount > 0.0)
-//                                   {
-//                                     double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
-//                                     if(f_mod < _tempoQuantizeAmount/2.0)
-//                                       real_tempo -= f_mod;
-//                                     else
-//                                       real_tempo += _tempoQuantizeAmount - f_mod;
-//                                   }
-//                                   _lastRealTempo = real_tempo;
-//                                   int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
-// 
-//                                   if(new_tempo != lastTempo)
-//                                   {
-//                                     lastTempo = new_tempo;
-//                                     // Compute tick for this tempo - it is way back in time.
-//                                     int add_tick = MusEGlobal::curExtMidiSyncTick - _clockAveragerStages[0] * div;
-//                                     if(add_tick < 0)
-//                                     {
-//                                       printf("FIXME sync: adding restart tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
-//                                       add_tick = 0;
-//                                     }
-//                                     if(MusEGlobal::debugSync)
-//                                       printf("adding restart tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f real_tempo_diff:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, _clockAveragerStages[0], avg_diff, real_tempo, real_tempo_diff, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
-//                                     MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
-//                                   }
-// 
-//                                   // Reset all the poles.
-//                                   //for(int i = 0; i < clockAveragerPoles; ++i)
-//                                   // We have a value for this pole, let's keep it but reset the other poles.
-//                                   for(int i = 1; i < _clockAveragerPoles; ++i)
-//                                   {
-//                                     _avgClkDiffCounter[i] = 0;
-//                                     _averagerFull[i] = false;
-//                                   }
-//                                   break;
-//                                 }
-//                               }
-// 
-//                               // On the last pole?
-//                               // All averagers need to be full before we can use the data...
-//                               if(pole == fin_idx)
-//                               {
-//                                 double real_tempo = 60.0/(avg_diff * 24.0);
-//                                 double real_tempo_diff = fabs(real_tempo - _lastRealTempo);
-// 
-//                                 if(real_tempo_diff >= _tempoQuantizeAmount/2.0) // Anti-hysteresis
-//                                 {
-//                                   if(_tempoQuantizeAmount > 0.0)
-//                                   {
-//                                     double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
-//                                     if(f_mod < _tempoQuantizeAmount/2.0)
-//                                       real_tempo -= f_mod;
-//                                     else
-//                                       real_tempo += _tempoQuantizeAmount - f_mod;
-//                                   }
-//                                   _lastRealTempo = real_tempo;
-//                                   int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
-// 
-//                                   if(new_tempo != lastTempo)
-//                                   {
-//                                     lastTempo = new_tempo;
-//                                     // Compute tick for this tempo - it is way back in time.
-//                                     int tick_idx_sub = 0;
-//                                     for(int i = 0; i <= pole; ++i)
-//                                       tick_idx_sub += _clockAveragerStages[i];
-//                                     // Compensate: Each pole > 0 has a delay one less than its number of stages.
-//                                     // For example three pole {8, 8, 8} has a delay of 22 not 24.
-//                                     tick_idx_sub -= pole;
-//                                     int add_tick = MusEGlobal::curExtMidiSyncTick - tick_idx_sub * div;
-//                                     if(add_tick < 0)
-//                                     {
-//                                       printf("FIXME sync: adding new tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
-//                                       add_tick = 0;
-//                                     }
-//                                     if(MusEGlobal::debugSync)
-//                                       printf("adding new tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, tick_idx_sub, avg_diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
-//                                     MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
-//                                   }
-//                                 }
-//                               }
-//                             }
-//                           }
-//                         }
-//                       }
-//                     }
-//                   }
-// 
-// //BEGIN : Original code: DELETETHIS 250
-//                   /*
-//                   double mclock0 = curTime();
-//                   // Difference in time last 2 rounds:
-//                   double tdiff0   = mclock0 - mclock1;
-//                   double tdiff1   = mclock1 - mclock2;
-//                   double averagetimediff = 0.0;
-// 
-//                   if (mclock1 != 0.0) {
-//                         if (storedtimediffs < 24)
-//                         {
-//                            timediff[storedtimediffs] = mclock0 - mclock1;
-//                            storedtimediffs++;
-//                         }
-//                         else {
-//                               for (int i=0; i<23; i++) {
-//                                     timediff[i] = timediff[i+1];
-//                                     }
-//                               timediff[23] = mclock0 - mclock1;
-//                         }
-//                         // Calculate average timediff:
-//                         for (int i=0; i < storedtimediffs; i++) {
-//                               averagetimediff += timediff[i]/storedtimediffs;
-//                               }
-//                         }
-// 
-//                   // Compare w audio if playing:
-//                   if (playStateExt == true ) {  //MusEGlobal::audio->isPlaying()  state == PLAY
-//                         //BEGIN standard setup:
-//                         recTick  += MusEGlobal::config.division / 24; // The one we're syncing to
-//                         int tempo = MusEGlobal::tempomap.tempo(0);
-//                         unsigned curFrame = MusEGlobal::audio->pos().frame();
-//                         double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
-//                                            double(MusEGlobal::config.division * 1000000.0) / double(tempo);
-// 
-//                         double scale = double(tdiff0/averagetimediff);
-//                         double tickdiff = songtick - ((double) recTick - 24 + scale*24.0);
-// 
-//                         //END standard setup
-//                         if (MusEGlobal::debugSync) {
-//                               int m, b, t;
-//                               MusEGlobal::audio->pos().mbt(&m, &b, &t);
-// 
-//                               int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
-//                               int sync_beat = recTick/MusEGlobal::config.division;
-//                               printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d",
-//                                       songtick, recTick, tickdiff, song_beat, sync_beat, scale, curFrame);
-//                               }
-// 
-//                         //if ((mclock2 !=0.0) && (tdiff1 > 0.0) && fabs(tickdiff) > 0.5 && lastTempo != 0) {
-//                         if ((mclock2 !=0.0) && (tdiff1 > 0.0) && lastTempo != 0) {
-//                               // Interpolate:
-//                               double tickdiff1 = songtick1 - recTick1;
-//                               double tickdiff2 = songtick2 - recTick2;
-//                               double newtickdiff = (tickdiff1+tickdiff2)/250;
-//                                                    //tickdiff/5.0  +
-//                                                    tickdiff1/16.0 +
-//                                                    tickdiff2/24.0;  //5 mins 30 secs on 116BPM, -p 512 jackd
-// 
-//                               if (newtickdiff != 0.0) {
-//                                     int newTempo = MusEGlobal::tempomap.tempo(0);
-//                                     //newTempo += int(24.0 * newtickdiff * scale);
-//                                     newTempo += int(24.0 * newtickdiff);
-//                                     if (MusEGlobal::debugSync)
-//                                           printf(" tdiff=%f ntd=%f lt=%d tmpo=%.3f",
-//                                                 tdiff0, newtickdiff, lastTempo, (float)((1000000.0 * 60.0)/newTempo));
-//                                     //syncTempo = newTempo;
-//                                     MusEGlobal::tempomap.setTempo(0,newTempo);
-//                                     }
-//                               if (MusEGlobal::debugSync)
-//                                     printf("\n");
-//                               }
-//                         else if (MusEGlobal::debugSync)
-//                               printf("\n");
-// 
-//                         //BEGIN post calc
-//                         lastTempo = tempo;
-//                         recTick2 = recTick1;
-//                         recTick1 = recTick;
-//                         mclock2 = mclock1;
-//                         mclock1 = mclock0;
-//                         songtick2 = songtick1;
-//                         songtick1 = songtick;
-//                         //END post calc
-//                         break;
-//                         } // END state play
-//                   //
-//                   // Pre-sync (when audio is not running)
-//                   // Calculate tempo depending on time per pulse
-//                   //
-//                   if (mclock1 == 0.0) {
-//                         mp->device()->discardInput();
-//                         if (MusEGlobal::debugSync)
-//                            printf("Discarding input from port %d\n", port);
-//                         }
-//                   if ((mclock2 != 0.0) && (tdiff0 > 0.0)) {
-//                         int tempo0 = int(24000000.0 * tdiff0 + .5);
-//                         int tempo1 = int(24000000.0 * tdiff1 + .5);
-//                         int tempo = MusEGlobal::tempomap.tempo(0);
-// 
-//                         int diff0 = tempo0 - tempo;
-//                         int diff1 = tempo1 - tempo0;
-//                         if (diff0) {
-//                               int newTempo = tempo + diff0/8 + diff1/16;
-//                               if (MusEGlobal::debugSync)
-//                                  printf("setting new tempo %d = %f\n", newTempo, (float)((1000000.0 * 60.0)/newTempo));
-//                               MusEGlobal::tempomap.setTempo(0, newTempo);
-//                               }
-//                         }
-//                   mclock2 = mclock1;
-//                   mclock1 = mclock0;
-//                   */
-// //END : Original Code
-// 
-// //BEGIN : Using external tempo map:
-//                   /*
-//                   double mclock0 = curTime();
-//                   // Difference in time last 2 rounds:
-//                   double tdiff0   = mclock0 - mclock1;
-//                   double tdiff1   = mclock1 - mclock2;
-//                   double averagetimediff = 0.0;
-// 
-//                   if (mclock1 != 0.0) {
-//                         if (storedtimediffs < 24)
-//                         {
-//                            timediff[storedtimediffs] = mclock0 - mclock1;
-//                            storedtimediffs++;
-//                         }
-//                         else {
-//                               for (int i=0; i<23; i++) {
-//                                     timediff[i] = timediff[i+1];
-//                                     }
-//                               timediff[23] = mclock0 - mclock1;
-//                         }
-//                         // Calculate average timediff:
-//                         for (int i=0; i < storedtimediffs; i++) {
-//                               averagetimediff += timediff[i]/storedtimediffs;
-//                               }
-//                         }
-// 
-//                   // Compare w audio if playing:
-//                   //if (playStateExt == true ) {  //MusEGlobal::audio->isPlaying()  state == PLAY
-//                   if (0) {
-//                         //BEGIN standard setup:
-//                         recTick  += MusEGlobal::config.division / 24; // The one we're syncing to
-//                         int tempo = MusEGlobal::tempomap.tempo(0);
-//                         //unsigned curFrame = MusEGlobal::audio->pos().frame();
-//                         //double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
-//                         //                   double(MusEGlobal::config.division * 1000000.0) / double(tempo);
-//                         double songtick = MusEGlobal::tempomap.curTickExt(mclock0);
-// 
-//                         double scale = double(tdiff0/averagetimediff);
-//                         double tickdiff = songtick - ((double) recTick - 24 + scale*24.0);
-// 
-//                         //END standard setup
-//                         if (MusEGlobal::debugSync) {
-//                               int m, b, t;
-//                               MusEGlobal::audio->pos().mbt(&m, &b, &t);
-// 
-//                               int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
-//                               int sync_beat = recTick/MusEGlobal::config.division;
-//                               printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d averagetimediff:%.3lf",
-//                                       songtick, recTick, tickdiff, song_beat, sync_beat, scale, MusEGlobal::audio->pos().frame(), averagetimediff);
-//                               }
-// 
-//                         //if ((mclock2 !=0.0) && (tdiff1 > 0.0) && fabs(tickdiff) > 0.5 && lastTempo != 0) {
-//                         if ((mclock2 !=0.0) && (tdiff1 > 0.0) && lastTempo != 0) {
-//                               // Interpolate:
-//                               double tickdiff1 = songtick1 - recTick1;
-//                               double tickdiff2 = songtick2 - recTick2;
-//                               double newtickdiff = (tickdiff1+tickdiff2)/250;
-//                               ////double newtickdiff = (tickdiff1+tickdiff2) / 10.0;
-//                               //double newtickdiff = tickdiff/5.0  +
-//                               //                     tickdiff1/16.0 +
-//                               //                     tickdiff2/24.0;  //5 mins 30 secs on 116BPM, -p 512 jackd
-// 
-//                               if (newtickdiff != 0.0) {
-//                                     //int newTempo = MusEGlobal::tempomap.tempo(0);
-//                                     int newTempo = tempo;
-//                                     //newTempo += int(24.0 * newtickdiff * scale);
-//                                     newTempo += int(24.0 * newtickdiff);
-//                                     if (MusEGlobal::debugSync)
-//                                           printf(" tdiff=%f ntd=%f lt=%d tmpo=%.3f",
-//                                                 tdiff0, newtickdiff, lastTempo, (float)((1000000.0 * 60.0)/newTempo));
-//                                     //syncTempo = newTempo;
-//                                     //MusEGlobal::tempomap.setTempo(0,newTempo);
-//                                     // Don't set the last stable tempo.
-//                                     //MusEGlobal::tempomap.setTempo(0, newTempo, false);
-//                                     MusEGlobal::tempomap.setExtTempo(newTempo);
-//                                     }
-//                               if (MusEGlobal::debugSync)
-//                                     printf("\n");
-//                               }
-//                         else if (MusEGlobal::debugSync)
-//                               printf("\n");
-// 
-//                         //BEGIN post calc
-//                         lastTempo = tempo;
-//                         recTick2 = recTick1;
-//                         recTick1 = recTick;
-//                         mclock2 = mclock1;
-//                         mclock1 = mclock0;
-//                         songtick2 = songtick1;
-//                         songtick1 = songtick;
-//                         //END post calc
-//                         break;
-//                         } // END state play
-//                   //
-//                   // Pre-sync (when audio is not running)
-//                   // Calculate tempo depending on time per pulse
-//                   //
-//                   if (mclock1 == 0.0) {
-//                         mp->device()->discardInput();
-//                         if (MusEGlobal::debugSync)
-//                            printf("Discarding input from port %d\n", port);
-//                         }
-//                   if ((mclock2 != 0.0) && (tdiff0 > 0.0)) {
-// 
-//                         //int tempo0 = int(24000000.0 * tdiff0 + .5);
-//                         //int tempo1 = int(24000000.0 * tdiff1 + .5);
-//                         //int tempo = MusEGlobal::tempomap.tempo(0);
-//                         //int diff0 = tempo0 - tempo;
-//                         //int diff1 = tempo1 - tempo0;
-// 
-//                         //if (diff0) {
-//                         //      int newTempo = tempo + diff0/8 + diff1/16;
-//                         //      if (MusEGlobal::debugSync)
-//                         //         printf("setting new tempo %d = %f\n", newTempo, (float)((1000000.0 * 60.0)/newTempo));
-//                               //MusEGlobal::tempomap.setTempo(0, newTempo);
-//                               // Don't set the last stable tempo.
-//                               //MusEGlobal::tempomap.setTempo(0, newTempo, false);
-//                         //      MusEGlobal::tempomap.setExtTempo(newTempo);
-//                         //      }
-// 
-//                         //double tempo0 = 24000000.0 * tdiff0;
-//                         //double tempo1 = 24000000.0 * tdiff1;
-//                         //int newTempo = int((tempo0 + tempo1) / 2.0);
-//                         int newTempo = int(averagetimediff * 24000000.0);
-//                         if(MusEGlobal::debugSync)
-//                           printf("setting new tempo %d = %f\n", newTempo, (float)((1000000.0 * 60.0)/newTempo));
-//                         MusEGlobal::tempomap.setExtTempo(newTempo);
-//                         }
-// 
-//                   mclock2 = mclock1;
-//                   mclock1 = mclock0;
-//                   */
-// //END : Using external tempo map
-// 
-//                   }
-//                   break;
             case ME_TICK:  // midi tick  (every 10 msec)
                   //DELETETHIS 6
                   // FIXME: Unfinished? mcStartTick is uninitialized and Song::setPos doesn't set it either. Dangerous to allow this.
@@ -1422,7 +888,6 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
                   if (1 /* !MusEGlobal::audio->isPlaying()*/ /*state == IDLE*/) {
                         if (!MusEGlobal::checkAudioDevice()) return;
 
-// REMOVE Tim. autoconnect. Added.
                         playStateExt = ExtMidiClock::ExternStarting;
                         
                         // Rew on start option.
@@ -1430,34 +895,12 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
                         {
                           MusEGlobal::curExtMidiSyncTick = 0;
                           MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
-// REMOVE Tim. autoconnect. Removed. TESTING. Reinstate.
                           MusEGlobal::audioDevice->seekTransport(Pos(0, false));
                         }
 
                         alignAllTicks();
-
                         storedtimediffs = 0;
-
-                        // p3.3.26 1/23/10 DELETETHIS 6
-                        // Changed because msgPlay calls MusEGlobal::audioDevice->seekTransport(song->cPos())
-                        //  and song->cPos() may not be changed to 0 yet, causing tranport not to go to 0.
-                        //MusEGlobal::audio->msgPlay(true);
-                        //MusEGlobal::audioDevice->startTransport();
-                        // p3.3.28
-// REMOVE Tim. autoconnect. Removed.
-//                         MusEGlobal::playPendingFirstClock = true;
-
                         MusEGlobal::midiExtSyncTicks = 0;
-                        
-// REMOVE Tim. autoconnect. Removed.
-//                         playStateExt = true;
-                        
-// REMOVE Tim. autoconnect. Added.
-                        // Hopefully the transport will be ready by now, the seek upon start should mean the
-                        //  audio prefetch has already finished or at least started...
-                        // Must comfirm that play does not force a complete prefetch again, but don't think so...
-//                         if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
-//                           MusEGlobal::audioDevice->startTransport();
                         }
                   break;
             case ME_CONTINUE:  // continue
@@ -1472,35 +915,15 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
                   //printf("continue:%f\n", curTime());
 
                   if (1 /* !MusEGlobal::audio->isPlaying() */ /*state == IDLE */) {
-                        //unsigned curFrame = MusEGlobal::audio->curFrame();
-                        //recTick = MusEGlobal::tempomap.frame2tick(curFrame); // don't think this will work... (ml)
-                        //alignAllTicks();
-
-                        // p3.3.28
-                        //MusEGlobal::audio->msgPlay(true);
-                        // p3.3.31
                         // Begin incrementing immediately upon first clock reception.
-// REMOVE Tim. autoconnect. Changed.
-//                         MusEGlobal::playPendingFirstClock = true;
                         playStateExt = ExtMidiClock::ExternContinuing;
-
-// REMOVE Tim. autoconnect. Removed.
-//                         playStateExt = true;
-                        
-// REMOVE Tim. autoconnect. Added.
-//                         if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
-//                           MusEGlobal::audioDevice->startTransport();
                         }
                   break;
             case ME_STOP:  // stop
                   {
                     // Stop the increment right away.
                     MusEGlobal::midiExtSyncTicks = 0;
-// REMOVE Tim. autoconnect. Changed.
-//                     playStateExt = false;
                     playStateExt = ExtMidiClock::ExternStopped;
-// REMOVE Tim. autoconnect. Removed.
-//                     MusEGlobal::playPendingFirstClock = false;
 
                     // Re-transmit stop to other devices if clock out turned on.
                     for(int p = 0; p < MIDI_PORTS; ++p)
@@ -1534,7 +957,6 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
 
       }
 
-// REMOVE Tim. autoconnect. Added.
 //---------------------------------------------------------
 //   midiClockInput
 //    Midi clock (24 ticks / quarter note)
@@ -1544,10 +966,6 @@ void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
 
 ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
 {
-// REMOVE Tim. autoconnect. Added.
-//   if(MusEGlobal::midiInputTrace)
-//     fprintf(stderr, "midiClockInput port:%d frame:%u\n", port+1, frame);
-
   if(port < 0 || port >= MIDI_PORTS)
     return ExtMidiClock();
 
@@ -1580,7 +998,6 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
   MusEGlobal::lastExtMidiSyncFrame = MusEGlobal::curExtMidiSyncFrame;
   MusEGlobal::curExtMidiSyncFrame = frame;
 
-  // REMOVE Tim. autoconnect. Added.
   if(MusEGlobal::lastExtMidiSyncFrame > MusEGlobal::curExtMidiSyncFrame)
   {
     fprintf(stderr, 
@@ -1588,36 +1005,9 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
       MusEGlobal::lastExtMidiSyncFrame, MusEGlobal::curExtMidiSyncFrame);
     MusEGlobal::lastExtMidiSyncFrame = MusEGlobal::curExtMidiSyncFrame;
   }
-//   unsigned int f_diff = MusEGlobal::curExtMidiSyncFrame - MusEGlobal::lastExtMidiSyncFrame;
   
-  // REMOVE Tim. autoconnect. Added.
   const int div = MusEGlobal::config.division/24;
-  // Put a midi clock record event into the clock history fifo. Ignore port and channel.
-  // Timestamp with the current frame.
-//   if(MusEGlobal::midiSyncContainer.extClockHistory())
-//     //MusEGlobal::midiSyncContainer.extClockHistory()->put(MusEGlobal::audio->curFrame());
-//     MusEGlobal::midiSyncContainer.extClockHistory()->put(ExtMidiClock(frame, playStateExt));
-// //   if(MusEGlobal::midiSyncContainer.extClockHistory())
-// //   {
-// //     for(int i = 0; i < div; ++i)
-// //     {
-// //       const unsigned int idx = (double(i) / double(div)) * double(f_diff);
-// //       const unsigned int s_frame = idx + MusEGlobal::lastExtMidiSyncFrame;
-// //       MusEGlobal::midiSyncContainer.extClockHistory()->put(s_frame);
-// //     }
-// //   }
   
-// REMOVE Tim. autoconnect. Changed.
-//   if(MusEGlobal::playPendingFirstClock)
-//   {
-//     MusEGlobal::playPendingFirstClock = false;
-// //     // Hopefully the transport will be ready by now, the seek upon start should mean the
-// //     //  audio prefetch has already finished or at least started...
-// //     // Must comfirm that play does not force a complete prefetch again, but don't think so...
-//     if(!MusEGlobal::audio->isPlaying())
-//       MusEGlobal::audioDevice->startTransport();
-//   }
-  //if(MusEGlobal::playPendingFirstClock)
   //-------------------------------
   // State changes:
   //-------------------------------
@@ -1632,29 +1022,16 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
     if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice())
       MusEGlobal::audioDevice->startTransport();
   }
-//   // Put a midi clock record event into the clock history fifo. Ignore port and channel.
-//   // Timestamp with the current frame.
-//   if(MusEGlobal::midiSyncContainer.extClockHistory())
-//     //MusEGlobal::midiSyncContainer.extClockHistory()->put(MusEGlobal::audio->curFrame());
-//     MusEGlobal::midiSyncContainer.extClockHistory()->put(ExtMidiClock(frame, playStateExt, first_clock));
   
   //else DELETETHIS?
   // This part will be run on the second and subsequent clocks, after start.
   // Can't check audio state, might not be playing yet, we might miss some increments.
-// REMOVE Tim. autoconnect. Changed.
-//   if(playStateExt)
   if(isRunning())
   {
-// REMOVE Tim. autoconnect. Removed. Moved above.
-//                     int div = MusEGlobal::config.division/24;
     MusEGlobal::midiExtSyncTicks += div;
     MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
     MusEGlobal::curExtMidiSyncTick += div;
 
-// REMOVE Tim. autoconnect. Changed.
-//     if(MusEGlobal::song->record() && MusEGlobal::lastExtMidiSyncTime > 0.0)
-//       double diff = MusEGlobal::curExtMidiSyncTime - MusEGlobal::lastExtMidiSyncTime;
-//       if(diff != 0.0)
     if(MusEGlobal::song->record() && MusEGlobal::curExtMidiSyncFrame > MusEGlobal::lastExtMidiSyncFrame)
     {
       double diff = double(MusEGlobal::curExtMidiSyncFrame - MusEGlobal::lastExtMidiSyncFrame) / double(MusEGlobal::sampleRate);

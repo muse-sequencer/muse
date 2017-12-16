@@ -32,7 +32,6 @@
 
 #include "mpevent.h"
 #include "mididev.h"
-//#include "lock_free_buffer.h"
 
 #endif // ALSA_SUPPORT
 
@@ -51,16 +50,10 @@ class MidiAlsaDevice : public MidiDevice {
       snd_seq_addr_t adr;
 
    private:
-      // Special for ALSA midi device: Play event list is processed in the ALSA midi sequencer thread.
-      // Need this FIFO, to decouple from audio thread which adds events to the list.       
-      //MidiFifo playEventFifo;  
-      //MidiFifo stuckNotesFifo;  
-
       // Fifo for midi playback events sent from audio thread:
       // The audio thread will gather the events in _playEvents for the 
       //  convenience of its sorting, then dump them to this FIFO so that 
       //  a driver or device may read it, possibly from another thread (ALSA driver).
-//       LockFreeBuffer<MidiPlayEvent> *_playEventFifo;
       SeqMPEventList _outPlaybackEvents;
       SeqMPEventList _outUserEvents;
      
@@ -73,9 +66,6 @@ class MidiAlsaDevice : public MidiDevice {
 
       bool putAlsaEvent(snd_seq_event_t*);
       
-//       // Clears the device's output events list, unique to each device.
-//       virtual void clearOutEvents() { _outEvents.clear(); };
-
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice();
@@ -95,27 +85,8 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void writeRouting(int, Xml&) const;
       virtual inline MidiDeviceType deviceType() const { return ALSA_MIDI; } 
       
-// REMOVE Tim. autoconnect. Added.
-      // This allows a device which processes in another thread (like ALSA) to 
-      //  drain the playEvents list into a fifo that the other thread reads.
-      // If the device processes in the audio thread, it is not required to use a fifo,
-      //  the device can use the playEvents list directly as long as it drains the list.
-      // To be called from audio thread only.
-//       virtual void preparePlayEventFifo();
-      // This clears the 'write' side of any fifo the device may have (like ALSA),
-      //  by setting the size to zero and the write pointer equal to the read pointer.
-//       virtual void clearPlayEventFifo();
-      
-      // Schedule an event for playback. Returns false if event cannot be delivered.
-      //virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
-      // Add a stuck note. Returns false if event cannot be delivered.
-      //virtual bool addStuckNote(const MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
       // Play all events up to current frame.
       virtual void processMidi(unsigned int curFrame = 0);
-      //virtual void handleStop();
-      //virtual void handleSeek();
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent&);
 
       virtual void setAddressClient(int client) { adr.client = client; }
       virtual void setAddressPort(int port) { adr.port = port; }

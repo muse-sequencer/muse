@@ -243,11 +243,7 @@ class VstNativeSynthIF : public SynthIF
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways() { }
-// REMOVE Tim. autoconnect. Changed.
-//       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned nframes, float** buffer) ;
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) ;
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
       virtual int channels() const;

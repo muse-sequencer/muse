@@ -342,16 +342,6 @@ void MPEventList::add(const MidiPlayEvent& ev)
         // If length is zero there's no point in adding this sysex. Just return.
         if(len == 0)
           return;
-//         // If the two sysexes are the same, ignore the event to be added.
-//         // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
-//         //  happen to be identical, they should not be at the same time anyway - they
-//         //  should be serialized.
-//         // REMOVE Tim. autoconnect. Fix this.
-//         // FIXME That's not necessarily true - should be able to schedule in order at
-//         //        the same time but the device does the serialization.
-//         // Currently we don't support chunks anyway, so we are safe for now...
-//         if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
-//           return;
       }
       break;
 
@@ -432,16 +422,6 @@ void SeqMPEventList::add(const MidiPlayEvent& ev)
         // If length is zero there's no point in adding this sysex. Just return.
         if(len == 0)
           return;
-//         // If the two sysexes are the same, ignore the event to be added.
-//         // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
-//         //  happen to be identical, they should not be at the same time anyway - they
-//         //  should be serialized.
-//         // REMOVE Tim. autoconnect. Fix this.
-//         // FIXME That's not necessarily true - should be able to schedule in order at
-//         //        the same time but the device does the serialization.
-//         // Currently we don't support chunks anyway, so we are safe for now...
-//         if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
-//           return;
       }
       break;
 
@@ -463,57 +443,6 @@ void SeqMPEventList::add(const MidiPlayEvent& ev)
   }
   insert(ev);
 }
-
-// REMOVE Tim. autoconnect. Removed. Replaced with template-ized version.
-// //---------------------------------------------------------
-// //   put
-// //    return true on fifo overflow
-// //---------------------------------------------------------
-// 
-// bool MidiFifo::put(const MidiPlayEvent& event)
-//       {
-//       if (size < MIDI_FIFO_SIZE) {
-//             fifo[wIndex] = event;
-//             wIndex = (wIndex + 1) % MIDI_FIFO_SIZE;
-//             // q_atomic_increment(&size);
-//             ++size;
-//             return false;
-//             }
-//       return true;
-//       }
-// 
-// //---------------------------------------------------------
-// //   get
-// //---------------------------------------------------------
-// 
-// MidiPlayEvent MidiFifo::get()
-//       {
-//       MidiPlayEvent event(fifo[rIndex]);
-//       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-//       --size;
-//       return event;
-//       }
-// 
-// //---------------------------------------------------------
-// //   peek
-// //---------------------------------------------------------
-// 
-// const MidiPlayEvent& MidiFifo::peek(int n)
-//       {
-//       int idx = (rIndex + n) % MIDI_FIFO_SIZE;
-//       return fifo[idx];
-//       }
-// 
-// //---------------------------------------------------------
-// //   remove
-// //---------------------------------------------------------
-// 
-// void MidiFifo::remove()
-//       {
-//       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-//       --size;
-//       }
-
 
 //---------------------------------------------------------
 //   put

@@ -96,7 +96,6 @@ class MetronomeSynthIF : public SynthIF
       float *accent2Samples;
       int    accent2Len;
 
-// REMOVE Tim. autoconnect. Added.
       bool processEvent(const MidiPlayEvent& ev);
       
    public:
@@ -118,11 +117,7 @@ class MetronomeSynthIF : public SynthIF
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       virtual void preProcessAlways() { }
-// REMOVE Tim. autoconnect. Changed.
-//       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
       
@@ -150,68 +145,11 @@ class MetronomeSynthIF : public SynthIF
 //   getData
 //---------------------------------------------------------
 
-// REMOVE Tim. autoconnect. Changed.
-// iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
-//       {
-//       // Added by Tim. p3.3.18
-//       #ifdef METRONOME_DEBUG
-//       printf("MusE: MetronomeSynthIF::getData\n");
-//       #endif
-// 
-//       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
-//           initMetronome();
-//       }
-// 
-//       //set type to unsigned , due to compiler warning: comparison signed/unsigned
-// // REMOVE Tim. autoconnect. Changed.
-// //       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
-// //       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
-// //       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
-//       unsigned int curPos      = 0;
-//       unsigned int endPos      = n;
-// // REMOVE Tim. autoconnect. Changed.
-// //       int frameOffset = MusEGlobal::audio->getFrameOffset();
-//       unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
-// 
-//       for (; i != el->end(); ++i) {
-// // REMOVE Tim. autoconnect. Changed.
-// //             unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
-// //             if (frame >= endPos)
-//             unsigned int frame = (i->time() < syncFrame) ? 0 : i->time() - syncFrame;
-//             if (frame >= n)
-//                   break;
-//             if (frame > curPos) {
-// //                   if (frame < pos)
-// //                         printf("should not happen: missed event %d\n", pos -frame);
-//                   if(i->time() < syncFrame)
-//                         fprintf(stderr, "MetronomeSynthIF: should not happen: missed event %u\n", i->time());
-//                   else
-// //                         process(buffer, curPos-pos, frame - curPos);
-//                         process(buffer, curPos, frame - curPos);
-//                   curPos = frame;
-//                   }
-//             putEvent(*i);
-//             }
-// //       if (endPos - curPos)
-// //             process(buffer, curPos - off, endPos - curPos);
-//       if (endPos > curPos)
-//             process(buffer, curPos, endPos - curPos);
-//       return el->end();
-//       }
-
-// REMOVE Tim. autoconnect. Changed.
-// iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* /*el*/, iMPEvent i, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
 bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
       {
       #ifdef METRONOME_DEBUG
       fprintf(stderr, "MusE: MetronomeSynthIF::getData\n");
       #endif
-
-// REMOVE Tim. autoconnect. Removed.
-// FIXME Not realtime safe
-//       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
-//           initMetronome();
-//       }
 
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
       unsigned int curPos = 0;
@@ -222,31 +160,24 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
 
       MidiPlayEvent buf_ev;
       
-      //const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->bufferCapacity();
       // Transfer the user lock-free buffer events to the user sorted multi-set.
       // False = don't use the size snapshot, but update it.
       const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
       for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        //if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev, i))
         if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-          //synti->_outUserEvents.add(buf_ev);
           synti->_outUserEvents.insert(buf_ev);
       }
       
       // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      //const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->bufferCapacity();
       const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
       for(unsigned int i = 0; i < pb_buf_sz; ++i)
       {
         // Are we stopping? Just remove the item.
         if(do_stop)
-          //synti->eventBuffers(PlaybackBuffer)->remove(i);
           synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
         // Otherwise get the item.
-        //else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev, i))
         else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-          //synti->_outPlaybackEvents.add(buf_ev);
           synti->_outPlaybackEvents.insert(buf_ev);
       }
   
@@ -258,25 +189,11 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         // Reset the flag.
         synti->setStopFlag(false);
       }
-//       else
-//       //{
-//         // For convenience, simply transfer all playback events into the other user list. 
-//         //for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
-//         //  synti->_outUserEvents.add(*impe);
-//         synti->_outUserEvents.insert(synti->_outPlaybackEvents.begin(), synti->_outPlaybackEvents.end());
-//       //}
-//       // Done with playback event list. Clear it.  
-//       //synti->_outPlaybackEvents.clear();
         
       iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
       iMPEvent impe_us = synti->_outUserEvents.begin();
       bool using_pb;
   
-//       // This also takes an internal snapshot of the size for use later...
-//       // False = don't use the size snapshot, but update it.
-//       const int sz = synti->eventFifos()->getSize(false);
-//       for(int i = 0; i < sz; ++i)
-//       for(iMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); )
       while(1)
       {  
         if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
@@ -287,9 +204,6 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
           using_pb = false;
         else break;
         
-//         // True = use the size snapshot.
-//         const MidiPlayEvent& ev(synti->eventFifos()->peek(true)); 
-//         const MidiPlayEvent& ev = *impe;
         const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
         
         const unsigned int evTime = ev.time();
@@ -311,10 +225,6 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
           break;
         }
 
-//         // Done with ring buffer event. Remove it from FIFO.
-//         // True = use the size snapshot.
-//         synti->eventFifos()->remove(true);
-        
         if(frame > curPos)
         {
           process(buffer, curPos, frame - curPos);
@@ -329,11 +239,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         processEvent(ev);
         
         // Done with ring buffer event. Remove it from FIFO.
-        // True = use the size snapshot.
-//         synti->eventFifos()->remove(true);
-        
         // C++11.
-        //impe = synti->_outUserEvents.erase(impe);
         if(using_pb)
           impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
         else
@@ -343,10 +249,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
       if(curPos < n)
         process(buffer, curPos, n - curPos);
       
-// REMOVE Tim. autoconnect. Changed.
-//       return i;
       return true;
-      //return el->end();
       }
       
 //---------------------------------------------------------
@@ -461,8 +364,6 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
 //   putEvent
 //---------------------------------------------------------
 
-// REMOVE Tim. autoconnect. Changed.
-//bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
 bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
 {
     if(ev.type() != MusECore::ME_NOTEON)

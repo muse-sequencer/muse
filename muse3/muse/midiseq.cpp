@@ -53,8 +53,6 @@
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq = NULL;
-// REMOVE Tim. autoconnect. Removed.
-// volatile bool midiBusy=false;
 }
 
 namespace MusECore {
@@ -153,20 +151,6 @@ void MidiSeq::processMsg1(const void* m)
             case MusECore::MS_STOP:
                   processStop();
                   break;
-            
-//             case MusECore::MS_SET_RTC:
-//                   MusEGlobal::doSetuid();
-//                   setRtcTicks();
-//                   MusEGlobal::undoSetuid();
-//                   break;
-//             case MusECore::MS_UPDATE_POLL_FD:
-//                   updatePollFd();
-//                   break;
-//                   
-//                   
-//             case MusECore::SEQM_IDLE:
-//                   idle = msg->a;
-//                   break;
             default:
                   fprintf(stderr, "MidiSeq::processMsg1() unknown id %d\n", msg->id);
                   break;
@@ -596,13 +580,6 @@ void MidiSeq::processTimerTick()
       if (idle)
             return;
 
-// REMOVE Tim. autoconnect. Removed.
-//       if (MusEGlobal::midiBusy) {
-//             // we hit MusEGlobal::audio: MusEGlobal::midiSeq->msgProcess (actually this has been MusEGlobal::audio->processMidi for some time now - Tim)
-//             // miss this timer tick
-//             return;
-//             }
-
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
       if (!MusEGlobal::extSyncFlag.value()) {
@@ -651,8 +628,6 @@ void MidiSeq::processTimerTick()
         switch(type)
         {
           case MidiDevice::ALSA_MIDI:
-// REMOVE Tim. autoconnect. Changed.
-//               md->processMidi();
               md->processMidi(curFrame);
           break;
 

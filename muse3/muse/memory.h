@@ -24,14 +24,10 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-//#include <cstddef>
 #include <stdio.h>
 #include <stdlib.h>
-// REMOVE Tim. autoconnect. Removed.
-// #include <map>
 
 // NOTE: Keep this code in case we need a dimensioned pool!
-// REMOVE Tim. autoconnect. Removed.
 #if 0
 // most of the following code is based on examples
 // from Bjarne Stroustrup: "Die C++ Programmiersprache"
@@ -108,104 +104,6 @@ extern Pool midiRTmemoryPool;
 #endif
 
 
-// REMOVE Tim. autoconnect. Removed. Moved into mpevent.h
-// //---------------------------------------------------------
-// //   audioRTalloc
-// //---------------------------------------------------------
-// 
-// template <class T> class audioRTalloc
-//       {
-//    public:
-//       typedef T         value_type;
-//       typedef size_t    size_type;
-//       typedef ptrdiff_t difference_type;
-// 
-//       typedef T*        pointer;
-//       typedef const T*  const_pointer;
-// 
-//       typedef T&        reference;
-//       typedef const T&  const_reference;
-// 
-//       pointer address(reference x) const { return &x; }
-//       const_pointer address(const_reference x) const { return &x; }
-// 
-//       audioRTalloc();
-//       template <class U> audioRTalloc(const audioRTalloc<U>&) {}
-//       ~audioRTalloc() {}
-// 
-//       pointer allocate(size_type n, void * = 0) {
-//             return static_cast<T*>(audioRTmemoryPool.alloc(n * sizeof(T)));
-//             }
-//       void deallocate(pointer p, size_type n) {
-//             audioRTmemoryPool.free(p, n * sizeof(T));
-//             }
-// 
-//       audioRTalloc<T>&  operator=(const audioRTalloc&) { return *this; }
-//       void construct(pointer p, const T& val) {
-//             new ((T*) p) T(val);
-//             }
-//       void destroy(pointer p) {
-//             p->~T();
-//             }
-//       size_type max_size() const { return size_t(-1); }
-// 
-//       template <class U> struct rebind { typedef audioRTalloc<U> other; };
-//       template <class U> audioRTalloc& operator=(const audioRTalloc<U>&) { return *this; }
-//       };
-// 
-// template <class T> audioRTalloc<T>::audioRTalloc() {}
-// 
-// //---------------------------------------------------------
-// //   midiRTalloc
-// //---------------------------------------------------------
-// 
-// template <class T> class midiRTalloc
-//       {
-//    public:
-//       typedef T         value_type;
-//       typedef size_t    size_type;
-//       typedef ptrdiff_t difference_type;
-// 
-//       typedef T*        pointer;
-//       typedef const T*  const_pointer;
-// 
-//       typedef T&        reference;
-//       typedef const T&  const_reference;
-// 
-//       pointer address(reference x) const { return &x; }
-//       const_pointer address(const_reference x) const { return &x; }
-// 
-//       midiRTalloc();
-//       template <class U> midiRTalloc(const midiRTalloc<U>&) {}
-//       ~midiRTalloc() {}
-// 
-//       pointer allocate(size_type n, void * = 0) {
-//             return static_cast<T*>(midiRTmemoryPool.alloc(n * sizeof(T)));
-//             }
-//       void deallocate(pointer p, size_type n) {
-//             midiRTmemoryPool.free(p, n * sizeof(T));
-//             }
-// 
-//       midiRTalloc<T>&  operator=(const midiRTalloc&) { return *this; }
-//       void construct(pointer p, const T& val) {
-//             new ((T*) p) T(val);
-//             }
-//       void destroy(pointer p) {
-//             p->~T();
-//             }
-//       size_type max_size() const { return size_t(-1); }
-// 
-//       template <class U> struct rebind { typedef midiRTalloc<U> other; };
-//       template <class U> midiRTalloc& operator=(const midiRTalloc<U>&) { return *this; }
-//       };
-// 
-// template <class T> midiRTalloc<T>::midiRTalloc() {}
-
-
-
-
-// REMOVE Tim. autoconnect. Added.
-
 //---------------------------------------------------------
 //   TypedMemoryPool
 //   Most of the following code is based on examples
@@ -264,8 +162,6 @@ template <typename T, int itemsPerChunk> class TypedMemoryPool
       
       void* alloc(size_t items)
       {
-        // REMOVE Tim. autoconnect. Added.
-        //fprintf(stderr, "TypedMemoryPool::alloc: sizeof T:%u\n", (unsigned int)sizeof(T));
         if(items == 0)
           return 0;
         if(items != 1)
@@ -283,8 +179,6 @@ template <typename T, int itemsPerChunk> class TypedMemoryPool
       
       void free(void* b, size_t items)
       {
-        // REMOVE Tim. autoconnect. Added.
-        //fprintf(stderr, "TypedMemoryPool::free: p:%p sizeof T:%u\n", b, (unsigned int)sizeof(T));
         if(b == 0 || items == 0)
           return;
         if(items != 1)
@@ -308,16 +202,10 @@ template <typename T, int itemsPerChunk> class TypedMemoryPool
 class MemoryQueue {
       struct Chunk
       {
-        //size_t _size;
         enum { ChunkSize = 8 * 1024 };
         Chunk* _next;
         char _mem[ChunkSize];
-        //char* _mem;
-        // TODO: Hm, will this cause a double call to new if new Chunk() is called?
-        // Maybe have to go back to static enum...
-        //Chunk(size_t size) { _size = size; _mem = new char[_size]; }
       };
-      //size_t _chunkSize;
       Chunk* _startChunk;
       Chunk* _endChunk;
       Chunk* _curWriteChunk;
@@ -330,14 +218,11 @@ class MemoryQueue {
 
    public:
       MemoryQueue();
-      //MemoryQueue(size_t chunkSize);
       ~MemoryQueue();
 
       // Static. Returns whether the given length in bytes needs to be chunked.
       static bool chunkable(size_t len) { return len > Chunk::ChunkSize; }
       
-      // Returns capacity in bytes.
-      //size_t capacity() const { return _chunkSize; }
       // Returns current size in bytes.
       size_t curSize() const { return _curSize; }
       // Deletes all chunks except the first (to avoid a preallocation), and calls reset.

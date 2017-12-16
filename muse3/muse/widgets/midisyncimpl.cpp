@@ -91,37 +91,21 @@ void MidiSyncConfig::setWhatsThis(QTreeWidgetItem *item)
   item->setWhatsThis(DEVCOL_NAME, tr("Name of the midi device associated with this port number"));
   item->setWhatsThis(DEVCOL_SYNC_TO, tr("Sync to this device. Click to select.\n"
 				   "MusE will synchronize to this device's\n clock or MTC quarter-frame,\n if 'slave to external sync' is on."));
-// REMOVE Tim. autoconnect. Changed.
-//   item->setWhatsThis(DEVCOL_IN, tr("Midi clock input detected.\n"
-// 				   "Current port actually used is red.\nClick to force a port to be used."));
   item->setWhatsThis(DEVCOL_IN, tr("Midi clock input detected"));
   item->setWhatsThis(DEVCOL_TICKIN, tr("Midi tick input detected"));
   item->setWhatsThis(DEVCOL_MRTIN, tr("Midi realtime input detected, including\n start/stop/continue, and song position."));
   item->setWhatsThis(DEVCOL_MMCIN, tr("MMC input detected, including stop/play/deferred play, and locate."));
                                       //"Current port actually used is red. Click to force a port to be current."));
-// REMOVE Tim. autoconnect. Changed.
-//   item->setWhatsThis(DEVCOL_MTCIN, tr("MTC input detected, including forward quarter-frame sync and full-frame locate.\n"
-// 				      "Current port actually used is red. Click to force a port to be current."));
   item->setWhatsThis(DEVCOL_MTCIN, tr("MTC input detected, including forward quarter-frame sync and full-frame locate"));
   item->setWhatsThis(DEVCOL_MTCTYPE, tr("Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop\n"
 					"Detects format of MTC quarter and full frame, and MMC locate."));
   item->setWhatsThis(DEVCOL_RID, tr("Receive id number. 127 = global receive all, even if not global."));
-// REMOVE Tim. autoconnect. Changed.
-//   item->setWhatsThis(DEVCOL_RCLK, tr("Accept midi clock input. Only one input is used for clock.\n"
-// 				     "Auto-acquire: If two or more port realtime inputs are enabled,\n"
-// 				     " the first clock detected is used, until clock is lost,\n"
-// 				     " then another can take over. Best if each turns off its clock\n" 
-// 				     " at stop, so MusE can re-acquire the clock from another port.\n"
-// 				     "Click on detect indicator to force another."));
   item->setWhatsThis(DEVCOL_RCLK, tr("Accept midi clock input.\nOnly one port can be used for clock sync."));
   item->setWhatsThis(DEVCOL_RMRT, tr("Accept midi realtime input, including\n start/stop/continue, and song position.\n"
 				     "Non-clock events (start,stop etc) are\n accepted by ALL enabled ports.\n"
 				     "This means you may have several master\n devices connected, and muse will accept\n"
 				     " input from them."));
   item->setWhatsThis(DEVCOL_RMMC, tr("Accept MMC input, including stop/play/deferred play, and locate."));
-// REMOVE Tim. autoconnect. Changed.
-//   item->setWhatsThis(DEVCOL_RMTC, tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
-// 				     "See 'rc' column for more help."));
   item->setWhatsThis(DEVCOL_RMTC, tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
 				     "Only one port can be used for sync."));
   item->setWhatsThis(DEVCOL_RREWSTART, tr("When start is received, rewind before playing.\n"
@@ -378,17 +362,6 @@ void MidiSyncConfig::heartBeat()
           bool sdet = MusEGlobal::midiPorts[port].syncInfo().MCSyncDetect();
           if(sdet)
           {
-// REMOVE Tim. autoconnect. Removed.
-//             if(port == MusEGlobal::curMidiSyncInPort)
-//             {
-//               if(!lvi->_curDet)
-//               {
-//                 lvi->_curDet = true;
-//                 lvi->_inDet = false;
-//                 lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-//               }  
-//             }
-//             else
             if(!lvi->_inDet)
             {
               lvi->_inDet = true;
@@ -406,11 +379,6 @@ void MidiSyncConfig::heartBeat()
             }  
           }
           
-// REMOVE Tim. autoconnect. Added.
-//           if(port == MusEGlobal::curMidiSyncInPort)
-//             lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
-//           else
-//             lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
           if(port == MusEGlobal::config.curMidiSyncInPort)
             lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
           else
@@ -497,17 +465,6 @@ void MidiSyncConfig::heartBeat()
           
           if(mtcdet)
           {
-// REMOVE Tim. autoconnect. Removed.
-//             if(port == MusEGlobal::curMidiSyncInPort)
-//             {
-//               if(!lvi->_curMTCDet)
-//               {
-//                 lvi->_curMTCDet = true;
-//                 lvi->_MTCDet = false;
-//                 lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-//               }  
-//             }
-//             else
             if(!lvi->_MTCDet)
             {
               lvi->_MTCDet = true;
@@ -603,8 +560,6 @@ void MidiSyncConfig::extSyncChanged(bool v)
 void MidiSyncConfig::ok()
       {
       apply();
-// REMOVE Tim. autoconnect. Changed.
-//       cancel();
       _dirty = false;
       if(applyButton->isEnabled())
         applyButton->setEnabled(false);
@@ -777,14 +732,6 @@ void MidiSyncConfig::updateSyncInfoLV()
             
             if(portsi.MCSyncDetect())
             {
-// REMOVE Tim. autoconnect. Removed.
-//               if(i == MusEGlobal::curMidiSyncInPort)
-//               {
-//                 lvi->_curDet = true;
-//                 lvi->_inDet = false;
-//                 lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-//               }
-//               else
               {
                 lvi->_curDet = false;
                 lvi->_inDet = true;
@@ -798,11 +745,6 @@ void MidiSyncConfig::updateSyncInfoLV()
               lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
             }
             
-// REMOVE Tim. autoconnect. Added.
-//             if(i == MusEGlobal::curMidiSyncInPort)
-//               lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
-//             else
-//               lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
             if(i == MusEGlobal::config.curMidiSyncInPort)
               lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
             else
@@ -865,14 +807,6 @@ void MidiSyncConfig::updateSyncInfoLV()
 
             if(portsi.MTCDetect())
             {
-// REMOVE Tim. autoconnect. Removed.
-//               if(i == MusEGlobal::curMidiSyncInPort)
-//               {
-//                 lvi->_curMTCDet = true;
-//                 lvi->_MTCDet = false;
-//                 lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-//               }
-//               else
               {
                 lvi->_curMTCDet = false;
                 lvi->_MTCDet = true;
@@ -991,7 +925,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   break;
             case DEVCOL_NAME:
                   break;
-// REMOVE Tim. autoconnect. Added.
             case DEVCOL_SYNC_TO:
                   if(no != MusEGlobal::config.curMidiSyncInPort)
                   {
@@ -1008,46 +941,12 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   }  
                   break;
             case DEVCOL_IN:
-// REMOVE Tim. autoconnect. Removed.
-//                   // If this is not the current midi sync in port, and sync in from this port is enabled,
-//                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
-//                   //  current sync in port. 
-//                   if(no != MusEGlobal::curMidiSyncInPort)
-//                   {
-//                     if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
-//                     {
-//                       MusEGlobal::curMidiSyncInPort = no;
-//                       lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-//                     }  
-//                     if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
-//                     {
-//                       MusEGlobal::curMidiSyncInPort = no;
-//                       lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-//                     }  
-//                   }  
                   break;
             case DEVCOL_TICKIN:
                   break;
             case DEVCOL_MMCIN:
                   break;
             case DEVCOL_MTCIN:
-// REMOVE Tim. autoconnect. Removed.
-//                   // If this is not the current midi sync in port, and sync in from this port is enabled,
-//                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
-//                   //  current sync in port. 
-//                   if(no != MusEGlobal::curMidiSyncInPort)
-//                   {
-//                     if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
-//                     {
-//                       MusEGlobal::curMidiSyncInPort = no;
-//                       lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-//                     }  
-//                     if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
-//                     {
-//                       MusEGlobal::curMidiSyncInPort = no;
-//                       lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-//                     }  
-//                   }  
                   break;
             case DEVCOL_MTCTYPE:
                   break;

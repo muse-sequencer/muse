@@ -220,8 +220,6 @@ void CtrlPanel::buildPanel()
       _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-// REMOVE Tim. autoconnect. Changed.
-//     connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
     connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
@@ -252,8 +250,6 @@ void CtrlPanel::buildPanel()
       _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-// REMOVE Tim. autoconnect. Changed.
-//     connect(_slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
     connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
@@ -560,8 +556,6 @@ void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 
 void CtrlPanel::patchCtrlChanged(int val)
 {
-// REMOVE Tim. autoconnect. Changed.
-//   ctrlChanged(double(val));
   ctrlChanged(double(val), false, _dnum, 0);
 }
 
@@ -569,8 +563,6 @@ void CtrlPanel::patchCtrlChanged(int val)
 //   ctrlChanged
 //---------------------------------------------------------
 
-// REMOVE Tim. autoconnect. Changed.
-// void CtrlPanel::ctrlChanged(double val)
 void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/)
     {
       if (inHeartBeat)
@@ -609,71 +601,16 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
       }
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
-//       int curval = mp->hwCtrlState(chan, _dnum);
-
-//       if(_dnum == MusECore::CTRL_PROGRAM)
-//       {
-// // REMOVE Tim. autoconnect. Changed.
-// //         if(val == MusECore::CTRL_VAL_UNKNOWN || (val < _ctrl->minVal()) || (val > _ctrl->maxVal()))
-// //         {
-// //           if(curval != MusECore::CTRL_VAL_UNKNOWN)
-// //           {
-// // // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// // //             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-// //             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
-// //                                                       MusECore::ME_CONTROLLER,
-// //                                                       MusECore::CTRL_PROGRAM,
-// //                                                       MusECore::CTRL_VAL_UNKNOWN));
-// //           }
-// //         }
-// //         else
-// //         {
-// // // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// // //           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
-// //           MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
-// //           mp->putEvent(ev);
-// //         }
-//         
-//         if(ival < _ctrl->minVal() || ival > _ctrl->maxVal())
-//           ival = MusECore::CTRL_VAL_UNKNOWN;
-//         MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, ival);
-//         mp->putEvent(ev);
-//         
-//       }
-// REMOVE Tim. autoconnect. Changed.
-//       else
-//       // Shouldn't happen, but...
-//       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
-//       {
-//         if(curval != MusECore::CTRL_VAL_UNKNOWN)
-// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// //           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-//           mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, outport, chan,
-//                                                      MusECore::ME_CONTROLLER,
-//                                                      _dnum,
-//                                                      MusECore::CTRL_VAL_UNKNOWN));
-//       }
-//       else
-//       {
-//         // Auto bias...
-//         ival += _ctrl->bias();
-//         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
-//         mp->putEvent(ev);
-//       }
-      //else
-      //{
-        // Shouldn't happen, but...
-        if(off || ival < _ctrl->minVal() || ival > _ctrl->maxVal())
-          ival = MusECore::CTRL_VAL_UNKNOWN;
-       
-        if(ival != MusECore::CTRL_VAL_UNKNOWN)
-          // Auto bias...
-          ival += _ctrl->bias();
-
-        MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
-        mp->putEvent(ev);
-      //}
+      // Shouldn't happen, but...
+      if(off || ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+        ival = MusECore::CTRL_VAL_UNKNOWN;
       
+      if(ival != MusECore::CTRL_VAL_UNKNOWN)
+        // Auto bias...
+        ival += _ctrl->bias();
+
+      MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+      mp->putEvent(ev);
     }
 
 //---------------------------------------------------------
@@ -682,8 +619,6 @@ void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/
 
 void CtrlPanel::setController()
 {
-//   inHeartBeat = true;
-
   if(!_track || !_ctrl)
   {
     if(_patchEdit)
@@ -925,8 +860,6 @@ void CtrlPanel::setController()
   }
 
   setControlColor();
-
-//   inHeartBeat = false;
 }
 
 void CtrlPanel::setControlColor()

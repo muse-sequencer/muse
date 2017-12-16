@@ -305,12 +305,6 @@ size_t SysExOutputProcessor::stageEvData(const EvData& evData, unsigned int fram
 
 void EvData::setData(const unsigned char* p, int l) 
 {
-// REMOVE Tim. autoconnect. Removed. Moved below.
-//             if(data)
-//               delete[] data;
-//             data = 0;  
-      
-// REMOVE Tim. autoconnect. Added.
       // Setting the data destroys any reference. Dereference now.
       // The data may still be shared. Destroy it only if no more references.
       if (refCount && (--(*refCount) == 0)) 
@@ -329,17 +323,9 @@ void EvData::setData(const unsigned char* p, int l)
         data = new unsigned char[l];
         memcpy(data, p, l);
         
-// REMOVE Tim. autoconnect. Added.
         // Setting the data destroys any reference. Create a new reference now.
         refCount = new int(1);
       }
-// REMOVE Tim. autoconnect. Added.
-//             else if(refCount)
-//             {  
-//               delete refCount;
-//               refCount = 0;
-//             } 
-      
       dataLen = l;
 }
             

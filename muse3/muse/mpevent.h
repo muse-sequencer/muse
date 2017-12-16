@@ -25,19 +25,10 @@
 #ifndef __MPEVENT_H__
 #define __MPEVENT_H__
 
-// #include <set>
 #include <set>
-//#include <iterator>
-//#include <memory>
-//#include <list>
 #include "evdata.h"
 #include "memory.h"
-// REMOVE Tim. autoconnect. Added.
-//#include "sysex_processor.h"
-//#include <stdio.h>
-//#include <stdlib.h>
 #include <cstddef>
-// #include <map>
 
 // Play events ring buffer size
 #define MIDI_FIFO_SIZE    4096         
@@ -111,8 +102,6 @@ class MEvent {
       int len() const                 { return edata.dataLen; }
       void setData(const EvData& e)   { edata = e; }
       void setData(const unsigned char* p, int len) { edata.setData(p, len); }
-      // REMOVE Tim. autoconnect. Added.
-      //void setData(const SysExInputProcessor* p) { edata.setData(p); }
       
       void dump() const;
       bool isNote() const      { return _type == 0x90; }
@@ -176,75 +165,6 @@ class MidiPlayEvent : public MEvent {
       virtual ~MidiPlayEvent() {}
       };
 
-// REMOVE Tim. autoconnect. Removed. Moved below.
-// //---------------------------------------------------------
-// //   MPEventList
-// //    memory allocation in audio thread domain
-// //---------------------------------------------------------
-// 
-// typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
-// 
-// struct MPEventList : public MPEL {
-//   public:
-//       // Optimize to eliminate duplicate events at the SAME time.
-//       // It will not handle duplicate events at DIFFERENT times.
-//       // Replaces event if it already exists.
-//       void add(const MidiPlayEvent& ev);
-// };
-// 
-// typedef MPEventList::iterator iMPEvent;
-// typedef MPEventList::const_iterator ciMPEvent;
-// typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
-
-/* DELETETHIS 20 ??
-//---------------------------------------------------------
-//   MREventList
-//    memory allocation in midi thread domain
-//---------------------------------------------------------
-
-// Changed by Tim. p3.3.8
-
-// audioRTalloc? Surely this must have been a mistake?  
-//typedef std::list<MidiRecordEvent, audioRTalloc<MidiRecordEvent> > MREL;
-typedef std::list<MidiRecordEvent, midiRTalloc<MidiRecordEvent> > MREL;
-
-struct MREventList : public MREL {
-      void add(const MidiRecordEvent& ev) { MREL::push_back(ev); }
-      };
-
-typedef MREventList::iterator iMREvent;
-typedef MREventList::const_iterator ciMREvent;
-*/
-
-// REMOVE Tim. autoconnect. Removed. Replaced with template-ized version.
-// //---------------------------------------------------------
-// //   MidiFifo
-// //---------------------------------------------------------
-// 
-// class MidiFifo {
-//       MidiPlayEvent fifo[MIDI_FIFO_SIZE];
-//       volatile int size;
-//       int wIndex;
-//       int rIndex;
-// 
-//    public:
-//       MidiFifo()  { clear(); }
-//       bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
-//       MidiPlayEvent get();
-//       const MidiPlayEvent& peek(int = 0);
-//       void remove();
-//       bool isEmpty() const { return size == 0; }
-//       // This is not thread-safe.
-//       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
-//       // Clear the 'read' side of the ring buffer, which also clears the size.
-//       // NOTE: A corresponding clearWrite() is not provided because
-//       //  it is dangerous to reset the size from the sender side -
-//       //  the receiver might cache the size, briefly. The sender should 
-//       //  only grow the size while the receiver should only shrink it.
-//       void clearRead()     { size = 0; rIndex = wIndex; }
-//       int getSize() const  { return size; }
-//       };
-
 //---------------------------------------------------------
 //   MidiRecFifo
 //---------------------------------------------------------
@@ -289,11 +209,7 @@ template <typename T> class audioMPEventRTalloc
     pointer address(reference x) const { return &x; }
     const_pointer address(const_reference x) const { return &x; }
 
-    audioMPEventRTalloc() 
-    { 
-      // REMOVE Tim. autoconnect. Added.
-      fprintf(stderr, "audioMPEventRTalloc ctor: sizeof T:%u\n", (unsigned int)sizeof(T));
-    } 
+    audioMPEventRTalloc() { } 
     template <typename U> audioMPEventRTalloc(const audioMPEventRTalloc<U>&) {}
     ~audioMPEventRTalloc() {}
 
@@ -348,106 +264,12 @@ template <typename T> class seqMPEventRTalloc
     template <typename U> seqMPEventRTalloc& operator=(const seqMPEventRTalloc<U>&) { return *this; }
 };
 
-
-// // REMOVE. Nope, can't use this. Containers expect a standard allocator parameter.
-// //---------------------------------------------------------
-// //   MPEventRTalloc
-// //---------------------------------------------------------
-// 
-// enum MPEventRTallocID { AudioRTAlloc = 0, SeqRTAlloc = 1 };
-// 
-// template <typename T, MPEventRTallocID aid> class MPEventRTalloc
-// {
-//   private:
-//     static TypedMemoryPool<T, 2048> audio_pool;
-//     static TypedMemoryPool<T, 2048> seq_pool;
-//     
-//   public:
-//     typedef T         value_type;
-//     typedef size_t    size_type;
-//     typedef ptrdiff_t difference_type;
-// 
-//     typedef T*        pointer;
-//     typedef const T*  const_pointer;
-// 
-//     typedef T&        reference;
-//     typedef const T&  const_reference;
-// 
-//     pointer address(reference x) const { return &x; }
-//     const_pointer address(const_reference x) const { return &x; }
-// 
-//     MPEventRTalloc() 
-//     { 
-//       // REMOVE Tim. autoconnect. Added.
-//       fprintf(stderr, "MPEventRTalloc ctor: sizeof T:%u\n", (unsigned int)sizeof(T));
-//     } 
-//     template <typename U, MPEventRTallocID aaid> MPEventRTalloc(const MPEventRTalloc<U, aaid>&) {}
-//     ~MPEventRTalloc() {}
-// 
-//     pointer allocate(size_type n, void * = 0) 
-//     { 
-//       switch(aid)
-//       {
-//         case AudioRTAlloc:
-//           return static_cast<T*>(audio_pool.alloc(n)); 
-//         break;
-//         case SeqRTAlloc:
-//           return static_cast<T*>(seq_pool.alloc(n)); 
-//         break;
-//       }
-//       return 0;
-//     }
-// 
-//     void deallocate(pointer p, size_type n) 
-//     { 
-//       switch(aid)
-//       {
-//         case AudioRTAlloc:
-//           audio_pool.free(p, n); 
-//         break;
-//         case SeqRTAlloc:
-//           seq_pool.free(p, n); 
-//         break;
-//       }
-//     }
-// 
-//     MPEventRTalloc<T, aid>&  operator=(const MPEventRTalloc&) { return *this; }
-//     void construct(pointer p, const T& val) { new ((T*) p) T(val); }
-//     void destroy(pointer p) { p->~T(); }
-//     size_type max_size() const { return size_t(-1); }
-// 
-//     template <typename U, MPEventRTallocID aaid> struct rebind { typedef MPEventRTalloc<U, aaid> other; };
-//     template <typename U, MPEventRTallocID aaid> MPEventRTalloc& operator=(const MPEventRTalloc<U, aaid>&) { return *this; }
-// };
-// 
-// //---------------------------------------------------------
-// //   MPEventsList
-// //    memory allocation in audio thread domain
-// //---------------------------------------------------------
-// 
-// //typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioMPEventRTalloc<MidiPlayEvent> > MPEL;
-// 
-// template <MPEventRTallocID aid> 
-// //class MPEventsList : public std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, MPEventRTalloc<MidiPlayEvent, aid> > {
-// class MPEventsList : public std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, AudioMPEventRTalloc<MidiPlayEvent> > {
-//   public:
-//       // Optimize to eliminate duplicate events at the SAME time.
-//       // It will not handle duplicate events at DIFFERENT times.
-//       // Replaces event if it already exists.
-//       void add(const MidiPlayEvent& ev);
-// };
-// 
-// typedef MPEventsList::iterator iMPEvents;
-// typedef MPEventsList::const_iterator ciMPEvents;
-// typedef std::pair<iMPEvents, iMPEvents> MPEventsListRangePair_t;
-
 //---------------------------------------------------------
 //   MPEventList
 //    memory allocation in audio thread domain
 //---------------------------------------------------------
 
 typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioMPEventRTalloc<MidiPlayEvent> > MPEL;
-//typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, std::allocator<MidiPlayEvent> > MPEL;
 
 class MPEventList : public MPEL {
   public:
@@ -480,37 +302,6 @@ typedef SeqMPEventList::iterator iSeqMPEvent;
 typedef SeqMPEventList::const_iterator ciSeqMPEvent;
 typedef std::pair<iSeqMPEvent, iSeqMPEvent> SeqMPEventListRangePair_t;
 
-
-// //---------------------------------------------------------
-// //   MPEventsList
-// //    memory allocation in audio thread domain
-// //---------------------------------------------------------
-// 
-// //typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioMPEventRTalloc<MidiPlayEvent> > MPEL;
-// 
-// //template <typename _Alloc = std::allocator<MidiPlayEvent> > 
-// //template < > <typename T, typename _Alloc = std::allocator<T> > 
-// //template < > 
-// //template <std::allocator _Alloc > 
-// //class MPEventsList : public std::multiset < MidiPlayEvent, std::less<MidiPlayEvent>, _Alloc > {
-// template < typename T >
-// class MPEventsList<T> : public std::multiset < T, std::less<T> > {
-// //class MPEventsList : public std::multiset < T, std::less<T>, std::allocator<T> > {
-// //class MPEventsList : public MPEventList<MidiPlayEvent, std::less<MidiPlayEvent>, SeqMPEventRTalloc<MidiPlayEvent> > {
-//   public:
-//       typedef std::iterator<T> iMPEvents;
-// //       typedef const_iterator ciMPEvents;
-// //       typedef std::pair<iMPEvents, iMPEvents> MPEventsListRangePair_t;
-//       
-//       // Optimize to eliminate duplicate events at the SAME time.
-//       // It will not handle duplicate events at DIFFERENT times.
-//       // Replaces event if it already exists.
-//       void add(const MidiPlayEvent& ev);
-// };
-
-//typedef MPEventsList::iterator iMPEvents;
-// typedef MPEventsList::const_iterator ciMPEvents;
-// typedef std::pair<iMPEvents, iMPEvents> MPEventsListRangePair_t;
 
 } // namespace MusECore
 

@@ -1703,10 +1703,7 @@ void MidiTrackInfo::progRecClicked()
       if(program == MusECore::CTRL_VAL_UNKNOWN || program == 0xffffff) 
         return;
 
-//       unsigned tick = MusEGlobal::song->cpos();
       MusECore::Event a(MusECore::Controller);
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//       a.setTick(tick);
       a.setTick(0);
       a.setA(MusECore::CTRL_PROGRAM);
       a.setB(program);
@@ -1776,14 +1773,11 @@ void MidiTrackInfo::recordClicked()
       int portno       = track->outPort();
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[portno];
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//       unsigned tick = MusEGlobal::song->cpos();
       
       int program = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       if(program != MusECore::CTRL_VAL_UNKNOWN && program != 0xffffff) 
       {
         MusECore::Event a(MusECore::Controller);
-//         a.setTick(tick);
         a.setTick(0);
         a.setA(MusECore::CTRL_PROGRAM);
         a.setB(program);
@@ -1793,7 +1787,6 @@ void MidiTrackInfo::recordClicked()
       if(volume != MusECore::CTRL_VAL_UNKNOWN) 
       {
         MusECore::Event a(MusECore::Controller);
-//         a.setTick(tick);
         a.setTick(0);
         a.setA(MusECore::CTRL_VOLUME);
         a.setB(volume);
@@ -1803,7 +1796,6 @@ void MidiTrackInfo::recordClicked()
       if(pan != MusECore::CTRL_VAL_UNKNOWN) 
       {
         MusECore::Event a(MusECore::Controller);
-//         a.setTick(tick);
         a.setTick(0);
         a.setA(MusECore::CTRL_PANPOT);
         a.setB(pan);

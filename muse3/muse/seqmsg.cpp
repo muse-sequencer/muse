@@ -155,34 +155,6 @@ void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
       sendMsg(&msg);
       }
 
-// REMOVE Tim. autoconnect. Removed.
-// //---------------------------------------------------------
-// //   msgSetRecord
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetRecord(Track* track, bool val)
-//       {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_RECORD;
-//       msg.track  = track;
-//       msg.ival   = int(val);
-//       sendMsg(&msg);
-//       }
-
-// REMOVE Tim. autoconnect. Removed.
-// //---------------------------------------------------------
-// //   msgSetRecMonitor
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetRecMonitor(Track* track, bool val)
-//       {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_RECORD_MONITOR;
-//       msg.track  = track;
-//       msg.ival   = int(val);
-//       sendMsg(&msg);
-//       }
-
 //---------------------------------------------------------
 //   msgSetPrefader
 //---------------------------------------------------------
@@ -410,14 +382,6 @@ void Audio::msgSeekNextACEvent(AudioTrack* node, int acid)
 
 void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
 {
-//       AudioMsg msg;
-//       
-//       msg.id     = AUDIO_ERASE_AC_EVENT;
-//       msg.snode  = node;
-//       msg.ival   = acid;
-//       msg.a      = frame; 
-//       sendMsg(&msg);
-      
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, node, acid, frame));
 }
 
@@ -427,15 +391,6 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
 
 void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int frame2)
 {
-//       AudioMsg msg;
-//       
-//       msg.id     = AUDIO_ERASE_RANGE_AC_EVENTS;
-//       msg.snode  = node;
-//       msg.ival   = acid;
-//       msg.a      = frame1; 
-//       msg.b      = frame2; 
-//       sendMsg(&msg);
-      
   ciCtrlList icl = node->controller()->find(acid);
   if(icl == node->controller()->end())
     return;
@@ -479,15 +434,6 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
 
 void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
 {
-//       AudioMsg msg;
-//       
-//       msg.id     = AUDIO_ADD_AC_EVENT;
-//       msg.snode  = node;
-//       msg.ival   = acid;
-//       msg.a      = frame; 
-//       msg.dval   = val;
-//       sendMsg(&msg);
-      
        MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal, node, acid, frame, val));
 }
 
@@ -507,49 +453,6 @@ void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame
       msg.dval   = val;
       sendMsg(&msg);
 }
-
-// REMOVE Tim. autoconnect. Removed.
-// //---------------------------------------------------------
-// //   msgSetTrackMute
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetTrackMute(Track* track, bool val)
-// {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_SET_MUTE;
-//       msg.track  = track;
-//       msg.ival   = int(val);
-//       sendMsg(&msg);
-// }
-
-// REMOVE Tim. autoconnect. Removed.
-// //---------------------------------------------------------
-// //   msgSetTrackOff
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetTrackOff(Track* track, bool val)
-// {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_SET_TRACKOFF;
-//       msg.track  = track;
-//       msg.ival   = int(val);
-//       sendMsg(&msg);
-// }
-
-// REMOVE Tim. autoconnect. Removed.
-// //---------------------------------------------------------
-// //   msgSetSolo
-// //---------------------------------------------------------
-// 
-// void Audio::msgSetSolo(Track* track, bool val)
-// {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_SET_SOLO;
-//       msg.track  = track;
-//       msg.ival   = int(val);
-//       sendMsg(&msg);
-// }
-
 
 //---------------------------------------------------------
 //   msgSeek
@@ -640,7 +543,6 @@ void Audio::msgPlay(bool val)
       }
 
 
-// REMOVE Tim. autoconnect. Added.
 //---------------------------------------------------------
 //   msgExternalPlay
 //---------------------------------------------------------

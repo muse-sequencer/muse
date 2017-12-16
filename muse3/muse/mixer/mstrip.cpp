@@ -936,11 +936,8 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
         // 0xffffff cannot be a valid patch number... yet...
         if(rv == MusECore::CTRL_PROGRAM_VAL_DONT_CARE)
           rv = 0xffff00;
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//         MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
         MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
         mp->putEvent(ev);
-        //updateTrackInfo(-1);
     }
   }
   else if(instr->isSynti() && act->data().canConvert<void *>())
@@ -958,8 +955,6 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
           if(mp)
           {
               if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//                 mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
                 mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
                                                            MusECore::ME_CONTROLLER,
                                                            MusECore::CTRL_PROGRAM,
@@ -1000,31 +995,6 @@ void MidiComponentRack::controllerChanged(int v, int id)
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-// REMOVE Tim. autoconnect. Changed.
-//     MusECore::MidiCtrlValList* mcvl = imcvl->second;
-// 
-//   //   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-//     if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
-//     {
-//       if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-//       {
-// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// //         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
-//                                                   MusECore::ME_CONTROLLER,
-//                                                   id,
-//                                                   MusECore::CTRL_VAL_UNKNOWN));
-//       }
-//     }
-//     else
-//     {
-//       val += mc->bias();
-// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// //       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, val);
-//       MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, val);
-//       mp->putEvent(ev);
-//     }
-
     int ival = val;
     //if(off || ival < mc->minVal() || ival > mc->maxVal())
     if(ival < mc->minVal() || ival > mc->maxVal())
@@ -1051,8 +1021,6 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
 {
   DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%.20f scrollMode:%d\n", id, val, scrollMode);
 
-//   if (inHeartBeat)
-//         return;
   int port     = _track->outPort();
   int channel  = _track->outChannel();
   if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
@@ -1074,30 +1042,6 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-// REMOVE Tim. autoconnect. Changed.
-//     MusECore::MidiCtrlValList* mcvl = imcvl->second;
-// 
-//     if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-//     {
-//       if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-//       {
-// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// //         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
-//                                                   MusECore::ME_CONTROLLER,
-//                                                   id,
-//                                                   MusECore::CTRL_VAL_UNKNOWN));
-//       }
-//     }
-//     else
-//     {
-//       ival += mc->bias();
-// // REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-// //       MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, ival);
-//       MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
-//       mp->putEvent(ev);
-//     }
-    
     int ival = lrint(val);
     if(off || ival < mc->minVal() || ival > mc->maxVal())
       ival = MusECore::CTRL_VAL_UNKNOWN;
@@ -2330,8 +2274,6 @@ void MidiStrip::controlRightClicked(QPoint p, int id)
 
 void MidiStrip::upperStackTabButtonAPressed()
 {
-//   _upperStack->raiseWidget(0);
-//   _upperStack->setCurrentIndex(0);
   _infoRack->hide();
   _upperRack->show();
   _upperStackTabButtonA->setOff(false);
@@ -2340,8 +2282,6 @@ void MidiStrip::upperStackTabButtonAPressed()
 
 void MidiStrip::upperStackTabButtonBPressed()
 {
-//   _upperStack->raiseWidget(1);
-//   _upperStack->setCurrentIndex(1);
   _upperRack->hide();
   _infoRack->show();
   _upperStackTabButtonA->setOff(true);
@@ -2356,11 +2296,8 @@ void MidiStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-// REMOVE Tim. autoconnect. Changed.
-//   MusEGlobal::audio->msgSetRecMonitor(track, v);
   // No undo.
   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
-  
   MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
@@ -2406,8 +2343,6 @@ void MidiStrip::volLabelDoubleClicked()
   else
   {
     if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//       mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
       mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), outport, chan,
                                                   MusECore::ME_CONTROLLER,
                                                   num,
@@ -2423,11 +2358,8 @@ void MidiStrip::offToggled(bool val)
       {
       if(!track)
         return;
-// REMOVE Tim. autoconnect. Changed.
-//       MusEGlobal::audio->msgSetTrackOff(track, val);
       // No undo.
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
-      
       MusEGlobal::song->update(SC_MUTE);
       }
 
@@ -2650,8 +2582,6 @@ void MidiStrip::ctrlChanged(double v, bool off, int num, int scrollMode)
         if(off || (m_val < double(mctl->minVal())) || (m_val > double(mctl->maxVal())))
         {
           if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
             mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       num,
@@ -2770,8 +2700,6 @@ void MidiStrip::incVolume(int v)
     if((d_new_val < double(mctl->minVal())) || (d_new_val > double(mctl->maxVal())))
     {
       if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                     MusECore::ME_CONTROLLER,
                                                     id,
@@ -2829,8 +2757,6 @@ void MidiStrip::incPan(int v)
     if((d_fin_val < double(mctl->minVal())) || (d_fin_val > double(mctl->maxVal())))
     {
       if(mp->hwCtrlState(chan, MusECore::CTRL_PANPOT) != MusECore::CTRL_VAL_UNKNOWN)
-// REMOVE Tim. autoconnect. Changed. Schedule for immediate playback.
-//         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
         mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                     MusECore::ME_CONTROLLER,
                                                     id,

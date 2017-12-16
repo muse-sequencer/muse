@@ -48,7 +48,6 @@ class QMenu;
 namespace MusECore {
 
 class SynthI;
-//struct MidiMsg;
 class Event;
 class Xml;
 class Sequencer;
@@ -376,8 +375,6 @@ public:
       Track* findTrack(const QString& name) const;
       bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.end(); }
 
-// REMOVE Tim. autoconnect. Changed.
-//       void setRecordFlag(Track*, bool);
       void setRecordFlag(Track*, bool val, Undo* operations = 0);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);

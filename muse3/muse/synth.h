@@ -142,11 +142,7 @@ class SynthIF : public PluginIBase {
       virtual bool hasGui() const = 0;
       virtual bool hasNativeGui() const = 0;
       virtual void preProcessAlways() = 0;
-// REMOVE Tim. autoconnect. Changed.
-//       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent& ev) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
 
@@ -222,7 +218,6 @@ class SynthI : public AudioTrack, public MidiDevice,
 
    protected:
       Synth* synthesizer;
-      // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
 
       MPEventList _outPlaybackEvents;
       MPEventList _outUserEvents;
@@ -327,8 +322,6 @@ class SynthI : public AudioTrack, public MidiDevice,
             _sif->setNativeGeometry(x, y, w, h);
             }
 
-// REMOVE Tim. autoconnect. Removed.
-//       bool putEvent(const MidiPlayEvent& ev);
       virtual void processMidi(unsigned int /*curFrame*/ = 0);
 
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
@@ -355,7 +348,6 @@ class SynthI : public AudioTrack, public MidiDevice,
 class MessSynthIF : public SynthIF {
       Mess* _mess;
 
-      // REMOVE Tim. autoconnect. Added.
       bool processEvent(const MidiPlayEvent& ev);
       
    public:
@@ -374,11 +366,7 @@ class MessSynthIF : public SynthIF {
       virtual void getNativeGeometry(int*, int*, int*, int*) const;
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways();
-// REMOVE Tim. autoconnect. Changed.
-//       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
-// REMOVE Tim. autoconnect. Removed.
-//       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const;
       bool init(Synth* s, SynthI* si);

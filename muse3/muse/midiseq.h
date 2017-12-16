@@ -94,8 +94,6 @@ extern void exitMidiSequencer();
 
 namespace MusEGlobal {
 extern MusECore::MidiSeq* midiSeq;
-// REMOVE Tim. autoconnect. Removed.
-// extern volatile bool midiBusy;
 } // namespace MusEGlobal
 
 #endif

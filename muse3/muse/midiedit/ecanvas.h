@@ -69,11 +69,6 @@ class EventCanvas : public Canvas {
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
-// REMOVE Tim. autoconnect. Removed.
-//       int playedPitch;
-//       int playedVelocity;
-//       int playedPitchPort;
-//       int playedPitchChannel;
       bool _playEvents;
       MidiEditor* editor;
       unsigned start_tick, end_tick;

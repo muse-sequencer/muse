@@ -94,8 +94,6 @@ enum AudioTickSound {
     measureSound,
     accent1Sound,
     accent2Sound
-// REMOVE Tim. autoconnect. Removed.
-//     reloadClickSounds
 };
 
 extern const unsigned char gmOnMsg[];
@@ -148,16 +146,6 @@ extern unsigned int sysexDuration(unsigned int len);
 // So far, this command is really just a special requirement for the fluidsynth MESS plugin.
 // It is the only way to inform the host to update the maps.
 #define MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID 0x00
-
-// REMOVE Tim. autoconnect. Added.
-// // This SYSTEM command will send CTRL_ALL_SOUNDS_OFF and/or CTRL_RESET_ALL_CTRL,
-// //  where appropriate reset all MidiCtrlValList lastValidByteX members,
-// //  and reset all MidiDevice curOutParamNums members. It is for internal use. It is sent
-// //  to the drivers like any other message (played or putEvent etc.), but it is not transmitted.
-// // It's the only way to tell our ring-buffered drivers to reset their cached values to CTRL_VAL_UNKNOWN.
-// #define MUSE_SYSEX_SYSTEM_PANIC_ID 0x01
-// // The next byte describes what to include in the panic. It is an OR'd combination of these values:
-// enum MUSE_SYSEX_SYSTEM_PANIC_TYPES { MUSE_SYSEX_SYSTEM_PANIC_ALL_SOUNDS_OFF = 0x1, MUSE_SYSEX_SYSTEM_PANIC_RESET_ALL_CTRL = 0x2};
 
 class MPEventList;
 class MidiTrack;

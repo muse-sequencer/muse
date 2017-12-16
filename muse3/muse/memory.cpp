@@ -25,7 +25,6 @@
 #include <string.h>
 
 // NOTE: Keep this code in case we need a dimensioned pool!
-// REMOVE Tim. autoconnect. Removed.
 #if 0
 Pool audioRTmemoryPool;
 Pool midiRTmemoryPool;
@@ -89,9 +88,7 @@ void Pool::grow(int idx)
 //---------------------------------------------------------
 
 MemoryQueue::MemoryQueue()
-//MemoryQueue::MemoryQueue(size_t chunkSize)
 {
-  //_chunkSize = chunkSize;
   _endChunk = 0;
   _curSize = 0;
   _curOffest = 0;
@@ -183,14 +180,12 @@ bool MemoryQueue::add(const unsigned char* src, size_t len)
   while(true)
   {
     bytes = Chunk::ChunkSize - _curOffest;
-    //bytes = _chunkSize - _curOffest;
     if(remain < bytes)
       bytes = remain;
     memcpy(_curWriteChunk->_mem + _curOffest, pp, bytes);
     _curSize += bytes;
     _curOffest += bytes;
     if(_curOffest == Chunk::ChunkSize)
-    //if(_curOffest == _chunkSize)
     {
       _curOffest = 0;
       // Does the next chunk exist?
@@ -238,7 +233,6 @@ size_t MemoryQueue::copy(unsigned char* dst, size_t len) const
   while(true)
   {
     bytes = Chunk::ChunkSize;
-    //bytes = _chunkSize;
     if(remain < bytes)
       bytes = remain;
     memcpy(pp, read_chunk->_mem, bytes);

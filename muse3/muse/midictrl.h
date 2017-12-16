@@ -79,12 +79,6 @@ const int CTRL_VARIATION_SEND     = 0x5e;
 // Same as other 7-bit controllers, but "implements Mode control and
 //  special message by using reserved controller numbers 120-127" (MMA).
 //
-// REMOVE Tim. autoconnect. Added. Added comment.
-// // Don't send these two directly from MusE unless you know what you are doing.
-// // They are controllers requiring special processing.
-// // Send a MUSE_SYSEX_SYSTEM_PANIC_ID sysex (see midi.h).
-// // The midiport and device will catch it and perform the necessary steps
-// //  including some IPC to the ALSA driver thread if required.
 const int CTRL_ALL_SOUNDS_OFF     = 0x78; // 120
 const int CTRL_RESET_ALL_CTRL     = 0x79; // 121
 //

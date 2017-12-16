@@ -3188,8 +3188,7 @@ void Song::executeOperationGroup3(Undo& operations)
       // If some operations marked as non-undoable were removed, it is OK,
       //  because we only want dirty if an undoable operation was executed, right?
       // Hm, no. ANY operation actually changes things, so yes, the song is dirty.
-// REMOVE Tim. autoconnect. Changed.
-//       if(!operations.empty())
+      //if(!operations.empty())
       if(song_has_changed)
         emit sigDirty();
       }
