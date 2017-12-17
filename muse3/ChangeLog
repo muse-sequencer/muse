@@ -1,4 +1,49 @@
 17.12.2017
+      * Substantial midi engine redesign: (Tim)
+         - Merge from engine_fixes_2017 branch:
+         - To ease working with multiple threads, new classes were developed:
+           MemoryQueue, and templates TypedMemoryPool LockFreeMPSCBuffer
+            and LockFreeMPSCRingBuffer. Pooled-memory SeqMPEventList was added
+            to compliment MPEventList.
+         - Midi device processing is now completely de-coupled from other threads,
+            using only MPSC Ring Buffers. It just does 'what it is told' now.
+           There is no more 'sending back' of midi controller values from midi
+            device process code to the audio thread - that was like a SERIAL manner.
+           Example: Previously a keyboard sent a controller, the audio thread picked
+            it up and sent it to an ALSA device where it's processed in the seq thread,
+            which then sets the muse hw midi controller representing it, and finally
+            the gui controls are updated with these values soon after.
+           Now instead, a keyboard sends a controller, the audio thread picks it up
+            and sends it in a PARALLEL manner to TWO places at once: An ALSA device
+            ring buffer where it's processed in the seq thread, AND a ring buffer
+            processed in the audio thread for setting the muse hw midi controller,
+            and finally the gui controls are updated soon after.
+           As one result, midi controls are now updated properly from automation
+            graphs - independently - whether the device actually got the messages,
+            or even if no device (<None>) selected for the port !
+           TODO: Now that we have MPSC ring buffers, I am hoping to allow ALSA midi
+            to shine, by taking midi input and bypassing the audio thread and
+            'directly' talking (putting) to other devices' threads. Eventually the
+            ALSA thread will 'collect' and process events completely independent
+            of the audio thread, autonomously without audio buffer size related delays.
+         - External midi clock sync: Complete redesign! Does not 'miss' recording
+            the first few notes any more.
+           There is no more pervasive 'duality' of processing midi in 'ticks' when
+            externally syncing vs 'frames' for normal tempo map use when not
+            externally syncing.
+           Instead, a brief external clock frame timestamp history is kept, and
+            ALL midi processing is done in FRAMES now, regardless of whether
+            externally syncing. Yay.
+         - Some fixes to the 'retake' (restart recording) feature. Complete re-write.
+           Much more stable and realtime-safe now. But still slow with wave tracks.
+         - All mute, solo, and off controls make the song dirty now.
+         - Metronome fixes: Fixed silent metronome when any track was soloed!
+           Fixed metronome dialog: Not updating when song loaded.
+           Fixed non-realtime-safe reloading of metronome samples.
+         - Piano and drum list: No more slow waiting for audio thread when each note played.
+           Fast! Completely de-coupled by putting to the ring buffers instead.
+         - Several other smaller related and unrelated fixes along the way.
+17.12.2017
          - Enhancements to midi port/device popup menu in track list + drum list. (Tim)
            Sorted by device type now.
          - New! Synthesizer tracks can change their port from the track list.
