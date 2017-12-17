@@ -34,6 +34,9 @@
            Instead, a brief external clock frame timestamp history is kept, and
             ALL midi processing is done in FRAMES now, regardless of whether
             externally syncing. Yay.
+         - Large System Exclusive (sysex) message support: MusE can now record
+            and playback very large sysex messages. Works great with ALSA.
+           TODO: Jack midi does not support large sysex recording.
          - Some fixes to the 'retake' (restart recording) feature. Complete re-write.
            Much more stable and realtime-safe now. But still slow with wave tracks.
          - All mute, solo, and off controls make the song dirty now.
