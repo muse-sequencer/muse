@@ -20,6 +20,7 @@
 #  Free Software Foundation, Inc.,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
+project(muse)
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
@@ -27,7 +28,6 @@ include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 
-project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -147,6 +147,7 @@ else (GIT_FOUND)
 endif (GIT_FOUND)
 
 
+option ( ENABLE_RTAUDIO     "Multi platform rtaudio audio compatibility fallback" ON)
 option ( ENABLE_ALSA        "Enable Advanced Linux Sound Architecture (ALSA)" ON)
 option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
@@ -323,6 +324,16 @@ if (ENABLE_LASH)
 else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
+
+if (ENABLE_RTAUDIO)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
+      if (RTAUDIO_FOUND)
+            include_directories(${RTAUDIO_INCLUDE_DIRS})
+            set(HAVE_RTAUDIO ON)
+      endif (RTAUDIO_FOUND)
+else (ENABLE_RTAUDIO)
+      message("RTAUDIO disabled")
+endif (ENABLE_RTAUDIO)
 
 ##
 ## check for python >= 2.4
@@ -590,7 +601,7 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
@@ -651,6 +662,10 @@ endif (NOT JACK_FOUND)
 
 ## Optional:
 ## =============
+
+if (ENABLE_RTAUDIO AND (NOT RTAUDIO_FOUND))
+        message("** WARNING: rtaudio (>= 4.0) was enabled, but development files were not found. ")
+endif (ENABLE_RTAUDIO AND (NOT RTAUDIO_FOUND))
 
 if (ENABLE_LASH AND (NOT LASH_FOUND))
         message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
@@ -739,6 +754,7 @@ message("")
 summary_add("ALSA support" ALSA_SUPPORT)
 # TODO:
 # summary_add("DSSI ALSA Compatibility support" DSSI_ALSA_COMPAT_SUPPORT)
+summary_add("RTAudio support" HAVE_RTAUDIO)
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)

@@ -30,6 +30,7 @@ file (GLOB driver_source_files
        dummyaudio.cpp
        jack.cpp
        jackmidi.cpp
+       rtaudio.cpp
        rtctimer.cpp
        )
 
@@ -65,6 +66,7 @@ target_link_libraries ( driver
       ${ALSA_LIBRARIES}
       ${JACK_LIBRARIES}
       ${QT_LIBRARIES}
+      ${RTAUDIO_LIBRARIES}
       mplugins
       )
 
