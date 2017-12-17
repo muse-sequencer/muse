@@ -24,8 +24,7 @@
 
 #include <set>
 
-#include <QMenu>
-#include <QApplication>
+#include <QString>
 
 #include "mididev.h"
 #include "midiport.h"
@@ -476,89 +475,6 @@ int MidiPort::portno() const
                   return i;
             }
       return -1;
-      }
-
-//---------------------------------------------------------
-//   midiPortsPopup
-//---------------------------------------------------------
-
-QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
-      {
-      QMenu* p = new QMenu(parent);
-      QMenu* subp = 0;
-      QAction *act = 0;
-      QString name;
-      const int openConfigId = MIDI_PORTS;
-      const int defaultId    = MIDI_PORTS + 1;
-      
-      // Warn if no devices available. Add an item to open midi config. 
-      int pi = 0;
-      for( ; pi < MIDI_PORTS; ++pi)
-      {
-        MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
-        if(md && (md->rwFlags() & 1))   
-          break;
-      }
-      if(pi == MIDI_PORTS)
-      {
-        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Warning: No output devices!")));
-        act->setCheckable(false);
-        act->setData(-1);
-        p->addSeparator();
-      }
-      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
-      act->setCheckable(false);
-      act->setData(openConfigId);  
-      p->addSeparator();
-      
-      p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), p));
-
-      if(includeDefaultEntry)
-      {
-        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "default")));
-        act->setCheckable(false);
-        act->setData(defaultId); 
-      }
-        
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            MidiPort* port = &MusEGlobal::midiPorts[i];
-            MusECore::MidiDevice* md = port->device();
-            if(md && md->isSynti()) //make deleted audio softsynths not show in select dialog
-            {
-               MusECore::AudioTrack *_track = static_cast<MusECore::AudioTrack *>(static_cast<MusECore::SynthI *>(md));
-               MusECore::TrackList* tl = MusEGlobal::song->tracks();
-               if(tl->find(_track) == tl->end())
-                  continue;
-            }
-            if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
-              continue;
-            name = QString("%1:%2")
-                .arg(port->portno() + 1)
-                .arg(port->portname());
-            if(md || (i == checkPort))   
-            {  
-              act = p->addAction(name);
-              act->setData(i);
-              act->setCheckable(true);
-              act->setChecked(i == checkPort);
-            }  
-
-            if(!md)
-            {
-              if(!subp)                  // No submenu yet? Create it now.
-              {
-                subp = new QMenu(p);
-                subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
-              }  
-              act = subp->addAction(QString().setNum(i+1));
-              act->setData(i);
-              act->setCheckable(true);
-              act->setChecked(i == checkPort);
-            }  
-          }  
-      if(subp)
-        p->addMenu(subp);
-      return p;
       }
 
 //---------------------------------------------------------
