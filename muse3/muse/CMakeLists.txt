@@ -103,6 +103,7 @@ file (GLOB core_source_files
       dialogs.cpp
       dssihost.cpp
       lv2host.cpp
+      evdata.cpp
       event.cpp
       eventlist.cpp
       exportmidi.cpp
@@ -114,7 +115,6 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
-      lock_free_buffer.h
       memory.cpp
       midi.cpp
       midictrl.cpp
@@ -230,6 +230,7 @@ set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
       # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
+      
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse

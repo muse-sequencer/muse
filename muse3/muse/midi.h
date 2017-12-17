@@ -93,8 +93,7 @@ enum AudioTickSound {
     beatSound,
     measureSound,
     accent1Sound,
-    accent2Sound,
-    reloadClickSounds
+    accent2Sound
 };
 
 extern const unsigned char gmOnMsg[];
@@ -121,9 +120,15 @@ extern const unsigned int mmcStopMsgLen;
 extern const unsigned int mmcLocateMsgLen;
 
 class MidiInstrument;
-QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-QString midiMetaName(int);
+extern QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
+extern QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
+extern QString midiMetaName(int meta);
+// Expected duration in frames, at the current sample rate, of the 
+//  given length of sysex data. Based on 31250Hz midi baud rate in
+//  1-8-2 format. (Midi specs say 1 stop bit, but ALSA says
+//  2 stop bits are common.) A small gap time is added as well.
+// If the data includes any start/end bytes, len should also include them.
+extern unsigned int sysexDuration(unsigned int len);
 
 // Use these in all the synths and their guis.
 // NOTE: Some synths and hosts might not use this scheme. For example, MESS requires it for IPC,
@@ -134,7 +139,7 @@ QString midiMetaName(int);
 // A special MusE soft synth sysex manufacturer ID.
 #define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
 // Following the MFG_ID, besides synth specific IDs, this reserved special ID indicates
-//  a MusE system ID will follow in the next byte.
+//  a MusE SYSTEM ID will follow in the next byte.
 #define MUSE_SYSEX_SYSTEM_ID 0x7f
 // This SYSTEM command will force any relevant drum maps to update.
 // When a synth's note names have changed, it should issue this command.
@@ -142,7 +147,7 @@ QString midiMetaName(int);
 // It is the only way to inform the host to update the maps.
 #define MUSE_SYSEX_SYSTEM_UPDATE_DRUM_MAPS_ID 0x00
 
-struct MPEventList;
+class MPEventList;
 class MidiTrack;
 extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 

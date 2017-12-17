@@ -182,6 +182,8 @@ GlobalConfigValues config = {
       QColor(208,145,49 ),          // rackItemBackgroundColor
 
       MusEGlobal::WaveOutLine,      // waveDrawing
+
+      false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
@@ -190,6 +192,7 @@ GlobalConfigValues config = {
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks
+      0,                            // curMidiSyncInPort The currently selected midi sync input port.
       true,                         // midiSendInit Send instrument initialization sequences
       true,                         // warnInitPending Warn instrument initialization sequences pending
       false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song
@@ -289,7 +292,7 @@ GlobalConfigValues config = {
       MusEGlobal::CONF_LV2_UI_USE_FIRST, //lv2UiBehavior
       true,                         // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
       true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
-      false,                        // monitorOnRecord  Whether to automatically monitor on record arm.
+      true,                        // monitorOnRecord  Whether to automatically monitor on record arm.
       true,                         // lineEditStyleHack Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
       false,                        // preferMidiVolumeDb Prefer midi volume as decibels instead of 0-127.
       QString("klick1.wav"),        // measSample

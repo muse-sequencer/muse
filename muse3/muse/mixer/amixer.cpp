@@ -171,6 +171,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
    : QMainWindow(parent)
 {
+      _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       cfg = c;
       oldAuxsSize = 0;
       routingDialog = 0;
@@ -237,11 +238,13 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       ///view = new QScrollArea();
       view = new ScrollArea();
+      view->setFocusPolicy(Qt::NoFocus);
       view->setContentsMargins(0, 0, 0, 0);
       //view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
       central = new QWidget(view);
+      central->setFocusPolicy(Qt::NoFocus);
       central->setContentsMargins(0, 0, 0, 0);
       //splitter = new QSplitter(view);
       mixerLayout = new QHBoxLayout();
@@ -420,6 +423,9 @@ void AudioMixerApp::redrawMixer()
       break;
   }
 
+  // Setup all tabbing for each strip, and between strips.
+  setupComponentTabbing();
+  
   update();
 }
 
@@ -608,7 +614,6 @@ void AudioMixerApp::addStripsTraditionalLayout()
     if ((*si)->getTrack()->type() == MusECore::Track::AUDIO_OUTPUT)
       addStripToLayoutIfVisible(*si);
   }
-
 }
 
 /*
@@ -761,6 +766,16 @@ void AudioMixerApp::configChanged()
   StripList::iterator si = stripList.begin();  // Catch when fonts change, viewable tracks, etc. No full rebuild.  p4.0.45
   for (; si != stripList.end(); ++si) 
         (*si)->configChanged();
+  
+  // Detect when knobs are preferred.
+  // TODO: Later if added: Detect when a rack component is added or removed. 
+  //       Or other stuff requiring this retabbing.
+  if(_preferKnobs != MusEGlobal::config.preferKnobsVsSliders)
+  {
+    _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+    // Now set up all tabbing on all strips.
+    setupComponentTabbing();
+  }
 }
 
 //---------------------------------------------------------
@@ -824,6 +839,29 @@ void AudioMixerApp::updateSelectedStrips()
         s->setSelected(t->selected());
     }
   }
+}
+
+QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
+{
+  QWidget* prev = previousWidget;
+  QLayoutItem* li;
+  QWidget* widget;
+  Strip* strip;
+  const int cnt = mixerLayout->count();
+  for(int i = 0; i < cnt; ++i)
+  {
+    li = mixerLayout->itemAt(i);
+    if(!li)
+      continue;
+    widget = li->widget();
+    if(!widget)
+      continue;
+    strip = qobject_cast<Strip*>(widget);
+    if(!strip)
+      continue;
+    prev = strip->setupComponentTabbing(prev);
+  }
+  return prev;
 }
 
 //---------------------------------------------------------

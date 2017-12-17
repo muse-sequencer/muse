@@ -1274,12 +1274,16 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
             }
 
-            int left_tick = leftmost->part()->tick();
-            int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
-            MusECore::Pos p1(left_tick, true);
-            MusECore::Pos p2(right_tick, true);
-            MusEGlobal::song->setPos(1, p1);
-            MusEGlobal::song->setPos(2, p2);
+            if(leftmost && rightmost)
+            {
+              int left_tick = leftmost->part()->tick();
+              int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
+              MusECore::Pos p1(left_tick, true);
+              MusECore::Pos p2(right_tick, true);
+              MusEGlobal::song->setPos(1, p1);
+              MusEGlobal::song->setPos(2, p2);
+            }
+            
             return;
             }
 

@@ -35,7 +35,7 @@
 
 namespace MusECore {
 
-struct MPEventList;
+class MPEventList;
 class MidiPlayEvent;
 class MidiInstrument;
 

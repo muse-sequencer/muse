@@ -3507,7 +3507,7 @@ QString EditInstrument::getPatchItemText(int val)
 {
   QString s;
   if(val == MusECore::CTRL_VAL_UNKNOWN)
-    s = "---";
+    s = QString("---");
   else
   {
     int hb = ((val >> 16) & 0xff) + 1;
@@ -3519,7 +3519,7 @@ QString EditInstrument::getPatchItemText(int val)
     int pr = (val & 0xff) + 1;
     if (pr == 0x100)
       pr = 0;
-    s.sprintf("%d-%d-%d", hb, lb, pr);
+    s = QString("%1-%2-%3").arg(hb).arg(lb).arg(pr);
   }
 
   return s;

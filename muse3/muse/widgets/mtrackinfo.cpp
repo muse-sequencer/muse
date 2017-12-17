@@ -1579,8 +1579,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
                 continue;
               if(!(md->rwFlags() & 1) && (i != outPort))   // Only writeable ports, or current one.
                 continue;
-              QString name;
-              name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
+              QString name = QString("%1:%2").arg(i + 1).arg(MusEGlobal::midiPorts[i].portname());
               iOutput->insertItem(item_idx, name, i);
               if (i == outPort)
                     iOutput->setCurrentIndex(item_idx);
@@ -1704,9 +1703,8 @@ void MidiTrackInfo::progRecClicked()
       if(program == MusECore::CTRL_VAL_UNKNOWN || program == 0xffffff) 
         return;
 
-      unsigned tick = MusEGlobal::song->cpos();
       MusECore::Event a(MusECore::Controller);
-      a.setTick(tick);
+      a.setTick(0);
       a.setA(MusECore::CTRL_PROGRAM);
       a.setB(program);
 
@@ -1775,13 +1773,12 @@ void MidiTrackInfo::recordClicked()
       int portno       = track->outPort();
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[portno];
-      unsigned tick = MusEGlobal::song->cpos();
       
       int program = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       if(program != MusECore::CTRL_VAL_UNKNOWN && program != 0xffffff) 
       {
         MusECore::Event a(MusECore::Controller);
-        a.setTick(tick);
+        a.setTick(0);
         a.setA(MusECore::CTRL_PROGRAM);
         a.setB(program);
         MusEGlobal::song->recordEvent(track, a);
@@ -1790,7 +1787,7 @@ void MidiTrackInfo::recordClicked()
       if(volume != MusECore::CTRL_VAL_UNKNOWN) 
       {
         MusECore::Event a(MusECore::Controller);
-        a.setTick(tick);
+        a.setTick(0);
         a.setA(MusECore::CTRL_VOLUME);
         a.setB(volume);
         MusEGlobal::song->recordEvent(track, a);
@@ -1799,7 +1796,7 @@ void MidiTrackInfo::recordClicked()
       if(pan != MusECore::CTRL_VAL_UNKNOWN) 
       {
         MusECore::Event a(MusECore::Controller);
-        a.setTick(tick);
+        a.setTick(0);
         a.setA(MusECore::CTRL_PANPOT);
         a.setB(pan);
         MusEGlobal::song->recordEvent(track, a);

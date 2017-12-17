@@ -960,36 +960,36 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->tag(PMODSENSSTR, sensitivity.pitch);
 	xml->tag(AMSSTR, sensitivity.amplitude);
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, AMESTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, AMESTR "%d",i+1);
 	    xml->tag(s, QString((sensitivity.ampOn[i]==true? "on":"off")));
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,EBSSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG,EBSSTR "%d",i+1);
 	    xml->tag(s, sensitivity.egBias[i]);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, KVSSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, KVSSTR "%d",i+1);
 	    xml->tag(s, sensitivity.keyVelocity[i]);
 	}
 	xml->etag("sensitivity");
 	//frequency
 	xml->stag("frequency");
 	for(int i=0; i<NBROP; i++) {
-	  sprintf(s, RATIOSTR "%d",i+1);
+	  snprintf(s, MAXCHARTAG, RATIOSTR "%d",i+1);
 	    xml->tag(s, frequency[i].ratio);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, FIXSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, FIXSTR "%d",i+1);
 	    xml->tag(s, QString((frequency[i].isFix==true? "yes":"no")));
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, FIXRANGESTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, FIXRANGESTR "%d",i+1);
 	    xml->tag(s, frequency[i].freq);
 	}
 	xml->etag("frequency");
 	//oscWave
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, OSWSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, OSWSTR "%d",i+1);
 	    xml->tag(s, QString((oscWave[i]==W1?"W1":
 			    (oscWave[i]==W2?"W2":
 			     (oscWave[i]==W3?"W3":
@@ -1000,33 +1000,33 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	}
 	//detune
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, DETSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, DETSTR "%d",i+1);
 	    xml->tag(s, detune[i]);
 	}
 	//eg
 	xml->stag("eg");
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, ARSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, ARSTR "%d",i+1);
 	    xml->tag(s, eg[i].ar);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, D1RSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, D1RSTR "%d",i+1);
 	    xml->tag(s, eg[i].d1r);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, D1LSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, D1LSTR "%d",i+1);
 	    xml->tag(s, eg[i].d1l);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, D2RSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, D2RSTR "%d",i+1);
 	    xml->tag(s, eg[i].d2r);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, RRSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, RRSTR "%d",i+1);
 	    xml->tag(s, eg[i].rr);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, SHFTSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, SHFTSTR "%d",i+1);
 	    xml->tag(s, QString((eg[i].egShift==VOF?"VOF":
 			    (eg[i].egShift==V48?"V48":
 			     (eg[i].egShift==V24?"V24":"V12")))));
@@ -1043,17 +1043,17 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->etag("pitchEg");
 	//outLevel
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, OUTSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, OUTSTR "%d",i+1);
 	    xml->tag(s, outLevel[i]);
 	}
 	//scaling
 	xml->stag("scaling");
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, RSSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, RSSTR "%d",i+1);
 	    xml->tag(s, scaling.rate[i]);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s, LSSTR "%d",i+1);
+	    snprintf(s, MAXCHARTAG, LSSTR "%d",i+1);
 	    xml->tag(s, scaling.level[i]);
 	}
 	xml->etag("scaling");
@@ -1160,10 +1160,10 @@ void Preset::printPreset()
 	       i+1, eg[i].d1l, i+1, eg[i].d2r, i+1, eg[i].rr, i+1);
 	switch(eg[i].egShift)
 	{
-	    case(VOF) : printf("VOF");
-	    case(V48) : printf("48");
-	    case(V24) : printf("24");
-	    case(V12) : printf("12");
+	    case(VOF) : printf("VOF"); break;
+	    case(V48) : printf("48"); break;
+	    case(V24) : printf("24"); break;
+	    case(V12) : printf("12"); break;
 	}
 	printf("\n");
     }

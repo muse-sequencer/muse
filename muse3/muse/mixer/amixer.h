@@ -114,6 +114,8 @@ class AudioMixerApp : public QMainWindow {
       QAction* showSyntiTracksId;
 
       bool mixerClicked;
+      // Current local state of knobs versus sliders preference global setting.
+      bool _preferKnobs;
 
       bool stripIsVisible(Strip* s);
       void redrawMixer();
@@ -169,6 +171,11 @@ class AudioMixerApp : public QMainWindow {
       AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
       void write(int level, MusECore::Xml& xml);
       void clearAndDelete();
+      
+      // Sets up tabbing for the entire mixer. Strip by strip.
+      // Accepts a previousWidget which can be null and returns the last widget in the last strip,
+      //  which allows chaining other widgets.
+      virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
       };
 
 } // namespace MusEGui

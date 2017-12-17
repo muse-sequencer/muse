@@ -76,6 +76,9 @@ class Xml {
       int latestMinorVersion() const { return _latestMinorVersion; }
       int majorVersion() const { return _majorVersion; }
       int minorVersion() const { return _minorVersion; }
+      bool isVersionEqualToLatest() const { return _majorVersion == _latestMajorVersion && _minorVersion == _latestMinorVersion; }
+      bool isVersionLessThanLatest() const { return _majorVersion < _latestMajorVersion || _minorVersion < _latestMinorVersion; }
+      bool isVersionGreaterThanLatest() const { return _majorVersion > _latestMajorVersion || _minorVersion > _latestMinorVersion; }
       void setVersion(int maj, int min) {
             _minorVersion = min;
             _majorVersion = maj;
@@ -113,7 +116,9 @@ class Xml {
       void floatTag(int level, const char* const name, float val);
       void strTag(int level, const char* const name, const char* val);
       void strTag(int level, const char* const name, const QString& s);
+      void strTag(int level, const QString& name, const QString& val);
       void colorTag(int level, const char* name, const QColor& color);
+      void colorTag(int level, const QString& name, const QColor& color);
       void geometryTag(int level, const char* name, const QWidget* g);
       void qrectTag(int level, const char* name, const QRect& r);
       static QString xmlString(const QString&);

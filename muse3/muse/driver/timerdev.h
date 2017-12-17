@@ -41,15 +41,15 @@ class Timer {
        Timer() {};
        virtual ~Timer() {};
        
-       virtual signed int initTimer() = 0;
-       virtual unsigned int setTimerResolution(unsigned int resolution) = 0;
-       virtual unsigned int getTimerResolution() = 0;
-       virtual unsigned int setTimerFreq(unsigned int freq) = 0;
-       virtual unsigned int getTimerFreq() = 0;
+       virtual signed int initTimer(unsigned long desiredFrequency) = 0;
+       virtual unsigned long setTimerResolution(unsigned long resolution) = 0;
+       virtual unsigned long getTimerResolution() = 0;
+       virtual unsigned long setTimerFreq(unsigned long freq) = 0;
+       virtual unsigned long getTimerFreq() = 0;
        
        virtual bool startTimer() = 0;
        virtual bool stopTimer() = 0;
-       virtual unsigned int getTimerTicks(bool printTicks = false) = 0;
+       virtual unsigned long getTimerTicks(bool printTicks = false) = 0;
         
 };
 

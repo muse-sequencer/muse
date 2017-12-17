@@ -36,7 +36,7 @@
 #include "muse/midictrl.h"
 
 #define NBROP 4 //do not change
-#define MAXCHARTAG 64
+#define MAXCHARTAG 256
 
 #define PROG_NBR 128
 #define LBANK_NBR 128

@@ -89,6 +89,11 @@ class CompactPatchEdit : public QFrame
     void setLastValidValue(int v);
     void setLastValidBytes(int hbank, int lbank, int prog);
 
+    // Sets up tabbing for the entire patch edit.
+    // Accepts a previousWidget which can be null and returns the last widget in the control,
+    //  which allows chaining other widgets.
+    virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
+      
     void setReadoutOrientation(ReadoutOrientation);
     void setShowPatchLabel(bool);
 

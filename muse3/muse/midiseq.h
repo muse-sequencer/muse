@@ -31,7 +31,7 @@ namespace MusECore {
 
 class MidiDevice;
 class MidiPort;
-struct MPEventList;
+class MPEventList;
 class MTC;
 class SynthI;
 class Timer;
@@ -88,7 +88,6 @@ extern void exitMidiSequencer();
 
 namespace MusEGlobal {
 extern MusECore::MidiSeq* midiSeq;
-extern volatile bool midiBusy;
 } // namespace MusEGlobal
 
 #endif

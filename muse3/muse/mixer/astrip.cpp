@@ -773,7 +773,6 @@ void AudioComponentRack::setComponentColors()
   }
 }
 
-
 //---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
@@ -871,7 +870,10 @@ void AudioStrip::configChanged()
     // Rebuild the strip components.
     buildStrip();
     // Now set up all tabbing on the strip.
-    setupComponentTabbing();
+    // Don't bother if the strip is part of the mixer (not embedded), 
+    //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+    if(isEmbedded())
+      setupComponentTabbing();
   }
 
   // Set the whole strip's font, except for the label.
@@ -1046,7 +1048,8 @@ void AudioStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      MusEGlobal::audio->msgSetTrackOff(track, val);
+      // No undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
       MusEGlobal::song->update(SC_MUTE);
       }
 
@@ -1122,19 +1125,6 @@ void AudioStrip::stereoToggled(bool val)
       }
 
 //---------------------------------------------------------
-//   recordToggled
-//---------------------------------------------------------
-
-void AudioStrip::recordToggled(bool val)
-{
-  // Simulate pressing monitor as well. Allow signalling.
-  if(_recMonitor && MusEGlobal::config.monitorOnRecord && track && track->recMonitor() != val)
-    _recMonitor->setChecked(val);
-  // Call ancestor.
-  Strip::recordToggled(val);
-}
-
-//---------------------------------------------------------
 //   recMonitorToggled
 //---------------------------------------------------------
 
@@ -1142,7 +1132,8 @@ void AudioStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  MusEGlobal::audio->msgSetRecMonitor(track, v);
+  // No undo.
+  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
   MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
@@ -1351,10 +1342,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       volume        = -1.0;
       _volPressed   = false;
       
-      record        = 0;
+      slider        = 0;
+      sl            = 0;
       off           = 0;
       _recMonitor   = 0;
-      
+
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
       
@@ -1684,7 +1676,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       updateRouteButtons();
 
-      if (type == MusECore::Track::WAVE)
+      if (track && track->canRecordMonitor())
       {
         _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
         _recMonitor->setFocusPolicy(Qt::NoFocus);
@@ -1773,7 +1765,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // Now build the strip components.
       buildStrip();
       // Now set up all tabbing on the strip.
-      setupComponentTabbing();
+      // Don't bother if the strip is part of the mixer (not embedded), 
+      //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+      if(isEmbedded)
+        setupComponentTabbing();
 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 
@@ -1914,7 +1909,8 @@ QWidget* AudioStrip::setupComponentTabbing(QWidget* previousWidget)
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
   {
-    QWidget::setTabOrder(prev, sl);
+    if(prev)
+      QWidget::setTabOrder(prev, sl);
     prev = sl;
   }
   prev = _lowerRack->setupComponentTabbing(prev);

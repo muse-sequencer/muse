@@ -121,7 +121,10 @@ void MarkerItem::setTick(unsigned v)
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(v, &bar, &beat, &tick);
-      s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+      s = QString("%1.%2.%3")
+          .arg(bar + 1,      4, 10, QLatin1Char('0'))
+          .arg(beat + 1,     2, 10, QLatin1Char('0'))
+          .arg(tick,         3, 10, QLatin1Char('0'));
       setText(COL_TICK, s);
 
       double time = double(MusEGlobal::tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
@@ -145,8 +148,12 @@ void MarkerItem::setTick(unsigned v)
             }
       int frame = int(rest);
       int subframe = int((rest-frame)*100);
-      s.sprintf("%02d:%02d:%02d:%02d:%02d",
-         hour, min, sec, frame, subframe);
+      s = QString("%1:%2:%3:%4:%5")
+          .arg(hour,     2, 10, QLatin1Char('0'))
+          .arg(min,      2, 10, QLatin1Char('0'))
+          .arg(sec,      2, 10, QLatin1Char('0'))
+          .arg(frame,    2, 10, QLatin1Char('0'))
+          .arg(subframe, 2, 10, QLatin1Char('0'));
       setText(COL_SMPTE, s);
       }
 

@@ -102,6 +102,7 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
 
       bool inHeartBeat;
       bool _dirty;
+      int _curMidiSyncInPort; // The original value, for restoring on Cancel.
       
       void updateSyncInfoLV();
       void closeEvent(QCloseEvent*);
@@ -112,6 +113,7 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
    private slots:
       void heartBeat();
       void syncChanged();
+      void useJackTransportChanged(bool v);
       void extSyncChanged(bool v);
       void ok();
       void cancel();

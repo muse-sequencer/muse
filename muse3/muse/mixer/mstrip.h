@@ -125,6 +125,10 @@ class MidiComponentRack : public ComponentRack
     void updateComponents();
     // Enable or disable all the aux components in this rack.
     void setAuxEnabled(bool enable);
+    // Sets up tabbing for the existing controls in the rack.
+    // Accepts a previousWidget which can be null and returns the last widget in the rack,
+    //  which allows chaining racks or other widgets.
+    virtual QWidget* setupComponentTabbing(QWidget* previousWidget = 0);
 };
 
 //---------------------------------------------
@@ -241,7 +245,6 @@ class MidiStrip : public Strip {
       void setupMidiVolume();
 
    private slots:
-      void recordToggled(bool);
       void recMonitorToggled(bool);
       void offToggled(bool);
       void iRoutePressed();

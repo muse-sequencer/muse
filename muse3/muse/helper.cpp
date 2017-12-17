@@ -47,18 +47,24 @@
 #include "dssihost.h"
 #include "lv2host.h"
 #include "vst_native.h"
+#include "appearance.h"
 
 #include <strings.h>
 
 #include <QMenu>
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
+#include <QStringList>
 #include <QLine>
 #include <QRect>
 #include <QByteArray>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QVector>
 
 using std::set;
 
@@ -84,8 +90,7 @@ QString pitch2string(int v)
       if (v < 0 || v > 127)
             return QString("----");
       int octave = (v / 12) - 2;
-      QString o;
-      o.sprintf("%d", octave);
+      QString o = QString::number(octave);
       int i = v % 12;
       QString s(octave < 0 ? valu[i] : vall[i]);
       if (MusEGlobal::hIsB) {
@@ -782,6 +787,429 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   midiPortsPopup
+//---------------------------------------------------------
+
+QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
+      {
+      QMenu* p = new QMenu(parent);
+      QMenu* subp = 0;
+      QAction *act = 0;
+      QString name;
+      const int openConfigId = MIDI_PORTS;
+      const int defaultId    = MIDI_PORTS + 1;
+      
+      // Warn if no devices available. Add an item to open midi config. 
+      int pi = 0;
+      for( ; pi < MIDI_PORTS; ++pi)
+      {
+        MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
+        if(md && (md->rwFlags() & 1))   
+          break;
+      }
+      if(pi == MIDI_PORTS)
+      {
+        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Warning: No output devices!")));
+        act->setCheckable(false);
+        act->setData(-1);
+        p->addSeparator();
+      }
+      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
+      act->setCheckable(false);
+      act->setData(openConfigId);  
+      p->addSeparator();
+      
+      p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), p));
+
+      p->addSeparator();
+      
+      if(includeDefaultEntry)
+      {
+        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "default")));
+        act->setCheckable(false);
+        act->setData(defaultId); 
+      }
+
+      QVector<int> alsa_list;
+      QVector<int> jack_list;
+      QVector<int> synth_list;
+      QVector<int> *cur_list;
+      QVector<int> unused_list;
+
+      for (int i = 0; i < MIDI_PORTS; ++i)
+      {
+        MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
+        MusECore::MidiDevice* md = port->device();
+        if(!md)
+        {
+          unused_list.push_back(i);
+          continue;
+        }
+        
+        // Make deleted audio softsynths not show in select dialog
+        if(md->isSynti())
+        {
+            MusECore::AudioTrack *_track = static_cast<MusECore::AudioTrack *>(static_cast<MusECore::SynthI *>(md));
+            MusECore::TrackList* tl = MusEGlobal::song->tracks();
+            if(tl->find(_track) == tl->end())
+              continue;
+        }
+        
+        // Only writeable ports, or current one.
+        if(!(md->rwFlags() & 1) && (i != checkPort))
+          continue;
+        
+        switch(md->deviceType())
+        {
+          case MusECore::MidiDevice::ALSA_MIDI:
+            alsa_list.push_back(i);
+          break;
+          
+          case MusECore::MidiDevice::JACK_MIDI:
+            jack_list.push_back(i);
+          break;
+
+          case MusECore::MidiDevice::SYNTH_MIDI:
+            synth_list.push_back(i);
+          break;
+        }
+      }  
+      
+      // Order the entire listing by device type.
+      for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+      {
+        switch(dtype)
+        {
+          case MusECore::MidiDevice::ALSA_MIDI:
+            if(!alsa_list.isEmpty())
+              p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "ALSA")), p));
+            cur_list = &alsa_list;
+          break;
+          
+          case MusECore::MidiDevice::JACK_MIDI:
+            if(!jack_list.isEmpty())
+              p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "JACK")), p));
+            cur_list = &jack_list;
+          break;
+
+          case MusECore::MidiDevice::SYNTH_MIDI:
+            if(!synth_list.isEmpty())
+              p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")), p));
+            cur_list = &synth_list;
+          break;
+        }
+              
+        if(cur_list->isEmpty())
+          continue;
+        
+        int row = 0;
+        int sz = cur_list->size();
+        
+        for (int i = 0; i < sz; ++i) 
+        {
+          const int port = cur_list->at(i);
+          if(port < 0 || port >= MIDI_PORTS)
+            continue;
+          MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+          name = QString("%1:%2")
+              .arg(port + 1)
+              .arg(mp->portname());
+              
+          act = p->addAction(name);
+          act->setData(port);
+          act->setCheckable(true);
+          act->setChecked(port == checkPort);
+          
+          ++row;
+        }  
+      }
+      
+      int sz = unused_list.size();
+      if(sz > 0)
+      {
+        p->addSeparator();
+        for (int i = 0; i < sz; ++i)
+        {
+          const int port = unused_list.at(i);
+          // No submenu yet? Create it now.
+          if(!subp)
+          {
+            subp = new QMenu(p);
+            subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
+          }
+          act = subp->addAction(QString().setNum(port + 1));
+          act->setData(port);
+          act->setCheckable(true);
+          act->setChecked(port == checkPort);
+        }
+      }
+      
+      if(subp)
+        p->addMenu(subp);
+      return p;
+      }
+
+//---------------------------------------------------------
+//   midiPortsPopupMenu
+//---------------------------------------------------------
+void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts, 
+                        const QWidget* widget, bool includeDefaultEntry)
+{
+  switch(t->type()) {
+      case MusECore::Track::MIDI:
+      case MusECore::Track::DRUM:
+      case MusECore::Track::NEW_DRUM:
+      case MusECore::Track::AUDIO_SOFTSYNTH:
+      {
+            MusECore::MidiTrack* track = 0;
+            MusECore::SynthI* synthi = 0;
+            
+            int potential_new_port_no=-1;
+            int port = -1; 
+            
+            if(t->isSynthTrack())
+            {
+              // Cast as SynthI which inherits MidiDevice.
+              synthi = static_cast<MusECore::SynthI*>(t);
+              if(!synthi)
+                return;
+              port = synthi->midiPort();
+            }
+            else
+            {
+              track = static_cast<MusECore::MidiTrack*>(t);
+              port = track->outPort();
+            }
+            
+            // NOTE: If parent is given, causes accelerators to be returned in QAction::text() !
+            QMenu* p = MusEGui::midiPortsPopup(0, port, includeDefaultEntry);
+            
+            // find first free port number
+            // do not permit numbers already used in other tracks!
+            // except if it's only used in this track.
+            int no;
+            for (no=0;no<MIDI_PORTS;no++)
+              if (MusEGlobal::midiPorts[no].device()==NULL)
+              {
+                MusECore::ciMidiTrack it;
+                for (it=MusEGlobal::song->midis()->begin(); it!=MusEGlobal::song->midis()->end(); ++it)
+                {
+                  MusECore::MidiTrack* mt=*it;
+                  if (mt!=t && mt->outPort()==no)
+                    break;
+                }
+                if (it == MusEGlobal::song->midis()->end())
+                  break;
+                
+                // TODO Ports which are used by synths ??
+              }
+
+            if (no==MIDI_PORTS)
+            {
+              delete p;
+              printf("THIS IS VERY UNLIKELY TO HAPPEN: no free midi ports! you have used all %i!\n",MIDI_PORTS);
+              break;
+            }
+
+            potential_new_port_no=no;
+            
+            // Do not include unused devices if the track is a synth track.
+            if(!synthi)
+            {
+              typedef std::map<std::string, int > asmap;
+              typedef std::map<std::string, int >::iterator imap;
+
+              asmap mapALSA;
+              asmap mapJACK;
+              asmap mapSYNTH;
+
+              int aix = 0x10000000;
+              int jix = 0x20000000;
+              int six = 0x30000000;
+              for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+              {
+                // don't add devices which are used somewhere
+                if((*i)->midiPort() >= 0 && (*i)->midiPort() < MIDI_PORTS)
+                  continue;
+                  
+                switch((*i)->deviceType())
+                {
+                  case MusECore::MidiDevice::ALSA_MIDI:
+                    mapALSA.insert(std::pair<std::string, int> ((*i)->name().toStdString(), aix));
+                    ++aix;
+                  break;
+                  
+                  case MusECore::MidiDevice::JACK_MIDI:
+                    mapJACK.insert(std::pair<std::string, int> ((*i)->name().toStdString(), jix));
+                    ++jix;
+                  break;
+                  
+                  case MusECore::MidiDevice::SYNTH_MIDI:
+                    mapSYNTH.insert(std::pair<std::string, int> ((*i)->name().toStdString(), six));
+                    ++six;
+                  break;
+                }
+              }
+
+              if (!mapALSA.empty() || !mapJACK.empty() || !mapSYNTH.empty())
+              {
+                QMenu* pup = p->addMenu(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Unused Devices")));
+                QAction* act;
+
+                if (!mapALSA.empty())
+                {
+                  pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
+
+                  for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i)
+                  {
+                    int idx = i->second;
+                    QString s(i->first.c_str());
+                    MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
+                    if(md)
+                    {
+                      if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
+                        continue;
+
+                      act = pup->addAction(md->name());
+                      act->setData(idx);
+                    }
+                  }
+                }
+
+                if (!mapJACK.empty())
+                {
+                  pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
+
+                  for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i)
+                  {
+                    int idx = i->second;
+                    QString s(i->first.c_str());
+                    MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
+                    if(md)
+                    {
+                      if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)
+                        continue;
+
+                      act = pup->addAction(md->name());
+                      act->setData(idx);
+                    }
+                  }
+                }
+                
+                if (!mapSYNTH.empty())
+                {
+                  pup->addAction(new MusEGui::MenuTitleItem("Synth:", pup));
+
+                  for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i)
+                  {
+                    int idx = i->second;
+                    QString s(i->first.c_str());
+                    MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
+                    if(md)
+                    {
+                      if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
+                        continue;
+
+                      act = pup->addAction(md->name());
+                      act->setData(idx);
+                    }
+                  }
+                }
+              }
+            }
+            
+            QAction* act = widget ? p->exec(widget->mapToGlobal(QPoint(x, y)), 0) : p->exec();
+            if(!act) 
+            {
+              delete p;
+              break;
+            }  
+            
+            QString acttext=act->text();
+            int n = act->data().toInt();
+            delete p;
+                  
+            if(n < 0)              // Invalid item.
+              break;
+            
+            if(n == MIDI_PORTS)    // Show port config dialog.
+            {
+              MusEGlobal::muse->configMidiPorts();
+              break;
+            }
+            else if (n >= 0x10000000)
+            {
+              // Error, should not happen.
+              if(synthi)
+                break;
+            
+              int typ;
+              if (n < 0x20000000)
+                typ = MusECore::MidiDevice::ALSA_MIDI;
+              else if (n < 0x30000000)
+                typ = MusECore::MidiDevice::JACK_MIDI;
+              else
+                typ = MusECore::MidiDevice::SYNTH_MIDI;
+
+              MusECore::MidiDevice* sdev = MusEGlobal::midiDevices.find(acttext, typ);
+
+              MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[potential_new_port_no], sdev);
+              n=potential_new_port_no;
+              
+              MusEGlobal::song->update();
+            }
+
+            MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
+            MusEGlobal::audio->msgIdle(true);
+            
+            // In the case of synths, multiple synths cannot be assigned to the same port.
+            if(synthi || (!allClassPorts && !t->selected()))
+            {
+              if(synthi)
+              {
+                MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[n], synthi);
+                MusEGlobal::song->update();
+                changed |= MusECore::MidiTrack::PortChanged;
+              }
+              else if(track)
+              {
+                if(n != track->outPort())
+                  changed |= track->setOutPortAndUpdate(n, false);
+              }
+            }
+            else
+            {
+              if(track)
+              {
+                MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
+                for(MusECore::iMidiTrack myt = tracks->begin(); myt != tracks->end(); ++myt) 
+                {
+                  MusECore::MidiTrack* mt = *myt;
+                  if(n != mt->outPort() && (allClassPorts || mt->selected()))
+                    changed |= mt->setOutPortAndUpdate(n, false);
+                }
+              }
+            }
+            
+            MusEGlobal::audio->msgIdle(false);
+            MusEGlobal::audio->msgUpdateSoloStates();
+            MusEGlobal::song->update(SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0));
+            
+            // Prompt and send init sequences.
+            MusEGlobal::audio->msgInitMidiDevices(false);
+      }
+      break;
+            
+      case MusECore::Track::WAVE:
+      case MusECore::Track::AUDIO_OUTPUT:
+      case MusECore::Track::AUDIO_INPUT:
+      case MusECore::Track::AUDIO_GROUP:
+      case MusECore::Track::AUDIO_AUX:    //TODO
+            break;
+      }
+}
+
+//---------------------------------------------------------
 //   populateAddSynth
 //---------------------------------------------------------
 
@@ -1345,6 +1773,109 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect)
 
   return QLine(x1, y1, x2, y2);
 }
+
+//---------------------------------------------------------
+//   loadTheme
+//---------------------------------------------------------
+
+void loadTheme(const QString& s, bool force)
+      {
+      // Style sheets take priority over styles, and actually
+      //  reset the style object name to empty when set.
+      const QString oname(qApp->style()->objectName());
+      QStringList sl = QStyleFactory::keys();
+      if (s.isEmpty() || sl.indexOf(s) == -1) {
+        if(MusEGlobal::debugMsg)
+          printf("Set style does not exist, setting default.\n");
+        // To find the name of the current style, use objectName().
+        if(force || oname.compare(Appearance::getSetDefaultStyle(), Qt::CaseInsensitive) != 0)
+        {
+          qApp->setStyle(Appearance::getSetDefaultStyle());
+          // Do the style again to fix a bug where the arranger is non-responsive.
+          if(MusEGlobal::config.fixFrozenMDISubWindows)
+            qApp->setStyle(Appearance::getSetDefaultStyle());
+
+          if(MusEGlobal::debugMsg)
+          {
+            fprintf(stderr, "loadTheme setting app style to default:%s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
+            fprintf(stderr, "   App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
+          }
+
+          // No style object name? It will hapen when a stylesheet is active.
+          // Give it a name. NOTE: The object names always seem to be lower case while
+          //  the style factory key names are not.
+          if(qApp->style()->objectName().isEmpty())
+          {
+            qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
+            if(MusEGlobal::debugMsg)
+              fprintf(stderr, "   Setting empty style object name. App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
+          }
+        }
+      }
+      else if (force || oname.compare(s, Qt::CaseInsensitive) != 0)
+      {
+            qApp->setStyle(s);
+            // Do the style again to fix a bug where the arranger is non-responsive.
+            if(MusEGlobal::config.fixFrozenMDISubWindows)
+              qApp->setStyle(s);
+
+            if(MusEGlobal::debugMsg)
+            {
+              fprintf(stderr, "loadTheme setting app style to:%s\n", s.toLatin1().constData());
+              fprintf(stderr, "   app style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
+            }
+
+            // No style object name? It will hapen when a stylesheet is active.
+            // Give it a name. NOTE: The object names always seem to be lower case while
+            //  the style factory key names are not.
+            if(qApp->style()->objectName().isEmpty())
+            {
+              qApp->style()->setObjectName(s.toLower());
+              if(MusEGlobal::debugMsg)
+                fprintf(stderr, "   Setting empty style object name. App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
+            }
+      }
+      }
+
+//---------------------------------------------------------
+//   loadStyleSheetFile
+//---------------------------------------------------------
+
+void loadStyleSheetFile(const QString& s)
+{
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "loadStyleSheetFile:%s\n", s.toLatin1().constData());
+    if(s.isEmpty())
+    {
+      qApp->setStyleSheet(s);
+      return;
+    }
+
+    QFile cf(s);
+    if (cf.open(QIODevice::ReadOnly)) {
+          QByteArray ss = cf.readAll();
+          QString sheet(QString::fromUtf8(ss.data()));
+          qApp->setStyleSheet(sheet);
+          cf.close();
+          }
+    else
+          printf("loading style sheet <%s> failed\n", qPrintable(s));
+}
+
+//---------------------------------------------------------
+//   updateThemeAndStyle
+//    Call when the theme or stylesheet part of the configuration has changed,
+//     to actually switch them.
+//---------------------------------------------------------
+
+void updateThemeAndStyle(bool forceStyle)
+{
+  // Note that setting a stylesheet completely takes over the font until blanked again.
+  qApp->setFont(MusEGlobal::config.fonts[0]);
+  loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+  loadTheme(MusEGlobal::config.style, forceStyle || !MusEGlobal::config.styleSheetFile.isEmpty());
+}
+
 
 
 } // namespace MusEGui

@@ -1306,6 +1306,8 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                 
                 case stretchStartMove:
                   _stretchAutomation._controllerState = stretchMovingController;
+                // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+                // FALLTHROUGH
                 case stretchMovingController:
                 {
                   if(button != Qt::LeftButton)

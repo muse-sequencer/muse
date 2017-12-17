@@ -239,6 +239,7 @@ void GlobalSettingsConfig::updateSettings()
       setBigtimeCurrent->setEnabled(MusEGlobal::muse->bigtimeWindow());
       setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
 
+      fixFrozenMDISubWindowsCheckBox->setChecked(MusEGlobal::config.fixFrozenMDISubWindows);
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
@@ -379,6 +380,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer2.geometry.setWidth(mixer2W->value());
       MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
+      MusEGlobal::config.fixFrozenMDISubWindows = fixFrozenMDISubWindowsCheckBox->isChecked();
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();
@@ -474,7 +476,8 @@ void GlobalSettingsConfig::apply()
       
       applyMdiSettings();
       
-      MusEGlobal::muse->changeConfig(true);    // save settings
+      // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+      MusEGlobal::muse->changeConfig(true);
       raise();
       }
 

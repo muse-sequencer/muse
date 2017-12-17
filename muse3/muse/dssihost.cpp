@@ -62,6 +62,7 @@
 #include "globaldefs.h"
 #include "gconfig.h"
 #include "popupmenu.h"
+#include "lock_free_buffer.h"
 
 namespace MusECore {
 
@@ -420,11 +421,6 @@ bool DssiSynthIF::nativeGuiVisible() const
       return false;
       }
 
-bool DssiSynthIF::guiVisible() const
-      {
-      return _gui && _gui->isVisible();
-      }
-
 //---------------------------------------------------------
 //   showNativeGui
 //---------------------------------------------------------
@@ -445,53 +441,6 @@ v
       
       #endif // OSC_SUPPORT
       }
-
-//---------------------------------------------------------
-//   showGui
-//---------------------------------------------------------
-
-void DssiSynthIF::showGui(bool v)
-{
-    if (v) {
-            if (_gui == 0)
-                makeGui();
-            _gui->show();
-            }
-    else {
-            if (_gui)
-                _gui->hide();
-            }
-}
-
-//---------------------------------------------------------
-//   getGeometry
-//---------------------------------------------------------
-
-void DssiSynthIF::getGeometry(int*x, int*y, int*w, int*h) const
-{
-  if(!_gui)
-  {
-    *x=0;*y=0;*w=0;*h=0;
-    return;
-  }
-  
-  *x = _gui->x();
-  *y = _gui->y();
-  *w = _gui->width();
-  *h = _gui->height();
-}
-
-//---------------------------------------------------------
-//   setGeometry
-//---------------------------------------------------------
-
-void DssiSynthIF::setGeometry(int x, int y, int w, int h)
-{
-  if(!_gui)
-    return;
-  
-  _gui->setGeometry(x, y, w, h);
-}
 
 //---------------------------------------------------------
 //   receiveEvent
@@ -1102,21 +1051,11 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
   int chn = e.channel();
   int a   = e.dataA();
   int b   = e.dataB();
-  
-  int len = e.len();
-  char ca[len + 2];
-  
-  ca[0] = 0xF0;
-  memcpy(ca + 1, (const char*)e.data(), len);
-  ca[len + 1] = 0xF7;
-
-  len += 2;
 
   #ifdef DSSI_DEBUG 
   fprintf(stderr, "DssiSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
   #endif
   
-  // REMOVE Tim. Noteoff. Added.
   const MidiInstrument::NoteOffMode nom = synti->noteOffMode();
   
   switch(e.type()) 
@@ -1129,11 +1068,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
       
-      // REMOVE Tim. Noteoff. Changed.
-//       if(b)
-//         snd_seq_ev_set_noteon(event, chn, a, b);
-//       else
-//         snd_seq_ev_set_noteoff(event, chn, a, 0);
       if(b == 0)
       {
         // Handle zero-velocity note ons. Technically this is an error because internal midi paths
@@ -1172,8 +1106,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
       
-      // REMOVE Tim. Noteoff. Changed.
-//       snd_seq_ev_set_noteoff(event, chn, a, 0);
       switch(nom)
       {
         // Instrument uses note offs. Send as-is.
@@ -1201,21 +1133,10 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
 
-      int cur_hb, cur_lb;
-      synti->currentProg(chn, NULL, &cur_lb, &cur_hb);
-      synti->setCurrentProg(chn, a & 0xff, cur_lb, cur_hb);
-      
-      // Only if there's something to change...
-      //if(dssi->select_program && (hb < 128 || lb < 128 || a < 128))
-      {
-        if(cur_hb > 127) // Map "dont care" to 0
-          cur_hb = 0;
-        if(cur_lb > 127)
-          cur_lb = 0;
-        if(a > 127)
-          a = 0;
-        doSelectProgram(_handle, (cur_hb << 8) + cur_lb, a);
-      }
+      int hb, lb;
+      synti->currentProg(chn, NULL, &lb, &hb);
+      synti->setCurrentProg(chn, a & 0xff, lb, hb);
+      doSelectProgram(_handle, hb, lb, a);
       // Event pointer not filled. Return false.
       return false;
     }
@@ -1226,9 +1147,11 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_CONTROLLER\n");
       #endif
       
-      if((a == 0) || (a == 32))
+      // Our internal hwCtrl controllers support the 'unknown' value.
+      // Don't send 'unknown' values to the driver. Ignore and return no error.
+      if(b == CTRL_VAL_UNKNOWN)
         return false;
-        
+            
       if(a == CTRL_PROGRAM)
       {
         #ifdef DSSI_DEBUG 
@@ -1238,24 +1161,32 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int hb = (b >> 16) & 0xff;
         int lb = (b >> 8) & 0xff;
         int pr = b & 0xff;
-        
         synti->setCurrentProg(chn, pr, lb, hb);
-        
-        // Only if there's something to change...
-        //if(dssi->select_program && (hb < 128 || lb < 128 || pr < 128))
-        {
-          if(hb > 127) // Map "dont care" to 0
-            hb = 0;
-          if(lb > 127)
-            lb = 0;
-          if(pr > 127)
-            pr = 0;
-          doSelectProgram(_handle, (hb << 8) + lb, pr);
-        }
+        doSelectProgram(_handle, hb, lb, pr);
         // Event pointer not filled. Return false.
         return false;
       }
           
+      if(a == CTRL_HBANK)
+      {
+        int lb, pr;
+        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->setCurrentProg(chn, pr, lb, b & 0xff);
+        doSelectProgram(_handle, b, lb, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
+      if(a == CTRL_LBANK)
+      {
+        int hb, pr;
+        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->setCurrentProg(chn, pr, b & 0xff, hb);
+        doSelectProgram(_handle, hb, b, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+            
       if(a == CTRL_PITCH)
       {
         #ifdef DSSI_DEBUG 
@@ -1504,10 +1435,21 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
           // "DssiSynthIF::processEvent midi event is ME_SYSEX"
           // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
           // That might be ALSA doing that.
+          
+          const int len = e.len();
+          char buf[len + 2];
+          
+          buf[0] = 0xF0;
+          memcpy(buf + 1, e.data(), len);
+          buf[len + 1] = 0xF7;
+
           snd_seq_ev_clear(event); 
+          snd_seq_ev_set_sysex(event, len + 2, buf);
           event->queue = SND_SEQ_QUEUE_DIRECT;
-          snd_seq_ev_set_sysex(event, len,
-            (unsigned char*)ca);
+          
+          // NOTE: Don't move this out, 'buf' would go out of scope.
+          // Event was filled. Return true.
+          return true;
         }
       }  
     break;
@@ -1527,17 +1469,12 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
-  // We may not be using ev_buf_sz all at once - this will be just the maximum.
-  const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
-  snd_seq_event_t events[ev_buf_sz];
-
-  const int frameOffset = MusEGlobal::audio->getFrameOffset();
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef DSSI_DEBUG_PROCESS
-  fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
+  fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu\n", pos, ports, nframes, syncFrame);
   #endif
 
   // All ports must be connected to something!
@@ -1737,7 +1674,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
     // Get all control ring buffer items valid for this time period...
     while(!_controlFifo.isEmpty())
     {
-      ControlEvent v = _controlFifo.peek();
+      const ControlEvent& v = _controlFifo.peek();
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
@@ -1763,10 +1700,12 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
           || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
           || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
         break;
-      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= in_ctrls) // Sanity check.
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         break;
+      }
 
       found = true;
       frame = evframe;
@@ -1786,6 +1725,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
+      
+      _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
@@ -1799,91 +1740,116 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
     if(nsamp != 0)
     {
       unsigned long nevents = 0;
-      if(ports != 0)  // Don't bother if not 'running'.
+      // Get the state of the stop flag.
+      const bool do_stop = synti->stopFlag();
+
+      MidiPlayEvent buf_ev;
+      
+      // Transfer the user lock-free buffer events to the user sorted multi-set.
+      // False = don't use the size snapshot, but update it.
+      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        // Process event list events...
-        for(; start_event != el->end(); ++start_event)
-        {
-          #ifdef DSSI_DEBUG
-          fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
-          #endif
-
-          if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
-          {
-            #ifdef DSSI_DEBUG
-            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
-            #endif
-            break;
-          }
-
-          // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-          // Same code as in MidiPort::sendEvent()
-          if(mp && !mp->sendHwCtrlState(*start_event, false))
-            continue;
-          
-          // Returns false if the event was not filled. It was handled, but some other way.
-          if(processEvent(*start_event, &events[nevents]))
-          {
-            // Time-stamp the event.
-            int ft = start_event->time() - frameOffset - pos - sample;
-            if(ft < 0)
-              ft = 0;
-
-            if (ft >= int(nsamp))
-            {
-                fprintf(stderr, "DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-                ft = nsamp - 1;
-            }
-
-            #ifdef DSSI_DEBUG
-            fprintf(stderr, "DssiSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
-            #endif
-
-            // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
-            //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-            events[nevents].time.tick = ft;
-
-            ++nevents;
-          }
-        }
+        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+          synti->_outUserEvents.insert(buf_ev);
       }
-
-      // Now process putEvent events...
-      while(!synti->eventFifo.isEmpty())
+      
+      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
       {
-        MidiPlayEvent e = synti->eventFifo.peek();
+        // Are we stopping? Just remove the item.
+        if(do_stop)
+          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
+        // Otherwise get the item.
+        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+          synti->_outPlaybackEvents.insert(buf_ev);
+      }
+  
+      // Are we stopping?
+      if(do_stop)
+      {
+        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->_outPlaybackEvents.clear();
+        // Reset the flag.
+        synti->setStopFlag(false);
+      }
+      
+      // Count how many events we need.
+      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+      {
+        const MidiPlayEvent& e = *impe;
+        if(e.time() >= (syncFrame + sample + nsamp))
+          break;
+        ++nevents;
+      }
+      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
+      {
+        const MidiPlayEvent& e = *impe;
+        if(e.time() >= (syncFrame + sample + nsamp))
+          break;
+        ++nevents;
+      }
+      
+      snd_seq_event_t events[nevents];
+      
+      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+      iMPEvent impe_us = synti->_outUserEvents.begin();
+      bool using_pb;
+  
+      unsigned long event_counter = 0;
+      while(1)
+      {
+        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+          using_pb = *impe_pb < *impe_us;
+        else if(impe_pb != synti->_outPlaybackEvents.end())
+          using_pb = true;
+        else if(impe_us != synti->_outUserEvents.end())
+          using_pb = false;
+        else break;
+        
+        const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
 
         #ifdef DSSI_DEBUG
-        fprintf(stderr, "DssiSynthIF::getData eventFifo event time:%d\n", e.time());
+        fprintf(stderr, "DssiSynthIF::getData eventFifos event time:%d\n", e.time());
         #endif
 
-        if(e.time() >= (pos + sample + nsamp + frameOffset))
+        if(e.time() >= (syncFrame + sample + nsamp))
           break;
 
-        synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
         if(ports != 0)  // Don't bother if not 'running'.
         {
           // Returns false if the event was not filled. It was handled, but some other way.
-          if(processEvent(e, &events[nevents]))
+          if(processEvent(e, &events[event_counter]))
           {
             // Time-stamp the event.
-            int ft = e.time() - frameOffset - pos  - sample;
-            if(ft < 0)
-              ft = 0;
-            if (ft >= int(nsamp))
+            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
+            if (ft >= nsamp)
             {
-                fprintf(stderr, "DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                fprintf(stderr, "DssiSynthIF::getData: eventFifos event time:%d out of range. pos:%d syncFrame:%lu ft:%u sample:%lu nsamp:%lu\n", 
+                        e.time(), pos, syncFrame, ft, sample, nsamp);
                 ft = nsamp - 1;
             }
             // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
             //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-            events[nevents].time.tick = ft;
+            events[event_counter].time.tick = ft;
 
-            ++nevents;
+            ++event_counter;
           }
         }
+        
+        // Done with ring buffer's event. Remove it.
+        // C++11.
+        if(using_pb)
+          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+        else
+          impe_us = synti->_outUserEvents.erase(impe_us);
       }
 
+      if(event_counter < nevents)
+        nevents = event_counter;
+      
       #ifdef DSSI_DEBUG_PROCESS
       fprintf(stderr, "DssiSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
       #endif
@@ -1929,22 +1895,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_even
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
 
-  return start_event;
+  return true;
 }
-
-//---------------------------------------------------------
-//   putEvent
-//---------------------------------------------------------
-
-bool DssiSynthIF::putEvent(const MidiPlayEvent& ev)
-      {
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "DssiSynthIF::putEvent midi event time:%d chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
-      #endif
-      if (MusEGlobal::midiOutputTrace)
-            ev.dump();
-      return synti->eventFifo.put(ev);
-      }
 
 //---------------------------------------------------------
 //   incInstances
@@ -1972,17 +1924,6 @@ void DssiSynth::incInstances(int val)
             midiCtl2PortMap.clear();
             port2MidiCtlMap.clear();
       }
-}
-
-//---------------------------------------------------------
-//   initGui
-//---------------------------------------------------------
-bool DssiSynthIF::initGui()
-{
-      #ifdef OSC_SUPPORT
-      return _oscif.oscInitGui();
-      #endif
-      return true;
 }
 
 //---------------------------------------------------------
@@ -2080,22 +2021,14 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       if(port != -1)
       {
         // Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
-        MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (lb << 8) | program);
+        const MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (lb << 8) | program);
       
         #ifdef DSSI_DEBUG 
         fprintf(stderr, "DssiSynthIF::oscProgram midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());
         #endif
         
-        MusEGlobal::midiPorts[port].sendEvent(event);
+        MusEGlobal::midiPorts[port].putEvent(event);
       }
-      
-      //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
-      //
-      //MidiDevice* md = dynamic_cast<MidiDevice*>(synti);
-      //if(md)
-      //  md->putEvent(event);
-      //
-      //synti->putEvent(event); 
       
       return 0;
       }
@@ -2183,22 +2116,52 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
 
 int DssiSynthIF::oscMidi(int a, int b, int c)
       {
-      if (a == ME_NOTEOFF) {
-            a = ME_NOTEON;
-            c = 0;
+        // From the DSSI RFC document:
+        // <base path>/midi
+        // "Send an arbitrary MIDI event to the plugin. Takes a four-byte MIDI string.
+        //  This is expected to be used for note data generated from a test panel on the UI,
+        //   for example. It should not be used for program or controller changes, sysex data, etc.
+        //  A host should feel free to drop any values it doesn't wish to pass on.
+        //  No guarantees are provided about timing accuracy, etc, of the MIDI communication."
+
+        // From dssi.h:
+        // " A host must not attempt to switch notes off by sending
+        //    zero-velocity NOTE_ON events.  It should always send true
+        //    NOTE_OFFs.  It is the host's responsibility to remap events in
+        //    cases where an external MIDI source has sent it zero-velocity
+        //    NOTE_ONs."
+        
+      int type = a & 0xf0;
+      if (type == ME_NOTEON && c == 0) {
+            type = ME_NOTEOFF;
+            c = 64;
             }
-      int channel = 0;        // TODO: ??
-      int port    = synti->midiPort();        
+            
+      const int channel = a & 0x0f;
+      
+      const int port    = synti->midiPort();        
       
       if(port != -1)
       {
-        MidiPlayEvent event(0, port, channel, a, b, c);
+        // Time-stamp the event.
+        MidiPlayEvent event(MusEGlobal::audio->curFrame(), port, channel, type, b, c);
       
         #ifdef DSSI_DEBUG   
-        printf("DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
+        printf("DssiSynthIF::oscMidi midi event port:%d type:%d chn:%d a:%d b:%d\n", event.port(), event.type(), event.channel(), event.dataA(), event.dataB());  
         #endif
         
-        MusEGlobal::midiPorts[port].sendEvent(event);
+        // Just in case someone decides to send controllers, sysex, or stuff
+        //  OTHER than "test notes", contrary to the rules...
+        // Since this is a thread other than audio or gui, it may not be safe to
+        //  even ask whether a controller exists, so MidiPort::putEvent or putHwCtrlEvent
+        //  would not be safe here. Ask the gui to do it for us.
+        // Is it a controller message? Send the message to the gui.
+        //if(event.translateCtrlNum() >= 0)
+          MusEGlobal::song->putIpcInEvent(event);
+          
+        // Send the message to the device.
+        if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
+          md->putEvent(event, MidiDevice::Late);
       }
       
       return 0;
@@ -2210,16 +2173,11 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
 
 int DssiSynthIF::oscConfigure(const char *key, const char *value)
       {
-      //"This is pretty much the simplest legal implementation of
-      // configure in a DSSI host. 
-      // The host has the option to remember the set of (key,value)
+      // "The host has the option to remember the set of (key,value)
       // pairs associated with a particular instance, so that if it
       // wants to restore the "same" instance on another occasion it can
       // just call configure() on it for each of those pairs and so
-      // restore state without any input from a GUI.  Any real-world GUI
-      // host will probably want to do that.  This host doesn't have any
-      // concept of restoring an instance from one run to the next, so
-      // we don't bother remembering these at all." 
+      // restore state without any input from a GUI." 
 
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLatin1().constData(), key, value);
@@ -2294,8 +2252,17 @@ void DssiSynthIF::queryPrograms()
             }
       }
 
-void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
+void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bankH, int bankL, int prog)
 {
+  if(bankH > 127) // Map "dont care" to 0
+    bankH = 0;
+  if(bankL > 127)
+    bankL = 0;
+  if(prog > 127)
+    prog = 0;
+    
+  const int bank = (bankH << 8) | bankL;
+  
   const DSSI_Descriptor* dssi = _synth->dssi;
   dssi->select_program(handle, bank, prog);
   

@@ -251,6 +251,7 @@ class MusE : public QMainWindow
       QSignalMapper *windowsMapper;
       QTimer *saveTimer;
       QTimer *blinkTimer;
+      QTimer *messagePollTimer;
       int saveIncrement;
 
    signals:
@@ -261,6 +262,7 @@ class MusE : public QMainWindow
       void heartBeat();
       void blinkTimerSlot();
       void saveTimerSlot();
+      void messagePollTimerSlot();
       void loadProject();
       bool save();
       void configGlobalSettings();
@@ -342,8 +344,6 @@ class MusE : public QMainWindow
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void toplevelDeleting(MusEGui::TopWin* tl);
-      void loadTheme(const QString&);
-      void loadStyleSheetFile(const QString&);
       bool seqRestart();
       void loadTemplate();
       void showBigtime(bool);
@@ -409,9 +409,8 @@ class MusE : public QMainWindow
       void kbAccel(int);
       
       // writeFlag: Write to configuration file. 
-      // simple: Don't bother with theme, style, and font etc. updates, just emit the configChanged signal.
-      void changeConfig(bool writeFlag, bool simple = false);
-      
+      void changeConfig(bool writeFlag);
+
       void seqStop();
       bool seqStart();
       // Starts the ALSA midi portion of the sequencer. audioDevice must be valid.

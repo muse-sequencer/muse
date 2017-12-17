@@ -1,3 +1,165 @@
+17.12.2017
+      * Substantial midi engine redesign: (Tim)
+         - Merge from engine_fixes_2017 branch:
+         - To ease working with multiple threads, new classes were developed:
+           MemoryQueue, and templates TypedMemoryPool LockFreeMPSCBuffer
+            and LockFreeMPSCRingBuffer. Pooled-memory SeqMPEventList was added
+            to compliment MPEventList.
+         - Midi device processing is now completely de-coupled from other threads,
+            using only MPSC Ring Buffers. It just does 'what it is told' now.
+           There is no more 'sending back' of midi controller values from midi
+            device process code to the audio thread - that was like a SERIAL manner.
+           Example: Previously a keyboard sent a controller, the audio thread picked
+            it up and sent it to an ALSA device where it's processed in the seq thread,
+            which then sets the muse hw midi controller representing it, and finally
+            the gui controls are updated with these values soon after.
+           Now instead, a keyboard sends a controller, the audio thread picks it up
+            and sends it in a PARALLEL manner to TWO places at once: An ALSA device
+            ring buffer where it's processed in the seq thread, AND a ring buffer
+            processed in the audio thread for setting the muse hw midi controller,
+            and finally the gui controls are updated soon after.
+           As one result, midi controls are now updated properly from automation
+            graphs - independently - whether the device actually got the messages,
+            or even if no device (<None>) selected for the port !
+           TODO: Now that we have MPSC ring buffers, I am hoping to allow ALSA midi
+            to shine, by taking midi input and bypassing the audio thread and
+            'directly' talking (putting) to other devices' threads. Eventually the
+            ALSA thread will 'collect' and process events completely independent
+            of the audio thread, autonomously without audio buffer size related delays.
+         - External midi clock sync: Complete redesign! Does not 'miss' recording
+            the first few notes any more.
+           There is no more pervasive 'duality' of processing midi in 'ticks' when
+            externally syncing vs 'frames' for normal tempo map use when not
+            externally syncing.
+           Instead, a brief external clock frame timestamp history is kept, and
+            ALL midi processing is done in FRAMES now, regardless of whether
+            externally syncing. Yay.
+         - Large System Exclusive (sysex) message support: MusE can now record
+            and playback very large sysex messages. Works great with ALSA.
+           TODO: Jack midi does not support large sysex recording.
+         - Some fixes to the 'retake' (restart recording) feature. Complete re-write.
+           Much more stable and realtime-safe now. But still slow with wave tracks.
+         - All mute, solo, and off controls make the song dirty now.
+         - Metronome fixes: Fixed silent metronome when any track was soloed!
+           Fixed metronome dialog: Not updating when song loaded.
+           Fixed non-realtime-safe reloading of metronome samples.
+         - Piano and drum list: No more slow waiting for audio thread when each note played.
+           Fast! Completely de-coupled by putting to the ring buffers instead.
+         - Several other smaller related and unrelated fixes along the way.
+17.12.2017
+         - Enhancements to midi port/device popup menu in track list + drum list. (Tim)
+           Sorted by device type now.
+         - New! Synthesizer tracks can change their port from the track list.
+15.12.2017
+         - Added support for track pad horizontal scrolling.
+           Involved adjusting scrolling constants and moving to pixelDelta() for
+           QWheelEvent, may need further adjustment (rj)
+14.12.2017
+         - fixed track info drawing to be drawn correctly when using big fonts (rj)
+04.12.2017
+         - Fixes to instruments, idf files, and sysexes. (Tim)
+           Fix error in Yamaha 9000pro idf file causing
+            "Cannot convert string to sysex r ct bn bt f7".
+           Several submitted idf files have F0...F7 enclosing sysexes, which was not 
+            allowed, so to avoid changing them all, MusE is now more forgiving and 
+            accepts enclosing F0...F7 in idf files and when editing sysex events.
+03.12.2017
+         - PopupMenu and RoutePopupMenu fixes and touchups. (Tim)
+           Fix problems with <More...> submenus.
+           Sort and present midi device items by device type.
+           Slight rearrangement of title items etc.
+02.12.2017 
+         - Clear 'recently opened' file list upon MusE self-restarting. (Tim)
+01.12.2017
+         - Further to 29.11.2017: Fixed LV2 synths + rack plugins position/size. (Tim)
+           NOTE: AFAIK we have no control over LV2 plugin 'external' windows,
+            only the ones where we create the window.
+           TODO: Same fix for MESS synths...
+29.11.2017
+         - Bug #571 Plugin GUIs are too narrow: Fixed. (Tim)
+           Fixed generic GUI windows' initial position/size.
+           Fixed saving/restoring pos/size of generic GUIs. 
+           Reported a Qt BUG #64773 regarding ignoring setting of position upon show()!
+           For said bug, wrote a MusE workaround. Tested all generic GUIs OK. 
+           TODO: Similar fix for 'native' synth GUIs (where it supports it...)
+           TODO: Similar check and fix other non-QDialog usages for pos/size settings.
+20.11.2017
+         - Removed: Arranger 'Alt' button (and hidden Pianoroll) midi Trackinfo. (Tim)
+19.11.2017
+         - LV2: Fix continuous "LV2SimpleRTFifo:put(): fifo is full" messages. (Tim)
+           Rewrote LV2EvBuf ctor: Can't just always call _buffer.resize() here, 
+            which fills with items. Use reserve + assign(1) item for an output buffer,
+            and resize for an input buffer. Some plugins expose midi output sequence 
+            ports even though they do NOT use them at all. This fix cures an oversight 
+            which caused our receiving buffer to always be full in such cases, never 
+            having a chance to be cleared by the plugin.
+         - Bug #572: Fix Alt+P crash with unselected regions. (Tim)
+16.11.2017
+         - LV2: Fix bug #587 All Gtk-based guis crashing on close. (Tim)
+           Rewrote how we delete things on close.
+05.11.2017
+         - Fix #592 MusE doesn't record some controllers. (Tim)
+08.06.2017
+         - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 
+            QString::arg usage or similar code, or snprintf. Compiler warned of some suspicous 
+            sprintf usage with not enough dest space. Fixed a few other compiler complaints. (Tim)
+         - lv2Gtk2Support module: Build with -Wno-error to avoid stopping on warnings. (Tim)
+         - Track list: Fix double error message box on track rename with duplicate name. (Tim)
+06.06.2017
+         - More frozen MDI sub windows fixes. (Tim)
+           When style or stylesheet is changed in Appearance, warning now is 'changes don't
+            take effect until restarted'. Don't even attempt to set style/stylesheet if user 
+            answers no to self-restart prompt. Moved initial setup of style/stylesheet in main() 
+            from after muse->show to just after QApplication is created - now the only 
+            place allowed to set them, except for hacks if 'Fix frozen windows' setting is on.
+           Note: Setting a stylesheet may still cause it to freeze. Working on the issue...
+         -------------------------------------------------------------------------------
+         [EDIT]: 29/11/2017 The 'frozen MDI sub window' thing was a KDE Breeze/Oxygen style bug. 
+                 Fixed upstream in recent versions with help from that team.
+         -------------------------------------------------------------------------------
+03.06.2017
+      * GCC 7 fixes: (Tim)
+         - LV2 GTK2 support is now optional, due to a current exception breakage in gtkmm.
+         - Fixed many places using switch/case 'fallthrough'. With gcc7 these now generate 
+            warnings which MusE treats as errors. I used 'comment warning suppressor indicators':
+            // FALLTHROUGH
+         - Fixed slight de-referencing problem in JackAudioDevice::portName().
+26.05.2017
+         - Further to 22.05: [Sigh] More timer fixes: (Tim)
+           Info: Alsa HR timer now has hard-coded 1000 Hz limit, unsettable, unreadable :-o
+           As recommended by ALSA support, step through and try freqs as before.
+           Fixed div by 0 crash in ALSA timer if freq too high - set ticks to 1 if 0.
+           In view of the above, the RTC timer now takes priority. MusE tries it first,
+            and falls back to ALSA (typically the HR timer or else the sytem timer).
+           Updated README with modern info about setting up systems for timers.
+         - Bug #567 from Krzysztof Gajdemski: Older Qt: Build fails at QMetaObject::inherits().
+           Oops, remove line. Next line qobject_cast() will take care of it.
+22.05.2017
+         - Oops, fix ALSA timer fix of 14.05 not working. (Tim)
+           From kernel 4.4.0-77, some weird default 1000Hz limit on HR timer frequency!
+           Step through several frequencies looking for the best one.
+21.05.2017
+         - More mixer strip focus tabbing fixes, including strip-to-strip. Should be OK now. (Tim)
+20.05.2017
+         - Oops, fix midi meters when midi sliders are in dB mode. (Tim)
+14.05.2017
+         - Some work on ALSA timer. For ex. not working at all in openSuSE. (Tim)
+           TODO: More tests. Cleanups. Remove diagnostic printf's.
+13.05.2017
+         - More frozen MDI windows fixes: (Tim)
+           Added option "General Settings > Gui Behaviour > Fix frozen MDI sub windows".
+           Move the theme and style stuff in MusE::changeConfig() into a separate
+            MusE::updateThemeAndStyle(). Many places call changeConfig, but only
+            a couple really needed updateThemeAndStyle().
+           TODO: Benign XCB connection errors may still occur. Remove diagnostic printf's.
+24.04.2017
+         - Added Monitor track list column. (Tim)
+         - Streamlined and tightened up the record-arm and bounce operations. (Tim)
+         - Monitor on record-arm is on by default now, upon first installation. (Tim)
+         - Fixed a problem with arranger track resizing taking much too long with
+            many tracks and mixer open - added a separate SC_TRACK_RESIZED. (Tim)
+         - Bumped up songfile version to 3.1, so that incompatible binary header data
+            can be skipped, since a new Monitor column was added. Changed other files. (Tim)
 10.04.2017
          - Slight tweak: Don't allow the strips to gain focus. (Tim)
          - Added new Czech translation from Pavel Fric. (Tim)

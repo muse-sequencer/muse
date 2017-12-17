@@ -48,14 +48,13 @@ class QMenu;
 namespace MusECore {
 
 class SynthI;
-struct MidiMsg;
 class Event;
 class Xml;
 class Sequencer;
 class Track;
 class Part;
 class PartList;
-struct MPEventList;
+class MPEventList;
 class EventList;
 class MarkerList;
 class Marker;
@@ -118,8 +117,9 @@ class AudioDevice;
 #define SC_DRUM_SELECTION             0x800000000L  // Drum list selected note changed.
 #define SC_TRACK_REC_MONITOR          0x1000000000L // Audio or midi track's record monitor changed.
 #define SC_TRACK_MOVED                0x2000000000L // Audio or midi track's position in track list or mixer changed.
-#define SC_STRETCH                    0x4000000000L // A stretch map changed.
-#define SC_AUDIO_CONVERTER            0x8000000000L // An audio converter or audio converter setting changed.
+#define SC_TRACK_RESIZED              0x4000000000L // Audio or midi track was resized in the arranger.
+#define SC_STRETCH                    0x8000000000L // A stretch map changed.
+#define SC_AUDIO_CONVERTER            0x10000000000L // An audio converter or audio converter setting changed.
 #define SC_EVERYTHING                 -1L           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
@@ -179,6 +179,10 @@ class Song : public QObject {
       float _fDspLoad;
       long _xRunsCount;
 
+      // Receives events from any threads. For now, specifically for creating new
+      //  controllers in the gui thread and adding them safely to the controller lists.
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
+      
       bool _masterFlag;
       bool loopFlag;
       bool punchinFlag;
@@ -390,7 +394,7 @@ public:
       Track* findTrack(const QString& name) const;
       bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.end(); }
 
-      void setRecordFlag(Track*, bool);
+      void setRecordFlag(Track*, bool val, Undo* operations = 0);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*, int idx);
@@ -423,6 +427,14 @@ public:
       void connectMidiPorts();
       void connectAllPorts() { connectAudioPorts(); connectMidiPorts(); }
       void updateSoloStates();
+      // Put an event into the IPC event ring buffer for the gui thread to process. Returns true on success.
+      // NOTE: Although the ring buffer is multi-writer, call this from audio thread only for now, unless
+      //  you know what you are doing because the thread needs to ask whether the controller exists before
+      //  calling, and that may not be safe from threads other than gui or audio.
+      bool putIpcInEvent(const MidiPlayEvent& ev);
+      // Process any special IPC audio thread - to - gui thread messages. Called by gui thread only.
+      // Returns true on success.
+      bool processIpcInEventBuffers();
 
       //-----------------------------------------
       //   undo, redo, operation groups
@@ -507,7 +519,7 @@ public:
        * recording will start on existing tracks,
        * else new copies of armed tracks will be created
        * and current armed tracks will be muted and unarmed
-       */
+       * Called from gui thread only. */
       void restartRecording(bool discard = true);
 
    signals:

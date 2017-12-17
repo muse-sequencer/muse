@@ -38,7 +38,6 @@
 #include <QMainWindow>
 #include <QUiLoader>
 
-
 #include <ladspa.h>
 #include "globals.h"
 #include "globaldefs.h"
@@ -55,6 +54,15 @@
 #include <dssi.h>
 #endif
 
+// BUG I have filed a Qt bug report 64773. If we do NOT
+//  set a position on a new QWidget, Qt seems to take control
+//  of the position management such that it will NOT accept
+//  any new position after that! It seems to decide to
+//  remain in 'auto-placement' mode forever.
+// If the bug is ever fixed by Qt, this define should then
+//  become version-sensitive.         2017/11/28 Tim.
+#define QT_SHOW_POS_BUG_WORKAROUND 1;
+
 class QAbstractButton;
 class QComboBox;
 class QRadioButton;
@@ -64,6 +72,8 @@ class QToolButton;
 class QTreeWidget;
 class QRect;
 class QByteArray;
+class QCloseEvent;
+class QShowEvent;
 
 namespace MusEGui {
 class PluginGui;
@@ -251,7 +261,7 @@ struct Port {
       unsigned long idx;
       
       //   NOTE: These values represent the lowest level of control value storage.
-      //         The choice of float or double depends on the underlying system using this scruct.
+      //         The choice of float or double depends on the underlying system using this struct.
       //         For example plugins and synthesizers usually use floats to represent control values
       //          and they are directly pointed to this float, while our own track controls 
       //          (volume, pan etc.) take advantage of the double precision.
@@ -280,6 +290,8 @@ class PluginIBase
    protected:
       ControlFifo _controlFifo;
       MusEGui::PluginGui* _gui;
+      QRect _guiGeometry;
+      QRect _nativeGuiGeometry;
 
       void makeGui();
 
@@ -332,6 +344,32 @@ class PluginIBase
 
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
+      
+      virtual void showGui();
+      virtual void showGui(bool);
+      virtual bool guiVisible() const;
+      // Sets the gui's geometry. Also updates the saved geometry.
+      virtual void setGeometry(int x, int y, int w, int h);
+      // Returns the current geometry of the gui, or if the gui does not exist, 
+      //  the saved gui geometry.
+      virtual void getGeometry(int *x, int *y, int *w, int *h) const;
+      // Saves the current gui geometry.
+      virtual void saveGeometry(int x, int y, int w, int h);
+      // Returns the saved gui geometry.
+      virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
+      
+      virtual void showNativeGui() { }
+      virtual void showNativeGui(bool) { }
+      virtual bool nativeGuiVisible() const { return false; }
+      // Sets the gui's geometry. Also updates the saved geometry.
+      virtual void setNativeGeometry(int x, int y, int w, int h);
+      // Returns the current geometry of the gui, or if the gui does not exist, 
+      //  the saved gui geometry.
+      virtual void getNativeGeometry(int *x, int *y, int *w, int *h) const;
+      // Saves the current gui geometry.
+      virtual void saveNativeGeometry(int x, int y, int w, int h);
+      // Returns the saved gui geometry.
+      virtual void savedNativeGeometry(int *x, int *y, int *w, int *h) const;
 };
 
 //---------------------------------------------------------
@@ -440,8 +478,7 @@ class PluginI : public PluginIBase {
       void showNativeGui();
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
-      bool guiVisible();
-      bool nativeGuiVisible();
+      bool nativeGuiVisible() const;
 
       unsigned long parameters() const           { return controlPorts; }
       unsigned long parametersOut() const           { return controlOutPorts; }
@@ -583,6 +620,11 @@ class PluginGui : public QMainWindow {
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
                      double &lower, double &upper, double &dlower, double &dupper, double &dval);
+      
+   protected:
+      virtual void showEvent(QShowEvent *e);
+      virtual void hideEvent(QHideEvent *e);
+    
    private slots:
       void load();
       void save();

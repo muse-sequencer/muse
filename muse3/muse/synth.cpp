@@ -58,6 +58,9 @@
 #include "midiitransform.h"
 #include "mitplugin.h"
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
+
 namespace MusEGlobal {
 std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
 }
@@ -201,18 +204,6 @@ int MessSynthIF::eventsPending() const
       if (_mess)
             return _mess->eventsPending();
       return 0;
-      }
-
-void MessSynthIF::getGeometry(int* x, int* y, int* w, int* h) const
-      {
-      if (_mess)
-            _mess->getGeometry(x, y, w, h);
-      }
-
-void MessSynthIF::setGeometry(int x, int y, int w, int h)
-      {
-      if (_mess)
-            _mess->setGeometry(x, y, w, h);
       }
 
 void MessSynthIF::getNativeGeometry(int* x, int* y, int* w, int* h) const
@@ -431,31 +422,11 @@ void SynthI::close()
 }
 
 //---------------------------------------------------------
-//   putMidiEvent
-//---------------------------------------------------------
-
-bool SynthI::putEvent(const MidiPlayEvent& ev)
-{
-  if(_writeEnable)
-  {
-    if (MusEGlobal::midiOutputTrace)
-    {
-          fprintf(stderr, "MidiOut: Synth: <%s>: ", name().toLatin1().constData());
-          ev.dump();
-    }
-    return _sif->putEvent(ev);
-  }
-
-  return false;
-}
-
-//---------------------------------------------------------
 //   processMidi
 //---------------------------------------------------------
 
-void SynthI::processMidi()
+void SynthI::processMidi(unsigned int /*curFrame*/)
 {
-    processStuckNotes();
 }
 
 //---------------------------------------------------------
@@ -690,8 +661,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                   }
 
                   MidiPlayEvent pev(0, 0, 0, ev);
-                  if (_sif->putEvent(pev))
-                        break;   // try later
+                  _userEventBuffers->put(pev);
                   }
             iel->clear();
             }
@@ -712,6 +682,15 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       return false;
       }
 
+//---------------------------------------------------------
+//   pbForwardShiftFrames
+//---------------------------------------------------------
+
+unsigned int SynthI::pbForwardShiftFrames() const
+{
+  return MusEGlobal::segmentSize;
+}
+      
 //---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
@@ -1087,13 +1066,13 @@ void SynthI::read(Xml& xml)
                               // No, initializing OSC without actually showing the gui doesn't work, at least for
                               //  dssi-vst plugins - without showing the gui they exit after ten seconds.
                               //initGui();
-                              showNativeGui(startngui);
                               setNativeGeometry(nr.x(), nr.y(), nr.width(), nr.height());
+                              showNativeGui(startngui);
 
                               mapRackPluginsToControllers();
 
-                              showGui(startgui);
                               setGeometry(r.x(), r.y(), r.width(), r.height());
+                              showGui(startgui);
 
                               // Now that the track has been added to the lists in insertTrack2(), if it's a dssi synth
                               //  OSC can find the track and its plugins, and start their native guis if required...
@@ -1188,13 +1167,9 @@ void SynthI::preProcessAlways()
   // Variation: Maybe allow certain types, or groups, of events through, especially bulk init or note offs.
   if(off())
   {
-    // Clear any accumulated play events.
-    //playEvents()->clear(); DELETETHIS
-    _playEvents.clear();
-    // Eat up any fifo events.
-    //while(!eventFifo.isEmpty())  DELETETHIS
-    //  eventFifo.get();
-    eventFifo.clear();  // Clear is the same but faster AND safer, right?
+    // Eat up any buffer events.
+    _playbackEventBuffers->clearRead();
+    //_userEventBuffers->clearRead();
   }
 }
 
@@ -1216,74 +1191,121 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
 
-      iMPEvent ie = _playEvents.begin();
-
-      ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
-
-      // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
-      // That way we can simply set the next play event to the beginning.
-      // This also allows other events to be inserted without the problems caused by the next play event
-      //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions.
-      // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
-      // The erasure in Audio::processMidi was missing some events because of that.
-      _playEvents.erase(_playEvents.begin(), ie);
+      _sif->getData(mp, pos, ports, n, buffer);
 
       return true;
       }
 
-iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigned n, float** buffer)
 {
-      //prevent compiler warning: comparison of signed/unsigned
-      unsigned curPos      = pos;
-      unsigned endPos      = pos + n;
-      unsigned off         = pos;
-      unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      unsigned int curPos = 0;
+      unsigned int frame = 0;
 
-      for (; i != el->end(); ++i) {
-          unsigned evTime = i->time();
-          if (evTime == 0)
-                evTime=frameOffset; // will cause frame to be zero, problem?
+      // Get the state of the stop flag.
+      const bool do_stop = synti->stopFlag();
 
-          unsigned frame = evTime - frameOffset;
-
-            if (frame >= endPos) {
-                fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %u, frameOffset %lu curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
-                continue;
-                }
-
-            if (frame > curPos) {
-                  if (frame < pos)
-                        fprintf(stderr, "should not happen: missed event %d\n", pos -frame);
-                  else
-                  {
-                        if (!_mess)
-                              fprintf(stderr, "should not happen - no _mess\n");
-                        else
-                        {
-                                _mess->process(pos, buffer, curPos-pos, frame - curPos);
-                        }
-                  }
-                  curPos = frame;
-            }
-
-            if (mp)
-                  mp->sendEvent(*i);
-            else {
-                  if (putEvent(*i))
-                        break;
-            }
-      }
-
-      if (endPos - curPos)
+      MidiPlayEvent buf_ev;
+      
+      // Transfer the user lock-free buffer events to the user sorted multi-set.
+      // False = don't use the size snapshot, but update it.
+      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-            if (!_mess)
-                  fprintf(stderr, "should not happen - no _mess\n");
-            else
-            {
-                    _mess->process(pos, buffer, curPos - off, endPos - curPos);
-            }
+        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+          synti->_outUserEvents.insert(buf_ev);
       }
-      return i;
+      
+      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
+      {
+        // Are we stopping? Just remove the item.
+        if(do_stop)
+          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
+        // Otherwise get the item.
+        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+          synti->_outPlaybackEvents.insert(buf_ev);
+      }
+  
+      // Are we stopping?
+      if(do_stop)
+      {
+        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->_outPlaybackEvents.clear();
+        // Reset the flag.
+        synti->setStopFlag(false);
+      }
+      
+      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+      iMPEvent impe_us = synti->_outUserEvents.begin();
+      bool using_pb;
+  
+      while(1)
+      {  
+        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+          using_pb = *impe_pb < *impe_us;
+        else if(impe_pb != synti->_outPlaybackEvents.end())
+          using_pb = true;
+        else if(impe_us != synti->_outUserEvents.end())
+          using_pb = false;
+        else break;
+        
+        const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+        
+        const unsigned int evTime = ev.time();
+        if(evTime < syncFrame)
+        {
+          if(evTime != 0)
+            fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                    evTime, syncFrame, curPos);
+          frame = 0;
+        }
+        else
+          frame = evTime - syncFrame;
+
+        // Event is for future?
+        if(frame >= n) 
+        {
+          DEBUG_SYNTH(stderr, "MessSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
+                  frame, n, evTime, syncFrame, curPos);
+          //continue;
+          break;
+        }
+
+        if(frame > curPos)
+        {
+          if (!_mess)
+            fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
+          else
+            _mess->process(pos, buffer, curPos, frame - curPos);
+          curPos = frame;
+        }
+        
+        // If putEvent fails, although we would like to not miss events by keeping them
+        //  until next cycle and trying again, that can lead to a large backup of events
+        //  over a long time. So we'll just... miss them.
+        //putEvent(ev);
+        //synti->putEvent(ev);
+        processEvent(ev);
+        
+        // Done with ring buffer event. Remove it from FIFO.
+        // C++11.
+        if(using_pb)
+          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+        else
+          impe_us = synti->_outUserEvents.erase(impe_us);
+      }
+
+      if(curPos < n)
+      {
+        if (!_mess)
+          fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
+        else
+          _mess->process(pos, buffer, curPos, n - curPos);
+      }
+      
+      return true;
 }
 
 //---------------------------------------------------------
@@ -1291,16 +1313,21 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 //    return true on error (busy)
 //---------------------------------------------------------
 
-bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
+bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
 {
-      //if (MusEGlobal::midiOutputTrace) DELETETHIS or re-enable?
-      //{
-      //      printf("MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
-      //      ev.dump();
-      //}
       if (!_mess)
         return true;
+      
+      if (MusEGlobal::midiOutputTrace)
+      {
+           fprintf(stderr, "MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
+           ev.dump();
+      }
+      
       int chn = ev.channel();
+      int a = ev.dataA();
+      int b = ev.dataB();
+      
       switch(ev.type())
       {
         // Special for program, hi bank, and lo bank: Virtually all synths encapsulate banks and program together
@@ -1314,60 +1341,90 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
             int hb;
             int lb;
             synti->currentProg(chn, NULL, &lb, &hb);
-            int pr = ev.dataA() & 0x7f;
-            synti->setCurrentProg(chn, pr, lb, hb);
-            if(hb > 127) // Map "dont care" to 0
-              hb = 0;
-            if(lb > 127)
-              lb = 0;
-            int full_prog = (hb >> 16) | (lb >> 8) | pr;
-            return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            synti->setCurrentProg(chn, a & 0xff, lb, hb);
+            // Only if there's something to change...
+            //if(hb < 128 || lb < 128 || a < 128)
+            //{
+              if(hb > 127) // Map "dont care" to 0
+                hb = 0;
+              if(lb > 127)
+                lb = 0;
+              if(a > 127)
+                a = 0;
+              const int full_prog = (hb << 16) | (lb << 8) | a;
+              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            //}
+            //return false;
           }
           break;
         case ME_CONTROLLER:
           {
-            int a = ev.dataA();
-            int b = ev.dataB();
+            // Our internal hwCtrl controllers support the 'unknown' value.
+            // Don't send 'unknown' values to the driver. Ignore and return no error.
+            if(b == CTRL_VAL_UNKNOWN)
+              return false;
+            
             if(a == CTRL_PROGRAM)
             {
               int hb = (b >> 16) & 0xff;
               int lb = (b >> 8)  & 0xff;
-              int pr = b & 0x7f;
+              int pr = b & 0xff;
               synti->setCurrentProg(chn, pr, lb, hb);
-              if(hb > 127)
-                hb = 0;
-              if(lb > 127)
-                lb = 0;
-              int full_prog = (hb << 16) | (lb << 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              // Only if there's something to change...
+              //if(hb < 128 || lb < 128 || pr < 128)
+              //{
+                if(hb > 127)
+                  hb = 0;
+                if(lb > 127)
+                  lb = 0;
+                if(pr > 127)
+                  pr = 0;
+                const int full_prog = (hb << 16) | (lb << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
-            else if(a == CTRL_HBANK)
+            
+            if(a == CTRL_HBANK)
             {
               int lb;
               int pr;
               synti->currentProg(chn, &pr, &lb, NULL);
-              int hb = ev.dataB() & 0x7f;
-              synti->setCurrentProg(chn, pr, lb, hb);
-              if(lb > 127)
-                lb = 0;
-              if(pr > 127)
-                pr = 0;
-              int full_prog = (hb << 16) | (lb >> 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              synti->setCurrentProg(chn, pr, lb, b & 0xff);
+              // Only if there's something to change...
+              //if(b < 128 || lb < 128 || pr < 128)
+              //{
+                if(b > 127)
+                  b = 0;
+                if(lb > 127)
+                  lb = 0;
+                if(pr > 127)
+                  pr = 0;
+                const int full_prog = (b << 16) | (lb << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
-            else if(a == CTRL_LBANK)
+            
+            if(a == CTRL_LBANK)
             {
               int hb;
               int pr;
               synti->currentProg(chn, &pr, NULL, &hb);
-              int lb = ev.dataB() & 0x7f;
-              if(hb > 127)
-                hb = 0;
-              if(pr > 127)
-                pr = 0;
-              synti->setCurrentProg(chn, pr, lb, hb);
-              int full_prog = (hb >> 16) | (lb << 8) | pr;
-              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              synti->setCurrentProg(chn, pr, b & 0xff, hb);
+              // Only if there's something to change...
+              //if(hb < 128 || b < 128 || pr < 128)
+              //{
+                if(hb > 127)
+                  hb = 0;
+                if(b > 127)
+                  b = 0;
+                if(pr > 127)
+                  pr = 0;
+                const int full_prog = (hb << 16) | (b << 8) | pr;
+                return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+              //}
+              //return false;
             }
           }
           break;
@@ -1377,16 +1434,6 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
       }
       return _mess->processEvent(ev);
 }
-
-//unsigned long MessSynthIF::uniqueID() const  DELETETHIS
-//{
-//  return _mess ? _mess->uniqueID() : 0;
-//}
-
-//MidiPlayEvent& MessSynthIF::wrapOldMidiStateVersion(MidiPlayEvent& e) const
-//{
-//  return _mess ? _mess->wrapOldMidiStateVersion(e) : e;
-//}
 
 int MessSynthIF::oldMidiStateHeader(const unsigned char** data) const
 {

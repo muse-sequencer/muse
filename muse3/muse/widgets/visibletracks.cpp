@@ -131,7 +131,8 @@ void VisibleTracks::visibilityChanged(QAction* action)
       default:
             break;
       }
-      MusEGlobal::muse->changeConfig(true);    // save settings
+      // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+      MusEGlobal::muse->changeConfig(true);
       emit visibilityChanged();
 }
 

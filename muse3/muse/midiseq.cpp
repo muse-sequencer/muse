@@ -53,7 +53,6 @@
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq = NULL;
-volatile bool midiBusy=false;
 }
 
 namespace MusECore {
@@ -118,7 +117,7 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   idle = msg->a;
                   break;
             default:
-                  printf("MidiSeq::processMsg() unknown id %d\n", msg->id);
+                  fprintf(stderr, "MidiSeq::processMsg() unknown id %d\n", msg->id);
                   break;
             }
       }
@@ -213,25 +212,25 @@ signed int MidiSeq::selectTimer()
     {
     int tmrFd;
 
+    printf("Trying RTC timer...\n");
+    timer = new RtcTimer();
+    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (tmrFd != -1) { // ok!
+        printf("got timer = %d\n", tmrFd);
+        return tmrFd;
+    }
+    delete timer;
+    
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
     timer = new AlsaTimer();
-    tmrFd = timer->initTimer();
+    tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
     if ( tmrFd!= -1) { // ok!
         fprintf(stderr, "got timer = %d\n", tmrFd);
         return tmrFd;
     }
     delete timer;
 #endif
-
-    printf("Trying RTC timer...\n");
-    timer = new RtcTimer();
-    tmrFd = timer->initTimer();
-    if (tmrFd != -1) { // ok!
-        printf("got timer = %d\n", tmrFd);
-        return tmrFd;
-    }
-    delete timer;
 
     timer=NULL;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
@@ -378,6 +377,8 @@ void MidiSeq::threadStop()
 int MidiSeq::setRtcTicks()
       {
       int gotTicks = timer->setTimerFreq(MusEGlobal::config.rtcTicks);
+      if(gotTicks == 0)
+        return 0;
       if (MusEGlobal::config.rtcTicks-24 > gotTicks) {
           fprintf(stderr, "INFO: Could not get the wanted frequency %d, got %d, still it should suffice.\n", MusEGlobal::config.rtcTicks, gotTicks);
       }
@@ -431,8 +432,14 @@ void MidiSeq::start(int /*priority*/, void*)
   prio = midiprio;
 
   MusEGlobal::doSetuid();
-  setRtcTicks();
+  int freq = setRtcTicks();
   MusEGlobal::undoSetuid();
+  
+  if(freq == 0)
+  {
+    fprintf(stderr, "Error setting timer frequency! Midi playback will not work!\n");
+  }
+  
   Thread::start(prio);
 
   int counter=0;
@@ -480,6 +487,7 @@ void MidiSeq::checkAndReportTimingResolution()
           if(warn != MusEGlobal::config.warnIfBadTiming)  
           {
             MusEGlobal::config.warnIfBadTiming = warn;
+            // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
             //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
           }
         }
@@ -498,7 +506,7 @@ void MidiSeq::midiTick(void* p, void*)
       {
         if(MidiSeq::ticker++ > 100)
           {
-          printf("tick!\n");
+          fprintf(stderr, "ticker:%i\n", MidiSeq::ticker);
           MidiSeq::ticker=0;
           }
         }
@@ -523,12 +531,6 @@ void MidiSeq::processTimerTick()
 
       if (idle)
             return;
-
-      if (MusEGlobal::midiBusy) {
-            // we hit MusEGlobal::audio: MusEGlobal::midiSeq->msgProcess (actually this has been MusEGlobal::audio->processMidi for some time now - Tim)
-            // miss this timer tick
-            return;
-            }
 
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
@@ -578,7 +580,7 @@ void MidiSeq::processTimerTick()
         switch(type)
         {
           case MidiDevice::ALSA_MIDI:
-              md->processMidi();
+              md->processMidi(curFrame);
           break;
 
           case MidiDevice::JACK_MIDI:

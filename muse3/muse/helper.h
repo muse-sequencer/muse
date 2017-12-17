@@ -69,7 +69,12 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 
 namespace MusEGui {
 class PopupMenu;
-  
+
+// Lists all used midi ports + devices, plus all empty ports.
+QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
+// Includes all listed in midiPortsPopup, plus unused devices.
+void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts, 
+                        const QWidget* widget = 0, bool includeDefaultEntry = false);
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool evenIgnoreDrumPreference=false);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
@@ -81,6 +86,10 @@ QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
+void loadTheme(const QString&, bool force = false);
+void loadStyleSheetFile(const QString&);
+// Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
+void updateThemeAndStyle(bool forceStyle = false);
 } 
 
 #endif

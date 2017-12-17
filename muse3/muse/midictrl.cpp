@@ -824,6 +824,24 @@ void MidiCtrlValListList::clearDelete(bool deleteLists)
 }
 
 //---------------------------------------------------------
+// resetAllHwVals
+//---------------------------------------------------------
+
+bool MidiCtrlValListList::resetAllHwVals(bool doLastHwValue)
+{
+  bool changed = false;
+  for(iMidiCtrlValList imcvl = begin(); imcvl != end(); ++imcvl)
+  {
+    if(imcvl->second)
+    {
+      if(imcvl->second->resetHwVal(doLastHwValue))
+        changed = true;
+    }
+  }
+  return changed;
+}
+
+//---------------------------------------------------------
 // searchControllers
 //---------------------------------------------------------
 
@@ -1026,6 +1044,25 @@ void MidiCtrlValListList::clear()
 #endif
 // =========================================================
 
+
+bool MidiCtrlValList::resetHwVal(bool doLastHwValue)
+{
+  bool changed = false;
+  if(!hwValIsUnknown())
+  {
+    _hwVal = CTRL_VAL_UNKNOWN;
+    changed = true;
+  }
+  
+  if(doLastHwValue)
+  {
+    if(!lastHwValIsUnknown())
+      changed = true;
+    _lastValidHWVal = _lastValidByte2 = _lastValidByte1 = _lastValidByte0 = CTRL_VAL_UNKNOWN;
+  }
+    
+  return changed;
+}
 
 //---------------------------------------------------------
 //   setHwVal

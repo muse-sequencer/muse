@@ -89,11 +89,11 @@ static void oscError(int num, const char *msg, const char *path)
 static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
    int argc, void*, void*)
       {
-      printf("MusE: got unhandled OSC message:\n   path: <%s>\n", path);
+      fprintf(stderr, "MusE: got unhandled OSC message:\n   path: <%s>\n", path);
       for (int i = 0; i < argc; i++) {
-            printf("   arg %d '%c' ", i, types[i]);
+            fprintf(stderr, "   arg %d '%c' ", i, types[i]);
             lo_arg_pp(lo_type(types[i]), argv[i]);
-            printf("\n");
+            fprintf(stderr, "\n");
             }
       return 1;
       }
@@ -113,18 +113,18 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
   #ifdef OSC_DEBUG 
   if(argc) 
   {
-      printf("oscMessageHandler: path:%s argc:%d\n", path, argc);
+      fprintf(stderr, "oscMessageHandler: path:%s argc:%d\n", path, argc);
       for(int i = 0; i < argc; ++i) 
       {
-        printf(" ");
+        fprintf(stderr, " ");
         lo_arg_pp((lo_type)types[i], argv[i]);
       }
-      printf("\n");
+      fprintf(stderr, "\n");
   } 
   else 
   {
-      printf("%s\n", path);
-      printf("oscMessageHandler: no args, path:%s\n", path);
+      fprintf(stderr, "%s\n", path);
+      fprintf(stderr, "oscMessageHandler: no args, path:%s\n", path);
   }
   #endif  
     
@@ -295,7 +295,7 @@ void initOSC()
     serverThread = lo_server_thread_new(0, oscError);
     if(!serverThread)
     {
-      printf("initOSC() Failed to create OSC server!\n");
+      fprintf(stderr, "initOSC() Failed to create OSC server!\n");
       return;
     }
   }  
@@ -304,7 +304,7 @@ void initOSC()
   if(!url)
   {
     lo_server_thread_free(serverThread);
-    printf("initOSC() Failed to get OSC server thread url !\n");
+    fprintf(stderr, "initOSC() Failed to get OSC server thread url !\n");
     return;
   }
   
@@ -312,7 +312,7 @@ void initOSC()
   meth = lo_server_thread_add_method(serverThread, 0, 0, oscMessageHandler, 0);
   if(!meth)
   {
-    printf("initOSC() Failed to add oscMessageHandler method to OSC server!\n");
+    fprintf(stderr, "initOSC() Failed to add oscMessageHandler method to OSC server!\n");
     // Does not return a value.
     lo_server_thread_free(serverThread);
     serverThread = 0;
@@ -320,6 +320,10 @@ void initOSC()
     url = 0;
     return;
   }
+  
+  #ifdef OSC_DEBUG 
+  fprintf(stderr, "initOSC() url:%s\n", url);
+  #endif
   
   // Does not return a value.
   lo_server_thread_start(serverThread);
@@ -397,10 +401,10 @@ OscIF::~OscIF()
 #ifdef _USE_QPROCESS_FOR_GUI_
   if(_oscGuiQProc)
   {
-    if(_oscGuiQProc->state())
+    if(_oscGuiQProc->state() != QProcess::NotRunning)
     {
       #ifdef OSC_DEBUG 
-      printf("OscIF::~OscIF terminating _oscGuiQProc\n");
+      fprintf(stderr, "OscIF::~OscIF terminating _oscGuiQProc\n");
       #endif
       
       _oscGuiQProc->terminate();
@@ -495,19 +499,19 @@ int OscIF::oscUpdate(lo_arg **argv)
       */
 
       #ifdef OSC_DEBUG 
-      printf("OscIF::oscUpdate: _uiOscTarget:%p\n", _uiOscTarget);
+      fprintf(stderr, "OscIF::oscUpdate: _uiOscTarget:%p\n", _uiOscTarget);
       if(url)
-        printf(" server url:%s\n", url);
+        fprintf(stderr, " server url:%s\n", url);
       else  
-        printf(" no server url!\n");
-      printf(" update path:%s\n", purl);
-      printf(" _uiOscPath:%s\n", _uiOscPath);
-      printf(" _uiOscSampleRatePath:%s\n", _uiOscSampleRatePath);
-      printf(" _uiOscConfigurePath:%s\n", _uiOscConfigurePath);
-      printf(" _uiOscProgramPath:%s\n", _uiOscProgramPath);
-      printf(" _uiOscControlPath:%s\n",_uiOscControlPath);
-      printf(" _uiOscShowPath:%s\n", _uiOscShowPath);
-      printf(" museProject:%s\n", MusEGlobal::museProject.toLatin1().constData());
+        fprintf(stderr, " no server url!\n");
+      fprintf(stderr, " update path:%s\n", purl);
+      fprintf(stderr, " _uiOscPath:%s\n", _uiOscPath);
+      fprintf(stderr, " _uiOscSampleRatePath:%s\n", _uiOscSampleRatePath);
+      fprintf(stderr, " _uiOscConfigurePath:%s\n", _uiOscConfigurePath);
+      fprintf(stderr, " _uiOscProgramPath:%s\n", _uiOscProgramPath);
+      fprintf(stderr, " _uiOscControlPath:%s\n",_uiOscControlPath);
+      fprintf(stderr, " _uiOscShowPath:%s\n", _uiOscShowPath);
+      fprintf(stderr, " museProject:%s\n", MusEGlobal::museProject.toLatin1().constData());
       #endif
       
       // Send sample rate.
@@ -596,12 +600,13 @@ int OscIF::oscExiting(lo_arg**)
       _oscGuiVisible = false;
       
 // DELETETHIS 52
-// Just an attempt to really kill the process, an attempt to fix gui not re-showing after closing. Doesn't help.
+// Just an attempt to really kill the process, an attempt to fix dssi-vst gui 
+//  not re-showing after closing. Doesn't help. It's a design problem with dssi-vst.
 /*
 #ifdef _USE_QPROCESS_FOR_GUI_
       if(_oscGuiQProc)
       {
-        if(_oscGuiQProc->state())
+        if(_oscGuiQProc->state() != QProcess::NotRunning)
         {
           #ifdef OSC_DEBUG 
           printf("OscIF::oscExiting terminating _oscGuiQProc\n");
@@ -804,7 +809,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
         if (maxDssiPort!=nDssiPorts)
         {
           // this should never happen, right?
-          printf("STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
+          fprintf(stderr, "STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
           delete [] old_control;
           old_control=new float[nDssiPorts];
           for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
@@ -815,11 +820,11 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       
       // Are we already running? We don't want to allow another process do we...
 #ifdef _USE_QPROCESS_FOR_GUI_
-      if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
-        return true;
+      if((_oscGuiQProc != 0) && (_oscGuiQProc->state() != QProcess::NotRunning))
+        return false;
 #else
       if(_guiPid != -1)
-        return true;
+        return false;
 #endif
         
       #ifdef OSC_DEBUG 
@@ -860,12 +865,18 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       #ifdef OSC_DEBUG 
       fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
       #endif
+      
       _oscGuiQProc->start(program, arguments);
-        
-      if(_oscGuiQProc->state())
+      
+      if(_oscGuiQProc->waitForStarted(10000)) // 10 secs.
       {
         #ifdef OSC_DEBUG 
         fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
+        fprintf(stderr, "guiPath:%s oscUrl:%s filePath:%s name:%s\n",
+                guiPath.toLatin1().constData(),
+                oscUrl.toLatin1().constData(),
+                filePath.toLatin1().constData(),
+                name.toLatin1().constData());
         #endif
       }
       else
@@ -876,6 +887,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                 filePath.toLatin1().constData(),
                 name.toLatin1().constData(),
                 strerror(errno));
+        return false;
       }
       
       #ifdef OSC_DEBUG 
@@ -910,6 +922,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                 name.toLatin1().constData(),
                 strerror(errno));
         //exit(1);
+        return false;
       }
       
 #endif   // _USE_QPROCESS_FOR_GUI_
@@ -925,14 +938,14 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
 void OscIF::oscShowGui(bool v)
 {
       #ifdef OSC_DEBUG 
-      printf("OscIF::oscShowGui(): v:%d visible:%d\n", v, oscGuiVisible());
+      fprintf(stderr, "OscIF::oscShowGui(): v:%d visible:%d\n", v, oscGuiVisible());
       #endif
       
       if (v == oscGuiVisible())
             return;
       
 #ifdef _USE_QPROCESS_FOR_GUI_
-      if((_oscGuiQProc == 0) || (!_oscGuiQProc->state()))
+      if((_oscGuiQProc == 0) || (_oscGuiQProc->state() == QProcess::NotRunning))
 #else        
       if(_guiPid == -1)
 #endif        
@@ -944,23 +957,23 @@ void OscIF::oscShowGui(bool v)
         _uiOscPath = 0;  
           
         #ifdef OSC_DEBUG
-        printf("OscIF::oscShowGui(): No QProcess or process not running. Starting gui...\n");
+        fprintf(stderr, "OscIF::oscShowGui(): No QProcess or process not running. Starting gui...\n");
         #endif
         
         if(!oscInitGui())
         {
-          printf("OscIF::oscShowGui(): failed to initialize gui on oscInitGui()\n");
+          fprintf(stderr, "OscIF::oscShowGui(): failed to initialize gui on oscInitGui()\n");
           return;
         }  
       }  
       
-      for (int i = 0; i < 20; ++i) {
+      for (int i = 0; i < 10; ++i) {
             if (_uiOscPath)
                   break;
             sleep(1);
             }
       if (_uiOscPath == 0) {
-            printf("OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 20 seconds.\n");
+            fprintf(stderr, "OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
             return;
             }
       
@@ -968,7 +981,7 @@ void OscIF::oscShowGui(bool v)
       sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, v ? "show" : "hide");
       
       #ifdef OSC_DEBUG 
-      printf("OscIF::oscShowGui(): Sending show/hide uiOscGuiPath:%s\n", uiOscGuiPath);
+      fprintf(stderr, "OscIF::oscShowGui(): Sending show/hide uiOscGuiPath:%s\n", uiOscGuiPath);
       #endif
       
       lo_send(_uiOscTarget, uiOscGuiPath, "");

@@ -164,9 +164,9 @@ QString bitmap2String(int bm)
                                     s += " ";
                               QString ns;
                               if (first == i-1)
-                                    ns.sprintf("%d", first+1);
+                                    ns = QString::number(first + 1);
                               else
-                                    ns.sprintf("%d-%d", first+1, i);
+                                    ns = QString("%1-%2").arg(first + 1).arg(i);
                               s += ns;
                               needSpace = true;
                               }
@@ -211,11 +211,9 @@ QString u32bitmap2String(unsigned int bm)
                                     s += " ";
                               QString ns;
                               if (first == i-1)
-                                    ns.sprintf("%d", first+1);
-                                    //ns.sprintf("%u", first+1);
+                                    ns = QString::number(first + 1);
                               else
-                                    ns.sprintf("%d-%d", first+1, i);
-                                    //ns.sprintf("%u-%u", first+1, i);
+                                    ns = QString("%1-%2").arg(first + 1).arg(i);
                               s += ns;
                               needSpace = true;
                               }
@@ -235,16 +233,17 @@ int string2bitmap(const QString& str)
       {
       int val = 0;
       QString ss = str.simplified();
+
+      if (ss.isEmpty())
+            return 0;
+      if (ss == QString("all"))
+            return 0xffff;
+      if (ss == QString("none"))
+            return 0;
+      
       QByteArray ba = ss.toLatin1();
       const char* s = ba.constData();
-//printf("string2bitmap <%s>\n", s);
-
-      if (s == 0)
-            return 0;
-      if (strcmp(s, "all") == 0)
-            return 0xffff;
-      if (strcmp(s, "none") == 0)
-            return 0;
+      
 // printf("str2bitmap: <%s> ", str.toLatin1);
       int tval   = 0;
       bool range = false;
@@ -293,17 +292,17 @@ unsigned int string2u32bitmap(const QString& str)
       //int val = 0;
       unsigned int val = 0;
       QString ss = str.simplified();
+
+      if (ss.isEmpty())
+            return 0;
+      if (ss == QString("all"))
+            return 0xffff;
+      if (ss == QString("none"))
+            return 0;
+      
       QByteArray ba = ss.toLatin1();
       const char* s = ba.constData();
-//printf("string2bitmap <%s>\n", s);
-
-      if (s == 0)
-            return 0;
-      if (strcmp(s, "all") == 0)
-            //return 0xffff;
-            return 0xffffffff;
-      if (strcmp(s, "none") == 0)
-            return 0;
+      
 // printf("str2bitmap: <%s> ", str.toLatin1);
       int tval   = 0;
       //unsigned int tval   = 0;

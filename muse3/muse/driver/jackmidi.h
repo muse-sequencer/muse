@@ -33,6 +33,7 @@
 
 #include "mididev.h"
 #include "route.h"
+#include "mpevent.h"
 
 class QString;
 //class MidiFifo;
@@ -57,21 +58,32 @@ class MidiJackDevice : public MidiDevice {
       jack_port_t* _in_client_jackport;
       jack_port_t* _out_client_jackport;
       
+      MPEventList _outPlaybackEvents;
+      MPEventList _outUserEvents;
+      
       //RouteList _routes;
       
       virtual QString open();
       virtual void close();
       //bool putEvent(int*);
       
-      bool processEvent(const MidiPlayEvent&);
+      // Return true if successful
+      // evBuffer is the Jack buffer.
+      bool processEvent(const MidiPlayEvent&, void* evBuffer);
       // Port is not midi port, it is the port(s) created for MusE.
-      bool queueEvent(const MidiPlayEvent&);
+      // evBuffer is the Jack buffer.
+      bool queueEvent(const MidiPlayEvent&, void* evBuffer);
       
       //virtual bool putMidiEvent(const MidiPlayEvent&);  // REMOVE Tim.
       //bool sendEvent(const MidiPlayEvent&);
       
       void eventReceived(jack_midi_event_t*);
 
+   protected:
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos.
+      virtual unsigned int pbForwardShiftFrames() const;
+     
    public:
       MidiJackDevice(const QString& name); 
       virtual ~MidiJackDevice(); 
@@ -82,11 +94,10 @@ class MidiJackDevice : public MidiDevice {
       
       //virtual void handleStop();  
       //virtual void handleSeek();
-      virtual void processMidi();
+      virtual void processMidi(unsigned int curFrame = 0);
       
       virtual void recordEvent(MidiRecordEvent&);
       
-      virtual bool putEvent(const MidiPlayEvent&);
       virtual void collectMidiEvents();
       
       // The meaning of the returned pointer depends on the driver.

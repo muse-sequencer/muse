@@ -26,9 +26,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstddef>
-#include <map>
 
+// NOTE: Keep this code in case we need a dimensioned pool!
+#if 0
 // most of the following code is based on examples
 // from Bjarne Stroustrup: "Die C++ Programmiersprache"
 
@@ -41,11 +41,12 @@ class Pool {
             Verweis* next;
             };
       struct Chunk {
-            enum { size = 4 * 1024 };
+            enum { size = 4 * 2048 };
             Chunk* next;
             char mem[size];
             };
-      enum { dimension = 21 };
+      // Gives about 300 bytes maximum request @ 8 bytes item size.
+      enum { dimension = 40 };
       Chunk* chunks[dimension];
       Verweis* head[dimension];
       Pool(Pool&);
@@ -100,97 +101,143 @@ inline void Pool::free(void* b, size_t n)
 extern Pool audioRTmemoryPool;
 extern Pool midiRTmemoryPool;
 
+#endif
+
+
 //---------------------------------------------------------
-//   audioRTalloc
+//   TypedMemoryPool
+//   Most of the following code is based on examples
+//    from Bjarne Stroustrup: "Die C++ Programmiersprache"
 //---------------------------------------------------------
 
-template <class T> class audioRTalloc
+template <typename T, int itemsPerChunk> class TypedMemoryPool
+{
+      struct Verweis {
+            Verweis* next;
+            };
+      struct Chunk {
+            enum { size = itemsPerChunk * sizeof(T) };
+            Chunk* next;
+            char mem[size];
+            };
+      Chunk* chunks;
+      Verweis* head;
+      TypedMemoryPool(TypedMemoryPool&);
+      void operator=(TypedMemoryPool&);
+      
+      void grow()
       {
+        const int esize = sizeof(T);
+        Chunk* n    = new Chunk;
+        n->next     = chunks;
+        chunks = n;
+        const int nelem = Chunk::size / esize;
+        char* start     = n->mem;
+        char* last      = &start[(nelem-1) * esize];
+        for(char* p = start; p < last; p += esize)
+          reinterpret_cast<Verweis*>(p)->next =
+            reinterpret_cast<Verweis*>(p + esize);
+        reinterpret_cast<Verweis*>(last)->next = 0;
+        head = reinterpret_cast<Verweis*>(start);
+      }
+
    public:
-      typedef T         value_type;
-      typedef size_t    size_type;
-      typedef ptrdiff_t difference_type;
-
-      typedef T*        pointer;
-      typedef const T*  const_pointer;
-
-      typedef T&        reference;
-      typedef const T&  const_reference;
-
-      pointer address(reference x) const { return &x; }
-      const_pointer address(const_reference x) const { return &x; }
-
-      audioRTalloc();
-      template <class U> audioRTalloc(const audioRTalloc<U>&) {}
-      ~audioRTalloc() {}
-
-      pointer allocate(size_type n, void * = 0) {
-            return static_cast<T*>(audioRTmemoryPool.alloc(n * sizeof(T)));
-            }
-      void deallocate(pointer p, size_type n) {
-            audioRTmemoryPool.free(p, n * sizeof(T));
-            }
-
-      audioRTalloc<T>&  operator=(const audioRTalloc&) { return *this; }
-      void construct(pointer p, const T& val) {
-            new ((T*) p) T(val);
-            }
-      void destroy(pointer p) {
-            p->~T();
-            }
-      size_type max_size() const { return size_t(-1); }
-
-      template <class U> struct rebind { typedef audioRTalloc<U> other; };
-      template <class U> audioRTalloc& operator=(const audioRTalloc<U>&) { return *this; }
-      };
-
-template <class T> audioRTalloc<T>::audioRTalloc() {}
-
-//---------------------------------------------------------
-//   midiRTalloc
-//---------------------------------------------------------
-
-template <class T> class midiRTalloc
+      TypedMemoryPool()
       {
-   public:
-      typedef T         value_type;
-      typedef size_t    size_type;
-      typedef ptrdiff_t difference_type;
+        head   = 0;
+        chunks = 0;
+        grow();  // preallocate
+      }
+      
+      ~TypedMemoryPool()
+      {
+        Chunk* n = chunks;
+        while (n)
+        {
+          Chunk* p = n;
+          n = n->next;
+          delete p;
+        }
+      }
+      
+      void* alloc(size_t items)
+      {
+        if(items == 0)
+          return 0;
+        if(items != 1)
+        {
+          printf("panic: TypedMemoryPool::alloc items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        if(head == 0)
+          grow();
+        Verweis* p = head;
+        head = p->next;
+        return p;
+      }
+      
+      void free(void* b, size_t items)
+      {
+        if(b == 0 || items == 0)
+          return;
+        if(items != 1)
+        {
+          printf("panic: TypedMemoryPool::free items requested:%u != 1\n", 
+                (unsigned int)items);
+          exit(-1);
+        }
+        Verweis* p = static_cast<Verweis*>(b);
+        p->next = head;
+        head = p;
+      }
+};
 
-      typedef T*        pointer;
-      typedef const T*  const_pointer;
+//---------------------------------------------------------
+//   MemoryQueue
+//   An efficient queue which grows by fixed chunk sizes,
+//    for single threads only.
+//---------------------------------------------------------
 
-      typedef T&        reference;
-      typedef const T&  const_reference;
-
-      pointer address(reference x) const { return &x; }
-      const_pointer address(const_reference x) const { return &x; }
-
-      midiRTalloc();
-      template <class U> midiRTalloc(const midiRTalloc<U>&) {}
-      ~midiRTalloc() {}
-
-      pointer allocate(size_type n, void * = 0) {
-            return static_cast<T*>(midiRTmemoryPool.alloc(n * sizeof(T)));
-            }
-      void deallocate(pointer p, size_type n) {
-            midiRTmemoryPool.free(p, n * sizeof(T));
-            }
-
-      midiRTalloc<T>&  operator=(const midiRTalloc&) { return *this; }
-      void construct(pointer p, const T& val) {
-            new ((T*) p) T(val);
-            }
-      void destroy(pointer p) {
-            p->~T();
-            }
-      size_type max_size() const { return size_t(-1); }
-
-      template <class U> struct rebind { typedef midiRTalloc<U> other; };
-      template <class U> midiRTalloc& operator=(const midiRTalloc<U>&) { return *this; }
+class MemoryQueue {
+      struct Chunk
+      {
+        enum { ChunkSize = 8 * 1024 };
+        Chunk* _next;
+        char _mem[ChunkSize];
       };
+      Chunk* _startChunk;
+      Chunk* _endChunk;
+      Chunk* _curWriteChunk;
+      size_t _curSize;
+      size_t _curOffest;
+      
+      MemoryQueue(MemoryQueue&);
+      void operator=(MemoryQueue&);
+      void grow();
 
-template <class T> midiRTalloc<T>::midiRTalloc() {}
+   public:
+      MemoryQueue();
+      ~MemoryQueue();
+
+      // Static. Returns whether the given length in bytes needs to be chunked.
+      static bool chunkable(size_t len) { return len > Chunk::ChunkSize; }
+      
+      // Returns current size in bytes.
+      size_t curSize() const { return _curSize; }
+      // Deletes all chunks except the first (to avoid a preallocation), and calls reset.
+      void clear();
+      // Resets the size and current write position, but does not clear.
+      // Existing chunks will be used, and new ones will be created (allocated) if required.
+      // This saves having to clear (which deletes) before every use, at the expense
+      //  of keeping what could be an ever increasing memory block alive. 
+      void reset();
+      // Return true if successful.
+      bool add(const unsigned char* src, size_t len);
+      // Copies the queue to a character buffer.
+      // Returns number of bytes copied.
+      size_t copy(unsigned char* dst, size_t len) const;
+      };
 
 #endif
 

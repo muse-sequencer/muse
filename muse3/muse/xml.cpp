@@ -37,7 +37,7 @@
 namespace MusECore {
 
 const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
-const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version (as of this release)
+const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version (as of this release)
   
 //---------------------------------------------------------
 //  Note:
@@ -731,6 +731,11 @@ void Xml::colorTag(int level, const char* name, const QColor& color)
 	    name, color.red(), color.green(), color.blue(), name);
       }
 
+void Xml::colorTag(int level, const QString& name, const QColor& color)
+{
+  colorTag(level, name.toLocal8Bit().constData(), color);
+}
+
 //---------------------------------------------------------
 //   geometryTag
 //---------------------------------------------------------
@@ -760,6 +765,11 @@ void Xml::strTag(int level, const char* name, const QString& val)
       strTag(level, name, val.toLocal8Bit().constData());
       }
 
+void Xml::strTag(int level, const QString& name, const QString& val)
+{
+  strTag(level, name.toLocal8Bit().constData(), val.toLocal8Bit().constData());
+}
+      
 //---------------------------------------------------------
 //   Xml::skip
 //---------------------------------------------------------

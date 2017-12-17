@@ -29,6 +29,8 @@
 #include "shortcuts.h"
 #include "songpos_toolbar.h"
 #include "sig_tempo_toolbar.h"
+#include "gconfig.h"
+#include "helper.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -406,6 +408,15 @@ void TopWin::setIsMdiWin(bool val)
 			subwin->setVisible(vis);
 			this->QMainWindow::show(); //bypass the delegation to the subwin
 			
+			// Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
+			//  force the style and stylesheet again. Otherwise the window freezes.
+			if(MusEGlobal::config.fixFrozenMDISubWindows)
+			{
+				if(MusEGlobal::debugMsg)
+				  fprintf(stderr, "TopWin::setIsMdiWin Calling updateThemeAndStyle()\n");
+				MusEGui::updateThemeAndStyle(true);
+			}
+
 			if (_sharesToolsAndMenu == _sharesWhenFree[_type])
 				shareToolsAndMenu(_sharesWhenSubwin[_type]);
 			
@@ -413,6 +424,10 @@ void TopWin::setIsMdiWin(bool val)
 			fullscreenAction->setChecked(false);
 			subwinAction->setChecked(true);
 			muse->updateWindowMenu();
+			
+			if(MusEGlobal::config.fixFrozenMDISubWindows)
+				connect(subwin, SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)),
+					        SLOT(windowStateChanged(Qt::WindowStates,Qt::WindowStates)));
 		}
 		else
 		{
@@ -729,6 +744,19 @@ void TopWin::setWindowTitle (const QString& title)
 	muse->updateWindowMenu();
 }
 
+void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState)
+{
+  // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
+  //  force the style and stylesheet again. Otherwise the window freezes.
+  // Ignore the Qt::WindowActive flag.
+  if((oldState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)) !=
+     (newState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)))
+  {
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "TopWin::windowStateChanged oldState:%d newState:%d Calling updateThemeAndStyle()\n", int(oldState), int(newState));
+    MusEGui::updateThemeAndStyle(true);
+  }
+}
 
 TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 {

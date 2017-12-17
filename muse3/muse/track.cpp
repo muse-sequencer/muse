@@ -754,15 +754,18 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              Part* dpart;
+              Part* dpart = 0;
               if(dup)
                 dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
               else if(cpy)
                 dpart = spart->duplicate();
               else if(cln)
                 dpart = spart->createNewClone();
-              dpart->setTrack(this);
-              parts()->add(dpart);
+              if(dpart)
+              {
+                dpart->setTrack(this);
+                parts()->add(dpart);
+              }
               }
       }
       
@@ -782,6 +785,22 @@ MidiTrack::~MidiTrack()
       remove_ourselves_from_drum_ordering();
       }
 
+
+bool MidiTrack::setRecordFlag2AndCheckMonitor(bool f)
+{
+  if(canRecord())
+    _recordFlag = f;
+
+  if(MusEGlobal::config.monitorOnRecord && canRecordMonitor())
+  {
+    if(f != _recMonitor)
+    {
+      _recMonitor = f;
+      return true;
+    }
+  }
+  return false;
+}
 
 void MidiTrack::convertToType(TrackType trackType)
 {
@@ -1561,7 +1580,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
-                              _recMonitor = xml.parseInt();
+                              setRecMonitor(xml.parseInt());
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
@@ -1722,7 +1741,7 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       else if (tag == "locked")
             _locked = xml.parseInt();
       else if (tag == "recMonitor")
-            _recMonitor = xml.parseInt();
+            setRecMonitor(xml.parseInt());
       else if (tag == "selected")
             _selected = xml.parseInt();
       else if (tag == "selectionOrder")
@@ -1922,7 +1941,8 @@ bool MidiTrack::updateDrummap(int doSignal)
 
     // TODO Move this to gui thread where it's safe to do so - this is only gui stuff.
     if(drummap_ordering_tied_to_patch())
-      init_drum_ordering();  // TODO This is not exactly rt friendly since it may de/allocate.
+      // TODO This is not exactly rt friendly since it may de/allocate.
+      init_drum_ordering();
   }
 
   // TODO Do this outside since we may be called as part of multiple tracks operations.

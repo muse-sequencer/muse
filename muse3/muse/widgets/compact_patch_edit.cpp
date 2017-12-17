@@ -114,6 +114,24 @@ QSize CompactPatchEdit::getMinimumSizeHint(const QFontMetrics& fm,
   return QSize(10, 10);
 }
 
+QWidget* CompactPatchEdit::setupComponentTabbing(QWidget* previousWidget)
+{
+  QWidget* prev = previousWidget;
+  if(_patchNameLabel)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _patchNameLabel);
+    prev = _patchNameLabel;
+  }
+  if(_patchEdit)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _patchEdit);
+    prev = _patchEdit;
+  }
+  return prev;
+}
+
 // void CompactPatchEdit::keyPressEvent(QKeyEvent* e)
 // {
 //   switch (e->key())

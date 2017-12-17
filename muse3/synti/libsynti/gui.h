@@ -27,7 +27,7 @@
 
 #include "mpevent.h"
 
-const int EVENT_FIFO_SIZE = 256;
+const int EVENT_FIFO_SIZE = 4096;
 class QWidget;
 
 //---------------------------------------------------------

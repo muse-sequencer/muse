@@ -67,6 +67,8 @@
 #include <QSemaphore>
 #include <QThread>
 #include <QTimer>
+#include <QWindow>
+
 #include <assert.h>
 #include <algorithm>
 #include "midictrl.h"
@@ -76,6 +78,9 @@
 #include "plugin.h"
 
 #endif
+
+// Define to use QWidget instead of QMainWindow for the plugin gui container.
+// #define LV2_GUI_USE_QWIDGET ;
 
 namespace MusECore
 {
@@ -297,6 +302,8 @@ private:
     LV2_URID _uAtom_EventTransfer;
     LV2_URID _uAtom_Chunk;
     LV2_URID _uAtom_Sequence;
+    LV2_URID _uAtom_StateChanged;
+    LV2_URID _uAtom_Object;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
     bool _isConstructed;
@@ -393,7 +400,7 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-    void doSelectProgram(unsigned char channel, int bank, int prog);
+    void doSelectProgram(unsigned char channel, int bankH, int bankL, int prog);
     inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b = 0, uint8_t c = 0);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
@@ -405,21 +412,15 @@ public:
     virtual ~LV2SynthIF();
 
     //virtual methods from SynthIF
-    virtual bool initGui();
     virtual void guiHeartBeat();
-    virtual bool guiVisible() const;
-    virtual void showGui ( bool v );
     virtual bool hasGui() const;
     virtual bool nativeGuiVisible() const;
     virtual void showNativeGui ( bool v );
     virtual bool hasNativeGui() const;
-    virtual void getGeometry ( int *, int *, int *, int * ) const;
-    virtual void setGeometry (int x, int y, int w, int h);
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry (int x, int y, int, int);
+    virtual void setNativeGeometry (int x, int y, int w, int h);
     virtual void preProcessAlways();
-    virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
-    virtual bool putEvent ( const MidiPlayEvent &ev );
+    virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer );
     virtual MidiPlayEvent receiveEvent();
     virtual int eventsPending() const;
 
@@ -540,6 +541,8 @@ struct LV2PluginWrapper_State {
       uiCurrent(NULL),
       uiX11Size(0, 0),
       pluginWindow(NULL),
+      pluginQWindow(NULL),
+      
       prgIface(NULL),
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
@@ -552,7 +555,8 @@ struct LV2PluginWrapper_State {
       uiControlEvt(LV2_RT_FIFO_SIZE),
       plugControlEvt(LV2_RT_FIFO_SIZE),
       gtk2ResizeCompleted(false),
-      gtk2AllocateCompleted(false)
+      gtk2AllocateCompleted(false),
+      songDirtyPending(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -614,6 +618,7 @@ struct LV2PluginWrapper_State {
     LV2UI_Resize uiResize;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
+    QWindow *pluginQWindow;
     LV2_MIDI_PORTS midiInPorts;
     LV2_MIDI_PORTS midiOutPorts;
     size_t inPortsMidi;
@@ -637,6 +642,7 @@ struct LV2PluginWrapper_State {
     std::map<uint32_t, LV2EvBuf *> idx2EvtPorts;
     bool gtk2ResizeCompleted;
     bool gtk2AllocateCompleted;
+    bool songDirtyPending;
 };
 
 
@@ -661,19 +667,26 @@ public:
 };
 
 
-
+#ifdef LV2_GUI_USE_QWIDGET
+class LV2PluginWrapper_Window : public QWidget
+#else
 class LV2PluginWrapper_Window : public QMainWindow
+#endif
 {
    Q_OBJECT
 protected:
    void closeEvent ( QCloseEvent *event );
+   void showEvent(QShowEvent *e);
+   void hideEvent(QHideEvent *e);
 private:
    LV2PluginWrapper_State *_state;
    bool _closing;
    QTimer updateTimer;
    void stopUpdateTimer();
 public:
-   explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
+   explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state, 
+                                      QWidget *parent = Q_NULLPTR, 
+                                      Qt::WindowFlags flags = Qt::WindowFlags());
    ~LV2PluginWrapper_Window();
    void startNextTime();
    void stopNextTime();
@@ -717,9 +730,9 @@ public:
     virtual const char *portName ( unsigned long i );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
-    virtual bool hasNativeGui();
+    virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
-    virtual bool nativeGuiVisible ( PluginI *p );
+    virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);

@@ -750,11 +750,12 @@ QWidget* ComponentRack::setupComponentTabbing(QWidget* previousWidget)
   for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
   {
     const ComponentWidget& cw = *ic;
-    if(!cw._widget)
-      continue;
-    if(prev)
-      QWidget::setTabOrder(prev, cw._widget);
-    prev = cw._widget;
+    if(cw._widget)
+    {
+      if(prev)
+        QWidget::setTabOrder(prev, cw._widget);
+      prev = cw._widget;
+    }
   }
   return prev;
 }
@@ -828,7 +829,7 @@ void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 //   Strip
 //---------------------------------------------------------
 
-const int Strip::FIXED_METER_WIDTH = 10;
+const int Strip::FIXED_METER_WIDTH = 7;
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -857,20 +858,28 @@ void Strip::resetPeaks()
 //---------------------------------------------------------
 
 void Strip::recordToggled(bool val)
+{
+  if (track->type() == MusECore::Track::AUDIO_OUTPUT)
+  {
+    if (val && !track->recordFlag())
+    {
+      MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
+
+      if (!((MusECore::AudioOutput*)track)->recFile())
       {
-      if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
-            if (val && track->recordFlag() == false) {
-                  MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
-                  }
-            MusEGlobal::audio->msgSetRecord((MusECore::AudioOutput*)track, val);
-            if (!((MusECore::AudioOutput*)track)->recFile())
-            {  
-                  record->setChecked(false);
-            }
-            return;
-            }
-      MusEGlobal::song->setRecordFlag(track, val);
+        if(record)
+        {
+          record->blockSignals(true);
+          record->setChecked(false);
+          record->blockSignals(false);
+        }
       }
+      return;
+    }
+  }
+
+  MusEGlobal::song->setRecordFlag(track, val);
+}
 
 //---------------------------------------------------------
 //   returnPressed
@@ -1006,9 +1015,12 @@ void Strip::setLabelText()
 void Strip::muteToggled(bool val)
       {
       if(track)
-        MusEGlobal::audio->msgSetTrackMute(track, val);
+        // No undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, val), false);
+        
       updateMuteIcon();
       MusEGlobal::song->update(SC_MUTE);
+      
       }
 
 //---------------------------------------------------------
@@ -1020,7 +1032,8 @@ void Strip::soloToggled(bool val)
       solo->setIconSetB(track && track->internalSolo());
       if(!track)
         return;
-      MusEGlobal::audio->msgSetSolo(track, val);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, track, val), false);
+      
       MusEGlobal::song->update(SC_SOLO);
       }
 
@@ -1033,6 +1046,9 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
    : QFrame(parent)
       {
       setMouseTracking(true);
+      setAttribute(Qt::WA_DeleteOnClose);
+      setFrameStyle(Panel | Raised);
+      setLineWidth(1);
 
       // Set so that strip can redirect focus proxy to volume label in descendants.
       // Nope. Seemed like a good idea but no. Do not allow the strip to gain focus.
@@ -1048,16 +1064,17 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 
       _curGridRow = 0;
       _userWidth = 0;
-      autoType = 0;
       _visible = true;
       dragOn=false;
-      setAttribute(Qt::WA_DeleteOnClose);
+
+      sliderGrid    = 0;
+      record        = 0;
+      solo          = 0;
+      mute          = 0;
       iR            = 0;
       oR            = 0;
-      
-      setFrameStyle(Panel | Raised);
-      setLineWidth(1);
-      
+      autoType      = 0;
+
       track    = t;
       meter[0] = 0;
       meter[1] = 0;
@@ -1286,7 +1303,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.preferKnobsVsSliders != checked)
         {
           MusEGlobal::config.preferKnobsVsSliders = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1294,7 +1311,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.showControlValues != checked)
         {
           MusEGlobal::config.showControlValues = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1302,7 +1319,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.preferMidiVolumeDb != checked)
         {
           MusEGlobal::config.preferMidiVolumeDb = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1310,7 +1327,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
         if(MusEGlobal::config.monitorOnRecord != checked)
         {
           MusEGlobal::config.monitorOnRecord = checked;
-          MusEGlobal::muse->changeConfig(true, true); // Save settings immediately, and use simple version.
+          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
         }
       break;
 
@@ -1844,7 +1861,7 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
         if(off || (d_val < double(mctl->minVal())) || (d_val > double(mctl->maxVal())))
         {
           if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       id,
                                                       MusECore::CTRL_VAL_UNKNOWN));
@@ -2455,13 +2472,12 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
     // Unusual, it is a factor of 40 not 20. Since muse_db2val()
     //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
     //----------------------------------------------------------
-//     double val_delta = newVal - oldVal;
+    
     double m_old_val = oldCompVal;
     double ma_old_val = oldCompVal;
     double m_new_val = newCompVal;
     double ma_new_val = newCompVal;
-//     double d_m_old_ctl_val = oldCtlVal;
-//     double d_ma_old_ctl_val = oldCtlVal;
+
     if(id == MusECore::CTRL_VOLUME)
     {
       if(MusEGlobal::config.preferMidiVolumeDb)
@@ -2470,8 +2486,6 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           m_old_val = ma_old_val = 0.0;
         else
         {
-//           m_old_val = double(i_m_max) * muse_db2val(m_old_val);
-//           ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val / 2.0);
           m_old_val = double(i_m_max) * muse_db2val(m_old_val / 2.0);
           ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val);
         }
@@ -2480,26 +2494,15 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           m_new_val = ma_new_val = 0.0;
         else
         {
-//           m_new_val = double(i_m_max) * muse_db2val(m_new_val);
-//           ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val / 2.0);
           m_new_val = double(i_m_max) * muse_db2val(m_new_val / 2.0);
           ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val);
         }
-
-//         d_m_old_ctl_val = muse_val2dbr(d_m_old_ctl_val / double(i_m_max)) * 2.0;
       }
       else
       {
         // It's a linear scale. We need to convert to Db and
         //  scale the linear value by 2 since the midi scale is
         //  twice the usual Db per step. Then convert back to linear.
-//         m_old_val = muse_val2dbr(m_old_val / double(i_m_max)) * 2.0;
-//         m_old_val *= 2.0;
-//         m_old_val = double(i_m_max) * muse_db2val(m_old_val / 2.0);
-//
-//         m_new_val = muse_val2dbr(m_new_val / double(i_m_max)) * 2.0;
-//         m_new_val *= 2.0;
-//         m_new_val = double(i_m_max) * muse_db2val(m_new_val / 2.0);
         ma_old_val = muse_val2dbr(ma_old_val / double(i_ma_max)) * 2.0;
         ma_old_val *= 2.0;
         ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val / 2.0);
@@ -2549,46 +2552,9 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
       return;
 
     // Get the current or last valid actual controller value.
-//     int i_m_cur_val = m_mp->hwCtrlState(m_chan, id);
-//     int i_ma_cur_val = i_m_cur_val;
-//     if(i_m_cur_val == MusECore::CTRL_VAL_UNKNOWN)
-//     {
-//       i_m_cur_val = m_mp->lastValidHWCtrlState(m_chan, id);
-//       i_ma_cur_val = i_m_cur_val;
-//     }
-//     if(i_m_cur_val == MusECore::CTRL_VAL_UNKNOWN)
-//     {
-//       i_m_cur_val = int(m_old_val);
-//       i_ma_cur_val = int(ma_old_val);
-//     }
-//     int i_m_cur_val = lrint(d_m_old_ctl_val);
-//     int i_ma_cur_val = lrint(d_ma_old_ctl_val);
-
-//     i_m_cur_val -= i_m_bias;
-//     i_ma_cur_val -= i_m_bias;
-//
-//     if(i_m_cur_val < i_m_min)
-//       i_m_cur_val = i_m_min;
-//     if(i_m_cur_val > i_m_max)
-//       i_m_cur_val = i_m_max;
-//
-//     if(i_ma_cur_val < i_ma_min)
-//       i_ma_cur_val = i_ma_min;
-//     if(i_ma_cur_val > i_ma_max)
-//       i_ma_cur_val = i_ma_max;
-
-    //const double d_m_cur_val = double(i_m_cur_val);
-//     const double d_ma_cur_val = double(i_ma_cur_val);
-
     const double m_val_delta = m_new_val - m_old_val;
     const double ma_val_delta = ma_new_val - ma_old_val;
 
-    //const double d_m_cur_val_delta = double(lrint(m_new_val)) - d_m_cur_val;
-//     const double d_ma_cur_val_delta = double(lrint(ma_new_val)) - d_ma_cur_val;
-
-//     const double m_old_fact = (m_old_val - (double)i_m_min) / (double)i_m_range;
-//     const double m_new_fact = (m_new_val - (double)i_m_min) / (double)i_m_range;
-    //const double m_new_delta_fact = m_val_delta / (double)i_m_range;
     const double ma_new_delta_fact = ma_val_delta / (double)i_ma_range;
 
     // Make sure to include this track as already done.
@@ -2613,34 +2579,25 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           continue;
         doneMidiTracks.append(mils);
 
-        //int i_new_val = lrint(ma_new_val);
-        //int i_new_val = lrint(m_new_val);
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
         MusECore::MidiController* mctl = mp->midiController(id, false);
         if(!mctl)
           continue;
         int min = mctl->minVal();
         const int max = mctl->maxVal();
-        //const int bias = mctl->bias();
-        //if(bias != 0 && ((max - min) & 0x1))
-        //  ++min;
 
-        //if(off || (i_new_val < mctl->minVal()) || (i_new_val > mctl->maxVal()))
         if(off)
         {
           if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(0, port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       id,
                                                       MusECore::CTRL_VAL_UNKNOWN));
         }
         else
         {
-          //int i_fin_val;
           double d_fin_val = m_new_val;
-          //double d_cur_val;
           // Get the current or last valid value.
-//           int d_cur_val =  mp->hwCtrlState(chan, id);
           double d_cur_val =  mp->hwDCtrlState(chan, id);
           if(MusECore::MidiController::dValIsUnknown(d_cur_val))
             d_cur_val = mp->lastValidHWDCtrlState(chan, id);
@@ -2648,43 +2605,25 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
             d_fin_val = m_new_val;
           else
           {
-//             const double d_cur_val = double(i_cur_val - mctl->bias());
             d_cur_val = d_cur_val - double(mctl->bias());
-//             double d_fin_val;
             if(id == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
             {
               d_fin_val = muse_val2dbr(d_cur_val / double(max)) * 2.0;
               d_fin_val += d_comp_val_delta;
               d_fin_val = double(max) * muse_db2val(d_fin_val / 2.0);
-//               d_fin_val = d_cur_val + d_m_cur_val_delta;
             }
             else
-              //d_fin_val = d_cur_val + val_delta;
-              //d_fin_val = d_cur_val + d_m_cur_val_delta;
               d_fin_val = d_cur_val + m_val_delta;
-
-//             i_fin_val = lrint(d_fin_val);
-            //i_fin_val = round(d_fin_val);
           }
 
-//           if(i_fin_val < min)
-//             i_fin_val = min;
-//           if(i_fin_val > max)
-//             i_fin_val = max;
           if(d_fin_val < double(min))
             d_fin_val = min;
           if(d_fin_val > double(max))
             d_fin_val = max;
 
-//           i_fin_val += mctl->bias();
           d_fin_val += double(mctl->bias());
 
-          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
-//           mp->putEvent(ev);
-
           // False = linear not dB because we are doing the conversion here.
-          //mp->putControllerIncrement(port, chan, id, d_fin_val, false);
           mp->putControllerValue(port, chan, id, d_fin_val, false);
 
           // Trip the wait flag.
@@ -2710,8 +2649,6 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         const double a_min = cl->minVal();
         const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
         const double a_range = a_max - a_min;
-        //const double a_val = (ma_new_val * a_range) + a_min;
-        //const double a_val_delta = (m_new_delta_fact * a_range) + a_min;
         const double a_val_delta = ma_new_delta_fact * a_range;
 
         if(id == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
@@ -2737,16 +2674,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         if(d_cur_val > a_max)
           d_cur_val = a_max;
 
-        //const double d_fin_val = d_cur_val + d_m_cur_val_delta;
-//         const double d_fin_val = d_cur_val + d_ma_cur_val_delta;
-        //const double d_fin_val = d_cur_val + a_val_delta;
-
-//         // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
-//         // ScrDirect mode is one-time only on press with modifier.
-//         if(scrollMode != SliderBase::ScrDirect)
-//           at->recordAutomation(a_ctlnum, a_val);
-          at->recordAutomation(a_ctlnum, d_cur_val);
-//         at->setParam(a_ctlnum, a_val);  // Schedules a timed control change.
+        at->recordAutomation(a_ctlnum, d_cur_val);
         at->setParam(a_ctlnum, d_cur_val);  // Schedules a timed control change.
         at->enableController(a_ctlnum, false);
 
@@ -2801,12 +2729,10 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
     // The audio volume can go above 0dB (amplification) while
     //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
     const double a_min = cl->minVal();
-//     const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
     const double a_max = cl->maxVal();
     const double a_range = a_max - a_min;
     if(a_range < 0.0001) // Avoid divide by zero.
       return;
-//     const double a_fact = (ma_val - a_min) / a_range;
     const double a_fact_delta = muse_round2micro((newCompVal - oldCompVal) / a_range);
 
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
@@ -2852,22 +2778,10 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           const double d_max = (double)max;
           const double d_range = double(max - min);
 
-//           int m_val = lrint((a_fact_delta * d_range) + d_min);
-//
-//           if(m_val < mctl->minVal())
-//             m_val = mctl->minVal();
-//           if(m_val > mctl->maxVal())
-//             m_val = mctl->maxVal();
-//           m_val += mctl->bias();
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, m_ctlnum, m_val);
-//           mp->putEvent(ev);
-
           const double m_val_delta = muse_round2micro(a_fact_delta * d_range);
 
           double d_fin_val = 0.0;
-          //double d_cur_val;
           // Get the current or last valid value.
-//           int d_cur_val =  mp->hwCtrlState(chan, id);
           double d_cur_val =  mp->hwDCtrlState(chan, m_ctlnum);
           if(MusECore::MidiController::dValIsUnknown(d_cur_val))
             d_cur_val = mp->lastValidHWDCtrlState(chan, m_ctlnum);
@@ -2880,44 +2794,25 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
             d_fin_val = 0.0;
           else
           {
-//             const double d_cur_val = double(i_cur_val - mctl->bias());
             d_cur_val = d_cur_val - double(mctl->bias());
-//             double d_fin_val;
-            //if(m_ctlnum == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
             if(m_ctlnum == MusECore::CTRL_VOLUME)
             {
               d_fin_val = muse_val2dbr(d_cur_val / d_max) * 2.0;
               d_fin_val += d_comp_val_delta;
               d_fin_val = d_max * muse_db2val(d_fin_val / 2.0);
-//               d_fin_val = d_cur_val + d_m_cur_val_delta;
             }
             else
-              //d_fin_val = d_cur_val + val_delta;
-              //d_fin_val = d_cur_val + d_m_cur_val_delta;
               d_fin_val = d_cur_val + m_val_delta;
-
-//             i_fin_val = lrint(d_fin_val);
-            //i_fin_val = round(d_fin_val);
           }
 
-//           if(i_fin_val < min)
-//             i_fin_val = min;
-//           if(i_fin_val > max)
-//             i_fin_val = max;
           if(d_fin_val < d_min)
             d_fin_val = d_min;
           if(d_fin_val > d_max)
             d_fin_val = d_max;
 
-//           i_fin_val += mctl->bias();
           d_fin_val += double(mctl->bias());
 
-          //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_new_val);
-//           MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, chan, MusECore::ME_CONTROLLER, id, i_fin_val);
-//           mp->putEvent(ev);
-
           // False = linear not dB because we are doing the conversion here.
-          //mp->putControllerIncrement(port, chan, id, d_fin_val, false);
           mp->putControllerValue(port, chan, m_ctlnum, d_fin_val, false);
 
           // Trip the wait flag.
@@ -2941,11 +2836,8 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         // The audio volume can go above 0dB (amplification) while
         //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
         const double d_min = cl->minVal();
-        //const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
         const double d_max = cl->maxVal();
         const double d_range = d_max - d_min;
-        //const double a_val = (ma_new_val * a_range) + a_min;
-        //const double a_val_delta = (m_new_delta_fact * a_range) + a_min;
         const double d_val_delta = a_fact_delta * d_range;
 
         if(id == MusECore::AC_VOLUME)

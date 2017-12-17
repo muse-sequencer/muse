@@ -89,6 +89,9 @@ Slider::Slider(QWidget *parent, const char *name,
       d_yMargin     = 0;
       d_mMargin    = 1;
 
+      horizontal_hint = 40;
+      vertical_hint = 40;
+      
       d_sliderRect.setRect(0, 0, 8, 8);
       setOrientation(orient);
       d_scale.setTextHighlightMode(textHighlightMode);
@@ -1067,6 +1070,7 @@ QSize Slider::sizeHint() const
         {
           case Qt::Vertical:
           {
+            h = vertical_hint;
             const int smw = msWidth + d_scaleDist;
             switch(d_scalePos)
             {
@@ -1093,6 +1097,7 @@ QSize Slider::sizeHint() const
             
           case Qt::Horizontal:
           {
+            w = horizontal_hint;
             const int smh = msHeight + d_scaleDist;
             switch(d_scalePos)
             {
@@ -1124,9 +1129,11 @@ QSize Slider::sizeHint() const
         {
           case Qt::Vertical:
                 w = 16;
+                h = vertical_hint;
                 break;
           case Qt::Horizontal:
                 h = 16;
+                w = horizontal_hint;
                 break;
         }
       }

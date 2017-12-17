@@ -102,9 +102,12 @@ int PendingOperationItem::getIndex() const
     case ModifyTrackDrumMapItem:
     case ReplaceTrackDrumMapPatchList:
     case RemapDrumControllers:
+    case UpdateDrumMaps:
     case SetTrackRecord:
     case SetTrackMute:
     case SetTrackSolo:
+    case SetTrackRecMonitor:
+    case SetTrackOff:
     case ModifyPartName:
     case ModifySongLength:
     case AddMidiCtrlValList:
@@ -117,6 +120,7 @@ int PendingOperationItem::getIndex() const
     case ModifyRouteNode:
     case UpdateSoloStates:
     case EnableAllAudioControllers:
+    case ModifyAudioSamples:
     // REMOVE Tim. samplerate. Added.
     case ModifyLocalAudioConverterSettings:
     case ModifyDefaultAudioConverterSettings:
@@ -403,6 +407,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case UpdateDrumMaps:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage UpdateDrumMaps: midi_port:%p:\n", _midi_port);
+#endif      
+      if(_midi_port->updateDrumMaps())
+        flags |= SC_DRUMMAP;
+    break;
+    
     case UpdateSoloStates:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage UpdateSoloStates: track_list:%p:\n", _track_list);
       // TODO Use the track_list, or simply keep as dummy parameter to identify UpdateSoloStates?
@@ -950,9 +962,13 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     break;
     
     case SetTrackRecord:
+    {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetTrackRecord track:%p new_val:%d\n", _track, _boolA);
-      _track->setRecordFlag2(_boolA);
+      const bool mon = _track->setRecordFlag2AndCheckMonitor(_boolA);
       flags |= SC_RECFLAG;
+      if(mon)
+        flags |= SC_TRACK_REC_MONITOR;
+    }
     break;
     
     case SetTrackMute:
@@ -965,6 +981,22 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetTrackSolo track:%p new_val:%d\n", _track, _boolA);
       _track->setSolo(_boolA);
       flags |= SC_SOLO;
+    break;
+    
+    case SetTrackRecMonitor:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackRecMonitor track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setRecMonitor(_boolA);
+      flags |= SC_TRACK_REC_MONITOR;
+    break;
+    
+    case SetTrackOff:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetTrackOff track:%p new_val:%d\n", _track, _boolA);
+#endif      
+      _track->setOff(_boolA);
+      flags |= SC_MUTE;
     break;
     
     
@@ -1339,6 +1371,29 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
     }
     break;
     
+    case ModifyAudioSamples:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyAudioSamples: "
+                      "audioSamplesPointer:%p newAudioSamples:%p audioSamplesLen:%p newAudioSamplesLen:%d\n",
+              _audioSamplesPointer, _newAudioSamples, _audioSamplesLen, _newAudioSamplesLen);
+#endif      
+      if(_audioSamplesPointer)
+      {
+        float* orig = *_audioSamplesPointer;
+        *_audioSamplesPointer = _newAudioSamples;
+        // Transfer the original pointer back to _audioSamplesPointer so it can be deleted in the non-RT stage.
+        _newAudioSamples = orig;
+      }
+      
+      if(_audioSamplesLen)
+        *_audioSamplesLen = _newAudioSamplesLen;
+      
+      // Currently no flags for this.
+      //flags |= SC_;
+    }
+    break;
+    
     case Uninitialized:
     break;
     
@@ -1455,6 +1510,13 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
 
         delete _midi_ctrl_val_remap_operation;
       }
+    break;
+
+    case ModifyAudioSamples:
+      // At this point _newAudioSamples points to the original memory that was replaced. Delete it now.
+      if(_newAudioSamples)
+        delete _newAudioSamples;
+    break;
 
     default:
     break;
@@ -1598,6 +1660,14 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::UpdateDrumMaps:
+        if(poi._type == PendingOperationItem::UpdateDrumMaps && poi._midi_port == op._midi_port)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double UpdateDrumMaps. Ignoring.\n");
+          return false;  
+        }
+      break;
+      
       case PendingOperationItem::UpdateSoloStates:
         if(poi._type == PendingOperationItem::UpdateSoloStates && poi._track_list == op._track_list)
         {
@@ -1816,6 +1886,42 @@ bool PendingOperationList::add(PendingOperationItem op)
           if(poi._boolA == op._boolA)  
           {
             ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetTrackSolo. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetTrackRecMonitor:
+        if(poi._type == PendingOperationItem::SetTrackRecMonitor && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackRecMonitor. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            return true;  
+          }
+        }
+      break;
+      
+      case PendingOperationItem::SetTrackOff:
+        if(poi._type == PendingOperationItem::SetTrackOff && poi._track == op._track)
+        {
+          if(poi._boolA == op._boolA)  
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetTrackOff. Ignoring.\n");
             return false;  
           }
           else
@@ -2549,6 +2655,20 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;  
 
+      case PendingOperationItem::ModifyAudioSamples:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyAudioSamples && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           poi._audioSamplesPointer && op._audioSamplesPointer &&
+//           (*poi._audioSamplesPointer == *op._audioSamplesPointer || poi._newAudioSamples == op._newAudioSamples))
+//         {
+//           // Simply replace the list.
+//           poi._newAudioSamples = op._newAudioSamples; 
+//           poi._newAudioSamplesLen = op._newAudioSamplesLen; 
+//           return true;
+//         }
+      break;
+      
       case PendingOperationItem::Uninitialized:
         ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  

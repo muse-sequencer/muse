@@ -625,7 +625,9 @@ void WaveEdit::songChanged1(MusECore::SongChangedFlags_t bits)
 void WaveEdit::soloChanged(bool flag)
       {
       MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
-      MusEGlobal::audio->msgSetSolo(part->track(), flag);
+      // No undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, part->track(), flag), false);
+      
       MusEGlobal::song->update(SC_SOLO);
       }
 

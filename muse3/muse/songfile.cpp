@@ -1194,7 +1194,7 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               }
                         break;
                   case MusECore::Xml::TagEnd:
-                        if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
+                        if(!xml.isVersionEqualToLatest())
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded file version is %d.%d\nCurrent version is %d.%d\n"
                                   "Conversions may be applied if file is saved!\n\n",
@@ -1219,6 +1219,7 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                             if(!mb->checkBox()->isChecked() != MusEGlobal::config.warnOnFileVersions)
                             {
                               MusEGlobal::config.warnOnFileVersions = !mb->checkBox()->isChecked();
+                              // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
                             }
                             delete mb;

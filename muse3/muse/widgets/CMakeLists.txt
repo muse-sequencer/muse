@@ -79,7 +79,7 @@ QT5_WRAP_CPP (widget_mocs
       mlabel.h  
       mtscale.h  
       mtscale_flo.h  
-      mtrackinfo.h
+      # mtrackinfo.h
       nentry.h  
       noteinfo.h  
       pastedialog.h
@@ -158,7 +158,7 @@ file (GLOB widgets_ui_files
       midi_audio_control_base.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
-      mtrackinfobase.ui
+      # mtrackinfobase.ui
       pastedialogbase.ui
       pasteeventsdialogbase.ui
       plugindialogbase.ui
@@ -230,7 +230,7 @@ file (GLOB widgets_source_files
       mixdowndialog.cpp 
       mlabel.cpp 
       mmath.cpp
-      mtrackinfo.cpp
+      # mtrackinfo.cpp
       mtscale.cpp 
       mtscale_flo.cpp 
       nentry.cpp 

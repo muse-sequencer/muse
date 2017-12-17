@@ -48,6 +48,8 @@
 #include "drummap.h"
 #include "operations.h"
 
+// For debugging output: Uncomment the fprintf section.
+//#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -62,6 +64,9 @@ extern bool initMidiAlsa();
 extern bool initMidiJack();
 
 extern void processMidiInputTransformPlugins(MEvent&);
+
+// Static.
+const int MidiDevice::extClockHistoryCapacity = 1024;
 
 
 //---------------------------------------------------------
@@ -101,9 +106,18 @@ void initMidiDevices()
 
 void MidiDevice::init()
       {
-      stopPending    = false;         
-      seekPending    = false;
+      _extClockHistoryFifo = new LockFreeBuffer<ExtMidiClock>(extClockHistoryCapacity);
       
+      // TODO: Scale these according to the current audio segment size.
+      _playbackEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(1024);
+      _userEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(1024);
+      
+      _sysExOutDelayedEvents = new std::vector<MidiPlayEvent>;
+      // Initially reserve a fair number of items to hold potentially a lot 
+      //  of messages when the sysex processor is busy (in the Sending state).
+      _sysExOutDelayedEvents->reserve(1024);
+      _stopFlag.store(false);
+
       _state         = QString("Closed");
       _readEnable    = false;
       _writeEnable   = false;
@@ -122,7 +136,6 @@ MidiDevice::MidiDevice()
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      _sysexReadingChunks = false;
       
       init();
       }
@@ -134,12 +147,23 @@ MidiDevice::MidiDevice(const QString& n)
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      _sysexReadingChunks = false;
       
       init();
       }
 
-QString MidiDevice::deviceTypeString()
+MidiDevice::~MidiDevice() 
+{
+    if(_sysExOutDelayedEvents)
+      delete _sysExOutDelayedEvents;
+    if(_extClockHistoryFifo)
+      delete _extClockHistoryFifo;
+    if(_userEventBuffers)
+      delete _userEventBuffers;
+    if(_playbackEventBuffers)
+      delete _playbackEventBuffers;
+}
+
+QString MidiDevice::deviceTypeString() const
 {
   switch(deviceType())
   {
@@ -149,7 +173,7 @@ QString MidiDevice::deviceTypeString()
         return "JACK";
     case SYNTH_MIDI:
     {
-      SynthI* s = dynamic_cast<SynthI*>(this);
+      const SynthI* s = dynamic_cast<const SynthI*>(this);
       if(s && s->synth())
         return MusECore::synthType2String(s->synth()->synthType());
       else
@@ -244,24 +268,25 @@ void MidiDevice::beforeProcess()
 }
 
 //---------------------------------------------------------
+//   midiClockInput
+//    Midi clock (24 ticks / quarter note)
+//---------------------------------------------------------
+
+void MidiDevice::midiClockInput(unsigned int frame)
+{
+  // Put a midi clock record event into the clock history fifo. Ignore port and channel.
+  // Timestamp with the current frame.
+  const ExtMidiClock ext_clk = MusEGlobal::midiSyncContainer.midiClockInput(midiPort(), frame);
+  if(ext_clk.isValid() && extClockHistory())
+    extClockHistory()->put(ext_clk);
+}
+
+//---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
 
 void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
-// Removed. Let the caller handle the timestamp. This was moved into alsa driver.
-// Jack midi device already has its own recordEvent() - simply without the timestamp it does its own,
-//  but we might now replace that override method with this default method.
-//
-//       // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
-//       unsigned frame_ts = MusEGlobal::audio->timestamp();
-// #ifndef _AUDIO_USE_TRUE_FRAME_
-//       if(MusEGlobal::audio->isPlaying())
-//        frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
-// #endif
-//       event.setTime(frame_ts);
-//       event.setTick(MusEGlobal::lastExtMidiSyncTick);
-      
       if(MusEGlobal::audio->isPlaying())
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
@@ -366,22 +391,22 @@ void MidiDeviceList::add(MidiDevice* dev)
       {
       bool gotUniqueName=false;
       int increment = 0;
-      QString origname = dev->name();
+      const QString origname = dev->name();
+      QString newName = origname;
       while (!gotUniqueName) {
             gotUniqueName = true;
             // check if the name's been taken
             for (iMidiDevice i = begin(); i != end(); ++i) {
                   const QString s = (*i)->name();
-                  if (s == dev->name())
+                  if (s == newName)
                         {
-                        char incstr[4];
-                        sprintf(incstr,"_%d",++increment);
-                        dev->setName(origname + QString(incstr));    
+                        newName = origname + QString("_%1").arg(++increment);
                         gotUniqueName = false;
                         }
                   }
             }
-      
+      if(origname != newName)
+        dev->setName(newName);
       push_back(dev);
       }
 
@@ -393,7 +418,8 @@ void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
 {
   bool gotUniqueName=false;
   int increment = 0;
-  QString origname = dev->name();
+  const QString origname = dev->name();
+  QString newName = origname;
   PendingOperationItem poi(this, dev, PendingOperationItem::AddMidiDevice);
   // check if the name's been taken
   while(!gotUniqueName) 
@@ -411,28 +437,23 @@ void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
       PendingOperationItem& poif = *ipo;
       if(poif._midi_device == poi._midi_device)
         return;  // Device itself is already added! 
-        
-      // TODO: This and section below should be changed to simply: dev->setName(origname + QString::number(increment))  
-      //        but first must be careful of localizations - will it give differing results?
-      char incstr[4];
-      sprintf(incstr,"_%d",++increment);
-      dev->setName(origname + QString(incstr));
-      
+      newName = origname + QString("_%1").arg(++increment);
       gotUniqueName = false;
     }    
     
     for(iMidiDevice i = begin(); i != end(); ++i) 
     {
       const QString s = (*i)->name();
-      if(s == dev->name())
+      if(s == newName)
       {
-        char incstr[4];
-        sprintf(incstr,"_%d",++increment);
-        dev->setName(origname + QString(incstr));    
+        newName = origname + QString("_%1").arg(++increment);
         gotUniqueName = false;
       }
     }
   }
+  
+  if(origname != newName)
+    dev->setName(newName);
   
   ops.add(poi);
 }
@@ -469,30 +490,58 @@ void MidiDevice::resetCurOutParamNums(int chan)
 }
 
 //---------------------------------------------------------
-//   putEventWithRetry
+//   putEvent
 //    return true if event cannot be delivered
-//    This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
-//    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. 
 //---------------------------------------------------------
 
-bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long delayUs)
+bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, EventBufferType bufferType)
 {
-  // TODO: Er, probably not the best way to do this.
-  //       Maybe try to correlate with actual audio buffer size instead of blind time delay.
-  for( ; tries > 0; --tries)
-  { 
-    if(!putEvent(ev))  // Returns true if event cannot be delivered.
-      return false;
-      
-    int sleepOk = -1;
-    while(sleepOk == -1)
-      sleepOk = usleep(delayUs);   // FIXME: usleep is supposed to be depricated!
-  }  
-  return true;
+// TODO: Decide whether we want the driver cached values always updated like this,
+//        even if not writeable or if error.
+//   if(!_writeEnable)
+//     return true;
+  
+  // Automatically shift the time forward if specified.
+  MidiPlayEvent fin_ev = ev;
+  switch(latencyType)
+  {
+    case NotLate:
+    break;
+    
+    case Late:
+      fin_ev.setTime(fin_ev.time() + pbForwardShiftFrames());
+    break;
+  }
+  
+  //DEBUG_MIDI_DEVICE(stderr, "MidiDevice::putUserEvent devType:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+  //                  deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
+  if (MusEGlobal::midiOutputTrace)
+  {
+    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+    fin_ev.dump();
+  }
+  
+  bool rv = true;
+  switch(bufferType)
+  {
+    case PlaybackBuffer:
+      rv = !_playbackEventBuffers->put(fin_ev);
+    break;
+    
+    case UserBuffer:
+      rv = !_userEventBuffers->put(fin_ev);
+    break;
+  }
+  
+  if(rv)
+    fprintf(stderr, "MidiDevice::putEvent: Error: Device buffer overflow. bufferType:%d\n", bufferType);
+  
+  return rv;
 }
 
 //---------------------------------------------------------
 //   processStuckNotes
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiDevice::processStuckNotes() 
@@ -501,8 +550,6 @@ void MidiDevice::processStuckNotes()
   // MusEGlobal::audio->isPlaying() might not be true during seek right now.
   //if(MusEGlobal::audio->isPlaying())  
   {
-    const bool extsync = MusEGlobal::extSyncFlag.value();
-    const int frameOffset = MusEGlobal::audio->getFrameOffset();
     const unsigned nextTick = MusEGlobal::audio->nextTick();
     ciMPEvent k;
 
@@ -514,11 +561,8 @@ void MidiDevice::processStuckNotes()
           if (k->time() >= nextTick)  
                 break;
           MidiPlayEvent ev(*k);
-          if(extsync)              // p3.3.25
-            ev.setTime(k->time());
-          else 
-            ev.setTime(MusEGlobal::tempomap.tick2frame(k->time()) + frameOffset);
-          _playEvents.add(ev);
+          ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
+            _userEventBuffers->put(ev);
           }
     _stuckNotes.erase(_stuckNotes.begin(), k);
 
@@ -531,6 +575,7 @@ void MidiDevice::processStuckNotes()
 
 //---------------------------------------------------------
 //   handleStop
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiDevice::handleStop()
@@ -573,12 +618,13 @@ void MidiDevice::handleStop()
   //     which were put directly to the device
   //---------------------------------------------------
 
-  _playEvents.clear();
+  setStopFlag(true);
   for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
   {
     MidiPlayEvent ev(*i);
-    ev.setTime(0);
-    putEvent(ev);
+    ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+    //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+        putEvent(ev, MidiDevice::NotLate);
   }
   _stuckNotes.clear();
   
@@ -597,8 +643,10 @@ void MidiDevice::handleStop()
       if((*i).port() != _port)
         continue;
       MidiPlayEvent ev(*i);
-      ev.setTime(0);
-      putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+      ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+      putEvent(ev, MidiDevice::NotLate);
+            
       mel.erase(i);
     }
   }
@@ -611,44 +659,20 @@ void MidiDevice::handleStop()
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
     {
-      const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-      putEvent(ev);
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0); // Immediate processing. TODO Use curFrame?
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+      putEvent(ev, MidiDevice::NotLate);
     }
   }
 }
       
 //---------------------------------------------------------
 //   handleSeek
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiDevice::handleSeek()
 {
-  // If the device is not in use by a port, don't bother it.
-  if(_port == -1)
-    return;
-  
-  MidiPort* mp = &MusEGlobal::midiPorts[_port];
-  MidiInstrument* instr = mp->instrument();
-  MidiCtrlValListList* cll = mp->controller();
-  unsigned pos = MusEGlobal::audio->tickPos();
-  
-  //---------------------------------------------------
-  //    Send STOP 
-  //---------------------------------------------------
-    
-  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-  if(!MusEGlobal::extSyncFlag.value())
-  {
-    if(mp->syncInfo().MRTOut())
-    {
-      // Shall we check for device write open flag to see if it's ok to send?...
-      //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
-      //if(!(openFlags() & 1))
-      //  continue;
-      mp->sendStop();
-    }    
-  }
-
   //---------------------------------------------------
   //    If playing, clear all notes and flush out any
   //     stuck notes which were put directly to the device
@@ -656,237 +680,16 @@ void MidiDevice::handleSeek()
   
   if(MusEGlobal::audio->isPlaying()) 
   {
-    _playEvents.clear();
+    // TODO: Don't clear, let it play whatever was scheduled ?
+    setStopFlag(true);
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
     {
       MidiPlayEvent ev(*i);
-      ev.setTime(0);
-      putEvent(ev);  // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
+      ev.setTime(0); // Immediate processing. TODO Use curFrame?
+      //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
+      putEvent(ev, MidiDevice::NotLate);
     }
     _stuckNotes.clear();
-  }
-  
-  //---------------------------------------------------
-  //    Send new controller values
-  //---------------------------------------------------
-    
-  // Find channels on this port used in the song...
-  bool usedChans[MIDI_CHANNELS];
-  int usedChanCount = 0;
-  for(int i = 0; i < MIDI_CHANNELS; ++i)
-    usedChans[i] = false;
-  if(MusEGlobal::song->click() && MusEGlobal::clickPort == _port)
-  {
-    usedChans[MusEGlobal::clickChan] = true;
-    ++usedChanCount;
-  }
-  bool drum_found = false;
-  for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
-  {
-    //------------------------------------------------------------
-    //    While we are at it, flush out any track-related playback stuck notes
-    //     (NOT 'live' notes) which were not put directly to the device
-    //------------------------------------------------------------
-    MPEventList& mel = (*imt)->stuckNotes;
-    for(iMPEvent i = mel.begin(), i_next = i; i != mel.end(); i = i_next)
-    {
-      ++i_next;
-
-      if((*i).port() != _port)
-        continue;
-      MidiPlayEvent ev(*i);
-      ev.setTime(0);
-      putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
-      mel.erase(i);
-    }
-    
-    if((*imt)->type() == MusECore::Track::DRUM)
-    {
-      if(!drum_found)
-      {
-        drum_found = true; 
-        for(int i = 0; i < DRUM_MAPSIZE; ++i)
-        {
-          // Default to track port if -1 and track channel if -1.
-          int mport = MusEGlobal::drumMap[i].port;
-          if(mport == -1)
-            mport = (*imt)->outPort();
-          int mchan = MusEGlobal::drumMap[i].channel;
-          if(mchan == -1)
-            mchan = (*imt)->outChannel();
-          if(mport != _port || usedChans[mchan])
-            continue;
-          usedChans[mchan] = true;
-          ++usedChanCount;
-          if(usedChanCount >= MIDI_CHANNELS)
-            break;  // All are used, done searching.
-        }
-      }
-    }
-    else
-    {
-      if((*imt)->outPort() != _port || usedChans[(*imt)->outChannel()])
-        continue;
-      usedChans[(*imt)->outChannel()] = true;
-      ++usedChanCount;
-    }
-
-    if(usedChanCount >= MIDI_CHANNELS)
-      break;    // All are used. Done searching.
-  }   
-  
-  for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
-  {
-    MidiCtrlValList* vl = ivl->second;
-    int chan = ivl->first >> 24;
-    if(!usedChans[chan])  // Channel not used in song?
-      continue;
-    int ctlnum = vl->num();
-
-    // Find the first non-muted value at the given tick...
-    bool values_found = false;
-    bool found_value = false;
-    
-    iMidiCtrlVal imcv = vl->lower_bound(pos);
-    if(imcv != vl->end() && imcv->first == (int)pos)
-    {
-      for( ; imcv != vl->end() && imcv->first == (int)pos; ++imcv)
-      {
-        const Part* p = imcv->second.part;
-        if(!p)
-          continue;
-        // Ignore values that are outside of the part.
-        if(pos < p->tick() || pos >= (p->tick() + p->lenTick()))
-          continue;
-        values_found = true;
-        // Ignore if part or track is muted or off.
-        if(p->mute())
-          continue;
-        const Track* track = p->track();
-        if(track && (track->isMute() || track->off()))
-          continue;
-        found_value = true;
-        break;
-      }
-    }
-    else
-    {
-      while(imcv != vl->begin())
-      {
-        --imcv;
-        const Part* p = imcv->second.part;
-        if(!p)
-          continue;
-        // Ignore values that are outside of the part.
-        unsigned t = imcv->first;
-        if(t < p->tick() || t >= (p->tick() + p->lenTick()))
-          continue;
-        values_found = true;
-        // Ignore if part or track is muted or off.
-        if(p->mute())
-          continue;
-        const Track* track = p->track();
-        if(track && (track->isMute() || track->off()))
-          continue;
-        found_value = true;
-        break;
-      }
-    }
-
-    if(found_value)
-    {
-      int fin_port = _port;
-      MidiPort* fin_mp = mp;
-      int fin_chan = chan;
-      int fin_ctlnum = ctlnum;
-      // Is it a drum controller event, according to the track port's instrument?
-      if(mp->drumController(ctlnum))
-      {
-        if(const Part* p = imcv->second.part)
-        {
-          if(Track* t = p->track())
-          {
-            if(t->type() == MusECore::Track::NEW_DRUM)
-            {
-              MidiTrack* mt = static_cast<MidiTrack*>(t);
-              int v_idx = ctlnum & 0x7f;
-              fin_ctlnum = (ctlnum & ~0xff) | mt->drummap()[v_idx].anote;
-              int map_port = mt->drummap()[v_idx].port;
-              if(map_port != -1)
-              {
-                fin_port = map_port;
-                fin_mp = &MusEGlobal::midiPorts[fin_port];
-              }
-              int map_chan = mt->drummap()[v_idx].channel;
-              if(map_chan != -1)
-                fin_chan = map_chan;
-            }
-          }
-        }
-      }
-
-      // Don't bother sending any sustain values if not playing. Just set the hw state.
-      if(fin_ctlnum == CTRL_SUSTAIN && !MusEGlobal::audio->isPlaying())
-        fin_mp->setHwCtrlState(fin_chan, CTRL_SUSTAIN, imcv->second.val);
-      else
-      {
-        // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
-        // NOTE: Why again was this forced? There was a reason. Think it was RJ in response to bug rep, then I modded.
-        // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
-        //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
-        //fprintf(stderr, "MidiDevice::handleSeek: found_value: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, imcv->second.val);
-        fin_mp->sendEvent(MidiPlayEvent(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val), false); //, imcv->first == pos);
-        //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
-      }
-    }
-
-    // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
-    // Send instrument default initial values.  NOT for syntis. Use midiState and/or initParams for that. 
-    //if((imcv == vl->end() || !done) && !MusEGlobal::song->record() && instr && !isSynti()) 
-    // Hmm, without refinement we can only do this at position 0, due to possible 'skipped' values outside parts, above.
-    if(!values_found && MusEGlobal::config.midiSendCtlDefaults && !MusEGlobal::song->record() && pos == 0 && instr && !isSynti())
-    {
-      MidiControllerList* mcl = instr->controller();
-      ciMidiController imc = mcl->find(vl->num());
-      if(imc != mcl->end())
-      {
-        MidiController* mc = imc->second;
-        if(mc->initVal() != CTRL_VAL_UNKNOWN)
-        {
-          //fprintf(stderr, "MidiDevice::handleSeek: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
-          // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
-          mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
-        }
-      }
-    }
-  }
-  
-  //---------------------------------------------------
-  //    reset sustain
-  //---------------------------------------------------
-  
-  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-  {
-    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-    {
-      const MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-      putEvent(ev);
-    }
-  }
-  
-  //---------------------------------------------------
-  //    Send STOP and "set song position pointer"
-  //---------------------------------------------------
-    
-  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-  if(!MusEGlobal::extSyncFlag.value())
-  {
-    if(mp->syncInfo().MRTOut())
-    {
-      //mp->sendStop();   // Moved above
-      int beat = (pos * 4) / MusEGlobal::config.division;
-      mp->sendSongpos(beat);
-    }    
   }
 }
 

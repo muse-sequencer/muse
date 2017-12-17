@@ -47,23 +47,22 @@ class AlsaTimer : public Timer{
     snd_timer_info_t *info;
     snd_timer_params_t *params;
     struct pollfd *fds;
-    char timername[64];
+    char timername[256];
     signed int count;
-    //unsigned int ticks;
 
     public:
        AlsaTimer();
        virtual ~AlsaTimer();
        
-       virtual signed int initTimer();
-       virtual unsigned int setTimerResolution(unsigned int resolution);
-       virtual unsigned int getTimerResolution();
-       virtual unsigned int setTimerFreq(unsigned int freq);
-       virtual unsigned int getTimerFreq();
+       virtual signed int initTimer(unsigned long desiredFrequency);
+       virtual unsigned long setTimerResolution(unsigned long resolution);
+       virtual unsigned long getTimerResolution();
+       virtual unsigned long setTimerFreq(unsigned long freq);
+       virtual unsigned long getTimerFreq();
 
        virtual bool startTimer();
        virtual bool stopTimer();
-       virtual unsigned int getTimerTicks(bool printTicks=false);
+       virtual unsigned long getTimerTicks(bool printTicks=false);
 };
 
 } // namespace MusECore

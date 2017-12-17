@@ -49,6 +49,13 @@ void *lv2Gtk2Helper_gtk_plug_new(unsigned long winId, void *arg)
    return static_cast<void *>(gtkPlug);
 }
 
+void *lv2Gtk2Helper_gtk_window_new(void *arg)
+{
+   GtkWidget *gtkWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   g_object_set_data(G_OBJECT(gtkWindow), "lv2Gtk2Helper_arg", arg);
+   return static_cast<void *>(gtkWindow);
+}
+
 void lv2Gtk2Helper_gtk_widget_destroy(void *plug)
 {
    gtk_widget_destroy(static_cast<GtkWidget *>(plug));
@@ -88,6 +95,11 @@ unsigned long lv2Gtk2Helper_gdk_x11_drawable_get_xid(void *plug)
    //GdkWindow *w =gtk_widget_get_window(static_cast<GtkWidget *>(widget));
    //return gdk_x11_drawable_get_xid(w);
    return gtk_plug_get_id(static_cast<GtkPlug *>(plug));
+}
+
+unsigned long lv2Gtk2Helper_gtk_window_get_xid(void *window)
+{
+   return GDK_WINDOW_XID(gtk_widget_get_window(static_cast<GtkWidget *>(window)));
 }
 
 void lv2Gtk2Helper_deinit()

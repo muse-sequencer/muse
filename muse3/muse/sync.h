@@ -143,14 +143,85 @@ class MidiSyncInfo
 
 
 //---------------------------------------------------------
+//   ExtMidiClock
+//   Holds the frame of each external clock, 
+//    and play state at that time.
+//---------------------------------------------------------
+
+class ExtMidiClock
+{
+  public:
+    enum ExternState { ExternStopped = 0, ExternStarting, ExternContinuing, ExternStarted, ExternContinued };
+    
+  private:
+    // The frame at which this clock arrived.
+    unsigned int _frame;
+    // The play state of the external device when this clock arrived.
+    ExternState _externState;
+    // Whether this clock is the first clock after a start or continue.
+    bool _isFirstClock;
+    // Whether this is a valid structure.
+    bool _isValid;
+    
+  public:
+    ExtMidiClock() : _frame(0), _externState(ExternStopped), _isFirstClock(false), _isValid(false) { };
+    ExtMidiClock(unsigned int frame, ExternState extState, bool firstClock) : 
+                 _frame(frame), _externState(extState), _isFirstClock(firstClock), _isValid(true) { };
+    
+    // The frame at which this clock arrived.
+    unsigned int frame() const { return _frame; }
+    // The play state of the external device when this clock arrived.
+    ExternState externState() const { return _externState; }
+    // Whether this clock is the first clock after a start or continue.
+    bool isFirstClock() const { return _isFirstClock; }
+    // Whether this is a valid structure.
+    bool isValid() const { return _isValid; }
+    bool isPlaying() const
+    {
+      switch(_externState)
+      {
+        case ExternStopped:
+        case ExternStarting:
+        case ExternContinuing:
+          return false;
+        break;
+        
+        case ExternStarted:
+        case ExternContinued:
+          return true;
+        break;
+      };
+      return false;
+    }
+    bool isRunning() const
+    {
+      switch(_externState)
+      {
+        case ExternStopped:
+          return false;
+        break;
+        
+        case ExternStarting:
+        case ExternContinuing:
+        case ExternStarted:
+        case ExternContinued:
+          return true;
+        break;
+      };
+      return false;
+    }
+};
+
+//---------------------------------------------------------
 //   MidiSyncContainer
 //---------------------------------------------------------
 
 class MidiSyncContainer {
-      int _midiClock;
+  private:
+      int _midiClock; // Accumulator for clock output.
 
 /* Testing */
-      bool playStateExt;       // used for keeping play state in sync functions
+      ExtMidiClock::ExternState playStateExt;   // used for keeping play state in sync functions
       int recTick;            // ext sync tick position
       double mclock1, mclock2;
       double songtick1, songtick2;
@@ -179,9 +250,47 @@ class MidiSyncContainer {
 
       int midiClock() const { return _midiClock; }
       void setMidiClock(int val) { _midiClock = val; }
-      bool externalPlayState() const { return playStateExt; }
-      void setExternalPlayState(bool v) { playStateExt = v; }
+      ExtMidiClock::ExternState externalPlayState() const { return playStateExt; }
+      void setExternalPlayState(ExtMidiClock::ExternState v) { playStateExt = v; }
+      bool isPlaying() const
+      {
+        switch(playStateExt)
+        {
+          case ExtMidiClock::ExternStopped:
+          case ExtMidiClock::ExternStarting:
+          case ExtMidiClock::ExternContinuing:
+            return false;
+          break;
+          
+          case ExtMidiClock::ExternStarted:
+          case ExtMidiClock::ExternContinued:
+            return true;
+          break;
+        };
+        return false;
+      }
+      bool isRunning() const
+      {
+        switch(playStateExt)
+        {
+          case ExtMidiClock::ExternStopped:
+            return false;
+          break;
+          
+          case ExtMidiClock::ExternStarting:
+          case ExtMidiClock::ExternContinuing:
+          case ExtMidiClock::ExternStarted:
+          case ExtMidiClock::ExternContinued:
+            return true;
+          break;
+        };
+        return false;
+      }
       void realtimeSystemInput(int port, int type, double time = 0.0);
+      // Starts transport if necessary. Adds clock to tempo list.
+      // Returns a clock structure including frame, state, and whether the clock was a
+      //  'first clock' after a start or continue message.
+      ExtMidiClock midiClockInput(int port, unsigned int frame); 
       void mtcInputQuarter(int, unsigned char);
       void setSongPosition(int, int);
       void mmcInput(int, const unsigned char*, int);
@@ -203,11 +312,11 @@ extern bool debugSync;
 extern int mtcType;
 extern MusECore::MTC mtcOffset;
 extern MusECore::BValue extSyncFlag;
-extern int volatile curMidiSyncInPort;
 extern MusECore::BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 extern unsigned int volatile lastExtMidiSyncTick;
+extern unsigned int volatile curExtMidiSyncTick;
 extern MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset;
 extern double syncRecTempoValQuant;
 

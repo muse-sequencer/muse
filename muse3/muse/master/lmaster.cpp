@@ -878,13 +878,19 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const MusECore::Ke
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+      c1 = QString("%1.%2.%3")
+          .arg(bar + 1,      4, 10, QLatin1Char('0'))
+          .arg(beat + 1,     2, 10, QLatin1Char('0'))
+          .arg(tick,         3, 10, QLatin1Char('0'));
 
       double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2.sprintf("%03d:%02d:%03d", min, sec, msec);
+      c2 = QString("%1:%2:%3")
+          .arg(min,  3, 10, QLatin1Char('0'))
+          .arg(sec,  2, 10, QLatin1Char('0'))
+          .arg(msec, 3, 10, QLatin1Char('0'));
       c3 = "Key";
       c4 = keyToString(ev.key);
       setText(0, c1);
@@ -907,13 +913,19 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* 
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+      c1 = QString("%1.%2.%3")
+          .arg(bar + 1,      4, 10, QLatin1Char('0'))
+          .arg(beat + 1,     2, 10, QLatin1Char('0'))
+          .arg(tick,         3, 10, QLatin1Char('0'));
 
       double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2.sprintf("%03d:%02d:%03d", min, sec, msec);
+      c2 = QString("%1:%2:%3")
+          .arg(min,  3, 10, QLatin1Char('0'))
+          .arg(sec,  2, 10, QLatin1Char('0'))
+          .arg(msec, 3, 10, QLatin1Char('0'));
       c3 = "Tempo";
       double dt = (1000000.0 * 60.0)/ev->tempo;
       c4.setNum(dt, 'f', 3);
@@ -935,15 +947,21 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+      c1 = QString("%1.%2.%3")
+          .arg(bar + 1,      4, 10, QLatin1Char('0'))
+          .arg(beat + 1,     2, 10, QLatin1Char('0'))
+          .arg(tick,         3, 10, QLatin1Char('0'));
 
       double time = double(MusEGlobal::tempomap.tick2frame(t)) / double (MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2.sprintf("%03d:%02d:%03d", min, sec, msec);
+      c2 = QString("%1:%2:%3")
+          .arg(min,  3, 10, QLatin1Char('0'))
+          .arg(sec,  2, 10, QLatin1Char('0'))
+          .arg(msec, 3, 10, QLatin1Char('0'));
       c3 = "Timesig";
-      c4.sprintf("%d  /  %d", ev->sig.z, ev->sig.n);
+      c4 = QString("%1  /  %2").arg(ev->sig.z).arg(ev->sig.n);
       setText(0, c1);
       setText(1, c2);
       setText(2, c3);

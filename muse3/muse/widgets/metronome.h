@@ -55,7 +55,9 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       void switchSamples();
 
    public:
-      MetronomeConfig(QDialog* parent=0);
+      MetronomeConfig(QWidget* parent=0);
+      
+      void updateValues();
       };
 
 } // namespace MusEGui

@@ -26,8 +26,10 @@
 #include "type_defs.h"
 #include "canvas.h"
 #include "noteinfo.h"
+#include "mpevent.h"
 #include <QEvent>
 #include <QKeyEvent>
+#include <QVector>
 
 #define KH        13
 
@@ -67,10 +69,6 @@ class EventCanvas : public Canvas {
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
-      int playedPitch;
-      int playedVelocity;
-      int playedPitchPort;
-      int playedPitchChannel;
       bool _playEvents;
       MidiEditor* editor;
       unsigned start_tick, end_tick;
@@ -78,6 +76,9 @@ class EventCanvas : public Canvas {
       bool _steprec;
       bool _midiin;
       bool _setCurPartIfOnlyOneEventIsSelected;
+      // Notes that are currently being played in the piano or drum list etc.
+      QVector<MusECore::MidiPlayEvent> _stuckNotes;
+      bool stuckNoteExists(int port, int channel, int pitch) const;
 
       void updateSelection();
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;

@@ -4,6 +4,7 @@
 //
 //  lv2host.cpp
 //  Copyright (C) 2014 by Deryabin Andrew <andrewderyabin@gmail.com>
+//  2017 - Implement LV2_STATE__StateChanged #565 (danvd)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -45,6 +46,7 @@
 //#include <QX11EmbedWidget>
 #include <QCoreApplication>
 #include <QtGui/QWindow>
+#include <QVBoxLayout>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -80,14 +82,22 @@
 #include <sord/sord.h>
 
 
-//uncomment to print audio process info
+// Uncomment to print audio process info.
 //#define LV2_DEBUG_PROCESS
-//#define LV2_DEBUG // REMOVE Tim. yoshimi. TESTING. Remove.
+
+// Uncomment to print general info.
+// (There is also the CMake option LV2_DEBUG for more output.)
+//#define LV2_DEBUG
 
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
 #endif
 
+// Define to use GtkPlug instead of GtkWindow for a Gtk plugin gui container.
+// This works better than GtkWindow for some plugins.
+// For example with GtkWindow, AMSynth fails to embed into the container window
+//  resulting in two separate windows.
+#define LV2_GUI_USE_GTKPLUG ;
 
 namespace MusECore
 {
@@ -119,6 +129,7 @@ namespace MusECore
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
+#define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
 
 static LilvWorld *lilvWorld = 0;
@@ -213,6 +224,7 @@ LV2_Feature lv2Features [] =
    {LV2_LOG__log, NULL},
    {LV2_STATE__makePath, NULL},
    {LV2_STATE__mapPath, NULL},
+   {LV2_F_STATE_CHANGED, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -962,8 +974,7 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
 {
    //send Atom events to gui.
    //Synchronize send rate with gui update rate
-   if(state->uiInst == NULL)
-      return;
+   
 
    size_t fifoItemSize = state->plugControlEvt.getItemSize();
 
@@ -980,6 +991,19 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
             if(!state->midiOutPorts [j].buffer->read(&frames, &subframes, &type, &size, &data))
             {
                break;
+            }
+            if(type == state->synth->_uAtom_Object)
+            {
+               const LV2_Atom_Object_Body *aObjBody = reinterpret_cast<LV2_Atom_Object_Body *>(data);
+               if(aObjBody->otype == state->synth->_uAtom_StateChanged)
+               {
+                  //Just make song status dirty (pending event) - something had changed in the plugin controls
+                  state->songDirtyPending = true;
+               }
+            }
+            if(state->uiInst == NULL)
+            {
+               continue;
             }
             unsigned char atom_data [fifoItemSize];
             LV2_Atom *atom_evt = reinterpret_cast<LV2_Atom *>(atom_data);
@@ -1061,7 +1085,12 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
       }
       else
       {
+#ifdef LV2_GUI_USE_QWIDGET
+         // TODO Check this, maybe wrong widget, maybe need the one contained by it?
+         QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget);
+#else
          QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget)->centralWidget();
+#endif
          if(ewCent != NULL)
          {
             ewCent->resize(width, height);
@@ -1175,7 +1204,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       state->hasExternalGui = false;
    }
 
+#ifdef LV2_GUI_USE_QWIDGET
+   win = new LV2PluginWrapper_Window(state, Q_NULLPTR, Qt::Window);
+#else
    win = new LV2PluginWrapper_Window(state);
+#endif
+   
    state->uiX11Size.setWidth(0);
    state->uiX11Size.setHeight(0);
 
@@ -1196,14 +1230,24 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          bEmbed = true;         
          //ewWin = new QWidget();
          //x11QtWindow = QWindow::fromWinId(ewWin->winId());
-         //ewWin = win->createWindowContainer(x11QtWindow, win);
          x11QtWindow = new QWindow();
          ewWin = QWidget::createWindowContainer(x11QtWindow, win);
-         win->setCentralWidget(ewWin);
+         state->pluginQWindow = x11QtWindow;
          //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
          //(static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
+         
+#ifdef LV2_GUI_USE_QWIDGET
+         QVBoxLayout* layout = new QVBoxLayout();
+         layout->setMargin(0);
+         layout->setSpacing(0);
+         layout->addWidget(ewWin);
+         win->setLayout(layout);
+         
+#else
+         win->setCentralWidget(ewWin);
+#endif
+         
          state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
-
       }
       else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
@@ -1215,10 +1259,15 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          bEmbed = true;
          bGtk = true;
          //ewWin = new QWidget();
-
          //ewWin = new QX11EmbedContainer(win);
          //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+         
+#ifdef LV2_GUI_USE_GTKPLUG
          state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_plug_new(0, state);
+#else
+         state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_window_new(state);
+#endif
+         
          //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
          MusEGui::lv2Gtk2Helper_register_allocate_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
          MusEGui::lv2Gtk2Helper_register_resize_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
@@ -1316,7 +1365,15 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          {            
             if(!bEmbed)
             {
-               win->setCentralWidget(static_cast<QWidget *>(uiW));
+#ifdef LV2_GUI_USE_QWIDGET
+              QVBoxLayout* layout = new QVBoxLayout();
+              layout->setMargin(0);
+              layout->setSpacing(0);
+              layout->addWidget(static_cast<QWidget *>(uiW));
+              win->setLayout(layout);
+#else
+              win->setCentralWidget(static_cast<QWidget *>(uiW));
+#endif
             }
             else
             {               
@@ -1326,12 +1383,26 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 #ifdef HAVE_GTK2
                   MusEGui::lv2Gtk2Helper_gtk_container_add(state->gtk2Plug, uiW);
                   MusEGui::lv2Gtk2Helper_gtk_widget_show_all(state->gtk2Plug);
+                  
+#ifdef LV2_GUI_USE_GTKPLUG
                   unsigned long plugX11Id = MusEGui::lv2Gtk2Helper_gdk_x11_drawable_get_xid(state->gtk2Plug);
+#else
+                  unsigned long plugX11Id = MusEGui::lv2Gtk2Helper_gtk_window_get_xid(state->gtk2Plug);
+#endif                  
                   
                   x11QtWindow = QWindow::fromWinId(plugX11Id);
-                  ewWin = QWidget::createWindowContainer(x11QtWindow);
-                  //ewWin->setParent(win);
+                  ewWin = QWidget::createWindowContainer(x11QtWindow, win);
+                  state->pluginQWindow = x11QtWindow;
+
+#ifdef LV2_GUI_USE_QWIDGET
+                  QVBoxLayout* layout = new QVBoxLayout();
+                  layout->setMargin(0);
+                  layout->setSpacing(0);
+                  layout->addWidget(ewWin);
+                  win->setLayout(layout);
+#else
                   win->setCentralWidget(ewWin);
+#endif                  
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
@@ -1795,7 +1866,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
    {
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2state_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
-#endif
+#endif     
       state->uiControlEvt.put(port_index, buffer_size, buffer);
       return;
    }
@@ -2147,6 +2218,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uAtom_EventTransfer   = mapUrid(LV2_ATOM__eventTransfer);
    _uAtom_Chunk           = mapUrid(LV2_ATOM__Chunk);
    _uAtom_Sequence        = mapUrid(LV2_ATOM__Sequence);
+   _uAtom_StateChanged    = mapUrid(LV2_F_STATE_CHANGED);
+   _uAtom_Object          = mapUrid(LV2_ATOM__Object);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
    _fSampleRate = (float)MusEGlobal::sampleRate;
@@ -2248,7 +2321,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if((std::string(LV2_STATE__mapPath) == _features [i].URI))
       {
          _fMapPath = i;
-      }
+      }      
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {
          _fDataAccess = i; //must be the last!
@@ -2865,8 +2938,21 @@ bool LV2SynthIF::init(LV2Synth *s)
 
 }
 
-void LV2SynthIF::doSelectProgram(unsigned char channel, int bank, int prog)
+void LV2SynthIF::doSelectProgram(unsigned char channel, int bankH, int bankL, int prog)
 {
+//    // Only if there's something to change...
+//    if(bankH >= 128 && bankL >= 128 && prog >= 128)
+//      return;
+  
+   if(bankH > 127) // Map "dont care" to 0
+     bankH = 0;
+   if(bankL > 127)
+     bankL = 0;
+   if(prog > 127)
+     prog = 0;
+    
+   const int bank = (bankH << 8) | bankL;
+  
    if(_state && _state->prgIface && (_state->prgIface->select_program || _state->prgIface->select_program_for_channel))
    {
       if(_state->newPrgIface)
@@ -3356,30 +3442,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_PROGRAM\n");
 #endif
 
-      int cur_hb, cur_lb;
-      synti->currentProg(chn, NULL, &cur_lb, &cur_hb);
-      synti->setCurrentProg(chn, a & 0xff, cur_lb, cur_hb);
-      
-      const int patch = ((cur_hb & 0xff) << 16) | ((cur_lb & 0xff) << 8) | (a & 0xff);
-      
-      // Only if there's something to change...
-      //if(cur_hb < 128 || cur_lb < 128 || a < 128)
-      {
-        if(cur_hb > 127) // Map "dont care" to 0
-          cur_hb = 0;
-        if(cur_lb > 127)
-          cur_lb = 0;
-        if(a > 127)
-          a = 0;
-        doSelectProgram(chn, (cur_hb << 8) + cur_lb, a); 
-      }
-
-      //update hardware program state
-      if(synti->midiPort() != -1)
-      {
-         MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-         mp->setHwCtrlState(chn, CTRL_PROGRAM, patch);
-      }
+      int hb, lb;
+      synti->currentProg(chn, NULL, &lb, &hb);
+      synti->setCurrentProg(chn, a & 0xff, lb, hb);
+      doSelectProgram(chn, hb, lb, a); 
 
       // Event pointer not filled. Return false.
       return false;
@@ -3392,11 +3458,11 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER\n");
 #endif
 
-      if((a == 0) || (a == 32))
-      {
-         return false;
-      }
-
+      // Our internal hwCtrl controllers support the 'unknown' value.
+      // Don't send 'unknown' values to the driver. Ignore and return no error.
+      if(b == CTRL_VAL_UNKNOWN)
+        return false;
+            
       if(a == CTRL_PROGRAM)
       {
 #ifdef LV2_DEBUG
@@ -3407,31 +3473,32 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
         int lb = (b >> 8) & 0xff;
         int pr = b & 0xff;
         synti->setCurrentProg(chn, pr, lb, hb);
-        const int patch = (hb << 16) | (lb << 8) | pr;
-        
-        // Only if there's something to change...
-        //if(hb < 128 || lb < 128 || pr < 128)
-        {
-          if(hb > 127) // Map "dont care" to 0
-            hb = 0;
-          if(lb > 127)
-            lb = 0;
-          if(pr > 127)
-            pr = 0;
-          doSelectProgram(chn, (hb << 8) + lb, pr);
-        }
-         
-         //update hardware program state
-         if(synti->midiPort() != -1)
-         {
-            MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-            mp->setHwCtrlState(chn, a, patch);
-         }
+        doSelectProgram(chn, hb, lb, pr);
 
          // Event pointer not filled. Return false.
          return false;
       }
 
+      if(a == CTRL_HBANK)
+      {
+        int lb, pr;
+        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->setCurrentProg(chn, pr, lb, b & 0xff);
+        doSelectProgram(chn, b, lb, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
+      if(a == CTRL_LBANK)
+      {
+        int hb, pr;
+        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->setCurrentProg(chn, pr, b & 0xff, hb);
+        doSelectProgram(chn, hb, b, pr);
+        // Event pointer not filled. Return false.
+        return false;
+      }
+      
       if(a == CTRL_PITCH)
       {
 #ifdef LV2_DEBUG
@@ -3570,14 +3637,9 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 }
 
 
-iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event, unsigned int pos, int ports, unsigned int nframes, float **buffer)
+bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int nframes, float **buffer)
 {
-   // We may not be using ev_buf_sz all at once - this will be just the maximum.
-   //unsigned long prop_buf_sz = el->size() + synti->eventFifo.getSize();
-   //const unsigned long ev_buf_sz = (prop_buf_sz == 0) ? 1024 : prop_buf_sz;
-
-   const unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
-   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+   const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
    // All ports must be connected to something!
    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
    const bool usefixedrate = (requiredFeatures() & Plugin::FixedBlockSize);;
@@ -3776,7 +3838,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
       while(!_controlFifo.isEmpty())
       {
          unsigned long evframe;
-         ControlEvent v = _controlFifo.peek();
+         const ControlEvent& v = _controlFifo.peek();
          // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
          // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
          evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
@@ -3806,7 +3868,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             break;
          }
 
-         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+//          _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
          found = true;
          frame = evframe;
@@ -3814,12 +3876,16 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
          if(index >= _inportsControl) // Sanity check.
          {
+            _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
             break;
          }
 
          //don't process freewheel port
          if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == index)
+         {
+            _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
             continue;
+         }
 
          if(ports == 0)                     // Don't bother if not 'running'.
          {
@@ -3844,6 +3910,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             _state->lastControls [index] = v.value;
             _state->controlsMask [index] = false;
          }
+         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
       }
 
       if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
@@ -3863,141 +3930,90 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
       {
          LV2Synth::lv2audio_preProcessMidiPorts(_state, nsamp);
 
-         if(ports != 0)  // Don't bother if not 'running'.
-         {
-            // Process event list events...
-            for(; start_event != el->end(); ++start_event)
+        // Get the state of the stop flag.
+        const bool do_stop = synti->stopFlag();
+
+        MidiPlayEvent buf_ev;
+        
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        // False = don't use the size snapshot, but update it.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.insert(buf_ev);
+        }
+        
+        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
+        for(unsigned int i = 0; i < pb_buf_sz; ++i)
+        {
+          // Are we stopping? Just remove the item.
+          if(do_stop)
+            synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
+          // Otherwise get the item.
+          else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+            synti->_outPlaybackEvents.insert(buf_ev);
+        }
+    
+        // Are we stopping?
+        if(do_stop)
+        {
+          // Transport has stopped, purge ALL further scheduled playback events now.
+          synti->_outPlaybackEvents.clear();
+          // Reset the flag.
+          synti->setStopFlag(false);
+        }
+        
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+    
+        while(1)
+        {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+          
+          const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+          #ifdef LV2_DEBUG
+          fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
+          #endif
+
+          if(e.time() >= (sample + nsamp + syncFrame))
+            break;
+
+          if(ports != 0)  // Don't bother if not 'running'.
+          {
+            // Time-stamp the event.
+            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+            ft = (ft < sample) ? 0 : ft - sample;
+
+            if(ft >= nsamp)
             {
-#ifdef LV2_DEBUG
-               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%lu\n", start_event->time(), pos, sample, nsamp, frameOffset);
-#endif
-
-               if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
-               {
-#ifdef LV2_DEBUG
-                  fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
-#endif
-                  break;
-               }
-
-               // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-               // Same code as in MidiPort::sendEvent()
-               if(synti->midiPort() != -1)
-               {
-                  MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
-
-                  if(start_event->type() == ME_CONTROLLER)
-                  {
-                     int da = start_event->dataA();
-                     int db = start_event->dataB();
-                     if(da != CTRL_PROGRAM) //for programs setHwCtrlState is called from processEvent
-                     {
-                        db = mp->limitValToInstrCtlRange(da, db);
-
-                        if(!mp->setHwCtrlState(start_event->channel(), da, db))
-                        {
-                           continue;
-                        }
-                     }
-                  }
-                  else if(start_event->type() == ME_PITCHBEND)
-                  {
-                     int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-                     {
-                        continue;
-                     }
-                  }
-                  else if(start_event->type() == ME_AFTERTOUCH)
-                  {
-                     int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-                     {
-                        continue;
-                     }
-                  }
-                  else if(start_event->type() == ME_POLYAFTER)
-                  {
-                     int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-                     int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-
-                     if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-                     {
-                        continue;
-                     }
-                  }
-//                  else if(start_event->type() == ME_PROGRAM)
-//                  {
-//                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
-//                     {
-//                        continue;
-//                     }
-//                  }
-               }
-
-               // Returns false if the event was not filled. It was handled, but some other way.
-               // Time-stamp the event.
-               long ft = start_event->time() - frameOffset - pos - sample;
-               
-               if(ft < 0)
-               {
-                  //fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
-                  //        start_event->time(), pos, frameOffset, ft, sample, nsamp);  // REMOVE Tim. yoshimi. Added.
-                 ft = 0;
-               }
-               if(ft >= (long)nsamp)
-               {
-                  fprintf(stderr, "LV2SynthIF::getData: eventList event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-                  ft = nsamp - 1;
-               }
-               
-               if(processEvent(*start_event, evBuf, ft))
-               {
-
-               }
+              fprintf(stderr, "LV2SynthIF::getData: eventFifos event time:%d out of range. pos:%d syncFrame:%u ft:%u sample:%lu nsamp:%lu\n", 
+                      e.time(), pos, syncFrame, ft, sample, nsamp);
+              ft = nsamp - 1;
             }
-         }
-
-         // Now process putEvent events...
-         while(!synti->eventFifo.isEmpty())
-         {
-            MidiPlayEvent e = synti->eventFifo.peek();
-
-#ifdef LV2_DEBUG
-            fprintf(stderr, "LV2SynthIF::getData eventFifo event time:%d\n", e.time());
-#endif
-
-            if(e.time() >= (pos + sample + nsamp + frameOffset))
+            if(processEvent(e, evBuf, ft))
             {
-               break;
+              
             }
+          }
 
-            synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
-
-            if(ports != 0)  // Don't bother if not 'running'.
-            {
-
-               // Returns false if the event was not filled. It was handled, but some other way.
-               // Time-stamp the event.
-               long ft = e.time() - frameOffset - pos  - sample;
-
-               if(ft < 0)
-               {
-                 //fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u less than zero! pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", 
-                 //        e.time(), pos, frameOffset, ft, sample, nsamp); // REMOVE Tim. yoshimi. Added.
-                 ft = 0;
-               }
-               if(ft >= (long)nsamp)
-               {
-                 fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%lu ft:%ld sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-                 ft = nsamp - 1;
-               }
-               
-               processEvent(e, evBuf, ft);
-            }
-         }
+          // Done with ring buffer's event. Remove it.
+          // C++11.
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
+        }
+         
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
@@ -4070,43 +4086,23 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
       ++cur_slice; // Slice is done. Moving on to any next slice now...
    }
 
-
-
-
-   return start_event;
-}
-
-
-void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
-{
-   if(!_gui)
-   {
-     *x=0;*y=0;*w=0;*h=0;
-     return;
-   }
-
-   *x = _gui->x();
-   *y = _gui->y();
-   *w = _gui->width();
-   *h = _gui->height();
-
-   return;
+   return true;
 }
 
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
-   *x = *y = *w = *h = 0;
    if(_state->pluginWindow != NULL && !_state->hasExternalGui)
    {
-      QSize sz = _state->pluginWindow->size();
-      *w = sz.width();
-      *h = sz.height();
-      QPoint pos = _state->pluginWindow->pos();
-      *x = pos.x();
-      *y = pos.y();
+      QRect g = _state->pluginWindow->geometry();
+      if(x) *x = g.x();
+      if(y) *y = g.y();
+      if(w) *w = g.width();
+      if(h) *h = g.height();
+      return;
    }
 
-   return;
+   // Fall back to blank geometry.
+   SynthIF::getNativeGeometry(x, y, w, h);
 }
 
 double LV2SynthIF::getParameter(long unsigned int n) const
@@ -4170,15 +4166,13 @@ QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
 
 void LV2SynthIF::guiHeartBeat()
 {
+   //check for pending song dirty status
+   if(_state->songDirtyPending){      
+      MusEGlobal::song->setDirty();
+      _state->songDirtyPending = false;
+   }
 
 }
-
-
-bool LV2SynthIF::guiVisible() const
-{
-   return _gui && _gui->isVisible();
-}
-
 
 bool LV2SynthIF::hasGui() const
 {
@@ -4188,12 +4182,6 @@ bool LV2SynthIF::hasGui() const
 bool LV2SynthIF::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
-}
-
-bool LV2SynthIF::initGui()
-{
-   //TODO: implement this
-   return true;
 }
 
 bool LV2SynthIF::nativeGuiVisible() const
@@ -4268,64 +4256,82 @@ void LV2SynthIF::preProcessAlways()
 
 }
 
-bool LV2SynthIF::putEvent(const MidiPlayEvent &ev)
-{
-#ifdef DEBUG_LV2
-   fprintf(stderr, "LV2SynthIF::putEvent midi event time:%u chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
-#endif
-
-   if(MusEGlobal::midiOutputTrace)
-   {
-      ev.dump();
-   }
-
-   return synti->eventFifo.put(ev);
-}
-
 MidiPlayEvent LV2SynthIF::receiveEvent()
 {
    return MidiPlayEvent();
 
 }
 
-void LV2SynthIF::setGeometry(int x, int y, int w, int h)
+void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 {
-   if(!_gui)
-     return;
-
-   _gui->setGeometry(x, y, w, h);
-
-}
-
-void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
-{
+   // Store the native geometry.
+   SynthIF::setNativeGeometry(x, y, w, h);
+  
    if(_state->pluginWindow && !_state->hasExternalGui)
    {
-      _state->pluginWindow->move(x, y);
+      //_state->pluginWindow->move(x, y);
       //don't resize lv2 uis - this is handles at plugin level
       //_uiState->pluginWindow->resize(w, h);
-   }
+      
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+      // Because of the bug, no matter what we must supply a position,
+      //  even upon first showing...
+      
+      // Check sane size.
+      if(w == 0)
+        w = _state->pluginWindow->sizeHint().width();
+      if(h == 0)
+        h = _state->pluginWindow->sizeHint().height();
 
+      // No size hint? Try minimum size.
+      if(w == 0)
+        w = _state->pluginWindow->minimumSize().width();
+      if(h == 0)
+        h = _state->pluginWindow->minimumSize().height();
+
+      // Fallback.
+      if(w == 0)
+        w = 400;
+      if(h == 0)
+        h = 300;
+      
+      _state->pluginWindow->setGeometry(x, y, w, h);
+      
+#else    
+      
+      // If the saved geometry is valid, use it.
+      // Otherwise this is probably the first time showing,
+      //  so do not set a geometry - let Qt pick one 
+      //  (using auto-placement and sizeHint).
+      if(!(x == 0 && y == 0 && w == 0 && h == 0))
+      {
+        // Check sane size.
+        if(w == 0)
+          w = _state->pluginWindow->sizeHint().width();
+        if(h == 0)
+          h = _state->pluginWindow->sizeHint().height();
+        
+        // No size hint? Try minimum size.
+        if(w == 0)
+          w = _state->pluginWindow->minimumSize().width();
+        if(h == 0)
+          h = _state->pluginWindow->minimumSize().height();
+
+        // Fallback.
+        if(w == 0)
+          w = 400;
+        if(h == 0)
+          h = 300;
+        
+        _state->pluginWindow->setGeometry(x, y, w, h);
+      }
+#endif
+   }
 }
 
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
    addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
-}
-
-void LV2SynthIF::showGui(bool v)
-{
-   if (v)
-   {
-      if (_gui == 0)
-         makeGui();
-      _gui->show();
-   }
-   else
-   {
-      if (_gui)
-         _gui->hide();
-   }
 }
 
 void LV2SynthIF::showNativeGui(bool bShow)
@@ -4509,6 +4515,87 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
    return MusECore::SynthIF::readConfiguration(xml, readPreset);
 }
 
+void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
+{
+  if(_state->plugInst != NULL)
+    _state->plugInst->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  else if(_state->sif != NULL)
+    _state->sif->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
+  
+  e->ignore();
+  QMainWindow::hideEvent(e);
+}
+      
+void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
+{
+  int x = 0, y = 0, w = 0, h = 0;
+  if(_state->plugInst != NULL)
+    _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
+  else if(_state->sif != NULL)
+    _state->sif->savedNativeGeometry(&x, &y, &w, &h);
+  
+#ifdef QT_SHOW_POS_BUG_WORKAROUND
+  // Because of the bug, no matter what we must supply a position,
+  //  even upon first showing...
+  
+  // Check sane size.
+  if(w == 0)
+    w = sizeHint().width();
+  if(h == 0)
+    h = sizeHint().height();
+  
+  // No size hint? Try minimum size.
+  if(w == 0)
+    w = minimumSize().width();
+  if(h == 0)
+    h = minimumSize().height();
+
+  // Fallback.
+  if(w == 0)
+    w = 400;
+  if(h == 0)
+    h = 300;
+  
+  setGeometry(x, y, w, h);
+  
+#else    
+  
+  // If the saved geometry is valid, use it.
+  // Otherwise this is probably the first time showing,
+  //  so do not set a geometry - let Qt pick one 
+  //  (using auto-placement and sizeHint).
+  if(!(x == 0 && y == 0 && w == 0 && h == 0))
+  {
+    // Check sane size.
+    if(w == 0)
+      w = sizeHint().width();
+    if(h == 0)
+      h = sizeHint().height();
+    
+    // No size hint? Try minimum size.
+    if(w == 0)
+      w = minimumSize().width();
+    if(h == 0)
+      h = minimumSize().height();
+    
+    // Fallback.
+    if(w == 0)
+      w = 400;
+    if(h == 0)
+      h = 300;
+    
+    setGeometry(x, y, w, h);
+  }
+#endif
+    
+  // Convenience: If the window was minimized, restore it.
+  if(isMinimized())
+    setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  
+  e->ignore();
+  QMainWindow::showEvent(e);
+}
+
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
    assert(_state != NULL);
@@ -4518,12 +4605,11 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
    if(_state->gtk2Plug != NULL)
    {
-      QWidget *cW = centralWidget();
-      setCentralWidget(NULL);
-      if(cW != NULL)
+      if(_state->pluginQWindow != NULL)
       {
-         cW->setParent(NULL);
-         delete cW;
+        _state->pluginQWindow->setParent(NULL);
+        delete _state->pluginQWindow;
+        _state->pluginQWindow = NULL;
       }
    }
 
@@ -4543,9 +4629,8 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
 
-
-   delete this;
-
+   // The widget is automatically deleted by use of the 
+   //  WA_DeleteOnClose attribute in the constructor.
 }
 
 void LV2PluginWrapper_Window::stopUpdateTimer()
@@ -4559,9 +4644,20 @@ void LV2PluginWrapper_Window::stopUpdateTimer()
 }
 
 
-LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
- : QMainWindow(), _state ( state ), _closing(false)
+#ifdef LV2_GUI_USE_QWIDGET
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state, 
+                                                 QWidget *parent, 
+                                                 Qt::WindowFlags flags)
+ : QWidget(parent, flags), _state ( state ), _closing(false)
+#else
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state, 
+                                                 QWidget *parent, 
+                                                 Qt::WindowFlags flags)
+ : QMainWindow(parent, flags), _state ( state ), _closing(false)
+#endif
 {
+   // Automatically delete the wiget when it closes.
+   setAttribute(Qt::WA_DeleteOnClose, true);
    connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
    connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
    connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
@@ -4956,7 +5052,7 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
    return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
-bool LV2PluginWrapper::hasNativeGui()
+bool LV2PluginWrapper::hasNativeGui() const
 {
    return (_synth->_pluginUiTypes.size() > 0);
 }
@@ -4979,7 +5075,7 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
   LV2Synth::lv2ui_ShowNativeGui(state, bShow);
 }
 
-bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
+bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
 {
    assert(p->instances > 0);
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
@@ -5088,7 +5184,23 @@ void LV2PluginWrapper_Worker::makeWork()
 LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk)
    :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 {
-   _buffer.resize(LV2_EVBUF_SIZE);
+   if(_isInput)
+   {
+     // Resize and fill with initial value.
+     _buffer.resize(LV2_EVBUF_SIZE, 0);
+   }
+   else
+   {
+     // Reserve the space.
+     _buffer.reserve(LV2_EVBUF_SIZE);
+     // Add one item, the first item.
+     _buffer.assign(sizeof(LV2_Atom_Sequence), 0);
+   }
+   
+#ifdef LV2_DEBUG
+   std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
+#endif
+
    resetBuffer();
 }
 

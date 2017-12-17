@@ -650,7 +650,9 @@ void DList::draw(QPainter& p, const QRect& rect)
                               if(dcanvas)
                                 isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::PortField);
                               if(dm->port != -1)
-                                s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
+                                s = QString("%1:%2")
+                                    .arg(dm->port + 1)
+                                    .arg(MusEGlobal::midiPorts[dm->port].portname());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }
@@ -726,7 +728,9 @@ void DList::draw(QPainter& p, const QRect& rect)
 
 bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       {
-      QMenu* p = MusECore::midiPortsPopup(0, t->port, true);  // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
+      // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
+      QMenu* p = MusEGui::midiPortsPopup(0, t->port, true);
+      
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if(!act)
       {

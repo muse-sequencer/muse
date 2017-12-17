@@ -756,6 +756,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(MusEGlobal::config.routerGroupingChannels > 2)
                                 MusEGlobal::config.routerGroupingChannels = 2;
                         }
+                        else if (tag == "fixFrozenMDISubWindows")
+                              MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1127,6 +1129,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")
                               MusEGlobal::config.rtcTicks = xml.parseInt();
+                        else if (tag == "curMidiSyncInPort")
+                              MusEGlobal::config.curMidiSyncInPort = xml.parseInt();
                         else if (tag == "midiSendInit")
                               MusEGlobal::config.midiSendInit = xml.parseInt();
                         else if (tag == "warnInitPending")
@@ -1323,7 +1327,7 @@ bool readConfiguration(const char *configFile)
                               }
                         break;
                   case Xml::TagEnd:
-                        if(xml.majorVersion() != xml.latestMajorVersion() || xml.minorVersion() != xml.latestMinorVersion())
+                        if(!xml.isVersionEqualToLatest())
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
                                   "Conversions may be applied!\n\n",
@@ -1503,23 +1507,17 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
 static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
-            char buffer[32];
-            sprintf(buffer, "palette%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.palette[i]);
+            xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
             }
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "partColor%d", i);
-            xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
+            xml.colorTag(level, QString("partColor") + QString::number(i), MusEGlobal::config.partColors[i]);
             }
 
       if(partColorNames)
       {
         for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-              char buffer[32];
-              sprintf(buffer, "partColorName%d", i);
-              xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
+              xml.strTag(level, QString("partColorName") + QString::number(i), MusEGlobal::config.partColorNames[i]);
               }
       }
       
@@ -1642,7 +1640,8 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     return false;
   }
   // Notify app, and write into configuration file.
-  changeConfig(true); 
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+  changeConfig(true);
   return true;
 }
 
@@ -1703,6 +1702,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
+      xml.intTag(level, "curMidiSyncInPort", MusEGlobal::config.curMidiSyncInPort);
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
       xml.intTag(level, "warnInitPending", MusEGlobal::config.warnInitPending);
       xml.intTag(level, "midiSendCtlDefaults", MusEGlobal::config.midiSendCtlDefaults);
@@ -1759,6 +1759,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
+      xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
@@ -1799,9 +1800,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "mixdownPath", MusEGlobal::config.mixdownPath);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
-            char buffer[32];
-            sprintf(buffer, "font%d", i);
-            xml.strTag(level, buffer, MusEGlobal::config.fonts[i].toString());
+            xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
             
       xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);
@@ -2074,6 +2073,7 @@ void MidiFileConfig::okClicked()
       if(exportInstrumentNames->isChecked())
         MusEGlobal::config.exportModeInstr |= MusEGlobal::INSTRUMENT_NAME_META;
       
+      // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();
       }

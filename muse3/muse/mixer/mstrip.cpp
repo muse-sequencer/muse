@@ -936,9 +936,8 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
         // 0xffffff cannot be a valid patch number... yet...
         if(rv == MusECore::CTRL_PROGRAM_VAL_DONT_CARE)
           rv = 0xffff00;
-        MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+        MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
         mp->putEvent(ev);
-        //updateTrackInfo(-1);
     }
   }
   else if(instr->isSynti() && act->data().canConvert<void *>())
@@ -956,7 +955,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
           if(mp)
           {
               if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
-                mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
+                mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, channel,
                                                            MusECore::ME_CONTROLLER,
                                                            MusECore::CTRL_PROGRAM,
                                                            MusECore::CTRL_VAL_UNKNOWN));
@@ -996,25 +995,17 @@ void MidiComponentRack::controllerChanged(int v, int id)
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-    MusECore::MidiCtrlValList* mcvl = imcvl->second;
+    int ival = val;
+    //if(off || ival < mc->minVal() || ival > mc->maxVal())
+    if(ival < mc->minVal() || ival > mc->maxVal())
+      ival = MusECore::CTRL_VAL_UNKNOWN;
+    
+    if(ival != MusECore::CTRL_VAL_UNKNOWN)
+      // Auto bias...
+      ival += mc->bias();
 
-  //   if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-    if(val == MusECore::CTRL_VAL_UNKNOWN || (val < mc->minVal()) || (val > mc->maxVal()))
-    {
-      if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      {
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-                                                  MusECore::ME_CONTROLLER,
-                                                  id,
-                                                  MusECore::CTRL_VAL_UNKNOWN));
-      }
-    }
-    else
-    {
-      val += mc->bias();
-      MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, val);
-      mp->putEvent(ev);
-    }
+    MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+    mp->putEvent(ev);
   }
 
   emit componentChanged(controllerComponent, v, false, id, 0);
@@ -1030,8 +1021,6 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
 {
   DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%.20f scrollMode:%d\n", id, val, scrollMode);
 
-//   if (inHeartBeat)
-//         return;
   int port     = _track->outPort();
   int channel  = _track->outChannel();
   if(channel < 0 || channel >= MIDI_CHANNELS || port < 0 || port >= MIDI_PORTS)
@@ -1039,7 +1028,6 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
     emit componentChanged(controllerComponent, val, off, id, scrollMode);
     return;
   }
-  int ival = lrint(val);
 
   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
   
@@ -1054,24 +1042,16 @@ void MidiComponentRack::controllerChanged(double val, bool off, int id, int scro
   MusECore::MidiController* mc = mp->midiController(id, false);
   if(mc)
   {
-    MusECore::MidiCtrlValList* mcvl = imcvl->second;
-
-    if(off || (ival < mc->minVal()) || (ival > mc->maxVal()))
-    {
-      if(mcvl->hwVal() != MusECore::CTRL_VAL_UNKNOWN)
-      {
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, channel,
-                                                  MusECore::ME_CONTROLLER,
-                                                  id,
-                                                  MusECore::CTRL_VAL_UNKNOWN));
-      }
-    }
-    else
-    {
+    int ival = lrint(val);
+    if(off || ival < mc->minVal() || ival > mc->maxVal())
+      ival = MusECore::CTRL_VAL_UNKNOWN;
+    
+    if(ival != MusECore::CTRL_VAL_UNKNOWN)
+      // Auto bias...
       ival += mc->bias();
-      MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), port, channel, MusECore::ME_CONTROLLER, id, ival);
-      mp->putEvent(ev);
-    }
+
+    MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), port, channel, MusECore::ME_CONTROLLER, id, ival);
+    mp->putEvent(ev);
   }
 
   emit componentChanged(controllerComponent, val, off, id, scrollMode);
@@ -1340,6 +1320,35 @@ void MidiComponentRack::setComponentColors()
   }
 }
 
+QWidget* MidiComponentRack::setupComponentTabbing(QWidget* previousWidget)
+{
+  QWidget* prev = previousWidget;
+  for(ciComponentWidget ic = _components.begin(); ic != _components.end(); ++ic)
+  {
+    const ComponentWidget& cw = *ic;
+    if(cw._widget)
+    {
+      switch(cw._widgetType)
+      {
+        case mStripCompactPatchEditComponentWidget:
+        {
+          CompactPatchEdit* w = static_cast<CompactPatchEdit*>(cw._widget);
+          prev = w->setupComponentTabbing(prev);
+        }
+        break;
+        
+        default:
+          if(prev)
+            QWidget::setTabOrder(prev, cw._widget);
+          prev = cw._widget;
+        break;
+      }  
+    }
+  }
+  return prev;
+}
+
+
 //---------------------------------------------------------
 //   MidiStrip
 //---------------------------------------------------------
@@ -1353,6 +1362,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       _preferMidiVolumeDb = MusEGlobal::config.preferMidiVolumeDb;
+
+      slider        = 0;
+      sl            = 0;
+      off           = 0;
+      _recMonitor   = 0;
 
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
@@ -1399,6 +1413,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperStackTabButtonB->setContentsMargins(0, 0, 0, 0);
       _upperStackTabButtonA->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       _upperStackTabButtonB->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+      _upperStackTabButtonA->setFocusPolicy(Qt::StrongFocus);
+      _upperStackTabButtonB->setFocusPolicy(Qt::StrongFocus);
       _upperStackTabButtonA->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
       _upperStackTabButtonA->setToolTip(tr("Palette A"));
@@ -1666,16 +1682,19 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
    
       updateRouteButtons();
-      
-      _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
-      _recMonitor->setFocusPolicy(Qt::NoFocus);
-      _recMonitor->setContentsMargins(0, 0, 0, 0);
-      _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _recMonitor->setCheckable(true);
-      _recMonitor->setToolTip(tr("Input monitor"));
-      _recMonitor->setWhatsThis(tr("Pass input through to output"));
-      _recMonitor->setChecked(t->recMonitor());
-      connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+
+      if(track && track->canRecordMonitor())
+      {
+        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
+        _recMonitor->setFocusPolicy(Qt::NoFocus);
+        _recMonitor->setContentsMargins(0, 0, 0, 0);
+        _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        _recMonitor->setCheckable(true);
+        _recMonitor->setToolTip(tr("Input monitor"));
+        _recMonitor->setWhatsThis(tr("Pass input through to output"));
+        _recMonitor->setChecked(t->recMonitor());
+        connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+      }
 
       if(off && record && _recMonitor)
       {
@@ -1738,8 +1757,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       // Now build the strip components.
       buildStrip();
+      
       // Now set up all tabbing on the strip.
-      setupComponentTabbing();
+      // Don't bother if the strip is part of the mixer (not embedded), 
+      //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+      if(isEmbedded)
+        setupComponentTabbing();
 
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
@@ -1920,11 +1943,24 @@ void MidiStrip::buildStrip()
 QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 {
   QWidget* prev = previousWidget;
+  if(_upperStackTabButtonA)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _upperStackTabButtonA);
+    prev = _upperStackTabButtonA;
+  }
+  if(_upperStackTabButtonB)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, _upperStackTabButtonB);
+    prev = _upperStackTabButtonB;
+  }
   prev = _upperRack->setupComponentTabbing(prev);
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
   {
-    QWidget::setTabOrder(prev, sl);
+    if(prev)
+      QWidget::setTabOrder(prev, sl);
     prev = sl;
   }
   prev = _lowerRack->setupComponentTabbing(prev);
@@ -2126,7 +2162,10 @@ void MidiStrip::configChanged()
     // Rebuild the strip components.
     buildStrip();
     // Now set up all tabbing on the strip.
-    setupComponentTabbing();
+    // Don't bother if the strip is part of the mixer (not embedded), 
+    //  the non-embedding parent (mixer) should set up all the tabs and make this call.
+    if(isEmbedded())
+      setupComponentTabbing();
   }
 
   // Set the whole strip's font, except for the label.
@@ -2235,8 +2274,6 @@ void MidiStrip::controlRightClicked(QPoint p, int id)
 
 void MidiStrip::upperStackTabButtonAPressed()
 {
-//   _upperStack->raiseWidget(0);
-//   _upperStack->setCurrentIndex(0);
   _infoRack->hide();
   _upperRack->show();
   _upperStackTabButtonA->setOff(false);
@@ -2245,25 +2282,10 @@ void MidiStrip::upperStackTabButtonAPressed()
 
 void MidiStrip::upperStackTabButtonBPressed()
 {
-//   _upperStack->raiseWidget(1);
-//   _upperStack->setCurrentIndex(1);
   _upperRack->hide();
   _infoRack->show();
   _upperStackTabButtonA->setOff(true);
   _upperStackTabButtonB->setOff(false);
-}
-
-//---------------------------------------------------------
-//   recordToggled
-//---------------------------------------------------------
-
-void MidiStrip::recordToggled(bool val)
-{
-  // Simulate pressing monitor as well. Allow signalling.
-  if(_recMonitor && MusEGlobal::config.monitorOnRecord && track && track->recMonitor() != val)
-    _recMonitor->setChecked(val);
-  // Call ancestor.
-  Strip::recordToggled(val);
 }
 
 //---------------------------------------------------------
@@ -2274,7 +2296,8 @@ void MidiStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  MusEGlobal::audio->msgSetRecMonitor(track, v);
+  // No undo.
+  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
   MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
 }
 
@@ -2320,7 +2343,7 @@ void MidiStrip::volLabelDoubleClicked()
   else
   {
     if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-      mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
+      mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), outport, chan,
                                                   MusECore::ME_CONTROLLER,
                                                   num,
                                                   MusECore::CTRL_VAL_UNKNOWN));
@@ -2335,7 +2358,8 @@ void MidiStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      MusEGlobal::audio->msgSetTrackOff(track, val);
+      // No undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
       MusEGlobal::song->update(SC_MUTE);
       }
 
@@ -2351,18 +2375,40 @@ void MidiStrip::heartBeat()
       if(++_heartBeatCounter >= 10)
         _heartBeatCounter = 0;
       
-      int act = track->activity();
-      double dact = double(act) * (slider->value() / 127.0);
-      
-      if((int)dact > track->lastActivity())
-        track->setLastActivity((int)dact);
-      
-      if(meter[0]) 
-        meter[0]->setVal(dact, track->lastActivity(), false);  
-      
-      // Gives reasonable decay with gui update set to 20/sec.
-      if(act)
-        track->setActivity((int)((double)act * 0.8));
+      if(track && track->isMidiTrack())
+      {
+        int act = track->activity();
+        double m_val = slider->value();
+
+        if(_preferMidiVolumeDb)
+        {
+          MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
+          const int port = t->outPort();
+          MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+          MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, false);
+          if(mctl)
+            m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
+          
+          m_val += double(mctl->bias());
+          
+          if(m_val < double(mctl->minVal()))
+            m_val = double(mctl->minVal());
+          if(m_val > double(mctl->maxVal()))
+            m_val = double(mctl->maxVal());
+        }
+        
+        double dact = double(act) * (m_val / 127.0);
+          
+        if((int)dact > track->lastActivity())
+          track->setLastActivity((int)dact);
+        
+        if(meter[0]) 
+          meter[0]->setVal(dact, track->lastActivity(), false);  
+        
+        // Gives reasonable decay with gui update set to 20/sec.
+        if(act)
+          track->setActivity((int)((double)act * 0.8));
+      }
       
       updateControls();
       
@@ -2536,7 +2582,7 @@ void MidiStrip::ctrlChanged(double v, bool off, int num, int scrollMode)
         if(off || (m_val < double(mctl->minVal())) || (m_val > double(mctl->maxVal())))
         {
           if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                       MusECore::ME_CONTROLLER,
                                                       num,
                                                       MusECore::CTRL_VAL_UNKNOWN));
@@ -2654,7 +2700,7 @@ void MidiStrip::incVolume(int v)
     if((d_new_val < double(mctl->minVal())) || (d_new_val > double(mctl->maxVal())))
     {
       if(mp->hwCtrlState(chan, id) != MusECore::CTRL_VAL_UNKNOWN)
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                     MusECore::ME_CONTROLLER,
                                                     id,
                                                     MusECore::CTRL_VAL_UNKNOWN));
@@ -2711,7 +2757,7 @@ void MidiStrip::incPan(int v)
     if((d_fin_val < double(mctl->minVal())) || (d_fin_val > double(mctl->maxVal())))
     {
       if(mp->hwCtrlState(chan, MusECore::CTRL_PANPOT) != MusECore::CTRL_VAL_UNKNOWN)
-        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), port, chan,
+        mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
                                                     MusECore::ME_CONTROLLER,
                                                     id,
                                                     MusECore::CTRL_VAL_UNKNOWN));

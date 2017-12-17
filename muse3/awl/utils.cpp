@@ -42,8 +42,7 @@ QString pitch2string(int v)
       if (v < 0 || v > 127)
             return QString("----");
       int octave = (v / 12) - 2;
-      QString o;
-      o.sprintf("%d", octave);
+      QString o = QString::number(octave);
       int i = v % 12;
       QString s(octave < 0 ? valu[i] : vall[i]);
       return s + o;
