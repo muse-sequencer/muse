@@ -223,14 +223,14 @@ class Track {
       void setInternalSolo(unsigned int val);
       virtual void setSolo(bool val) = 0;
       virtual bool isMute() const = 0;
-      unsigned int internalSolo() const  { return _internalSolo; }
-      bool soloMode() const              { return _soloRefCnt; }
-      bool solo() const                  { return _solo;         }
-      bool mute() const                  { return _mute;         }
-      bool off() const                   { return _off;          }
-      bool recordFlag() const            { return _recordFlag;   }
-      void setRecMonitor(bool b)         { if(canRecordMonitor()) _recMonitor = b; }
-      bool recMonitor() const            { return _recMonitor; }
+      virtual unsigned int internalSolo() const  { return _internalSolo; }
+      virtual bool soloMode() const      { return _soloRefCnt; }
+      virtual bool solo() const          { return _solo;         }
+      virtual bool mute() const          { return _mute;         }
+      virtual bool off() const           { return _off;          }
+      virtual bool recordFlag() const    { return _recordFlag;   }
+      virtual void setRecMonitor(bool b) { if(canRecordMonitor()) _recMonitor = b; }
+      virtual bool recMonitor() const    { return _recMonitor; }
 
       // Internal use...
       static void clearSoloRefCounts();
@@ -255,6 +255,7 @@ class Track {
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
       bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
+      bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
       virtual bool canRecord() const { return false; }
       virtual bool canRecordMonitor() const { return false; }
       virtual AutomationType automationType() const    = 0;

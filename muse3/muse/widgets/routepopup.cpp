@@ -363,271 +363,324 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
   const MusECore::RouteList* const rl = isOutput ? t->outRoutes() : t->inRoutes();
   MusECore::MidiDevice* md;
   
+  bool is_first_pass = true;
+  QActionGroup* act_group = 0;
+  // Order the entire listing by device type.
+  for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+  {
   // Currently only midi port output to midi track input supports 'Omni' routes.
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
-  if(isOutput)
-  {
-    // Count the number of required rows. 
-    int rows = 0;
-    for(int i = 0; i < MIDI_PORTS; ++i)
+    if(isOutput)
     {
-      md = MusEGlobal::midiPorts[i].device();
-      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
-      // So for now, just list all valid ports whether read or write.
-      //if(!md)
-      //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
-        continue;
-      // Do not list synth devices!
-      if(!show_synths && md->isSynti())
-        continue;
-      ++rows;      
-    }
-    if(rows == 0)
-      return;
-    
-    QActionGroup* act_group = new QActionGroup(this);
-    act_group->setExclusive(true);
-    
-    int row = 0;
-    MusECore::Route r(-1);   // Midi port route.
-    for(int i = 0; i < MIDI_PORTS; ++i)
-    {
-      md = MusEGlobal::midiPorts[i].device();
-      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
-      // So for now, just list all valid ports whether read or write.
-      //if(!md)
-      //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
-        continue;
-      // Do not list synth devices!
-      if(!show_synths && md->isSynti())
+      // Count the number of required rows. 
+      int rows = 0;
+      for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        md = MusEGlobal::midiPorts[i].device();
+        // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+        // So for now, just list all valid ports whether read or write.
+        //if(!md)
+        //  continue;
+        if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+          continue;
+        // Do not list synth devices!
+        if(!show_synths && md->isSynti())
+          continue;
+        // We only want the sorted device type.
+        if(md->deviceType() != dtype)
+          continue;
+        ++rows;      
+      }
+      if(rows == 0)
         continue;
       
-      //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-      if(row == 0)
+      if(is_first_pass)
       {
-        wa->array()->setArrayTitle(tr("Channels"));
-        wa->array()->headerSetTitle(tr("Midi ports/devices"));
-        wa->array()->headerSetVisible(true);
+        is_first_pass = false;
+        act_group = new QActionGroup(this);
+        act_group->setExclusive(true);
       }
-      else
-        wa->array()->headerSetVisible(false);
+      
+      int row = 0;
+      MusECore::Route r(-1);   // Midi port route.
+      for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        md = MusEGlobal::midiPorts[i].device();
+        // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+        // So for now, just list all valid ports whether read or write.
+        //if(!md)
+        //  continue;
+        if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+          continue;
+        // Do not list synth devices!
+        if(!show_synths && md->isSynti())
+          continue;
+        // We only want the sorted device type.
+        if(md->deviceType() != dtype)
+          continue;
         
-      r.midiPort = i;
-      wa->setData(QVariant::fromValue(r));   
-      
-      wa->array()->setColumnsExclusive(true);
-      MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
-      if(i == mt->outPort())
-        wa->array()->setValue(mt->outChannel(), true);
-      // Must rebuild array after text changes.
-      wa->updateChannelArray();
-      
-      // Make it easy for the user: Show the device's jack ports as well.
-      // This is reasonable for midi devices since they are hidden away.
-      // (Midi devices were made tracks, and midi ports eliminated, in the old MusE-2 muse_evolution branch!)
-      switch(md->deviceType())
-      {
-        case MusECore::MidiDevice::JACK_MIDI:
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        if(row == 0)
         {
-          const MusECore::Route md_r(md, -1);
-          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
-          addJackPorts(md_r, subp);
-          wa->setMenu(subp);
-        }
-        break;
+          switch(dtype)
+          {
+            case MusECore::MidiDevice::ALSA_MIDI:
+              wa->array()->headerSetTitle(tr("ALSA devices"));
+            break;
+            
+            case MusECore::MidiDevice::JACK_MIDI:
+              wa->array()->headerSetTitle(tr("JACK devices"));
+            break;
 
-        default:
-        break;
+            case MusECore::MidiDevice::SYNTH_MIDI:
+              wa->array()->headerSetTitle(tr("Synth devices"));
+            break;
+          }
+          wa->array()->setArrayTitle(tr("Channels"));
+          wa->array()->headerSetVisible(true);
+        }
+        else
+          wa->array()->headerSetVisible(false);
+          
+        r.midiPort = i;
+        wa->setData(QVariant::fromValue(r));   
+        
+        wa->array()->setColumnsExclusive(true);
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+        if(i == mt->outPort())
+          wa->array()->setValue(mt->outChannel(), true);
+        // Must rebuild array after text changes.
+        wa->updateChannelArray();
+        
+        // Make it easy for the user: Show the device's jack ports as well.
+        // This is reasonable for midi devices since they are hidden away.
+        // (Midi devices were made tracks, and midi ports eliminated, in the old MusE-2 muse_evolution branch!)
+        switch(md->deviceType())
+        {
+          case MusECore::MidiDevice::JACK_MIDI:
+          {
+            const MusECore::Route md_r(md, -1);
+            RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
+            addJackPorts(md_r, subp);
+            wa->setMenu(subp);
+          }
+          break;
+
+          default:
+          break;
+        }
+        
+        act_group->addAction(wa);
+        ++row;
       }
-      
-      act_group->addAction(wa);
-      ++row;
+      pup->addActions(act_group->actions());
     }
-    pup->addActions(act_group->actions());
-  }
-  else 
+    else 
     
 #endif // _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
     
-  {
-    // Count the number of required rows. 
-    int rows = 0;
-    for(int i = 0; i < MIDI_PORTS; ++i)
     {
-      md = MusEGlobal::midiPorts[i].device();
-      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
-      // So for now, just list all valid ports whether read or write.
-      //if(!md)
-      //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
-        continue;
-      // Do not list synth devices!
-      if(!show_synths && md->isSynti())
-        continue;
-      ++rows;      
-    }
-    if(rows == 0)
-      return;
-    
-    // It's an input. Allow 'Omni' routes'...
-    int row = 0;
-    for(int i = 0; i < MIDI_PORTS; ++i)
-    {
-      md = MusEGlobal::midiPorts[i].device();
-      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
-      // So for now, just list all valid ports whether read or write.
-      //if(!md)
-      //  continue;
-      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
-        continue;
-      // Do not list synth devices!
-      if(!show_synths && md->isSynti())
+      // Count the number of required rows. 
+      int rows = 0;
+      for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        md = MusEGlobal::midiPorts[i].device();
+        // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+        // So for now, just list all valid ports whether read or write.
+        //if(!md)
+        //  continue;
+        if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
+          continue;
+        // Do not list synth devices!
+        if(!show_synths && md->isSynti())
+          continue;
+        // We only want the sorted device type.
+        if(md->deviceType() != dtype)
+          continue;
+        ++rows;      
+      }
+      if(rows == 0)
         continue;
       
-      MusECore::Route r(i, -1);
-      //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
-      if(row == 0)
+      // It's an input. Allow 'Omni' routes'...
+      int row = 0;
+      for(int i = 0; i < MIDI_PORTS; ++i)
       {
-        wa->array()->setCheckBoxTitle(tr("Omni"));
-        wa->array()->headerSetTitle(tr("Midi ports/devices"));
-        wa->array()->setArrayTitle(tr("Channels"));
-        wa->array()->headerSetVisible(true);
-      }
-      else
-        wa->array()->headerSetVisible(false);
-      wa->setHasCheckBox(true);
-      if(rl->contains(r))
-        wa->setCheckBoxChecked(true);
-      wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
+        md = MusEGlobal::midiPorts[i].device();
+        // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+        // So for now, just list all valid ports whether read or write.
+        //if(!md)
+        //  continue;
+        if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi readable here.
+          continue;
+        // Do not list synth devices!
+        if(!show_synths && md->isSynti())
+          continue;
+        // We only want the sorted device type.
+        if(md->deviceType() != dtype)
+          continue;
+        
+        MusECore::Route r(i, -1);
+        //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+        if(row == 0)
+        {
+          wa->array()->setCheckBoxTitle(tr("Omni"));
+          switch(dtype)
+          {
+            case MusECore::MidiDevice::ALSA_MIDI:
+              wa->array()->headerSetTitle(tr("ALSA devices"));
+            break;
+            
+            case MusECore::MidiDevice::JACK_MIDI:
+              wa->array()->headerSetTitle(tr("JACK devices"));
+            break;
+
+            case MusECore::MidiDevice::SYNTH_MIDI:
+              wa->array()->headerSetTitle(tr("Synth devices"));
+            break;
+          }
+          wa->array()->setArrayTitle(tr("Channels"));
+          wa->array()->headerSetVisible(true);
+        }
+        else
+          wa->array()->headerSetVisible(false);
+        
+        wa->setHasCheckBox(true);
+        if(rl->contains(r))
+          wa->setCheckBoxChecked(true);
+        wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
       
 #ifdef _USE_MIDI_ROUTE_PER_CHANNEL_
-      for(int col = 0; col < MIDI_CHANNELS; ++col)
-      {  
-        r.channel = col;
-        if(rl->contains(r))
-          wa->array()->setValue(col, true);
-      }
-#else  // _USE_MIDI_ROUTE_PER_CHANNEL_    
-      int chans = 0;
-      // Is there already a route?
-      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-      {
-        switch(ir->type)
-        {
-          case MusECore::Route::MIDI_PORT_ROUTE:
-            if(ir->midiPort == i)
-              chans = ir->channel; // Grab the channels.
-          break;  
-          case MusECore::Route::TRACK_ROUTE:
-          case MusECore::Route::JACK_ROUTE:
-          case MusECore::Route::MIDI_DEVICE_ROUTE:
-          break;  
-        }
-        if(chans != 0)
-          break;
-      }
-      if(chans != 0 && chans != -1)
-      {
         for(int col = 0; col < MIDI_CHANNELS; ++col)
-        {
-          if(chans & (1 << col))
+        {  
+          r.channel = col;
+          if(rl->contains(r))
             wa->array()->setValue(col, true);
         }
-      }
+#else  // _USE_MIDI_ROUTE_PER_CHANNEL_    
+        int chans = 0;
+        // Is there already a route?
+        for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+        {
+          switch(ir->type)
+          {
+            case MusECore::Route::MIDI_PORT_ROUTE:
+              if(ir->midiPort == i)
+                chans = ir->channel; // Grab the channels.
+            break;  
+            case MusECore::Route::TRACK_ROUTE:
+            case MusECore::Route::JACK_ROUTE:
+            case MusECore::Route::MIDI_DEVICE_ROUTE:
+            break;  
+          }
+          if(chans != 0)
+            break;
+        }
+        if(chans != 0 && chans != -1)
+        {
+          for(int col = 0; col < MIDI_CHANNELS; ++col)
+          {
+            if(chans & (1 << col))
+              wa->array()->setValue(col, true);
+          }
+        }
 #endif // _USE_MIDI_ROUTE_PER_CHANNEL_
 
-      // Must rebuild array after text changes.
-      wa->updateChannelArray();
-      
-      // Make it easy for the user: Show the device's jack ports as well.
-      // This is reasonable for midi devices since they are hidden away.
-      // (Midi devices were made tracks, and midi ports eliminated, in the old MusE-2 muse_evolution branch!)
-      switch(md->deviceType())
-      {
-        case MusECore::MidiDevice::JACK_MIDI:
-        {
-          //PopupMenu* subp = new PopupMenu(this, true);
-          const MusECore::Route md_r(md, -1);
-          RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
-          addJackPorts(md_r, subp);
-          wa->setMenu(subp);
-        }
-        break;
+        // Must rebuild array after text changes.
+        wa->updateChannelArray();
         
-        default:
-        break;
+        // Make it easy for the user: Show the device's jack ports as well.
+        // This is reasonable for midi devices since they are hidden away.
+        // (Midi devices were made tracks, and midi ports eliminated, in the old MusE-2 muse_evolution branch!)
+        switch(md->deviceType())
+        {
+          case MusECore::MidiDevice::JACK_MIDI:
+          {
+            //PopupMenu* subp = new PopupMenu(this, true);
+            const MusECore::Route md_r(md, -1);
+            RoutePopupMenu* subp = new RoutePopupMenu(md_r, this, isOutput, _broadcastChanges);
+            addJackPorts(md_r, subp);
+            wa->setMenu(subp);
+          }
+          break;
+          
+          default:
+          break;
+        }
+        
+        pup->addAction(wa);
+        ++row;
       }
-      
-      pup->addAction(wa);
-      ++row;
     }
-  }
         
 #else // _USE_CUSTOM_WIDGET_ACTIONS_
         
-  pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
-  for(int i = 0; i < MIDI_PORTS; ++i)
-  {
-    MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
-    MusECore::MidiDevice* md = mp->device();
-    
-    // This is desirable, but could lead to 'hidden' routes unless we add more support
-    //  such as removing the existing routes when user changes flags.
-    // So for now, just list all valid ports whether read or write.
-    //if(!md)
-    //  continue;
-    if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi outputs here.
-      continue;
-          
-    // Do not list synth devices!
-    if(!show_synths && md->isSynti())
-      continue;
-          
-    MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
-    
-    int chanmask = 0;
-    // To reduce number of routes required, from one per channel to just one containing a channel mask. 
-    // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
-    for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)   
+    pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
+    for(int i = 0; i < MIDI_PORTS; ++i)
     {
-      if(ir->type == MusECore::Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
+      MusECore::MidiDevice* md = mp->device();
+      
+      // This is desirable, but could lead to 'hidden' routes unless we add more support
+      //  such as removing the existing routes when user changes flags.
+      // So for now, just list all valid ports whether read or write.
+      //if(!md)
+      //  continue;
+      if(!md || !(md->rwFlags() & (want_writable ? 1 : 2)))  // If this is an input click we are looking for midi outputs here.
+        continue;
+            
+      // Do not list synth devices!
+      if(!show_synths && md->isSynti())
+        continue;
+      // We only want the sorted device type.
+      if(md->deviceType() != dtype)
+        continue;
+            
+      MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+      
+      int chanmask = 0;
+      // To reduce number of routes required, from one per channel to just one containing a channel mask. 
+      // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
+      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)   
       {
-        // We have a route to the midi port. Grab the channel mask.
-        chanmask = ir->channel;
-        break;
+        if(ir->type == MusECore::Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+        {
+          // We have a route to the midi port. Grab the channel mask.
+          chanmask = ir->channel;
+          break;
+        }
       }
-    }
-    
-    PopupMenu* subp = new PopupMenu(pup, true);
-    subp->setTitle(md->name()); 
-    QAction* act;
-    
-    for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-    {
-      act = subp->addAction(QString("Channel %1").arg(ch+1));
-      act->setCheckable(true);
       
-      int chbit = 1 << ch;
-      MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
+      PopupMenu* subp = new PopupMenu(pup, true);
+      subp->setTitle(md->name()); 
+      QAction* act;
       
-      act->setData(QVariant::fromValue(srcRoute));   
-      
-      if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
-        act->setChecked(true);
-    }
-    act = subp->addAction(QString("Toggle all"));
-    //act->setCheckable(true);
-    MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
-    act->setData(QVariant::fromValue(togRoute));   
-    pup->addMenu(subp);
-  }    
+      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      {
+        act = subp->addAction(QString("Channel %1").arg(ch+1));
+        act->setCheckable(true);
+        
+        int chbit = 1 << ch;
+        MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
+        
+        act->setData(QVariant::fromValue(srcRoute));   
+        
+        if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
+          act->setChecked(true);
+      }
+      act = subp->addAction(QString("Toggle all"));
+      //act->setCheckable(true);
+      MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+      act->setData(QVariant::fromValue(togRoute));   
+      pup->addMenu(subp);
+    }    
   
 #endif // _USE_CUSTOM_WIDGET_ACTIONS_    
-    
+
+  }
+  
   return;
 }
 
@@ -656,7 +709,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
   if(!MusEGlobal::checkAudioDevice())
     return;
 
-  MusECore::RouteList* rl;
+  MusECore::RouteList* rl = 0;
   int channels = -1;
   std::list<QString> ol;
   MusECore::RouteCapabilitiesStruct rcaps;
@@ -1067,7 +1120,8 @@ bool RoutePopupMenu::event(QEvent* event)
           case Qt::Key_Space:
             if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
                 break;
-              // for motif, fall through
+          // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
+          // FALLTHROUGH
           case Qt::Key_Select:
           case Qt::Key_Return:
           case Qt::Key_Enter:
@@ -3381,14 +3435,7 @@ void RoutePopupMenu::prepare()
   QAction* route_act = addAction(tr("Open advanced router..."));
   route_act->setCheckable(false);
   route_act->setData(_OPEN_ROUTING_DIALOG_);
-  addSeparator();
-  
-  if(_isOutMenu)
-    addAction(new MenuTitleItem(tr("Output routes:"), this));
-  else
-    addAction(new MenuTitleItem(tr("Input routes:"), this));
-  addSeparator();
-  
+
   switch(_route.type)
   {
     case MusECore::Route::TRACK_ROUTE:
@@ -3402,24 +3449,48 @@ void RoutePopupMenu::prepare()
         for( ; pi < MIDI_PORTS; ++pi)
         {
           MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
-          if(md && !md->isSynti() && (md->rwFlags() & 2))
+          //if(md && !md->isSynti() && (md->rwFlags() & 2))
           //if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27 Reverted p4.0.35 
+          if(md && (md->rwFlags() & (_isOutMenu ? 1 : 2))) // Allow synth as input.
             break;
         }
         if(pi == MIDI_PORTS)
         {
-          act = addAction(tr("Warning: No input devices!"));
+          if(_isOutMenu)
+            act = addAction(tr("Warning: No output devices!"));
+          else
+            act = addAction(tr("Warning: No input devices!"));
           act->setCheckable(false);
           act->setData(-1);
-          addSeparator();
         }
         act = addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
         act->setCheckable(false);
         act->setData(_OPEN_MIDI_CONFIG_);
-        addSeparator();
-        
+      }
+    }
+    break;
+    
+    default:
+    break;
+  }
+
+  addSeparator();
+  
+  if(_isOutMenu)
+    addAction(new MenuTitleItem(tr("Output routes:"), this));
+  else
+    addAction(new MenuTitleItem(tr("Input routes:"), this));
+  //addSeparator();
+  
+  switch(_route.type)
+  {
+    case MusECore::Route::TRACK_ROUTE:
+    {
+      MusECore::Track* const track = _route.track;
+      if(track->isMidiTrack())
+      {
+        QAction* act = 0;
         addMidiPorts(track, this, _isOutMenu, true, _isOutMenu);
-        
         if(_isOutMenu)   
         {
           

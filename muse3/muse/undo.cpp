@@ -68,7 +68,7 @@ const char* UndoOp::typeName()
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
             "ModifyTrackName", "ModifyTrackChannel",
-            "SetTrackRecord", "SetTrackMute", "SetTrackSolo",
+            "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing",
@@ -112,6 +112,12 @@ void UndoOp::dump()
                   printf("%s %d\n", track->name().toLatin1().constData(), a);
                   break;
             case SetTrackSolo:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  break;
+            case SetTrackRecMonitor:
+                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  break;
+            case SetTrackOff:
                   printf("%s %d\n", track->name().toLatin1().constData(), a);
                   break;
             default:      
@@ -366,6 +372,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::SetTrackSolo:
       fprintf(stderr, "Undo::insert: SetTrackSolo\n");
     break;
+    case UndoOp::SetTrackRecMonitor:
+      fprintf(stderr, "Undo::insert: SetTrackRecMonitor\n");
+    break;
+    case UndoOp::SetTrackOff:
+      fprintf(stderr, "Undo::insert: SetTrackOff\n");
+    break;
     
     
     case UndoOp::AddPart:
@@ -580,6 +592,40 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             if(uo.a == n_op.a)
             {
               fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackSolo. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+        
+        case UndoOp::SetTrackRecMonitor:
+          if(uo.type == UndoOp::SetTrackRecMonitor && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackRecMonitor. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // On/off followed by off/on is useless. Cancel out the on/off + off/on by erasing the command.
+              erase(iuo);
+              return;  
+            }
+          }
+        break;
+        
+        case UndoOp::SetTrackOff:
+          if(uo.type == UndoOp::SetTrackOff && uo.track == n_op.track)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double SetTrackOff. Ignoring.\n");
               return;
             }
             else
@@ -1191,10 +1237,13 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             MusEGlobal::audio->msgExecuteOperationGroup(group);
             
             // append all elements from "group" to the end of undoList->back().
-            Undo& curUndo = undoList->back();
-            curUndo.insert(curUndo.end(), group.begin(), group.end());
-            if (group.combobreaker)
-               curUndo.combobreaker=true;
+            if(!undoList->empty())
+            {
+              Undo& curUndo = undoList->back();
+              curUndo.insert(curUndo.end(), group.begin(), group.end());
+              if (group.combobreaker)
+                 curUndo.combobreaker=true;
+            }
             
             if (doUndo)
                  endUndo(0);
@@ -1397,7 +1446,8 @@ UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, bool value, bool noUndo)
       {
-      assert(type_== SetTrackRecord || type_== SetTrackMute || type_== SetTrackSolo);
+      assert(type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo || 
+             type_ == SetTrackRecMonitor || type_ == SetTrackOff);
       assert(track_);
       
       type    = type_;
@@ -1911,6 +1961,16 @@ void Song::revertOperationGroup1(Undo& operations)
                   case UndoOp::SetTrackSolo:
                         pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackSolo));
                         updateFlags |= SC_SOLO;
+                        break;
+
+                  case UndoOp::SetTrackRecMonitor:
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackRecMonitor));
+                        updateFlags |= SC_TRACK_REC_MONITOR;
+                        break;
+
+                  case UndoOp::SetTrackOff:
+                        pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackOff));
+                        updateFlags |= SC_MUTE;
                         break;
 
                         
@@ -2603,6 +2663,16 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_SOLO;
                         break;
 
+                  case UndoOp::SetTrackRecMonitor:
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackRecMonitor));
+                        updateFlags |= SC_TRACK_REC_MONITOR;
+                        break;
+
+                  case UndoOp::SetTrackOff:
+                        pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackOff));
+                        updateFlags |= SC_MUTE;
+                        break;
+
                         
                   case UndoOp::AddRoute:
 #ifdef _UNDO_DEBUG_
@@ -2993,6 +3063,7 @@ void Song::executeOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif                        
       pendingOperations.clear();
+      bool song_has_changed = !operations.empty();
       for (iUndoOp i = operations.begin(); i != operations.end(); ) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
@@ -3116,7 +3187,9 @@ void Song::executeOperationGroup3(Undo& operations)
             
       // If some operations marked as non-undoable were removed, it is OK,
       //  because we only want dirty if an undoable operation was executed, right?
-      if(!operations.empty())
+      // Hm, no. ANY operation actually changes things, so yes, the song is dirty.
+      //if(!operations.empty())
+      if(song_has_changed)
         emit sigDirty();
       }
 

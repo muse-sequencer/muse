@@ -86,7 +86,7 @@ void PitchLabel::setValue(int val)
       if (_pitchMode)
             s = MusECore::pitch2string(_value);
       else
-            s.sprintf("%d", _value);
+            s = QString::number(_value);
       setText(s);
       }
 

@@ -137,21 +137,12 @@ class SynthIF : public PluginIBase {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
-      virtual bool initGui() = 0;
       virtual void guiHeartBeat() = 0;
-      virtual bool guiVisible() const = 0;
-      virtual void showGui(bool v) = 0;
+      virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
-      virtual bool nativeGuiVisible() const = 0;
-      virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      virtual void getGeometry(int*, int*, int*, int*) const = 0;
-      virtual void setGeometry(int, int, int, int) = 0;
-      virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
-      virtual void setNativeGeometry(int, int, int, int) = 0;
       virtual void preProcessAlways() = 0;
-      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
-      virtual bool putEvent(const MidiPlayEvent& ev) = 0;
+      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
 
@@ -227,8 +218,10 @@ class SynthI : public AudioTrack, public MidiDevice,
 
    protected:
       Synth* synthesizer;
-      // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
 
+      MPEventList _outPlaybackEvents;
+      MPEventList _outUserEvents;
+      
       // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
       std::vector<double> initParams;
@@ -241,6 +234,9 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
+      // Returns the number of frames to shift forward output event scheduling times when putting events
+      //  into the eventFifos.
+      virtual unsigned int pbForwardShiftFrames() const;
 
       virtual QString open();
       virtual void close();
@@ -250,9 +246,10 @@ class SynthI : public AudioTrack, public MidiDevice,
       friend class SynthIF;
       friend class MessSynthIF;
       friend class DssiSynthIF;
-	  friend class LV2SynthIF;
+	    friend class LV2SynthIF;
       friend class VstSynthIF;
       friend class VstNativeSynthIF;
+      friend class MetronomeSynthIF;
 
       SynthI();
       SynthI(const SynthI& si, int flags);
@@ -306,7 +303,6 @@ class SynthI : public AudioTrack, public MidiDevice,
            {  _curOutParamNums[chan].setCurrentProg(prog, bankL, bankH);  }
 
       void guiHeartBeat()     { return _sif->guiHeartBeat(); }
-      bool initGui()    const { return _sif->initGui(); }
       bool guiVisible() const { return _sif->guiVisible(); }
       void showGui(bool v)    { _sif->showGui(v); }
       bool hasGui() const     { return _sif->hasGui(); }
@@ -326,8 +322,7 @@ class SynthI : public AudioTrack, public MidiDevice,
             _sif->setNativeGeometry(x, y, w, h);
             }
 
-      bool putEvent(const MidiPlayEvent& ev);
-      virtual void processMidi();
+      virtual void processMidi(unsigned int /*curFrame*/ = 0);
 
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }
@@ -353,6 +348,8 @@ class SynthI : public AudioTrack, public MidiDevice,
 class MessSynthIF : public SynthIF {
       Mess* _mess;
 
+      bool processEvent(const MidiPlayEvent& ev);
+      
    public:
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
@@ -360,21 +357,16 @@ class MessSynthIF : public SynthIF {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
 
-      virtual bool initGui()          { return true; }
       virtual void guiHeartBeat()     { }
       virtual bool guiVisible() const { return false; }
-      virtual void showGui(bool)    { };
       virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool v);
       virtual bool hasNativeGui() const;
-      virtual void getGeometry(int*, int*, int*, int*) const;
-      virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*, int*, int*, int*) const;
       virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways();
-      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
+      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const;
       bool init(Synth* s, SynthI* si);

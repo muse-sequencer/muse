@@ -26,9 +26,9 @@
 #define __MPEVENT_H__
 
 #include <set>
-#include <list>
 #include "evdata.h"
 #include "memory.h"
+#include <cstddef>
 
 // Play events ring buffer size
 #define MIDI_FIFO_SIZE    4096         
@@ -58,14 +58,14 @@ class MEvent {
       int _loopNum; // The loop count when the note was recorded.
 
    public:
-      MEvent() { _loopNum = 0; }
+      MEvent() : _time(0), _port(0), _channel(0), _type(0), _a(0), _b(0), _loopNum(0) { }
       MEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b) { _loopNum = 0; }
+        : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
       MEvent(unsigned t, int p, int type, const unsigned char* data, int len);
-      MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe) { _loopNum = 0; }
+      MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
       MEvent(unsigned t, int port, int channel, const Event& e);
 
-      ~MEvent()         {}
+      virtual ~MEvent()         {}
 
       MEvent& operator=(const MEvent& ed) {
             _time    = ed._time;
@@ -102,10 +102,24 @@ class MEvent {
       int len() const                 { return edata.dataLen; }
       void setData(const EvData& e)   { edata = e; }
       void setData(const unsigned char* p, int len) { edata.setData(p, len); }
+      
       void dump() const;
       bool isNote() const      { return _type == 0x90; }
       bool isNoteOff() const   { return (_type == 0x80)||(_type == 0x90 && _b == 0); }
       bool operator<(const MEvent&) const;
+      bool isValid() const { return _type != 0; }
+      
+      // Returns a valid source controller number (above zero), 
+      //  translated from the event to proper internal control type.
+      // For example 
+      //  ME_CONTROLLER + Data(A = CTRL_HBANK) = CTRL_PROGRAM
+      //  ME_CONTROLLER + Data(A = CTRL_LBANK) = CTRL_PROGRAM
+      //  ME_PROGRAM                           = CTRL_PROGRAM
+      //  ME_PITCHBEND                         = CTRL_PITCH
+      //  ME_CONTROLLER + Data(A = ctrl)       = ctrl
+      // Otherwise returns -1 if the event is not translatable to a controller, 
+      //  or an error occurred.
+      int translateCtrlNum() const;
       };
 
 //---------------------------------------------------------
@@ -125,7 +139,7 @@ class MidiRecordEvent : public MEvent {
         : MEvent(t, p, tpe, data, len) {}
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
-      ~MidiRecordEvent() {}
+      virtual ~MidiRecordEvent() {}
       
       unsigned int tick() {return _tick;}
       void setTick(unsigned int tick) {_tick = tick;}
@@ -148,67 +162,7 @@ class MidiPlayEvent : public MEvent {
         : MEvent(t, p, type, data) {}
       MidiPlayEvent(unsigned t, int port, int channel, const Event& e)
         : MEvent(t, port, channel, e) {}
-      ~MidiPlayEvent() {}
-      };
-
-//---------------------------------------------------------
-//   MPEventList
-//    memory allocation in audio thread domain
-//---------------------------------------------------------
-
-typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
-
-struct MPEventList : public MPEL {
-  public:
-      // Optimize to eliminate duplicate events at the SAME time.
-      // It will not handle duplicate events at DIFFERENT times.
-      // Replaces event if it already exists.
-      void add(const MidiPlayEvent& ev);
-};
-
-typedef MPEventList::iterator iMPEvent;
-typedef MPEventList::const_iterator ciMPEvent;
-typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
-
-/* DELETETHIS 20 ??
-//---------------------------------------------------------
-//   MREventList
-//    memory allocation in midi thread domain
-//---------------------------------------------------------
-
-// Changed by Tim. p3.3.8
-
-// audioRTalloc? Surely this must have been a mistake?  
-//typedef std::list<MidiRecordEvent, audioRTalloc<MidiRecordEvent> > MREL;
-typedef std::list<MidiRecordEvent, midiRTalloc<MidiRecordEvent> > MREL;
-
-struct MREventList : public MREL {
-      void add(const MidiRecordEvent& ev) { MREL::push_back(ev); }
-      };
-
-typedef MREventList::iterator iMREvent;
-typedef MREventList::const_iterator ciMREvent;
-*/
-
-//---------------------------------------------------------
-//   MidiFifo
-//---------------------------------------------------------
-
-class MidiFifo {
-      MidiPlayEvent fifo[MIDI_FIFO_SIZE];
-      volatile int size;
-      int wIndex;
-      int rIndex;
-
-   public:
-      MidiFifo()  { clear(); }
-      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
-      MidiPlayEvent get();
-      const MidiPlayEvent& peek(int = 0);
-      void remove();
-      bool isEmpty() const { return size == 0; }
-      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
-      int getSize() const  { return size; }
+      virtual ~MidiPlayEvent() {}
       };
 
 //---------------------------------------------------------
@@ -231,6 +185,123 @@ class MidiRecFifo {
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
       int getSize() const  { return size; }
       };
+
+//---------------------------------------------------------
+//   audioMPEventRTalloc
+//---------------------------------------------------------
+
+template <typename T> class audioMPEventRTalloc
+{
+  private:
+    static TypedMemoryPool<T, 2048> pool;
+    
+  public:
+    typedef T         value_type;
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+
+    typedef T&        reference;
+    typedef const T&  const_reference;
+
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    audioMPEventRTalloc() { } 
+    template <typename U> audioMPEventRTalloc(const audioMPEventRTalloc<U>&) {}
+    ~audioMPEventRTalloc() {}
+
+    pointer allocate(size_type n, void * = 0) { return static_cast<T*>(pool.alloc(n)); }
+    void deallocate(pointer p, size_type n) { pool.free(p, n); }
+
+    audioMPEventRTalloc<T>&  operator=(const audioMPEventRTalloc&) { return *this; }
+    void construct(pointer p, const T& val) { new ((T*) p) T(val); }
+    void destroy(pointer p) { p->~T(); }
+    size_type max_size() const { return size_t(-1); }
+
+    template <typename U> struct rebind { typedef audioMPEventRTalloc<U> other; };
+    template <typename U> audioMPEventRTalloc& operator=(const audioMPEventRTalloc<U>&) { return *this; }
+};
+
+//---------------------------------------------------------
+//   seqMPEventRTalloc
+//---------------------------------------------------------
+
+template <typename T> class seqMPEventRTalloc
+{
+  private:
+    static TypedMemoryPool<T, 2048> pool;
+    
+  public:
+    typedef T         value_type;
+    typedef size_t    size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+
+    typedef T&        reference;
+    typedef const T&  const_reference;
+
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    seqMPEventRTalloc() { }
+    template <typename U> seqMPEventRTalloc(const seqMPEventRTalloc<U>&) {}
+    ~seqMPEventRTalloc() {}
+
+    pointer allocate(size_type n, void * = 0) { return static_cast<T*>(pool.alloc(n)); }
+    void deallocate(pointer p, size_type n) { pool.free(p, n); }
+
+    seqMPEventRTalloc<T>&  operator=(const seqMPEventRTalloc&) { return *this; }
+    void construct(pointer p, const T& val) { new ((T*) p) T(val); }
+    void destroy(pointer p) { p->~T(); }
+    size_type max_size() const { return size_t(-1); }
+
+    template <typename U> struct rebind { typedef seqMPEventRTalloc<U> other; };
+    template <typename U> seqMPEventRTalloc& operator=(const seqMPEventRTalloc<U>&) { return *this; }
+};
+
+//---------------------------------------------------------
+//   MPEventList
+//    memory allocation in audio thread domain
+//---------------------------------------------------------
+
+typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioMPEventRTalloc<MidiPlayEvent> > MPEL;
+
+class MPEventList : public MPEL {
+  public:
+      // Optimize to eliminate duplicate events at the SAME time.
+      // It will not handle duplicate events at DIFFERENT times.
+      // Replaces event if it already exists.
+      void add(const MidiPlayEvent& ev);
+};
+
+typedef MPEventList::iterator iMPEvent;
+typedef MPEventList::const_iterator ciMPEvent;
+typedef std::pair<iMPEvent, iMPEvent> MPEventListRangePair_t;
+
+//---------------------------------------------------------
+//   SeqMPEventList
+//    memory allocation in sequencer thread domain
+//---------------------------------------------------------
+
+typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, seqMPEventRTalloc<MidiPlayEvent> > SMPEL;
+
+class SeqMPEventList : public SMPEL {
+  public:
+      // Optimize to eliminate duplicate events at the SAME time.
+      // It will not handle duplicate events at DIFFERENT times.
+      // Replaces event if it already exists.
+      void add(const MidiPlayEvent& ev);
+};
+
+typedef SeqMPEventList::iterator iSeqMPEvent;
+typedef SeqMPEventList::const_iterator ciSeqMPEvent;
+typedef std::pair<iSeqMPEvent, iSeqMPEvent> SeqMPEventListRangePair_t;
+
 
 } // namespace MusECore
 

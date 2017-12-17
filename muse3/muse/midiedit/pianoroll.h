@@ -33,6 +33,11 @@
 #include "event.h"
 #include "midictrl.h"
 
+// Whether to show an additional 'Alt' button beside
+//  the trackinfo button, to show the old midi trackinfo panel.
+// TODO: TO BE REMOVED. The midi trackinfo panel is obsolete and disabled now.
+//#define _USE_TRACKINFO_ALT 1;
+
 class QSplitter;
 class QAction;
 class QMenu;
@@ -59,7 +64,6 @@ namespace MusEGui {
 
 class MidiStrip;
 class CtrlEdit;
-class MidiTrackInfo;
 class PianoCanvas;
 class PitchLabel;
 class SNode;
@@ -70,6 +74,9 @@ class Toolbar1;
 class Piano;
 class TrackInfoToolBar;
 class TrackInfoWidget;
+#ifdef _USE_TRACKINFO_ALT
+class MidiTrackInfo;
+#endif
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -80,7 +87,9 @@ class PianoRoll : public MidiEditor {
     
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiStrip *midiStrip;
+#ifdef _USE_TRACKINFO_ALT
       MusEGui::MidiTrackInfo *midiTrackInfo;
+#endif
       TrackInfoWidget* trackInfoWidget;
       QWidget* noTrackInfo;
       MusECore::Track* selected;

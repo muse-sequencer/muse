@@ -77,8 +77,6 @@ class Thread {
       int toThreadFdw;     // message to thread (app write)
 
       PollList plist;
-//      pthread_mutex_t lock; DELETETHIS 2
-//      pthread_cond_t ready;
       void* userPtr;
 
    protected:

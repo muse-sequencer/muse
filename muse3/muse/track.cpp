@@ -754,15 +754,18 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              Part* dpart;
+              Part* dpart = 0;
               if(dup)
                 dpart = spart->hasClones() ? spart->createNewClone() : spart->duplicate();
               else if(cpy)
                 dpart = spart->duplicate();
               else if(cln)
                 dpart = spart->createNewClone();
-              dpart->setTrack(this);
-              parts()->add(dpart);
+              if(dpart)
+              {
+                dpart->setTrack(this);
+                parts()->add(dpart);
+              }
               }
       }
       
@@ -1938,7 +1941,8 @@ bool MidiTrack::updateDrummap(int doSignal)
 
     // TODO Move this to gui thread where it's safe to do so - this is only gui stuff.
     if(drummap_ordering_tied_to_patch())
-      init_drum_ordering();  // TODO This is not exactly rt friendly since it may de/allocate.
+      // TODO This is not exactly rt friendly since it may de/allocate.
+      init_drum_ordering();
   }
 
   // TODO Do this outside since we may be called as part of multiple tracks operations.

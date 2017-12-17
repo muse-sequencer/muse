@@ -599,12 +599,12 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
                   QString s;
                   if (sr == 0) {
                         p.setFont(_font2);
-                        s.sprintf("%d:00", min);
+                        s = QString("%1:00").arg(min);
                         yy = y;
                         }
                   else {
                         p.setFont(_font1);
-                        s.sprintf("%02d", sr);
+                        s = QString("%1").arg(sr, 2, 10, QLatin1Char('0'));
                         yy = y + 7;
                         }
                   int xp = pos2pix(AL::Pos(sec * AL::sampleRate, AL::FRAMES));
@@ -622,7 +622,7 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
             for (int min = min1; min < min2; ++min) {
                   QString s;
                   p.setFont(_font2);
-                  s.sprintf("%d", min);
+                  s = QString("%1").arg(min);
                   int xp = pos2pix(AL::Pos(min * AL::sampleRate * 60, AL::FRAMES));
                   p.setPen(Qt::black);
                   p.drawLine(xp, y, xp, rulerHeight);

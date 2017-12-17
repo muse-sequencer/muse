@@ -347,6 +347,13 @@ MusE::MusE() : QMainWindow()
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
       saveTimer->start( 60 * 1000 ); // every minute
 
+      messagePollTimer = new QTimer(this);
+      messagePollTimer->setObjectName("messagePollTimer");
+      connect(messagePollTimer, SIGNAL(timeout()), SLOT(messagePollTimerSlot()));
+      // A zero-millisecond poll timer. Oops, no can't do that in the gui thread,
+      //  it spikes the CPU usage because it eats up all the idle time. Use say, 50Hz 20msec.
+      messagePollTimer->start(20);
+
       //init cpuload stuff
       clock_gettime(CLOCK_REALTIME, &lastSysTime);
       lastCpuTime.tv_sec = 0;
@@ -462,6 +469,9 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
 
+      QMenu* panicPopupMenu = new QMenu(this);
+      MusEGlobal::panicAction->setMenu(panicPopupMenu);
+      
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
@@ -838,6 +848,10 @@ MusE::MusE() : QMainWindow()
       menu_functions->addAction(midiInitInstActions);
       menu_functions->addAction(midiLocalOffAction);
 
+      panicPopupMenu->addAction(midiResetInstAction);
+      panicPopupMenu->addAction(midiInitInstActions);
+      panicPopupMenu->addAction(midiLocalOffAction);
+      
       //-------------------------------------------------------------
       //    popup Audio
       //-------------------------------------------------------------
@@ -977,7 +991,6 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::song->blockSignals(false);
 
-      changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
 
@@ -1004,6 +1017,12 @@ void MusE::heartBeat()
 void MusE::blinkTimerSlot()
 {
   MusEGlobal::blinkTimerPhase = !MusEGlobal::blinkTimerPhase;
+}
+
+void MusE::messagePollTimerSlot()
+{
+  if(MusEGlobal::song)
+    MusEGlobal::song->processIpcInEventBuffers();
 }
 
 //---------------------------------------------------------
@@ -1434,7 +1453,7 @@ bool MusE::save()
 
 bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
-      QString backupCommand;
+//       QString backupCommand;
 
       QFile currentName(name);
       if (QFile::exists(name)) {
@@ -2097,6 +2116,7 @@ void MusE::showDidYouKnowDialog()
         if( dyk.exec()) {
               if (dyk.dontShowCheckBox->isChecked()) {
                     MusEGlobal::config.showDidYouKnow=false;
+                    // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                     MusEGlobal::muse->changeConfig(true);    // save settings
                     }
               }
@@ -2513,50 +2533,7 @@ void MusE::configAppearance()
       }
 
 //---------------------------------------------------------
-//   loadTheme
-//---------------------------------------------------------
-
-void MusE::loadTheme(const QString& s)
-      {
-      QStringList sl = QStyleFactory::keys();
-      if (s.isEmpty() || sl.indexOf(s) == -1) {
-        if(MusEGlobal::debugMsg)
-          printf("Set style does not exist, setting default.\n");
-        qApp->setStyle(Appearance::getSetDefaultStyle());
-        qApp->style()->setObjectName(Appearance::getSetDefaultStyle());
-      }
-      else if (qApp->style()->objectName() != s)
-      {
-            qApp->setStyle(s);
-            qApp->style()->setObjectName(s);
-      }
-      }
-
-//---------------------------------------------------------
-//   loadStyleSheetFile
-//---------------------------------------------------------
-
-void MusE::loadStyleSheetFile(const QString& s)
-{
-    if(s.isEmpty())
-    {
-      qApp->setStyleSheet(s);
-      return;
-    }
-
-    QFile cf(s);
-    if (cf.open(QIODevice::ReadOnly)) {
-          QByteArray ss = cf.readAll();
-          QString sheet(QString::fromUtf8(ss.data()));
-          qApp->setStyleSheet(sheet);
-          cf.close();
-          }
-    else
-          printf("loading style sheet <%s> failed\n", qPrintable(s));
-}
-
-//---------------------------------------------------------
-//   configChanged
+//   changeConfig
 //    - called whenever configuration has changed
 //    - when configuration has changed by user, call with
 //      writeFlag=true to save configuration in ~/.MusE
@@ -2564,36 +2541,12 @@ void MusE::loadStyleSheetFile(const QString& s)
 //       and font etc. updates, just emit the configChanged signal.
 //---------------------------------------------------------
 
-void MusE::changeConfig(bool writeFlag, bool simple)
+void MusE::changeConfig(bool writeFlag)
       {
       if (writeFlag)
             writeGlobalConfiguration();
-
-      if(!simple)
-      {
-        // Qt FIXME BUG: Cannot load certain themes with a stylesheet - even a blank one.
-        //               Although it works for a few styles, others like Breeze and Oxygen
-        //                cause the main MDI window to not respond. Force Fusion for now.
-        if(MusEGlobal::config.styleSheetFile.isEmpty())
-          loadTheme(MusEGlobal::config.style);
-        else
-          loadTheme("Fusion");
-
-        QApplication::setFont(MusEGlobal::config.fonts[0]);
-
-        if(!MusEGlobal::config.styleSheetFile.isEmpty())
-          loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
-
-        //if(MusEGlobal::config.styleSheetFile.isEmpty())
-        //  loadStyleSheetFile(QString());
-        //else
-        //  loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
-      }
-
+      updateConfiguration();
       emit configChanged();
-      
-      if(!simple)
-        updateConfiguration();
       }
 
 //---------------------------------------------------------
@@ -2603,15 +2556,22 @@ void MusE::changeConfig(bool writeFlag, bool simple)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
+      {
           // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
           metronomeConfig = new MusEGui::MetronomeConfig;
+          metronomeConfig->show();
+          return;
+      }
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();
           metronomeConfig->activateWindow();
           }
       else
+      {
+          metronomeConfig->updateValues();
           metronomeConfig->show();
+      }
       }
 
 
@@ -2641,6 +2601,7 @@ void MusE::configShortCuts()
 
 void MusE::configShortCutsSaveConfig()
       {
+      // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       changeConfig(true);
       }
 

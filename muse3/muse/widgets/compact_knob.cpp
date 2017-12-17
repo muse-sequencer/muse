@@ -645,7 +645,7 @@ void CompactKnob::resizeEvent(QResizeEvent* ev)
         _editor->setGeometry(r);
 
       const int spacing = 0;
-      int x, y, sz;
+      int x, y, sz = 1;
 
       QFontMetrics fm = fontMetrics();
 

@@ -197,13 +197,16 @@ MusEGlobal::GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
       
-      // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
+      false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
+      
+      // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text.
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
       1024,                         // rtcTicks
+      0,                            // curMidiSyncInPort The currently selected midi sync input port.
       true,                         // midiSendInit Send instrument initialization sequences
       true,                         // warnInitPending Warn instrument initialization sequences pending
       false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song
@@ -322,8 +325,7 @@ QString pitch2string(int v)
       if (v < 0 || v > 127)
             return QString("----");
       int octave = (v / 12) - 2;
-      QString o;
-      o.sprintf("%d", octave);
+      QString o = QString::number(octave);
       int i = v % 12;
       QString s(octave < 0 ? valu[i] : vall[i]);
       if (hIsB) {

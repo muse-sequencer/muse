@@ -112,7 +112,9 @@ class Xml {
       void floatTag(int level, const char* const name, float val);
       void strTag(int level, const char* const name, const char* val);
       void strTag(int level, const char* const name, const QString& s);
+      void strTag(int level, const QString& name, const QString& val);
       void colorTag(int level, const char* name, const QColor& color);
+      void colorTag(int level, const QString& name, const QColor& color);
       void geometryTag(int level, const char* name, const QWidget* g);
       void qrectTag(int level, const char* name, const QRect& r);
       static QString xmlString(const QString&);

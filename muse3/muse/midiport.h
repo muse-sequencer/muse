@@ -30,9 +30,9 @@
 #include "route.h"
 #include "mpevent.h"
 #include "lock_free_buffer.h"
+#include "mididev.h"
 
-class QMenu;
-class QWidget;
+class QString;
 
 namespace MusECore {
 
@@ -44,26 +44,28 @@ class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
 
-struct Gui2AudioFifoStruct {
-  int _type;
-  int _chan;
-  int _ctlnum;
-  double _val;
-  bool _incremental;
-
-  Gui2AudioFifoStruct()
-    : _type(0), _chan(0), _ctlnum(0), _val(0.0), _incremental(false) { }
-  Gui2AudioFifoStruct(int type, int chan, int ctlnum, double val, bool incremental)
-    : _type(type), _chan(chan), _ctlnum(ctlnum), _val(val), _incremental(incremental) { }
-  Gui2AudioFifoStruct(const MidiPlayEvent& ev)
-    : _type(ev.type()), _chan(ev.channel()), _ctlnum(ev.dataA()), _val(ev.dataB()), _incremental(false) { }
-};
-
 //---------------------------------------------------------
 //   MidiPort
 //---------------------------------------------------------
 
 class MidiPort {
+  public:
+      // IDs for the various IPC FIFOs that are used.
+      enum EventFifoIds
+      {
+        // Playback queued events put by the audio process thread.
+        PlayFifo=0,
+        // Gui events put by our gui thread.
+        GuiFifo=1,
+        // OSC events put by the OSC thread.
+        OSCFifo=2,
+        // Monitor input passthrough events put by Jack devices (audio process thread).
+        JackFifo=3,
+        // Monitor input passthrough events put by ALSA devices (midi seq thread).
+        ALSAFifo=4
+      };
+      
+  private:    
       MidiCtrlValListList* _controller;
       MidiDevice* _device;
       QString _state;               // result of device open
@@ -80,19 +82,22 @@ class MidiPort {
       //  something about the port changes like device, Jack routes, or instrument.
       bool _initializationsSent; 
 
-      // Fifo for midi events sent from gui to audio (ex. updating hardware knobs/sliders):
-      LockFreeBuffer<Gui2AudioFifoStruct> *_gui2AudioFifo;
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *_eventBuffers;
 
       RouteList _inRoutes, _outRoutes;
       
       void clearDevice();
 
-      // Prepares an event for putting into the gui2audio fifo.
-      // To be called from gui thread only. Returns true if the event was staged.
-      bool stageEvent(MidiPlayEvent& dst, const MidiPlayEvent& src);
-      // To be called from audio thread only. Returns true if event cannot be delivered.
-      //bool handleGui2AudioEvent(const MidiPlayEvent&);
-      bool handleGui2AudioEvent(const Gui2AudioFifoStruct&);
+      // Creates a controller in this port's controller list.
+      // Returns true if the controller was created.
+      // To be called by gui thread only.
+      bool createController(int chan, int ctrl);
+
+      // To be called from audio thread only. Returns true on success.
+      // If createAsNeeded is true, automatically send a message to the gui thread to
+      //  create items such as controllers, and cache the events sent to it and re-put
+      //  them after the controller has been created.
+      bool handleGui2AudioEvent(const MidiPlayEvent&, bool createAsNeeded);
 
    public:
       MidiPort();
@@ -122,6 +127,7 @@ class MidiPort {
       bool setHwCtrlState(int ch, int ctrl, double val);
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
       bool setHwCtrlStates(int ch, int ctrl, double val, double lastval);
+      bool setHwCtrlState(const MidiPlayEvent&);
       void deleteController(int ch, int tick, int ctrl, Part* part);
       void addDefaultControllers();
       
@@ -146,6 +152,7 @@ class MidiPort {
       void changeInstrument(MidiInstrument* i);
       MidiController* midiController(int num, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
+      // To be called from realtime audio thread only.
       void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val);
       double limitValToInstrCtlRange(int ctl, double val);
@@ -190,7 +197,8 @@ class MidiPort {
       void sendMMCStop(int devid = -1);
       void sendMMCDeferredPlay(int devid = -1);
 
-      // Send Instrument Init sequences and controller defaults etc.
+      // Send Instrument Init sequences and controller defaults etc. Return true if success.
+      // To be called from realtime audio thread only.
       bool sendPendingInitializations(bool force = true);  // Per port
       // Send initial controller values. Called by above method, and elsewhere.
       bool sendInitialControllers(unsigned start_time = 0);
@@ -200,7 +208,7 @@ class MidiPort {
       // Put an event into the gui2audio fifo for playback. Calls stageEvent().
       // Called from gui thread only. Returns true if event cannot be delivered.
       bool putHwCtrlEvent(const MidiPlayEvent&);
-      // Put an event into both the device and the gui2audio fifo for playback. Calls stageEvent().
+      // Put an event into both the device and the gui2audio fifos for playback. Calls stageEvent().
       // Called from gui thread only. Returns true if event cannot be delivered.
       bool putEvent(const MidiPlayEvent&);
       // Special method for incrementing a value: Handles getting the current hw value,
@@ -210,14 +218,16 @@ class MidiPort {
       //        to change in the audio thread before calling again, especially rapidly.
       //       This method looks at the current value, so the current value must be up to date.
       //       It will not call Audio::msgAudioWait(), to allow caller to optimize multiple calls.
-      bool putControllerIncrement(int port, int chan, int ctlnum, double incVal, bool isDb);
+// TODO: An increment method seems possible: Wait for gui2audio to increment, then send to driver,
+//        which incurs up to one extra segment delay (if Jack midi).
       bool putControllerValue(int port, int chan, int ctlnum, double val, bool isDb);
       // Process the gui2AudioFifo. Called from audio thread only.
-      bool processGui2AudioEvents();
+      static bool processGui2AudioEvents();
 
+      // Various IPC FIFOs.
+      static LockFreeMPSCRingBuffer<MidiPlayEvent> *eventBuffers() { return _eventBuffers; } 
 
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
-      bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }
       void setAutomationType(int channel, AutomationType t) {
             _automationType[channel] = t;
@@ -232,7 +242,6 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
 extern MidiControllerList defaultManagedMidiController;
 
 } // namespace MusECore

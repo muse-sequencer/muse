@@ -1,6 +1,5 @@
 ================================================
     MusE loadable Midi Instrument Definitions
-    (valid from around MusE 0.8.1, Edited by Tim DEC.16.2016, at MusE 3.0rc2)
 ================================================
 
   - File Extension  ".idf"
@@ -12,8 +11,17 @@
      original instruments while allowing modifications.
 
   All found instrument definitions are presented by MusE
-  in Config->MidiPorts in Pulldown in column "Instrument".
-
+  in Settings->Config->MidiPorts in Pulldown in column "Instrument".
+  They can also be selected directly from within a midi mixer strip.
+  
+  You choose an appropriate Instrument for the playback device being used.
+  For example if playing back to a Yamaha S-90 keyboard, choose Yamaha S-90.
+  If the Yamaha model is not listed, it may be a Yamaha XG compatible device
+   so try the more general XG. Similarly there is a more general Roland SG.
+  More specific Instrument models are defined as well.
+  When in doubt, or if all else does not seem to work, try GM (General Midi),
+   it is always a safe bet with most devices, and is the default Instrument.
+  
   As of MusE-2.1 or so, Drum Maps can be integrated into the .idf file.
   The Instrument Editor has a facility for editing them.
   See the GM2, GS, or XG instruments for examples.
@@ -26,9 +34,21 @@
 <?xml version="1.0"?>
 <muse version="1.0">
   <MidiInstrument name="GM">
+  
+    <!-- Supported sysex messages: -->
+    <!-- Notice that the enclosing F0 ... F7 are not required: -->
+    <SysEx name="GM on">
+      <comment>Switch General Midi mode on</comment>
+      <data>7e 7f 09 01</data>
+      </SysEx>
+      
+    <!-- Sysex event list which initializes instrument: -->
     <Init>
-      ...MusE event list which initializes instrument
+        <event tick="0" type="2" datalen="4"> 
+            7e 7f 09 01           
+            </event>
       </Init>
+      
     <PatchGroup name="Piano">
        <Patch name="Grand Piano" prog="0"/>
        <Patch name="Bright Piano" prog="1"/>
@@ -60,7 +80,7 @@
         ...
         </MidiInstrument>
 
- (2)  An "Instrument Definition File" can define more than on
+ (2)  An "Instrument Definition File" can define more than one
       Instrument, but it is recommended to use one file for
       one instrument
 
@@ -90,11 +110,12 @@
       From version 2.1:
       -----------------
       There is no 'mode' parameter. The selection of GM, GS, or XG instruments
-       or other instruments with an sysex 'Init' section, determines what 'mode'
+       or other instruments with a sysex 'Init' section, determines what 'mode'
        the device is in.
 
  (4)  example for MusE event (Sysex "XG-On"):
 
+      <!-- Notice that the enclosing F0 ... F7 are not required: -->
       <event tick="0" type="5" datalen="7">
         43 10 4c 00 00 7e 00
         </event>

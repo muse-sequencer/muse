@@ -71,7 +71,6 @@ class VstSynthIF : public SynthIF
             _guiVisible = false;
             }
 
-      virtual bool initGui()       { return true; };
       virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const { return false; }
       virtual void showGui(bool) {  }

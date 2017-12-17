@@ -147,8 +147,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
                   continue;
             p.drawLine(xp, 0, xp, h/2);
             p.drawLine(xp, h/2, xp+5, h/2);
-            QString s;
-            s.sprintf("%d/%d", e->sig.z, e->sig.n);
+            QString s = QString("%1/%2").arg(e->sig.z).arg(e->sig.n);
             p.drawText(xp+8, h-6, s);
             }
 

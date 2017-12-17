@@ -586,7 +586,7 @@ void Piano::draw(QPainter& p, const QRect& r)
         return;
       MusECore::PartList* part_list = _midiEditor->parts();
       MusECore::Part* cur_part = _midiEditor->curCanvasPart();
-      if(!part_list || !cur_part)
+      if(!part_list || !cur_part || !cur_part->track()->isMidiTrack())
         return;
       
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());

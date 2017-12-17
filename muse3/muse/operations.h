@@ -197,8 +197,8 @@ struct PendingOperationItem
                               AddMidiDevice,     DeleteMidiDevice,       
                               ModifyMidiDeviceAddress,         ModifyMidiDeviceFlags,       ModifyMidiDeviceName,
                               AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
-                              SetTrackRecord,    SetTrackMute, SetTrackSolo,
-                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,
+                              SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
+                              ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
                               AddPart,           DeletePart,   MovePart, ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
@@ -211,7 +211,8 @@ struct PendingOperationItem
                               AddRoute,          DeleteRoute, 
                               AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
                               UpdateSoloStates,
-                              EnableAllAudioControllers
+                              EnableAllAudioControllers,
+                              ModifyAudioSamples
                               }; 
                               
   PendingOperationType _type;
@@ -220,6 +221,7 @@ struct PendingOperationItem
     Part* _part;
     MidiPort* _midi_port;
     void* _void_track_list;
+    int* _audioSamplesLen;
   };
   
   union {
@@ -233,7 +235,8 @@ struct PendingOperationItem
     MidiDeviceList* _midi_device_list;
     MidiInstrumentList* _midi_instrument_list;
     AuxSendValueList* _aux_send_value_list;
-    RouteList* _route_list;       
+    RouteList* _route_list;
+    float** _audioSamplesPointer;
   };
             
   union {
@@ -245,6 +248,7 @@ struct PendingOperationItem
     TEvent* _tempo_event; 
     AL::SigEvent* _sig_event; 
     Route* _dst_route_pointer;
+    float* _newAudioSamples;
   };
 
   iPart _iPart; 
@@ -272,6 +276,7 @@ struct PendingOperationItem
     int _address_client;
     int _rw_flags;
     int _frame;
+    int _newAudioSamplesLen;
     //DrumMapOperation* _drum_map_operation;
     DrumMapTrackOperation* _drum_map_track_operation;
     DrumMapTrackPatchOperation* _drum_map_track_patch_operation;
@@ -293,6 +298,11 @@ struct PendingOperationItem
     double _ctl_dbl_val;
   };
 
+  PendingOperationItem(float** samples, float* new_samples, int* samples_len, int new_samples_len, 
+                       PendingOperationType type = ModifyAudioSamples)
+    { _type = type; _audioSamplesPointer = samples; _newAudioSamples = new_samples; 
+      _audioSamplesLen = samples_len, _newAudioSamplesLen = new_samples_len; }
+    
   // The operation is constructed and allocated in non-realtime before the call, then the controllers modified in realtime stage,
   //  then operation is deleted in non-realtime stage.
   PendingOperationItem(MidiCtrlValRemapOperation* operation, PendingOperationType type = RemapDrumControllers)
@@ -308,6 +318,9 @@ struct PendingOperationItem
   PendingOperationItem(DrumMapTrackPatchReplaceOperation* operation, PendingOperationType type = ReplaceTrackDrumMapPatchList)
     { _type = type; _drum_map_track_patch_replace_operation = operation; }
 
+  PendingOperationItem(MidiPort* mp, PendingOperationType type = UpdateDrumMaps)
+    { _type = type; _midi_port = mp; }
+    
   PendingOperationItem(TrackList* tl, PendingOperationType type = UpdateSoloStates)
     { _type = type; _track_list = tl; }
   
@@ -363,7 +376,8 @@ struct PendingOperationItem
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
     
-  PendingOperationItem(Track* track, bool v, PendingOperationType type) // type is SetTrackRecord, SetTrackMute, SetTrackSolo
+   // type is SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff
+  PendingOperationItem(Track* track, bool v, PendingOperationType type)
     { _type = type; _track = track; _boolA = v; }
     
     

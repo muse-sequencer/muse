@@ -29,7 +29,7 @@ details.
       Technologies supported:
          - LASH - for session control with external LASH enabled applications 
          - JACK - The Jack Audio Connection Kit can be used for audio and midi
-         - ALSA midi output
+         - ALSA midi
          - Plugin formats: LV2, DSSI, VST, LinuxVST, MESS
          - Support Inst(rument) Patch Library for enhanced fluidsynth features.
          - FLAM plugin guis.
@@ -79,15 +79,15 @@ details.
   =============================
       Optional:
   =============================
+  
+      - ALSA >= 0.9.0  Advanced Linux Sound Architecture (development files) 
+          http://www.alsa-project.org/
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
           http://sourceforge.net/apps/trac/fluidsynth/
 
       - libinstpatch >= 1.0    Instrument Patch Library (development files)
           http://www.swamiproject.org/
-
-      - liblo    Lightweight OSC (Open Sound Control) (development files)   
-          http://liblo.sourceforge.net/
 
       - LV2 (LADSPA Version 2) plugin support:
       
@@ -116,7 +116,11 @@ details.
          
       - DSSI     Disposable Soft Synth Interface (development files)   
           http://dssi.sourceforge.net/
-        (Both recommended - DSSI needs OSC, OSC alone does nothing, for now.)
+
+      - liblo    Lightweight OSC (Open Sound Control) (development files)   
+          http://liblo.sourceforge.net/
+          
+        (Both recommended - DSSI can use OSC, OSC alone does nothing, for now.)
 
       - dssi-vst        Support for DSSI vst plugins            
           http://www.breakfastquay.com/dssi-vst/
@@ -290,19 +294,56 @@ details.
       Startup troubleshooting tips:
       -----------------------------
 
-      - some distros do not load the alsa sequencer module by default.
-        if necessary, load the alsa sequencer module with:
+      - Some rare distros might not load the alsa sequencer module by default.
+        If necessary, load the alsa sequencer module with:
             /sbin/modprobe snd-seq
 
-      If MusE falls back to the old RTC timer but fails, try this:
-      - make sure you can acces the realtime clock (RTC)
+      - Timer accuracy for ALSA support:
+
+        If ALSA support is enabled, a reliable source of timing is 
+         desired for playback of midi notes.
+         
+        By default, the timer is attempted to run at 1024 Hz (ticks/second).
+        
+        MusE will try the Real Time Clock (RTC) first.
+        If that fails it will try ALSA timers instead - typically the 
+         ALSA High Resolution (HR) timer or the ALSA sytem timer.
+
+        The RTC is recommended, with sufficient permissions, for best accuracy.
+        
+        To ensure you have permissions to use the RTC, on modern systems
+         using udev rules, create this file if it does not exist:
+           "/etc/udev/rules.d/40-timer-permissions.rules"
+         and add the follwing lines to the file:  
+           KERNEL=="rtc0",GROUP="audio"
+           KERNEL=="hpet",GROUP="audio"
+         and, as stated in "Recommended setup" above, ensure you are 
+          part of the audio group.
+         
+        (The hpet is not supported, but that line can help other applications.)
+      
+        It is possible to use the ALSA system timer instead of the RTC, 
+         but it usually requires a kernel built with a 1000 Hz system timer
+         (low-latency, realtime, or custom kernel as in "Recommended setup" above).
+        With most desktop kernels, the system timer is limited to 250 Hz,
+         while the HR timer is limited to 1000 Hz.
+        On such distros, without modification, MusE should end up picking 
+         the 1000 Hz HR timer. 
+         
+        But if you set your RTC as above, you can run even higher rates.
+        See the Global Settings dialog for user-adjustable high rates.
+         
+        Run MusE in a terminal to see what it picks. -D option gives more info. 
+
+        
+        (The following is old information! But may work for those without udev.)
+        Make sure you can acces the realtime clock (RTC)
             chmod 660 /dev/rtc
             chgrp audio /dev/rtc
-      - make sure MusE can set the rtc clock:
+        Make sure MusE can set the rtc clock:
             echo 8192 > /proc/sys/dev/rtc/max-user-freq
             inspect with:
             cat /proc/sys/dev/rtc/max-user-freq
-
 
   =============================
       known bugs

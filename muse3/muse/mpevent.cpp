@@ -34,6 +34,13 @@
 
 namespace MusECore {
 
+
+template <typename T> TypedMemoryPool<T, 2048> audioMPEventRTalloc<T>::pool;
+template <typename T> TypedMemoryPool<T, 2048> seqMPEventRTalloc<T>::pool;
+
+//template <typename T, MPEventRTallocID aid> TypedMemoryPool<T, 2048> MPEventRTalloc<T, aid>::audio_pool;
+//template <typename T, MPEventRTallocID aid> TypedMemoryPool<T, 2048> MPEventRTalloc<T, aid>::seq_pool;
+
 //---------------------------------------------------------
 //   MEvent
 //---------------------------------------------------------
@@ -220,6 +227,64 @@ bool MEvent::operator<(const MEvent& e) const
       }
 
 //---------------------------------------------------------
+//  translateCtrlNum
+//---------------------------------------------------------
+
+int MEvent::translateCtrlNum() const
+{
+  const int da = dataA();
+  int ctrl = -1;
+
+  switch(type())
+  {
+    case ME_CONTROLLER:
+      switch(da)
+      {
+        case CTRL_HBANK:
+          ctrl = CTRL_PROGRAM;
+        break;
+
+        case CTRL_LBANK:
+          ctrl = CTRL_PROGRAM;
+        break;
+
+        case CTRL_PROGRAM:
+          ctrl = CTRL_PROGRAM;
+        break;
+        
+        default:
+          ctrl = da;
+        break;
+      }
+    break;
+    
+    case ME_POLYAFTER:
+    {
+      const int pitch = da & 0x7f;
+      ctrl = (CTRL_POLYAFTER & ~0xff) | pitch;
+    }
+    break;
+    
+    case ME_AFTERTOUCH:
+      ctrl = CTRL_AFTERTOUCH;
+    break;
+    
+    case ME_PITCHBEND:
+      ctrl = CTRL_PITCH;
+    break;
+    
+    case ME_PROGRAM:
+      ctrl = CTRL_PROGRAM;
+    break;
+    
+    default:
+    break;
+  }
+  
+  return ctrl;
+}
+
+//---------------------------------------------------------
 //   add
 //    Optimize to eliminate duplicate events at the SAME time.
 //    It will not handle duplicate events at DIFFERENT times.
@@ -277,16 +342,6 @@ void MPEventList::add(const MidiPlayEvent& ev)
         // If length is zero there's no point in adding this sysex. Just return.
         if(len == 0)
           return;
-        // If the two sysexes are the same, ignore the event to be added.
-        // Even if the two are chunks (no SYSEX and/or EOX) which by pure coincidence
-        //  happen to be identical, they should not be at the same time anyway - they
-        //  should be serialized.
-        // REMOVE Tim. autoconnect. Fix this.
-        // FIXME That's not necessarily true - should be able to schedule in order at
-        //        the same time but the device does the serialization.
-        // Currently we don't support chunks anyway, so we are safe for now...
-        if(l_ev.len() == len && memcmp(ev.data(), l_ev.data(), len) == 0)
-          return;
       }
       break;
 
@@ -310,54 +365,84 @@ void MPEventList::add(const MidiPlayEvent& ev)
 }
 
 //---------------------------------------------------------
-//   put
-//    return true on fifo overflow
+//   add
+//    Optimize to eliminate duplicate events at the SAME time.
+//    It will not handle duplicate events at DIFFERENT times.
+//    Replaces event if it already exists.
 //---------------------------------------------------------
 
-bool MidiFifo::put(const MidiPlayEvent& event)
+void SeqMPEventList::add(const MidiPlayEvent& ev)
+{
+  SeqMPEventListRangePair_t range = equal_range(ev);
+
+  for(iSeqMPEvent impe = range.first; impe != range.second; ++impe)
+  {
+    // Note that (multi)set iterators are constant and can't be modified.
+    // The only option is to erase the old item(s), then insert a new item.
+    const MidiPlayEvent& l_ev = *impe;
+
+    // The type, time, port, and channel should already be equal, according to the operator< method.
+    switch(ev.type())
+    {
+      case ME_NOTEON:
+      case ME_NOTEOFF:
+      case ME_CONTROLLER:
+      case ME_POLYAFTER:
+        // Are the notes or controller numbers the same?
+        if(l_ev.dataA() == ev.dataA())
+        {
+          // If the velocities or values are the same, just ignore.
+          if(l_ev.dataB() == ev.dataB())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
+          return;
+        }
+      break;
+
+      case ME_PROGRAM:
+      case ME_AFTERTOUCH:
+      case ME_PITCHBEND:
+      case ME_SONGPOS:
+      case ME_MTC_QUARTER:
+      case ME_SONGSEL:
+          // If the values are the same, just ignore.
+          if(l_ev.dataA() == ev.dataA())
+            return;
+          // Erase the item, and insert the replacement.
+          erase(impe);
+          insert(ev);
+          return;
+      break;
+
+      case ME_SYSEX:
       {
-      if (size < MIDI_FIFO_SIZE) {
-            fifo[wIndex] = event;
-            wIndex = (wIndex + 1) % MIDI_FIFO_SIZE;
-            // q_atomic_increment(&size);
-            ++size;
-            return false;
-            }
-      return true;
+        const int len = ev.len();
+        // If length is zero there's no point in adding this sysex. Just return.
+        if(len == 0)
+          return;
       }
+      break;
 
-//---------------------------------------------------------
-//   get
-//---------------------------------------------------------
+      case ME_CLOCK:
+      case ME_START:
+      case ME_CONTINUE:
+      case ME_STOP:
+      case ME_SYSEX_END:
+      case ME_TUNE_REQ:
+      case ME_TICK:
+      case ME_SENSE:
+        // Event already exists. Ignore the event to be added.
+        return;
+      break;
 
-MidiPlayEvent MidiFifo::get()
-      {
-      MidiPlayEvent event(fifo[rIndex]);
-      rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      --size;
-      return event;
-      }
-
-//---------------------------------------------------------
-//   peek
-//---------------------------------------------------------
-
-const MidiPlayEvent& MidiFifo::peek(int n)
-      {
-      int idx = (rIndex + n) % MIDI_FIFO_SIZE;
-      return fifo[idx];
-      }
-
-//---------------------------------------------------------
-//   remove
-//---------------------------------------------------------
-
-void MidiFifo::remove()
-      {
-      rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      --size;
-      }
-
+      case ME_META: // TODO: This could be reset, or might be a meta, depending on MPEventList usage.
+      break;
+    }
+  }
+  insert(ev);
+}
 
 //---------------------------------------------------------
 //   put
@@ -406,5 +491,5 @@ void MidiRecFifo::remove()
       rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
       --size;
       }
-
+      
 } // namespace MusECore

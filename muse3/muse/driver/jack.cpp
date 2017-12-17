@@ -1882,14 +1882,14 @@ char* JackAudioDevice::portName(void* port, char* str, int str_size, int preferr
   al[1] = &a2[0];
   
   int na = jack_port_get_aliases((jack_port_t*)port, al);
-  if(na >= 1 && al[0] != '\0')
+  if(na >= 1 && *al[0] != '\0')
   {
     if((strncmp(al[0], "system:", 7) != 0 && preferred_name_or_alias == -1) || preferred_name_or_alias == 1)
       return MusELib::strntcpy(str, al[0], str_size);
     B = true;
   }
 
-  if(na >= 2 && al[1] != '\0')
+  if(na >= 2 && *al[1] != '\0')
   {
     if((strncmp(al[1], "system:", 7) != 0 && preferred_name_or_alias == -1) || preferred_name_or_alias == 2)
       return MusELib::strntcpy(str, al[1], str_size);

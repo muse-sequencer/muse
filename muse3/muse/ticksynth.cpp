@@ -20,6 +20,8 @@
 //
 //=========================================================
 
+#include <stdio.h>
+
 #include "audio.h"
 #include "ticksynth.h"
 #include "default_click.h"
@@ -27,6 +29,7 @@
 #include "popupmenu.h"
 #include "gconfig.h"
 #include "wave.h"
+#include "operations.h"
 
 // If sysex support is ever added, make sure this number is unique among all the
 //  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
@@ -34,6 +37,9 @@
 //#define METRONOME_UNIQUE_ID      7
 
 //#define METRONOME_DEBUG
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_TICKSYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -88,6 +94,8 @@ class MetronomeSynthIF : public SynthIF
       float *accent2Samples;
       int    accent2Len;
 
+      bool processEvent(const MidiPlayEvent& ev);
+      
    public:
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
@@ -97,22 +105,17 @@ class MetronomeSynthIF : public SynthIF
             accent2Len = 0;
             initSamples();
             }
-      virtual bool initGui()     { return true; }
       virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const { return false; }
-      virtual void showGui(bool) {}
       virtual bool hasGui() const { return false; }
       virtual bool nativeGuiVisible() const { return false; }
       virtual void showNativeGui(bool) { }
       virtual bool hasNativeGui() const { return false; }
       
-      virtual void getGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
-      virtual void setGeometry(int, int, int, int) {}
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       virtual void preProcessAlways() { }
-      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
+      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
       
@@ -127,52 +130,126 @@ class MetronomeSynthIF : public SynthIF
       virtual void setParameter(unsigned long, double) {}
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
+      void initSamplesOperation(MusECore::PendingOperationList&);
+       
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
 
-      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, double /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 //---------------------------------------------------------
 //   getData
 //---------------------------------------------------------
 
-iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsigned pos, int/*ports*/, unsigned n, float** buffer)
+bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsigned n, float** buffer)
       {
-      // Added by Tim. p3.3.18
       #ifdef METRONOME_DEBUG
-      printf("MusE: MetronomeSynthIF::getData\n");
+      fprintf(stderr, "MusE: MetronomeSynthIF::getData\n");
       #endif
 
-      if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
-          initMetronome();
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      unsigned int curPos = 0;
+      unsigned int frame = 0;
+
+      // Get the state of the stop flag.
+      const bool do_stop = synti->stopFlag();
+
+      MidiPlayEvent buf_ev;
+      
+      // Transfer the user lock-free buffer events to the user sorted multi-set.
+      // False = don't use the size snapshot, but update it.
+      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
+      {
+        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+          synti->_outUserEvents.insert(buf_ev);
+      }
+      
+      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
+      {
+        // Are we stopping? Just remove the item.
+        if(do_stop)
+          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
+        // Otherwise get the item.
+        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+          synti->_outPlaybackEvents.insert(buf_ev);
+      }
+  
+      // Are we stopping?
+      if(do_stop)
+      {
+        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->_outPlaybackEvents.clear();
+        // Reset the flag.
+        synti->setStopFlag(false);
+      }
+        
+      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+      iMPEvent impe_us = synti->_outUserEvents.begin();
+      bool using_pb;
+  
+      while(1)
+      {  
+        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+          using_pb = *impe_pb < *impe_us;
+        else if(impe_pb != synti->_outPlaybackEvents.end())
+          using_pb = true;
+        else if(impe_us != synti->_outUserEvents.end())
+          using_pb = false;
+        else break;
+        
+        const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+        
+        const unsigned int evTime = ev.time();
+        if(evTime < syncFrame)
+        {
+          fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+                  evTime, syncFrame, curPos);
+          frame = 0;
+        }
+        else
+          frame = evTime - syncFrame;
+
+        // Event is for future?
+        if(frame >= n) 
+        {
+          DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
+                  frame, n, evTime, syncFrame, curPos);
+          //continue;
+          break;
+        }
+
+        if(frame > curPos)
+        {
+          process(buffer, curPos, frame - curPos);
+          curPos = frame;
+        }
+        
+        // If putEvent fails, although we would like to not miss events by keeping them
+        //  until next cycle and trying again, that can lead to a large backup of events
+        //  over a long time. So we'll just... miss them.
+        //putEvent(ev);
+        //synti->putEvent(ev);
+        processEvent(ev);
+        
+        // Done with ring buffer event. Remove it from FIFO.
+        // C++11.
+        if(using_pb)
+          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+        else
+          impe_us = synti->_outUserEvents.erase(impe_us);
       }
 
-      //set type to unsigned , due to compiler warning: comparison signed/unsigned
-      unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
-      unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
-      unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
-      int frameOffset = MusEGlobal::audio->getFrameOffset();
-
-      for (; i != el->end(); ++i) {
-            unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
-            if (frame >= endPos)
-                  break;
-            if (frame > curPos) {
-                  if (frame < pos)
-                        printf("should not happen: missed event %d\n", pos -frame);
-                  else
-                        process(buffer, curPos-pos, frame - curPos);
-                  curPos = frame;
-                  }
-            putEvent(*i);
-            }
-      if (endPos - curPos)
-            process(buffer, curPos - off, endPos - curPos);
-      return el->end();
+      if(curPos < n)
+        process(buffer, curPos, n - curPos);
+      
+      return true;
       }
-
+      
 //---------------------------------------------------------
 //   initSamples
 //---------------------------------------------------------
@@ -222,13 +299,70 @@ void MetronomeSynthIF::initSamples()
 
 }
 
+//---------------------------------------------------------
+//   initSamplesOperation
+//---------------------------------------------------------
 
+void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& operations)
+{
+  SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample);
+  if (!beat.openRead(false)) {
+    const sf_count_t newBeatLen = beat.samples();
+    if(newBeatLen != 0)
+    {
+      float* newBeatSamples = new float[newBeatLen];
+      beat.read(1, &newBeatSamples, newBeatLen);
+      operations.add(PendingOperationItem(&beatSamples, newBeatSamples, 
+                                          &beatLen, newBeatLen, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+  
+  SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + MusEGlobal::config.measSample);
+  if (!meas.openRead(false)) {
+    const sf_count_t newMeasLen = meas.samples();
+    if(newMeasLen != 0)
+    {
+      float* newMeasSamples = new float[newMeasLen];
+      meas.read(1, &newMeasSamples, newMeasLen);
+      operations.add(PendingOperationItem(&measSamples, newMeasSamples, 
+                                          &measLen, newMeasLen, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+
+  SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent1Sample);
+  if (!accent1.openRead(false)) {
+    const sf_count_t newAccent1Len = accent1.samples();
+    if(newAccent1Len != 0)
+    {
+      float* newAccent1Samples = new float[newAccent1Len];
+      accent1.read(1, &newAccent1Samples, newAccent1Len);
+      operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples, 
+                                          &accent1Len, newAccent1Len, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+
+  SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent2Sample);
+  if (!accent2.openRead(false)) {
+    const sf_count_t newAccent2Len = accent2.samples();
+    if(newAccent2Len != 0)
+    {
+      float* newAccent2Samples = new float[newAccent2Len];
+      accent2.read(1, &newAccent2Samples, newAccent2Len);
+      operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples, 
+                                          &accent2Len, newAccent2Len, 
+                                          PendingOperationItem::ModifyAudioSamples));
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   putEvent
 //---------------------------------------------------------
 
-bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
+bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
 {
     if(ev.type() != MusECore::ME_NOTEON)
       return false;
@@ -311,6 +445,16 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
             data = 0;
       }
 
+//---------------------------------------------------------
+//   MetronomeSynthI
+//---------------------------------------------------------
+
+void MetronomeSynthI::initSamplesOperation(PendingOperationList& operations)
+{ 
+  if(sif()) 
+    dynamic_cast<MetronomeSynthIF*>(sif())->initSamplesOperation(operations);
+}
+   
 //---------------------------------------------------------
 //   initMetronome
 //---------------------------------------------------------

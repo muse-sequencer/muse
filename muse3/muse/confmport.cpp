@@ -277,7 +277,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         {
           MusECore::MidiTrack* mt = *it;
           MusECore::RouteList* rl = mt->outRoutes();
-          for(MusECore::ciRoute ir = rl->begin(); ir != rl.end(); ++ir)
+          for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
           {
             switch(ir->type)
             {
@@ -711,29 +711,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }  
                     }
                     
-                    if(!mapSYNTH.empty())
-                    {
-                      pup->addSeparator();
-                      pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
-                      
-                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
-                      {
-                        int idx = i->second;
-                        QString s(i->first.c_str());
-                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
-                        if(md)
-                        {
-                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
-                            continue;
-                            
-                          act = pup->addAction(md->name());
-                          act->setData(idx);
-                          act->setCheckable(true);
-                          act->setChecked(md == dev);
-                        }  
-                      }
-                    }  
-                    
                     if(!mapJACK.empty())
                     {
                       pup->addSeparator();
@@ -756,6 +733,29 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         }  
                       }
                     }
+                    
+                    if(!mapSYNTH.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
+                      
+                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
+                      {
+                        int idx = i->second;
+                        QString s(i->first.c_str());
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
+                            continue;
+                            
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }  
+                      }
+                    }  
                     
                     act = pup->exec(ppt);
                     if(!act)
@@ -850,6 +850,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                     
                     MusEGlobal::audio->msgSetMidiDevice(port, sdev);
+                    // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                     MusEGlobal::muse->changeConfig(true);     // save configuration file
                     
                     // Add all track routes to/from this port...
@@ -1469,6 +1470,9 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       int row_cnt = 0;
       for (MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MusECore::MidiDevice* md = *imd;
+            MusECore::SynthI* synth = 0;
+            if(md->isSynti())
+              synth = static_cast<MusECore::SynthI*>(md);
             QTableWidgetItem* iitem = new QTableWidgetItem(md->name());
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             // Is it a Jack midi device? Allow renaming.
@@ -1508,8 +1512,8 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             iitem->setTextAlignment(Qt::AlignCenter);
             addInstItem(row_cnt, INSTCOL_GUI, iitem, instanceList);
-            if(md->hasNativeGui())
-              iitem->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            if(synth && synth->hasNativeGui())
+              iitem->setIcon(synth->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
             else
               iitem->setIcon(QIcon(QPixmap()));
 
@@ -1603,6 +1607,7 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
                   MusEGlobal::audio->msgSetMidiDevice(port, si);
+                  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
                   MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();
                   break;
@@ -1736,6 +1741,9 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
       if(!item->data(DeviceRole).canConvert<void*>())
         return;
       MusECore::MidiDevice* md = static_cast<MusECore::MidiDevice*>(item->data(DeviceRole).value<void*>());
+      MusECore::SynthI* synth = 0;
+      if(md->isSynti())
+        synth = static_cast<MusECore::SynthI*>(md);
       int rwFlags   = md->rwFlags();
       int openFlags = md->openFlags();
 #endif        
@@ -1767,10 +1775,10 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   return;
         case INSTCOL_GUI:
-                  if(md->hasNativeGui())
+                  if(synth && synth->hasNativeGui())
                   {
-                    md->showNativeGui(!md->nativeGuiVisible());
-                    item->setIcon(md->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                    synth->showNativeGui(!synth->nativeGuiVisible());
+                    item->setIcon(synth->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
                   
@@ -1829,6 +1837,7 @@ void MPConfig::addAlsaDeviceClicked(bool v)
   MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
 
   MusEGlobal::config.enableAlsaMidiDriver = v;
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
   //MusEGlobal::muse->changeConfig(true);    // Save settings? No, wait till close.
 
   if(v)

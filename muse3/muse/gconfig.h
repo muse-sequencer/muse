@@ -194,6 +194,9 @@ struct GlobalConfigValues {
       QColor rackItemBackgroundColor;
 
       WaveDrawing waveDrawing;
+
+      // Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
+      bool fixFrozenMDISubWindows;
       
       // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
       // For certain widgets that use it. May be more later.
@@ -202,6 +205,7 @@ struct GlobalConfigValues {
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
       int rtcTicks;
+      int curMidiSyncInPort;     // The currently selected midi sync input port.
       bool midiSendInit;         // Send instrument initialization sequences
       bool warnInitPending;      // Warn instrument initialization sequences pending
       bool midiSendCtlDefaults;  // Send instrument controller defaults at position 0 if none in song

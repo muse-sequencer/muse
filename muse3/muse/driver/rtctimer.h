@@ -42,15 +42,15 @@ class RtcTimer : public Timer{
        RtcTimer();
        virtual ~RtcTimer();
        
-       virtual signed int initTimer();
-       virtual unsigned int setTimerResolution(unsigned int resolution);
-       virtual unsigned int getTimerResolution();
-       virtual unsigned int setTimerFreq(unsigned int tick);
-       virtual unsigned int getTimerFreq();
+       virtual signed int initTimer(unsigned long desiredFrequency);
+       virtual unsigned long setTimerResolution(unsigned long resolution);
+       virtual unsigned long getTimerResolution();
+       virtual unsigned long setTimerFreq(unsigned long tick);
+       virtual unsigned long getTimerFreq();
 
        virtual bool startTimer();
        virtual bool stopTimer();
-       virtual unsigned int getTimerTicks(bool printTicks=false);
+       virtual unsigned long getTimerTicks(bool printTicks=false);
       
     private:
       int timerFd; 

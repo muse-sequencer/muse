@@ -101,7 +101,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   {
     for( ; ni < 65536; ++ni)
     {
-      name.sprintf("jack-midi-%d", ni);
+      name = QString("jack-midi-") + QString::number(ni);
       if(!MusEGlobal::midiDevices.find(name, JACK_MIDI))
         break;
     }
@@ -445,6 +445,15 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
 }
 
 //---------------------------------------------------------
+//   pbForwardShiftFrames
+//---------------------------------------------------------
+
+unsigned int MidiJackDevice::pbForwardShiftFrames() const
+{
+  return MusEGlobal::segmentSize;
+}
+      
+//---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
 
@@ -549,10 +558,14 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
 
 void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       {
+      if(ev->size == 0)
+        return;
+      
       MidiRecordEvent event;
       event.setB(0);
       event.setPort(_port);
-      
+      jack_nframes_t abs_ft = 0;
+
       // NOTE: From muse_qt4_evolution. Not done here in Muse-2 (yet).
       // move all events 2*MusEGlobal::segmentSize into the future to get
       // jitterfree playback
@@ -570,54 +583,75 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
 #ifdef _AUDIO_USE_TRUE_FRAME_
-      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->time);
+      abs_ft = MusEGlobal::audio->previousPos().frame() + ev->time;
 #else
-      event.setTime(MusEGlobal::audio->pos().frame() + ev->time);
+      // The events arrived in the previous cycle, not this one. Adjust.
+      abs_ft = MusEGlobal::audio->curSyncFrame() + ev->time;
+      if(abs_ft >= MusEGlobal::segmentSize)
+        abs_ft -= MusEGlobal::segmentSize;
 #endif
+      event.setTime(abs_ft);
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
       event.setChannel(*(ev->buffer) & 0xf);
-      int type = *(ev->buffer) & 0xf0;
-      int a    = *(ev->buffer + 1) & 0x7f;
-      int b    = *(ev->buffer + 2) & 0x7f;
+      const int type = *(ev->buffer) & 0xf0;
       event.setType(type);
 
       switch(type) {
             case ME_NOTEON:
-                 // REMOVE Tim. Noteoff. Added.
+            {
+                 if(ev->size < 3)
+                   return;
                  // Convert zero-velocity note ons to note offs as per midi spec.
-                 if(b == 0)
+                 if(*(ev->buffer + 2) == 0)
                    event.setType(ME_NOTEOFF);
-                 // Fall through.
-                 
+            }
+            // Fall through.
+                
             case ME_NOTEOFF:
             case ME_CONTROLLER:
             case ME_POLYAFTER:
-                  event.setA(*(ev->buffer + 1));
-                  event.setB(*(ev->buffer + 2));
+                  if(ev->size < 3)
+                    return;
+                  event.setA(*(ev->buffer + 1) & 0x7f);
+                  event.setB(*(ev->buffer + 2) & 0x7f);
                   break;
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
-                  event.setA(*(ev->buffer + 1));
+                  if(ev->size < 2)
+                    return;
+                  event.setA(*(ev->buffer + 1) & 0x7f);
                   break;
 
             case ME_PITCHBEND:
-                  event.setA(((b << 7) + a) - 8192);
+                  if(ev->size < 3)
+                    return;
+                  event.setA(( ((*(ev->buffer + 2) & 0x7f) << 7) + 
+                                (*(ev->buffer + 1) & 0x7f) )
+                              - 8192);
                   break;
 
             case ME_SYSEX:
                   {
-                    int type = *(ev->buffer) & 0xff;
+                    const int type = *(ev->buffer) & 0xff;
                     switch(type) 
                     {
                           case ME_SYSEX:
-                                
+                              #ifdef JACK_MIDI_DEBUG
+                                // ---Diagnostics---:
+                                fprintf(stderr, "MidiJackDevice::eventReceived SYSEX len:%u data: ", (unsigned int)ev->size);
+                                for(unsigned int i = 0; i < ev->size && i < 16; ++i)
+                                  fprintf(stderr, "%0x ", ((unsigned char*)ev->buffer)[i]);
+                                if(ev->size >= 16) 
+                                  fprintf(stderr, "..."); 
+                                fprintf(stderr, "\n"); 
+                              #endif
+      
                                 // TODO: Deal with large sysex, which are broken up into chunks!
                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
                                 {
-                                  if(MusEGlobal::debugMsg)
-                                    printf("MidiJackDevice::eventReceived sysex chunks not supported!\n");
+                                  fprintf(stderr, "MidiJackDevice::eventReceived sysex chunks not supported!\n");
                                   return;
                                 }
                                 
@@ -641,22 +675,23 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           //case ME_TUNE_REQ:   
                           //case ME_SENSE:
                           case ME_CLOCK:      
+                          {
+                                midiClockInput(abs_ft);
+                                return;
+                          }
+                          case ME_START:
+                          {
+                            #ifdef JACK_MIDI_DEBUG
+                              fprintf(stderr, "MidiJackDevice::eventReceived: START port:%d time:%u\n", _port, abs_ft);
+                            #endif
+                          }
+                            // FALLTHROUGH
+
                           case ME_TICK:       
-                          case ME_START:      
                           case ME_CONTINUE:   
                           case ME_STOP:       
                           {
-                                if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
-                                {
-                                  MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
-                                  jack_client_t* jc = jad->jackClient();
-                                  if(jc)
-                                  {
-                                    jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
-                                    double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
-                                    MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
-                                  }
-                                }
+                                MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, 0.0);
                                 return;
                           }
                           //case ME_SYSEX_END:  
@@ -668,12 +703,10 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 return;
                     }
                   }
-                  //return;
                   break;
             default:
               if(MusEGlobal::debugMsg)
                 printf("MidiJackDevice::eventReceived unknown event 0x%02x\n", type);
-                //printf("MidiJackDevice::eventReceived unknown event 0x%02x size:%d buf:0x%02x 0x%02x 0x%02x ...0x%02x\n", type, ev->size, *(ev->buffer), *(ev->buffer + 1), *(ev->buffer + 2), *(ev->buffer + (ev->size - 1)));
               return;
             }
 
@@ -713,58 +746,32 @@ void MidiJackDevice::collectMidiEvents()
 }
 
 //---------------------------------------------------------
-//   putEvent
-//    return true if event cannot be delivered
-//---------------------------------------------------------
-
-bool MidiJackDevice::putEvent(const MidiPlayEvent& ev)
-{
-  if(!_writeEnable || !_out_client_jackport)  
-    return false;
-    
-  #ifdef JACK_MIDI_DEBUG
-  printf("MidiJackDevice::putEvent time:%d type:%d ch:%d A:%d B:%d\n", ev.time(), ev.type(), ev.channel(), ev.dataA(), ev.dataB());
-  #endif  
-      
-  bool rv = eventFifo.put(ev);
-  if(rv)
-    printf("MidiJackDevice::putEvent: port overflow\n");
-  
-  return rv;
-}
-
-//---------------------------------------------------------
 //   queueEvent
 //   return true if successful
 //---------------------------------------------------------
 
-bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
+bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
 {
       // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
       // No big deal if not. Not used for now.
       //int port = e.port();
       
-      //if(port >= JACK_MIDI_CHANNELS)
-      //  return false;
-        
-      if(!_writeEnable || !_out_client_jackport)   
+      if(!_writeEnable || !evBuffer)   
         return false;
-      void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
-    
-      //unsigned frameCounter = ->frameTime();
-      int frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned pos = MusEGlobal::audio->pos().frame();
-      int ft = e.time() - frameOffset - pos;
-      
-      if (ft < 0)
-            ft = 0;
-      if (ft >= (int)MusEGlobal::segmentSize) {
-            printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
+
+      const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
+      if(e.time() != 0 && e.time() < syncFrame)
+        fprintf(stderr, "MidiJackDevice::queueEvent() evTime:%u < syncFrame:%u!!\n", e.time(), syncFrame);
+      unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+      if (ft >= MusEGlobal::segmentSize) {
+            fprintf(stderr, "MidiJackDevice::queueEvent: Event time:%d out of range. syncFrame:%d ft:%d (seg=%d)\n", 
+                    e.time(), syncFrame, ft, MusEGlobal::segmentSize);
             ft = MusEGlobal::segmentSize - 1;
             }
       
       #ifdef JACK_MIDI_DEBUG
-      printf("MidiJackDevice::queueEvent pos:%d fo:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", pos, frameOffset, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
+      fprintf(stderr, "MidiJackDevice::queueEvent pos:%d syncFrame:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", 
+              pos, syncFrame, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
       #endif  
       
       if (MusEGlobal::midiOutputTrace) {
@@ -785,7 +792,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent note on/off polyafter controller or pitch\n");
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 3);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent NOTE CTL PAT or PB: buffer overflow, stopping until next cycle\n");  
@@ -805,7 +812,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent program or aftertouch\n");
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 2);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent PROG or AT: buffer overflow, stopping until next cycle\n");  
@@ -824,7 +831,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   
                   const unsigned char* data = e.data();
                   int len = e.len();
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, len+2);
                   if (p == 0) {
                         fprintf(stderr, "MidiJackDevice::queueEvent ME_SYSEX: buffer overflow, sysex too big, event lost\n");
                         
@@ -838,8 +845,8 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                         return true;
                         }
                   p[0] = 0xf0;
-                  p[len+1] = 0xf7;
                   memcpy(p+1, data, len);
+                  p[len+1] = 0xf7;
                   }
                   break;
             case ME_SONGPOS:
@@ -848,7 +855,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent songpos %d\n", e.dataA());
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 3);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent songpos: buffer overflow, stopping until next cycle\n");  
@@ -870,7 +877,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent realtime %x\n", e.type());
                   #endif  
                     
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 1);
+                  unsigned char* p = jack_midi_event_reserve(evBuffer, ft, 1);
                   if (p == 0) {
                         #ifdef JACK_MIDI_DEBUG
                         fprintf(stderr, "MidiJackDevice::queueEvent realtime: buffer overflow, stopping until next cycle\n");  
@@ -894,7 +901,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 //    return true if successful
 //---------------------------------------------------------
 
-bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
+bool MidiJackDevice::processEvent(const MidiPlayEvent& event, void* evBuffer)
 {    
   int chn    = event.channel();
   unsigned t = event.time();
@@ -903,22 +910,11 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
   // No big deal if not. Not used for now.
   int port   = event.port();
-  
-  // TODO: No sub-tick playback resolution yet, with external sync.
-  // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
-  // Does require relatively short audio buffers, in order to catch the resolution, but buffer <= 256 should be OK... 
-  // Tested OK so far with 128. 
-  // Or, is the event marked to be played immediately?
-  // Nothing to do but stamp the event to be queued for frame 0+.
-  if(t == 0 || MusEGlobal::extSyncFlag.value())    
-    t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
-    //t = frameOffset + pos;
-      
+
   #ifdef JACK_MIDI_DEBUG
   //printf("MidiJackDevice::processEvent time:%d type:%d ch:%d A:%d B:%d\n", t, event.type(), chn, a, b);  
   #endif  
       
-  // REMOVE Tim. Noteoff. Added.
   MidiInstrument::NoteOffMode nom = MidiInstrument::NoteOffAll; // Default to NoteOffAll in case of no port.
   const int mport = midiPort();
   if(mport != -1)
@@ -941,18 +937,18 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       {
         // Instrument uses note offs. Convert to zero-vel note off.
         case MidiInstrument::NoteOffAll:
-          return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEOFF, a, 0));
+          return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEOFF, a, 0), evBuffer);
         break;
         
         // Instrument uses no note offs at all. Send as-is.
         case MidiInstrument::NoteOffNone:
         // Instrument converts all note offs to zero-vel note ons. Send as-is.
         case MidiInstrument::NoteOffConvertToZVNoteOn:
-          return queueEvent(event);
+          return queueEvent(event, evBuffer);
         break;
       }
     }
-    return queueEvent(event);
+    return queueEvent(event, evBuffer);
   }
   else if(event.type() == ME_NOTEOFF)
   {
@@ -960,7 +956,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     {
       // Instrument uses note offs. Send as-is.
       case MidiInstrument::NoteOffAll:
-        return queueEvent(event);
+        return queueEvent(event, evBuffer);
       break;
       
       // Instrument uses no note offs at all. Send nothing. Eat up the event - return true.
@@ -969,10 +965,10 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
         
       // Instrument converts all note offs to zero-vel note ons. Convert to zero-vel note on.
       case MidiInstrument::NoteOffConvertToZVNoteOn:
-        return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEON, a, 0));
+        return queueEvent(MidiPlayEvent(t, port, chn, ME_NOTEON, a, 0), evBuffer);
       break;
     }
-    return queueEvent(event);
+    return queueEvent(event, evBuffer);
   }
   
   else if(event.type() == ME_PROGRAM) 
@@ -982,7 +978,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
           _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
           _curOutParamNums[chn].setPROG(a);
-          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0)))
+          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0), evBuffer))
             return false;
           
     //      }
@@ -991,13 +987,13 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   {
       int v = a + 8192;
       //printf("MidiJackDevice::processEvent ME_PITCHBEND v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f), evBuffer))
         return false;
   }
   else if(event.type() == ME_SYSEX)
   {
     resetCurOutParamNums();  // Probably best to reset all.
-    if(!queueEvent(event))
+    if(!queueEvent(event, evBuffer))
       return false;
   }
   else if(event.type() == ME_CONTROLLER)
@@ -1009,20 +1005,20 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     if((a | 0xff) == CTRL_POLYAFTER) 
     {
       //printf("MidiJackDevice::processEvent CTRL_POLYAFTER v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f), evBuffer))
         return false;
     }
     else if(a == CTRL_AFTERTOUCH) 
     {
       //printf("MidiJackDevice::processEvent CTRL_AFTERTOUCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0), evBuffer))
         return false;
     }
     else if(a == CTRL_PITCH) 
     {
       int v = b + 8192;
       //printf("MidiJackDevice::processEvent CTRL_PITCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f), evBuffer))
         return false;
     }
     else if (a == CTRL_PROGRAM) 
@@ -1039,17 +1035,17 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
             _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
             if (hb != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb), evBuffer))
                     return false;
             }
             if (lb != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb), evBuffer))
                     return false;
             }
             if (pr != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0), evBuffer))
                     return false;
             }
               
@@ -1063,7 +1059,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       //sysex[1] = deviceId(); TODO FIXME p4.0.15 Grab the ID from midi port sync info.
       sysex[4] = b & 0x7f;
       sysex[5] = (b >> 7) & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t, port, ME_SYSEX, sysex, 6)))
+      if(!queueEvent(MidiPlayEvent(t, port, ME_SYSEX, sysex, 6), evBuffer))
         return false;
     }
     else if (a < CTRL_14_OFFSET) 
@@ -1090,7 +1086,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
         _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
 
       //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
-      if(!queueEvent(event))
+      if(!queueEvent(event, evBuffer))
         return false;
     }
     else if (a < CTRL_RPN_OFFSET) 
@@ -1099,9 +1095,9 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH)))
+      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH), evBuffer))
         return false;
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL)))
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL), evBuffer))
         return false;
     }
     else if (a < CTRL_NRPN_OFFSET) 
@@ -1112,19 +1108,19 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL), evBuffer))
           return false;
       }
       if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(data);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data), evBuffer))
           return false;
       }
       
@@ -1132,11 +1128,11 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1148,30 +1144,30 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL), evBuffer))
           return false;
       }
       if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(data);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, data), evBuffer))
           return false;
       }
                   
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setNRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setNRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1186,36 +1182,36 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL), evBuffer))
           return false;
       }
       if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(dataH);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH), evBuffer))
           return false;
       }
       if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAL(dataL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL), evBuffer))
           return false;
       }
       
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, 0x7f), evBuffer))
           return false;
       }
     }
@@ -1228,36 +1224,36 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNH(ctrlH);
-        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH), evBuffer))
           return false;
       }
       if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setNRPNL(ctrlL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL), evBuffer))
           return false;
       }
       if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAH(dataH);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH), evBuffer))
           return false;
       }
       if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
       {
         _curOutParamNums[chn].setDATAL(dataL);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL), evBuffer))
           return false;
       }
     
       if(MusEGlobal::config.midiSendNullParameters)
       {
         _curOutParamNums[chn].setNRPNH(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, 0x7f), evBuffer))
           return false;
         
         _curOutParamNums[chn].setNRPNL(0x7f);
-        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f)))
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, 0x7f), evBuffer))
          return false;
       }
     }
@@ -1271,7 +1267,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   else 
   {
     //queueEvent(MidiPlayEvent(t, port, chn, event));
-    if(!queueEvent(event))
+    if(!queueEvent(event, evBuffer))
       return false;
   }
   
@@ -1283,18 +1279,8 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 //    Called from audio thread only.
 //---------------------------------------------------------
 
-void MidiJackDevice::processMidi()
+void MidiJackDevice::processMidi(unsigned int curFrame)
 {
-  //bool stop = stopPending;  // Snapshots
-  //bool seek = seekPending;  //
-  //seekPending = stopPending = false;
-
-  processStuckNotes();       
-  
-  // Don't process if the device is not assigned to a port.
-  //if(_port == -1)
-  //  return;
-    
   void* port_buf = 0;
   if(_out_client_jackport && _writeEnable)  
   {
@@ -1302,294 +1288,78 @@ void MidiJackDevice::processMidi()
     jack_midi_clear_buffer(port_buf);
   }  
   
-  int port = midiPort();
-  MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
+  // Get the state of the stop flag.
+  const bool do_stop = stopFlag();
 
-  /*
-  bool is_playing = MusEGlobal::audio->isPlaying();  // TODO Check this. It includes LOOP1 and LOOP2 besides PLAY.
-  //bool is_playing = MusEGlobal::audio->isPlaying() || MusEGlobal::audio->isStarting(); 
-  int pos = MusEGlobal::audio->tickPos();
-  bool ext_sync = MusEGlobal::extSyncFlag.value();
-
-  if(mp)
+  MidiPlayEvent buf_ev;
+  
+  // Transfer the user lock-free buffer events to the user sorted multi-set.
+  // False = don't use the size snapshot, but update it.
+  const unsigned int usr_buf_sz = eventBuffers(UserBuffer)->getSize(false);
+  for(unsigned int i = 0; i < usr_buf_sz; ++i)
   {
-    MidiSyncInfo& si = mp->syncInfo();
-    if(stop)
-    {
-      // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
-      if(!ext_sync)
-      {
-        // Shall we check open flags?
-        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-        //if(!(dev->openFlags() & 1))
-        //  return;
-              
-        // Send MMC stop...
-        if(si.MMCOut())
-        {
-          unsigned char msg[mmcStopMsgLen];
-          memcpy(msg, mmcStopMsg, mmcStopMsgLen);
-          msg[1] = si.idOut();
-          putEvent(MidiPlayEvent(0, 0, ME_SYSEX, msg, mmcStopMsgLen));
-        }
-        
-        // Send midi stop...
-        if(si.MRTOut()) 
-        {
-          putEvent(MidiPlayEvent(0, 0, 0, ME_STOP, 0, 0));
-          // Added check of option send continue not start.    p3.3.31
-          // Hmm, is this required? Seems to make other devices unhappy.
-          // (Could try now that this is in MidiDevice. p4.0.22 )
-          //if(!si.sendContNotStart())
-          //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / config.division);
-        }
-      }  
-    }
+    if(eventBuffers(UserBuffer)->get(buf_ev))
+      _outUserEvents.insert(buf_ev);
+  }
+  
+  // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+  const unsigned int pb_buf_sz = eventBuffers(PlaybackBuffer)->getSize(false);
+  for(unsigned int i = 0; i < pb_buf_sz; ++i)
+  {
+    // Are we stopping? Just remove the item.
+    if(do_stop)
+      eventBuffers(PlaybackBuffer)->remove();
+    // Otherwise get the item.
+    else if(eventBuffers(PlaybackBuffer)->get(buf_ev))
+      _outPlaybackEvents.insert(buf_ev);
+  }
+  
+  // Are we stopping?
+  if(do_stop)
+  {
+    // Transport has stopped, purge ALL further scheduled playback events now.
+    _outPlaybackEvents.clear();
+    // Reset the flag.
+    setStopFlag(false);
+  }
+  
+  iMPEvent impe_pb = _outPlaybackEvents.begin();
+  iMPEvent impe_us = _outUserEvents.begin();
+  bool using_pb;
+  
+  while(1)
+  {  
+    if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
+      using_pb = *impe_pb < *impe_us;
+    else if(impe_pb != _outPlaybackEvents.end())
+      using_pb = true;
+    else if(impe_us != _outUserEvents.end())
+      using_pb = false;
+    else break;
     
-    if(seek)
+    const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+    
+    if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
     {
-      // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-      if(!ext_sync)
-      {
-        // Send midi stop and song position pointer...
-        if(si.MRTOut())
-        {
-          // Shall we check for device write open flag to see if it's ok to send?...
-          //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
-          //if(!(openFlags() & 1))
-          //  continue;
-          putEvent(MidiPlayEvent(0, 0, 0, ME_STOP, 0, 0));
-          // Hm, try scheduling these for after stuck notes scheduled below...
-          //putEvent(MidiPlayEvent(0, 0, 0, ME_SONGPOS, beat, 0));
-          //if(is_playing)
-          //  putEvent(MidiPlayEvent(0, 0, 0, ME_CONTINUE, 0, 0));
-        }    
-      }
-    }    
-  }
-  
-  if(stop || (seek && is_playing))
-  {
-    // Clear all notes and handle stuck notes...
-    _playEvents.clear();
-    for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
-    {
-      MidiPlayEvent ev = *i;
-      ev.setTime(0);  // Schedule immediately.
-      putEvent(ev);
-    }
-    _stuckNotes.clear();
-  }
-
-  if(mp)
-  {
-    MidiSyncInfo& si = mp->syncInfo();
-    // Try scheduling these now for after stuck notes scheduled above...
-    if(stop || seek)
-    {
-      // Reset sustain.
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-          putEvent(MidiPlayEvent(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0));
-    }
-    if(seek)
-    {
-      // Send new song position.
-      if(!ext_sync && si.MRTOut())
-      {
-        int beat = (pos * 4) / MusEGlobal::config.division;
-        putEvent(MidiPlayEvent(0, 0, 0, ME_SONGPOS, beat, 0));
-      }
-      // Send new controller values.
-      MidiCtrlValListList* cll = mp->controller();
-      for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
-      {
-        MidiCtrlValList* vl = ivl->second;
-        iMidiCtrlVal imcv = vl->iValue(pos);
-        if(imcv != vl->end()) {
-          Part* p = imcv->second.part;
-          // Don't send if part or track is muted or off.
-          if(!p || p->mute())
-            continue;
-          Track* track = p->track();
-          if(track && (track->isMute() || track->off()))   
-            continue;
-          unsigned t = (unsigned)imcv->first;
-          // Do not add values that are outside of the part.
-          if(t >= p->tick() && t < (p->tick() + p->lenTick()))
-            // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
-            mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), imcv->first == pos);
-        }
-      }
-      // Send continue.
-      // REMOVE Tim. This is redundant and too early - Audio::startRolling already properly sends it when sync ready.
-      //if(is_playing && !ext_sync && si.MRTOut())
-      //  putEvent(MidiPlayEvent(0, 0, 0, ME_CONTINUE, 0, 0));
-    }
-  }
-  */
-  
-  while(!eventFifo.isEmpty())
-  {
-    MidiPlayEvent e(eventFifo.peek()); 
-    //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
-    // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
-    if(port_buf && !processEvent(e))  
-      return;            // Give up. The Jack buffer is full. Nothing left to do.  
-    eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
-  }
-  
-  //if(!(stop || (seek && is_playing)))
-  //  processStuckNotes();  
-  
-  if(_playEvents.empty())
-    return;
-  
-  iMPEvent i = _playEvents.begin();     
-  for(; i != _playEvents.end(); ++i) 
-  {
-    //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
-    // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    if(mp && !mp->sendHwCtrlState(*i, false)) 
-      continue;
-  
-    // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
-    if(port_buf && !processEvent(*i)) 
+      #ifdef JACK_MIDI_DEBUG
+      fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+      #endif
       break;
+    }
+
+    // If processEvent fails, although we would like to not miss events by keeping them
+    //  until next cycle and trying again, that can lead to a large backup of events
+    //  over a long time. So we'll just... miss them.
+    processEvent(ev, port_buf);
+    
+    // Successfully processed event. Remove it from FIFO.
+    // C++11.
+    if(using_pb)
+      impe_pb = _outPlaybackEvents.erase(impe_pb);
+    else
+      impe_us = _outUserEvents.erase(impe_us);
   }
-  _playEvents.erase(_playEvents.begin(), i);
 }
-
-/*
-//---------------------------------------------------------
-//   handleStop
-//---------------------------------------------------------
-
-void MidiJackDevice::handleStop()
-{
-  // If the device is not in use by a port, don't bother it.
-  if(_port == -1)
-    return;
-    
-  stopPending = true;  // Trigger stop handling in processMidi.
-  
-//   //---------------------------------------------------
-//   //    reset sustain
-//   //---------------------------------------------------
-//   
-//   MidiPort* mp = &MusEGlobal::midiPorts[_port];
-//   for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-//   {
-//     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-//     {
-//       //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
-//       MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-//       putEvent(ev);
-//       // Do sendEvent to get the optimizations - send only on a change of value.
-//       //mp->sendEvent(ev);
-//     }
-//   }
-  
-//   //---------------------------------------------------
-//   //    send midi stop
-//   //---------------------------------------------------
-//   
-//   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
-//   if(!MusEGlobal::extSyncFlag.value())
-//   {
-//     // Shall we check open flags?
-//     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-//     //if(!(dev->openFlags() & 1))
-//     //  return;
-//           
-//     MidiSyncInfo& si = mp->syncInfo();
-//     if(si.MMCOut())
-//       mp->sendMMCStop();
-//     
-//     if(si.MRTOut()) 
-//     {
-//       // Send STOP 
-//       mp->sendStop();
-//       
-//       // Added check of option send continue not start.    p3.3.31
-//       // Hmm, is this required? Seems to make other devices unhappy.
-//       // (Could try now that this is in MidiDevice. p4.0.22 )
-//       //if(!si.sendContNotStart())
-//       //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / config.division);
-//     }
-//   }  
-}
-*/
-
-/*
-//---------------------------------------------------------
-//   handleSeek
-//---------------------------------------------------------
-
-void MidiJackDevice::handleSeek()
-{
-  // If the device is not in use by a port, don't bother it.
-  if(_port == -1)
-    return;
-  
-  seekPending = true;  // Trigger seek handling in processMidi.
-  
-  //MidiPort* mp = &MusEGlobal::midiPorts[_port];
-  //MidiCtrlValListList* cll = mp->controller();
-  //int pos = MusEGlobal::audio->tickPos();
-  
-  //---------------------------------------------------
-  //    Send new contoller values
-  //---------------------------------------------------
-    
-//   for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
-//   {
-//     MidiCtrlValList* vl = ivl->second;
-//     iMidiCtrlVal imcv = vl->iValue(pos);
-//     if(imcv != vl->end()) 
-//     {
-//       Part* p = imcv->second.part;
-//       //printf("MidiAlsaDevice::handleSeek _port:%d ctl:%d num:%d val:%d\n", _port, ivl->first >> 24, vl->num(), imcv->second.val); 
-//       unsigned t = (unsigned)imcv->first;
-//       // Do not add values that are outside of the part.
-//       if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
-//         // Keep this and the section in processMidi() just in case we need to revert...
-//         //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
-//         // Hmm, play event list for immediate playback? Try putEvent, putMidiEvent, or sendEvent (for the optimizations) instead. 
-//         mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
-//     }
-//   }
-  
-  //---------------------------------------------------
-  //    Send STOP and "set song position pointer"
-  //---------------------------------------------------
-    
-//   // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
-//   if(!MusEGlobal::extSyncFlag.value())
-//   {
-//     if(mp->syncInfo().MRTOut())
-//     {
-//       // Shall we check for device write open flag to see if it's ok to send?...
-//       // This means obey what the user has chosen for read/write in the midi port config dialog,
-//       //  which already takes into account whether the device is writable or not.
-//       //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
-//       //if(!(openFlags() & 1))
-//       //  continue;
-//       
-//       int beat = (pos * 4) / MusEGlobal::config.division;
-//         
-//       //bool isPlaying = (state == PLAY);
-//       bool isPlaying = MusEGlobal::audio->isPlaying();  // TODO Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
-//         
-//       mp->sendStop();
-//       mp->sendSongpos(beat);
-//       // REMOVE Tim. This is redundant and too early - Audio::startRolling already properly sends it when sync ready.
-//       //if(isPlaying)
-//       //  mp->sendContinue();
-//     }    
-//   }
-}
-*/
 
 //---------------------------------------------------------
 //   initMidiJack

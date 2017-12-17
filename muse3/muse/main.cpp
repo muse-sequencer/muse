@@ -106,6 +106,7 @@ void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
 #endif
+extern QStringList projectRecentList;
 }
 
 enum AudioDriver {
@@ -498,17 +499,6 @@ int main(int argc, char* argv[])
       else
         setenv("LV2_PATH", MusEGlobal::config.pluginLv2PathList.join(":").toLatin1().constData(), true);
 
-      // May need this. Tested OK. Grab the default style BEFORE calling setStyle and creating the app.   
-      //{  int dummy_argc = 1; char** dummy_argv = &argv[0];
-      //  QApplication dummy_app(dummy_argc, dummy_argv);
-      //  MusEGui::Appearance::defaultStyle = dummy_app.style()->objectName();  }
-      //QStringList sl = QStyleFactory::keys();
-      //if (sl.indexOf(MusEGlobal::config.style) != -1) {
-      //  QStyle* style = QApplication::setStyle(MusEGlobal::config.style);
-      //  style->setObjectName(MusEGlobal::config.style);   
-      //}      
-
-
       int rv = 0;
       bool is_restarting = true; // First-time init true.
       while(is_restarting)
@@ -544,8 +534,17 @@ int main(int argc, char* argv[])
 
         // Now create the application, and let Qt remove recognized arguments.
         MuseApplication app(argc_copy, argv_copy);
-        QString appStyleObjName = app.style()->objectName();
-        MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);   // NOTE: May need alternate method, above.
+        if(QStyle* def_style = app.style())
+        {
+          const QString appStyleObjName = def_style->objectName();
+          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
+        }
+        
+        // NOTE: Set the stylesheet and style as early as possible!
+        // Any later invites trouble - typically the colours may be off, 
+        //  but currently with Breeze or Oxygen, MDI sub windows  may be frozen!
+        // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
+        MusEGui::updateThemeAndStyle();
 
         QString optstr("atJFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
@@ -737,31 +736,6 @@ int main(int argc, char* argv[])
         }
         MusEGlobal::museUserInstruments = uinstrPath;
 
-        // NOTE: May need alternate method, above.
-        // If setStyle is called after MusE is created, bug: I get transparent background in MDI windows, other artifacts.
-        // Docs say any style should be set before QApplication created, but this actually works OK up to that point!
-        QStringList sl = QStyleFactory::keys();
-
-        // Qt FIXME BUG: Cannot load certain themes with a stylesheet - even a blank one.
-        //               Although it works for a few styles, others like Breeze and Oxygen
-        //                cause the main MDI window to not respond. Force Fusion for now.
-        if(MusEGlobal::config.styleSheetFile.isEmpty())
-        {
-          if (sl.indexOf(MusEGlobal::config.style) != -1)
-          {
-            QStyle* style = app.setStyle(MusEGlobal::config.style);
-            style->setObjectName(MusEGlobal::config.style);
-          }
-        }
-        else
-        {
-          if (sl.indexOf("Fusion") != -1)
-          {
-            QStyle* style = app.setStyle("Fusion");
-            style->setObjectName("Fusion");
-          }
-        }
-
         AL::initDsp();
         MusECore::initAudio();
 
@@ -882,10 +856,6 @@ int main(int argc, char* argv[])
         MusECore::initMidiInstruments();
         MusECore::initMidiPorts();
 
-        // If the sequencer object was created, report timing.
-        if(MusEGlobal::midiSeq)
-          MusEGlobal::midiSeq->checkAndReportTimingResolution();
-
         if (MusEGlobal::loadPlugins)
               MusECore::initPlugins();
 
@@ -938,7 +908,17 @@ int main(int argc, char* argv[])
               }
 
         MusEGlobal::muse->show();
+
+        // Let the configuration settings take effect. Do not save.
+        MusEGlobal::muse->changeConfig(false);
+        // Set style and stylesheet, and do not force the style
+        //MusEGui::updateThemeAndStyle(); // Works better if called just after app created, above.
+
         MusEGlobal::muse->seqStart();
+        
+        // If the sequencer object was created, report timing.
+        if(MusEGlobal::midiSeq)
+          MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
         //--------------------------------------------------
         // Auto-fill the midi ports, if appropriate.
@@ -947,11 +927,7 @@ int main(int argc, char* argv[])
           argc_copy < 2 &&
           (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) &&
           !MusEGlobal::config.startSongLoadConfig)
-        {
           MusECore::populateMidiPorts();
-          //MusEGlobal::muse->changeConfig(true);     // save configuration file
-          //MusEGlobal::song->update();
-        }
 
         //--------------------------------------------------
         // Load the default song.
@@ -1007,6 +983,14 @@ int main(int argc, char* argv[])
           }
           free(argv_copy);
         }
+
+        // Reset these before restarting, seems to work better, 
+        //  makes a difference with the MDI freezing problem, above.
+        app.setStyleSheet("");
+        app.setStyle(MusEGlobal::config.style);
+        
+        // Reset the recently opened list.
+        MusEGui::projectRecentList.clear();
       }
 
       if(MusEGlobal::debugMsg) 

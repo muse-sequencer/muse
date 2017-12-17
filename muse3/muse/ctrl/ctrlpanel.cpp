@@ -58,6 +58,7 @@
 #include "lcd_widgets.h"
 #include "utils.h"
 
+#include "audio.h"
 #include "midi.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
@@ -219,7 +220,7 @@ void CtrlPanel::buildPanel()
       _knob->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-    connect(_knob, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_knob, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
     kbox->addWidget(_knob);
@@ -249,7 +250,7 @@ void CtrlPanel::buildPanel()
       _slider->setStyleSheet(MusECore::font2StyleSheet(MusEGlobal::config.fonts[1]));
     }
 
-    connect(_slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
+    connect(_slider, SIGNAL(valueStateChanged(double,bool,int,int)), SLOT(ctrlChanged(double,bool,int,int)));
     connect(_slider, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
 
     kbox->addWidget(_slider);
@@ -555,14 +556,14 @@ void CtrlPanel::songChanged(MusECore::SongChangedFlags_t /*flags*/)
 
 void CtrlPanel::patchCtrlChanged(int val)
 {
-  ctrlChanged(double(val));
+  ctrlChanged(double(val), false, _dnum, 0);
 }
 
 //---------------------------------------------------------
 //   ctrlChanged
 //---------------------------------------------------------
 
-void CtrlPanel::ctrlChanged(double val)
+void CtrlPanel::ctrlChanged(double val, bool off, int /*id*/, int /*scrollMode*/)
     {
       if (inHeartBeat)
             return;
@@ -600,43 +601,16 @@ void CtrlPanel::ctrlChanged(double val)
       }
 
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
-      int curval = mp->hwCtrlState(chan, _dnum);
-
-      if(_dnum == MusECore::CTRL_PROGRAM)
-      {
-        if(val == MusECore::CTRL_VAL_UNKNOWN || (val < _ctrl->minVal()) || (val > _ctrl->maxVal()))
-        {
-          if(curval != MusECore::CTRL_VAL_UNKNOWN)
-          {
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-                                                      MusECore::ME_CONTROLLER,
-                                                      MusECore::CTRL_PROGRAM,
-                                                      MusECore::CTRL_VAL_UNKNOWN));
-          }
-        }
-        else
-        {
-          MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
-          mp->putEvent(ev);
-        }
-      }
-      else
       // Shouldn't happen, but...
-      if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
-      {
-        if(curval != MusECore::CTRL_VAL_UNKNOWN)
-          mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::song->cpos(), outport, chan,
-                                                     MusECore::ME_CONTROLLER,
-                                                     _dnum,
-                                                     MusECore::CTRL_VAL_UNKNOWN));
-      }
-      else
-      {
+      if(off || ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+        ival = MusECore::CTRL_VAL_UNKNOWN;
+      
+      if(ival != MusECore::CTRL_VAL_UNKNOWN)
         // Auto bias...
         ival += _ctrl->bias();
-        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
-        mp->putEvent(ev);
-      }
+
+      MusECore::MidiPlayEvent ev(MusEGlobal::audio->curFrame(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+      mp->putEvent(ev);
     }
 
 //---------------------------------------------------------
@@ -645,8 +619,6 @@ void CtrlPanel::ctrlChanged(double val)
 
 void CtrlPanel::setController()
 {
-//   inHeartBeat = true;
-
   if(!_track || !_ctrl)
   {
     if(_patchEdit)
@@ -888,8 +860,6 @@ void CtrlPanel::setController()
   }
 
   setControlColor();
-
-//   inHeartBeat = false;
 }
 
 void CtrlPanel::setControlColor()

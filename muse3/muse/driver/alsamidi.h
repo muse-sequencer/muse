@@ -50,10 +50,15 @@ class MidiAlsaDevice : public MidiDevice {
       snd_seq_addr_t adr;
 
    private:
-      // Special for ALSA midi device: Play event list is processed in the ALSA midi sequencer thread.
-      // Need this FIFO, to decouple from audio thread which adds events to the list.       
-      //MidiFifo playEventFifo;  
-      //MidiFifo stuckNotesFifo;  
+      // Fifo for midi playback events sent from audio thread:
+      // The audio thread will gather the events in _playEvents for the 
+      //  convenience of its sorting, then dump them to this FIFO so that 
+      //  a driver or device may read it, possibly from another thread (ALSA driver).
+      SeqMPEventList _outPlaybackEvents;
+      SeqMPEventList _outUserEvents;
+     
+      // Return false if event is delivered.
+      bool processEvent(const MidiPlayEvent& ev);
       
       virtual void processInput()  {}
       virtual int selectRfd()      { return -1; }
@@ -63,7 +68,7 @@ class MidiAlsaDevice : public MidiDevice {
       
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
-      virtual ~MidiAlsaDevice() {}
+      virtual ~MidiAlsaDevice();
       
       static MidiDevice* createAlsaMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable 
       static void dump(const snd_seq_event_t* ev);
@@ -79,15 +84,9 @@ class MidiAlsaDevice : public MidiDevice {
       
       virtual void writeRouting(int, Xml&) const;
       virtual inline MidiDeviceType deviceType() const { return ALSA_MIDI; } 
-      // Schedule an event for playback. Returns false if event cannot be delivered.
-      //virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
-      // Add a stuck note. Returns false if event cannot be delivered.
-      //virtual bool addStuckNote(const MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
+      
       // Play all events up to current frame.
-      virtual void processMidi();
-      //virtual void handleStop();
-      //virtual void handleSeek();
-      virtual bool putEvent(const MidiPlayEvent&);
+      virtual void processMidi(unsigned int curFrame = 0);
 
       virtual void setAddressClient(int client) { adr.client = client; }
       virtual void setAddressPort(int port) { adr.port = port; }

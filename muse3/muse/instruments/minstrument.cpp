@@ -86,6 +86,9 @@ int string2sysex(const QString& s, unsigned char** data)
             return -1;
           }
           src    = ep;
+          // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+          if(val == MusECore::ME_SYSEX || val == MusECore::ME_SYSEX_END)
+            continue;
           *dst++ = val;
           if (dst - buffer >= 2048) {
             printf("string2sysex: Hex String too long (2048 bytes limit)\n");
@@ -93,6 +96,7 @@ int string2sysex(const QString& s, unsigned char** data)
           }
         }
       }
+      
       int len = dst - buffer;
       if(len > 0)
       {
@@ -113,14 +117,16 @@ int string2sysex(const QString& s, unsigned char** data)
 QString sysex2string(int len, unsigned char* data)
       {
       QString d;
-      QString s;
       for (int i = 0; i < len; ++i) {
             if ((i > 0) && ((i % 8)==0)) {
-                  d += "\n";
+                  d += QString("\n");
                   }
             else if (i)
-                  d += " ";
-            d += s.sprintf("%02x", data[i]);
+                  d += QString(" ");
+            // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+            if(data[i] == MusECore::ME_SYSEX || data[i] == MusECore::ME_SYSEX_END)
+              continue;
+            d += QString("%1").arg(data[i], 2, 16, QLatin1Char('0'));
             }
       return d;
       }
@@ -568,6 +574,7 @@ MType MidiInstrument::midiType() const
 //---------------------------------------------------------
 //   reset
 //    send note off to all channels
+//   To be called by audio thread only.
 //---------------------------------------------------------
 
 void MidiInstrument::reset(int portNo)
@@ -577,9 +584,10 @@ void MidiInstrument::reset(int portNo)
         return;
 
       MusECore::MidiPlayEvent ev;
-      ev.setType(0x90);
+      ev.setType(ME_NOTEOFF);
       ev.setPort(portNo);
-      ev.setTime(0);
+      ev.setTime(0);  // Immediate processing. TODO: Use curFrame?
+      ev.setB(64);
 
       for (int chan = 0; chan < MIDI_CHANNELS; ++chan)
       {
@@ -587,9 +595,7 @@ void MidiInstrument::reset(int portNo)
             for (int pitch = 0; pitch < 128; ++pitch)
             {
                   ev.setA(pitch);
-                  ev.setB(0);
-
-                  port->sendEvent(ev);
+                  port->device()->putEvent(ev, MidiDevice::NotLate);
             }
       }
 }

@@ -26,13 +26,33 @@
 #include "synth.h"
 
 namespace MusECore {
+class PendingOperationList;
 
 extern void initMetronome();
 extern void exitMetronome();
 class MetronomeSynthI : public SynthI
 {
-   virtual bool hasAuxSend() const  { return false; }
-
+  virtual bool hasAuxSend() const  { return false; }
+   
+public:
+  void initSamplesOperation(PendingOperationList& operations);
+  
+  //------------------------------------------------------------------------
+  // The metronome synth is special - it cannot be routed like other tracks, 
+  //  and thus cannot be muted, soloed, recorded, or monitored.
+  //------------------------------------------------------------------------
+  virtual void setMute(bool)         { }
+  virtual void setOff(bool)          { }
+  virtual void setSolo(bool)         { }
+  virtual bool isMute() const        { return false; }
+  virtual unsigned int internalSolo() const { return 0; }
+  virtual bool soloMode() const      { return false; }
+  virtual bool solo() const          { return false; }
+  virtual bool mute() const          { return false; }
+  virtual bool off() const           { return false; }
+  virtual bool recordFlag() const    { return false; }
+  virtual void setRecMonitor(bool)   { }
+  virtual bool recMonitor() const    { return false; }
 };
 extern MetronomeSynthI* metronome;
 

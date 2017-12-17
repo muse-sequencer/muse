@@ -437,7 +437,7 @@ Transport::Transport(QWidget* parent, const char* name)
 
       syncButton     = newButton(tr("Sync"), tr("external sync on/off"), true,19);
 
-      jackTransportButton     = newButton(tr("Jack"), tr("Jack transport sync on/off"), true,19);
+      jackTransportButton     = newButton(tr("Jack"), tr("Use Jack Transport"), true,19);
 
       quantizeButton->setChecked(MusEGlobal::song->quantize());
       clickButton->setChecked(MusEGlobal::song->click());
@@ -668,7 +668,9 @@ void Transport::setPlay(bool f)
 
 void Transport::setMasterFlag(bool f)
       {
+      masterButton->blockSignals(true);
       masterButton->setChecked(f);
+      masterButton->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -688,7 +690,9 @@ void Transport::setClickFlag(bool f)
 
 void Transport::setQuantizeFlag(bool f)
       {
+      quantizeButton->blockSignals(true);
       quantizeButton->setChecked(f);
+      quantizeButton->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -697,7 +701,9 @@ void Transport::setQuantizeFlag(bool f)
 
 void Transport::setSyncFlag(bool f)
       {
+      syncButton->blockSignals(true);
       syncButton->setChecked(f);
+      syncButton->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -740,7 +746,11 @@ void Transport::songChanged(MusECore::SongChangedFlags_t flags)
             setTimesig(z, n);
             }
       if (flags & SC_MASTER)
+      {
+            masterButton->blockSignals(true);
             masterButton->setChecked(MusEGlobal::song->masterFlag());
+            masterButton->blockSignals(false);
+      }
       }
 
 //---------------------------------------------------------
@@ -749,7 +759,9 @@ void Transport::songChanged(MusECore::SongChangedFlags_t flags)
 
 void Transport::syncChanged(bool flag)
       {
+      syncButton->blockSignals(true);
       syncButton->setChecked(flag);
+      syncButton->blockSignals(false);
       buttons[0]->setEnabled(!flag);      // goto start
       buttons[1]->setEnabled(!flag);      // rewind
       buttons[2]->setEnabled(!flag);      // forward
@@ -758,7 +770,9 @@ void Transport::syncChanged(bool flag)
       slider->setEnabled(!flag);
       masterButton->setEnabled(!flag);
       if (flag) {
+            masterButton->blockSignals(true);
             masterButton->setChecked(false);
+            masterButton->blockSignals(false);
             MusEGlobal::song->setMasterFlag(false);
             tempo->setTempo(0);         // slave mode: show "extern"
             }
@@ -773,7 +787,9 @@ void Transport::syncChanged(bool flag)
 
 void Transport::jackSyncChanged(bool flag)
       {
+      jackTransportButton->blockSignals(true);
       jackTransportButton->setChecked(flag);
+      jackTransportButton->blockSignals(false);
       }
 //---------------------------------------------------------
 //   stopToggled

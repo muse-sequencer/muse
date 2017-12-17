@@ -40,7 +40,6 @@
 
 #include "rtctimer.h"
 #include "globals.h"
-#include "gconfig.h"
 
 namespace MusECore {
 
@@ -55,7 +54,7 @@ RtcTimer::~RtcTimer()
       close(timerFd);
     }
 
-signed int RtcTimer::initTimer()
+signed int RtcTimer::initTimer(unsigned long desiredFrequency)
     {
     if(TIMER_DEBUG)
           printf("RtcTimer::initTimer()\n");
@@ -68,11 +67,10 @@ signed int RtcTimer::initTimer()
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
           fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
-          fprintf(stderr, "hint: check if 'rtc' kernel module is loaded, or used by something else\n");
           MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(MusEGlobal::config.rtcTicks)) {
+    if (!setTimerFreq(desiredFrequency)) {
           // unable to set timer frequency
           return -1;
           }
@@ -86,21 +84,21 @@ signed int RtcTimer::initTimer()
     return timerFd;
     }
 
-unsigned int RtcTimer::setTimerResolution(unsigned int resolution)
+unsigned long RtcTimer::setTimerResolution(unsigned long resolution)
     {
     if(TIMER_DEBUG)
-      printf("RtcTimer::setTimerResolution(%d)\n",resolution);
+      printf("RtcTimer::setTimerResolution(%lu)\n",resolution);
     /* The RTC can take power-of-two frequencies from 2 to 8196 Hz.
      * It doesn't really have a resolution as such.
      */
     return 0;
     }
 
-unsigned int RtcTimer::setTimerFreq(unsigned int freq)
+unsigned long RtcTimer::setTimerFreq(unsigned long freq)
     {
     int rc = ioctl(timerFd, RTC_IRQP_SET, freq);
     if (rc == -1) {
-            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set freq %d on /dev/rtc: %s\n", freq,
+            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set freq %lu on /dev/rtc: %s\n", freq,
                strerror(errno));
             fprintf(stderr, "  precise timer not available, check file permissions and allowed RTC freq (/sys/class/rtc/rtc0/max_user_freq)\n");
             return 0;
@@ -108,7 +106,7 @@ unsigned int RtcTimer::setTimerFreq(unsigned int freq)
     return freq;
     }
 
-unsigned int RtcTimer::getTimerResolution()
+unsigned long RtcTimer::getTimerResolution()
     {
     /* The RTC doesn't really work with a set resolution as such.
      * Not sure how this fits into things yet.
@@ -116,9 +114,9 @@ unsigned int RtcTimer::getTimerResolution()
     return 0;
     }
 
-unsigned int RtcTimer::getTimerFreq()
+unsigned long RtcTimer::getTimerFreq()
     {
-    unsigned int freq;
+    unsigned long freq;
     int rv = ioctl(timerFd, RTC_IRQP_READ, &freq);
     if (rv < 0)
       return 0;
@@ -155,7 +153,7 @@ bool RtcTimer::stopTimer()
     return true;
     }
 
-unsigned int RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler warning: unused parameter
+unsigned long RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler warning: unused parameter
     {
     if(TIMER_DEBUG)
       printf("getTimerTicks()\n");

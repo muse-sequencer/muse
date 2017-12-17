@@ -193,6 +193,7 @@ void ProjectCreateImpl::ok()
 {
   MusEGlobal::config.projectStoreInFolder = createFolderCheckbox->isChecked();
   //MusEGlobal::config.projectBaseFolder = directoryPath;
+  // Save to config file. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
   //MusEGlobal::muse->changeConfig(true);
   emit accept();
 }
@@ -200,7 +201,8 @@ void ProjectCreateImpl::ok()
 void ProjectCreateImpl::createProjFolderChanged()
 {
   //MusEGlobal::config.projectStoreInFolder = createFolderCheckbox->isChecked();
-  //MusEGlobal::muse->changeConfig(true);  // Save to config file.
+  // Save to config file. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+  //MusEGlobal::muse->changeConfig(true);
   updateDirectoryPath();
 }
 
@@ -211,7 +213,8 @@ void ProjectCreateImpl::browseProjDir()
   {  
     directoryPath = dir;
     MusEGlobal::config.projectBaseFolder = dir;
-    MusEGlobal::muse->changeConfig(true);  // Save to config file.
+    // Save to config file. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+    MusEGlobal::muse->changeConfig(true);
     updateDirectoryPath();
   }  
 }

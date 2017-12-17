@@ -62,14 +62,16 @@ namespace MusEGui {
 QString string2hex(const unsigned char* data, int len)
       {
       QString d;
-      QString s;
       for (int i = 0; i < len; ++i) {
             if ((i > 0) && ((i % 8)==0)) {
                   d += "\n";
                   }
             else if (i)
                   d += " ";
-            d += s.sprintf("%02x", data[i]);
+            // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+            if(data[i] == MusECore::ME_SYSEX || data[i] == MusECore::ME_SYSEX_END)
+              continue;
+            d += QString("%1").arg(data[i], 2, 16, QLatin1Char('0'));
             }
       return d;
       }
@@ -96,6 +98,9 @@ char* hex2string(QWidget* parent, const char* src, int& len, bool warn = true)
                   return 0;
                   }
             src    = ep;
+            // Strip all f0 and f7 (whether accidental or on purpose enclosing etc).
+            if(val == MusECore::ME_SYSEX || val == MusECore::ME_SYSEX_END)
+              continue;
             *dst++ = val;
             if (dst - buffer >= 2048) {
                   if(warn)

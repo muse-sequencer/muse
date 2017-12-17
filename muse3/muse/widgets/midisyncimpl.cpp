@@ -38,13 +38,14 @@
 #include "icons.h"
 #include "sync.h"
 #include "globals.h"
+#include "gconfig.h"
 #include "midisyncimpl.h"
 #include "driver/audiodev.h"
 #include "audio.h"
 
 namespace MusEGui {
 
-enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
+enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_SYNC_TO, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
        DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMRT, DEVCOL_RMMC, DEVCOL_RMTC, DEVCOL_RREWSTART, 
        DEVCOL_TID, DEVCOL_TCLK, DEVCOL_TMRT, DEVCOL_TMMC, DEVCOL_TMTC, /* DEVCOL_TREWSTART, */  };
 
@@ -59,6 +60,7 @@ void MidiSyncConfig::setToolTips(QTreeWidgetItem *item)
   item->setToolTip(DEVCOL_NO, tr("Port Number"));
   item->setToolTip(DEVCOL_NAME, tr("Name of the midi device associated with"
 				   " this port number"));
+  item->setToolTip(DEVCOL_SYNC_TO, tr("Sync to this device. Click to select."));
   item->setToolTip(DEVCOL_IN, tr("Midi clock input detected"));
   item->setToolTip(DEVCOL_TICKIN, tr("Midi tick input detected"));
   item->setToolTip(DEVCOL_MRTIN, tr("Midi real time input detected"));
@@ -87,33 +89,28 @@ void MidiSyncConfig::setWhatsThis(QTreeWidgetItem *item)
 {
   item->setWhatsThis(DEVCOL_NO, tr("Port Number"));
   item->setWhatsThis(DEVCOL_NAME, tr("Name of the midi device associated with this port number"));
-  item->setWhatsThis(DEVCOL_IN, tr("Midi clock input detected.\n"
-				   "Current port actually used is red.\nClick to force a port to be used."));
+  item->setWhatsThis(DEVCOL_SYNC_TO, tr("Sync to this device. Click to select.\n"
+				   "MusE will synchronize to this device's\n clock or MTC quarter-frame,\n if 'slave to external sync' is on."));
+  item->setWhatsThis(DEVCOL_IN, tr("Midi clock input detected"));
   item->setWhatsThis(DEVCOL_TICKIN, tr("Midi tick input detected"));
   item->setWhatsThis(DEVCOL_MRTIN, tr("Midi realtime input detected, including\n start/stop/continue, and song position."));
   item->setWhatsThis(DEVCOL_MMCIN, tr("MMC input detected, including stop/play/deferred play, and locate."));
                                       //"Current port actually used is red. Click to force a port to be current."));
-  item->setWhatsThis(DEVCOL_MTCIN, tr("MTC input detected, including forward quarter-frame sync and full-frame locate.\n"
-				      "Current port actually used is red. Click to force a port to be current."));
+  item->setWhatsThis(DEVCOL_MTCIN, tr("MTC input detected, including forward quarter-frame sync and full-frame locate"));
   item->setWhatsThis(DEVCOL_MTCTYPE, tr("Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop\n"
 					"Detects format of MTC quarter and full frame, and MMC locate."));
   item->setWhatsThis(DEVCOL_RID, tr("Receive id number. 127 = global receive all, even if not global."));
-  item->setWhatsThis(DEVCOL_RCLK, tr("Accept midi clock input. Only one input is used for clock.\n"
-				     "Auto-acquire: If two or more port realtime inputs are enabled,\n"
-				     " the first clock detected is used, until clock is lost,\n"
-				     " then another can take over. Best if each turns off its clock\n" 
-				     " at stop, so MusE can re-acquire the clock from another port.\n"
-				     "Click on detect indicator to force another."));
+  item->setWhatsThis(DEVCOL_RCLK, tr("Accept midi clock input.\nOnly one port can be used for clock sync."));
   item->setWhatsThis(DEVCOL_RMRT, tr("Accept midi realtime input, including\n start/stop/continue, and song position.\n"
 				     "Non-clock events (start,stop etc) are\n accepted by ALL enabled ports.\n"
 				     "This means you may have several master\n devices connected, and muse will accept\n"
 				     " input from them."));
   item->setWhatsThis(DEVCOL_RMMC, tr("Accept MMC input, including stop/play/deferred play, and locate."));
   item->setWhatsThis(DEVCOL_RMTC, tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
-				     "See 'rc' column for more help."));
+				     "Only one port can be used for sync."));
   item->setWhatsThis(DEVCOL_RREWSTART, tr("When start is received, rewind before playing.\n"
-					  "Note: It may be impossible to rewind fast\n"
-					  " enough to synchronize with the external device."));
+					  "Note: In some cases, such as having many\n project audio tracks, it may be impossible\n to rewind fast"
+					  " enough to synchronize\n with the external device.\nManually rewinding the device before\n playing is recommended."));
   item->setWhatsThis(DEVCOL_TID, tr("Transmit id number. 127 = global transmit to all."));
   item->setWhatsThis(DEVCOL_TCLK, tr("Send midi clock output. If 'Slave to External Sync' is chosen,\n"
 				     " muse can re-transmit clock to any other chosen ports."));
@@ -199,13 +196,18 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
 {
       setupUi(this);
       
+      // Remember the current value, for cancelling.
+      _curMidiSyncInPort = MusEGlobal::config.curMidiSyncInPort;
+      
       _dirty = false;
       applyButton->setEnabled(false);
+      okButton->setEnabled(false);
       
       devicesListView->setAllColumnsShowFocus(true);
       QStringList columnnames;
       columnnames << tr("Port")
 		  << tr("Device Name")
+		  << tr("s")
 		  << tr("c")
 		  << tr("k")
 		  << tr("r")
@@ -260,6 +262,10 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(syncRecTempoValQuant, SIGNAL(valueChanged(double)), SLOT(syncChanged()));
       connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
+
+      connect(extSyncCheckbox, SIGNAL(toggled(bool)), &MusEGlobal::extSyncFlag, SLOT(setValue(bool)));
+      connect(useJackTransportCheckbox, SIGNAL(toggled(bool)),&MusEGlobal::useJackTransport, SLOT(setValue(bool)));
+      connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(useJackTransportChanged(bool)));
   
       // Done in show().
       //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
@@ -286,6 +292,8 @@ void MidiSyncConfig::songChanged(MusECore::SongChangedFlags_t flags)
       _dirty = false;
       if(applyButton->isEnabled())
         applyButton->setEnabled(false);
+      if(okButton->isEnabled())
+        okButton->setEnabled(false);
       
       //for(int i = 0; i < MIDI_PORTS; ++i)
       //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
@@ -354,16 +362,6 @@ void MidiSyncConfig::heartBeat()
           bool sdet = MusEGlobal::midiPorts[port].syncInfo().MCSyncDetect();
           if(sdet)
           {
-            if(port == MusEGlobal::curMidiSyncInPort)
-            {
-              if(!lvi->_curDet)
-              {
-                lvi->_curDet = true;
-                lvi->_inDet = false;
-                lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-              }  
-            }
-            else
             if(!lvi->_inDet)
             {
               lvi->_inDet = true;
@@ -380,6 +378,11 @@ void MidiSyncConfig::heartBeat()
               lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
             }  
           }
+          
+          if(port == MusEGlobal::config.curMidiSyncInPort)
+            lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+          else
+            lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
           
           sdet = MusEGlobal::midiPorts[port].syncInfo().tickDetect();
           if(sdet)
@@ -462,16 +465,6 @@ void MidiSyncConfig::heartBeat()
           
           if(mtcdet)
           {
-            if(port == MusEGlobal::curMidiSyncInPort)
-            {
-              if(!lvi->_curMTCDet)
-              {
-                lvi->_curMTCDet = true;
-                lvi->_MTCDet = false;
-                lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-              }  
-            }
-            else
             if(!lvi->_MTCDet)
             {
               lvi->_MTCDet = true;
@@ -538,6 +531,19 @@ void MidiSyncConfig::syncChanged()
 //   extSyncChanged
 //---------------------------------------------------------
 
+void MidiSyncConfig::useJackTransportChanged(bool v)
+      {
+      useJackTransportCheckbox->blockSignals(true);
+      useJackTransportCheckbox->setChecked(v);
+//      if(v)
+//        MusEGlobal::song->setMasterFlag(false);
+      useJackTransportCheckbox->blockSignals(false);
+      }
+
+//---------------------------------------------------------
+//   extSyncChanged
+//---------------------------------------------------------
+
 void MidiSyncConfig::extSyncChanged(bool v)
       {
       extSyncCheckbox->blockSignals(true);
@@ -554,7 +560,13 @@ void MidiSyncConfig::extSyncChanged(bool v)
 void MidiSyncConfig::ok()
       {
       apply();
-      cancel();
+      _dirty = false;
+      if(applyButton->isEnabled())
+        applyButton->setEnabled(false);
+      if(okButton->isEnabled())
+        okButton->setEnabled(false);
+      
+      close();
       }
 
 //---------------------------------------------------------
@@ -563,9 +575,14 @@ void MidiSyncConfig::ok()
 
 void MidiSyncConfig::cancel()
       {
+      // Restore the current sync port.
+      MusEGlobal::config.curMidiSyncInPort = _curMidiSyncInPort;
+      
       _dirty = false;
       if(applyButton->isEnabled())
         applyButton->setEnabled(false);
+      if(okButton->isEnabled())
+        okButton->setEnabled(false);
       
       close();
       }
@@ -661,14 +678,20 @@ void MidiSyncConfig::apply()
         
       }
   
+  // Update the current value.
+  _curMidiSyncInPort = MusEGlobal::config.curMidiSyncInPort;
+      
   if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
     MusEGlobal::audio->msgIdle(false);
   
-  //muse->changeConfig(true);    // save settings
+  // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+  //muse->changeConfig(true);
   
   _dirty = false;
   if(applyButton->isEnabled())
     applyButton->setEnabled(false);
+  if(okButton->isEnabled())
+    okButton->setEnabled(false);
   
   // Do not call this. Causes freeze sometimes. Only will be needed if extra pollfds are used by midi seq thread.
   //midiSeq->msgUpdatePollFd();
@@ -709,13 +732,6 @@ void MidiSyncConfig::updateSyncInfoLV()
             
             if(portsi.MCSyncDetect())
             {
-              if(i == MusEGlobal::curMidiSyncInPort)
-              {
-                lvi->_curDet = true;
-                lvi->_inDet = false;
-                lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-              }
-              else
               {
                 lvi->_curDet = false;
                 lvi->_inDet = true;
@@ -728,6 +744,11 @@ void MidiSyncConfig::updateSyncInfoLV()
               lvi->_inDet = false;
               lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
             }
+            
+            if(i == MusEGlobal::config.curMidiSyncInPort)
+              lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+            else
+              lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
             
             if(portsi.tickDetect())
             {
@@ -786,13 +807,6 @@ void MidiSyncConfig::updateSyncInfoLV()
 
             if(portsi.MTCDetect())
             {
-              if(i == MusEGlobal::curMidiSyncInPort)
-              {
-                lvi->_curMTCDet = true;
-                lvi->_MTCDet = false;
-                lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-              }
-              else
               {
                 lvi->_curMTCDet = false;
                 lvi->_MTCDet = true;
@@ -848,6 +862,7 @@ void MidiSyncConfig::updateSyncInfoLV()
 	    devicesListView->resizeColumnToContents(DEVCOL_NO);
 	    //devicesListView->resizeColumnToContents(DEVCOL_NAME);
 	    devicesListView->header()->resizeSection(DEVCOL_NAME, 120);
+	    devicesListView->resizeColumnToContents(DEVCOL_SYNC_TO);
 	    devicesListView->resizeColumnToContents(DEVCOL_IN);
 	    devicesListView->resizeColumnToContents(DEVCOL_TICKIN);
 	    devicesListView->resizeColumnToContents(DEVCOL_MRTIN);
@@ -867,6 +882,7 @@ void MidiSyncConfig::updateSyncInfoLV()
 	    devicesListView->resizeColumnToContents(DEVCOL_TMTC);
 
      devicesListView->header()->setSectionResizeMode(DEVCOL_NO, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_SYNC_TO, QHeaderView::Fixed);
      devicesListView->header()->setSectionResizeMode(DEVCOL_IN, QHeaderView::Fixed);
      devicesListView->header()->setSectionResizeMode(DEVCOL_TICKIN, QHeaderView::Fixed);
      devicesListView->header()->setSectionResizeMode(DEVCOL_MRTIN, QHeaderView::Fixed);
@@ -909,45 +925,28 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   break;
             case DEVCOL_NAME:
                   break;
-            case DEVCOL_IN:
-                  // If this is not the current midi sync in port, and sync in from this port is enabled,
-                  //  and sync is in fact detected on this port, allow the user to force this port to now be the
-                  //  current sync in port. 
-                  if(no != MusEGlobal::curMidiSyncInPort)
+            case DEVCOL_SYNC_TO:
+                  if(no != MusEGlobal::config.curMidiSyncInPort)
                   {
-                    if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
-                    {
-                      MusEGlobal::curMidiSyncInPort = no;
-                      lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-                    }  
-                    if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
-                    {
-                      MusEGlobal::curMidiSyncInPort = no;
-                      lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-                    }  
+                    // Turn off the current sync port's light.
+                    MidiSyncLViewItem* prev_lvi = 
+                      (MidiSyncLViewItem*)devicesListView->topLevelItem(MusEGlobal::config.curMidiSyncInPort);
+                    if(prev_lvi)
+                      prev_lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
+                    
+                    // Set the current sync port and turn on the port's light.
+                    MusEGlobal::config.curMidiSyncInPort = no;
+                    lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+                    setDirty();
                   }  
+                  break;
+            case DEVCOL_IN:
                   break;
             case DEVCOL_TICKIN:
                   break;
             case DEVCOL_MMCIN:
                   break;
             case DEVCOL_MTCIN:
-                  // If this is not the current midi sync in port, and sync in from this port is enabled,
-                  //  and sync is in fact detected on this port, allow the user to force this port to now be the
-                  //  current sync in port. 
-                  if(no != MusEGlobal::curMidiSyncInPort)
-                  {
-                    if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
-                    {
-                      MusEGlobal::curMidiSyncInPort = no;
-                      lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
-                    }  
-                    if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
-                    {
-                      MusEGlobal::curMidiSyncInPort = no;
-                      lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
-                    }  
-                  }  
                   break;
             case DEVCOL_MTCTYPE:
                   break;
@@ -1056,6 +1055,8 @@ void MidiSyncConfig::setDirty()
   _dirty = true;
   if(!applyButton->isEnabled())
     applyButton->setEnabled(true);
+  if(!okButton->isEnabled())
+    okButton->setEnabled(true);
 }
 
 } // namespace MusEGui

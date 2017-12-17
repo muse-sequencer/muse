@@ -1066,8 +1066,9 @@ bool Song::event(QEvent* _e)
                         return false;
 
                   bool muted = e->getP1() == 1;
-                  //track->setMute(muted);
-                  MusEGlobal::audio->msgSetTrackMute(track, muted);  // Tim
+                  // No undo.
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted), false);
+      
                   this->update(SC_MUTE | SC_TRACK_MODIFIED);
                   break;
                   }
@@ -1084,8 +1085,8 @@ bool Song::event(QEvent* _e)
 
                   int num = e->getP1();
                   int val = e->getP2();
-                  int tick = MusEGlobal::song->cpos();
-                  MidiPlayEvent ev(tick, track->outPort(), chan, ME_CONTROLLER, num, val);
+                  // Schedule for immediate playback.
+                  MidiPlayEvent ev(0, track->outPort(), chan, ME_CONTROLLER, num, val);
                   MusEGlobal::audio->msgPlayMidiEvent(&ev);
                   break;
                   }

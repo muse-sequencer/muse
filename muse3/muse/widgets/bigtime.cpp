@@ -20,7 +20,7 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
-#include <stdio.h>
+//#include <stdio.h>
 #include <limits.h>
 #include <cmath>
 
@@ -261,59 +261,58 @@ bool BigTime::setString(unsigned v)
       QString s;
 
       if(oldAbsTick != v) {
-        s.sprintf("%010d", v);
+        s = QString("%1").arg(v, 10, 10, QLatin1Char('0'));
         absTickLabel->setText(s);
         oldAbsTick = v;
       }
       if(oldAbsFrame != absFrame) {
-        s.sprintf("%010d", absFrame);
+        s = QString("%1").arg(absFrame, 10, 10, QLatin1Char('0'));
         absFrameLabel->setText(s);
         oldAbsFrame = absFrame;
       }
       if(oldbar != bar) {
-	      s.sprintf("%04d", bar+1);
+        s = QString("%1").arg(bar + 1, 4, 10, QLatin1Char('0'));
 	      barLabel->setText(s);
 	      oldbar = bar;
       }
       if(oldbeat != beat) {
-	      s.sprintf("%02d", beat+1);
+        s = QString("%1").arg(beat + 1, 2, 10, QLatin1Char('0'));
 	      beatLabel->setText(s);
 	      oldbeat = beat;
       }
 
       if(oldtick != tick) {
-	      s.sprintf("%03d", tick);
+        s = QString("%1").arg(tick, 3, 10, QLatin1Char('0'));
 	      tickLabel->setText(s);
 	      oldtick = tick;
       }
 
       //if(oldhour != hour) {
-	    //  s.sprintf("%02d", hour);
+      //  s = QString("%1").arg(hour, 2, 10, QLatin1Char('0'));
 	    //  hourLabel->setText(s);
 	    //  oldhour = hour;
       //}
 
       if(oldmin != min) {
-	      //s.sprintf("%02d", min);
-        s.sprintf("%03d", min);
+        s = QString("%1").arg(min, 3, 10, QLatin1Char('0'));
 	      minLabel->setText(s);
 	      oldmin = min;
       }
 
       if(oldsec != sec) {
-	      s.sprintf("%02d", sec);
+        s = QString("%1").arg(sec, 2, 10, QLatin1Char('0'));
 	      secLabel->setText(s);
 	      oldsec = sec;
       }
 
       if(oldframe != frame) {
-	      s.sprintf("%02d", frame);
+        s = QString("%1").arg(frame, 2, 10, QLatin1Char('0'));
 	      frameLabel->setText(s);
 	      oldframe = frame;
       }
 
       if(oldsubframe != subframe) {
-        s.sprintf("%02u", subframe);
+        s = QString("%1").arg(subframe, 2, 10, QLatin1Char('0'));
         subFrameLabel->setText(s);
         oldsubframe = subframe;
       }

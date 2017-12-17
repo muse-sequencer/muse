@@ -41,6 +41,8 @@ class QWheelEvent;
 namespace MusECore {
 class Track;
 class Xml;
+//class PendingOperationList;
+class Undo;
 }
 
 namespace MusEGui {
@@ -106,7 +108,6 @@ class TList : public QWidget {
       virtual void keyPressEvent(QKeyEvent* e);
       virtual void wheelEvent(QWheelEvent* e);
 
-      void portsPopupMenu(MusECore::Track*, int, int, bool allClassPorts);
       void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
       void adjustScrollbar();
@@ -117,7 +118,7 @@ class TList : public QWidget {
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
-      void toggleMute(MusECore::Track *t, bool turnOff);
+      void toggleMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff);
       void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
       void editTrackName(MusECore::Track *t);
       void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);

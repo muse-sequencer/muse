@@ -685,26 +685,31 @@ void Appearance::changeTheme()
 
     QString themeDir = MusEGlobal::museGlobalShare + "/themes/";
     backgroundTree->reset();
+
+    QString configPath = themeDir + currentTheme;
     if (QFile::exists(themeDir + QFileInfo(currentTheme).baseName()+ ".qss"))
     {
       styleSheetPath->setText(themeDir + QFileInfo(currentTheme).baseName()+ ".qss");
       MusEGlobal::config.styleSheetFile = styleSheetPath->text();
       if (MusEGlobal::debugMsg)
           printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
+
+      MusECore::readConfiguration(configPath.toLatin1().constData());
+      // We want the simple version, don't set the style or stylesheet yet.
+      MusEGlobal::muse->changeConfig(true);
     }
     else
     {
-      styleSheetPath->setText("arg");
-      MusEGlobal::muse->loadStyleSheetFile("");
       MusEGlobal::config.styleSheetFile = "";
+      // We want the simple version, don't set the style or stylesheet yet.
+      MusEGlobal::muse->changeConfig(true);
+      MusECore::readConfiguration(configPath.toLatin1().constData());
     }
 
-    QString configPath = themeDir + currentTheme;
-    MusECore::readConfiguration(configPath.toLatin1().constData());
-    colorSchemeComboBox->setCurrentIndex(0);
-    MusEGlobal::muse->changeConfig(true);
-
     hide();
+
+    // If required, ask user to restart the application for proper results.
+    checkClose();
 }
 
 //---------------------------------------------------------
@@ -819,6 +824,7 @@ bool Appearance::apply()
       *backupConfig = *config;
       updateColorItems();
 
+      // We want the simple version, don't set the style or stylesheet yet.
       MusEGlobal::muse->changeConfig(true);
       raise();
 
@@ -832,7 +838,7 @@ bool Appearance::apply()
 bool Appearance::checkClose()
 {
   if(QMessageBox::warning(MusEGlobal::muse, QString("Muse"),
-    tr("Style was changed.\nThe application needs to restart.\nRestart now?"),
+    tr("Style was changed.\nThe program must be restarted for changes to take place.\nRestart now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
      == QMessageBox::Yes)
   {
@@ -840,6 +846,11 @@ bool Appearance::checkClose()
     if(MusEGlobal::muse->close())
       return true;
   }
+
+  // We want the non-simple version, set the style and stylesheet, and don't save - it's already been done.
+  // And force the style.
+  MusEGlobal::muse->changeConfig(false);
+//   MusEGlobal::muse->updateThemeAndStyle(true);
 
   MusEGlobal::muse->setRestartingApp(false); // Cancel any restart. Also cleared in muse->closeEvent().
   return false;
@@ -1013,7 +1024,7 @@ void Appearance::colorListCustomContextMenuReq(const QPoint& p)
           _colorDialog->blockSignals(false);
         }
         // Notify the rest of the app, without the heavy stuff.
-        MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+        MusEGlobal::muse->changeConfig(false); // No write, and simple mode.
       }
     } 
     break;
@@ -1036,7 +1047,7 @@ void Appearance::colorListCustomContextMenuReq(const QPoint& p)
       }
       //changeGlobalColor();
       // Notify the rest of the app, without the heavy stuff.
-      MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+      MusEGlobal::muse->changeConfig(false); // No write, and simple mode.
     } 
     break;
   }
@@ -1125,7 +1136,7 @@ void Appearance::changeGlobalColor()
   {
     ccol = *color;
     // Notify the rest of the app, without the heavy stuff.
-    MusEGlobal::muse->changeConfig(false, true); // No write, and simple mode.
+    MusEGlobal::muse->changeConfig(false); // No write, and simple mode.
   }
 
   setColorItemDirty();
@@ -1184,7 +1195,9 @@ void Appearance::doCancel()
 {
   MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
   MusEGlobal::config = *backupConfig;
+  // Save settings. Use non-simple version - set style and stylesheet.
   MusEGlobal::muse->changeConfig(true); // Restore everything possible.
+//   MusEGlobal::muse->updateThemeAndStyle(true);
 }
 
 //---------------------------------------------------------

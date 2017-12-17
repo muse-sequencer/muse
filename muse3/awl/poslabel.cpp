@@ -68,12 +68,19 @@ void PosLabel::updateValue()
       if (_smpte) {
             int min, sec, frame, subframe;
             pos.msf(&min, &sec, &frame, &subframe);
-            s.sprintf("%03d:%02d:%02d:%02d", min, sec, frame, subframe);
+            s = QString("%1:%2:%3:%4")
+                .arg(min,      3, 10, QLatin1Char('0'))
+                .arg(sec,      2, 10, QLatin1Char('0'))
+                .arg(frame,    2, 10, QLatin1Char('0'))
+                .arg(subframe, 2, 10, QLatin1Char('0'));
             }
       else {
             int measure, beat, tick;
             pos.mbt(&measure, &beat, &tick);
-            s.sprintf("%04d.%02d.%03u", measure+1, beat+1, tick);
+            s = QString("%1.%2.%3")
+                .arg(measure + 1,  4, 10, QLatin1Char('0'))
+                .arg(beat + 1,     2, 10, QLatin1Char('0'))
+                .arg(tick,         3, 10, QLatin1Char('0'));
             }
       setText(s);
       }
