@@ -728,7 +728,9 @@ void DList::draw(QPainter& p, const QRect& rect)
 
 bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       {
-      QMenu* p = MusECore::midiPortsPopup(0, t->port, true);  // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
+      // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
+      QMenu* p = MusEGui::midiPortsPopup(0, t->port, true);
+      
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if(!act)
       {

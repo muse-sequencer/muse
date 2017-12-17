@@ -255,6 +255,7 @@ class Track {
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
       bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
+      bool isSynthTrack() const      { return type() == AUDIO_SOFTSYNTH; }
       virtual bool canRecord() const { return false; }
       virtual bool canRecordMonitor() const { return false; }
       virtual AutomationType automationType() const    = 0;

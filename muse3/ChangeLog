@@ -1,3 +1,7 @@
+17.12.2017
+         - Enhancements to midi port/device popup menu in track list + drum list. (Tim)
+           Sorted by device type now.
+         - New! Synthesizer tracks can change their port from the track list.
 15.12.2017
          - Added support for track pad horizontal scrolling.
            Involved adjusting scrolling constants and moving to pixelDelta() for

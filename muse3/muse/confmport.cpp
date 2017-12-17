@@ -711,29 +711,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }  
                     }
                     
-                    if(!mapSYNTH.empty())
-                    {
-                      pup->addSeparator();
-                      pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
-                      
-                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
-                      {
-                        int idx = i->second;
-                        QString s(i->first.c_str());
-                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
-                        if(md)
-                        {
-                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
-                            continue;
-                            
-                          act = pup->addAction(md->name());
-                          act->setData(idx);
-                          act->setCheckable(true);
-                          act->setChecked(md == dev);
-                        }  
-                      }
-                    }  
-                    
                     if(!mapJACK.empty())
                     {
                       pup->addSeparator();
@@ -756,6 +733,29 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         }  
                       }
                     }
+                    
+                    if(!mapSYNTH.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
+                      
+                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
+                      {
+                        int idx = i->second;
+                        QString s(i->first.c_str());
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
+                            continue;
+                            
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }  
+                      }
+                    }  
                     
                     act = pup->exec(ppt);
                     if(!act)

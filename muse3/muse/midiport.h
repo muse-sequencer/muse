@@ -32,8 +32,7 @@
 #include "lock_free_buffer.h"
 #include "mididev.h"
 
-class QMenu;
-class QWidget;
+class QString;
 
 namespace MusECore {
 
@@ -243,7 +242,6 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
 extern MidiControllerList defaultManagedMidiController;
 
 } // namespace MusECore
