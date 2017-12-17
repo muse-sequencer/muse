@@ -30,9 +30,15 @@ file (GLOB driver_source_files
        dummyaudio.cpp
        jack.cpp
        jackmidi.cpp
-       rtaudio.cpp
        rtctimer.cpp
        )
+if (HAVE_RTAUDIO)
+       file (GLOB driver_source_files
+       ${driver_source_files}
+       rtaudio.cpp
+     )
+endif (HAVE_RTAUDIO)
+
 
 ##
 ## Define target

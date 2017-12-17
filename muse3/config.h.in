@@ -21,6 +21,7 @@
 //=============================================================================
 
 #cmakedefine ALSA_SUPPORT
+#cmakedefine HAVE_RTAUDIO
 #cmakedefine DSSI_ALSA_COMPAT_SUPPORT
 #cmakedefine HAVE_LASH
 #cmakedefine OSC_SUPPORT

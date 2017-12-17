@@ -72,7 +72,9 @@
 
 namespace MusECore {
 extern bool initDummyAudio();
+#ifdef HAVE_RTAUDIO
 extern bool initRtAudio();
+#endif
 extern bool initJackAudio();
 extern void initMidiController();
 extern void initMetronome();
@@ -266,9 +268,9 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -h       This help\n");
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       No audio, use dummy audio driver, plus ALSA midi\n");
-
+#ifdef HAVE_RTAUDIO
       fprintf(stderr, "   -t       Use RtAudio audio fallback.\n");
-
+#endif
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
       fprintf(stderr, "   -F       Do not auto-populate midi ports with midi devices found, at startup\n");
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
@@ -800,10 +802,12 @@ int main(int argc, char* argv[])
               MusECore::initDummyAudio();
               MusEGlobal::realTimeScheduling = true;
               }
+#ifdef HAVE_RTAUDIO
         else if (audioType == RtAudio) {
               MusECore::initRtAudio();
               MusEGlobal::realTimeScheduling = true;
               }
+#endif
         else if (MusECore::initJackAudio()) {
               if (!MusEGlobal::debugMode)
                     {
