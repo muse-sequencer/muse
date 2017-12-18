@@ -32,6 +32,13 @@ file (GLOB driver_source_files
        jackmidi.cpp
        rtctimer.cpp
        )
+if (HAVE_RTAUDIO)
+       file (GLOB driver_source_files
+       ${driver_source_files}
+       rtaudio.cpp
+     )
+endif (HAVE_RTAUDIO)
+
 
 ##
 ## Define target
@@ -65,6 +72,7 @@ target_link_libraries ( driver
       ${ALSA_LIBRARIES}
       ${JACK_LIBRARIES}
       ${QT_LIBRARIES}
+      ${RTAUDIO_LIBRARIES}
       mplugins
       )
 

@@ -41,7 +41,7 @@ class Pos;
 class AudioDevice {
 
    public:
-      enum { DUMMY_AUDIO=0, JACK_AUDIO=1 };
+      enum { DUMMY_AUDIO=0, JACK_AUDIO=1, RTAUDIO_AUDIO=2 };
       enum PortType { UnknownType=0, AudioPort=1, MidiPort=2 };
       enum PortDirection { UnknownDirection=0, InputPort=1, OutputPort=2 };
       

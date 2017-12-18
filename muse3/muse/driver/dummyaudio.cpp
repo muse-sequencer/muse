@@ -189,17 +189,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual void startTransport() {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::startTransport playPos=%d\n", playPos);
-#if 0            
-            Msg trcmd;
-            trcmd.cmd = trStart;
-            trcmd.arg = playPos;
-            cmdQueue.push_front(trcmd);
-#else
             state = Audio::PLAY;
-#endif            
-/*            state = Audio::START_PLAY;
-            audio->sync(state, playPos);            
-            state = Audio::PLAY;*/
             }
       virtual void stopTransport() {
             if(DEBUG_DUMMY)
@@ -212,38 +202,17 @@ class DummyAudioDevice : public AudioDevice {
       {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
-#if 0            
-            Msg trcmd;
-            trcmd.cmd = trSeek;
-            trcmd.arg = p.frame();
-            cmdQueue.push_front(trcmd);
-            playPos = p.frame();
-#else
             seekflag = true;
             //pos = n;
             playPos = p.frame();
-#endif            
             
       }
       virtual void seekTransport(unsigned pos) {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
-#if 0            
-            Msg trcmd;
-            trcmd.cmd = trSeek;
-            trcmd.arg = pos;
-            cmdQueue.push_front(trcmd);
-            playPos = pos;
-#else
             seekflag = true;
             //pos = n;
             playPos = pos;
-#endif            
-/*
-            Audio::State tempState = state;
-            state = Audio::START_PLAY;
-            audio->sync(state, playPos);            
-            state = tempState;*/
             }
       virtual void setFreewheel(bool) {}
       void setRealTime() { realtimeFlag = true; }
@@ -342,199 +311,36 @@ std::list<QString> DummyAudioDevice::inputPorts(bool midi, int /*aliases*/)
 
 static void* dummyLoop(void* ptr)
       {
-      //unsigned int tickRate = 25;
-      
-      // p3.3.30
-      //MusEGlobal::sampleRate = 25600;
-      //MusEGlobal::segmentSize = dummyFrames;
-//       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
-#if 0      
-      //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
-      unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;
-      
-      AlsaTimer timer;
-      fprintf(stderr, "Get alsa timer for dummy driver:\n");
-      timer.setFindBestTimer(false);
-      int fd = timer.initTimer();
-      if (fd==-1) {
-      //  QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer for dummy audio driver!")),
-      //        /*tr*/(QString("No functional timer was available.\n"
-      //                   "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
-        fprintf(stderr, "Failed to start timer for dummy audio driver! No functional timer was available.\n" 
-                         "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available\n");
-        pthread_exit(0);
-      }
-
-      /* Depending on nature of the timer, the requested tickRate might not
-       * be available.  The return value is the nearest available frequency,
-       * so use this to reset our dummpy MusEGlobal::sampleRate to keep everything 
-       * consistent.
-       */
-      tickRate = timer.setTimerFreq( /*250*/ tickRate );
-      
-      // p3.3.31
-      // If it didn't work, get the actual rate.
-      if(tickRate == 0)
-        tickRate = timer.getTimerFreq();
-        
-      MusEGlobal::sampleRate = tickRate * MusEGlobal::segmentSize;
-      timer.startTimer();
-#endif        
 
       DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
-
-      ///pollfd myPollFd;
-
-      ///myPollFd.fd = fd;
-      ///myPollFd.events = POLLIN;
-
-
-      /*
-      MusEGlobal::doSetuid();
-      struct sched_param rt_param;
-      int rv;
-      memset(&rt_param, 0, sizeof(sched_param));
-      int type;
-      rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-      if (rv != 0)
-            perror("get scheduler parameter");
-      if (type != SCHED_FIFO) {
-            fprintf(stderr, "Driver thread not running SCHED_FIFO, trying to set...\n");
-
-            memset(&rt_param, 0, sizeof(sched_param));
-            //rt_param.sched_priority = 1;
-            rt_param.sched_priority = realtimePriority();
-            rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &rt_param);
-            if (rv != 0)
-                  perror("set realtime scheduler");
-            memset(&rt_param, 0, sizeof(sched_param));
-            rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-            if (rv != 0)
-                  perror("get scheduler parameter");
-            if (type == SCHED_FIFO) {
-                  drvPtr->setRealTime();
-                  fprintf(stderr, "Thread succesfully set to SCHED_FIFO\n");
-                  }
-                  else {
-                  fprintf(stderr, "Unable to set thread to SCHED_FIFO\n");
-                  }
-            }
-      MusEGlobal::undoSetuid();
-      */
       
-#ifndef __APPLE__
-      MusEGlobal::doSetuid();
-      //if (realTimePriority) {
-      if (MusEGlobal::realTimeScheduling) {
-            //
-            // check if we really got realtime priviledges
-            //
-            int policy;
-            if ((policy = sched_getscheduler (0)) < 0) {
-                printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
-                }
-            else
-                {
-                if (policy != SCHED_FIFO)
-                          printf("audio dummy thread _NOT_ running SCHED_FIFO\n");
-                else if (MusEGlobal::debugMsg) {
-                        struct sched_param rt_param;
-                    memset(&rt_param, 0, sizeof(sched_param));
-                        int type;
-                    int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-                        if (rv == -1)
-                                perror("get scheduler parameter");
-                    printf("audio dummy thread running SCHED_FIFO priority %d\n",
-                             rt_param.sched_priority);
-                    }
-                }
-            }
-      MusEGlobal::undoSetuid();
-#endif
-      
-#if 0      
-      /* unsigned long tick = 0;*/    // prevent compiler warning: unused variable
-      for (;;) {
-            int _pollWait = 10;   // ms
-            unsigned long count = 0;
-            while (count < 1 /*250/tickRate*/) // will loop until the next tick occurs
-                {
-                /*int n = */  poll(&myPollFd, 1 /* npfd */, _pollWait);
-                count += timer.getTimerTicks();
-                // FIXME FIXME: There is a crash here (or near-lockup, a race condition?) while zipping 
-                //               the cursor around in an editor (pianoroll, master edit) while arranger is open.
-                while (drvPtr->cmdQueue.size())
-                    {
-                    Msg &msg = drvPtr->cmdQueue.back();
-                    drvPtr->cmdQueue.pop_back();
-                    switch(msg.cmd) {
-                          case trSeek:
-                            {
-                            //printf("trSeek\n");
-                            drvPtr->playPos = msg.arg;
-                            Audio::State tempState = drvPtr->state;
-                            drvPtr->state = Audio::START_PLAY;
-                            audio->sync(drvPtr->state, msg.arg);
-                            drvPtr->state = tempState;
-                            }
-                            break;
-                          case trStart:
-                            {
-                            //printf("trStart\n");
-                            drvPtr->state = Audio::START_PLAY;
-                            audio->sync(drvPtr->state, msg.arg);
-                            drvPtr->state = Audio::PLAY;
-                            }
-                            break;
-                          case trStop:
-                            break;
-                          default:
-                            printf("dummyLoop: Unknown command!\n");
-                        }
-                    }
-                }
-            audio->process(MusEGlobal::segmentSize);
-            int increment = MusEGlobal::segmentSize; // 1 //tickRate / MusEGlobal::sampleRate * MusEGlobal::segmentSize;
-            drvPtr->_framePos+=increment;
-            if (drvPtr->state == Audio::PLAY) 
-                  {
-                  drvPtr->playPos+=increment;
-                  }
-            }
-#else
       // Adapted from muse_qt4_evolution. p4.0.20       
       for(;;) 
       {
-            drvPtr->_timeAtCycleStart = curTime();
-            //if(audioState == AUDIO_RUNNING)
-            if(MusEGlobal::audio->isRunning())
-              //MusEGlobal::audio->process(MusEGlobal::segmentSize, drvPtr->state);
-              MusEGlobal::audio->process(MusEGlobal::segmentSize);
-            //else if (audioState == AUDIO_START1)
-            //  audioState = AUDIO_START2;
-            //usleep(dummyFrames*1000000/AL::sampleRate);
-            usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
-            //if(dummyAudio->seekflag) 
-            if(drvPtr->seekflag) 
-            {
-              //MusEGlobal::audio->sync(Audio::STOP, dummyAudio->pos);
-              //MusEGlobal::audio->sync(drvPtr->state, drvPtr->playPos);
-              MusEGlobal::audio->sync(Audio::STOP, drvPtr->playPos);
-              
-              //dummyAudio->seekflag = false;
-              drvPtr->seekflag = false;
-            }
-            
-            //if(dummyAudio->state == Audio::PLAY) 
-            //  dummyAudio->pos += dummyFrames;
-            drvPtr->_framePos += MusEGlobal::segmentSize;
-            drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
-            if(drvPtr->state == Audio::PLAY) 
-              drvPtr->playPos += MusEGlobal::segmentSize;
+        drvPtr->_timeAtCycleStart = curTime();
+
+        if(MusEGlobal::audio->isRunning()) {
+
+          MusEGlobal::audio->process(MusEGlobal::segmentSize);
+        }
+
+        usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
+
+        if(drvPtr->seekflag) {
+
+          MusEGlobal::audio->sync(Audio::STOP, drvPtr->playPos);
+
+          drvPtr->seekflag = false;
+        }
+
+        drvPtr->_framePos += MusEGlobal::segmentSize;
+        drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
+
+        if(drvPtr->state == Audio::PLAY) {
+
+          drvPtr->playPos += MusEGlobal::segmentSize;
+        }
       }
-#endif
-            
-      ///timer.stopTimer();
       pthread_exit(0);
       }
 
@@ -571,10 +377,6 @@ void DummyAudioDevice::start(int priority)
       int rv = pthread_create(&dummyThread, attributes, dummyLoop, this); 
       if(rv)
       {  
-        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
-        // I cannot seem to find a reliable answer to the question of "are we RT or not".
-        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
-        // So we'll just have to try again without attributes.
         if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
           rv = pthread_create(&dummyThread, NULL, dummyLoop, this); 
       }

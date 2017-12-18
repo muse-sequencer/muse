@@ -72,6 +72,9 @@
 
 namespace MusECore {
 extern bool initDummyAudio();
+#ifdef HAVE_RTAUDIO
+extern bool initRtAudio();
+#endif
 extern bool initJackAudio();
 extern void initMidiController();
 extern void initMetronome();
@@ -107,6 +110,12 @@ extern lash_client_t * lash_client;
 #endif
 extern QStringList projectRecentList;
 }
+
+enum AudioDriver {
+  DummyAudio,
+  JackAudio,
+  RtAudio,
+};
 
 static QString locale_override;
 
@@ -259,6 +268,9 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -h       This help\n");
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       No audio, use dummy audio driver, plus ALSA midi\n");
+#ifdef HAVE_RTAUDIO
+      fprintf(stderr, "   -t       Use RtAudio audio fallback.\n");
+#endif
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
       fprintf(stderr, "   -F       Do not auto-populate midi ports with midi devices found, at startup\n");
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
@@ -536,7 +548,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("aJFAhvdDumMsP:Y:l:py");
+        QString optstr("atJFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -553,7 +565,7 @@ int main(int argc, char* argv[])
         optstr += QString("2");
   #endif
 
-        bool noAudio = false;
+        AudioDriver audioType = JackAudio;
         int i;
 
         // Now read the remaining arguments as our own...
@@ -566,7 +578,10 @@ int main(int argc, char* argv[])
   #endif
                           return 0;
                     case 'a':
-                          noAudio = true;
+                          audioType = DummyAudio;
+                          break;
+                    case 't':
+                          audioType = RtAudio;
                           break;
                     case 'J':
                           MusEGlobal::noAutoStartJack = true;
@@ -783,10 +798,16 @@ int main(int argc, char* argv[])
               MusECore::initDummyAudio();
               MusEGlobal::realTimeScheduling = false;
               }
-        else if (noAudio) {
+        else if (audioType == DummyAudio) {
               MusECore::initDummyAudio();
               MusEGlobal::realTimeScheduling = true;
               }
+#ifdef HAVE_RTAUDIO
+        else if (audioType == RtAudio) {
+              MusECore::initRtAudio();
+              MusEGlobal::realTimeScheduling = true;
+              }
+#endif
         else if (MusECore::initJackAudio()) {
               if (!MusEGlobal::debugMode)
                     {
@@ -797,7 +818,7 @@ int main(int argc, char* argv[])
                                                                     "started as the same user as MusE.\n");
 
                     MusECore::initDummyAudio();
-                    noAudio = true;
+                    audioType = DummyAudio;
                     MusEGlobal::realTimeScheduling = true;
                     if (MusEGlobal::debugMode) {
                               MusEGlobal::realTimeScheduling = false;
@@ -875,7 +896,7 @@ int main(int argc, char* argv[])
             if(MusECore::alsaSeq)
               lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
   #endif
-            if (!noAudio) {
+            if (audioType != DummyAudio) {
                   const char *jack_name = MusEGlobal::audioDevice->clientName();
                   lash_jack_client_name (MusEGui::lash_client, jack_name);
             }
