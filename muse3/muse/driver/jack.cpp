@@ -1287,22 +1287,23 @@ void* JackAudioDevice::registerOutPort(const char* name, bool midi)
 //   connect
 //---------------------------------------------------------
 
-void JackAudioDevice::connect(void* src, void* dst)
+bool JackAudioDevice::connect(void* src, void* dst)
 {
       if (JACK_DEBUG)
             printf("JackAudioDevice::connect()\n");
-      if(!checkJackClient(_client)) return;
+      if(!checkJackClient(_client)) return false;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
       if (sn == 0 || dn == 0) {
             fprintf(stderr, "JackAudio::connect: unknown jack ports\n");
-            return;
+            return false;
             }
       int err = jack_connect(_client, sn, dn);
       //if (jack_connect(_client, sn, dn)) {
       if (err) {
             fprintf(stderr, "jack connect <%s>%p - <%s>%p failed with err:%d\n",
                sn, src, dn, dst, err);
+            return false;
             }
       else
       if (JACK_DEBUG)
@@ -1310,42 +1311,47 @@ void JackAudioDevice::connect(void* src, void* dst)
         fprintf(stderr, "jack connect <%s>%p - <%s>%p succeeded\n",
            sn, src, dn, dst);
       }      
+      return true;
 }
 
-void JackAudioDevice::connect(const char* src, const char* dst)
+bool JackAudioDevice::connect(const char* src, const char* dst)
 {
   if(JACK_DEBUG)
     printf("JackAudioDevice::connect()\n");
   if(!checkJackClient(_client) || !src || !dst || src[0] == '\0' || dst[0] == '\0') 
-    return;
+    return false;
   int err = jack_connect(_client, src, dst);
   if(err) 
+  {
     fprintf(stderr, "jack connect <%s> - <%s> failed with err:%d\n", src, dst, err);
+    return false;
+  }
+  return true;
 }
-
 
 //---------------------------------------------------------
 //   disconnect
 //---------------------------------------------------------
 
-void JackAudioDevice::disconnect(void* src, void* dst)
+bool JackAudioDevice::disconnect(void* src, void* dst)
 {
       if (JACK_DEBUG)
             printf("JackAudioDevice::disconnect()\n");
-      if(!checkJackClient(_client)) return;
+      if(!checkJackClient(_client)) return false;
       if(!src || !dst)  
-        return;
+        return false;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
       if (sn == 0 || dn == 0) {
             fprintf(stderr, "JackAudio::disconnect: unknown jack ports\n");
-            return;
+            return false;
             }
       int err = jack_disconnect(_client, sn, dn);
       //if (jack_disconnect(_client, sn, dn)) {
       if (err) {
             fprintf(stderr, "jack disconnect <%s> - <%s> failed with err:%d\n",
                sn, dn, err);
+            return false;
             }
       else
       if (JACK_DEBUG)
@@ -1353,17 +1359,22 @@ void JackAudioDevice::disconnect(void* src, void* dst)
             fprintf(stderr, "jack disconnect <%s> - <%s> succeeded\n",
                sn, dn);
       }      
+      return true;
 }
 
-void JackAudioDevice::disconnect(const char* src, const char* dst)
+bool JackAudioDevice::disconnect(const char* src, const char* dst)
 {
   if(JACK_DEBUG)
     printf("JackAudioDevice::disconnect()\n");
   if(!checkJackClient(_client) || !src || !dst || src[0] == '\0' || dst[0] == '\0') 
-    return;
+    return false;
   int err = jack_disconnect(_client, src, dst);
-  if(err) 
+  if(err)
+  {
     fprintf(stderr, "jack disconnect <%s> - <%s> failed with err:%d\n", src, dst, err);
+    return false;
+  }
+  return true;
 }
 
 //---------------------------------------------------------

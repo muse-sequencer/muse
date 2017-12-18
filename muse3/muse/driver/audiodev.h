@@ -83,10 +83,10 @@ class AudioDevice {
       virtual PortType portType(void*) const = 0;
       virtual PortDirection portDirection(void*) const = 0;
       virtual void unregisterPort(void*) = 0;
-      virtual void connect(void* src, void* dst) = 0;
-      virtual void connect(const char* src, const char* dst) = 0;
-      virtual void disconnect(void* src, void* dst) = 0;
-      virtual void disconnect(const char* src, const char* dst) = 0;
+      virtual bool connect(void* src, void* dst) = 0;
+      virtual bool connect(const char* src, const char* dst) = 0;
+      virtual bool disconnect(void* src, void* dst) = 0;
+      virtual bool disconnect(const char* src, const char* dst) = 0;
       virtual int connections(void* /*clientPort*/) = 0; 
       virtual bool portConnectedTo(void* our_port, const char* port) = 0;
       // Returns true if the ports are connected.

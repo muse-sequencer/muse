@@ -112,10 +112,10 @@ class JackAudioDevice : public AudioDevice {
       virtual void unregisterPort(void*);
       virtual AudioDevice::PortType portType(void*) const;
       virtual AudioDevice::PortDirection portDirection(void*) const;
-      virtual void connect(void* src, void* dst);
-      virtual void connect(const char* src, const char* dst);
-      virtual void disconnect(void* src, void* dst);
-      virtual void disconnect(const char* src, const char* dst);
+      virtual bool connect(void* src, void* dst);
+      virtual bool connect(const char* src, const char* dst);
+      virtual bool disconnect(void* src, void* dst);
+      virtual bool disconnect(const char* src, const char* dst);
       virtual int connections(void* clientPort) { return jack_port_connected((jack_port_t*)clientPort); }
       virtual bool portConnectedTo(void* our_port, const char* port) { return jack_port_connected_to((jack_port_t*)our_port, port); }
       // Returns true if the ports are connected.
