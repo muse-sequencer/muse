@@ -269,10 +269,11 @@ GlobalConfigValues config = {
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow
       false,                        // vstInPlace  Enable VST in-place processing
-      44100,                        // Dummy audio preferred sample rate
-      512,                          // Dummy audio buffer size
-      44100,                        // rtAudio preferred sample rate
-      512,                          // rtAudio buffer size
+
+      44100,                        // Device audio preferred sample rate
+      512,                          // Device audio buffer size
+      2,                            // Device RtAudio selected backend
+
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog

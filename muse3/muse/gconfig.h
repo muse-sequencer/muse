@@ -273,10 +273,10 @@ struct GlobalConfigValues {
       bool useOutputLimiter;
       bool showDidYouKnow;
       bool vstInPlace; // Enable VST in-place processing
-      int dummyAudioSampleRate; 
-      int dummyAudioBufSize;
-      int rtAudioSampleRate;
-      int rtAudioBufSize;
+      int deviceAudioSampleRate;
+      int deviceAudioBufSize;
+      int deviceRtAudioBackend;
+
       QString projectBaseFolder;
       bool projectStoreInFolder;
       bool useProjectSaveDialog;

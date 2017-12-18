@@ -222,8 +222,8 @@ DummyAudioDevice* dummyAudio = 0;
 
 DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       {
-      MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
-      MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
+      MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
+      MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
       int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {

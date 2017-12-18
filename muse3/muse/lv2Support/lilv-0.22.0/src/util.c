@@ -15,7 +15,8 @@
 */
 
 #define _POSIX_C_SOURCE 200809L  /* for fileno */
-#define _BSD_SOURCE     1        /* for realpath, symlink */
+#define _BSD_SOURCE         1        /* for realpath, symlink */
+#define _DEFAULT_SOURCE     1        /* for realpath, symlink */
 
 #ifdef __APPLE__
 #    define _DARWIN_C_SOURCE 1  /* for flock */
@@ -558,13 +559,9 @@ lilv_dir_for_each(const char* path,
 			name_max = 255;   // Limit not defined, or error
 		}
 
-		const size_t   len    = offsetof(struct dirent, d_name) + name_max + 1;
-		struct dirent* entry = (struct dirent*)malloc(len);
-		struct dirent* result;
-		while (!readdir_r(dir, entry, &result) && result) {
-			f(path, entry->d_name, data);
-		}
-		free(entry);
+        for (struct dirent* entry; (entry = readdir(dir));) {
+            f(path, entry->d_name, data);
+        }
 		closedir(dir);
 	}
 #endif

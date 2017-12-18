@@ -18,6 +18,7 @@
 //
 //=========================================================
 
+#include <QMessageBox>
 #include <RtAudio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -249,19 +250,18 @@ class RtAudioDevice : public AudioDevice {
       void setRealTime() { realtimeFlag = true; }
 };
 
-RtAudioDevice* rtAudio = 0;
+RtAudioDevice* rtAudioDevice = 0;
 
 RtAudioDevice::RtAudioDevice() : AudioDevice()
       {
       printf("Init RtAudioDevice\n");
-      MusEGlobal::sampleRate = MusEGlobal::config.rtAudioSampleRate;
-      MusEGlobal::segmentSize = MusEGlobal::config.rtAudioBufSize;
+      MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
+      MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
       masterLeftBuffer = new float[MusEGlobal::segmentSize];
       masterRightBuffer = new float[MusEGlobal::segmentSize];
       memset(masterLeftBuffer, 0, MusEGlobal::segmentSize * sizeof(float));
       memset(masterRightBuffer, 0, MusEGlobal::segmentSize * sizeof(float));
-
 
       realtimeFlag = false;
       seekflag = false;
@@ -273,11 +273,30 @@ RtAudioDevice::RtAudioDevice() : AudioDevice()
       playPos = 0;
       cmdQueue.clear();
 
+      RtAudio::Api api = RtAudio::UNSPECIFIED;
 
-      dac = new RtAudio(RtAudio::LINUX_PULSE);
+      switch (MusEGlobal::config.deviceRtAudioBackend) {
+        case 0:
+          api = RtAudio::UNSPECIFIED;
+          break;
+        case 1:
+          api = RtAudio::LINUX_ALSA;
+        break;
+        case 2:
+          api = RtAudio::LINUX_PULSE;
+        break;
+        case 3:
+          api = RtAudio::LINUX_OSS;
+        break;
+        case 4:
+          api = RtAudio::UNIX_JACK;
+        break;
+      }
+
+      dac = new RtAudio(api);
       if ( dac->getDeviceCount() < 1 ) {
-        std::cout << "\nNo audio devices found!\n";
-        //        exit( 0 );
+        printf ("\nNo audio devices found!\n");
+        QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - start with dummy audio if this is what you want.", QMessageBox::Ok);
       }
 }
 
@@ -288,9 +307,9 @@ RtAudioDevice::RtAudioDevice() : AudioDevice()
 
 void exitRtAudio()
 {
-  if(rtAudio)
-    delete rtAudio;
-  rtAudio = NULL;
+  if(rtAudioDevice)
+    delete rtAudioDevice;
+  rtAudioDevice = NULL;
   MusEGlobal::audioDevice = NULL;
 }
 
@@ -301,8 +320,8 @@ void exitRtAudio()
 
 bool initRtAudio()
 {
-  rtAudio = new RtAudioDevice();
-  MusEGlobal::audioDevice = rtAudio;
+  rtAudioDevice = new RtAudioDevice();
+  MusEGlobal::audioDevice = rtAudioDevice;
   return false;
 }
 
@@ -345,19 +364,19 @@ int processAudio( void * outputBuffer, void * /* inputBuffer */, unsigned int nB
 //  rtAudio->setBuffer((float *)outputBuffer);
   float *floatOutputBuffer = (float*)outputBuffer;
 
-  rtAudio->_framePos += nBufferFrames;
-  rtAudio->_framesAtCycleStart += nBufferFrames;
+  rtAudioDevice->_framePos += nBufferFrames;
+  rtAudioDevice->_framesAtCycleStart += nBufferFrames;
 
-  if(rtAudio->seekflag)
+  if(rtAudioDevice->seekflag)
   {
-    MusEGlobal::audio->sync(Audio::STOP, rtAudio->playPos);
+    MusEGlobal::audio->sync(Audio::STOP, rtAudioDevice->playPos);
 
-    rtAudio->seekflag = false;
+    rtAudioDevice->seekflag = false;
   }
 
-  if(rtAudio->state == Audio::PLAY) {
+  if(rtAudioDevice->state == Audio::PLAY) {
 
-    rtAudio->playPos += nBufferFrames;
+    rtAudioDevice->playPos += nBufferFrames;
   }
 
   if (MusEGlobal::audio->isRunning()) {
@@ -368,8 +387,8 @@ int processAudio( void * outputBuffer, void * /* inputBuffer */, unsigned int nB
   // copy buffers into output
   for (unsigned int i = 0; i < nBufferFrames; i++ ) {
 
-    floatOutputBuffer[i*2] = rtAudio->masterLeftBuffer[i];
-    floatOutputBuffer[i*2+1] = rtAudio->masterRightBuffer[i];
+    floatOutputBuffer[i*2] = rtAudioDevice->masterLeftBuffer[i];
+    floatOutputBuffer[i*2+1] = rtAudioDevice->masterRightBuffer[i];
   }
 
   return 0;

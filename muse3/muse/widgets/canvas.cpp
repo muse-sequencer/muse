@@ -479,21 +479,24 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       return;
     }
 
-    if (shift || delta.x() != 0) { // scroll horizontally
+    if (shift  || delta.x() != 0) { // scroll horizontally
 
         int scrolldelta = - delta.x() /2;
-         if (shift)
-           scrolldelta = - delta.x() /2;
+        if (shift) {
+          scrolldelta = - delta.y() /2;
+        }
 
         int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
-        if (xpixelscale <= 0)
-              xpixelscale = 1;
+        if (xpixelscale <= 0) {
+          xpixelscale = 1;
+        }
         int scrollstep = WHEEL_STEPSIZE * (scrolldelta);
         scrollstep = scrollstep / 10;
         int newXpos = xpos + xpixelscale * scrollstep;
 
-        if (newXpos < 0)
-              newXpos = 0;
+        if (newXpos < 0) {
+          newXpos = 0;
+        }
 
         emit horizontalScroll((unsigned)newXpos);
 

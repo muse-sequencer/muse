@@ -1,3 +1,14 @@
+18.12.2017
+      - Fixed horizontal scrolling with shift, again (rj)
+      - Wired rtaudio to config dialog so backend device, buffers size
+        and sample rate can be set (rj)
+        TODO:
+        > Add proper output port support
+        > Add input ports
+        > Make config changes without restart
+      - backported build fixes in lilv/util.c from 0.24.2 to our version
+        to allow building without deprecation warnings (by default we treat
+        them as errors) (rj)
 17.12.2017
       * Substantial midi engine redesign: (Tim)
          - Merge from engine_fixes_2017 branch:

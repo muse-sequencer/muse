@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>606</width>
-    <height>472</height>
+    <height>488</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -849,6 +849,185 @@
        <string>Audio</string>
       </attribute>
       <layout class="QGridLayout">
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox13">
+         <property name="title">
+          <string>External Waveditor</string>
+         </property>
+         <layout class="QGridLayout">
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayoutwaveEditor">
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="qhboxLayoutWaveEditor">
+              <item>
+               <widget class="QLabel" name="textLabel2_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>External Waveditor command</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="spacer13">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>60</width>
+                  <height>23</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="externalWavEditorSelect">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>2</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="textLabel1_6">
+              <property name="font">
+               <font>
+                <pointsize>8</pointsize>
+                <italic>true</italic>
+               </font>
+              </property>
+              <property name="text">
+               <string>Note: External editor opened from the internal editor.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="deviceAudioGroupBox">
+         <property name="title">
+          <string>Audio Driver settings (require restart - does not affect jack)</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="2">
+           <widget class="QLabel" name="deviceAudioRateLabel">
+            <property name="text">
+             <string>Sample rate:</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="deviceAudioBackendLabel">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are using the RtAudio backend there are several supported drivers, including Alsa and Pulse audio. If MusE is running with Jack or the Dummy audio backend this has no effect.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>RtAudio backend:</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="deviceAudioSize">
+            <property name="toolTip">
+             <string>Shorter periods give better midi playback resolution.</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>16</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>32</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>64</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>128</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>256</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>512</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1024</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2048</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="4">
+           <widget class="QComboBox" name="deviceAudioBackendComboBox"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="deviceAudioSizeLabel">
+            <property name="text">
+             <string>Period size (Frames per period):</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QComboBox" name="deviceAudioRate"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QGroupBox" name="GroupBox4">
          <property name="title">
@@ -1100,200 +1279,6 @@ Adjusts responsiveness of audio controls and
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox13">
-         <property name="title">
-          <string>External Waveditor</string>
-         </property>
-         <layout class="QGridLayout">
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="bottomMargin">
-           <number>2</number>
-          </property>
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <item row="0" column="0">
-           <layout class="QGridLayout" name="gridLayoutwaveEditor">
-            <item row="0" column="0">
-             <layout class="QHBoxLayout" name="qhboxLayoutWaveEditor">
-              <item>
-               <widget class="QLabel" name="textLabel2_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>External Waveditor command</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="spacer13">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Expanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>60</width>
-                  <height>23</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="externalWavEditorSelect">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>2</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="textLabel1_6">
-              <property name="font">
-               <font>
-                <pointsize>8</pointsize>
-                <italic>true</italic>
-               </font>
-              </property>
-              <property name="text">
-               <string>Note: External editor opened from the internal editor.</string>
-              </property>
-              <property name="wordWrap">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="dummyAudioGroupBox">
-         <property name="title">
-          <string>Dummy Audio Driver (settings require restart)</string>
-         </property>
-         <layout class="QGridLayout">
-          <property name="leftMargin">
-           <number>11</number>
-          </property>
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>11</number>
-          </property>
-          <property name="bottomMargin">
-           <number>2</number>
-          </property>
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="dummyAudioRateLabel">
-            <property name="text">
-             <string>Sample rate</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="dummyAudioRate">
-            <property name="suffix">
-             <string>Hz</string>
-            </property>
-            <property name="minimum">
-             <number>3000</number>
-            </property>
-            <property name="maximum">
-             <number>200000</number>
-            </property>
-            <property name="singleStep">
-             <number>10</number>
-            </property>
-            <property name="value">
-             <number>44100</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="dummyAudioSizeLabel">
-            <property name="text">
-             <string>Period size (Frames per period):</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="dummyAudioSize">
-            <property name="toolTip">
-             <string>Shorter periods give better midi playback resolution.</string>
-            </property>
-            <item>
-             <property name="text">
-              <string>16</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>32</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>64</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>128</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>256</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>512</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1024</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2048</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab2">
@@ -1311,12 +1296,21 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>546</width>
-            <height>510</height>
+            <width>550</width>
+            <height>452</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
             <number>6</number>
            </property>
            <item>
@@ -1699,7 +1693,16 @@ Certain operations will also force them to be resent,
        <property name="spacing">
         <number>6</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>11</number>
+       </property>
+       <property name="topMargin">
+        <number>11</number>
+       </property>
+       <property name="rightMargin">
+        <number>11</number>
+       </property>
+       <property name="bottomMargin">
         <number>11</number>
        </property>
        <item>
@@ -1708,11 +1711,20 @@ Certain operations will also force them to be resent,
           <string>Behavior</string>
          </property>
          <layout class="QGridLayout" name="gridLayout7">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
            <number>6</number>
           </property>
           <property name="spacing">
-           <number>-1</number>
+           <number>6</number>
           </property>
           <item row="0" column="0" colspan="2">
            <widget class="QScrollArea" name="scrollArea_2">
@@ -1724,8 +1736,8 @@ Certain operations will also force them to be resent,
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>526</width>
-               <height>558</height>
+               <width>524</width>
+               <height>602</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2306,8 +2318,8 @@ Benign XCB connection errors may still
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>540</width>
-               <height>292</height>
+               <width>554</width>
+               <height>311</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -2328,7 +2340,7 @@ Benign XCB connection errors may still
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
-      <number>-1</number>
+      <number>6</number>
      </property>
      <item>
       <spacer name="Spacer1">
