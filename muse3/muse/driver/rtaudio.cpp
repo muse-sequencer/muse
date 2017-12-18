@@ -178,13 +178,13 @@ class RtAudioDevice : public AudioDevice {
       virtual AudioDevice::PortType portType(void*) const { return AudioPort; }
       virtual AudioDevice::PortDirection portDirection(void*) const { return OutputPort; }
       virtual void unregisterPort(void*) {}
-      virtual void connect(void* /*src*/, void* /*dst*/) {}
-      virtual void connect(const char* /*src*/, const char* /*dst*/) {}
-      virtual void disconnect(void* /*src*/, void* /*dst*/) {}
-      virtual void disconnect(const char* /*src*/, const char* /*dst*/) {}
+      virtual bool connect(void* /*src*/, void* /*dst*/)  { return false; }
+      virtual bool connect(const char* /*src*/, const char* /*dst*/)  { return false; }
+      virtual bool disconnect(void* /*src*/, void* /*dst*/)  { return false; }
+      virtual bool disconnect(const char* /*src*/, const char* /*dst*/)  { return false; }
       virtual int connections(void* /*clientPort*/) { return 0; }
       virtual bool portConnectedTo(void*, const char*) { return false; }
-      virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const { return false; };
+      virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const { return false; }
       virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const { return false; }
       virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const { return false; }
       virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const { return false; }
