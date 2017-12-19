@@ -109,6 +109,10 @@ extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
 extern void exitMidiAlsa();
+
+#ifdef HAVE_RTAUDIO
+extern void exitRtAudio();
+#endif
 }
 
 namespace MusEGui {
@@ -1570,6 +1574,9 @@ void MusE::closeEvent(QCloseEvent* event)
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting DummyAudio\n");
       MusECore::exitDummyAudio();
+      if(MusEGlobal::debugMsg)
+        printf("MusE: Exiting RtAudio\n");
+      MusECore::exitRtAudio();
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting Metronome\n");
       MusECore::exitMetronome();

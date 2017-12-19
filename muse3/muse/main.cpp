@@ -809,16 +809,24 @@ int main(int argc, char* argv[])
               }
 #endif
         else if (MusECore::initJackAudio()) {
-              if (!MusEGlobal::debugMode)
-                    {
+              if (!MusEGlobal::debugMode) {
+#ifdef HAVE_RTAUDIO
                     QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                                    "<i>MusE will continue without audio support (-a switch)!</i><br><br>"
+                                                                    "<i>MusE will continue with <b>RtAudio</b> backend (-t switch)!</i><br><br>"
                                                                     "If this was not intended check that Jack was started. "
                                                                     "If Jack <i>was</i> started check that it was\n"
                                                                     "started as the same user as MusE.\n");
-
+                    MusECore::initRtAudio();
+                    audioType = RtAudio;
+#else
+                    QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
+                                                                    "<i>MusE will continue <b>without audio support</b> (-a switch)!</i><br><br>"
+                                                                    "If this was not intended check that Jack was started. "
+                                                                    "If Jack <i>was</i> started check that it was\n"
+                                                                    "started as the same user as MusE.\n");
                     MusECore::initDummyAudio();
                     audioType = DummyAudio;
+#endif
                     MusEGlobal::realTimeScheduling = true;
                     if (MusEGlobal::debugMode) {
                               MusEGlobal::realTimeScheduling = false;

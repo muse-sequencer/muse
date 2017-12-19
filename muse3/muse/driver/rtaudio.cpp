@@ -47,33 +47,20 @@
 
 namespace MusECore {
 
-class MidiPlayEvent;
-
 //---------------------------------------------------------
 //   RtAudioDevice
 //---------------------------------------------------------
 
-enum Cmd {
-trSeek,
-trStart,
-trStop
+struct MuseRtAudioPort {
+  QString name;
+  float* buffer;
 };
-
-struct Msg {
-  enum Cmd cmd;
-  int arg;
-};
-
 
 class RtAudioDevice : public AudioDevice {
-//      float* buffer;
 
-
-      int _realTimePriority;
       RtAudio *dac;
 
    public:
-      std::list<Msg> cmdQueue;
       Audio::State state;
       int _framePos;
       unsigned _framesAtCycleStart;
@@ -82,15 +69,25 @@ class RtAudioDevice : public AudioDevice {
       bool realtimeFlag;
       bool seekflag;
 
-      float* masterLeftBuffer;
-      float* masterRightBuffer;
+      QList<MuseRtAudioPort*> outputPortsList;
+      QList<MuseRtAudioPort*> inputPortsList;
 
       RtAudioDevice();
       virtual ~RtAudioDevice()
-      { 
-//        free(buffer);
-        free(masterLeftBuffer);
-        free(masterRightBuffer);
+      {
+
+        while (outputPortsList.size() > 0) {
+          MuseRtAudioPort *port = outputPortsList.takeFirst();
+          free (port->buffer);
+          free (port);
+        }
+
+        while (inputPortsList.size() > 0) {
+          MuseRtAudioPort *port = inputPortsList.takeFirst();
+          free (port->buffer);
+          free (port);
+        }
+
       }
 
       virtual inline int deviceType() const { return RTAUDIO_AUDIO; }
@@ -99,8 +96,6 @@ class RtAudioDevice : public AudioDevice {
       
       virtual void stop ();
       virtual int framePos() const { 
-//            if(DEBUG_RTAUDIO)
-//                printf("RtAudioDevice::framePos %d\n", _framePos);
             return _framePos; 
             }
 
@@ -124,52 +119,74 @@ class RtAudioDevice : public AudioDevice {
           exit(-1);
         }
 
-        if (port == MASTER_LEFT) {
+        return ((MuseRtAudioPort*)port)->buffer;
 
-          return this->masterLeftBuffer;
-
-        } else if (port == MASTER_RIGHT) {
-
-          return this->masterRightBuffer;
-        }
-
-        return (float *)0;
       }
 
-//      void setBuffer(float *bufferPtr) {
-//        this->buffer = bufferPtr;
-//      }
+      virtual std::list<QString> outputPorts(bool, int) {
+        std::list<QString> outlist;
 
-      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
-      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
+        foreach (MuseRtAudioPort *port, outputPortsList) {
+
+          outlist.push_back(port->name);
+        }
+
+        return outlist;
+      }
+
+      virtual std::list<QString> inputPorts(bool, int) {
+        std::list<QString> inlist;
+
+        foreach (MuseRtAudioPort *port, inputPortsList) {
+
+          inlist.push_back(port->name);
+        }
+
+        return inlist;
+      }
 
       virtual void registerClient() {}
 
-      virtual const char* clientName() { return "MusE"; }
+      virtual const char* clientName() { return "RtAudio"; }
       
-      // this method mocks creating ports at the moment
-      // it should provide a dynamic approach with respect to what the hardware is capable of
       virtual void* registerOutPort(const char* name, bool) {
 
         printf("register output port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
 
-        if (name[strlen(name)-1] == '0') {
-
-          return MASTER_LEFT;
+        foreach (MuseRtAudioPort *port, outputPortsList) {
+          if (port->name == name) {
+            printf("RtAudioDevice::registerOutPort - port [%s] already exists, return existing.", name);
+            return port;
+          }
         }
-        if (name[strlen(name)-1] == '1') {
 
-          return MASTER_RIGHT;
-        }
-        else {
+        MuseRtAudioPort *port = new MuseRtAudioPort();
+        port->name = name;
+        port->buffer = new float[MusEGlobal::segmentSize];
+        memset(port->buffer, 0, MusEGlobal::segmentSize * sizeof(float));
 
-          printf("RtAudioDevice::registerOutPort - ERROR illegal port being created\n");
-          return 0;
-        }
+        outputPortsList.push_back(port);
+        return port;
       }
 
-      virtual void* registerInPort(const char*, bool) {
-        return (void *)0;
+      virtual void* registerInPort(const char* name, bool) {
+
+        printf("register input port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
+
+        foreach (MuseRtAudioPort *port, inputPortsList) {
+          if (port->name == name) {
+            printf("RtAudioDevice::registerInPort - port [%s] already exists, return existing.", name);
+            return port;
+          }
+        }
+
+        MuseRtAudioPort *port = new MuseRtAudioPort();
+        port->name = name;
+        port->buffer = new float[MusEGlobal::segmentSize];
+        memset(port->buffer, 0, MusEGlobal::segmentSize * sizeof(float));
+
+        inputPortsList.push_back(port);
+        return port;
       }
 
       float getDSP_Load() {
@@ -216,8 +233,7 @@ class RtAudioDevice : public AudioDevice {
         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
       }
       virtual bool isRealtime() { return realtimeFlag; }
-      //virtual int realtimePriority() const { return 40; }
-      virtual int realtimePriority() const { return _realTimePriority; }
+      virtual int realtimePriority() const { return 40; }
       virtual void startTransport() {
             if(DEBUG_RTAUDIO)
                 printf("RtAudioDevice::startTransport playPos=%d\n", playPos);
@@ -258,11 +274,6 @@ RtAudioDevice::RtAudioDevice() : AudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
-      masterLeftBuffer = new float[MusEGlobal::segmentSize];
-      masterRightBuffer = new float[MusEGlobal::segmentSize];
-      memset(masterLeftBuffer, 0, MusEGlobal::segmentSize * sizeof(float));
-      memset(masterRightBuffer, 0, MusEGlobal::segmentSize * sizeof(float));
-
       realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
@@ -271,7 +282,6 @@ RtAudioDevice::RtAudioDevice() : AudioDevice()
       _framesAtCycleStart = 0;
       _timeAtCycleStart = 0.0;
       playPos = 0;
-      cmdQueue.clear();
 
       RtAudio::Api api = RtAudio::UNSPECIFIED;
 
@@ -326,43 +336,15 @@ bool initRtAudio()
 }
 
 //---------------------------------------------------------
-//   outputPorts
-//---------------------------------------------------------
-
-std::list<QString> RtAudioDevice::outputPorts(bool midi, int /*aliases*/)
-{
-  std::list<QString> clientList;
-  if(!midi)
-  {
-    clientList.push_back(QString("output1"));
-    clientList.push_back(QString("output2"));
-  }
-  return clientList;
-}
-
-//---------------------------------------------------------
-//   inputPorts
-//---------------------------------------------------------
-std::list<QString> RtAudioDevice::inputPorts(bool midi, int /*aliases*/)
-{
-  std::list<QString> clientList;
-  if(!midi)
-  {
-    clientList.push_back(QString("input1"));
-    clientList.push_back(QString("input2"));
-  }
-  return clientList;
-}
-
-//---------------------------------------------------------
 //   processAudio
 //---------------------------------------------------------
-int processAudio( void * outputBuffer, void * /* inputBuffer */, unsigned int nBufferFrames,
+int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double /* streamTime */, RtAudioStreamStatus /* status */, void * /* userData */ )
 {
 //  printf("RtAduioDevice::processAudio %d\n", nBufferFrames);
-//  rtAudio->setBuffer((float *)outputBuffer);
+
   float *floatOutputBuffer = (float*)outputBuffer;
+  float *floatInputBuffer = (float*)inputBuffer;
 
   rtAudioDevice->_framePos += nBufferFrames;
   rtAudioDevice->_framesAtCycleStart += nBufferFrames;
@@ -384,12 +366,39 @@ int processAudio( void * outputBuffer, void * /* inputBuffer */, unsigned int nB
     MusEGlobal::audio->process((unsigned long)nBufferFrames);
   }
 
-  // copy buffers into output
-  for (unsigned int i = 0; i < nBufferFrames; i++ ) {
+  if (rtAudioDevice->outputPortsList.size() >= 2) {
 
-    floatOutputBuffer[i*2] = rtAudioDevice->masterLeftBuffer[i];
-    floatOutputBuffer[i*2+1] = rtAudioDevice->masterRightBuffer[i];
+    MuseRtAudioPort *left = rtAudioDevice->outputPortsList.at(0);
+    MuseRtAudioPort *right= rtAudioDevice->outputPortsList.at(1);
+
+    // copy buffers into output
+    for (unsigned int i = 0; i < nBufferFrames; i++ ) {
+
+      floatOutputBuffer[i*2] = left->buffer[i];
+      floatOutputBuffer[i*2+1] = right->buffer[i];
+    }
+  } else {
+
+    //printf("Too few ports in list, won't copy any data\n");
   }
+
+  if (rtAudioDevice->inputPortsList.size() >= 2) {
+
+    MuseRtAudioPort *left = rtAudioDevice->inputPortsList.at(0);
+    MuseRtAudioPort *right= rtAudioDevice->inputPortsList.at(1);
+
+    // copy buffers into input
+    for (unsigned int i = 0; i < nBufferFrames; i++ ) {
+
+      left->buffer[i] = floatInputBuffer[i*2];
+      right->buffer[i] = floatInputBuffer[i*2+1];
+    }
+
+  } else {
+
+    //printf("Too few ports in list, won't copy any data\n");
+  }
+
 
   return 0;
 }
@@ -399,15 +408,25 @@ int processAudio( void * outputBuffer, void * /* inputBuffer */, unsigned int nB
 //---------------------------------------------------------
 void RtAudioDevice::start(int /* priority */)
 {
-  RtAudio::StreamParameters parameters;
-  parameters.deviceId = dac->getDefaultOutputDevice();
-  parameters.nChannels = 2;
-  parameters.firstChannel = 0;
+  RtAudio::StreamParameters outParameters;
+  outParameters.deviceId = dac->getDefaultOutputDevice();
+  outParameters.nChannels = 2;
+  outParameters.firstChannel = 0;
+
+  RtAudio::StreamParameters inParameters;
+  inParameters.deviceId = dac->getDefaultInputDevice();
+  inParameters.nChannels = 2;
+  inParameters.firstChannel = 0;
+
   double data[2];
+
   try {
-    dac->openStream( &parameters, NULL, RTAUDIO_FLOAT32, MusEGlobal::sampleRate, &MusEGlobal::segmentSize, &processAudio, (void *)&data );
+
+    dac->openStream( &outParameters, &inParameters, RTAUDIO_FLOAT32, MusEGlobal::sampleRate, &MusEGlobal::segmentSize, &processAudio, (void *)&data );
     dac->startStream();
+
   } catch ( RtAudioError& e ) {
+
     e.printMessage();
   }
 }
@@ -415,14 +434,17 @@ void RtAudioDevice::start(int /* priority */)
 void RtAudioDevice::stop ()
 {
   try {
+
     dac->stopStream();
+
   } catch (RtAudioError& e) {
+
     e.printMessage();
   }
   if ( dac->isStreamOpen() ) {
+
     dac->closeStream();
   }
-
 }
 
 
