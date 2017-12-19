@@ -120,7 +120,6 @@ class RtAudioDevice : public AudioDevice {
         }
 
         return ((MuseRtAudioPort*)port)->buffer;
-
       }
 
       virtual std::list<QString> outputPorts(bool, int) {
@@ -196,42 +195,111 @@ class RtAudioDevice : public AudioDevice {
       virtual AudioDevice::PortType portType(void*) const { return AudioPort; }
       virtual AudioDevice::PortDirection portDirection(void*) const { return OutputPort; }
       virtual void unregisterPort(void*) {}
-      virtual bool connect(void* /*src*/, void* /*dst*/)  { return false; }
-      virtual bool connect(const char* /*src*/, const char* /*dst*/)  { return false; }
+      virtual bool connect(void* /*src*/, void* /*dst*/)  {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::connect\n");
+        return false;
+      }
+      virtual bool connect(const char* /*src*/, const char* /*dst*/)  {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::connect2\n");
+        return false;
+      }
       virtual bool disconnect(void* /*src*/, void* /*dst*/)  { return false; }
       virtual bool disconnect(const char* /*src*/, const char* /*dst*/)  { return false; }
-      virtual int connections(void* /*clientPort*/) { return 0; }
-      virtual bool portConnectedTo(void*, const char*) { return false; }
-      virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const { return false; }
-      virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const { return false; }
-      virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const { return false; }
-      virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const { return false; }
-      virtual bool portsCompatible(void* /*src*/, void* /*dst*/) const { return false; }
-      virtual bool portsCompatible(const char* /*src*/, const char* /*dst*/) const { return false; }
-      virtual void setPortName(void*, const char*) {}
-      virtual void* findPort(const char*) { return 0;}
+      virtual int connections(void* /* clientPort */) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::connections\n");
+        return 1; // always return nonzero, for now
+      }
+      virtual bool portConnectedTo(void*, const char*) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portConnectedTo\n");
+        return false;
+      }
+      virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCanDisconnect\n");
+        return false;
+      }
+      virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCanDisconnect2\n");
+        return false;
+      }
+      virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCanConnect\n");
+        return false;
+      }
+      virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCanConnect\n");
+        return false;
+      }
+      virtual bool portsCompatible(void* /*src*/, void* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCompatible\n");
+        return false;
+      }
+      virtual bool portsCompatible(const char* /*src*/, const char* /*dst*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portCompatible2\n");
+        return false;
+      }
+      virtual void setPortName(void*, const char*) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::setPortName\n");
+
+      }
+      virtual void* findPort(const char*) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::findPort\n");
+        return 0;
+      }
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
-      virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
-      virtual const char* canonicalPortName(void*) { return 0; }
-      virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
+      virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portName %s\n", str);
+        if(str_size == 0) {
+          return 0;
+        }
+        str[0] = '\0';
+        return str;
+      }
+      virtual const char* canonicalPortName(void*) {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::canonicalPortName\n");
+        return 0;
+      }
+      virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const {
+        if(DEBUG_RTAUDIO)
+          printf("RtAudio::portLatency\n");
+        return 0;
+      }
 
       virtual int getState() {
-            return state; }
+        return state;
+      }
+
       virtual unsigned getCurFrame() const { 
-            if(DEBUG_RTAUDIO)
-                printf("RtAudioDevice::getCurFrame %d\n", _framePos);
+        if(DEBUG_RTAUDIO)
+            printf("RtAudioDevice::getCurFrame %d\n", _framePos);
       
-      return _framePos; }
+        return _framePos;
+      }
+
       virtual unsigned frameTime() const {
-            return lrint(curTime() * MusEGlobal::sampleRate);
-            }
-      virtual double systemTime() const
-      {
+        return lrint(curTime() * MusEGlobal::sampleRate);
+      }
+
+      virtual double systemTime() const {
         struct timeval t;
         gettimeofday(&t, 0);
         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
       }
+
       virtual bool isRealtime() { return realtimeFlag; }
       virtual int realtimePriority() const { return 40; }
       virtual void startTransport() {
@@ -382,16 +450,26 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
     //printf("Too few ports in list, won't copy any data\n");
   }
 
-  if (rtAudioDevice->inputPortsList.size() >= 2) {
+  if (rtAudioDevice->inputPortsList.size() >= 1) {
 
     MuseRtAudioPort *left = rtAudioDevice->inputPortsList.at(0);
-    MuseRtAudioPort *right= rtAudioDevice->inputPortsList.at(1);
+    MuseRtAudioPort *right = NULL;
+    if (rtAudioDevice->inputPortsList.size() >= 2) {
+       right= rtAudioDevice->inputPortsList.at(1);
+    }
+
+//    if (left->buffer[0] > 0.001) {
+//      printf("Got non zero buffer value %f\n", left->buffer[0]);
+//    }
 
     // copy buffers into input
     for (unsigned int i = 0; i < nBufferFrames; i++ ) {
 
       left->buffer[i] = floatInputBuffer[i*2];
-      right->buffer[i] = floatInputBuffer[i*2+1];
+
+      if (right != NULL) {
+        right->buffer[i] = floatInputBuffer[i*2+1];
+      }
     }
 
   } else {
