@@ -1,3 +1,14 @@
+18.12.2017
+      - Fixed horizontal scrolling with shift, again (rj)
+      - Wired rtaudio to config dialog so backend device, buffers size
+        and sample rate can be set (rj)
+        TODO:
+        > Add proper output port support
+        > Add input ports
+        > Make config changes without restart
+      - backported build fixes in lilv/util.c from 0.24.2 to our version
+        to allow building without deprecation warnings (by default we treat
+        them as errors) (rj)
 17.12.2017
       * Substantial midi engine redesign: (Tim)
          - Merge from engine_fixes_2017 branch:
@@ -46,10 +57,14 @@
          - Piano and drum list: No more slow waiting for audio thread when each note played.
            Fast! Completely de-coupled by putting to the ring buffers instead.
          - Several other smaller related and unrelated fixes along the way.
-17.12.2017
          - Enhancements to midi port/device popup menu in track list + drum list. (Tim)
            Sorted by device type now.
          - New! Synthesizer tracks can change their port from the track list.
+         * Initial support for RtAudio - Pulse Audio sound output (rj)
+           For the moment severely limited
+           - only samplerate 44100
+           - only output stereo
+           - no input
 15.12.2017
          - Added support for track pad horizontal scrolling.
            Involved adjusting scrolling constants and moving to pixelDelta() for

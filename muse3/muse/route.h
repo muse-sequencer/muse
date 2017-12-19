@@ -170,14 +170,22 @@ class RouteList : public std::vector <Route> {
       iterator find(const Route& r)             { return std::find(begin(), end(), r); }
       const_iterator find(const Route& r) const { return std::find(begin(), end(), r); }
       bool contains(const Route& r) const         { return std::find(begin(), end(), r) != end(); }
-      void removeRoute(const Route& r)          { iterator i = std::find(begin(), end(), r);  if(i != end()) erase(i); }
+      bool removeRoute(const Route& r) { 
+        iterator i = std::find(begin(), end(), r);  
+        if(i == end()) 
+          return false;
+        erase(i);
+        return true;
+      }
       };
 
 typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;
 
-extern void addRoute(Route src, Route dst);
-extern void removeRoute(Route src, Route dst);
+// Returns true if something changed.
+extern bool addRoute(Route src, Route dst);
+// Returns true if something changed.
+extern bool removeRoute(Route src, Route dst);
 extern void removeAllRoutes(Route src, Route dst);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 // Returns true if the routes are found and they are connected.

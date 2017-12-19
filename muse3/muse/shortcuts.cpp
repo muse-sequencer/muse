@@ -186,8 +186,8 @@ void initShortCuts()
       defShrt(SHRT_SELECT_INVERT,    Qt::CTRL + Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "Edit: Invert Selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT,  "sel_inv");
       defShrt(SHRT_SELECT_ILOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts inside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT,  "sel_ins_loc");
       defShrt(SHRT_SELECT_OLOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts outside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "sel_out_loc");
-      defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select previous part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_prv_prt");
-      defShrt(SHRT_SELECT_NEXT_PART, Qt::ALT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select next part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_nxt_prt");
+      defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select previous part"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_prv_prt");
+      defShrt(SHRT_SELECT_NEXT_PART, Qt::ALT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select next part"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_nxt_prt");
       defShrt(SHRT_SEL_LEFT,         Qt::Key_Left,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the left or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_left");
       defShrt(SHRT_SEL_LEFT_ADD,     Qt::Key_Left + Qt::SHIFT,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the left to selection"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_left_add");
       defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the right or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT,"sel_right");

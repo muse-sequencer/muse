@@ -55,12 +55,26 @@ static int rtcResolutions[] = {
 static int divisions[] = {
       48, 96, 192, 384, 768, 1536, 3072, 6144, 12288
       };
-static int dummyAudioBufSizes[] = {
+static int selectableAudioBufSizes[] = {
       16, 32, 64, 128, 256, 512, 1024, 2048
       };
+static int selectableAudioSampleRates[] = {
+      22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
+      };
+int numAudioSampleRates = 8;
+
 static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
+
+static QString selectableRtAudioBackendDevices[] = {
+        "Russian roulette (RtAudio selects)",
+        "ALSA",
+        "Pulse Audio (recommended)",
+        "OSS (Open Sound System)",
+        "Jack through RtAudio - probably not what you want.",
+};
+int numRtAudioDevices = 5;
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -68,7 +82,7 @@ static unsigned long minControlProcessPeriods[] = {
 
 GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
    : QDialog(parent)
-      {
+{
       setupUi(this);
       startSongGroup = new QButtonGroup(this);
       startSongGroup->addButton(startLastButton, 0);
@@ -122,7 +136,17 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::CLIPLIST);
       addMdiSettings(TopWin::MARKER);
       
+      for (int i = 0; i < numRtAudioDevices; i++){
+        deviceAudioBackendComboBox->addItem(selectableRtAudioBackendDevices[i],i);
       }
+#ifndef HAVE_RTAUDIO
+      deviceAudioBackendComboBox->disabled();
+#endif
+
+      for (int i = 0; i < numAudioSampleRates; i++){
+        deviceAudioRate->addItem(QString::number(selectableAudioSampleRates[i]),i);
+      }
+}
 
 void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
 {
@@ -155,13 +179,19 @@ void GlobalSettingsConfig::updateSettings()
                   break;
                   }
             }
-      for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
-            if (dummyAudioBufSizes[i] == MusEGlobal::config.dummyAudioBufSize) {
-                  dummyAudioSize->setCurrentIndex(i);
+      for (unsigned i = 0; i < sizeof(selectableAudioBufSizes)/sizeof(*selectableAudioBufSizes); ++i) {
+            if (selectableAudioBufSizes[i] == MusEGlobal::config.deviceAudioBufSize) {
+                  deviceAudioSize->setCurrentIndex(i);
                   break;
                   }
             }
       
+      for (int i = 0; i < numAudioSampleRates; ++i) {
+            if (selectableAudioSampleRates[i] == MusEGlobal::config.deviceAudioSampleRate) {
+                  deviceAudioRate->setCurrentIndex(i);
+                  break;
+                  }
+            }
       for (unsigned i = 0; i < sizeof(minControlProcessPeriods)/sizeof(*minControlProcessPeriods); ++i) {
             if (minControlProcessPeriods[i] == MusEGlobal::config.minControlProcessPeriod) {
                   minControlProcessPeriodComboBox->setCurrentIndex(i);
@@ -191,12 +221,10 @@ void GlobalSettingsConfig::updateSettings()
       denormalCheckBox->setChecked(MusEGlobal::config.useDenormalBias);
       outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
-      dummyAudioRate->setValue(MusEGlobal::config.dummyAudioSampleRate);
-      
-      //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
-      //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
-      //dummyAudioRealRate->setText(QString().setNum(sampleRate));   // Not used any more. p4.0.20  DELETETHIS?
-      
+
+      deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceRtAudioBackend);
+
+
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
 
 
@@ -340,9 +368,12 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(recDrumGroup->checkedId());
 
       
-      int das = dummyAudioSize->currentIndex();
-      MusEGlobal::config.dummyAudioBufSize = dummyAudioBufSizes[das];
-      MusEGlobal::config.dummyAudioSampleRate = dummyAudioRate->value();
+      int das = deviceAudioSize->currentIndex();
+      MusEGlobal::config.deviceAudioBufSize = selectableAudioBufSizes[das];
+      MusEGlobal::config.deviceAudioSampleRate = selectableAudioSampleRates[deviceAudioRate->currentIndex()];
+
+      MusEGlobal::config.deviceRtAudioBackend = deviceAudioBackendComboBox->currentIndex();
+
       int mcp = minControlProcessPeriodComboBox->currentIndex();
       MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 

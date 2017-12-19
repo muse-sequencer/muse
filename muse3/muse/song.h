@@ -422,7 +422,7 @@ public:
       void processMasterRec();
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
-      void connectJackRoutes(const MusECore::Route& src, const MusECore::Route& dst, bool disconnect = false);
+      bool connectJackRoutes(const MusECore::Route& src, const MusECore::Route& dst, bool disconnect = false);
       void connectAudioPorts();
       void connectMidiPorts();
       void connectAllPorts() { connectAudioPorts(); connectMidiPorts(); }

@@ -1506,6 +1506,8 @@ void MidiTrack::read(Xml& xml)
       {
       unsigned int portmask = 0;
       int chanmask = 0;
+      bool portmask_found = false;
+      bool chanmask_found = false;
       
       for (;;) {
             Xml::Token token = xml.parse();
@@ -1574,9 +1576,15 @@ void MidiTrack::read(Xml& xml)
                                 setOutChannel(chan);
                               }
                         else if (tag == "inportMap")
+                        {
                               portmask = xml.parseUInt();           // Obsolete but support old files.
+                              portmask_found = true;
+                        }
                         else if (tag == "inchannelMap")
+                        {
                               chanmask = xml.parseInt();            // Obsolete but support old files.
+                              chanmask_found = true;
+                        }
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
@@ -1599,7 +1607,8 @@ void MidiTrack::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
-                          setInPortAndChannelMask(portmask, chanmask); // Support old files.
+                          if(portmask_found && chanmask_found)
+                            setInPortAndChannelMask(portmask, chanmask); // Support old files.
                           goto out_of_MidiTrackRead_forloop;
                         }
                   default:

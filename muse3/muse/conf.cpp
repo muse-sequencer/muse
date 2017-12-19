@@ -1161,10 +1161,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.useOutputLimiter = xml.parseInt();
                         else if (tag == "vstInPlace")
                               MusEGlobal::config.vstInPlace = xml.parseInt();
-                        else if (tag == "dummyAudioSampleRate")
-                              MusEGlobal::config.dummyAudioSampleRate = xml.parseInt();
-                        else if (tag == "dummyAudioBufSize")
-                              MusEGlobal::config.dummyAudioBufSize = xml.parseInt();
+                        else if (tag == "deviceAudioSampleRate")
+                              MusEGlobal::config.deviceAudioSampleRate = xml.parseInt();
+                        else if (tag == "deviceAudioBufSize")
+                              MusEGlobal::config.deviceAudioBufSize = xml.parseInt();
+                        else if (tag == "deviceRtAudioBackend")
+                              MusEGlobal::config.deviceRtAudioBackend = xml.parseInt();
+
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
@@ -1717,8 +1720,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "didYouKnow", MusEGlobal::config.showDidYouKnow);
       xml.intTag(level, "outputLimiter", MusEGlobal::config.useOutputLimiter);
       xml.intTag(level, "vstInPlace", MusEGlobal::config.vstInPlace);
-      xml.intTag(level, "dummyAudioBufSize", MusEGlobal::config.dummyAudioBufSize);
-      xml.intTag(level, "dummyAudioSampleRate", MusEGlobal::config.dummyAudioSampleRate);
+
+      xml.intTag(level, "deviceAudioBufSize", MusEGlobal::config.deviceAudioBufSize);
+      xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
+      xml.intTag(level, "deviceRtAudioBackend", MusEGlobal::config.deviceRtAudioBackend);
+
+
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
       xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
       

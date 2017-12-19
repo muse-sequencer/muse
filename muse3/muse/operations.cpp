@@ -429,8 +429,8 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       _src_route.dump();
       _dst_route.dump();
 #endif      
-      addRoute(_src_route, _dst_route);
-      flags |= SC_ROUTE;
+      if(addRoute(_src_route, _dst_route))
+        flags |= SC_ROUTE;
     break;
     
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
@@ -440,8 +440,8 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       _src_route.dump();
       _dst_route.dump();
 #endif      
-      removeRoute(_src_route, _dst_route);
-      flags |= SC_ROUTE;
+      if(removeRoute(_src_route, _dst_route))
+        flags |= SC_ROUTE;
     break;
     
     case AddRouteNode:
@@ -1410,11 +1410,13 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
   switch(_type)
   {
     case AddRoute:
-      MusEGlobal::song->connectJackRoutes(_src_route, _dst_route);
+      if(MusEGlobal::song->connectJackRoutes(_src_route, _dst_route))
+        flags |= SC_ROUTE;
     break;
     
     case DeleteRoute:
-      MusEGlobal::song->connectJackRoutes(_src_route, _dst_route, true);
+      if(MusEGlobal::song->connectJackRoutes(_src_route, _dst_route, true))
+        flags |= SC_ROUTE;
     break;
 
     case DeleteTempo:
