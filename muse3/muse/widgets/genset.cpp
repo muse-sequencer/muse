@@ -130,7 +130,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
         deviceAudioBackendComboBox->addItem(selectableRtAudioBackendDevices[i],i);
       }
 #ifndef HAVE_RTAUDIO
-      deviceAudioBackendComboBox->disabled();
+      deviceAudioBackendComboBox->setDisabled(true);
 #endif
 
       for (int i = 0; i < numAudioSampleRates; i++){
