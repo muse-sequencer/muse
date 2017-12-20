@@ -44,25 +44,9 @@
 
 namespace MusECore {
 
-class MidiPlayEvent;
-
 //---------------------------------------------------------
 //   DummyAudioDevice
 //---------------------------------------------------------
-
-//static const unsigned dummyFrames = 1024;
-
-enum Cmd {
-trSeek,
-trStart,
-trStop
-};
-
-struct Msg {
-  enum Cmd cmd;
-  int arg;
-};
-
 
 class DummyAudioDevice : public AudioDevice {
       pthread_t dummyThread;
@@ -72,7 +56,6 @@ class DummyAudioDevice : public AudioDevice {
       int _realTimePriority;
 
    public:
-      std::list<Msg> cmdQueue;
       Audio::State state;
       int _framePos;
       unsigned _framesAtCycleStart;
@@ -253,7 +236,6 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       _framesAtCycleStart = 0;
       _timeAtCycleStart = 0.0;
       playPos = 0;
-      cmdQueue.clear();
       }
 
 

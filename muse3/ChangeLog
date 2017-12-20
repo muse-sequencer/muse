@@ -1,3 +1,7 @@
+19.12.2017
+      - Enabled basic stereo input support (rj)
+      - RtAudio buffer allocation rework (rj)
+      - Make RtAudio fallback instead of dummyaudio if jack isn't recognized. (rj) 
 18.12.2017
       - Fixed horizontal scrolling with shift, again (rj)
       - Wired rtaudio to config dialog so backend device, buffers size
