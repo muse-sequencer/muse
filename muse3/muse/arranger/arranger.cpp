@@ -938,8 +938,9 @@ void Arranger::readStatus(MusECore::Xml& xml)
                               rast = xml.parseInt();
                         else if (tag == "info")
                               showTrackinfoFlag = xml.parseInt();
-                        else if (tag == split->objectName())
+                        else if (tag == split->objectName()) {
                               split->readStatus(xml);
+                        }
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
                         else if (tag == "xpos") 

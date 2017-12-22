@@ -1,3 +1,7 @@
+22.12.2017
+      - Added backwards compatibility hack for Splitter, (atleast some) old songs
+        have only two splits for the arranger, so we inject a third to mimic
+        tree splits (rj)
 19.12.2017
       - Enabled basic stereo input support (rj)
       - RtAudio buffer allocation rework (rj)

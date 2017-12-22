@@ -468,8 +468,6 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
     QPoint delta       = ev->pixelDelta();  // WHEEL_DELTA;
 
-    printf("delta x:%d y:%d\n", delta.x(),delta.y());
-
     bool shift      = keyState & Qt::ShiftModifier;
     bool ctrl       = keyState & Qt::ControlModifier;
 
