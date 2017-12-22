@@ -1574,9 +1574,11 @@ void MusE::closeEvent(QCloseEvent* event)
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting DummyAudio\n");
       MusECore::exitDummyAudio();
+#ifdef HAVE_RTAUDIO
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting RtAudio\n");
       MusECore::exitRtAudio();
+#endif
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting Metronome\n");
       MusECore::exitMetronome();
