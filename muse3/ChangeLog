@@ -2,6 +2,12 @@
       - Added backwards compatibility hack for Splitter, (atleast some) old songs
         have only two splits for the arranger, so we inject a third to mimic
         tree splits (rj)
+      - RtAudio with PULSE AUDIO backend is now default. (rj)
+        Rather drastic change but it should make it much easier for new users.
+        TODO: Display the current audio driver somewhere in the UI
+      - Harmonized audio device selection so they are all available in the
+        config dialog, midi only still can be selected with -a and
+        RtAudio+Pulse can be selected with -t (rj)
 19.12.2017
       - Enabled basic stereo input support (rj)
       - RtAudio buffer allocation rework (rj)

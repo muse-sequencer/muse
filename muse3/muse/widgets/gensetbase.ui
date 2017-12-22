@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>606</width>
-    <height>488</height>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -936,7 +936,7 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="deviceAudioGroupBox">
          <property name="title">
-          <string>Audio Driver settings (require restart - does not affect jack)</string>
+          <string>Audio Driver settings (require restart)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="1" column="2">
@@ -952,10 +952,10 @@
           <item row="0" column="0">
            <widget class="QLabel" name="deviceAudioBackendLabel">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are using the RtAudio backend there are several supported drivers, including Alsa and Pulse audio. If MusE is running with Jack or the Dummy audio backend this has no effect.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>RtAudio backend:</string>
+             <string>Audio backend:</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -1297,7 +1297,7 @@ Adjusts responsiveness of audio controls and
             <x>0</x>
             <y>0</y>
             <width>550</width>
-            <height>452</height>
+            <height>508</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1737,7 +1737,7 @@ Certain operations will also force them to be resent,
                <x>0</x>
                <y>0</y>
                <width>524</width>
-               <height>602</height>
+               <height>614</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2319,7 +2319,7 @@ Benign XCB connection errors may still
                <x>0</x>
                <y>0</y>
                <width>554</width>
-               <height>311</height>
+               <height>350</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

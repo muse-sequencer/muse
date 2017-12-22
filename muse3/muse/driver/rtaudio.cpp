@@ -72,7 +72,7 @@ class RtAudioDevice : public AudioDevice {
       QList<MuseRtAudioPort*> outputPortsList;
       QList<MuseRtAudioPort*> inputPortsList;
 
-      RtAudioDevice();
+      RtAudioDevice(bool forceDefault);
       virtual ~RtAudioDevice()
       {
 
@@ -336,7 +336,7 @@ class RtAudioDevice : public AudioDevice {
 
 RtAudioDevice* rtAudioDevice = 0;
 
-RtAudioDevice::RtAudioDevice() : AudioDevice()
+RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       {
       printf("Init RtAudioDevice\n");
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
@@ -353,28 +353,38 @@ RtAudioDevice::RtAudioDevice() : AudioDevice()
 
       RtAudio::Api api = RtAudio::UNSPECIFIED;
 
-      switch (MusEGlobal::config.deviceRtAudioBackend) {
-        case 0:
-          api = RtAudio::UNSPECIFIED;
+      switch (MusEGlobal::config.deviceAudioBackend) {
+
+          case 0:
+            api = RtAudio::UNSPECIFIED;
+            break;
+          case 1:
+            api = RtAudio::LINUX_ALSA;
           break;
-        case 1:
-          api = RtAudio::LINUX_ALSA;
-        break;
-        case 2:
+          case 2:
+            api = RtAudio::LINUX_PULSE;
+          break;
+          case 3:
+            api = RtAudio::LINUX_OSS;
+          break;
+          case 4:
+            api = RtAudio::UNIX_JACK;
+          break;
+          default:
+            fprintf(stderr, "Error: RtAudio device selection illegal, setting up dummy audio backend!\n");
+            api = RtAudio::RTAUDIO_DUMMY;
+      }
+
+      if (forceDefault) {
+
           api = RtAudio::LINUX_PULSE;
-        break;
-        case 3:
-          api = RtAudio::LINUX_OSS;
-        break;
-        case 4:
-          api = RtAudio::UNIX_JACK;
-        break;
       }
 
       dac = new RtAudio(api);
       if ( dac->getDeviceCount() < 1 ) {
+
         printf ("\nNo audio devices found!\n");
-        QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - start with dummy audio if this is what you want.", QMessageBox::Ok);
+        QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
       }
 }
 
@@ -396,9 +406,9 @@ void exitRtAudio()
 //   initRtAudio
 //---------------------------------------------------------
 
-bool initRtAudio()
+bool initRtAudio(bool forceDefault = false)
 {
-  rtAudioDevice = new RtAudioDevice();
+  rtAudioDevice = new RtAudioDevice(forceDefault);
   MusEGlobal::audioDevice = rtAudioDevice;
   return false;
 }

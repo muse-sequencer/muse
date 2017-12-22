@@ -69,6 +69,17 @@ enum ExportModeInstr_t
   INSTRUMENT_NAME_META = 0x02,
 };
 
+
+enum SelectableAudioBackendDevices {
+  RtAudioChoice,
+  RtAudioAlsa,
+  RtAudioPulse,
+  RtAudioOss,
+  RtAudioJack,
+  DummyAudio,
+  JackAudio,
+};
+
 enum RouteNameAliasPreference { RoutePreferCanonicalName = 0, RoutePreferFirstAlias = 1, RoutePreferSecondAlias = 2 };
 
 enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
@@ -275,7 +286,7 @@ struct GlobalConfigValues {
       bool vstInPlace; // Enable VST in-place processing
       int deviceAudioSampleRate;
       int deviceAudioBufSize;
-      int deviceRtAudioBackend;
+      int deviceAudioBackend;
 
       QString projectBaseFolder;
       bool projectStoreInFolder;
