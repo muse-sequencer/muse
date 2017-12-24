@@ -96,7 +96,7 @@ void WaveTrack::assign(const Track& t, int flags)
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite)
       {
       #ifdef WAVETRACK_DEBUG
-      printf("WaveTrack::fetchData %s samples:%lu pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
+      printf("WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
       #endif
 
       // reset buffer to zero

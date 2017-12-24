@@ -989,11 +989,16 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
           flags |= SC_PART_REMOVED;
         }
         _part->setTrack(_track);
+        //_part->setTick(_intA);
+        _part->setPosValue(_intA);
         _track->parts()->add(_part);
         flags |= SC_PART_INSERTED;
       }
-      //_part->setTick(_intA);
-      _part->setPosValue(_intA);
+      else
+      {
+        //_part->setTick(_intA);
+        _part->setPosValue(_intA);
+      }
       flags |= SC_PART_MODIFIED;
     break;
 

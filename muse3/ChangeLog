@@ -1,3 +1,12 @@
+24.12.2017
+      - Oops! Fix years-old bug preventing a just-moved part from sounding. (Tim)
+        The MovePart undo/operations were not properly erasing/reinserting
+         the part because they were passed null track and oldTrack.
+        For ex. if a wave part was moved before another wave part, it
+         looked OK on screen but it did not sound.
+      - Reverted small piece of code that made song dirty too sensitive.
+      - TODO: Revert a few places, causing some undo operations to be
+         included in undo/redo history when they weren't meant to be.
 23.12.2017
       - Some fixes to rtAudio support. (Tim)
         Fix compile error on unknown 'DummyAudio'.
