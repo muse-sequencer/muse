@@ -493,6 +493,10 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 //---------------------------------------------------------
 bool RtAudioDevice::start(int /* priority */)
 {
+  if (dac->isStreamRunning()) {
+    stop();
+  }
+
   RtAudio::StreamParameters outParameters;
   outParameters.deviceId = dac->getDefaultOutputDevice();
   outParameters.nChannels = 2;
@@ -618,7 +622,9 @@ void RtAudioDevice::stop ()
 {
   try {
 
-    dac->stopStream();
+    if (dac->isStreamRunning()) {
+      dac->stopStream();
+    }
 
   } catch (RtAudioError& e) {
 

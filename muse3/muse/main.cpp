@@ -778,8 +778,9 @@ int main(int argc, char* argv[])
               MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
         }
 
+#ifdef HAVE_LASH
         bool using_jack = false;
-        
+#endif
         if (MusEGlobal::debugMode) {
             MusEGlobal::realTimeScheduling = false;
             MusECore::initDummyAudio();
@@ -804,7 +805,9 @@ int main(int argc, char* argv[])
             fallbackDummy();
           else
           {
+#ifdef HAVE_LASH
             using_jack = true;
+#endif
             fprintf(stderr, "...Using Jack\n");
           }
         }
@@ -820,7 +823,7 @@ int main(int argc, char* argv[])
               }
             case MusEGlobal::RtAudioAlsa:
             case MusEGlobal::RtAudioOss:
-            case MusEGlobal::RtAudioJack:
+//            case MusEGlobal::RtAudioJack:
             case MusEGlobal::RtAudioChoice:
             case MusEGlobal::RtAudioPulse:
               {
@@ -833,9 +836,9 @@ int main(int argc, char* argv[])
                   case MusEGlobal::RtAudioOss:
                     fprintf(stderr, " Oss");
                   break;
-                  case MusEGlobal::RtAudioJack:
-                    fprintf(stderr, " Jack");
-                  break;
+//                  case MusEGlobal::RtAudioJack:
+//                    fprintf(stderr, " Jack");
+//                  break;
                   case MusEGlobal::RtAudioChoice:
                     fprintf(stderr, " rtAudio chooses");
                   break;
@@ -863,7 +866,9 @@ int main(int argc, char* argv[])
                   fallbackDummy();
                 else
                 {
+#ifdef HAVE_LASH
                   using_jack = true;
+#endif
                   fprintf(stderr, "Using Jack\n");
                 }
                 

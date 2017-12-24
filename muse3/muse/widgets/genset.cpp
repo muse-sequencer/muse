@@ -64,12 +64,12 @@ static QString selectableAudioBackendDevices[] = {
     "RtAudio ALSA",
     "RtAudio Pulse Audio (default)",
     "RtAudio OSS - Open Sound System",
-    "RtAudio Jack (probably not what you want).",
+//    "RtAudio Jack (probably not what you want).", -- removed this option
     "Midi only",
     "Jack Audio"
 };
 
-int numRtAudioDevices = 7;
+int numRtAudioDevices = 6;
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -301,7 +301,7 @@ void GlobalSettingsConfig::updateSettings()
 
       pluginLv2PathList->clear();
       pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
-      
+
       updateMdiSettings();
 }
 

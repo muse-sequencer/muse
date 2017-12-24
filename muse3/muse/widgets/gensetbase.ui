@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -938,7 +938,7 @@
          <property name="title">
           <string>Audio Driver settings (require restart)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout4">
           <item row="1" column="2">
            <widget class="QLabel" name="deviceAudioRateLabel">
             <property name="text">
@@ -1297,7 +1297,7 @@ Adjusts responsiveness of audio controls and
             <x>0</x>
             <y>0</y>
             <width>550</width>
-            <height>508</height>
+            <height>452</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1737,7 +1737,7 @@ Certain operations will also force them to be resent,
                <x>0</x>
                <y>0</y>
                <width>524</width>
-               <height>614</height>
+               <height>602</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2319,7 +2319,7 @@ Benign XCB connection errors may still
                <x>0</x>
                <y>0</y>
                <width>554</width>
-               <height>350</height>
+               <height>362</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

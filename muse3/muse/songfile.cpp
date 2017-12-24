@@ -558,8 +558,23 @@ void Song::read(Xml& xml, bool isTemplate)
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
                               int sRate  = xml.parseInt();
-                              if (!isTemplate && MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate)
-                                QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
+                              if (!isTemplate && MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate) {
+
+                                if (MusEGlobal::audioDevice->deviceType() == AudioDevice::RTAUDIO_AUDIO) {
+                                  // restart audio with selected sample rate
+                                  MusEGlobal::sampleRate = sRate;
+                                  MusEGlobal::audioDevice->stop();
+                                  MusEGlobal::audioDevice->start(0);
+                                  if (MusEGlobal::sampleRate == sRate) {
+                                    QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Changing sample rate to song setting " + QString::number(sRate) + "!");
+                                  } else {
+                                    QMessageBox::warning(MusEGlobal::muse,"Sample rate", "Tried changing sample rate to song setting " +
+                                                         QString::number(sRate) + " but driver set it to " + QString::number(MusEGlobal::sampleRate) + "!");
+                                  }
+                                } else {
+                                  QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
+                                }
+                              }
                             }
                         else if (tag == "tempolist") {
                               MusEGlobal::tempomap.read(xml);

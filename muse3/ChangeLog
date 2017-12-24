@@ -7,6 +7,10 @@
       - Reverted small piece of code that made song dirty too sensitive.
       - TODO: Revert a few places, causing some undo operations to be
          included in undo/redo history when they weren't meant to be.
+      - Added sample-rate change according to song file when using RtAudio (rj)
+        as backend.
+      - Removed the RtAudioJack option, brings trouble and can't find any (rj)
+        reasonable use for it.
 23.12.2017
       - Some fixes to rtAudio support. (Tim)
         Fix compile error on unknown 'DummyAudio'.
