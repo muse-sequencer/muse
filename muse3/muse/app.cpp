@@ -173,13 +173,13 @@ bool MusE::seqStart()
             if(!MusEGlobal::audio->isRunning())
             {
               QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-                  tr("Timeout waiting for audio to run. Check if jack is running.\n"));
+                  tr("Timeout waiting for audio to run. Check if jack is running or try another driver.\n"));
             }
           }
           else
           {
             QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
-                tr("Was not able to start audio, check if jack is running.\n"));
+                tr("Was not able to start audio, check if jack is running or try another driver.\n"));
           }
         }
       }
@@ -206,7 +206,7 @@ bool MusE::seqStart()
           if(MusEGlobal::realTimePriority - 5 >= 0)
             pfprio = MusEGlobal::realTimePriority - 5;
         }
-        // FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
+        // FIXME: The realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
       }
       else
         fprintf(stderr, "seqStart(): audioDevice is NULL\n");

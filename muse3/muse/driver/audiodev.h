@@ -50,8 +50,8 @@ class AudioDevice {
 
       virtual int deviceType() const = 0;
       
-      //virtual void start() = 0;
-      virtual void start(int priority) = 0;
+      // Returns true on success.
+      virtual bool start(int priority) = 0;
       
       virtual void stop () = 0;
       // Estimated current frame.

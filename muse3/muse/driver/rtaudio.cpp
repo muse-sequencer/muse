@@ -66,7 +66,6 @@ class RtAudioDevice : public AudioDevice {
       unsigned _framesAtCycleStart;
       double _timeAtCycleStart;
       int playPos;
-      bool realtimeFlag;
       bool seekflag;
 
       QList<MuseRtAudioPort*> outputPortsList;
@@ -92,7 +91,7 @@ class RtAudioDevice : public AudioDevice {
 
       virtual inline int deviceType() const { return RTAUDIO_AUDIO; }
       
-      virtual void start(int);
+      virtual bool start(int);
       
       virtual void stop ();
       virtual int framePos() const { 
@@ -114,7 +113,7 @@ class RtAudioDevice : public AudioDevice {
       {
         if (nframes > MusEGlobal::segmentSize) {
 
-          printf("RtAudioDevice::getBuffer nframes > segment size\n");
+          fprintf(stderr, "RtAudioDevice::getBuffer nframes > segment size\n");
 
           exit(-1);
         }
@@ -150,11 +149,11 @@ class RtAudioDevice : public AudioDevice {
       
       virtual void* registerOutPort(const char* name, bool) {
 
-        printf("register output port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
+        fprintf(stderr, "register output port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
 
         foreach (MuseRtAudioPort *port, outputPortsList) {
           if (port->name == name) {
-            printf("RtAudioDevice::registerOutPort - port [%s] already exists, return existing.", name);
+            fprintf(stderr, "RtAudioDevice::registerOutPort - port [%s] already exists, return existing.", name);
             return port;
           }
         }
@@ -170,11 +169,11 @@ class RtAudioDevice : public AudioDevice {
 
       virtual void* registerInPort(const char* name, bool) {
 
-        printf("register input port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
+        fprintf(stderr, "register input port [%s] length %d char %c\n", name, int(strlen(name)), name[strlen(name)-1] );
 
         foreach (MuseRtAudioPort *port, inputPortsList) {
           if (port->name == name) {
-            printf("RtAudioDevice::registerInPort - port [%s] already exists, return existing.", name);
+            fprintf(stderr, "RtAudioDevice::registerInPort - port [%s] already exists, return existing.", name);
             return port;
           }
         }
@@ -197,70 +196,70 @@ class RtAudioDevice : public AudioDevice {
       virtual void unregisterPort(void*) {}
       virtual bool connect(void* /*src*/, void* /*dst*/)  {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::connect\n");
+          fprintf(stderr, "RtAudio::connect\n");
         return false;
       }
       virtual bool connect(const char* /*src*/, const char* /*dst*/)  {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::connect2\n");
+          fprintf(stderr, "RtAudio::connect2\n");
         return false;
       }
       virtual bool disconnect(void* /*src*/, void* /*dst*/)  { return false; }
       virtual bool disconnect(const char* /*src*/, const char* /*dst*/)  { return false; }
       virtual int connections(void* /* clientPort */) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::connections\n");
+          fprintf(stderr, "RtAudio::connections\n");
         return 1; // always return nonzero, for now
       }
       virtual bool portConnectedTo(void*, const char*) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portConnectedTo\n");
+          fprintf(stderr, "RtAudio::portConnectedTo\n");
         return false;
       }
       virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCanDisconnect\n");
+          fprintf(stderr, "RtAudio::portCanDisconnect\n");
         return false;
       }
       virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCanDisconnect2\n");
+          fprintf(stderr, "RtAudio::portCanDisconnect2\n");
         return false;
       }
       virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCanConnect\n");
+          fprintf(stderr, "RtAudio::portCanConnect\n");
         return false;
       }
       virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCanConnect\n");
+          fprintf(stderr, "RtAudio::portCanConnect\n");
         return false;
       }
       virtual bool portsCompatible(void* /*src*/, void* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCompatible\n");
+          fprintf(stderr, "RtAudio::portCompatible\n");
         return false;
       }
       virtual bool portsCompatible(const char* /*src*/, const char* /*dst*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portCompatible2\n");
+          fprintf(stderr, "RtAudio::portCompatible2\n");
         return false;
       }
       virtual void setPortName(void*, const char*) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::setPortName\n");
+          fprintf(stderr, "RtAudio::setPortName\n");
 
       }
       virtual void* findPort(const char*) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::findPort\n");
+          fprintf(stderr, "RtAudio::findPort\n");
         return 0;
       }
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portName %s\n", str);
+          fprintf(stderr, "RtAudio::portName %s\n", str);
         if(str_size == 0) {
           return 0;
         }
@@ -269,12 +268,12 @@ class RtAudioDevice : public AudioDevice {
       }
       virtual const char* canonicalPortName(void*) {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::canonicalPortName\n");
+          fprintf(stderr, "RtAudio::canonicalPortName\n");
         return 0;
       }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const {
         if(DEBUG_RTAUDIO)
-          printf("RtAudio::portLatency\n");
+          fprintf(stderr, "RtAudio::portLatency\n");
         return 0;
       }
 
@@ -284,7 +283,7 @@ class RtAudioDevice : public AudioDevice {
 
       virtual unsigned getCurFrame() const { 
         if(DEBUG_RTAUDIO)
-            printf("RtAudioDevice::getCurFrame %d\n", _framePos);
+            fprintf(stderr, "RtAudioDevice::getCurFrame %d\n", _framePos);
       
         return _framePos;
       }
@@ -296,20 +295,20 @@ class RtAudioDevice : public AudioDevice {
       virtual double systemTime() const {
         struct timeval t;
         gettimeofday(&t, 0);
-        //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+        //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
       }
 
-      virtual bool isRealtime() { return realtimeFlag; }
+      virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       virtual int realtimePriority() const { return 40; }
       virtual void startTransport() {
             if(DEBUG_RTAUDIO)
-                printf("RtAudioDevice::startTransport playPos=%d\n", playPos);
+                fprintf(stderr, "RtAudioDevice::startTransport playPos=%d\n", playPos);
             state = Audio::PLAY;
             }
       virtual void stopTransport() {
             if(DEBUG_RTAUDIO)
-                printf("RtAudioDevice::stopTransport, playPos=%d\n", playPos);
+                fprintf(stderr, "RtAudioDevice::stopTransport, playPos=%d\n", playPos);
             state = Audio::STOP;
             }
       virtual int setMaster(bool) { return 1; }
@@ -317,7 +316,7 @@ class RtAudioDevice : public AudioDevice {
       virtual void seekTransport(const Pos &p)
       {
             if(DEBUG_RTAUDIO)
-                printf("RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
+                fprintf(stderr, "RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
             seekflag = true;
             //pos = n;
             playPos = p.frame();
@@ -325,24 +324,22 @@ class RtAudioDevice : public AudioDevice {
       }
       virtual void seekTransport(unsigned pos) {
             if(DEBUG_RTAUDIO)
-                printf("RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
+                fprintf(stderr, "RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
             seekflag = true;
             //pos = n;
             playPos = pos;
             }
       virtual void setFreewheel(bool) {}
-      void setRealTime() { realtimeFlag = true; }
 };
 
 RtAudioDevice* rtAudioDevice = 0;
 
 RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       {
-      printf("Init RtAudioDevice\n");
+      fprintf(stderr, "Init RtAudioDevice\n");
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
-      realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
       //startTime = curTime();
@@ -383,7 +380,7 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       dac = new RtAudio(api);
       if ( dac->getDeviceCount() < 1 ) {
 
-        printf ("\nNo audio devices found!\n");
+        fprintf (stderr, "\nNo audio devices found!\n");
         QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
       }
 }
@@ -419,7 +416,7 @@ bool initRtAudio(bool forceDefault = false)
 int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double /* streamTime */, RtAudioStreamStatus /* status */, void * /* userData */ )
 {
-//  printf("RtAduioDevice::processAudio %d\n", nBufferFrames);
+//  fprintf(stderr, "RtAduioDevice::processAudio %d\n", nBufferFrames);
 
   float *floatOutputBuffer = (float*)outputBuffer;
   float *floatInputBuffer = (float*)inputBuffer;
@@ -457,7 +454,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
     }
   } else {
 
-    //printf("Too few ports in list, won't copy any data\n");
+    //fprintf(stderr, "Too few ports in list, won't copy any data\n");
   }
 
   if (rtAudioDevice->inputPortsList.size() >= 1) {
@@ -469,7 +466,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
     }
 
 //    if (left->buffer[0] > 0.001) {
-//      printf("Got non zero buffer value %f\n", left->buffer[0]);
+//      fprintf(stderr, "Got non zero buffer value %f\n", left->buffer[0]);
 //    }
 
     // copy buffers into input
@@ -484,7 +481,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 
   } else {
 
-    //printf("Too few ports in list, won't copy any data\n");
+    //fprintf(stderr, "Too few ports in list, won't copy any data\n");
   }
 
 
@@ -494,7 +491,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 //---------------------------------------------------------
 //   start
 //---------------------------------------------------------
-void RtAudioDevice::start(int /* priority */)
+bool RtAudioDevice::start(int /* priority */)
 {
   RtAudio::StreamParameters outParameters;
   outParameters.deviceId = dac->getDefaultOutputDevice();
@@ -506,6 +503,100 @@ void RtAudioDevice::start(int /* priority */)
   inParameters.nChannels = 2;
   inParameters.firstChannel = 0;
 
+  unsigned int fin_sr = MusEGlobal::sampleRate;
+  
+  RtAudio::DeviceInfo in_di  = dac->getDeviceInfo(inParameters.deviceId);
+  RtAudio::DeviceInfo out_di = dac->getDeviceInfo(outParameters.deviceId);
+  
+  if(!in_di.probed || !out_di.probed)
+  {
+    fprintf(stderr, "Error: RtAudioDevice: Could not probe device info.\n");
+  }
+  else
+  {
+    typedef std::vector<unsigned int>::iterator t_isr;
+
+    std::set<unsigned int> sr_set;
+    typedef std::set<unsigned int>::iterator t_isr_set;
+
+    if(in_di.sampleRates.empty())
+    {
+      for(t_isr isr_o = out_di.sampleRates.begin(); isr_o != out_di.sampleRates.end(); ++isr_o)
+        sr_set.insert(*isr_o);
+    }
+    else
+    {
+      if(out_di.sampleRates.empty())
+      {
+        for(t_isr isr_i = in_di.sampleRates.begin(); isr_i != in_di.sampleRates.end(); ++isr_i)
+          sr_set.insert(*isr_i);
+      }
+      else
+      {
+        std::vector<unsigned int> out_sr_tmp = out_di.sampleRates;
+        for(t_isr isr_i = in_di.sampleRates.begin(); isr_i != in_di.sampleRates.end(); ++isr_i)
+        {
+          for(t_isr isr_o = out_sr_tmp.begin(); isr_o != out_sr_tmp.end(); ++isr_o)
+          {
+            // Since we currently just use one openStream for both input and output,
+            //  and openStream takes only one samplerate value, then we can only openStream
+            //  if the samplerate is supported for both input and output... I guess?
+            if(*isr_o == *isr_i)
+            {
+              sr_set.insert(*isr_i);
+              // Done with this output samplerate. Remove it to speed up as we go.
+              out_sr_tmp.erase(isr_o);
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    if(sr_set.find(fin_sr) == sr_set.end())
+    {
+      unsigned int near_low = 0;
+      unsigned int near_high = 0;
+      unsigned int sr;
+      for(t_isr_set isr = sr_set.begin(); isr != sr_set.end(); ++isr)
+      {
+        sr = *isr;
+        // Include the desired samplerate.
+        if(sr > fin_sr)
+          continue;
+        if(sr > near_low)
+          near_low = sr;
+      }
+      for(t_isr_set isr = sr_set.begin(); isr != sr_set.end(); ++isr)
+      {
+        sr = *isr;
+        // Include the desired samplerate.
+        if(sr < fin_sr)
+          continue;
+        if(near_high == 0 || sr < near_high)
+          near_high = sr;
+      }
+      
+      // Prefer the closest lower rate rather than highest to be safe, I suppose.
+      if(near_low == 0 && near_high == 0)
+      {
+        fprintf(stderr, "Error: RtAudioDevice: Unsupported samplerate for both in/out:%d. No other samplerates found! Trying 44100 anyway...\n",
+                MusEGlobal::sampleRate);
+        fin_sr = 44100;
+      }
+      else
+      {
+        if(near_low == 0)
+          fin_sr = near_high;
+        else
+          fin_sr = near_low;
+        fprintf(stderr, "Warning: RtAudioDevice: Unsupported samplerate for both in/out:%d. Using closest:%d\n", MusEGlobal::sampleRate, fin_sr);
+      }
+    }
+  }
+
+  MusEGlobal::sampleRate = fin_sr;
+  
   double data[2];
 
   try {
@@ -516,7 +607,11 @@ void RtAudioDevice::start(int /* priority */)
   } catch ( RtAudioError& e ) {
 
     e.printMessage();
+    fprintf(stderr, "Error: RtAudioDevice: Cannot open device for streaming!.\n");
+    return false;
   }
+
+  return true;
 }
 
 void RtAudioDevice::stop ()

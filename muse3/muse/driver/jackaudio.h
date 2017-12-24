@@ -92,7 +92,7 @@ class JackAudioDevice : public AudioDevice {
       virtual ~JackAudioDevice();
       virtual inline int deviceType() const { return JACK_AUDIO; }   
       
-      virtual void start(int);
+      virtual bool start(int);
       virtual void stop ();
       
       // These are meant to be called from inside process thread only.      
@@ -146,6 +146,8 @@ class JackAudioDevice : public AudioDevice {
       virtual unsigned frameTime() const     { return _frameCounter; }  
       virtual double systemTime() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
+      // Jack does this for us.
+      virtual bool setRealTime() { return false; }
       virtual int realtimePriority() const;
       
       virtual void startTransport();

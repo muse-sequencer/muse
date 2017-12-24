@@ -1,3 +1,13 @@
+23.12.2017
+      - Some fixes to rtAudio support. (Tim)
+        Fix compile error on unknown 'DummyAudio'.
+        Automatically chooses nearest lower sample rate if requested
+         rate is unsupported. Prevents freeze in MusE msg system.
+        If driver cannot be started, it warns with a message box but MusE
+         still runs so that user can change the driver.
+        NOTE: If system is not set up properly, selecting Pulse backend
+         while Jack is already running may cause MusE to freeze. Likewise,
+         selecting Jack backend may cause Pulse to pause.
 22.12.2017
       - Added backwards compatibility hack for Splitter, (atleast some) old songs
         have only two splits for the arranger, so we inject a third to mimic

@@ -50,8 +50,6 @@ namespace MusECore {
 
 class DummyAudioDevice : public AudioDevice {
       pthread_t dummyThread;
-      // Changed by Tim. p3.3.15
-      //float buffer[1024];
       float* buffer;
       int _realTimePriority;
 
@@ -61,25 +59,23 @@ class DummyAudioDevice : public AudioDevice {
       unsigned _framesAtCycleStart;
       double _timeAtCycleStart;
       int playPos;
-      bool realtimeFlag;
       bool seekflag;
       
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
       { 
-        // Added by Tim. p3.3.15
         free(buffer); 
       }
 
-      virtual inline int deviceType() const { return DUMMY_AUDIO; } // p3.3.52
+      virtual inline int deviceType() const { return DUMMY_AUDIO; }
       
-      //virtual void start();
-      virtual void start(int);
+      // Returns true on success.
+      virtual bool start(int);
       
       virtual void stop ();
       virtual int framePos() const { 
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::framePos %d\n", _framePos);
+                fprintf(stderr, "DummyAudioDevice::framePos %d\n", _framePos);
             return _framePos; 
             }
 
@@ -96,11 +92,8 @@ class DummyAudioDevice : public AudioDevice {
 
       virtual float* getBuffer(void* /*port*/, unsigned long nframes)
             {
-            // p3.3.30
-            //if (nframes > dummyFrames) {
-                  //printf("error: segment size > 1024\n");
             if (nframes > MusEGlobal::segmentSize) {
-                  printf("DummyAudioDevice::getBuffer nframes > segment size\n");
+                  fprintf(stderr, "DummyAudioDevice::getBuffer nframes > segment size\n");
                   
                   exit(-1);
                   }
@@ -114,11 +107,9 @@ class DummyAudioDevice : public AudioDevice {
 
       virtual const char* clientName() { return "MusE"; }
       
-      //virtual void* registerOutPort(const char*) {
       virtual void* registerOutPort(const char*, bool) {
             return (void*)1;
             }
-      //virtual void* registerInPort(const char*) {
       virtual void* registerInPort(const char*, bool) {
             return (void*)2;
             }
@@ -149,11 +140,11 @@ class DummyAudioDevice : public AudioDevice {
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       virtual int getState() { 
 //            if(DEBUG_DUMMY)
-//                printf("DummyAudioDevice::getState %d\n", state);
+//                fprintf(stderr, "DummyAudioDevice::getState %d\n", state);
             return state; }
       virtual unsigned getCurFrame() const { 
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::getCurFrame %d\n", _framePos);
+                fprintf(stderr, "DummyAudioDevice::getCurFrame %d\n", _framePos);
       
       return _framePos; }
       virtual unsigned frameTime() const {
@@ -163,20 +154,20 @@ class DummyAudioDevice : public AudioDevice {
       {
         struct timeval t;
         gettimeofday(&t, 0);
-        //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+        //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
         return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
       }
-      virtual bool isRealtime() { return realtimeFlag; }
+      virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
       virtual void startTransport() {
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::startTransport playPos=%d\n", playPos);
+                fprintf(stderr, "DummyAudioDevice::startTransport playPos=%d\n", playPos);
             state = Audio::PLAY;
             }
       virtual void stopTransport() {
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::stopTransport, playPos=%d\n", playPos);
+                fprintf(stderr, "DummyAudioDevice::stopTransport, playPos=%d\n", playPos);
             state = Audio::STOP;
             }
       virtual int setMaster(bool) { return 1; }
@@ -184,7 +175,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual void seekTransport(const Pos &p)
       {
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
+                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
             seekflag = true;
             //pos = n;
             playPos = p.frame();
@@ -192,13 +183,12 @@ class DummyAudioDevice : public AudioDevice {
       }
       virtual void seekTransport(unsigned pos) {
             if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
+                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
             seekflag = true;
             //pos = n;
             playPos = pos;
             }
       virtual void setFreewheel(bool) {}
-      void setRealTime() { realtimeFlag = true; }
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -222,10 +212,8 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
         memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
 
       dummyThread = 0;
-      realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
-      //startTime = curTime();
       _framePos = 0;
       _framesAtCycleStart = 0;
       _timeAtCycleStart = 0.0;
@@ -326,8 +314,12 @@ static void* dummyLoop(void* ptr)
       pthread_exit(0);
       }
 
-//void DummyAudioDevice::start()
-void DummyAudioDevice::start(int priority)
+//---------------------------------------------------------
+//   dummyLoop
+//   Returns true on success.
+//---------------------------------------------------------
+
+bool DummyAudioDevice::start(int priority)
 {
       _realTimePriority = priority;
       pthread_attr_t* attributes = 0;
@@ -337,21 +329,21 @@ void DummyAudioDevice::start(int priority)
             pthread_attr_init(attributes);
 
             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-                  printf("cannot set FIFO scheduling class for dummy RT thread\n");
+                  fprintf(stderr, "cannot set FIFO scheduling class for dummy RT thread\n");
                   }
             if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-                  printf("Cannot set scheduling scope for dummy RT thread\n");
+                  fprintf(stderr, "Cannot set scheduling scope for dummy RT thread\n");
                   }
             // p4.0.16 Dummy was not running FIFO because this is needed.
             if (pthread_attr_setinheritsched(attributes, PTHREAD_EXPLICIT_SCHED)) {
-                  printf("Cannot set setinheritsched for dummy RT thread\n");
+                  fprintf(stderr, "Cannot set setinheritsched for dummy RT thread\n");
                   }
                   
             struct sched_param rt_param;
             memset(&rt_param, 0, sizeof(rt_param));
             rt_param.sched_priority = priority;
             if (pthread_attr_setschedparam (attributes, &rt_param)) {
-                  printf("Cannot set scheduling priority %d for dummy RT thread (%s)\n",
+                  fprintf(stderr, "Cannot set scheduling priority %d for dummy RT thread (%s)\n",
                      priority, strerror(errno));
                   }
             }
@@ -366,11 +358,13 @@ void DummyAudioDevice::start(int priority)
       if(rv)
           fprintf(stderr, "creating dummy audio thread failed: %s\n", strerror(rv));
 
-      if (attributes)                      // p4.0.16
+      if (attributes)
       {
         pthread_attr_destroy(attributes);
         free(attributes);
       }
+      
+      return true;
 }
 
 void DummyAudioDevice::stop ()
