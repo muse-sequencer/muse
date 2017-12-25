@@ -543,6 +543,8 @@ if ( ENABLE_EXPERIMENTAL )
       set(CMAKE_CXX_FLAGS -DBUILD_EXPERIMENTAL ${CMAKE_CXX_FLAGS})
 endif ( ENABLE_EXPERIMENTAL )
 
+set(CMAKE_CXX_FLAGS "-std=c++11" ${CMAKE_CXX_FLAGS})
+
 #
 # produce config.h file
 #

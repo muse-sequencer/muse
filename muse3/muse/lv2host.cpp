@@ -71,7 +71,7 @@
 #include "icons.h"
 #include <ladspa.h>
 
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -2409,11 +2409,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
          cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _portSym, _cType, isCVPort));
 
-         if(isnan(_pluginControlsDefault [i]))
+         if(std::isnan(_pluginControlsDefault [i]))
             _pluginControlsDefault [i] = 0;
-         if(isnan(_pluginControlsMin [i]))
+         if(std::isnan(_pluginControlsMin [i]))
             _pluginControlsMin [i] = 0;
-         if(isnan(_pluginControlsMax [i]))
+         if(std::isnan(_pluginControlsMax [i]))
             _pluginControlsMax [i] = 0;
 
          if(isCVPort)
