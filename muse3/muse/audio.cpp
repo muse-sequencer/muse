@@ -208,7 +208,7 @@ bool Audio::start()
           if(initJackAudio() == false) {
                 InputList* itl = MusEGlobal::song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting input %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
                       (*i)->setName((*i)->name()); // restore jack connection
@@ -216,21 +216,26 @@ bool Audio::start()
 
                 OutputList* otl = MusEGlobal::song->outputs();
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting output %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      if (MusEGlobal::debugMsg) printf("name=%s\n",(*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "name=%s\n",(*i)->name().toLatin1().data());
                       (*i)->setName((*i)->name()); // restore jack connection
                       }
                }
           else {
-               printf("Failed to init audio!\n");
+               fprintf(stderr, "Failed to init audio!\n");
                return false;
                }
           }
 
       _running = true;  // Set before we start to avoid error messages in process.
-      MusEGlobal::audioDevice->start(MusEGlobal::realTimePriority);
+      if(!MusEGlobal::audioDevice->start(MusEGlobal::realTimePriority))
+      {
+        fprintf(stderr, "Failed to start audio!\n");
+        _running = false;
+        return false;
+      }
 
       // shall we really stop JACK transport and locate to
       // saved position?
@@ -331,7 +336,7 @@ void Audio::setFreewheel(bool val)
 void Audio::shutdown()
       {
       _running = false;
-      printf("Audio::shutdown()\n");
+      fprintf(stderr, "Audio::shutdown()\n");
       write(sigFd, "S", 1);
       }
 
@@ -409,10 +414,10 @@ void Audio::process(unsigned frames)
             ;     // sync cycle
             }
       else if (state != jackState)
-            printf("JACK: state transition %s -> %s ?\n",
+            fprintf(stderr, "JACK: state transition %s -> %s ?\n",
                audioStates[state], audioStates[jackState]);
 
-      // printf("p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
+      // fprintf(stderr, "p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
 
       //
       // clear aux send buffers
@@ -507,7 +512,7 @@ void Audio::process(unsigned frames)
                 || MusEGlobal::song->loop())) {
 
                   if(MusEGlobal::debugMsg)
-                    printf("Audio::process curTickPos >= MusEGlobal::song->len\n");
+                    fprintf(stderr, "Audio::process curTickPos >= MusEGlobal::song->len\n");
                   
                   MusEGlobal::audioDevice->stopTransport();
                   return;
@@ -644,14 +649,14 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track = (AudioTrack*)(*it);
         if(!track->processed() && track->type() == Track::AUDIO_AUX)
         {
-          //printf("Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());   DELETETHIS
+          //fprintf(stderr, "Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());   DELETETHIS
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
+          //fprintf(stderr, "Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }
@@ -673,14 +678,14 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track = (AudioTrack*)(*it);
         if(!track->processed() && (track->type() != Track::AUDIO_OUTPUT))
         {
-          //printf("Audio::process1 track:%s\n", track->name().toLatin1().constData());  DELETETHIS
+          //fprintf(stderr, "Audio::process1 track:%s\n", track->name().toLatin1().constData());  DELETETHIS
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
+          //fprintf(stderr, "Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }
       }      
@@ -829,7 +834,7 @@ void Audio::seek(const Pos& p)
             return;        
             }
       if (MusEGlobal::heavyDebugMsg)
-        printf("Audio::seek frame:%d\n", p.frame());
+        fprintf(stderr, "Audio::seek frame:%d\n", p.frame());
         
 #ifdef _AUDIO_USE_TRUE_FRAME_
       _previousPos = _pos;
@@ -898,7 +903,7 @@ void Audio::writeTick()
 void Audio::startRolling()
       {
       if (MusEGlobal::debugMsg)
-        printf("startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
+        fprintf(stderr, "startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
 
       if(_loopCount == 0) {
         startRecordPos = _pos;
@@ -946,7 +951,7 @@ void Audio::startRolling()
 //         && MusEGlobal::song->click()
 //         && !MusEGlobal::extSyncFlag.value()
 //         && MusEGlobal::song->record()) {
-//          printf("state = PRECOUNT!\n");
+//          fprintf(stderr, "state = PRECOUNT!\n");
 //            state = PRECOUNT;
 //            int z, n;
 //            if (MusEGlobal::precountFromMastertrackFlag)
@@ -993,7 +998,7 @@ void Audio::startRolling()
 void Audio::stopRolling()
 {
       if (MusEGlobal::debugMsg)
-        printf("Audio::stopRolling state %s\n", audioStates[state]);
+        fprintf(stderr, "Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
 
@@ -1050,7 +1055,7 @@ void Audio::recordStop(bool restart, Undo* ops)
       MusEGlobal::song->processMasterRec();   
         
       if (MusEGlobal::debugMsg)
-        printf("recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
+        fprintf(stderr, "recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
 
       Undo loc_ops;
       Undo& operations = ops ? (*ops) : loc_ops;

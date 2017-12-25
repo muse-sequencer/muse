@@ -1487,13 +1487,14 @@ bool JackAudioDevice::portsCompatible(const char* src, const char* dst) const
 
 //---------------------------------------------------------
 //   start
+//   Return true on success.
 //---------------------------------------------------------
 
-void JackAudioDevice::start(int /*priority*/)
+bool JackAudioDevice::start(int /*priority*/)
       {
       if (JACK_DEBUG)
             printf("JackAudioDevice::start()\n");
-      if(!checkJackClient(_client)) return;
+      if(!checkJackClient(_client)) return false;
 
       MusEGlobal::doSetuid();
 
@@ -1516,6 +1517,8 @@ void JackAudioDevice::start(int /*priority*/)
 
       fflush(stdin);
       //JackAudioDevice::jackStarted=true;
+      
+      return true;
       }
 
 //---------------------------------------------------------

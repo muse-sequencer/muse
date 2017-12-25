@@ -68,14 +68,17 @@ static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
 
-static QString selectableRtAudioBackendDevices[] = {
-        "Russian roulette (RtAudio selects)",
-        "ALSA",
-        "Pulse Audio (recommended)",
-        "OSS (Open Sound System)",
-        "Jack through RtAudio - probably not what you want.",
+static QString selectableAudioBackendDevices[] = {
+    "Russian roulette (RtAudio selects)",
+    "RtAudio ALSA",
+    "RtAudio Pulse Audio (default)",
+    "RtAudio OSS - Open Sound System",
+//    "RtAudio Jack (probably not what you want).", -- removed this option
+    "Midi only",
+    "Jack Audio"
 };
-int numRtAudioDevices = 5;
+
+int numRtAudioDevices = 6;
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -138,7 +141,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::MARKER);
       
       for (int i = 0; i < numRtAudioDevices; i++){
-        deviceAudioBackendComboBox->addItem(selectableRtAudioBackendDevices[i],i);
+        deviceAudioBackendComboBox->addItem(selectableAudioBackendDevices[i],i);
       }
 #ifndef HAVE_RTAUDIO
       deviceAudioBackendComboBox->setDisabled(true);
@@ -229,11 +232,9 @@ void GlobalSettingsConfig::updateSettings()
       outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
 
-      deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceRtAudioBackend);
-
+      deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
       projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
-
 
       startSongEntry->setText(MusEGlobal::config.startSong == "" ? "<default>" : MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
@@ -317,7 +318,7 @@ void GlobalSettingsConfig::updateSettings()
 
       pluginLv2PathList->clear();
       pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
-      
+
       updateMdiSettings();
 }
 
@@ -381,7 +382,7 @@ void GlobalSettingsConfig::apply()
 //       MusEGlobal::config.deviceAudioSampleRate = selectableAudioSampleRates[deviceAudioRate->currentIndex()];
       MusEGlobal::config.deviceAudioSampleRate = MusEGlobal::selectableAudioSampleRates[deviceAudioRate->currentIndex()];
 
-      MusEGlobal::config.deviceRtAudioBackend = deviceAudioBackendComboBox->currentIndex();
+      MusEGlobal::config.deviceAudioBackend = deviceAudioBackendComboBox->currentIndex();
 
       int mcp = minControlProcessPeriodComboBox->currentIndex();
       MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];

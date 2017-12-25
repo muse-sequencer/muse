@@ -1165,8 +1165,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.deviceAudioSampleRate = xml.parseInt();
                         else if (tag == "deviceAudioBufSize")
                               MusEGlobal::config.deviceAudioBufSize = xml.parseInt();
-                        else if (tag == "deviceRtAudioBackend")
-                              MusEGlobal::config.deviceRtAudioBackend = xml.parseInt();
+                        else if (tag == "deviceAudioBackend")
+                              MusEGlobal::config.deviceAudioBackend = xml.parseInt();
 
                         else if (tag == "minControlProcessPeriod")
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
@@ -1723,7 +1723,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "deviceAudioBufSize", MusEGlobal::config.deviceAudioBufSize);
       xml.intTag(level, "deviceAudioSampleRate", MusEGlobal::config.deviceAudioSampleRate);
-      xml.intTag(level, "deviceRtAudioBackend", MusEGlobal::config.deviceRtAudioBackend);
+      xml.intTag(level, "deviceAudioBackend", MusEGlobal::config.deviceAudioBackend);
 
 
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);

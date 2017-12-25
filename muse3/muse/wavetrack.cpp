@@ -1122,7 +1122,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         const double f = fabs(*sp++);
         if(f > met[c])
           met[c] = f;
-// >>>>>>> origin/master
       }
       if(met[c] > _meter[c])
         _meter[c] = met[c];

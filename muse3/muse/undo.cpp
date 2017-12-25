@@ -1490,12 +1490,15 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, int old_len_or_pos, int new_le
     {
       track = nTrack;
       oldTrack = oTrack;
-      // If the tracks are the same or either track is null, we just want a regular move (to the same track).
-      if(oTrack == 0 || nTrack == 0 || oTrack == nTrack)
-      {
-        track = 0;
-        oldTrack = 0;
-      }
+      // Make sure both tracks exist.
+      if(!track && !oldTrack)
+        track = oldTrack = part->track();
+      else if(!oldTrack)
+        oldTrack = track;
+      else if(!track)
+        track = oldTrack;
+      assert(oldTrack);
+      assert(track);
     }
     old_partlen_or_pos = old_len_or_pos;
     new_partlen_or_pos = new_len_or_pos;
@@ -3063,7 +3066,7 @@ void Song::executeOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif                        
       pendingOperations.clear();
-      bool song_has_changed = !operations.empty();
+      //bool song_has_changed = !operations.empty();
       for (iUndoOp i = operations.begin(); i != operations.end(); ) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
@@ -3187,9 +3190,9 @@ void Song::executeOperationGroup3(Undo& operations)
             
       // If some operations marked as non-undoable were removed, it is OK,
       //  because we only want dirty if an undoable operation was executed, right?
+      if(!operations.empty())
       // Hm, no. ANY operation actually changes things, so yes, the song is dirty.
-      //if(!operations.empty())
-      if(song_has_changed)
+      //if(song_has_changed)
         emit sigDirty();
       }
 

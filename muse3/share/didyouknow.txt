@@ -29,3 +29,5 @@ take wasn't perfect or you simply want several takes. While recording press<br>
 shift+space (default shortcut), a new track is created and the recording is<br>
 restarted from the initial position.<br>
 If recording was done on multiple tracks, all the armed tracks will be duplicated.
+
+MusE 3.0 defaults to connecting to Pulse Audio instead of Jack to ease startup for new users. To connect to Jack change the default sound output on the Audio configuration tab in Global Settings.

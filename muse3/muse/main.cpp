@@ -75,7 +75,7 @@
 namespace MusECore {
 extern bool initDummyAudio();
 #ifdef HAVE_RTAUDIO
-extern bool initRtAudio();
+extern bool initRtAudio(bool forceDefault = false);
 #endif
 extern bool initJackAudio();
 extern void initMidiController();
@@ -113,40 +113,15 @@ extern lash_client_t * lash_client;
 extern QStringList projectRecentList;
 }
 
-enum AudioDriver {
-  DummyAudio,
-  JackAudio,
-  RtAudio,
+enum AudioDriverSelect {
+  DriverConfigSetting,
+  DummyAudioOverride,
+  JackAudioOverride,
+  RtAudioOverride,
+
 };
 
 static QString locale_override;
-
-// REMOVE Tim. setuid. Removed.
-// //---------------------------------------------------------
-// //   getCapabilities
-// //---------------------------------------------------------
-// 
-// static void getCapabilities()
-//       {
-// #ifdef RTCAP
-// #ifdef __linux__
-//       const char* napp = getenv("GIVERTCAP");
-//       if (napp == 0)
-//             napp = "givertcap";
-//       int pid = fork();
-//       if (pid == 0) {
-//             if (execlp(napp, napp, 0) == -1)
-//                   perror("exec givertcap failed");
-//             }
-//       else if (pid == -1) {
-//             perror("fork givertcap failed");
-//             }
-//       else {
-//             waitpid(pid, 0, 0);
-//             }
-// #endif // __linux__
-// #endif
-//       }
 
 //---------------------------------------------------------
 //   printVersion
@@ -269,10 +244,11 @@ static void usage(const char* prog, const char* txt)
          prog, txt, prog);
       fprintf(stderr, "   -h       This help\n");
       fprintf(stderr, "   -v       Print version\n");
-      fprintf(stderr, "   -a       No audio, use dummy audio driver, plus ALSA midi\n");
+      fprintf(stderr, "   -a       Alsa midi only (using dummy audio driver)\n");
 #ifdef HAVE_RTAUDIO
-      fprintf(stderr, "   -t       Use RtAudio audio fallback.\n");
+      fprintf(stderr, "   -t       Use RtAudio driver (with Pulse Audio driver).\n");
 #endif
+      fprintf(stderr, "   -j       Use JAckAudio driver to connect to Jack audio server\n");
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
       fprintf(stderr, "   -F       Do not auto-populate midi ports with midi devices found, at startup\n");
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
@@ -350,6 +326,19 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "\n");
       }
 
+
+void fallbackDummy() {
+
+  fprintf(stderr, "Falling back to dummy audio driver\n");
+  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
+                                                  "<i>MusE will continue <b>without audio support</b> (-a switch)!</i><br><br>"
+                                                  "If this was not intended check that Jack was started. "
+                                                  "If Jack <i>was</i> started check that it was\n"
+                                                  "started as the same user as MusE.\n");
+  MusEGlobal::realTimeScheduling = true;
+  MusECore::initDummyAudio();
+}
+
 //---------------------------------------------------------
 //   main
 //---------------------------------------------------------
@@ -372,22 +361,22 @@ int main(int argc, char* argv[])
       bool cConfExists = cConf.exists();
       if (!cConfExists)
       {
-        printf ("creating new config...\n");
+        fprintf(stderr, "creating new config...\n");
         if (cConfTempl.copy(MusEGlobal::configName))
-          printf ("  success.\n");
+          fprintf(stderr, "  success.\n");
         else
-          printf ("  FAILED!\n");
+          fprintf(stderr, "  FAILED!\n");
       }
 
       QFile cConfQt (MusEGlobal::configPath + QString("/MusE-qt.conf"));
       QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE-qt.conf"));
       if (! cConfQt.exists())
       {
-        printf ("creating new qt config...\n");
+        fprintf(stderr, "creating new qt config...\n");
         if (cConfTemplQt.copy(cConfQt.fileName()))
-          printf ("  success.\n");
+          fprintf(stderr, "  success.\n");
         else
-          printf ("  FAILED!\n");
+          fprintf(stderr, "  FAILED!\n");
       }
 
       MusEGui::initShortCuts();
@@ -558,7 +547,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("atJFAhvdDumMsP:Y:l:py");
+        QString optstr("atJjFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -575,7 +564,7 @@ int main(int argc, char* argv[])
         optstr += QString("2");
   #endif
 
-        AudioDriver audioType = JackAudio;
+        AudioDriverSelect audioType = DriverConfigSetting;
         int i;
 
         // Now read the remaining arguments as our own...
@@ -588,13 +577,16 @@ int main(int argc, char* argv[])
   #endif
                           return 0;
                     case 'a':
-                          audioType = DummyAudio;
+                          audioType = DummyAudioOverride;
                           break;
                     case 't':
-                          audioType = RtAudio;
+                          audioType = RtAudioOverride;
                           break;
                     case 'J':
                           MusEGlobal::noAutoStartJack = true;
+                          break;
+                    case 'j':
+                          audioType = JackAudioOverride;
                           break;
                     case 'F':
                           MusEGlobal::populateMidiPortsOnStart = false;
@@ -642,15 +634,6 @@ int main(int argc, char* argv[])
         argc_copy -= optind;
         ++argc_copy;
 
-  // REMOVE Tim. setuid. Removed.
-  //       MusEGlobal::ruid = getuid();
-  //       MusEGlobal::euid = geteuid();
-  //       MusEGlobal::undoSetuid();
-  //       getCapabilities();
-  //       if (MusEGlobal::debugMsg)
-  //             printf("Start euid: %d ruid: %d, Now euid %d\n",
-  //                   MusEGlobal::euid, MusEGlobal::ruid, geteuid());
-
         srand(time(0));   // initialize random number generator
         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
 
@@ -665,7 +648,7 @@ int main(int argc, char* argv[])
                   QString lp(MusEGlobal::museGlobalShare);
                   lp += QString("/locale");
                   if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
+                        fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
                   }
             }
             app.installTranslator(&translator);
@@ -674,10 +657,10 @@ int main(int argc, char* argv[])
         QLocale def_loc(locale);
         QLocale::setDefault(def_loc);
 
-        printf("LOCALE %s\n",QLocale().name().toLatin1().data());
+        fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
 
         if (QLocale().name() == "de" || locale_override == "de") {
-          printf("locale de - setting 'note h is B' override parameter.\n");
+          fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
           MusEGlobal::hIsB = false;
         }
 
@@ -685,9 +668,9 @@ int main(int argc, char* argv[])
         if (MusEGlobal::debugMsg) {
               QStringList list = app.libraryPaths();
               QStringList::Iterator it = list.begin();
-              printf("QtLibraryPath:\n");
+              fprintf(stderr, "QtLibraryPath:\n");
               while(it != list.end()) {
-                    printf("  <%s>\n", (*it).toLatin1().constData());
+                    fprintf(stderr, "  <%s>\n", (*it).toLatin1().constData());
                     ++it;
                     }
               }
@@ -763,34 +746,35 @@ int main(int argc, char* argv[])
 
         // SHOW MUSE SPLASH SCREEN
         if (MusEGlobal::config.showSplashScreen) {
-              QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
+            QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
 
-              if (!splsh.isNull()) {
-                    QSplashScreen* muse_splash = new QSplashScreen(splsh,
-                      Qt::WindowStaysOnTopHint);
-                    muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
-                    muse_splash->show();
-                    muse_splash->showMessage("MusE " + QString(VERSION) );
-                    QTimer* stimer = new QTimer(0);
-                    muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-                    stimer->setSingleShot(true);
-                    stimer->start(6000);
-                    QApplication::processEvents();
-                    }
-              }
+            if (!splsh.isNull()) {
+                QSplashScreen* muse_splash = new QSplashScreen(splsh,
+                  Qt::WindowStaysOnTopHint);
+                muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
+                muse_splash->show();
+                muse_splash->showMessage("MusE " + QString(VERSION) );
+                QTimer* stimer = new QTimer(0);
+                muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
+                stimer->setSingleShot(true);
+                stimer->start(6000);
+                QApplication::processEvents();
+            }
+        }
 
-        if (MusEGlobal::config.useDenormalBias)
-            printf("Denormal protection enabled.\n");
+        if (MusEGlobal::config.useDenormalBias) {
+            fprintf(stderr, "Denormal protection enabled.\n");
+        }
         if (MusEGlobal::debugMsg) {
-              printf("global lib:       <%s>\n", MusEGlobal::museGlobalLib.toLatin1().constData());
-              printf("global share:     <%s>\n", MusEGlobal::museGlobalShare.toLatin1().constData());
-              printf("muse home:        <%s>\n", MusEGlobal::museUser.toLatin1().constData());
-              printf("project dir:      <%s>\n", MusEGlobal::museProject.toLatin1().constData());
-              printf("user instruments: <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
-              }
+            fprintf(stderr, "global lib:       <%s>\n", MusEGlobal::museGlobalLib.toLatin1().constData());
+            fprintf(stderr, "global share:     <%s>\n", MusEGlobal::museGlobalShare.toLatin1().constData());
+            fprintf(stderr, "muse home:        <%s>\n", MusEGlobal::museUser.toLatin1().constData());
+            fprintf(stderr, "project dir:      <%s>\n", MusEGlobal::museProject.toLatin1().constData());
+            fprintf(stderr, "user instruments: <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        }
 
         //rlimit lim; getrlimit(RLIMIT_RTPRIO, &lim);
-        //printf("RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
+        //fprintf(stderr, "RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
         if (MusEGlobal::realTimePriority < sched_get_priority_min(SCHED_FIFO))
               MusEGlobal::realTimePriority = sched_get_priority_min(SCHED_FIFO);
         else if (MusEGlobal::realTimePriority > sched_get_priority_max(SCHED_FIFO))
@@ -804,55 +788,106 @@ int main(int argc, char* argv[])
               MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
         }
 
+#ifdef HAVE_LASH
+        bool using_jack = false;
+#endif
         if (MusEGlobal::debugMode) {
-              MusECore::initDummyAudio();
-              MusEGlobal::realTimeScheduling = false;
-              }
-        else if (audioType == DummyAudio) {
-              MusECore::initDummyAudio();
-              MusEGlobal::realTimeScheduling = true;
-              }
+            MusEGlobal::realTimeScheduling = false;
+            MusECore::initDummyAudio();
+        }
+        else if (audioType == DummyAudioOverride) {
+            fprintf(stderr, "Force Dummy Audio driver\n");
+            MusEGlobal::realTimeScheduling = true;
+            MusECore::initDummyAudio();
+        }
 #ifdef HAVE_RTAUDIO
-        else if (audioType == RtAudio) {
-              MusECore::initRtAudio();
-              MusEGlobal::realTimeScheduling = true;
-              }
+        else if (audioType == RtAudioOverride) {
+            fprintf(stderr, "Force RtAudio with Pulse Backend\n");
+            MusEGlobal::realTimeScheduling = true;
+            if(MusECore::initRtAudio(true))
+              fallbackDummy();
+            else
+              fprintf(stderr, "Using rtAudio\n");
+        }
 #endif
-        else if (MusECore::initJackAudio()) {
-              if (!MusEGlobal::debugMode) {
-#ifdef HAVE_RTAUDIO
-                    QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                                    "<i>MusE will continue with <b>RtAudio</b> backend (-t switch)!</i><br><br>"
-                                                                    "If this was not intended check that Jack was started. "
-                                                                    "If Jack <i>was</i> started check that it was\n"
-                                                                    "started as the same user as MusE.\n");
-                    MusECore::initRtAudio();
-                    audioType = RtAudio;
-#else
-                    QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                                    "<i>MusE will continue <b>without audio support</b> (-a switch)!</i><br><br>"
-                                                                    "If this was not intended check that Jack was started. "
-                                                                    "If Jack <i>was</i> started check that it was\n"
-                                                                    "started as the same user as MusE.\n");
-                    MusECore::initDummyAudio();
-                    audioType = DummyAudio;
+        else if (audioType == JackAudioOverride) {
+          if(MusECore::initJackAudio()) 
+            fallbackDummy();
+          else
+          {
+#ifdef HAVE_LASH
+            using_jack = true;
 #endif
-                    MusEGlobal::realTimeScheduling = true;
-                    if (MusEGlobal::debugMode) {
-                              MusEGlobal::realTimeScheduling = false;
-                              }
-                    }
-              else
-                    {
-                    fprintf(stderr, "fatal error: no JACK audio server found\n");
-                    fprintf(stderr, "no audio functions available\n");
-                    fprintf(stderr, "*** experimental mode -- no play possible ***\n");
-                    MusECore::initDummyAudio();
-                    }
-              MusEGlobal::realTimeScheduling = true;
+            fprintf(stderr, "...Using Jack\n");
+          }
+        }
+        else if (audioType == DriverConfigSetting) {
+          fprintf(stderr, "Select audio device from configuration : %d\n", MusEGlobal::config.deviceAudioBackend);
+          switch (MusEGlobal::config.deviceAudioBackend) {
+            case MusEGlobal::DummyAudio:
+              {
+                fprintf(stderr, "User DummyAudio backend - selected through configuration\n");
+                MusEGlobal::realTimeScheduling = true;
+                MusECore::initDummyAudio();
+                break;
               }
-        else
-              MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
+            case MusEGlobal::RtAudioAlsa:
+            case MusEGlobal::RtAudioOss:
+//            case MusEGlobal::RtAudioJack:
+            case MusEGlobal::RtAudioChoice:
+            case MusEGlobal::RtAudioPulse:
+              {
+                fprintf(stderr, "User RtAudio backend - backend selected through configuration:");
+                
+                switch (MusEGlobal::config.deviceAudioBackend) {
+                  case MusEGlobal::RtAudioAlsa:
+                    fprintf(stderr, " Alsa");
+                  break;
+                  case MusEGlobal::RtAudioOss:
+                    fprintf(stderr, " Oss");
+                  break;
+//                  case MusEGlobal::RtAudioJack:
+//                    fprintf(stderr, " Jack");
+//                  break;
+                  case MusEGlobal::RtAudioChoice:
+                    fprintf(stderr, " rtAudio chooses");
+                  break;
+                  case MusEGlobal::RtAudioPulse:
+                    fprintf(stderr, " Pulse");
+                  break;
+                  default:
+                    fprintf(stderr, " Unknown");
+                  break;
+                }
+                fprintf(stderr, "\n");
+                
+                MusEGlobal::realTimeScheduling = true;
+                if(MusECore::initRtAudio())
+                  fallbackDummy();
+                else
+                  fprintf(stderr, "Using rtAudio\n");
+              
+                break;
+              }
+            case MusEGlobal::JackAudio:
+              {
+                fprintf(stderr, "User JackAudio backend - backend selected through configuration\n");
+                if (MusECore::initJackAudio()) 
+                  fallbackDummy();
+                else
+                {
+#ifdef HAVE_LASH
+                  using_jack = true;
+#endif
+                  fprintf(stderr, "Using Jack\n");
+                }
+                
+                break;
+              }
+          }
+        }
+
+        MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
 
         // ??? With Jack2 this reports true even if it is not running realtime.
         // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
@@ -914,7 +949,8 @@ int main(int argc, char* argv[])
             if(MusECore::alsaSeq)
               lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
   #endif
-            if (audioType != DummyAudio) {
+            //if (audioType != DummyAudio) {
+            if (using_jack) {
                   const char *jack_name = MusEGlobal::audioDevice->clientName();
                   lash_jack_client_name (MusEGui::lash_client, jack_name);
             }
@@ -960,7 +996,7 @@ int main(int argc, char* argv[])
 
         rv = app.exec();
         if(MusEGlobal::debugMsg)
-          printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
+          fprintf(stderr, "app.exec() returned:%d\nDeleting main MusE object\n", rv);
 
         if (MusEGlobal::loadPlugins)
         {
@@ -1020,7 +1056,7 @@ int main(int argc, char* argv[])
         delete MusEGlobal::defaultAudioConverterSettings;
       
       if(MusEGlobal::debugMsg) 
-        printf("Finished! Exiting main, return value:%d\n", rv);
+        fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;
       
       }

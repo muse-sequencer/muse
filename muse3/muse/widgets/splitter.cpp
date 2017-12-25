@@ -91,6 +91,17 @@ void Splitter::readStatus(MusECore::Xml& xml)
                               int val = (*it).toInt();
                               vl.append(val);
                               }
+
+                        // fix for allowing the arranger split to work nicely with old songs
+                        // that have only two splitters, we add a first splitter with the
+                        // standard strip width 53 pixels
+                        if (objectName() == "split") {
+                          if (vl.size() < 3) {
+                            vl.prepend(53);
+                          }
+                        }
+                        //
+                        //
                         }
                         break;
                   case MusECore::Xml::TagEnd:

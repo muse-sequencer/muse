@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>606</width>
-    <height>488</height>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -936,9 +936,9 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="deviceAudioGroupBox">
          <property name="title">
-          <string>Audio Driver settings (require restart - does not affect jack)</string>
+          <string>Audio Driver settings (require restart)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout4">
           <item row="1" column="2">
            <widget class="QLabel" name="deviceAudioRateLabel">
             <property name="text">
@@ -952,10 +952,10 @@
           <item row="0" column="0">
            <widget class="QLabel" name="deviceAudioBackendLabel">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are using the RtAudio backend there are several supported drivers, including Alsa and Pulse audio. If MusE is running with Jack or the Dummy audio backend this has no effect.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>RtAudio backend:</string>
+             <string>Audio backend:</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -2348,7 +2348,7 @@ Benign XCB connection errors may still
                <x>0</x>
                <y>0</y>
                <width>554</width>
-               <height>311</height>
+               <height>362</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
