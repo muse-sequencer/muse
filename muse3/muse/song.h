@@ -211,6 +211,9 @@ class Song : public QObject {
       void changeEventOperation(const Event&, const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       void deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       
+      // REMOVE Tim. samplerate. Added.
+      void checkSongSampleRate();
+      
    public:
       Song(const char* name = 0);
       ~Song();

@@ -359,16 +359,17 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 //     f.seek(newfr, SEEK_SET);
 //   }
 // }
-void WaveEventBase::seekAudio(sf_count_t offset)
+void WaveEventBase::seekAudio(sf_count_t frame)
 {
   #ifdef WAVEEVENT_DEBUG_PRC
   //printf("WaveEventBase::seekAudio audConv:%p offset:%lu\n", _audConv, offset);
   printf("WaveEventBase::seekAudio offset:%lu\n", offset);
   #endif
 
-  sf_count_t newfr = offset + _spos;
-
 #ifdef USE_SAMPLERATE
+  
+  //sf_count_t newfr = offset + _spos;
+  
   if(!f.isNull())
   {
 //     if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
@@ -390,7 +391,7 @@ void WaveEventBase::seekAudio(sf_count_t offset)
 //     if(f.sampleRateDiffers() && _audConv && _audConv->isValid())
 //       _audConv->reset();
     
-    f.seekConverted(newfr, SEEK_SET);
+    f.seekConverted(frame, SEEK_SET, _spos);
   }
   
 // #ifdef USE_SAMPLERATE
@@ -409,6 +410,7 @@ void WaveEventBase::seekAudio(sf_count_t offset)
   // TODO: May want a 'current frame' variable, just like audio converter, to keep track of the latest position.
   if(!f.isNull())
   {  
+    sf_count_t newfr = offset + _spos;
     const sf_count_t smps = f.samples();
     if(newfr < 0)
       newfr = 0;
@@ -422,7 +424,7 @@ void WaveEventBase::seekAudio(sf_count_t offset)
       
 // REMOVE Tim. samplerate. Changed.
 //void WaveEventBase::readAudio(WavePart* /*part*/, unsigned /*offset*/, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
-void WaveEventBase::readAudio(unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
+void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
   // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC
@@ -478,7 +480,7 @@ void WaveEventBase::readAudio(unsigned offset, float** buffer, int channel, int 
       //_audConv->readAudio(f, offset, buffer, channel, n, doSeek, overwrite); // Hm, just offset not spos? Check...
       //_audConv->readAudio(f, f.convertPosition(offset), buffer, channel, n, doSeek, overwrite); // Hm, just offset not spos? Check...
 //       _audConv->process(f, buffer, channel, n, overwrite); // Hm, just offset not spos? Check...
-      f.readConverted(offset, channel, buffer, n, overwrite);
+      f.readConverted(frame, channel, buffer, n, overwrite);
 //     }
 //     else
 //     {

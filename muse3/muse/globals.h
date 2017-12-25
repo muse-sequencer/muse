@@ -57,6 +57,8 @@ extern unsigned fifoLength; // inversely proportional to segmentSize
 extern int segmentCount;
 // REMOVE Tim. samplerate. Added.
 extern int projectSampleRate;
+extern const int numAudioSampleRates;
+extern const int selectableAudioSampleRates[];
 
 
 extern bool overrideAudioOutput;

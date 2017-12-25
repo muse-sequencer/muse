@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <map>
+
 #include <QUuid>
 #include <QProgressDialog>
 #include <QMessageBox>
@@ -506,6 +508,49 @@ void Song::readMarker(Xml& xml)
       _markerList->add(m);
       }
 
+
+// REMOVE Tim. samplerate. Added.
+//---------------------------------------------------------
+//   checkSongSampleRate
+//   Called by gui thread.
+//---------------------------------------------------------
+
+void Song::checkSongSampleRate()
+{
+  std::map<int, int> waveRates;
+  
+  for(ciWaveTrack iwt = waves()->begin(); iwt != waves()->end(); ++iwt)
+  {
+    WaveTrack* wt = *iwt;
+    for(ciPart ipt = wt->parts()->begin(); ipt != wt->parts()->end(); ++ipt)
+    {
+      Part* pt = ipt->second;
+      for(ciEvent ie = pt->events().begin(); ie != pt->events().end(); ++ie)
+      {
+        const Event e(ie->second);
+        if(e.sndFile().isOpen())
+        {
+          const int sr = e.sndFile().samplerate();
+          std::map<int, int>::iterator iwr = waveRates.find(sr);
+          if(iwr == waveRates.end())
+          {
+            waveRates.insert(std::pair<int, int>(sr, 1));
+          }
+          else
+          {
+            ++iwr->second;
+          }
+        }
+      }
+    }
+  }
+  
+  for(std::map<int, int>::const_iterator iwr = waveRates.cbegin(); iwr != waveRates.cend(); ++iwr)
+  {
+    
+  }
+}
+
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -514,6 +559,7 @@ void Song::read(Xml& xml, bool isTemplate)
       {
       // REMOVE Tim. samplerate. Added.
       //int cur_samplerate = MusEGlobal::sampleRate;  
+      //bool samplerate_found = false;
       
       MusEGlobal::cloneList.clear();
       for (;;) {
@@ -576,6 +622,7 @@ void Song::read(Xml& xml, bool isTemplate)
                               //          WITHOUT changing any stored frame values. But it looks like it might be more complicated than that.
                               //         So projectSampleRate is set to the system rate at the END of this loading routine, for now...
                               MusEGlobal::projectSampleRate = xml.parseInt();
+                              //samplerate_found = true;
                               if (!isTemplate && 
                                   //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
                                   MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)

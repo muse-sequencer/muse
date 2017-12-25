@@ -370,7 +370,8 @@ AudioConverterHandle AudioConverter::release(AudioConverter* cv)
 
 // sf_count_t AudioConverter::seekAudio(MusECore::SndFileR& f, sf_count_t pos)
 //sf_count_t AudioConverter::seekAudio(MusECore::SndFileR f, sf_count_t pos)
-sf_count_t AudioConverter::seekAudio(SndFile* f, sf_count_t pos)
+// The offset is the offset into the sound file and is NOT converted.
+sf_count_t AudioConverter::seekAudio(SndFile* f, sf_count_t frame, int offset)
 {
 //   if(f->isNull())
 //     return _sfCurFrame;
@@ -384,8 +385,8 @@ sf_count_t AudioConverter::seekAudio(SndFile* f, sf_count_t pos)
 //   const bool resample   = isValid() && f.sampleRateDiffers();  
   const sf_count_t smps = f->samples();
   
-  if(pos < 0)
-    pos = 0;
+  if(frame < 0)
+    frame = 0;
   
 //   // No resampling needed?
 //   if(!resample)
@@ -405,8 +406,13 @@ sf_count_t AudioConverter::seekAudio(SndFile* f, sf_count_t pos)
 // // //   off_t newfr = (off_t)floor(((double)frame * srcratio));    // From simplesynth.
 // //   sf_count_t newfr = (sf_count_t)floor(((double)pos * srcratio));    // From simplesynth.
 // 
-  sf_count_t newfr = f->convertPosition(pos);
-
+  sf_count_t newfr = f->convertPosition(frame);
+  
+  // Do not convert the offset.
+  newfr += offset;
+  if(newfr < 0)
+    newfr = 0;
+  
   // Clamp it at 'one past the end' in other words EOF.
   if(newfr > smps)
     newfr = smps;
@@ -416,7 +422,7 @@ sf_count_t AudioConverter::seekAudio(SndFile* f, sf_count_t pos)
   //_sfCurFrame = f.seek(pos, SEEK_SET);
   
   // Added by Tim. p3.3.17 DELETETHIS 3 or comment it in
-  DEBUG_AUDIOCONVERT(stderr, "AudioConverter::process Seek pos:%ld converted to frame:%ld sfCurFrame:%ld\n", pos, newfr, _sfCurFrame);
+  DEBUG_AUDIOCONVERT(stderr, "AudioConverter::process Seek pos:%ld converted to frame:%ld sfCurFrame:%ld\n", frame, newfr, _sfCurFrame);
   
   // Reset the converter. Its current state is meaningless now.
   reset();

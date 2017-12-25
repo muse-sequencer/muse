@@ -26,6 +26,7 @@
 
 #include "globals.h"
 #include "xml.h"
+#include "wave.h"
 
 #include <QDir>
 #include <QString>
@@ -580,13 +581,14 @@ void AudioConverterPluginI::reset()
       handle[i]->reset();
 }
 
-sf_count_t AudioConverterPluginI::seekAudio(SndFile* sf, sf_count_t offset)
+// The offset is the offset into the sound file and is NOT converted.
+sf_count_t AudioConverterPluginI::seekAudio(SndFile* sf, sf_count_t frame, int offset)
 { 
   if(!handle) return 0;
   for(int i = 0; i < instances; ++i) 
     if(handle[i])
     {
-      sf_count_t count = handle[i]->seekAudio(sf, offset);
+      sf_count_t count = handle[i]->seekAudio(sf, frame, offset);
       // FIXME: Multiple instances point to the SAME SndFile. 
       //        Make seperate SndFile instances per-channel,
       //         make this function per-handle, and work with 

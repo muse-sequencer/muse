@@ -249,6 +249,7 @@ bool Pos::operator==(const Pos& s) const
             return _tick == s.tick();
       }
 
+// REMOVE Tim. samplerate. Changed.
 //---------------------------------------------------------
 //   tick
 //---------------------------------------------------------
@@ -270,6 +271,28 @@ unsigned Pos::frame() const
             _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
       return _frame;
       }
+
+//---------------------------------------------------------
+//   tick
+//---------------------------------------------------------
+
+// unsigned Pos::tick() const
+//       {
+//       if (_type == FRAMES)
+//             _tick = MusEGlobal::tempomap.frame2tick(MusEGlobal::convertFrame4ProjectSampleRate(_frame), _tick, &sn);
+//       return _tick;
+//       }
+// 
+// //---------------------------------------------------------
+// //   frame
+// //---------------------------------------------------------
+// 
+// unsigned Pos::frame() const
+//       {
+//       if (_type == TICKS)
+//             _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+//       return MusEGlobal::convertFrame4ProjectSampleRate(_frame);
+//       }
 
 //---------------------------------------------------------
 //   posValue

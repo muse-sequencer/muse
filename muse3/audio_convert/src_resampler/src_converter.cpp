@@ -47,7 +47,8 @@
 
 // REMOVE Tim. samplerate. Enabled.
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+//#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 
 // Fixed audio input buffer size.
 #define SRC_IN_BUFFER_FRAMES 1024
@@ -615,8 +616,12 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
     if(_needBuffer)
     {
-      _srcdata.input_frames = sf_readf_float(handle, _inbuffer, _inBufferSize);
+// Oops! Caused crash with stereo.
+//       _srcdata.input_frames = sf_readf_float(handle, _inbuffer, _inBufferSize);
+      _srcdata.input_frames = sf_readf_float(handle, _inbuffer, SRC_IN_BUFFER_FRAMES);
+      
       _srcdata.end_of_input = _srcdata.input_frames != SRC_IN_BUFFER_FRAMES;
+      //DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process _needBuffer: _srcdata.input_frames:%ld\n", _srcdata.input_frames);
       // Zero any unread portion of the input buffer.
       for(int i = _srcdata.input_frames * fchan; i < _inBufferSize; ++i)
         *(_inbuffer + i) = 0.0f;
@@ -626,6 +631,7 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
     {
       _srcdata.input_frames = SRC_IN_BUFFER_FRAMES - _curInBufferFrame;
       //_srcdata.end_of_input = false;
+      //DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process not _needBuffer: _srcdata.input_frames:%ld\n", _srcdata.input_frames);
     }
     _srcdata.data_in = _inbuffer + fchan * _curInBufferFrame;
 
@@ -660,6 +666,7 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
       else
         outFrames = frames - totalOutFrames;
 
+      //DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process need_slice: outFrames:%ld\n", outFrames);
       need_slice = false;
     }
     // "When using the src_process or src_callback_process APIs and
@@ -677,8 +684,8 @@ int SRCAudioConverter::process(SndFile* sf, SNDFILE* handle, sf_count_t pos,
 
 
 
-    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Calling src_process _curInBufferFrame:%d totalOutFrames:%ld\n",
-                       _curInBufferFrame, totalOutFrames);
+    DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process Calling src_process inv_fin_samplerateRatio:%f _curInBufferFrame:%d outFrames:%ld totalOutFrames:%ld\n",
+                       inv_fin_samplerateRatio, _curInBufferFrame, outFrames, totalOutFrames);
 
     int srcerr = src_process(_src_state, &_srcdata);
     if(srcerr != 0)

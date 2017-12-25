@@ -191,7 +191,8 @@ class AudioConverter
 //       sf_count_t readAudio(SndFile* sf, unsigned offset, float** buffer, 
 //                       int channels, int frames, bool doSeek, bool overwrite);
       
-      virtual sf_count_t seekAudio(SndFile* sf, sf_count_t offset);
+      // The offset is the offset into the sound file and is NOT converted.
+      virtual sf_count_t seekAudio(SndFile* sf, sf_count_t frame, int offset);
       
       virtual bool isValid() = 0;
       virtual void reset() = 0;

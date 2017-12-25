@@ -47,6 +47,11 @@ int segmentCount = 2;
 //          then at the END of song loading is immediately set to the real current rate.
 //         See comments in Song::read() at the "samplerate" tag section.
 int projectSampleRate = sampleRate;
+// REMOVE Tim. samplerate. Added. Moved here from genset.cpp.
+const int numAudioSampleRates = 8;
+const int selectableAudioSampleRates[] = {
+      22050, 32000, 44100, 48000, 64000, 88200, 96000, 192000
+      };
 
 // denormal bias value used to eliminate the manifestation of denormals by
 // lifting the zero level slightly above zero

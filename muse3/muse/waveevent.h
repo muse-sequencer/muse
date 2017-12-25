@@ -93,9 +93,9 @@ class WaveEventBase : public EventBase {
       
 // REMOVE Tim. samplerate. Changed.
 //       virtual void readAudio(WavePart* part, unsigned offset, 
-      virtual void readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
+      virtual void readAudio(unsigned frame, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
 // REMOVE Tim. samplerate. Added.
-      virtual void seekAudio(sf_count_t offset);
+      virtual void seekAudio(sf_count_t frame);
       //virtual void clearPrefetchFifo();
       virtual Fifo* audioPrefetchFifo()        { return _prefetchFifo; }
       //virtual void prefetchAudio(WavePart* part, sf_count_t writePos, int channels, bool off, sf_count_t frames);

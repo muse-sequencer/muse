@@ -174,7 +174,8 @@ class SndFile {
       // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
       void readConverted(SampleV* s, int mag, sf_count_t pos, bool overwrite = true, bool allowSeek = true);
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
-      sf_count_t seekConverted(sf_count_t frames, int whence);
+      // The offset is the offset into the sound file and is NOT converted.
+      sf_count_t seekConverted(sf_count_t frames, int whence, int offset);
 //       AudioConverterPluginI* staticAudioConverter() const { return _staticAudioConverter; }
 //       AudioConverterPluginI* staticAudioConverterUI() const { return _staticAudioConverterUI; }
 //       AudioConverterPluginI* dynamicAudioConverter() const { return _dynamicAudioConverter; }
@@ -315,7 +316,9 @@ class SndFileR {
       void readConverted(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
             if(sf) sf->readConverted(s, mag, pos, overwrite, allowSeek); }
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
-      sf_count_t seekConverted(sf_count_t frames, int whence) { return sf ? sf->seekConverted(frames, whence) : 0; }
+      // The offset is the offset into the sound file and is NOT converted.
+      sf_count_t seekConverted(sf_count_t frames, int whence, int offset)
+      { return sf ? sf->seekConverted(frames, whence, offset) : 0; }
 //       AudioConverter* audioConverter() { return sf ? sf->staticAudioConverter() : 0; }
 //       AudioConverter* audioConverterUI() { return sf ? sf->staticAudioConverterUI() : 0; }
 //       AudioConverterPluginI* staticAudioConverter() const { return sf ? sf->staticAudioConverter() : 0; }

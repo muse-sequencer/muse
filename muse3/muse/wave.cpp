@@ -1684,15 +1684,16 @@ sf_count_t SndFile::seekUIConverted(sf_count_t frames, int whence)
 // REMOVE Tim. samplerate. Added.
 //---------------------------------------------------------
 //   seekConverted
+//   The offset is the offset into the sound file and is NOT converted.
 //---------------------------------------------------------
 
-sf_count_t SndFile::seekConverted(sf_count_t frames, int whence)
+sf_count_t SndFile::seekConverted(sf_count_t frames, int whence, int offset)
       {
       if(_staticAudioConverter && _staticAudioConverter->isValid() &&
          (((sampleRateDiffers() || isResampled()) && (_staticAudioConverter->capabilities() & AudioConverter::SampleRate)) ||
           (isStretched() && (_staticAudioConverter->capabilities() & AudioConverter::Stretch))) )
-        return _staticAudioConverter->seekAudio(this, frames);
-      return seek(frames, whence);
+        return _staticAudioConverter->seekAudio(this, frames, offset);
+      return seek(frames + offset, whence);
       }
 
 //---------------------------------------------------------

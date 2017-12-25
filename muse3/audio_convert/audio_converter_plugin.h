@@ -221,7 +221,8 @@ class AudioConverterPluginI {
 
       void reset();
       
-      sf_count_t seekAudio(SndFile* sf, sf_count_t offset);
+      // The offset is the offset into the sound file and is NOT converted.
+      sf_count_t seekAudio(SndFile* sf, sf_count_t frame, int offset);
       
       int process(SndFile* sf, SNDFILE* sf_handle, sf_count_t pos, float** buffer, 
                  int channels, int frames, bool overwrite);
