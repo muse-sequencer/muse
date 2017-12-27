@@ -68,18 +68,6 @@ static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
 
-static QString selectableAudioBackendDevices[] = {
-    "Russian roulette (RtAudio selects)",
-    "RtAudio ALSA",
-    "RtAudio Pulse Audio (default)",
-    "RtAudio OSS - Open Sound System",
-//    "RtAudio Jack (probably not what you want).", -- removed this option
-    "Midi only",
-    "Jack Audio"
-};
-
-int numRtAudioDevices = 6;
-
 //---------------------------------------------------------
 //   GlobalSettingsConfig
 //---------------------------------------------------------
@@ -139,9 +127,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::LMASTER);
       addMdiSettings(TopWin::CLIPLIST);
       addMdiSettings(TopWin::MARKER);
-      
-      for (int i = 0; i < numRtAudioDevices; i++){
-        deviceAudioBackendComboBox->addItem(selectableAudioBackendDevices[i],i);
+
+      for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){
+        deviceAudioBackendComboBox->addItem(MusEGlobal::selectableAudioBackendDevices[i],i);
       }
 #ifndef HAVE_RTAUDIO
       deviceAudioBackendComboBox->setDisabled(true);

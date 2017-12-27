@@ -351,22 +351,21 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       RtAudio::Api api = RtAudio::UNSPECIFIED;
 
       switch (MusEGlobal::config.deviceAudioBackend) {
-
-          case 0:
-            api = RtAudio::UNSPECIFIED;
-            break;
-          case 1:
-            api = RtAudio::LINUX_ALSA;
-          break;
-          case 2:
-            api = RtAudio::LINUX_PULSE;
-          break;
-          case 3:
-            api = RtAudio::LINUX_OSS;
-          break;
-          case 4:
-            api = RtAudio::UNIX_JACK;
-          break;
+              case MusEGlobal::RtAudioChoice:
+                api = RtAudio::UNSPECIFIED;
+                break;
+              case MusEGlobal::RtAudioAlsa:
+                api = RtAudio::LINUX_ALSA;
+              break;
+              case MusEGlobal::RtAudioPulse:
+                api = RtAudio::LINUX_PULSE;
+              break;
+              case MusEGlobal::RtAudioOss:
+                api = RtAudio::LINUX_OSS;
+              break;
+              //case MusEGlobal::RtAudioJack:
+              //  api = RtAudio::UNIX_JACK;
+              //break;
           default:
             fprintf(stderr, "Error: RtAudio device selection illegal, setting up dummy audio backend!\n");
             api = RtAudio::RTAUDIO_DUMMY;
