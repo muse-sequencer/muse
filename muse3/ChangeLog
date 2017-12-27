@@ -1,3 +1,7 @@
+27.12.2017
+      - Jack is now the default audio device selection. (Tim)
+        If that fails, it tries rtAudio with Pulse, and if that fails,
+         the dummy driver.
 24.12.2017
       - Oops! Fix years-old bug preventing a just-moved part from sounding. (Tim)
         The MovePart undo/operations were not properly erasing/reinserting

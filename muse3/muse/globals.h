@@ -59,6 +59,18 @@ extern int segmentCount;
 extern bool overrideAudioOutput;
 extern bool overrideAudioInput;
 
+extern const QString selectableAudioBackendDevices[];
+extern const int numRtAudioDevices;
+enum SelectableAudioBackendDevices {
+  JackAudio = 0,
+  DummyAudio = 1,
+  RtAudioPulse = 2,
+  RtAudioAlsa = 3,
+  RtAudioOss = 4,
+  RtAudioChoice = 5
+  //RtAudioJack, -- it's just stupid to keep this option
+};
+
 extern QTimer* heartBeatTimer;
 
 extern bool blinkTimerPhase;

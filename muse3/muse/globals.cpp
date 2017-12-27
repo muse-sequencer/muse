@@ -50,6 +50,17 @@ const float denormalBias=1e-18;
 bool overrideAudioOutput = false;
 bool overrideAudioInput = false;
 
+const QString selectableAudioBackendDevices[] = {
+    "Jack Audio (default)",
+    "Midi only",
+    "RtAudio Pulse Audio",
+    "RtAudio ALSA",
+    "RtAudio OSS - Open Sound System",
+    "Russian roulette (RtAudio selects)"
+};
+
+const int numRtAudioDevices = 6;
+
 QTimer* heartBeatTimer;
 
 bool blinkTimerPhase = false;

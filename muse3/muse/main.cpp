@@ -827,30 +827,15 @@ int main(int argc, char* argv[])
             case MusEGlobal::RtAudioChoice:
             case MusEGlobal::RtAudioPulse:
               {
-                fprintf(stderr, "User RtAudio backend - backend selected through configuration:");
-                
-                switch (MusEGlobal::config.deviceAudioBackend) {
-                  case MusEGlobal::RtAudioAlsa:
-                    fprintf(stderr, " Alsa");
-                  break;
-                  case MusEGlobal::RtAudioOss:
-                    fprintf(stderr, " Oss");
-                  break;
-//                  case MusEGlobal::RtAudioJack:
-//                    fprintf(stderr, " Jack");
-//                  break;
-                  case MusEGlobal::RtAudioChoice:
-                    fprintf(stderr, " rtAudio chooses");
-                  break;
-                  case MusEGlobal::RtAudioPulse:
-                    fprintf(stderr, " Pulse");
-                  break;
-                  default:
-                    fprintf(stderr, " Unknown");
-                  break;
-                }
+                fprintf(stderr, "User RtAudio backend - backend selected through configuration: ");
+                if(MusEGlobal::config.deviceAudioBackend >= MusEGlobal::numRtAudioDevices)
+                  fprintf(stderr, "Unknown");
+                else
+                  fprintf(stderr, "%s",
+                    MusEGlobal::selectableAudioBackendDevices[MusEGlobal::config.deviceAudioBackend].
+                      toLatin1().constData());
                 fprintf(stderr, "\n");
-                
+
                 MusEGlobal::realTimeScheduling = true;
                 if(MusECore::initRtAudio())
                   fallbackDummy();
@@ -863,7 +848,14 @@ int main(int argc, char* argv[])
               {
                 fprintf(stderr, "User JackAudio backend - backend selected through configuration\n");
                 if (MusECore::initJackAudio()) 
-                  fallbackDummy();
+                {
+                  MusEGlobal::realTimeScheduling = true;
+                  // Force default Pulse.
+                  if(MusECore::initRtAudio(true))
+                    fallbackDummy();
+                  else
+                    fprintf(stderr, "Using rtAudio Pulse\n");
+                }
                 else
                 {
 #ifdef HAVE_LASH

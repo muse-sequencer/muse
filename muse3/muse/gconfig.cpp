@@ -272,7 +272,7 @@ GlobalConfigValues config = {
 
       44100,                        // Device audio preferred sample rate
       512,                          // Device audio buffer size
-      2,                            // Device RtAudio selected backend
+      0,                            // Device RtAudio selected backend
 
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
