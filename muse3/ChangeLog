@@ -1,3 +1,6 @@
+29.12.2017
+      - Revert some new undo stuff and replace with pending operations. (Tim)
+        Undo was behaving oddly for things like mute, rec, monitor, off etc.
 27.12.2017
       - Jack is now the default audio device selection. (Tim)
         If that fails, it tries rtAudio with Pulse, and if that fails,

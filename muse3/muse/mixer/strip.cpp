@@ -52,6 +52,7 @@
 #include "midictrl.h"
 #include "icons.h"
 #include "undo.h"
+#include "operations.h"
 #include "amixer.h"
 #include "compact_knob.h"
 #include "compact_slider.h"
@@ -1015,12 +1016,13 @@ void Strip::setLabelText()
 void Strip::muteToggled(bool val)
       {
       if(track)
-        // No undo.
-        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, val), false);
-        
+      {
+        // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+        MusECore::PendingOperationList operations;
+        operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackMute));
+        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      }
       updateMuteIcon();
-      MusEGlobal::song->update(SC_MUTE);
-      
       }
 
 //---------------------------------------------------------
@@ -1032,9 +1034,10 @@ void Strip::soloToggled(bool val)
       solo->setIconSetB(track && track->internalSolo());
       if(!track)
         return;
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, track, val), false);
-      
-      MusEGlobal::song->update(SC_SOLO);
+      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
 
 //---------------------------------------------------------

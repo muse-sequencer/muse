@@ -75,6 +75,7 @@
 #include "helper.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
+#include "operations.h"
 
 #include "cmd.h"
 #include "shortcuts.h"
@@ -1268,9 +1269,12 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
 void PianoRoll::soloChanged(bool flag)
       {
       if(canvas->track())
-        // No undo.
-        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, canvas->track(), flag), false);
-      MusEGlobal::song->update(SC_SOLO);
+      {
+        // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+        MusECore::PendingOperationList operations;
+        operations.add(MusECore::PendingOperationItem(canvas->track(), flag, MusECore::PendingOperationItem::SetTrackSolo));
+        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+      }
       }
 
 //---------------------------------------------------------

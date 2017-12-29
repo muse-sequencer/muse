@@ -59,6 +59,7 @@
 #include "icons.h"
 #include "shortcuts.h"
 #include "cmd.h"
+#include "operations.h"
 
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
@@ -617,10 +618,10 @@ void WaveEdit::songChanged1(MusECore::SongChangedFlags_t bits)
 void WaveEdit::soloChanged(bool flag)
       {
       MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
-      // No undo.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, part->track(), flag), false);
-      
-      MusEGlobal::song->update(SC_SOLO);
+      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(part->track(), flag, MusECore::PendingOperationItem::SetTrackSolo));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
 
 //---------------------------------------------------------

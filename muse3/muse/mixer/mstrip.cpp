@@ -65,6 +65,7 @@
 #include "elided_label.h"
 #include "utils.h"
 #include "muse_math.h"
+#include "operations.h"
 
 #include "synth.h"
 #ifdef LV2_SUPPORT
@@ -2296,9 +2297,10 @@ void MidiStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  // No undo.
-  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
-  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(track, v, MusECore::PendingOperationItem::SetTrackRecMonitor));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -2358,9 +2360,10 @@ void MidiStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      // No undo.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
-      MusEGlobal::song->update(SC_MUTE);
+      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackOff));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
 
 //---------------------------------------------------------

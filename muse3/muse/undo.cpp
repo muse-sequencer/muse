@@ -1953,7 +1953,9 @@ void Song::revertOperationGroup1(Undo& operations)
                         if(!editable_track->setRecordFlag1(!i->a))
                           break;
                         pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackRecord));
-                        updateFlags |= SC_RECFLAG;
+                        // FIXME: No choice but to include monitor flag. Really should try to merge pending ops flags
+                        //  with undo flags after executing the pending ops in revertOperationGroup3...
+                        updateFlags |= (SC_RECFLAG | SC_TRACK_REC_MONITOR);
                         break;
 
                   case UndoOp::SetTrackMute:
@@ -2653,7 +2655,9 @@ void Song::executeOperationGroup1(Undo& operations)
                         if(!editable_track->setRecordFlag1(i->a))
                           break;
                         pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackRecord));
-                        updateFlags |= SC_RECFLAG;
+                        // FIXME: No choice but to include monitor flag. Really should try to merge pending ops flags
+                        //  with undo flags after executing the pending ops in executeOperationGroup3...
+                        updateFlags |= (SC_RECFLAG | SC_TRACK_REC_MONITOR);
                         break;
 
                   case UndoOp::SetTrackMute:

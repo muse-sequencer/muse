@@ -966,16 +966,17 @@ void Song::setLoop(bool f)
 //---------------------------------------------------------
 void Song::clearTrackRec()
 {
-  Undo operations;
-  for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
-    operations.push_back(UndoOp(UndoOp::SetTrackRecord, *it, false));
-    // No undo.
-  if(!operations.empty())
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  for(iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
   {
-    // No undo.
-    applyOperationGroup(operations, false);
-    update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+    if(!(*it)->setRecordFlag1(false))
+    {
+      //continue;
+    }
+    operations.add(MusECore::PendingOperationItem((*it), false, MusECore::PendingOperationItem::SetTrackRecord));
   }
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -1020,17 +1021,16 @@ void Song::setRecord(bool f, bool autoRecEnable)
                             }
                       }
                 if (!alreadyRecEnabled && selectedTracks.size() >0) {
-                  
-                      Undo operations;
+                      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                      MusECore::PendingOperationList operations;
                       foreach (Track *t, selectedTracks)
-                        setRecordFlag(t, true, &operations);
-                      if(!operations.empty())
                       {
-                        // No undo.
-                        applyOperationGroup(operations, false);
-                        update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+                        if(!t->setRecordFlag1(true))
+                          continue;
+                        operations.add(MusECore::PendingOperationItem(t, true, MusECore::PendingOperationItem::SetTrackRecord));
                       }
-                      
+                      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
                       }
                 else if (alreadyRecEnabled)  {
                       // do nothing
@@ -1787,27 +1787,21 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
 
 void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 {
-  if(!track->setRecordFlag1(val))
-    return;
-
-  Undo ops;
-  Undo* opsp = operations ? operations : &ops;
-
-  // No undo.
-  opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
-  //opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, true));
-//   MusEGlobal::audio->msgSetRecord(track, val);
-//   update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
-  
-  if(!operations)
+  if(operations)
   {
-    if(!ops.empty())
-    {
-      //applyOperationGroup(ops);
-      // No undo.
-      applyOperationGroup(ops, false);
-      update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
-    }
+    // The undo system calls setRecordFlag1 for us.
+    operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
+    //operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, true)); // No undo.
+  }
+  else
+  {
+    // The pending operations system does not call setRecordFlag1 for us. Call it now.
+    if(!track->setRecordFlag1(val))
+      return;
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackRecord));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
   }
 }
 
