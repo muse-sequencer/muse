@@ -4,6 +4,7 @@
         Note that turning a track off, or 'proxy muting' it will still
          mute the track.
       - Fix monitored midi output on wrong channel. Editing error from 17.12.2017
+      - New master record icon, dual-state red LED style.
       - Missing ifdefs for RTAUDIO, build patch from Dennis Schulmeister added (rj)
       - Moved instantiation of Add Track Menu so it is only done once (rj)
 29.12.2017

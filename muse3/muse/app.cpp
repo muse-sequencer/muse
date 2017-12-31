@@ -466,7 +466,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
-      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon), tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));

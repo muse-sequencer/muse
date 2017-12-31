@@ -650,6 +650,7 @@ QIcon* soloProxySVGIcon;
 QIcon* muteSVGIcon;
 QIcon* trackEnableSVGIcon;
 QIcon* recArmSVGIcon;
+QIcon* recMasterSVGIcon;
 
 //---------------------------------------------------------
 //   initIcons
@@ -1024,8 +1025,13 @@ void initIcons()
       trackEnableSVGIcon = new QIcon(":/svg/track_on.svg");
       trackEnableSVGIcon->addFile(":/svg/track_off.svg", QSize(), QIcon::Normal, QIcon::On);
 
+      //recArmSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
       recArmSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
       recArmSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
+      //recMasterSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
+      recMasterSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
+      recMasterSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
       }
 
 //---------------------------------------------------------
@@ -1372,6 +1378,7 @@ void deleteIcons()
       delete muteSVGIcon;
       delete trackEnableSVGIcon;
       delete recArmSVGIcon;
+      delete recMasterSVGIcon;
       }
 
 } // namespace MusEGui

@@ -386,6 +386,7 @@ extern QIcon* soloProxySVGIcon;
 extern QIcon* muteSVGIcon;
 extern QIcon* trackEnableSVGIcon;
 extern QIcon* recArmSVGIcon;
+extern QIcon* recMasterSVGIcon;
 
 } // namespace MusEGui
 
