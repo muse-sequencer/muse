@@ -67,6 +67,7 @@
 #include "visibletracks.h"
 #include "xml.h"
 #include "arrangercolumns.h"
+#include "tlist.h"
 
 namespace MusEGui {
 
@@ -688,6 +689,9 @@ void ArrangerView::populateAddTrack()
       trackAGroupAction = grp->actions()[idx++];
       trackAInputAction = grp->actions()[idx++];
       trackAAuxAction = grp->actions()[idx++];
+
+
+      arranger->getTrackList()->populateAddTrack();
 }
 
 void ArrangerView::addNewTrack(QAction* action)

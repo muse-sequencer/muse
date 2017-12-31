@@ -103,7 +103,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       // This is absolutely required for speed! Otherwise painfully slow because we get 
       //  full rect paint events even on small scrolls! See help on QPainter::scroll().
       setAttribute(Qt::WA_OpaquePaintEvent);
-      
+
       setObjectName(name);
       ypos = 0;
       editMode = false;
@@ -1576,36 +1576,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
       TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
-                  QMenu* p = new QMenu;
-                  MusEGui::populateAddTrack(p);
-                  
-                  // Show the menu
-                  QAction* act = p->exec(ev->globalPos(), 0);
 
-                  // Valid click?
-                  if(act)
+                // Show the menu
+                QAction* act = addTrackMenu->exec(ev->globalPos(), 0);
+
+                // Valid click?
+                if(act)
+                {
+                  t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
+                  if(t && t->isVisible())
                   {
-                    t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
-                    if(t && t->isVisible())
-                    {
-                      MusEGlobal::song->selectAllTracks(false);
-                      t->setSelected(true);
-                      MusEGlobal::song->update(SC_TRACK_SELECTION);
-                      adjustScrollbar();
-                    }  
+                    MusEGlobal::song->selectAllTracks(false);
+                    t->setSelected(true);
+                    MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    adjustScrollbar();
                   }
+                }
                   
-                  // Just delete p, and all its children will go too, right?
-                  //delete synp;
-                  delete p;
             }
-            /*else if (button == Qt::LeftButton) { DELETETHIS
-              if (!ctrl) 
-              {
-                MusEGlobal::song->selectAllTracks(false);
-                emit selectionChanged(0);
-              }  
-            }*/
             return;
             }
 
@@ -2007,12 +1995,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           p->addSeparator();
                         }
                         
-                        QMenu* pnew = new QMenu(p);
-                        pnew->setTitle(tr("Insert Track"));
-                        pnew->setIcon(QIcon(*edit_track_addIcon));
-                        MusEGui::populateAddTrack(pnew);
-                        p->addMenu(pnew);
-                        QAction* act = p->exec(ev->globalPos(), 0);
+                        QAction* act = addTrackMenu->exec(ev->globalPos(), 0);
                         if (act) {
                               //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
                               int n = act->data().toInt();
@@ -2702,6 +2685,12 @@ void TList::setHeader(Header* h)
 {
   header=h;
   redraw();
+}
+
+void TList::populateAddTrack()
+{
+  addTrackMenu = new QMenu;
+  MusEGui::populateAddTrack(addTrackMenu);
 }
 
 } // namespace MusEGui
