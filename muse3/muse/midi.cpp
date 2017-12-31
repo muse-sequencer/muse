@@ -1743,11 +1743,11 @@ void Audio::processMidi()
       for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t)
       {
             MidiTrack* track = *t;
-            const int port = track->outPort();
-            //const int channel = track->outChannel();
+            const int t_port = track->outPort();
+            const int t_channel = track->outChannel();
             MidiPort* mp = 0;
-            if(port >= 0 && port < MIDI_PORTS)
-              mp = &MusEGlobal::midiPorts[port];
+            if(t_port >= 0 && t_port < MIDI_PORTS)
+              mp = &MusEGlobal::midiPorts[t_port];
             MidiDevice* md = 0;
             if(mp)
               md = mp->device();
@@ -1811,7 +1811,8 @@ void Audio::processMidi()
                             for(int i = 0; i < count; ++i)
                             {
                               MidiRecordEvent event(rf.peek(i));
-                              event.setPort(port);
+                              event.setPort(t_port);
+                              event.setChannel(t_channel);
                               // dont't echo controller changes back to software
                               // synthesizer:
                               if(md && track_rec_monitor)
@@ -1898,7 +1899,8 @@ void Audio::processMidi()
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
-                                event.setChannel(channel);
+                                event.setPort(t_port);
+                                event.setChannel(t_channel);
 
                                 if (event.isNote() || event.isNoteOff())
                                 {
@@ -2067,7 +2069,7 @@ void Audio::processMidi()
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
-                                        event.setPort(port);
+                                        event.setPort(t_port);
                                         // REMOVE Tim. monitor. Changed.
                                         //if(md && track_rec_monitor && !track->off() && !track->isMute())
                                         if(md && track_rec_monitor)
@@ -2076,7 +2078,7 @@ void Audio::processMidi()
                                           //  not even if monitor (echo) is on.
                                           if(!dev->isSynti() || dev != md)
                                           {
-                                            MidiInstrument* minstr = MusEGlobal::midiPorts[port].instrument();
+                                            MidiInstrument* minstr = MusEGlobal::midiPorts[t_port].instrument();
                                             const MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
                                             // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
                                             // This allows drum input triggers (no note offs at all), although it is awkward to
@@ -2085,7 +2087,7 @@ void Audio::processMidi()
                                             {
                                               if(event.isNoteOff())
                                                 // Try to remove any corresponding stuck live note.
-                                                track->removeStuckLiveNote(port, event.channel(), event.dataA());
+                                                track->removeStuckLiveNote(t_port, event.channel(), event.dataA());
 //                                               md->addScheduledEvent(event);
                                               md->putEvent(event, MidiDevice::NotLate);
                                             }
@@ -2093,7 +2095,7 @@ void Audio::processMidi()
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
-                                              if(track->removeStuckLiveNote(port, event.channel(), event.dataA()))
+                                              if(track->removeStuckLiveNote(t_port, event.channel(), event.dataA()))
 //                                                 md->addScheduledEvent(event);
                                                 md->putEvent(event, MidiDevice::NotLate);
                                             }
@@ -2103,13 +2105,13 @@ void Audio::processMidi()
                                               ciMidiTrack it_other = mtl->begin();
                                               for( ; it_other != mtl->end(); ++it_other)
                                               {
-                                                if((*it_other)->stuckLiveNoteExists(port, event.channel(), event.dataA()))
+                                                if((*it_other)->stuckLiveNoteExists(t_port, event.channel(), event.dataA()))
                                                   break;
                                               }
                                               // Only if NO stuck live note existed do we schedule the note on to play.
                                               if(it_other == mtl->end())
                                               {
-                                                if(track->addStuckLiveNote(port, event.channel(), event.dataA()))
+                                                if(track->addStuckLiveNote(t_port, event.channel(), event.dataA()))
 //                                                   md->addScheduledEvent(event);
                                                   md->putEvent(event, MidiDevice::NotLate);
                                               }
@@ -2119,7 +2121,7 @@ void Audio::processMidi()
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
                                               // This is the audio thread. Just set directly.
-                                              MusEGlobal::midiPorts[port].setHwCtrlState(event);
+                                              MusEGlobal::midiPorts[t_port].setHwCtrlState(event);
                                               md->putEvent(event, MidiDevice::NotLate);
                                             }
                                           }
@@ -2243,8 +2245,8 @@ void Audio::processMidi()
                                           drumRecEvent.setA(ctl | drumRecPitch);
                                           // In this case, preVelo is simply the controller value.
                                           drumRecEvent.setB(preVelo);
-                                          drumRecEvent.setPort(port); //rec-event to current port
-                                          drumRecEvent.setChannel(channel); //rec-event to current channel
+                                          drumRecEvent.setPort(t_port); //rec-event to current port
+                                          drumRecEvent.setChannel(t_channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                       else
@@ -2254,8 +2256,8 @@ void Audio::processMidi()
                                           drumRecEvent.setB(preVelo);
                                           // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
                                           //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
-                                          drumRecEvent.setPort(port);  //rec-event to current port
-                                          drumRecEvent.setChannel(channel); //rec-event to current channel
+                                          drumRecEvent.setPort(t_port);  //rec-event to current port
+                                          drumRecEvent.setChannel(t_channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                     }
@@ -2267,8 +2269,8 @@ void Audio::processMidi()
                                                 recEvent.setA(prePitch);
                                           if (preVelo)
                                                 recEvent.setB(preVelo);
-                                          recEvent.setPort(port);
-                                          recEvent.setChannel(channel);
+                                          recEvent.setPort(t_port);
+                                          recEvent.setChannel(t_channel);
 
                                           track->mpevents.add(recEvent);
                                     }
@@ -2333,7 +2335,7 @@ void Audio::processMidi()
                 MidiPlayEvent ev(*k);
                 ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
                 mport = ev.port();
-                if(port < 0)
+                if(t_port < 0)
                   continue;
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
