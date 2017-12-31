@@ -1762,7 +1762,9 @@ void Audio::processMidi()
             //----------midi recording
             //
             const bool track_rec_flag = track->recordFlag();
-            const bool track_rec_monitor = track->recMonitor(); // Separate monitor and record functions.
+// REMOVE Tim. monitor. Changed.
+//            const bool track_rec_monitor = track->recMonitor(); // Separate monitor and record functions.
+            const bool track_rec_monitor = track->isRecMonitored(); // Separate monitor and record functions.
 
             if(track_rec_monitor || track_rec_flag)
             {
@@ -2066,7 +2068,9 @@ void Audio::processMidi()
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
                                         event.setPort(port);
-                                        if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                        // REMOVE Tim. monitor. Changed.
+                                        //if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                        if(md && track_rec_monitor)
                                         {
                                           // Do not echo synth events back to the same synth instance under any circumstances,
                                           //  not even if monitor (echo) is on.
@@ -2123,7 +2127,9 @@ void Audio::processMidi()
                                       }
                                   else {
                                         MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-                                        if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                        // REMOVE Tim. monitor. Changed.
+                                        //if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                        if(mdAlt && track_rec_monitor)
                                         {
                                           // Do not echo synth events back to the same synth instance under any circumstances,
                                           //  not even if monitor (echo) is on.
@@ -2341,8 +2347,9 @@ void Audio::processMidi()
           }
 
           // If no monitor or off, or not rec-armed (or muted), we want to cancel all 'live' (rec) stuck notes immediately.
-          if(!track_rec_monitor || track->off() ||
-             track->isMute())
+          // REMOVE Tim. monitor. Changed.
+          //if(!track_rec_monitor || track->off() || track->isMute())
+          if(!track_rec_monitor)
           {
             //------------------------------------------------------------
             //    Send all track-related 'live' (rec) note-offs

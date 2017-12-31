@@ -267,9 +267,15 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   const bool track_rec_flag = recordFlag();
   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
 
+  //---------------------------------------------
+  // Contributions to data from input sources:
+  //---------------------------------------------
+
+  // Gather input data from connected routes.
   if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
   {
     have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+    // Do we want to record the incoming data?
     if(have_data && track_rec_flag && MusEGlobal::audio->isRecording() && recFile())
     {
       if(MusEGlobal::audio->freewheel())
@@ -324,14 +330,22 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     }
   }
 
-  if(!MusEGlobal::audio->isPlaying())
+  //---------------------------------------------
+  // Contributions to data from playback sources:
+  //---------------------------------------------
+
+// REMOVE Tim. monitor. Changed.
+//  if(!MusEGlobal::audio->isPlaying())
+  // Are we muted or not playing?
+  if(!MusEGlobal::audio->isPlaying() || isMute())
   {
     if(!have_data || (track_rec_monitor && have_data))
       return have_data;
     return false;
   }
 
-  // If there was no data, or we do not want record monitoring, zero the supplied buffers.
+  // If there is no input source data or we do not want to monitor it,
+  //  overwrite the supplied buffers rather than mixing with them.
   const bool do_overwrite = !have_data || !track_rec_monitor;
 
   // Set the return type.

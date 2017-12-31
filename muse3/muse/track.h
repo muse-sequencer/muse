@@ -218,18 +218,44 @@ class Track {
       virtual Part* newPart(Part*p=0, bool clone = false) = 0;
       void dump() const;
 
-      virtual void setMute(bool val);
-      virtual void setOff(bool val);
+      virtual void setMute(bool val) { _mute = val; }
+      virtual void setOff(bool val) { _off = val; }
       void setInternalSolo(unsigned int val);
       virtual void setSolo(bool val) = 0;
-      virtual bool isMute() const = 0;
+
+      // Returns true if playback ultimately is muted, depending on
+      //  other factors such as soloing.
+      virtual bool isMute() const {
+        if(_solo || (_internalSolo && !_mute))
+          return false;
+        if(_soloRefCnt)
+          return true;
+        return _mute;
+      }
+      // Returns true if playback ultimately is monitored, depending on
+      //  other factors such as soloing.
+      virtual bool isRecMonitored() const {
+        if(_off || !_recMonitor)
+          return false;
+        if(_solo || _internalSolo)
+          return true;
+        return _soloRefCnt == 0;
+      }
+      // Returns true (>= 1) if proxy-soloed.
       virtual unsigned int internalSolo() const  { return _internalSolo; }
+      // Returns true if proxy-muted.
       virtual bool soloMode() const      { return _soloRefCnt; }
+      // Returns true if soloed.
       virtual bool solo() const          { return _solo;         }
+      // Returns true if muted.
       virtual bool mute() const          { return _mute;         }
+      // Returns true if track is off.
       virtual bool off() const           { return _off;          }
+      // Returns true if rec-armed.
       virtual bool recordFlag() const    { return _recordFlag;   }
+      // Sets monitor.
       virtual void setRecMonitor(bool b) { if(canRecordMonitor()) _recMonitor = b; }
+      // Returns true if monitored.
       virtual bool recMonitor() const    { return _recMonitor; }
 
       // Internal use...
@@ -365,9 +391,6 @@ class MidiTrack : public Track {
       int outPort() const             { return _outPort;     }
       int outChannel() const          { return _outChannel;  }
 
-      virtual void setMute(bool val);
-      virtual void setOff(bool val);
-      virtual bool isMute() const;
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
@@ -552,7 +575,6 @@ class AudioTrack : public Track {
       // Number of required processing buffers.
       virtual int totalProcessBuffers() const { return (channels() == 1) ? 1 : totalOutChannels(); }
 
-      virtual bool isMute() const;
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();

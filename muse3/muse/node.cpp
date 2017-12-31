@@ -58,50 +58,6 @@
 namespace MusECore {
 
 //---------------------------------------------------------
-//   isMute
-//---------------------------------------------------------
-
-bool MidiTrack::isMute() const
-      {
-      if (_solo || (_internalSolo && !_mute))
-            return false;
-
-      if (_soloRefCnt)
-            return true;
-
-      return _mute;
-      }
-
-bool AudioTrack::isMute() const
-      {
-      if (_solo || (_internalSolo && !_mute))
-            return false;
-
-      if (_soloRefCnt)
-            return true;
-
-      return _mute;
-      }
-
-//---------------------------------------------------------
-//   setMute
-//---------------------------------------------------------
-
-void MidiTrack::setMute(bool val)
-      {
-      _mute = val;
-      }
-
-//---------------------------------------------------------
-//   setOff
-//---------------------------------------------------------
-
-void MidiTrack::setOff(bool val)
-      {
-      _off = val;
-      }
-
-//---------------------------------------------------------
 //   setSolo
 //---------------------------------------------------------
 
@@ -377,25 +333,6 @@ void AudioTrack::updateSoloStates(bool noDec)
 
   _nodeTraversed = false; // Reset.
 }
-
-
-//---------------------------------------------------------
-//   setMute
-//---------------------------------------------------------
-
-void Track::setMute(bool val)
-      {
-      _mute = val;
-      }
-
-//---------------------------------------------------------
-//   setOff
-//---------------------------------------------------------
-
-void Track::setOff(bool val)
-      {
-      _off = val;
-      }
 
 //---------------------------------------------------------
 //   processTrackCtrls
@@ -1125,8 +1062,12 @@ void AudioTrack::copyData(unsigned pos,
          _isClipped[c] = true;
     }
 
-    if(isMute())
+// REMOVE Tim. monitor. Changed.
+//    if(isMute())
+    // Are both playback and input are muted?
+    if(isMute() && !isRecMonitored())
     {
+      // Nothing to do. Zero the supplied buffers.
       for(i = dstStartChan; i < (dstStartChan + availDstChannels); ++i)
       {
         if(addArray ? addArray[i] : add)

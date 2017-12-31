@@ -1,3 +1,8 @@
+31.12.2017
+      - As requested: Track monitor now works regardless of track mute. (Tim)
+        Allows to listen to input while muting playback material.
+        Note that turning a track off, or 'proxy muting' it will still
+         mute the track.
 29.12.2017
       - Revert some new undo stuff and replace with pending operations. (Tim)
         Undo was behaving oddly for things like mute, rec, monitor, off etc.
