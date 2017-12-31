@@ -74,6 +74,18 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
       return button;
       }
 
+static QToolButton* newButton(const QIcon* icon, const QString& tt,
+                              bool toggle=false, QWidget* parent=0)
+      {
+      QToolButton* button = new QToolButton(parent);
+      button->setFixedHeight(25);
+      button->setIcon(*icon);
+      button->setCheckable(toggle);
+      button->setToolTip(tt);
+      button->setFocusPolicy(Qt::NoFocus);
+      return button;
+      }
+
 //---------------------------------------------------------
 //    Handle
 //    allows moving a root-window with the mouse
@@ -402,7 +414,7 @@ Transport::Transport(QWidget* parent, const char* name)
       buttons[4] = newButton(playIcon, tr("play"), true);
       buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
-      buttons[5] = newButton(recordIcon, tr("record"), true);
+      buttons[5] = newButton(recMasterSVGIcon, tr("record"), true);
       buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
