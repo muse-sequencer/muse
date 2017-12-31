@@ -3,6 +3,8 @@
         Allows to listen to input while muting playback material.
         Note that turning a track off, or 'proxy muting' it will still
          mute the track.
+      - Missing ifdefs for RTAUDIO, build patch from Dennis Schulmeister added (rj)
+      - Moved instantiation of Add Track Menu so it is only done once (rj)
 29.12.2017
       - Revert some new undo stuff and replace with pending operations. (Tim)
         Undo was behaving oddly for things like mute, rec, monitor, off etc.

@@ -987,9 +987,6 @@ MusE::MusE() : QMainWindow()
         }
       }
 
-      arrangerView->populateAddTrack();
-      arrangerView->updateShortcuts();
-
       transport = new MusEGui::Transport(this, "transport");
       bigtime   = 0;
 
@@ -1016,6 +1013,13 @@ void MusE::heartBeat()
   cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(), 
                             MusEGlobal::song->dspLoad(), 
                             MusEGlobal::song->xRunsCount());
+}
+
+void MusE::populateAddTrack()
+{
+  arrangerView->populateAddTrack();
+  arrangerView->updateShortcuts();
+
 }
 
 void MusE::blinkTimerSlot()

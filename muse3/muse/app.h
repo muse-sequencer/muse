@@ -394,6 +394,8 @@ class MusE : public QMainWindow
       float fCurCpuLoad;
    public:
       MusE();
+      void populateAddTrack();
+
       void loadDefaultSong(int argc, char** argv);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);

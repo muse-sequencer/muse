@@ -328,11 +328,8 @@ static void usage(const char* prog, const char* txt)
 void fallbackDummy() {
 
   fprintf(stderr, "Falling back to dummy audio driver\n");
-  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                  "<i>MusE will continue <b>without audio support</b> (-a switch)!</i><br><br>"
-                                                  "If this was not intended check that Jack was started. "
-                                                  "If Jack <i>was</i> started check that it was\n"
-                                                  "started as the same user as MusE.\n");
+  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find selected <b>audio server</b>.<br><br>"
+                                                  "<i>MusE will continue <b>without audio support</b> (-a switch)!</i>");
   MusEGlobal::realTimeScheduling = true;
   MusECore::initDummyAudio();
 }
@@ -837,11 +834,14 @@ int main(int argc, char* argv[])
                 fprintf(stderr, "\n");
 
                 MusEGlobal::realTimeScheduling = true;
+#ifdef HAVE_RTAUDIO
                 if(MusECore::initRtAudio())
                   fallbackDummy();
                 else
                   fprintf(stderr, "Using rtAudio\n");
-              
+#else
+                fallbackDummy();
+#endif
                 break;
               }
             case MusEGlobal::JackAudio:
@@ -851,10 +851,14 @@ int main(int argc, char* argv[])
                 {
                   MusEGlobal::realTimeScheduling = true;
                   // Force default Pulse.
+#ifdef HAVE_RTAUDIO
                   if(MusECore::initRtAudio(true))
                     fallbackDummy();
                   else
                     fprintf(stderr, "Using rtAudio Pulse\n");
+#else
+                  fallbackDummy();
+#endif
                 }
                 else
                 {
@@ -946,6 +950,8 @@ int main(int argc, char* argv[])
               if (mlockall(MCL_CURRENT | MCL_FUTURE))
                     perror("WARNING: Cannot lock memory:");
               }
+
+        MusEGlobal::muse->populateAddTrack(); // could possibly be done in a thread.
 
         MusEGlobal::muse->show();
 
