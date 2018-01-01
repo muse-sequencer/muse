@@ -1717,9 +1717,9 @@ void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
 }
 
 /*!
-    \fn SimpleSynthGui::readMessage(int)
+    \fn SimpleSynthGui::readMessage()
  */
-void DeicsOnzeGui::readMessage(int)
+void DeicsOnzeGui::readMessage()
 {
     MessGui::readMessage();
 }
