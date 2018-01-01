@@ -26,6 +26,7 @@
 ##
 QT5_WRAP_CPP ( fluidsynth_mocs
       fluidsynthgui.h
+      fluidsynti.h
       )
 
 ##

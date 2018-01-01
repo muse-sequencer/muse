@@ -1994,8 +1994,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           // 1016 is occupied.
                           p->addSeparator();
                         }
-                        
-                        QAction* act = addTrackMenu->exec(ev->globalPos(), 0);
+                        addTrackMenu->setTitle(tr("Insert Track"));
+                        addTrackMenu->setIcon(QIcon(*edit_track_addIcon));
+                        p->addMenu(addTrackMenu);
+                        QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
                               //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
                               int n = act->data().toInt();

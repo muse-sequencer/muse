@@ -68,7 +68,7 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       void deletePresetPressed();
       void doSavePresets(const QString&, bool);
       void savePresetsToFilePressed();
-      void readMessage(int);
+      void readMessage();
 
    protected:
       virtual void sysexReceived(const unsigned char*, int);

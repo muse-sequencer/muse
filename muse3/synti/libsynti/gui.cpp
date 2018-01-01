@@ -25,7 +25,40 @@
 #include "gui.h"
 #include "muse/midi.h"
 
+#include <QThread>
 #include <unistd.h>
+
+SignalGui::SignalGui()
+{
+
+}
+void SignalGui::create()
+{
+//  int filedes[2];         // 0 - reading   1 - writing
+//  if (pipe(filedes) == -1) {
+//        perror("thread:creating pipe4");
+//        exit(-1);
+//        }
+//  readFd      = filedes[0];
+//  writeFd     = filedes[1];
+
+//  QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
+//  connect(s, SIGNAL(activated(int)), SIGNAL(wakeup()));
+}
+
+void SignalGui::clearSignal()
+{
+//  printf("clearSignal %d\n", (int)QThread::currentThreadId());
+
+//  char c;
+//  ::read(readFd, &c, 1);
+}
+void SignalGui::sendSignal()
+{
+//  printf("emit wakeup() %d\n", (int)QThread::currentThreadId());
+  emit wakeup();
+//  write(writeFd, "x", 1);  // wakeup GUI
+}
 
 //---------------------------------------------------------
 //   MessGui
@@ -36,13 +69,7 @@ MessGui::MessGui()
       //
       // prepare for interprocess communication:
       //
-      int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
-            perror("thread:creating pipe4");
-            exit(-1);
-            }
-      readFd      = filedes[0];
-      writeFd     = filedes[1];
+      guiSignal.create();
       wFifoSize   = 0;
       wFifoWindex = 0;
       wFifoRindex = 0;
@@ -65,9 +92,8 @@ MessGui::~MessGui()
 
 void MessGui::readMessage()
       {
-      char c;
       while (rFifoSize) {
-            ::read(readFd, &c, 1);
+            guiSignal.clearSignal();
             processEvent(rFifo[rFifoRindex]);
             rFifoRindex = (rFifoRindex + 1) % EVENT_FIFO_SIZE;
             --rFifoSize;
@@ -127,7 +153,7 @@ void MessGui::writeEvent(const MusECore::MidiPlayEvent& ev)
       rFifo[rFifoWindex] = ev;
       rFifoWindex = (rFifoWindex + 1) % EVENT_FIFO_SIZE;
       ++rFifoSize;
-      write(writeFd, "x", 1);  // wakeup GUI
+      guiSignal.sendSignal();
       }
 
 //---------------------------------------------------------

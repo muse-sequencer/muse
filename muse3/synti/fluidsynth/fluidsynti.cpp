@@ -36,6 +36,9 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
+#include <QObject>
+#include <QMutexLocker>
+#include <QMessageBox>
 
 //#include "common_defs.h"
 #include "fluidsynti.h"
@@ -102,13 +105,12 @@ FluidCtrl FluidSynth::fluidCtrl[] = {
     };
 
 static int NUM_CONTROLLER = sizeof(FluidSynth::fluidCtrl)/sizeof(*(FluidSynth::fluidCtrl));
-static void* fontLoadThread(void* t);
 
 QString *projPathPtr;
 //
 // Fluidsynth
 //
-FluidSynth::FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex) : Mess(2)
+FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoaderMutex(_GlobalSfLoaderMutex)
       {
       gui = 0;
       setSampleRate(sr);
@@ -128,15 +130,19 @@ FluidSynth::FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex) : Mess(2)
             channels[i].preset     = FS_UNSPECIFIED_PRESET;
             channels[i].drumchannel= false;
       }
-      //pthread_mutex_init(&_sfloader_mutex,NULL);
-      _sfloader_mutex = _Globalsfloader_mutex;
 
       initBuffer  = 0;
       initLen     = 0;
+
+      QObject::connect(&fontWorker,SIGNAL(loadFontSignal(void*)),&fontWorker,SLOT(execLoadFont(void*)));
+      fontWorker.moveToThread(&fontLoadThread);
+      fontLoadThread.start();
       }
 
 FluidSynth::~FluidSynth()
       {
+
+      fontLoadThread.exit();
 
       for (std::list<FluidSoundFont>::iterator it =stack.begin(); it !=stack.end(); it++) 
       {
@@ -157,11 +163,7 @@ FluidSynth::~FluidSynth()
       if (err == -1) {
             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
             return;
-            }
-      //Destroy the mutex
-/*      if (pthread_mutex_destroy(&_sfloader_mutex) != 0)
-            std::cerr << DEBUG_ARGS << "Strange, mutex busy! Should not be!" << std::endl;*/
-            
+            }            
       }
 
 bool FluidSynth::init(const char* name)
@@ -169,8 +171,6 @@ bool FluidSynth::init(const char* name)
       debug("FluidSynth::init\n");
 
       gui = new FluidSynthGui();
-      //don't show gui on init - it will be shown later by setNativeguiVisible()
-      //gui->show();
       gui->setWindowTitle(name);
 
       lastdir= "";
@@ -431,20 +431,23 @@ void FluidSynth::parseInitData(int n, const byte* d)
       byte nr_of_fonts = d[3];
       //byte nr_of_fonts = d[5];
       nrOfSoundfonts = nr_of_fonts; //"Global" counter
-      const byte* chptr = (d + 4);
+      //byte* chptr = (unsigned char*)d + 4;
+      int arrayIndex = 4;
       //const byte* chptr = (d + FS_INIT_DATA_HEADER_SIZE);
 
       //Get lastdir:
-      lastdir = std::string((char*)chptr);
+      lastdir = std::string((char*)&d[arrayIndex]);
       sendLastdir(lastdir.c_str());
 
-      chptr+=strlen(lastdir.c_str())+1;
+      arrayIndex+=strlen(lastdir.c_str())+1;
+
+      printf("Number of soundfonts for this instance: %d\n", nr_of_fonts);
 
       FluidSoundFont* fonts = new FluidSoundFont[nrOfSoundfonts]; //Just a temp one
       //Fonts:
       for (int i=0; i<nr_of_fonts; i++) {
-            fonts[i].file_name = QString::fromLatin1((char*)(chptr));
-            chptr+=fonts[i].file_name.size()+1;
+            fonts[i].file_name = QString::fromLatin1((char*)&d[arrayIndex]);
+            arrayIndex+=fonts[i].file_name.size()+1;
             QByteArray ba = projPathPtr->toLatin1();
 
             if (QFileInfo(fonts[i].file_name).isRelative()) {
@@ -454,43 +457,44 @@ void FluidSynth::parseInitData(int n, const byte* d)
             std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().data() << std::endl;
             }
 
-      if (*chptr != FS_INIT_CHANNEL_SECTION) {
+      if (d[arrayIndex] != FS_INIT_CHANNEL_SECTION) {
             delete[] fonts;
             sendError("Init-data corrupt... Projectfile error. Initdata ignored.\n");
             return;
             }
 
-      chptr++;
+      arrayIndex++;
       for (int i=0; i<nr_of_fonts; i++) {
-            fonts[i].extid = *chptr;
-            chptr++;
+            fonts[i].extid = d[arrayIndex];
+            arrayIndex++;
             //printf("Extid, %d: %d\n",i,fonts[i].extid);
             }
 
       // All channels external id + preset
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
-            channels[i].font_extid = *chptr; chptr++;
-            channels[i].preset     = *chptr; chptr++;
+            channels[i].font_extid = d[arrayIndex]; arrayIndex++;
+            channels[i].preset     = d[arrayIndex]; arrayIndex++;
             if (handle_bankvalue) { // Ver 0.4 and later
-                  channels[i].banknum = *chptr; chptr++;
+                  channels[i].banknum = d[arrayIndex]; arrayIndex++;
                   }
             else {
                   channels[i].banknum = 0;
                   }
 
             if (load_drumchannels) { // Ver 0.3 and later
-                  channels[i].drumchannel = *chptr;
-                  chptr++;
+                  channels[i].drumchannel = arrayIndex;
+                  arrayIndex++;
                   }
             }
 
       //Reverb:
-      setController(0, FS_REVERB_ON, *chptr); chptr++;
-      setController(0, FS_CHORUS_ON, *chptr); chptr++;
+      setController(0, FS_REVERB_ON, d[arrayIndex]); arrayIndex++;
+      setController(0, FS_CHORUS_ON, d[arrayIndex]); arrayIndex++;
 
-      if (FS_DEBUG)
+      //if (FS_DEBUG)
             printf("--- END PARSE INIT DATA ---\n");
-      //Load the shit:
+
+
       for (int i=0; i<nrOfSoundfonts; i++) {
             pushSoundfont(fonts[i].file_name.toLatin1().data(), fonts[i].extid);
             }
@@ -623,11 +627,7 @@ void FluidSynth::sendSysex(int l, const unsigned char* d)
 //-----------------------------------
 bool FluidSynth::pushSoundfont (const char* filename, int extid)
       {
-      pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-      pthread_attr_init(attributes);
-      pthread_attr_setdetachstate(attributes, PTHREAD_CREATE_DETACHED);
-
-      FS_Helper* helper = new FS_Helper;
+      FS_Helper *helper = new FS_Helper;
       helper->fptr = this;
       helper->id = extid;
       QString fn = QString::fromLatin1(filename);
@@ -648,17 +648,20 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
               //       however require the class to be derived from qobject
               //       tried in vain to make the call in the gui object
               //       could'nt get it to work due to symbol missing in .so ...
-              helper->file_name = QFileDialog::getOpenFileName(0,
-                                      QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
-                                      fn,
-                                      QString("Soundfonts (*.sf2);;All files (*)"));
+//              helper->file_name = QFileDialog::getOpenFileName(0,
+//                                      QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
+//                                      fn,
+//                                      QString("Soundfonts (*.sf2);;All files (*)"));
+//              QMessageBox::warning(NULL,"No sound font found.","Could not open soundfont: " + fn, QMessageBox::Ok);
+
+              fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLatin1().data());
+
+              return false;
           }
       }
 
-      if (pthread_create(&fontThread, attributes, ::fontLoadThread, (void*) helper))
-            perror("creating thread failed:");
+      fontWorker.loadFont(helper);
 
-      pthread_attr_destroy(attributes);
       return true;
       }
 
@@ -806,87 +809,6 @@ static void loadNoteSampleNames(FluidSoundFont& font)
   g_object_unref (sffile);
 }
 #endif
-
-//---------------------------------------------------------
-//   fontLoadThread
-//    helper thread to load soundfont in the
-//    background
-//---------------------------------------------------------
-
-static void* fontLoadThread(void* t)
-      {
-      //Init vars
-      FS_Helper* h = (FS_Helper*) t;
-      FluidSynth* fptr = h->fptr;
-      char * filename = h->file_name.toLocal8Bit().data();
-      char sf_pathstr[200];
-      memset(sf_pathstr, 0, 200);
-      strcpy(sf_pathstr,filename);       // can't really see why but had to copy the string to a local variable,
-                                         // otherwise the filename became corrupted during fluid_synth_sfload
-      pthread_mutex_t* sfloader_mutex = (fptr->_sfloader_mutex);
-
-      //Let only one loadThread have access to the fluidsynth-object at the time
-      pthread_mutex_lock(sfloader_mutex);
-      int rv = fluid_synth_sfload(fptr->fluidsynth, sf_pathstr, 1);
-
-      if (rv ==-1) {
-            fptr->sendError(fluid_synth_error(fptr->fluidsynth));
-            if (FS_DEBUG)
-                  std::cerr << DEBUG_ARGS << "error loading soundfont: " << fluid_synth_error(fptr->fluidsynth) << std::endl;
-            
-            //Unlock the mutex, or else we might be stuck here forever...
-            pthread_mutex_unlock(sfloader_mutex);
-            delete h;
-            pthread_exit(0);
-            }
-
-      //Deal with internal and external id etc.
-      if (FS_DEBUG)
-            printf("Soundfont %s loaded, index %d\n", filename, rv);
-
-      FluidSoundFont font;
-      font.file_name = h->file_name;
-
-      font.intid = rv;
-      if (h->id == FS_UNSPECIFIED_ID) {
-            font.extid = fptr->getNextAvailableExternalId();
-            if (FS_DEBUG)
-                  printf("Font got extid %d\n",font.extid);
-            }
-      else
-            font.extid = h->id;
-      if (FS_DEBUG)
-            printf("Font has external id: %d int id:%d\n", font.extid, font.intid);
-
-      //Strip off the filename
-      QFileInfo fi(h->file_name);
-      font.name = fi.fileName();
-
-      #ifdef HAVE_INSTPATCH
-      loadNoteSampleNames(font);
-      #endif
-
-      fptr->stack.push_front(font);
-      fptr->currentlyLoadedFonts++;
-
-      //Cleanup & unlock:
-      pthread_mutex_unlock(sfloader_mutex);
-      delete h;
-
-      if (FS_DEBUG)
-            printf("Currently loaded fonts: %d Nr of soundfonts: %d\n",fptr->currentlyLoadedFonts, fptr->nrOfSoundfonts);
-      //Check whether this was the last font or not. If so, run initSynth();
-      if (fptr->nrOfSoundfonts <= fptr->currentlyLoadedFonts) {
-            if (FS_DEBUG)
-                  printf("This was the last font, rewriting channel settings...\n");
-            fptr->rewriteChannelSettings();
-            //Update data in GUI-window.
-            fptr->sendSoundFontData();;
-            fptr->sendChannelData();
-            }
-
-      pthread_exit(0);
-      }
 
 //---------------------------------------------------------
 //   playNote
@@ -1629,14 +1551,88 @@ bool FluidSynth::popSoundfont (int ext_id)
       return success;
       }
 
+
+void LoadFontWorker::loadFont(void* h)
+{
+  emit loadFontSignal(h);
+}
+
+//---------------------------------------------------------
+//   execLoadFont
+//    helper function to load soundfont in the
+//    background.
+//---------------------------------------------------------
+void LoadFontWorker::execLoadFont(void * t)
+{
+      FS_Helper *h = (FS_Helper*) t;
+      FluidSynth* fptr = h->fptr;
+      char * filename = h->file_name.toLocal8Bit().data();
+      char sf_pathstr[200];
+      memset(sf_pathstr, 0, 200);
+      strcpy(sf_pathstr,filename);       // can't really see why but had to copy the string to a local variable,
+                                         // otherwise the filename became corrupted during fluid_synth_sfload
+      if (FS_DEBUG)
+         printf("execLoadFont() font name %s\n", sf_pathstr);
+
+      //Let only one loadThread have access to the fluidsynth-object at the time
+      QMutexLocker ml(&fptr->_sfLoaderMutex);
+      int rv = fluid_synth_sfload(fptr->fluidsynth, sf_pathstr, 1);
+
+      if (rv ==-1) {
+            fptr->sendError(fluid_synth_error(fptr->fluidsynth));
+            if (FS_DEBUG)
+                  std::cerr << DEBUG_ARGS << "error loading soundfont: " << fluid_synth_error(fptr->fluidsynth) << std::endl;
+
+            delete h;
+            return;
+      }
+
+      //Deal with internal and external id etc.
+      if (FS_DEBUG)
+            printf("Soundfont %s loaded, index %d\n", filename, rv);
+
+      FluidSoundFont font;
+      font.file_name = h->file_name;
+
+      font.intid = rv;
+      if (h->id == FS_UNSPECIFIED_ID) {
+            font.extid = fptr->getNextAvailableExternalId();
+            if (FS_DEBUG)
+                  printf("Font got extid %d\n",font.extid);
+            }
+      else
+            font.extid = h->id;
+      if (FS_DEBUG)
+            printf("Font has external id: %d int id:%d\n", font.extid, font.intid);
+
+      //Strip off the filename
+      QFileInfo fi(h->file_name);
+      font.name = fi.fileName();
+      fptr->stack.push_front(font);
+      fptr->currentlyLoadedFonts++;
+
+      if (FS_DEBUG)
+            printf("Currently loaded fonts: %d Nr of soundfonts: %d\n",fptr->currentlyLoadedFonts, fptr->nrOfSoundfonts);
+      //Check whether this was the last font or not. If so, run initSynth();
+      if (fptr->nrOfSoundfonts <= fptr->currentlyLoadedFonts) {
+            if (FS_DEBUG)
+                  printf("This was the last font, rewriting channel settings...\n");
+            fptr->rewriteChannelSettings();
+            //Update data in GUI-window.
+            fptr->sendSoundFontData();;
+            fptr->sendChannelData();
+            }
+
+      delete h;
+}
+
 //---------------------------------------------------------
 //   instantiate
 //    construct a new synthesizer instance
 //---------------------------------------------------------
 
 class QWidget;
-static  pthread_mutex_t globalMutex;
-static bool mutexEnabled = false;
+static  QMutex globalFluidSynthMutex;
 
 
 static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
@@ -1644,12 +1640,7 @@ static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* 
       printf("fluidsynth sampleRate %d\n", sr);
       projPathPtr=projectPathPtr;
 
-      if (!mutexEnabled) {
-          pthread_mutex_init(&globalMutex,NULL);
-          mutexEnabled = true;
-          }
-
-      FluidSynth* synth = new FluidSynth(sr, &globalMutex);
+      FluidSynth* synth = new FluidSynth(sr, globalFluidSynthMutex);
       if (synth->init(name)) {
             delete synth;
             synth = 0;
