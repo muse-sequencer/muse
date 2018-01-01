@@ -1608,6 +1608,11 @@ void LoadFontWorker::execLoadFont(void * t)
       //Strip off the filename
       QFileInfo fi(h->file_name);
       font.name = fi.fileName();
+
+      #ifdef HAVE_INSTPATCH
+      loadNoteSampleNames(font);
+      #endif
+
       fptr->stack.push_front(font);
       fptr->currentlyLoadedFonts++;
 
