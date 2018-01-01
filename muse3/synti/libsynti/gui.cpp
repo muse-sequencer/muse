@@ -48,14 +48,14 @@ void SignalGui::create()
 
 void SignalGui::clearSignal()
 {
-//  printf("clearSignal %d\n", (int)QThread::currentThreadId());
+//  printf("clearSignal %ld\n", (long)QThread::currentThreadId());
 
 //  char c;
 //  ::read(readFd, &c, 1);
 }
 void SignalGui::sendSignal()
 {
-//  printf("emit wakeup() %d\n", (int)QThread::currentThreadId());
+//  printf("sendSignal - emit wakeup() %ld\n", (long)QThread::currentThreadId());
   emit wakeup();
 //  write(writeFd, "x", 1);  // wakeup GUI
 }

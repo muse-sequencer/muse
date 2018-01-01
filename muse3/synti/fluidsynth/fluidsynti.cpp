@@ -482,7 +482,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
                   }
 
             if (load_drumchannels) { // Ver 0.3 and later
-                  channels[i].drumchannel = arrayIndex;
+                  channels[i].drumchannel = d[arrayIndex];
                   arrayIndex++;
                   }
             }

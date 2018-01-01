@@ -71,6 +71,7 @@ FluidSynthGui::FluidSynthGui()
       ChorusType->setItemIcon(1, QIcon(*MusEGui::sawIcon));
 
       connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
+      connect (Push, SIGNAL (clicked()), SLOT(loadClicked()));
 
       lastdir = "";
       
