@@ -48,7 +48,7 @@ class OrganGui : public QWidget, public Ui::OrganGuiBase, public MessGui {
 
    private slots:
       void ctrlChanged(int idx);
-      void readMessage(int);
+      void readMessage();
 
    public:
       virtual void processEvent(const MusECore::MidiPlayEvent&);

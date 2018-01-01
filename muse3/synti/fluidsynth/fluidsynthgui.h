@@ -41,19 +41,6 @@ class QTreeWidgetItem;
 
 struct FluidChannel;
 #define FS_DEBUG 0 //Turn on/off debug
-/*
-#include <list>
-#include <string>
-#include <qscrollview.h>
-
-#include <qevent.h>
-#include <qmenubar.h>
-#include <qsocketnotifier.h>
-#include <alsa/asoundlib.h>
-#include <qlistview.h>
-#include <qheader.h>
-#include "muse/debug.h"
-*/
 
 #define FS_MAX_NR_OF_CHANNELS          16
 #define FS_UNSPECIFIED_FONT           126
@@ -215,7 +202,7 @@ class FluidSynthGui : public QDialog, public Ui::FLUIDSynthGuiBase, public MessG
 */
    private slots:
       void loadClicked();
-      void readMessage(int);
+      void readMessage();
       void changeGain(int);
       void dumpInfo();
       void channelItemClicked(QTableWidgetItem* item);

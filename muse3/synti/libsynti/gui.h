@@ -25,19 +25,32 @@
 #ifndef __SYNTH_GUI_H__
 #define __SYNTH_GUI_H__
 
+#include <QObject>
 #include "mpevent.h"
 
 const int EVENT_FIFO_SIZE = 4096;
 class QWidget;
+
+class SignalGui : public QObject  {
+  Q_OBJECT
+  int writeFd;
+public:
+  SignalGui();
+  void create();
+  void clearSignal();
+  void sendSignal();
+signals:
+  void wakeup();
+protected:
+  int readFd;
+};
 
 //---------------------------------------------------------
 //   MessGui
 //    manage IO from synti-GUI to Host
 //---------------------------------------------------------
 
-class MessGui {
-      int writeFd;
-
+class MessGui{
       // Event Fifo  synti -> GUI
       MusECore::MidiPlayEvent rFifo[EVENT_FIFO_SIZE];
       volatile int rFifoSize;
@@ -49,9 +62,10 @@ class MessGui {
       volatile int wFifoSize;
       int wFifoWindex;
       int wFifoRindex;
+      SignalGui guiSignal;
 
    protected:
-      int readFd;
+      SignalGui *getGuiSignal() { return &guiSignal;}
       void readMessage();
       void sendEvent(const MusECore::MidiPlayEvent& ev);
       void sendController(int,int,int);

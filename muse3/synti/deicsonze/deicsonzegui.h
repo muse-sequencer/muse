@@ -139,7 +139,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     
     QString lastDir;
   private slots:
-    void readMessage(int);
+    void readMessage();
     void setEnabledChannel(bool);
     void setChangeChannel(int);
     void setPanic();

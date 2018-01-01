@@ -42,7 +42,6 @@
 #include <QLCDNumber>
 #include <QSignalMapper>
 #include <QSlider>
-#include <QSocketNotifier>
 
 #include "muse/globals.h"
 #include "muse/xml.h"
@@ -180,8 +179,7 @@ VAMGui::VAMGui()
 	MessGui()
 {
       setupUi(this);
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
       loadPresets->setIcon(QIcon(*MusEGui::openIcon));
       savePresets->setIcon(QIcon(*MusEGui::saveIcon));
@@ -751,7 +749,7 @@ void VAMGui::deletePresetPressed()
 //   readMessage
 //---------------------------------------------------------
 
-void VAMGui::readMessage(int)
+void VAMGui::readMessage()
       {
       MessGui::readMessage();
       }

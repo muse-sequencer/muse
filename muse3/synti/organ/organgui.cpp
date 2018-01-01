@@ -31,7 +31,6 @@
 #include <QCheckBox>
 #include <QSignalMapper>
 #include <QSlider>
-#include <QSocketNotifier>
 #include <QSpinBox>
 
 #include "common_defs.h"
@@ -49,8 +48,7 @@ OrganGui::OrganGui()
    : QWidget(0, Qt::Window), MessGui()
       {
       setupUi(this);  // p4.0.17
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
       dctrl[0]  = SynthGuiCtrl(p1,  lcd1,  SynthGuiCtrl::SLIDER);
       dctrl[1]  = SynthGuiCtrl(p2,  lcd2,  SynthGuiCtrl::SLIDER);
@@ -194,7 +192,7 @@ void OrganGui::processEvent(const MusECore::MidiPlayEvent& ev)
 //   readMessage
 //---------------------------------------------------------
 
-void OrganGui::readMessage(int)
+void OrganGui::readMessage()
       {
       MessGui::readMessage();
       }
