@@ -65,12 +65,16 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
     if (tick < startPos )
       break;
 
-    if (tick > startPos && tick +diff < startPos ) { // remove
+// REMOVE Tim. global cut. Changed.
+//     if (tick > startPos && tick +diff < startPos ) { // remove
+    if (tick >= startPos && tick < startPos + diff) { // remove
       operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
-      operations.push_back(UndoOp(UndoOp::AddKey,tick+diff, key));
+// REMOVE Tim. global cut. Changed.
+//      operations.push_back(UndoOp(UndoOp::AddKey,tick+diff, key));
+      operations.push_back(UndoOp(UndoOp::AddKey,tick - diff, key));
       }
   }
 
@@ -82,12 +86,16 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
     if (tick < startPos )
       break;
 
-    if (tick > startPos && tick +diff < startPos ) { // remove
+// REMOVE Tim. global cut. Changed.
+//    if (tick > startPos && tick +diff < startPos ) { // remove
+    if (tick >= startPos && tick < startPos + diff) { // remove
       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
-      operations.push_back(UndoOp(UndoOp::AddTempo,tick+diff, tempo));
+// REMOVE Tim. global cut. Changed.
+//      operations.push_back(UndoOp(UndoOp::AddTempo,tick+diff, tempo));
+      operations.push_back(UndoOp(UndoOp::AddTempo,tick - diff, tempo));
       }
   }
 
@@ -100,12 +108,16 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
 
     int z = ev->sig.z;
     int n = ev->sig.n;
-    if (tick > startPos && tick +diff < startPos ) { // remove
+// REMOVE Tim. global cut. Changed.
+//    if (tick > startPos && tick +diff < startPos ) { // remove
+    if (tick >= startPos && tick < startPos + diff) { // remove
       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
     }
     else {
       operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
-      operations.push_back(UndoOp(UndoOp::AddSig,tick+diff, z, n));
+// REMOVE Tim. global cut. Changed.
+//      operations.push_back(UndoOp(UndoOp::AddSig,tick+diff, z, n));
+      operations.push_back(UndoOp(UndoOp::AddSig,tick - diff, z, n));
     }
   }
 
@@ -114,14 +126,18 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
   {
       Marker* m = &i->second;
       int tick = m->tick();
-      if (tick > startPos)
+      if (tick >= startPos)
       {
-        if (tick + diff < startPos ) { // these ticks should be removed
-          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));    
+// REMOVE Tim. global cut. Changed.
+//        if (tick + diff < startPos ) { // these ticks should be removed
+        if (tick < startPos + diff) { // these ticks should be removed
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));
         } else {
           Marker *newMarker = new Marker();
           *newMarker = *m;
-          newMarker->setTick(tick + diff);  
+// REMOVE Tim. global cut. Changed.
+//          newMarker->setTick(tick + diff);
+          newMarker->setTick(tick - diff);
           operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
         }
       }
@@ -211,8 +227,11 @@ void globalCut(bool onlySelectedTracks)
                         }
                   }
             }
-      int diff = lpos - rpos;
-      adjustGlobalLists(operations, lpos, diff);
+// REMOVE Tim. global cut. Changed.
+//       int diff = lpos - rpos;
+//      adjustGlobalLists(operations, lpos, diff);
+      int diff = lpos > rpos ? lpos - rpos : rpos - lpos;
+      adjustGlobalLists(operations, lpos > rpos ? rpos : lpos, diff);
 
       MusEGlobal::song->applyOperationGroup(operations);
       }

@@ -396,22 +396,22 @@ Transport::Transport(QWidget* parent, const char* name)
       tb = new QHBoxLayout;
       tb->setSpacing(0);
 
-      buttons[0] = newButton(startIcon, tr("rewind to start"));
+      buttons[0] = newButton(rewindToStartSVGIcon, tr("rewind to start"));
       buttons[0]->setWhatsThis(tr("Click this button to rewind to start position"));
 
-      buttons[1] = newButton(frewindIcon, tr("rewind"));
+      buttons[1] = newButton(rewindSVGIcon, tr("rewind"));
       buttons[1]->setAutoRepeat(true);
       buttons[1]->setWhatsThis(tr("Click this button to rewind"));
 
-      buttons[2] = newButton(fforwardIcon, tr("forward"));
+      buttons[2] = newButton(fastForwardSVGIcon, tr("forward"));
       buttons[2]->setAutoRepeat(true);
       buttons[2]->setWhatsThis(tr("Click this button to forward current play position"));
 
-      buttons[3] = newButton(stopIcon, tr("stop"), true);
+      buttons[3] = newButton(stopSVGIcon, tr("stop"), true);
       buttons[3]->setChecked(true);     // set STOP
       buttons[3]->setWhatsThis(tr("Click this button to stop playback"));
 
-      buttons[4] = newButton(playIcon, tr("play"), true);
+      buttons[4] = newButton(playSVGIcon, tr("play"), true);
       buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
       buttons[5] = newButton(recMasterSVGIcon, tr("record"), true);

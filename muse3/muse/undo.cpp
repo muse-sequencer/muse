@@ -1574,9 +1574,11 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_, bool noUndo)
       {
       assert(type_==ModifyMarker);
-      assert(copyMarker_);
-      assert(realMarker_);
-      
+// REMOVE Tim. global cut. Changed. copyMarker_ or realMarker_ can be null.
+//      assert(copyMarker_);
+//      assert(realMarker_);
+      assert(copyMarker_ || realMarker_);
+
       type    = type_;
       realMarker  = realMarker_;
       copyMarker  = copyMarker_;

@@ -388,6 +388,12 @@ extern QIcon* trackEnableSVGIcon;
 extern QIcon* recArmSVGIcon;
 extern QIcon* recMasterSVGIcon;
 
+extern QIcon* stopSVGIcon;
+extern QIcon* playSVGIcon;
+extern QIcon* fastForwardSVGIcon;
+extern QIcon* rewindSVGIcon;
+extern QIcon* rewindToStartSVGIcon;
+
 } // namespace MusEGui
 
 #endif

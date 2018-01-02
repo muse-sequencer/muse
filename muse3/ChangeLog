@@ -7,6 +7,8 @@
         not found, to be able to load an alternative. Currently
         the fonts are omitted silently, a better solution should be found.
       - fixed regression, context menu for tracks had vanished (rj)
+      - Some attempts to fix 'global cut' crash. Working on it...(Tim)
+      - New SVG icons for transport stop, play, ff, rew, rew-to-start. (Tim)
 31.12.2017
       - As requested: Track monitor now works regardless of track mute. (Tim)
         Allows to listen to input while muting playback material.

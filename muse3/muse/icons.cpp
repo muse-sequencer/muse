@@ -652,6 +652,12 @@ QIcon* trackEnableSVGIcon;
 QIcon* recArmSVGIcon;
 QIcon* recMasterSVGIcon;
 
+QIcon* stopSVGIcon;
+QIcon* playSVGIcon;
+QIcon* fastForwardSVGIcon;
+QIcon* rewindSVGIcon;
+QIcon* rewindToStartSVGIcon;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -1032,6 +1038,18 @@ void initIcons()
       //recMasterSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
       recMasterSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
       recMasterSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
+
+      stopSVGIcon = new QIcon(":/svg/stop.svg");
+
+      playSVGIcon = new QIcon(":/svg/play_off.svg");
+      playSVGIcon->addFile(":/svg/play_on.svg", QSize(), QIcon::Normal, QIcon::On);
+
+      fastForwardSVGIcon = new QIcon(":/svg/fast_forward.svg");
+
+      rewindSVGIcon = new QIcon(":/svg/rewind.svg");
+
+      rewindToStartSVGIcon = new QIcon(":/svg/rewind_to_start.svg");
       }
 
 //---------------------------------------------------------
@@ -1379,6 +1397,12 @@ void deleteIcons()
       delete trackEnableSVGIcon;
       delete recArmSVGIcon;
       delete recMasterSVGIcon;
+
+      delete stopSVGIcon;
+      delete playSVGIcon;
+      delete fastForwardSVGIcon;
+      delete rewindSVGIcon;
+      delete rewindToStartSVGIcon;
       }
 
 } // namespace MusEGui

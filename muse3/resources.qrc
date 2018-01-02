@@ -38,6 +38,13 @@
       <file>svg/solo_proxy_spotlight_on.svg</file>
       <file>svg/solo_proxy_spotlight_on_alone.svg</file>
       <file>svg/solo_and_proxy_spotlight_on.svg</file>
+      
+      <file>svg/stop.svg</file>
+      <file>svg/play_off.svg</file>
+      <file>svg/play_on.svg</file>
+      <file>svg/fast_forward.svg</file>
+      <file>svg/rewind.svg</file>
+      <file>svg/rewind_to_start.svg</file>
    </qresource>
 </RCC>
 

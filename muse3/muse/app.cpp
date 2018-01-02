@@ -430,25 +430,25 @@ MusE::MusE() : QMainWindow()
       tseparator->setSeparator(true);
       MusEGlobal::transportAction->addAction(tseparator);
 
-      MusEGlobal::startAction = new QAction(QIcon(*MusEGui::startIcon),
+      MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon,
          tr("Start"), MusEGlobal::transportAction);
 
       MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
-      MusEGlobal::rewindAction = new QAction(QIcon(*MusEGui::frewindIcon),
+      MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon,
          tr("Rewind"), MusEGlobal::transportAction);
 
       MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
-      MusEGlobal::forwardAction = new QAction(QIcon(*MusEGui::fforwardIcon),
+      MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon,
          tr("Forward"), MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
-      MusEGlobal::stopAction = new QAction(QIcon(*MusEGui::stopIcon),
+      MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon,
          tr("Stop"), MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
@@ -456,7 +456,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
+      MusEGlobal::playAction = new QAction(*MusEGui::playSVGIcon,
                      tr("Play") + " (" + shrtToStr(MusEGui::SHRT_PLAY_TOGGLE)
                          + ")<br>"+ tr("Restart rec")+" (" + QKeySequence(MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key).toString() + ")",
                      MusEGlobal::transportAction);
