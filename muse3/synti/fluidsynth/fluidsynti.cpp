@@ -1566,17 +1566,16 @@ void LoadFontWorker::execLoadFont(void * t)
 {
       FS_Helper *h = (FS_Helper*) t;
       FluidSynth* fptr = h->fptr;
-      char * filename = h->file_name.toLocal8Bit().data();
-      char sf_pathstr[200];
-      memset(sf_pathstr, 0, 200);
-      strcpy(sf_pathstr,filename);       // can't really see why but had to copy the string to a local variable,
-                                         // otherwise the filename became corrupted during fluid_synth_sfload
+
+      QByteArray ba = h->file_name.toLocal8Bit();
+      const char* filename = ba.constData();
+
       if (FS_DEBUG)
-         printf("execLoadFont() font name %s\n", sf_pathstr);
+         printf("execLoadFont() font name %s\n", filename);
 
       //Let only one loadThread have access to the fluidsynth-object at the time
       QMutexLocker ml(&fptr->_sfLoaderMutex);
-      int rv = fluid_synth_sfload(fptr->fluidsynth, sf_pathstr, 1);
+      int rv = fluid_synth_sfload(fptr->fluidsynth, filename, 1);
 
       if (rv ==-1) {
             fptr->sendError(fluid_synth_error(fptr->fluidsynth));

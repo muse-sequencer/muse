@@ -1,3 +1,6 @@
+02.01.2018
+      - Fix fluidsynth not loading font although it shows valid filename. (Tim)
+        Out-of-scope QString byte array constData in LoadFontWorker::execLoadFont.
 01.01.2018
       - Ported QThread and removal of QSocketNotifier from
         platformindependence branch (rj)
