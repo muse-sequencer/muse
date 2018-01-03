@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <list>
 
+#include <iostream>
 
 #include <QDialog>
 #include <QListWidgetItem>
@@ -668,6 +669,16 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             case MusECore::ScaleMap:
             case MusECore::Dynamic:
             case MusECore::Random:
+                {
+                    int range = cmt->procPosA;
+                    double val = range * (rand() / RAND_MAX - 0.5);
+                    int newpos = (int)round((double)pos + val);
+                    std::cout << "Position Randomize: range=" << range
+                            << " val=" << val << " pos=" << pos
+                            << " newpos=" << newpos << std::endl;
+                    pos = newpos;
+                }
+            break;
             case MusECore::Keep:
             case MusECore::Flip:
             case MusECore::Value:
@@ -1238,7 +1249,17 @@ void MidiTransformerDialog::procLenOpSel(int val)
 
 void MidiTransformerDialog::procPosOpSel(int val)
       {
-      MusECore::TransformOperator op = MusECore::TransformOperator(val);
+      std::cout << "procPosOpSel: val=" << val << std::endl;
+
+      MusECore::TransformOperator op;
+      if(val == 5)
+      {
+          op = MusECore::Random;
+      }
+      else
+      {
+          op = MusECore::TransformOperator(val);
+      }
       data->cmt->procPos = op;
 
       switch (op) {
@@ -1246,6 +1267,7 @@ void MidiTransformerDialog::procPosOpSel(int val)
             case MusECore::Invert:
                   procPosA->setEnabled(false);
                   break;
+            case MusECore::Random:
             case MusECore::Multiply:
             case MusECore::Divide:
                   procPosA->setDecimals(2);
