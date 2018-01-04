@@ -556,7 +556,8 @@ struct LV2PluginWrapper_State {
       plugControlEvt(LV2_RT_FIFO_SIZE),
       gtk2ResizeCompleted(false),
       gtk2AllocateCompleted(false),
-      songDirtyPending(false)
+      songDirtyPending(false),
+      uiIsOpening(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -643,6 +644,7 @@ struct LV2PluginWrapper_State {
     bool gtk2ResizeCompleted;
     bool gtk2AllocateCompleted;
     bool songDirtyPending;
+    bool uiIsOpening;
 };
 
 

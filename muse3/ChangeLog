@@ -1,3 +1,10 @@
+04.01.2018
+      - Fixed Zynaddsubfx LV2 not working in Muse (#599) (Tim)
+        (X11UI ui type would not show after the first show, and looked ugly.)
+        Used QMainWindow instead of QWindow for X11UI LV2 ui type.
+        Added a flag state->uiIsOpening which forces the gui update timer
+         to re-send all controls and program to the gui upon re-opening in 
+         LV2PluginWrapper_Window::updateGui + LV2Synth::lv2ui_SendChangedControls.
 02.01.2018
       - Fix fluidsynth not loading font although it shows valid filename. (Tim)
         Out-of-scope QString byte array constData in LoadFontWorker::execLoadFont.

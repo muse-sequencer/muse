@@ -530,7 +530,8 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
          {
             state->controlsMask [i] = false;
 
-            if(state->lastControls [i] != controls [i].val)
+            // Force send if re-opening.
+            if(state->uiIsOpening || state->lastControls [i] != controls [i].val)
             {
                state->lastControls [i] = controls [i].val;
                state->uiDesc->port_event(state->uiInst,
@@ -543,7 +544,8 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 
       for(uint32_t i = 0; i < numControlsOut; ++i)
       {
-         if(state->lastControlsOut [i] != controlsOut [i].val)
+         // Force send if re-opening.
+         if(state->uiIsOpening || state->lastControlsOut [i] != controlsOut [i].val)
          {
             state->lastControlsOut [i] = controlsOut [i].val;
             state->uiDesc->port_event(state->uiInst,
@@ -1068,6 +1070,9 @@ void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 
    }
 
+   // Set the flag to tell the update timer to force sending all controls and program.
+   state->uiIsOpening = true;
+   
    state->pluginWindow->startNextTime();
 
 }
@@ -4617,6 +4622,9 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
 
+   // Reset the flag, just to be sure.
+   _state->uiIsOpening = false;
+   
    // The widget is automatically deleted by use of the 
    //  WA_DeleteOnClose attribute in the constructor.
 }
@@ -4682,7 +4690,8 @@ void LV2PluginWrapper_Window::updateGui()
    LV2Synth::lv2ui_SendChangedControls(_state);
 
    //send program change if any
-   if(_state->uiDoSelectPrg)
+   // Force send if re-opening.
+   if(_state->uiIsOpening || _state->uiDoSelectPrg)
    {
       _state->uiDoSelectPrg = false;
       if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
@@ -4694,6 +4703,9 @@ void LV2PluginWrapper_Window::updateGui()
       }
    }
 
+   // Reset the flag.
+   _state->uiIsOpening = false;
+   
    //call ui idle callback if any
    if(_state->uiIdleIface != NULL)
    {
