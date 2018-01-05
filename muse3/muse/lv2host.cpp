@@ -4661,9 +4661,9 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state,
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 {
-//#ifdef DEBUG_LV2
+#ifdef DEBUG_LV2
    std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
-//#endif
+#endif
 }
 
 void LV2PluginWrapper_Window::startNextTime()
