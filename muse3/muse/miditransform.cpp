@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include <list>
 
-#include <iostream>
-
 #include <QDialog>
 #include <QListWidgetItem>
 
@@ -671,12 +669,8 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             case MusECore::Random:
                 {
                     int range = cmt->procPosA;
-                    double val = range * (rand() / RAND_MAX - 0.5);
-                    int newpos = (int)round((double)pos + val);
-                    std::cout << "Position Randomize: range=" << range
-                            << " val=" << val << " pos=" << pos
-                            << " newpos=" << newpos << std::endl;
-                    pos = newpos;
+                    int val = rand() % (2 * range) - range;
+                    pos = pos + val;
                 }
             break;
             case MusECore::Keep:
@@ -1249,8 +1243,12 @@ void MidiTransformerDialog::procLenOpSel(int val)
 
 void MidiTransformerDialog::procPosOpSel(int val)
       {
-      std::cout << "procPosOpSel: val=" << val << std::endl;
-
+      // Added the randomize functionality for the
+      // MIDI note position. Since we left out the
+      // other operators, random would be 5 (as
+      // we get it from the combo box but in the
+      // enum used it would be 11, so we do this
+      // conditionally
       MusECore::TransformOperator op;
       if(val == 5)
       {
@@ -1267,12 +1265,12 @@ void MidiTransformerDialog::procPosOpSel(int val)
             case MusECore::Invert:
                   procPosA->setEnabled(false);
                   break;
-            case MusECore::Random:
             case MusECore::Multiply:
             case MusECore::Divide:
                   procPosA->setDecimals(2);
                   procPosA->setEnabled(true);
                   break;
+            case MusECore::Random:
             case MusECore::Plus:
             case MusECore::Minus:
                   procPosA->setDecimals(0);
