@@ -1,3 +1,10 @@
+06.01.2018
+      *** MusE 3.0.0 ***
+        Final release of MusE 3.0.0
+      - Changed remaining toLatin1() into toLocal8Bit() for fluidsynth path operations. (rj)
+05.01.2018
+      - Merged feature from Michael Oswald, Mid transformer support for (rj)
+        randomizing event
 04.01.2018
       - Fixed Zynaddsubfx LV2 not working in Muse (#599) (Tim)
         (X11UI ui type would not show after the first show, and looked ugly.)
