@@ -33,6 +33,7 @@ packaging consistent and traceable.
 6. make a tag in git for this particular checkin when you are satisfied the release is correct
    'git tag -l' lists all of the previous tags and gives a hint as to the format to use.
    Use git tag -a <tag name> to create an annotated tag.
+   To push the tag to master: git push --tags
 7. create a releasenote
 8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
    it's time)
