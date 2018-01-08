@@ -29,6 +29,7 @@ details.
       Technologies supported:
          - LASH - for session control with external LASH enabled applications 
          - JACK - The Jack Audio Connection Kit can be used for audio and midi
+         - RtAudio - basic audio input/output for Pulse, ALSA and OSS
          - ALSA midi
          - Plugin formats: LV2, DSSI, VST, LinuxVST, MESS
          - Support Inst(rument) Patch Library for enhanced fluidsynth features.
@@ -89,6 +90,9 @@ details.
       - libinstpatch >= 1.0    Instrument Patch Library (development files)
           http://www.swamiproject.org/
 
+      - RtAudio >=5.0 audio input/output support.
+          https://www.music.mcgill.ca/~gary/rtaudio/
+        
       - LV2 (LADSPA Version 2) plugin support:
       
         MusE contains built-in versions of these LV2 support libraries:
@@ -148,7 +152,8 @@ details.
         sudo apt-get install build-essential cmake libsndfile1-dev libsamplerate0-dev\
             libjack-jackd2-dev ladspa-sdk qt5-default qttools5-dev qttools5-dev-tools\
             liblo-dev dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev git\
-            libfluidsynth-dev libgtkmm-2.4-dev
+            libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev libqt5svg5-dev\
+            libinstpatch-dev
     2. Clone muse source with command: 
      'git clone https://github.com/muse-sequencer/muse.git'
     3. Type 'cd muse/muse3'
