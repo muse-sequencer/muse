@@ -1,4 +1,6 @@
 08.01.2018
+      - Fixed build against newer gcc (4.5+ with c++11 enabled) and glibc 2.27+ (Orcan)
+08.01.2018
       - Oops! Fix #602 Wave tracks lose sync if muted / unmuted. (Tim)
         Slight rework of WaveTrack::getData().
         TODO: Same thing happens if clicking track off/on.

@@ -131,7 +131,7 @@ double qwtCeil125( double x)
 
     lx = log10(fabs(x));
     p10 = floor(lx);
-    fr = pow10(lx - p10);
+    fr = exp10(lx - p10);
     if (fr <=1.0)
        fr = 1.0;
     else if (fr <= 2.0)
@@ -140,7 +140,7 @@ double qwtCeil125( double x)
        fr = 5.0;
     else
        fr = 10.0;
-    rv = fr * pow10(p10);
+    rv = fr * exp10(p10);
     return sign * rv;
 }
 
@@ -168,7 +168,7 @@ double qwtFloor125( double x)
 
     lx = log10(fabs(x));
     p10 = floor(lx);
-    fr = pow10(lx - p10);
+    fr = exp10(lx - p10);
     if (fr >= 10.0)
        fr = 10.0;
     else if (fr >= 5.0)
@@ -177,7 +177,7 @@ double qwtFloor125( double x)
        fr = 2.0;
     else
        fr = 1.0;
-    rv = fr * pow10(p10);
+    rv = fr * exp10(p10);
     return sign * rv;
 }
 

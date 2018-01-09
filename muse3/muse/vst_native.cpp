@@ -470,7 +470,7 @@ static void scanVstNativeLib(QFileInfo& fi)
         VstIntPtr id = plugin->dispatcher(plugin, 24 + 46 /* effShellGetNextPlugin */, 0, 0, cPlugName, 0);
         if(id != 0 && cPlugName [0] != 0)
         {
-           shellPlugs.insert(std::make_pair<int, std::string>(id, std::string(cPlugName)));
+           shellPlugs.insert(std::make_pair(id, std::string(cPlugName)));
         }
         else
            break;
