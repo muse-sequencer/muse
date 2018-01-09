@@ -1,3 +1,7 @@
+08.01.2018
+      - Oops! Fix #602 Wave tracks lose sync if muted / unmuted. (Tim)
+        Slight rework of WaveTrack::getData().
+        TODO: Same thing happens if clicking track off/on.
 06.01.2018
       *** MusE 3.0.0 ***
         Final release of MusE 3.0.0
