@@ -680,8 +680,9 @@ void MidiDevice::handleSeek()
   
   if(MusEGlobal::audio->isPlaying()) 
   {
-    // TODO: Don't clear, let it play whatever was scheduled ?
-    setStopFlag(true);
+// REMOVE Tim. bugs. Removed.
+//     // TODO: Don't clear, let it play whatever was scheduled ?
+//     setStopFlag(true);
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
     {
       MidiPlayEvent ev(*i);

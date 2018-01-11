@@ -532,21 +532,9 @@ void Audio::process(unsigned frames)
                               n = 0;
                         state = LOOP1;
                         _loopFrame = lpos - n;
-
-                        // clear sustain
-                        for (int i = 0; i < MIDI_PORTS; ++i) {
-                            MidiPort* mp = &MusEGlobal::midiPorts[i];
-                            if(!mp->device())
-                              continue;
-                            for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-                                if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                                    const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                                    mp->device()->putEvent(ev, MidiDevice::NotLate);
-                                    }
-                                }
-                            }
-
                         Pos lp(_loopFrame, false);
+                        // Seek the transport. Note that temporary clearing of sustain
+                        //  controllers is done by the seek handlers and then startRolling().
                         MusEGlobal::audioDevice->seekTransport(lp);
                         }
                   }

@@ -1,3 +1,8 @@
+11.01.2018
+      - Fixed looping not playing first note in loops since 17.12.2017. (Tim)
+        Was a line in MidiDevice::handleSeek() I was not sure of.
+      - Fixed midi sustain controller problems since 17.12.2017. (Tim)
+        Sustain was not handled right, and was being reset to zero.
 08.01.2018
       - Fixed build against newer gcc (4.5+ with c++11 enabled) and glibc 2.27+ (Orcan)
 08.01.2018
