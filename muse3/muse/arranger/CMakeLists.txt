@@ -38,6 +38,7 @@ file (GLOB arranger_source_files
       arranger.cpp
       arrangerview.cpp
       pcanvas.cpp
+      structure.cpp
       tlist.cpp
       )
 

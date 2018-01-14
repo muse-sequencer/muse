@@ -997,6 +997,22 @@ void Audio::seekMidi()
     if(md && playing)
       md->handleSeek();
     
+    //---------------------------------------------------
+    //    reset sustain
+    //---------------------------------------------------
+    
+    if(md)
+    {
+      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      {
+        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+        {
+          const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+          md->putEvent(ev, MidiDevice::NotLate);
+        }
+      }
+    }
+    
     MidiInstrument* instr = mp->instrument();
     MidiCtrlValListList* cll = mp->controller();
 
@@ -1090,18 +1106,14 @@ void Audio::seekMidi()
           }
         }
 
-        // Don't bother sending any sustain values if not playing. Just set the hw state.
         const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
-        if(fin_ctlnum == CTRL_SUSTAIN && !playing)
-          // This is the audio thread. Just set directly.
-          fin_mp->setHwCtrlState(ev);
-        else
-        {
-          // This is the audio thread. Just set directly.
-          fin_mp->setHwCtrlState(ev);
-          if(fin_mp->device())
-            fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
-        }
+        // This is the audio thread. Just set directly.
+        fin_mp->setHwCtrlState(ev);
+        // Don't bother sending any sustain values to the device, because we already
+        //  just sent out zero sustain values, above. Just set the hw state.
+        // When play resumes, the correct values are sent again if necessary in Audio::startRolling().
+        if(fin_ctlnum != CTRL_SUSTAIN && fin_mp->device())
+          fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
       }
 
       // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
@@ -1118,30 +1130,13 @@ void Audio::seekMidi()
           MidiController* mc = imc->second;
           if(mc->initVal() != CTRL_VAL_UNKNOWN)
           {
-            //fprintf(stderr, "Audio::handleSeek: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
+            //fprintf(stderr, "Audio::seekMidi: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
             // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
             const MidiPlayEvent ev(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias());
             // This is the audio thread. Just set directly.
             mp->setHwCtrlState(ev);
-            if(mp->device())
-              mp->device()->putEvent(ev, MidiDevice::NotLate);
+            md->putEvent(ev, MidiDevice::NotLate);
           }
-        }
-      }
-      
-      //---------------------------------------------------
-      //    reset sustain
-      //---------------------------------------------------
-      
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-      {
-        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-        {
-          const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-          // This is the audio thread. Just set directly.
-          mp->setHwCtrlState(ev);
-          if(mp->device())
-            mp->device()->putEvent(ev, MidiDevice::NotLate);
         }
       }
       
