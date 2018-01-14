@@ -258,10 +258,10 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       if(mey + meh >= my && mey + meh <= my + mh)
         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
 
-#if 0
+// print note name on the drawn notes
       QFont f(MusEGlobal::config.fonts[1]);
 
-      f.setPointSize(f.pointSize() * 0.75);
+      f.setPointSize(f.pointSize() * 0.85);
       p.setFont(f);
       printf("color lightsness %f\n", color.lightnessF());
       if (color.lightnessF() > 0.6f) {
@@ -273,9 +273,11 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         p.setPen(Qt::white);
 
       }
-      p.drawText(mr,Qt::AlignHCenter|Qt::AlignCenter, MusECore::pitch2string(event.pitch()));
+      QString noteStr = MusECore::pitch2string(event.pitch());
 
-#endif
+      p.drawText(mer,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
+
+//
 
       p.setWorldMatrixEnabled(wmtxen);
       }

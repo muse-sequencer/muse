@@ -1,6 +1,8 @@
 14.01.2018
       - Moved structure.* into muse/arranger/. -DMODULES_BUILD_STATIC=TRUE should
         work now. (Orcan)
+      - Print out note name on events in Pianoroll
+        possibly this should be a setting (rj)
 11.01.2018
       - Fixed looping not playing first note in loops since 17.12.2017. (Tim)
         Was a line in MidiDevice::handleSeek() I was not sure of.
