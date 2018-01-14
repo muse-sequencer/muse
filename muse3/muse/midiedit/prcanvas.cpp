@@ -50,6 +50,7 @@
 #include "audio.h"
 #include "functions.h"
 #include "gconfig.h"
+#include "helper.h"
 
 #define CHORD_TIMEOUT 75
 
@@ -246,8 +247,8 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       int meh = mer.height();
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QBrush brush(color);
-      p.fillRect(mr, brush);       
-      
+      p.fillRect(mr, brush);
+
       if(mex >= mx && mex <= mx + mw)
         p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
       if(mex + mew >= mx && mex + mew <= mx + mw)
@@ -256,7 +257,26 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         p.drawLine(mx, mey, mx + mw - 1, mey);                       // The top edge
       if(mey + meh >= my && mey + meh <= my + mh)
         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
-      
+
+#if 0
+      QFont f(MusEGlobal::config.fonts[1]);
+
+      f.setPointSize(f.pointSize() * 0.75);
+      p.setFont(f);
+      printf("color lightsness %f\n", color.lightnessF());
+      if (color.lightnessF() > 0.6f) {
+
+        p.setPen(Qt::black);
+
+      } else {
+
+        p.setPen(Qt::white);
+
+      }
+      p.drawText(mr,Qt::AlignHCenter|Qt::AlignCenter, MusECore::pitch2string(event.pitch()));
+
+#endif
+
       p.setWorldMatrixEnabled(wmtxen);
       }
 
