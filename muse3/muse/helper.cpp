@@ -1809,7 +1809,7 @@ void loadTheme(const QString& s, bool force)
             fprintf(stderr, "   App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
           }
 
-          // No style object name? It will hapen when a stylesheet is active.
+          // No style object name? It will happen when a stylesheet is active.
           // Give it a name. NOTE: The object names always seem to be lower case while
           //  the style factory key names are not.
           if(qApp->style()->objectName().isEmpty())
@@ -1833,7 +1833,7 @@ void loadTheme(const QString& s, bool force)
               fprintf(stderr, "   app style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
             }
 
-            // No style object name? It will hapen when a stylesheet is active.
+            // No style object name? It will happen when a stylesheet is active.
             // Give it a name. NOTE: The object names always seem to be lower case while
             //  the style factory key names are not.
             if(qApp->style()->objectName().isEmpty())

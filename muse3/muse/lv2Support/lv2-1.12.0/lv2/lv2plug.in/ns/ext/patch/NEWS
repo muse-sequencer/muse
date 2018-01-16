@@ -1,6 +1,6 @@
 patch (2.4) stable;
 
-  * Define patch:Get with no subject to implicitly apply to reciever.  This can be
+  * Define patch:Get with no subject to implicitly apply to receiver.  This can be
     used by UIs to get an initial description of a plugin.
   * Add patch:Copy method.
 

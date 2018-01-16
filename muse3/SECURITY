@@ -150,7 +150,7 @@ Additionally, you can use "givertcap" as described in the next section.
 What is givertcap and how do I use it ?
 ---------------------------------------
 
-"givertcap" (give real-time capabilites) is a small wrapper written by Tommi
+"givertcap" (give real-time capabilities) is a small wrapper written by Tommi
 Ilmonen.
 When enabled, it is executed by MusE and gives to it just the capabilities
 needed to set the timer and get real-time scheduling, but not the full set of 
@@ -195,7 +195,7 @@ Do not forget to remove the suid bit on muse afterwards by doing
 	# chmod 755 muse
 .
 
-For more information about givertcap and kernel capabilites, see
+For more information about givertcap and kernel capabilities, see
 http://www.tml.hut.fi/~tilmonen/givertcap/
 and
 http://ftp.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.4/capfaq-0.2.
@@ -223,7 +223,7 @@ http://www.tml.hut.fi/~tilmonen/givertcap/
 An alternative approach, using a kernel module:
 http://arctrix.com/nas/linux/capwrap.tar.gz
 
-Kernel capabilites:
+Kernel capabilities:
 http://ftp.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.4/capfaq-0.2.
 txt
 

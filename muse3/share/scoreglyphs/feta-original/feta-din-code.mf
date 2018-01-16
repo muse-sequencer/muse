@@ -40,7 +40,7 @@ fet_endchar;
 
 
 %
-% Couldn't find many z examples.  This one is losely inspired
+% Couldn't find many z examples.  This one is loosely inspired
 % by a sfz from Mueller Etuden fuer Horn (Edition Hofmeister).
 %
 

@@ -491,7 +491,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                               }
                         }
                   if(MusEGlobal::debugMsg)
-                    printf("MidiFile::readEvent: unknown Sysex 0x%02x unabsorbed, passing thru intead\n", me & 0xff);
+                    printf("MidiFile::readEvent: unknown Sysex 0x%02x unabsorbed, passing thru instead\n", me & 0xff);
                   return 3;
                   }
             if (me == 0xff) {
@@ -669,7 +669,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
       int c     = event->channel();
       int nstat = event->type();
 
-      // we dont save meta data into smf type 0 files: DELETETHIS 4 ???
+      // we don't save meta data into smf type 0 files: DELETETHIS 4 ???
       // Oct 16, 2011: Apparently it is legal to do that. Part of fix for bug tracker 3293339.
       //if (MusEGlobal::config.smfFormat == 0 && nstat == ME_META)
       //      return;

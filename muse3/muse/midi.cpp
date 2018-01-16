@@ -1161,7 +1161,7 @@ void Audio::seekMidi()
 //   extClockHistoryTick2Frame
 //    Convert tick to frame using the external clock history list.
 //    The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
-//    The returned clock frames occured during the previous audio cycle(s), so you may want to shift 
+//    The returned clock frames occurred during the previous audio cycle(s), so you may want to shift 
 //     the frames forward by one audio segment size for scheduling purposes.
 //    CAUTION: There must be at least one valid clock in the history,
 //              otherwise it returns zero. Don't feed this a tick 
@@ -1288,7 +1288,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
       PartList* pl = track->parts();
       for (iPart p = pl->begin(); p != pl->end(); ++p) {
             MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
-            // dont play muted parts
+            // don't play muted parts
             if (part->mute())
                   continue;
             const EventList& events = part->events();
@@ -1317,7 +1317,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                   Event ev = ie->second;
                   port = defaultPort; //Reset each loop
                   //
-                  //  dont play any meta events
+                  //  don't play any meta events
                   //
                   if (ev.type() == Meta)
                         continue;
@@ -1343,7 +1343,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                     // If external sync is on, look up the scheduling frame from the tick,
                     //  in the external clock history list (which is cleared, re-composed, and processed each cycle).
                     // The function takes a tick relative to zero (ie. relative to the first event in this batch).
-                    // The returned clock frame occured during the previous audio cycle(s), so shift the frame 
+                    // The returned clock frame occurred during the previous audio cycle(s), so shift the frame 
                     //  forward by one audio segment size.
                     frame = extClockHistoryTick2Frame(tick - stick) + MusEGlobal::segmentSize;
                   else
@@ -1418,7 +1418,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     veloOff = 0;
 
                               len = (len *  track->len) / 100;
-                              if (len <= 0)     // dont allow zero length
+                              if (len <= 0)     // don't allow zero length
                                     len = 1;
 
                               if (port == defaultPort) {
@@ -1808,7 +1808,7 @@ void Audio::processMidi()
                               MidiRecordEvent event(rf.peek(i));
                               event.setPort(t_port);
                               event.setChannel(t_channel);
-                              // dont't echo controller changes back to software
+                              // don't echo controller changes back to software
                               // synthesizer:
                               if(md && track_rec_monitor)
                               {
@@ -2035,7 +2035,7 @@ void Audio::processMidi()
                                 // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent(). p3.3.35
                                 // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
 
-                                // dont't echo controller changes back to software
+                                // don't echo controller changes back to software
                                 // synthesizer:
 
                                 // Zero means zero. Should mean no note at all?

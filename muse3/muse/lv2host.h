@@ -202,7 +202,7 @@ struct LV2ControlPort
    float defVal; //default control value
    float minVal; //minimum control value
    float maxVal; //maximum control value
-   char *cName; //cached value to share beetween function calls
+   char *cName; //cached value to share between function calls
    char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;

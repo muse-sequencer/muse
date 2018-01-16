@@ -151,7 +151,7 @@ define_pixels (blot_diameter);
 %   . Restore height and decrease `d' by 1.
 %
 % o The glyph is centered between two or four staff lines, and the origin is
-%   the middle of the whitespace.  Assuming that the the whitespace consists
+%   the middle of the whitespace.  Assuming that the whitespace consists
 %   of an odd number of pixels, we have this:
 %
 %          -----------

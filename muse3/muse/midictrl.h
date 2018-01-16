@@ -397,7 +397,7 @@ class MidiEncoder {
 //---------------------------------------------------------
 //   MidiControllerList
 //    this is a list of used midi controllers created
-//    - excplicit by user
+//    - explicit by user
 //    - implicit during import of a midi file
 //---------------------------------------------------------
 

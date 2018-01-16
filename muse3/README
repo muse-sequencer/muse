@@ -312,14 +312,14 @@ details.
         
         MusE will try the Real Time Clock (RTC) first.
         If that fails it will try ALSA timers instead - typically the 
-         ALSA High Resolution (HR) timer or the ALSA sytem timer.
+         ALSA High Resolution (HR) timer or the ALSA system timer.
 
         The RTC is recommended, with sufficient permissions, for best accuracy.
         
         To ensure you have permissions to use the RTC, on modern systems
          using udev rules, create this file if it does not exist:
            "/etc/udev/rules.d/40-timer-permissions.rules"
-         and add the follwing lines to the file:  
+         and add the following lines to the file:  
            KERNEL=="rtc0",GROUP="audio"
            KERNEL=="hpet",GROUP="audio"
          and, as stated in "Recommended setup" above, ensure you are 
@@ -342,7 +342,7 @@ details.
 
         
         (The following is old information! But may work for those without udev.)
-        Make sure you can acces the realtime clock (RTC)
+        Make sure you can access the realtime clock (RTC)
             chmod 660 /dev/rtc
             chgrp audio /dev/rtc
         Make sure MusE can set the rtc clock:

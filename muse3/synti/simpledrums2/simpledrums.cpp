@@ -1557,7 +1557,7 @@ void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch)
 
 /*!
     \fn loadSampleThread(void* p)
-    \brief Since process needs to respond withing a certain time, loading of samples need to be done in a separate thread
+    \brief Since process needs to respond within a certain time, loading of samples need to be done in a separate thread
  */
 static void* loadSampleThread(void* p)
 {

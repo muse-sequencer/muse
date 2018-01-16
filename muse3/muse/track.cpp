@@ -1882,7 +1882,7 @@ int MidiTrack::getControllerChangeAtTick(unsigned tick, int ctrl, int def)
   return def;
 }
 
-// returns the tick where this CC gets overriden by a new one
+// returns the tick where this CC gets overridden by a new one
 // returns UINT_MAX for "never"
 unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl) 
 {

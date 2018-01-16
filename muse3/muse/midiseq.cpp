@@ -471,7 +471,7 @@ void MidiSeq::start(int /*priority*/, void*)
 void MidiSeq::checkAndReportTimingResolution()
 {
     int freq = timer->getTimerFreq();
-    fprintf(stderr, "Aquired timer frequency: %d\n", freq);
+    fprintf(stderr, "Acquired timer frequency: %d\n", freq);
     if (freq < 500) {
         if(MusEGlobal::config.warnIfBadTiming)
         {

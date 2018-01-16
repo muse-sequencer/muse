@@ -174,7 +174,7 @@ LMaster::LMaster(QWidget* parent, const char* name)
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));
       signAction = menuEdit->addAction(tr("Insert Signature"));
       keyAction = menuEdit->addAction(tr("Insert Key"));
-      posAction = menuEdit->addAction(tr("Edit Positon"));
+      posAction = menuEdit->addAction(tr("Edit Position"));
       valAction = menuEdit->addAction(tr("Edit Value"));
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);

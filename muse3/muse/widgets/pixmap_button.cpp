@@ -160,7 +160,7 @@ void PixmapButton::mousePressEvent(QMouseEvent* e)
   if(_checkable)
     emit toggled(_checked);
   
-  //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons... 
+  //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desirable with many small buttons... 
   QWidget::mousePressEvent(e);   // Hm, need this so menus can close.
 }
 
@@ -168,7 +168,7 @@ void PixmapButton::mouseReleaseEvent(QMouseEvent* e)
 {
   emit clicked(_checked);
   
-  //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons... 
+  //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desirable with many small buttons... 
   QWidget::mouseReleaseEvent(e); // Hm, need this so menus can close.
 }
 
@@ -407,7 +407,7 @@ void IconButton::mousePressEvent(QMouseEvent* e)
   if(_checkable)
     emit toggled(_checked);
 
-//   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons...
+//   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desirable with many small buttons...
 //   QWidget::mousePressEvent(e);   // Hm, need this so menus can close.
 }
 
@@ -416,7 +416,7 @@ void IconButton::mouseReleaseEvent(QMouseEvent* e)
   e->accept();
   emit clicked(_checked);
 
-//   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons...
+//   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desirable with many small buttons...
 //   QWidget::mouseReleaseEvent(e); // Hm, need this so menus can close.
 }
 

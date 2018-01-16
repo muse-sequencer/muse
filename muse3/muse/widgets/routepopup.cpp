@@ -1040,7 +1040,7 @@ bool RoutePopupMenu::event(QEvent* event)
     //   receives the release event. There is one exception: if a popup menu appears while the mouse button is held down, 
     //   this popup immediately steals the mouse events."
     // Unfortunately that's exactly what we don't want. The mouse release events are not being passed to the higher-up menu
-    //  if we hold the mouse down and move over another menu item which has a submenu - the (delayed) appearance  of that 
+    //  if we hold the mouse down and move over another menu item which has a submenu - the (delayed) appearance of that 
     //  submenu steals the release. Oddly, if the mouse is moved further - even just once - within the new item, 
     //  the release event IS passed on. So to avoid dealing with that distinction, let's just pass on all release events.
     // Should be OK under normal usage, since it makes some sense that no mouse events should be reaching a submenu anyway - 
@@ -2265,7 +2265,7 @@ bool RoutePopupMenu::preferredPortAliasChanged()
         }
       }
       // No Route data type. Check for int data IDs.
-      // Handle future data types above, before this in case those types might be convertable to int.
+      // Handle future data types above, before this in case those types might be convertible to int.
       else
       {
         bool ok = false;
@@ -2362,7 +2362,7 @@ bool RoutePopupMenu::routerChannelGroupingChanged()
         // Nothing to do here yet.
       }
       // No Route data type. Check for int data IDs.
-      // Handle future data types above, before this in case those types might be convertable to int.
+      // Handle future data types above, before this in case those types might be convertible to int.
       else
       {
         bool ok = false;

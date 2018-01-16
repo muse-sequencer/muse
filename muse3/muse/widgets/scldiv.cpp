@@ -28,7 +28,7 @@
 
 namespace MusEGui {
 
-//	ScaleDiv - A class for building  scale divisions
+//	ScaleDiv - A class for building scale divisions
 //
 //	The ScaleDiv class can build
 //	linear and logarithmic scale divisions for specified
@@ -155,7 +155,7 @@ ScaleDiv::ScaleDiv(const ScaleDiv &s)
 //.f	ScaleDiv & ScaleDiv::operator=(const ScaleDiv &s)
 //
 //.u	Parameters
-//.p	const ScaleDiv &s -- scale divison to be assigned
+//.p	const ScaleDiv &s -- scale division to be assigned
 //------------------------------------------------------------
 
 ScaleDiv& ScaleDiv::operator=(const ScaleDiv &s)

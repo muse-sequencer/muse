@@ -797,7 +797,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             //  us in a really BAD state: mouse is grabbed (and hidden) and no way out !
                             //
                             // That is likely just how QWidget works, but here using global cursor overrides 
-                            //  it is disasterous. TESTED: Yes, that is how other controls work. Hitting another 
+                            //  it is disastrous. TESTED: Yes, that is how other controls work. Hitting another 
                             //  button while the mouse has been dragged outside causes it to bypass us !
                             setMouseGrab(true); // CAUTION
                             

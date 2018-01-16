@@ -203,7 +203,7 @@ void PartCanvas::returnPressed()
       {
       lineEditor->hide();
       if (editMode) {
-          //this check is neccessary, because it returnPressed may be called
+          //this check is necessary, because it returnPressed may be called
           //twice. the second call would cause a crash, however!
           MusECore::Part* part = editPart->part();
           // Indicate do undo, and do port controller values but not clone parts.

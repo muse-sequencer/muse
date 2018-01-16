@@ -226,7 +226,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
 
             case audioMasterPinConnected:
-                  // inquire if an input or output is beeing connected;
+                  // inquire if an input or output is being connected;
                   // index enumerates input or output counting from zero:
                   // value is 0 for input and != 0 otherwise. note: the
                   // return value is 0 for <true> such that older versions
@@ -1375,7 +1375,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       return 0;
 
    case audioMasterPinConnected:
-      // inquire if an input or output is beeing connected;
+      // inquire if an input or output is being connected;
       // index enumerates input or output counting from zero:
       // value is 0 for input and != 0 otherwise. note: the
       // return value is 0 for <true> such that older versions
@@ -1629,7 +1629,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
 
       // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
       // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio
-      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      //  position, so that by the time of the NEXT process, THOSE events have also occurred in the previous period.
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
@@ -1682,7 +1682,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
                     int type = ev->midiData[0] & 0xff;
                     switch(type)
                     {
-// TODO: Sysex NOT suppported with Vestige !
+// TODO: Sysex NOT supported with Vestige !
 //                           case ME_SYSEX:
 //
 //                                 // TODO: Deal with large sysex, which are broken up into chunks!

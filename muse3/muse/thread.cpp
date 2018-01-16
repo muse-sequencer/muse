@@ -269,7 +269,7 @@ void Thread::loop()
       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
       int policy = buf[0]; // Initialize using buf[0] to keep the compiler from complaining about unused buf.
-      policy = 0;          // Now set the true desired inital value.
+      policy = 0;          // Now set the true desired initial value.
       if ((policy = sched_getscheduler (0)) < 0) {
             printf("Thread: Cannot get current client scheduler: %s\n", strerror(errno));
             }

@@ -352,7 +352,7 @@ void Audio::process(unsigned frames)
       if (msg) {
             processMsg(msg);
             int sn = msg->serialNo;
-            msg    = 0;    // dont process again
+            msg    = 0;    // don't process again
             int rv = write(fromThreadFdw, &sn, sizeof(int));
             if (rv != sizeof(int)) {
                   fprintf(stderr, "audio: write(%d) pipe failed: %s\n",
@@ -965,7 +965,7 @@ void Audio::startRolling()
             midiClick = AL::sigmap.bar2tick(bar, beat, 0);
 //            }
 
-      // reenable sustain 
+      // re-enable sustain 
       for (int i = 0; i < MIDI_PORTS; ++i) {
           MidiPort* mp = &MusEGlobal::midiPorts[i];
           if(!mp->device())
