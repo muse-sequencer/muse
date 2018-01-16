@@ -1,3 +1,5 @@
+16.01.2018
+      *** MusE 3.0.1 ***
 14.01.2018
       - Moved structure.* into muse/arranger/. -DMODULES_BUILD_STATIC=TRUE should
         work now. (Orcan)
