@@ -517,7 +517,6 @@ if ( ENABLE_FLUID )
       #  synth library named 'fluid_synth' to be built later.
       PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
       if (FLUIDSYN_FOUND)
-            include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
       endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )
