@@ -607,7 +607,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     int chbits = MusEGlobal::midiPorts[no].defaultOutChannels();
                     QActionGroup* ag = new QActionGroup(pup);
                     ag->setExclusive(true);
-                    for(int i = 0; i < MIDI_CHANNELS; ++i) 
+
+                    act = ag->addAction("None");
+                    act->setData(0);
+                    act->setCheckable(true);
+                    act->setChecked(chbits == 0);
+
+                    for(int i = 0; i < MIDI_CHANNELS; ++i)
                     {
                       act = ag->addAction(QString().setNum(i + 1));
                       act->setData(i);
