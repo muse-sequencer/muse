@@ -86,7 +86,13 @@ void initMidiPorts()
             // Set the first channel on the first port to auto-connect to midi track outputs.
             if(i == 0)
             {
-              port->setDefaultOutChannels(1);
+
+              // robert: removing the default init on several places to allow for the case
+              // where you rather want the midi track to default to the last created port
+              // this can only happen if there is _no_ default set
+              //
+              // port->setDefaultOutChannels(1);
+
               port->setDefaultInChannels(1);
             }
             }

@@ -1,3 +1,7 @@
+17.01.2018
+      - Added ability to /not/ specify a default out, instead a created midi track
+        defaults to the port with highest number (usually the last created)
+        this is also the default behaviour now (rj)
 16.01.2018
       *** MusE 3.0.1 ***
 14.01.2018

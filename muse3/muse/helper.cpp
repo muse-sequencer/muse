@@ -376,7 +376,7 @@ void populateMidiPorts()
   int port_num = 0;
   int jack_midis_found = 0;
   bool def_in_found = false;
-  bool def_out_found = false;
+//  bool def_out_found = false;
 
   // If Jack is running, prefer Jack midi devices over ALSA.
   if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::JACK_AUDIO)  
@@ -390,13 +390,17 @@ void populateMidiPorts()
         MidiPort* mp = &MusEGlobal::midiPorts[port_num];
         MusEGlobal::audio->msgSetMidiDevice(mp, dev);
 
-        // Global function initMidiPorts() already sets defs to port #1, but this will override.
-        if(!def_out_found && dev->rwFlags() & 0x1)
-        {
-          mp->setDefaultOutChannels(1);
-          def_out_found = true;
-        }
-        else
+// robert: removing the default init on several places to allow for the case
+// where you rather want the midi track to default to the last created port
+// this can only happen if there is _no_ default set
+
+//        // Global function initMidiPorts() already sets defs to port #1, but this will override.
+//        if(!def_out_found && dev->rwFlags() & 0x1)
+//        {
+//          mp->setDefaultOutChannels(1);
+//          def_out_found = true;
+//        }
+//        else
           mp->setDefaultOutChannels(0);
 
         if(!def_in_found && dev->rwFlags() & 0x2)
@@ -428,13 +432,17 @@ void populateMidiPorts()
       MidiPort* mp = &MusEGlobal::midiPorts[port_num];
       MusEGlobal::audio->msgSetMidiDevice(mp, dev);
 
-      // Global function initMidiPorts() already sets defs to port #1, but this will override.
-      if(!def_out_found && dev->rwFlags() & 0x1)
-      {
-        mp->setDefaultOutChannels(1);
-        def_out_found = true;
-      }
-      else
+      // robert: removing the default init on several places to allow for the case
+      // where you rather want the midi track to default to the last created port
+      // this can only happen if there is _no_ default set
+
+//      // Global function initMidiPorts() already sets defs to port #1, but this will override.
+//      if(!def_out_found && dev->rwFlags() & 0x1)
+//      {
+//        mp->setDefaultOutChannels(1);
+//        def_out_found = true;
+//      }
+//      else
         mp->setDefaultOutChannels(0);
 
       if(!def_in_found && dev->rwFlags() & 0x2)
