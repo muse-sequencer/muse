@@ -28,6 +28,8 @@ file(GLOB script_files
       ConstantLength 
       SwingQuantize1
       RandomQuantize1
+      RandomPosition1
+      RandomizeVelocityRelative
       RemoveAftertouch
       Rhythm1
       TempoDelay
