@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # MusE external midi processing script
-# By: Robert Jonsson 2013
-# Quantize
+# By: Michael Oswald 2018
+# Randomize the Velocity relative to it's current position
 #=============================================================================
 #  MusE
 #  Linux Music Editor
@@ -35,7 +35,7 @@ class Quantize(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
-        self.setWindowTitle('Randomize note positions')
+        self.setWindowTitle('Randomize note velocity relative to it\'s current velocity')
 
         self.spreadEdit = QtGui.QLineEdit()
         self.spreadEdit.setText('3')
@@ -46,7 +46,7 @@ class Quantize(QtGui.QWidget):
         grid = QtGui.QGridLayout()
         grid.setSpacing(3)
 
-        grid.addWidget(QtGui.QLabel('Spread(ticks)'), 2, 0)
+        grid.addWidget(QtGui.QLabel('Spread'), 2, 0)
         grid.addWidget(self.spreadEdit, 2, 1)
         grid.addWidget(button, 3, 1)
 
@@ -70,14 +70,16 @@ class Quantize(QtGui.QWidget):
             if line.startswith('NOTE'):
               tag,tick,pitch,length,velocity = line.split(' ')
 
-              newTick = int(tick)
-              # apply randomness to the note position
-              newTick=int(random.gauss(newTick,int(self.spreadEdit.text())))
-              if newTick < 0:
-                newTick = 0
+              newVelo = int(velocity)
+              # apply random value to velocity
+              newVelo=int(random.gauss(newVelo,int(self.spreadEdit.text())))
+              if newVelo < 0:
+                newVelo = 1
+              if newVelo > 127:
+                newVelo = 127
 
-              newLine="NOTE "+ str(newTick)+" " + pitch  + " "+ length + " " + velocity
-              print ("oldTick:", tick)
+              newLine="NOTE "+ tick + " " + pitch  + " "+ length + " " + str(newVelo) + "\n"
+              print ("oldVelo:", velocity)
               print ("newLine:",newLine.strip())
               outputEvents.append(newLine)
             else:
