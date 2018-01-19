@@ -72,7 +72,9 @@ class Quantize(QtGui.QWidget):
 
               newTick = int(tick)
               # apply swing factor to every beat              
-              newTick=int(random.gauss(newTick,self.spreadEdit.text().toInt()[0]))
+              newTick=int(random.gauss(newTick,int(self.spreadEdit.text())))
+              if newTick < 0:
+                newTick = 0
 
               newLine="NOTE "+ str(newTick)+" " + pitch  + " "+ length + " " + velocity
               print ("oldTick:", tick)
