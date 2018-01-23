@@ -1,3 +1,5 @@
+23.01.2018
+      - Added an appdata file. Distros want it these days (Orcan)
 17.01.2018
       - Added ability to /not/ specify a default out, instead a created midi track
         defaults to the port with highest number (usually the last created)
