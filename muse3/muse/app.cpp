@@ -1331,7 +1331,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       }
 
 // REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
-//  not restoring on project reload. Didn't want to have to reenable this, IIRC there
+//  not restoring on project reload. Didn't want to have to re-enable this, IIRC there
 //  was a problem with using this (interference with other similar competing settings),
 //  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
       resize(MusEGlobal::config.geometryMain.size());
@@ -1530,7 +1530,7 @@ void MusE::closeEvent(QCloseEvent* event)
                "Save Current Project?"),
                tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
-                  if (!save())      // dont quit if save failed
+                  if (!save())      // don't quit if save failed
                   {
                         setRestartingApp(false); // Cancel any restart.
                         event->ignore();
@@ -2404,7 +2404,7 @@ void MusE::kbAccel(int key)
 static void catchSignal(int sig)
       {
       if (MusEGlobal::debugMsg)
-            fprintf(stderr, "MusE: signal %d catched\n", sig);
+            fprintf(stderr, "MusE: signal %d caught\n", sig);
       if (sig == SIGSEGV) {
             fprintf(stderr, "MusE: segmentation fault\n");
             abort();
@@ -3669,7 +3669,7 @@ void MusE::updateWindowMenu()
   sep=false;
   for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
     if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-    // the isVisibleTo check is neccessary because isVisible returns false if a
+    // the isVisibleTo check is necessary because isVisible returns false if a
     // MdiSubWin is actually visible, but the muse main window is hidden for some reason
     {
       if (!sep)

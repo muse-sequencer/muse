@@ -95,7 +95,7 @@ ZIX_API ZixTreeIter*
 zix_tree_begin(ZixTree* t);
 
 /**
-   Return an iterator the the element one past the last element in `t`.
+   Return an iterator to the element one past the last element in `t`.
 */
 ZIX_API ZixTreeIter*
 zix_tree_end(ZixTree* t);
@@ -113,7 +113,7 @@ ZIX_API ZixTreeIter*
 zix_tree_rbegin(ZixTree* t);
 
 /**
-   Return an iterator the the element one before the first element in `t`.
+   Return an iterator to the element one before the first element in `t`.
 */
 ZIX_API ZixTreeIter*
 zix_tree_rend(ZixTree* t);

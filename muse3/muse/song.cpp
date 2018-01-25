@@ -98,7 +98,7 @@ Song::Song(const char* name)
       _fDspLoad = 0.0;
       _xRunsCount = 0;
       
-      _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
+      _arrangerRaster     = 0; // Set to measure, the same as Arranger initial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;

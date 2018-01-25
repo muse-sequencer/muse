@@ -378,26 +378,26 @@ Some user adjustment may be required
          <property name="toolTip">
           <string>If enabled, any drum notes or drum controllers
  on an applied drum map item in which Channel
- is overriden will go to a separate track in the 
+ is overridden will go to a separate track in the 
  midi file.
 
 If disabled, any drum notes or drum controllers
  on an applied drum map item in which Channel
- is overriden will stay on that track in the midi file.
+ is overridden will stay on that track in the midi file.
 
 See &quot;What's This ?&quot; for more info.</string>
          </property>
          <property name="whatsThis">
           <string>If enabled, any drum notes or drum controllers
  on an applied drum map item in which Channel
- is overriden will go to a separate track in the 
+ is overridden will go to a separate track in the 
  midi file. The extra track is automatically
  created. In this mode all events on a track in 
  the midi file are on the same channel.
 
 If disabled, any drum notes or drum controllers
  on an applied drum map item in which Channel
- is overriden will stay on that track in the midi file.
+ is overridden will stay on that track in the midi file.
 In this mode the track events can be on different 
  channels. But if the file is re-imported into an
  app such as MusE, MusE will automatically

@@ -197,7 +197,7 @@ void Xml::writeProperties(const QObject* o)
 
   	//
       // start from dummy "muse" property, assuming this is the
-      // first muse propertie in widget hierarchy
+      // first muse property in widget hierarchy
       //
   	int from = meta->indexOfProperty("muse") + 1;
      	int n    = meta->propertyCount();

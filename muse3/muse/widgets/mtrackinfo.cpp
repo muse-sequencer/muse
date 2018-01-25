@@ -384,7 +384,7 @@ void MidiTrackInfo::heartBeat()
         // The alternative is to have a system where the synth can signal the host when a change has happened.
         // Or an 'isValidPatch' function, or make getPatchName (and several others) return 0, so that updateTrackInfo 
         //  can ignore it. Oops. No! Even if we make updateTrackInfo ignore it, then the same thing happens here. 
-        // Thats is, program = nprogram but the text is still wrong.  Not much choice but to do this for now...
+        // That is, program = nprogram but the text is still wrong.  Not much choice but to do this for now...
         if(++heartBeatCounter >= 20)
           heartBeatCounter = 0;
         if(program != nprogram || heartBeatCounter == 0) 

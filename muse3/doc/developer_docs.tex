@@ -25,7 +25,7 @@
 %% "feature requests" as flo did in r1497 IS one).
 %% Below that, feel free to change the logical arrangement
 %% (making paragraphs to subsections and similar) if you deem it
-%% neccessary.
+%% necessary.
 %%
 %% Whenever referring to code symbols, constants or source/header
 %% files, please use \sym{someClass::someSymbol}, \usym{UPPERCASE_THING}
@@ -404,7 +404,7 @@ in \sym{AudioTrack::{\_}controller}, which is a \sym{CtrlListList},
 that is, a list of \sym{CtrlList}s, that is, a list of lists of
 controller-objects which hold the control points of the automation graph.
 The \sym{CtrlList} also stores whether the list is meant discrete
-(a new control point results in a value-jump) or continous (a new control
+(a new control point results in a value-jump) or continuous (a new control
 point results in the value slowly sloping to the new value).
 
 While \sym{PluginI::{\_}controlFifo} can be queried very quickly and
@@ -434,7 +434,7 @@ song), and we must iterate through a whole list of iterators.
 \paragraph{Just use the current data access functions}
 By just using the current functions for accessing automation data,
 we might get a quick-and-dirty solution, which however wastes way too
-much CPU ressources. This is because on \emph{every single frame}, we
+much CPU resources. This is because on \emph{every single frame}, we
 need to do a binary search on multiple controller lists.
 
 
@@ -489,7 +489,7 @@ can have notes on channel 1 on one track and controller stuff on channel
 
 \subsection{Use cases}
 \paragraph{Saving CPU}
-On slow systems, this is neccessary for songs with lots of, or demanding
+On slow systems, this is necessary for songs with lots of, or demanding
 (or both) soft synthes / plugins. Even if the synth or plugin is so
 demanding that your system is not able to produce sound in real-time,
 then with this feature you'll be able to use the synth (this will make
@@ -597,7 +597,7 @@ unified editor window consists of:
       which might include window name, MDI-ness etc.
 \item A toolbar which contains controls suitable for every single slot.
 \item A container with one or more slots; the slots can be scrolled in
-      y-direction if there are multipe slots.
+      y-direction if there are multiple slots.
 \item A time-scrollbar with zoom
 \end{itemize}
 
@@ -634,7 +634,7 @@ a bias. Instead of the actual set value, $\textrm{value} * \textrm{bias}
 controllers like "pan", the unbiased values shall be transformed, that
 is, a pan of 64, with $\textrm{bias}=2$ and $\textrm{gain}=0.5$, shall
 be transformed to 66 (because 64 is actually 0, while 0 is actually -64).
-These values shall be set in the arranger and whereever the actual
+These values shall be set in the arranger and wherever the actual
 controller/automation values can be edited.
 
 \section{Enabled-indicator while recording}
@@ -652,7 +652,7 @@ when in \usym{AUTO{\_}TOUCH} mode.
 \section{Linear automation editing}
 While holding some modifier key (like shift), operating the MusE-native-
 GUI sliders shall only generate control points when clicking and when
-releasing the slider. This will result in linear graphs for continous
+releasing the slider. This will result in linear graphs for continuous
 controllers, and in large steps for discrete controllers (which is in
 particular useful for stuff like "which low/high-pass filter type to use").
 
@@ -682,7 +682,7 @@ for \emph{every} song.
 % TODO: unified automation and midi ctrls:
 %       both shall be editable through the same editors
 %       four modes: 1. discrete
-%                   2. continous (plus a global and per-port setting for the max rate)
+%                   2. continuous (plus a global and per-port setting for the max rate)
 %                   3. switch (not necessarily ON/OFF; signals with color plus text annotation)
 %                   4. raw (no graph, instead a box with the value sent out (for "all voices off")
 %       they shall be copy-and-pastable, at least between compatible modes

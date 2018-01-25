@@ -112,7 +112,7 @@ void Knob::setTotalAngle (double angle)
 // Knob::setRange
 // Set the range and step size of the knob
 //
-// Sets the paramaters that define the shininess of the ring
+// Sets the parameters that define the shininess of the ring
 // surrounding the knob and then proceeds by passing the
 // parameters to the parent class' setRange() function.
 //------------------------------------------------------------

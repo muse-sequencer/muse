@@ -283,7 +283,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				p->num_ports = this_index + 1;
 			}
 
-			// Havn't seen this port yet, add it to array
+			// Haven't seen this port yet, add it to array
 			if (!this_port) {
 				this_port = lilv_port_new(p->world,
 				                          port,

@@ -385,7 +385,7 @@ class MidiTrack : public Track {
       // Backward compatibility: For reading old songs.
       void setInPortAndChannelMask(unsigned int portmask, int chanmask); 
       
-      // Overriden for special midi output behaviour.
+      // Overridden for special midi output behaviour.
       virtual bool noOutRoute() const;
       
       int outPort() const             { return _outPort;     }
@@ -408,7 +408,7 @@ class MidiTrack : public Track {
       
       int getFirstControllerValue(int ctrl, int def=-1);
       int getControllerChangeAtTick(unsigned tick, int ctrl, int def=-1);
-      unsigned getControllerValueLifetime(unsigned tick, int ctrl); // returns the tick where this CC gets overriden by a new one
+      unsigned getControllerValueLifetime(unsigned tick, int ctrl); // returns the tick where this CC gets overridden by a new one
                                                                     // returns UINT_MAX for "never"
 
       void setClef(clefTypes i) { clefType = i; }

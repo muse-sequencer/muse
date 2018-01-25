@@ -1477,7 +1477,7 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         MusEGlobal::song->applyOperationGroup(operations);
       }
       else // forbid action by not applying it   
-          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
                                           //to remove "forbidden" events from the list again
       }
 
@@ -1524,7 +1524,7 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
       }
       //else forbid action by not performing it
       MusEGlobal::song->applyOperationGroup(operations);
-      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is neccessary
+      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
                                       //to remove "forbidden" events from the list again
       }
 

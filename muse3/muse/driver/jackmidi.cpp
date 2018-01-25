@@ -578,7 +578,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       
       // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
       // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio 
-      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      //  position, so that by the time of the NEXT process, THOSE events have also occurred in the previous period.
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...

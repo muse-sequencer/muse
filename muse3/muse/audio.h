@@ -157,7 +157,7 @@ class Audio {
       int _extClockHistorySize;
       // Convert tick to frame using the external clock history list.
       // The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
-      // The returned clock frames occured during the previous audio cycle(s), so you may want to shift 
+      // The returned clock frames occurred during the previous audio cycle(s), so you may want to shift 
       //  the frames forward by one audio segment size for scheduling purposes.
       // CAUTION: There must be at least one valid clock in the history, otherwise it returns zero. 
       //          Don't feed this a tick greater than or equal to the next tick, it will simply return the 

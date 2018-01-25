@@ -1505,7 +1505,7 @@ void EditInstrument::deleteInstrument(QListWidgetItem* item)
   delete item;
   instrumentList->blockSignals(false);
 
-  // Test this: Neccessary? DELETETHIS
+  // Test this: Necessary? DELETETHIS
   // if(curritem)
   //  instrumentList->setCurrentItem(curritem);
 

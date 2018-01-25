@@ -483,7 +483,7 @@ void TimeCanvas::moveY(int y)
             return;
       wpos.setY(y);
 
-      // dont move ruler:
+      // don't move ruler:
 
       int ww = _widget->width();
       int wh = _widget->height();

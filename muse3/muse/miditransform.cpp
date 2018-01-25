@@ -923,7 +923,7 @@ void MidiTransformerDialog::apply()
             MusECore::MidiTrack* newTrack = 0;
             MusECore::PartList *pl = (*t)->parts();
             if (copyExtract) {
-                  // check wether we must generate a new track
+                  // check whether we must generate a new track
                   for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
                         MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
                         const MusECore::EventList& el = part->events();
@@ -958,7 +958,7 @@ void MidiTransformerDialog::apply()
                   doneList.insert(part->clonemaster_sn());
                   
                   if (copyExtract) {
-                        // check wether we must generate a new part
+                        // check whether we must generate a new part
                         for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
                               const MusECore::Event& event = i->second;
                               unsigned tick = event.tick();

@@ -83,7 +83,7 @@ class WaveCanvas : public EventCanvas {
       unsigned endSample;
       int colorMode;
       int selectionStart, selectionStop, dragstartx;
-      int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
+      int lastGainvalue; //!< Stores the last used gainvalue when specifying gain value in the editgain dialog
       QString copiedPart;
       
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile

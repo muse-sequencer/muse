@@ -384,7 +384,7 @@ else (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 endif (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 
 ##
-## Depricated FST-based VST support
+## Deprecated FST-based VST support
 ##
 
 if (ENABLE_VST)

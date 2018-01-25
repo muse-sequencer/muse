@@ -810,7 +810,7 @@ bool SysEx::read(Xml& xml)
                         {
                               unsigned char*d;
                               int len = string2sysex(xml.parse1(), &d);
-                              // Was the conversion succesful, even if empty?
+                              // Was the conversion successful, even if empty?
                               if(len != -1)
                               {
                                 // Delete existing.

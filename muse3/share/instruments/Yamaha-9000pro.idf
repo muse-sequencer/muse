@@ -4092,7 +4092,7 @@ cc: Ignored
 
         <SysEx name="MWCAT Parameter Flag">
             <comment>
-Some weired flag for the internal sequencer?
+Some weird flag for the internal sequencer?
 
 0xF0 0x43 0x73 0x01 0x11 0x0? 0x54 dd 0xF7
 

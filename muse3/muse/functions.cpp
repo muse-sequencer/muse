@@ -524,7 +524,7 @@ bool modify_notelen(const set<const Part*>& parts, int range, int rate, int offs
 			const Event& event=*(it->first);
 			const Part* part=it->second;
 
-			unsigned int len = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
+			unsigned int len = event.lenTick(); //prevent compiler warning: comparison signed/unsigned
 
 			len = (len * rate) / 100;
 			len += offset;

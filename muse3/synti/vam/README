@@ -19,7 +19,7 @@ VAM: Virtual Analog for MusE
     ( and everything that MusE requires, like Qt3 )
 
     Unpack VAM in $MUSESOURCEDIR/synthi and run from vam/ make;
-    make install. VAM won't compile automaticly if you run make 
+    make install. VAM won't compile automatically if you run make 
     from $MUSESOURCEDIR.
     $MUSESOURCEDIR is the directory you have the MusE source.
     For optimizing add -march=(your arch) to the compiler arguments

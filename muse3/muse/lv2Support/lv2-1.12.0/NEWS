@@ -10,7 +10,7 @@ lv2 (1.12.0) stable;
   * lv2core: Relax domain of lv2:minimum lv2:maximum and lv2:default so they can be used to
     describe properties/parameters as well.
   * parameters: Add range to parameters so hosts know how to control them.
-  * patch: Define patch:Get with no subject to implicitly apply to reciever.  This can be
+  * patch: Define patch:Get with no subject to implicitly apply to receiver.  This can be
     used by UIs to get an initial description of a plugin.
   * patch: Add patch:Copy method.
   * units: Add lv2:Parameter to domain of units:unit.

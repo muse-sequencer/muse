@@ -280,7 +280,7 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                   freq_256_harm4 = freq_256_harm3 * 2;
                   freq_256_harm5 = freq_256_harm4 * 2;
                   for (int i = 0; i < sampleCount; i++) {
-                        int a1=0, a2=0;	//prevent compiler warning: unitialized usage of vars a1 & a2
+                        int a1=0, a2=0;	//prevent compiler warning: uninitialized usage of vars a1 & a2
                         switch(v->state1) {
                               case ATTACK:
                                     if (v->envL1.step(&a1))
@@ -348,7 +348,7 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                   freq_256_harm4 = freq_256 * 3;
                   freq_256_harm5 = freq_256_harm3 * 2;
                   for (int i = 0; i < sampleCount; i++) {
-                        int a1=0, a2=0;//prevent compiler warning: unitialized usage of vars a1 & a2
+                        int a1=0, a2=0;//prevent compiler warning: uninitialized usage of vars a1 & a2
                         switch(v->state1) {
                               case ATTACK:
                                     if (v->envL1.step(&a1))

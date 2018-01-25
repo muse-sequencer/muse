@@ -1543,7 +1543,7 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
 
    state->wrkDataSize = size;
    state->wrkDataBuffer = data;
-   if(MusEGlobal::audio->freewheel()) //dont wait for a thread. Do it now
+   if(MusEGlobal::audio->freewheel()) //don't wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
       return state->wrkThread->scheduleWork();
@@ -1844,7 +1844,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
 
-   assert(state != NULL); //this should'nt happen
+   assert(state != NULL); //this shouldn't happen
    assert(state->inst != NULL || state->sif != NULL); // this too
 
    if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)

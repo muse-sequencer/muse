@@ -38,7 +38,7 @@ IntLabel::IntLabel(int _val, int _min, int _max, QWidget* parent,
       specialValue = "off";
       min = _min;
       max = _max;
-      val = _val+1;           // dont optimize away
+      val = _val+1;           // don't optimize away
       off = _off;
       setValue(_val);
       int len = MusECore::num2cols(min, max);

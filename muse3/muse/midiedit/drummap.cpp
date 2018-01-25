@@ -47,7 +47,7 @@ namespace MusECore {
 // Default to track port if -1 and track channel if -1.  (These used to say 9, 0 for chan, port).
 const DrumMap blankdm = { QString(""), 100, 16, 32, -1, -1, 70, 90, 110, 127, 127, 127, false, false };
 
-// this map should have 128 entries, as it's used for initalising iNewDrumMap as well.
+// this map should have 128 entries, as it's used for initialising iNewDrumMap as well.
 // iNewDrumMap only has 128 entries. also, the every "out-note" ("anote") should be
 // represented exactly once in idrumMap, and there shall be no duplicate or unused
 // "out-notes".
@@ -208,7 +208,7 @@ void initNewDrumMap()
     {
       if (done[idx]==true)
       {
-        printf("ERROR: iNewDrumMap[%i] is already initalized!\n"
+        printf("ERROR: iNewDrumMap[%i] is already initialized!\n"
                "       this will be probably not a problem, but some programmer didn't read\n"
                "       flo's comment at drummap.cpp, above idrumMap[].\n", idx);
       }
@@ -224,7 +224,7 @@ void initNewDrumMap()
   {
     if (done[i]==false)
     {
-      printf("ERROR: iNewDrumMap[%i] is uninitalized!\n"
+      printf("ERROR: iNewDrumMap[%i] is uninitialized!\n"
              "       this will be probably not a problem, but some programmer didn't read\n"
              "       flo's comment at drummap.cpp, above idrumMap[].\n", i);
       iNewDrumMap[i].name="";
