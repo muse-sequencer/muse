@@ -28,8 +28,8 @@ namespace Awl {
 //   PanEntry
 //---------------------------------------------------------
 
-PanEntry::PanEntry(QWidget* parent)
-   : FloatEntry(parent)
+PanEntry::PanEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
+   : FloatEntry(parent, leftMouseButtonCanDecrease)
       {
       setRange(-1.0, 1.0);
       }

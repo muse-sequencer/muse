@@ -23,7 +23,7 @@
 
 #include "evdata.h"
 #include "midi.h"
-#include "globals.h"
+#include "sysex_helper.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -208,7 +208,7 @@ SysExOutputProcessor::State SysExOutputProcessor::setEvData(const EvData& src, s
   return _state;
 }
 
-bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
+bool SysExOutputProcessor::getCurChunk(unsigned char* dst, int sampleRate)
 {
   if(!dst)
     return false;
@@ -278,7 +278,7 @@ bool SysExOutputProcessor::getCurChunk(unsigned char* dst)
       // Advance the current chunk frame so that the driver can schedule the next chunk. 
       // Do it even if the state has Finished, so the driver can wait until the last chunk is done
       //  before calling Clear() or Reset() (setting the state to Clear).
-      _curChunkFrame += sysexDuration(sz);
+      _curChunkFrame += sysexDuration(sz, sampleRate);
     }
     break;
   }

@@ -48,6 +48,7 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
+#include "mpevent.h"
 
 #include <strings.h>
 
@@ -103,6 +104,28 @@ QString pitch2string(int v)
       }
 
 
+//---------------------------------------------------------
+//   dumpMPEvent
+//---------------------------------------------------------
+
+void dumpMPEvent(const MEvent* ev)
+      {
+      fprintf(stderr, "time:%d port:%d chan:%d ", ev->time(), ev->port(), ev->channel()+1);
+      if (ev->type() == ME_NOTEON) {   
+            QString s = pitch2string(ev->dataA());
+            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+           }
+      else if (ev->type() == ME_NOTEOFF) {  
+            QString s = pitch2string(ev->dataA());
+            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+           }
+      else if (ev->type() == ME_SYSEX) {
+            fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->data()[0]);
+            }
+      else
+            fprintf(stderr, "type:0x%02x a=%d b=%d\n", ev->type(), ev->dataA(), ev->dataB());
+      }
+      
 #if 0
 
 // -------------------------------------------------------------------------------------------------------

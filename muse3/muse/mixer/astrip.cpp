@@ -908,6 +908,7 @@ void AudioStrip::configChanged()
   {
     meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
     meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+    meter[c]->setRefreshRate(MusEGlobal::config.guiRefresh);
   }
 
   // If smart focus is on redirect strip focus to slider label.
@@ -1294,9 +1295,9 @@ void AudioStrip::updateChannels()
                   setClipperTooltip(cc);
                   _clipperLayout->addWidget(_clipperLabel[cc]);
                   connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
-            
-                  meter[cc] = new Meter(this);
-                  meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+
+                  meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+                  meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
@@ -1431,8 +1432,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       int ch = 0;
       for (; ch < channel; ++ch)
       {
-            meter[ch] = new Meter(this);
-            meter[ch]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+            meter[ch] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+            meter[ch]->setRefreshRate(MusEGlobal::config.guiRefresh);
             meter[ch]->setFixedWidth(FIXED_METER_WIDTH);
             meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             _clipperLabel[ch] = new ClipperLabel(this);
@@ -1538,6 +1539,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+            meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
             meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
             meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);

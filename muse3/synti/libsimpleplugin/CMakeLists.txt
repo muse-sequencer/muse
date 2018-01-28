@@ -23,58 +23,84 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
-QT5_WRAP_CPP ( mess_mocs
-      gui.h
+QT5_WRAP_CPP ( simpler_plugingui_mocs
+      simpler_plugingui.h
       )
+
+##
+## UI files
+##
+file (GLOB simpler_plugingui_ui_files
+      simplepluginchooserbase.ui
+      )
+QT5_WRAP_UI ( simpler_plugingui_uis ${simpler_plugingui_ui_files} )
+
 ##
 ## List of source files to compile
 ##
-file (GLOB synti_source_files
-      mess.cpp
-      # mess2.cpp
-      gui.cpp
-      mono.cpp
-      poly.cpp
-      # midievent.cpp
-      # Removed. Causing conflicts with /muse/mpevent
-      ## mpevent.cpp
+file (GLOB simpler_plugingui_source_files
+      simpler_plugingui.cpp
+      )
+file (GLOB simpler_plugin_source_files
+      simpler_plugin.cpp
       )
 
 ##
 ## Define target
 ##
-add_library(synti ${MODULES_BUILD}
+add_library ( simpler_plugingui ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h
-      ${mess_mocs}
-      ${synti_source_files}
+      ${simpler_plugingui_source_files}
+      ${simpler_plugingui_mocs}
+      ${simpler_plugingui_uis}
       )
-
-target_link_libraries(synti
-      # TODO: Try to remove this dependency by splitting the gui out of synti.
-      ${QT_LIBRARIES}
+add_library ( simpler_plugin ${MODULES_BUILD}
+      ${PROJECT_BINARY_DIR}/all-pic.h
+      ${simpler_plugin_source_files}
       )
+      
 ##
 ## Append to the list of translations
 ##
 set (FILES_TO_TRANSLATE
-      ${FILES_TO_TRANSLATE}
-      ${synti_source_files}
+      ${FILES_TO_TRANSLATE} 
+      ${simpler_plugingui_source_files}
+      ${simpler_plugingui_ui_files}
+      ${simpler_plugin_source_files}
       CACHE INTERNAL ""
       )
-
+      
 ##
 ## Compilation flags and target name
 ##
-set_target_properties( synti
+set_target_properties( simpler_plugingui
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-      OUTPUT_NAME muse_synti
+      OUTPUT_NAME muse_simpler_plugingui
+      )
+set_target_properties( simpler_plugin
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+      OUTPUT_NAME muse_simpler_plugin
+      )
+      
+##
+## Linkage
+##
+target_link_libraries(simpler_plugingui
+      ${QT_LIBRARIES}
+      simpler_plugin
+      )
+      
+target_link_libraries(simpler_plugin
+      ${QT_LIBRARIES}
+      dl
       )
 
 ##
 ## Install location
 ##
 if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS synti 
-            DESTINATION ${MusE_MODULES_DIR}
+      install(TARGETS simpler_plugingui simpler_plugin
+              DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
+

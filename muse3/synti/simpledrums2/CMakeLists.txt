@@ -34,7 +34,6 @@ QT5_WRAP_CPP ( simpledrums_mocs
 ##
 file (GLOB simpledrums_ui_files 
       simpledrumsguibase.ui
-      sspluginchooserbase.ui
       )
 QT5_WRAP_UI ( simpledrums_uis ${simpledrums_ui_files} )
 
@@ -44,7 +43,6 @@ QT5_WRAP_UI ( simpledrums_uis ${simpledrums_ui_files} )
 file (GLOB simpledrums_source_files
       simpledrums.cpp
       simpledrumsgui.cpp
-      ssplugin.cpp
       ssplugingui.cpp
       )
 
@@ -93,6 +91,14 @@ target_link_libraries(simpledrums
       synti
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
+      ${SAMPLERATE_LIBRARIES}
+      simpler_plugin
+      simpler_plugingui
+      mpevent_module
+      wavepreview_module
+      widgets
+      dl
+      pthread
       )
 
 ##

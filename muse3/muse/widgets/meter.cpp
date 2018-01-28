@@ -35,7 +35,6 @@
 
 #include "meter.h"
 #include "utils.h"
-#include "gconfig.h"
 #include "fastlog.h"
 #include "muse_math.h"
 
@@ -51,10 +50,15 @@ namespace MusEGui {
 Meter::Meter(QWidget* parent, 
              MeterType type, 
              Qt::Orientation orient, 
+             double scaleMin, double scaleMax,
              ScalePos scalePos, 
              const QColor& primaryColor,
-             ScaleDraw::TextHighlightMode textHighlightMode)
-   : QFrame(parent), _primaryColor(primaryColor), _scalePos(scalePos) //Qt::WNoAutoErase
+             ScaleDraw::TextHighlightMode textHighlightMode,
+             int refreshRate)
+   : QFrame(parent), 
+     _primaryColor(primaryColor), 
+     _scalePos(scalePos), 
+     _refreshRate(refreshRate) //Qt::WNoAutoErase
       {
       setBackgroundRole(QPalette::NoRole);
       setAttribute(Qt::WA_NoSystemBackground);
@@ -89,8 +93,8 @@ Meter::Meter(QWidget* parent,
       targetValStep = 0.0;
       maxVal      = 0.0;
       targetMaxVal = 0.0;
-      minScale    = mtype == DBMeter ? MusEGlobal::config.minMeter : 0.0;      // min value in dB or int
-      maxScale    = mtype == DBMeter ? 10.0 : 127.0;
+      minScale    = scaleMin;
+      maxScale    = scaleMax;
       yellowScale = -10;
       redScale    = 0;
       setLineWidth(0);
@@ -349,7 +353,7 @@ void Meter::setVal(double v, double max, bool ovl)
          targetMaxVal = max;
          if(!fallingTimer.isActive())
          {
-            fallingTimer.start(1000/std::max(30, MusEGlobal::config.guiRefresh));
+            fallingTimer.start(1000/std::max(30, _refreshRate));
          }
       }
       
@@ -374,7 +378,7 @@ void Meter::updateTargetMeterValue()
    }
    else if(targetVal < val)
    {
-      targetValStep = (val - targetVal) / ((double)(1000 / std::max(30, MusEGlobal::config.guiRefresh + 1)) / 7.0f);
+      targetValStep = (val - targetVal) / ((double)(1000 / std::max(30, _refreshRate + 1)) / 7.0f);
       val -= targetValStep;
       if(val < targetVal)
       {
@@ -506,6 +510,15 @@ void Meter::setRange(double min, double max)
       
       update();
       }
+
+//---------------------------------------------------------
+//   setRefreshRate
+//---------------------------------------------------------
+
+void Meter::setRefreshRate(int rate)
+{
+  _refreshRate = rate;
+}
 
 void Meter::setPrimaryColor(const QColor& color)
 {

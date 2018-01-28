@@ -28,7 +28,7 @@
 #ifndef __ORGAN_H__
 #define __ORGAN_H__
 
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
 #include "libsynti/mess.h"
 #include "common_defs.h"
 
@@ -197,15 +197,11 @@ class Organ : public Mess {
       virtual bool playNote(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);
 
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
-      //virtual void getInitData(int*, const unsigned char**) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual void getInitData(int*, const unsigned char**);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
 
-      //virtual bool guiVisible() const;
-      //virtual void showGui(bool);
-      //virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool);
       virtual bool hasNativeGui() const { return true; }

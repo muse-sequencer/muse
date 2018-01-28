@@ -29,8 +29,8 @@ namespace Awl {
 //   MidiVolEntry
 //---------------------------------------------------------
 
-MidiVolEntry::MidiVolEntry(QWidget* parent)
-   : FloatEntry(parent)
+MidiVolEntry::MidiVolEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
+   : FloatEntry(parent, leftMouseButtonCanDecrease)
       {
   	_max = 127;
       setRange(-98.0f, 0.0f);

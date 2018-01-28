@@ -46,8 +46,6 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       int dataHi;
       int dataLo;
       SynthGuiCtrl dctrl[NUM_CONTROLLER];
-      QString * presetFileName;
-
       
       void sendControllerChange(int ctrl, int val);
       void initParameter();
@@ -75,7 +73,7 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
 
    public:
       int getController(int idx);
-      int getControllerInfo(int id, QString* name, int* controller, int* min, int* max, int* initval) const;
+      int getControllerInfo(int id, const char** name, int* controller, int* min, int* max, int* initval) const;
       VAMGui();
       };
 

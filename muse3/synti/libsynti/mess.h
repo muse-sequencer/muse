@@ -26,13 +26,69 @@
 #define MESS_MAJOR_VERSION 1
 #define MESS_MINOR_VERSION 1
 
-#include <QString>
 #include "mpevent.h"
-#include <string>
-#include <map>
 
-class QWidget;
 struct MessP;
+
+//---------------------------------------------------------
+//   MessConfig
+//   Information to be passed to MESS::instantiate().
+//   The plugin is free to store these values as it wishes
+//    without relying on any particular libraries.
+//---------------------------------------------------------
+
+struct MessConfig {
+  unsigned int _segmentSize;
+  int _sampleRate;
+  int _minMeterVal;
+  bool _useDenormalBias;
+  float _denormalBias;
+  bool _leftMouseButtonCanDecrease;
+  const char* _configPath;
+  const char* _globalLibPath;
+  const char* _globalSharePath;
+  const char* _userPath;
+  const char* _projectPath;
+  
+  MessConfig() {
+    _segmentSize = 1024;
+    _sampleRate = 44100;
+    _minMeterVal = 0;
+    _useDenormalBias = false;
+    _denormalBias = 0.0;
+    _leftMouseButtonCanDecrease = false;
+    _configPath = 0;
+    _globalLibPath = 0;
+    _globalSharePath = 0;
+    _userPath = 0;
+    _projectPath = 0;
+  }
+  
+  MessConfig(unsigned int segmentSize,
+             int sampleRate, 
+             int minMeterVal, 
+             bool useDenormalBias,
+             float denormalBias,
+             bool leftMouseButtonCanDecrease,
+             const char* configPath,
+             const char* globalLibPath,
+             const char* globalSharePath,
+             const char* userPath,
+             const char* projectPath)
+  { 
+    _segmentSize = segmentSize;
+    _sampleRate = sampleRate;
+    _minMeterVal = minMeterVal;
+    _useDenormalBias = useDenormalBias;
+    _denormalBias = denormalBias;
+    _leftMouseButtonCanDecrease = leftMouseButtonCanDecrease;
+    _configPath = configPath;
+    _globalLibPath = globalLibPath;
+    _globalSharePath = globalSharePath;
+    _userPath = userPath;
+    _projectPath = projectPath;
+  }
+};
 
 //---------------------------------------------------------
 //   MidiPatch
@@ -89,11 +145,13 @@ class Mess {
       virtual bool sysex(int, const unsigned char*) { return false; }
 
       virtual void getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; } // No const: Synths may need to allocate member pointers.
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const {return 0;}
-      virtual QString getPatchName(int, int, bool) const { return "?"; }
+      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
+      virtual const char* getPatchName(int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
       // True if it found a name.
-      virtual bool getNoteSampleName(bool /*drum*/, int /*channel*/, int /*patch*/, int /*note*/, QString* /*name*/) const { return false; }
+      virtual bool getNoteSampleName(bool /*drum*/, int /*channel*/, 
+                                     int /*patch*/, int /*note*/, 
+                                     const char** /*name*/) const { return false; }
 
       // synthesizer -> host communication
       void sendEvent(MusECore::MidiPlayEvent);  // called from synti
@@ -106,6 +164,7 @@ class Mess {
       virtual void showNativeGui(bool) {}
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int, int, int, int) {}
+      virtual void guiHeartBeat() {}
       };
 
 //---------------------------------------------------------
@@ -118,7 +177,7 @@ struct MESS {
       const char* description;
       const char* version;
       int majorMessVersion, minorMessVersion;
-      Mess* (*instantiate)(int sr, QWidget* parent, QString* projectPathPtr, const char* name);
+      Mess* (*instantiate)(unsigned long long parentWinId, const char* name, const MessConfig* config);
       };
 
 extern "C" {

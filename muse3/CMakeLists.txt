@@ -170,9 +170,13 @@ if ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD STATIC )
 else ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD SHARED )
-      SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-      SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
+#       SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+#       SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 endif ( MODULES_BUILD_STATIC )
+# We need these always, for a few of the shared modules in the muse/core build,
+#  even when building muse/core as static. Otherwise it can't find them on run. Tim.
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 
 ##
 ## Just print a notice if this is OS X

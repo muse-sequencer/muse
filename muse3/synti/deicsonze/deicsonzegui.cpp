@@ -35,18 +35,16 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-#include "muse/midi.h"
-#include "muse/midictrl.h"
-#include "config.h"
+#include "muse/midi_consts.h"
+#include "muse/midictrl_consts.h"
 
 #include "common_defs.h"
 #include "deicsonzegui.h"
 
-#include "plugin.h"
-#include "plugindialog.h"
-#include "plugins/pandelay/pandelaymodel.h"
+#include "libsimpleplugin/simpler_plugin.h"
+#include "libsimpleplugin/simpler_plugingui.h"
 
-//#include "deicsonzegui.h"
+//#include "plugins/pandelay/pandelaymodel.h"
 
 namespace MusEGui {
 class PluginDialog;
@@ -418,10 +416,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 
   connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
-  QString sharePath(MusEGlobal::museGlobalShare);
-  // Tim.
-  updateInitSetPath(sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
-  updateBackgroundPixPath(sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
+  updateInitSetPath(DEI_sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
+  updateBackgroundPixPath(DEI_sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
   updateBackgroundPixCheckBox(false);
 
   setTextColor(reinterpret_cast<const QColor &>(*tColor));
@@ -555,7 +551,7 @@ void DeicsOnzeGui::saveConfiguration() {
 // saveDefaultConfiguration
 //-----------------------------------------------------------
 void DeicsOnzeGui::saveDefaultConfiguration() {
-  QString filename = MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco");
+  QString filename = DEI_configPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
     f.open(QIODevice::WriteOnly);
@@ -2602,16 +2598,18 @@ void DeicsOnzeGui::setChorusReturn(int val) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectChorusPlugin() {
-  MusECore::Plugin* pluginChorus = MusEGui::PluginDialog::getPlugin(this);
+  MusESimplePlugin::Plugin* pluginChorus = 
+    MusESimplePlugin::SimplerPluginChooser::getPlugin(this);
   if(pluginChorus) {
-    unsigned char message[3+sizeof(MusECore::Plugin*)];
+    unsigned char message[3+sizeof(MusESimplePlugin::Plugin*)];
     message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
     message[1]=DEICSONZE_UNIQUE_ID;
     message[2]=SYSEX_SELECTCHORUS;
-    memcpy(&message[3], &pluginChorus, sizeof(MusECore::Plugin*));
-    sendSysex(message, 3+sizeof(MusECore::Plugin*));
+    memcpy(&message[3], &pluginChorus, sizeof(MusESimplePlugin::Plugin*));
+    sendSysex(message, 3+sizeof(MusESimplePlugin::Plugin*));
   }
 }
+
 /*void DeicsOnzeGui::setPanChorus1(double i) {
   unsigned char message[4];
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
@@ -2680,14 +2678,14 @@ void DeicsOnzeGui::setReverbReturn(int val) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectReverbPlugin() {
-  MusECore::Plugin* pluginReverb = MusEGui::PluginDialog::getPlugin(this);
+  MusESimplePlugin::Plugin* pluginReverb = MusESimplePlugin::SimplerPluginChooser::getPlugin(this);
   if(pluginReverb) {
-    unsigned char message[3+sizeof(MusECore::Plugin*)];
+    unsigned char message[3+sizeof(MusESimplePlugin::Plugin*)];
     message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
     message[1]=DEICSONZE_UNIQUE_ID;
     message[2]=SYSEX_SELECTREVERB;
-    memcpy(&message[3], &pluginReverb, sizeof(MusECore::Plugin*));
-    sendSysex(message, 3+sizeof(MusECore::Plugin*));
+    memcpy(&message[3], &pluginReverb, sizeof(MusESimplePlugin::Plugin*));
+    sendSysex(message, 3+sizeof(MusESimplePlugin::Plugin*));
   }
 }
 
@@ -3125,15 +3123,6 @@ void DeicsOnzeGui::setDelayReturn(int r) {
 void DeicsOnzeGui::setChannelDelay(int d) {
   sendController(_currentChannel, MusECore::CTRL_VARIATION_SEND, (unsigned char)d);
 }
-//void DeicsOnzeGui::setDelayTime(int t) {
-//  unsigned char message[4];
-//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-//  message[1]=DEICSONZE_UNIQUE_ID;
-//  message[2]=SYSEX_DELAYTIME;
-//  message[3]=(unsigned char)t;
-//  sendSysex(message, 4);
-//  updateDelayTime(t);
-//}
 void DeicsOnzeGui::setDelayBPM(double t) {
   //int it = (int)(((t - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
   unsigned char message[sizeof(float)+3];
@@ -3156,15 +3145,6 @@ void DeicsOnzeGui::setDelayBeatRatio(double t) {
   message[3]=(unsigned char)f;
   sendSysex(message, sizeof(float)+3);
 } 
-//void DeicsOnzeGui::setDelayFeedback(int f) {
-//  unsigned char message[4];
-//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-//  message[1]=DEICSONZE_UNIQUE_ID;
-//  message[2]=SYSEX_DELAYFEEDBACK;
-//  message[3]=(unsigned char)f;
-//  sendSysex(message, 4);
-//  updateDelayFeedback(f);
-//}
 void DeicsOnzeGui::setDelayFeedback(double t) {
   //int idf = (int)(f*128.0+128.0);
   unsigned char message[sizeof(float)+3];
@@ -3176,15 +3156,6 @@ void DeicsOnzeGui::setDelayFeedback(double t) {
   sendSysex(message, sizeof(float)+3);
   //updateDelayFeedback(idf);
 }
-//void DeicsOnzeGui::setDelayPanLFOFreq(int pf) {
-//  unsigned char message[4];
-//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-//  message[1]=DEICSONZE_UNIQUE_ID;
-//  message[2]=SYSEX_DELAYLFOFREQ;
-//  message[3]=(unsigned char)pf;
-//  sendSysex(message, 4);
-//  updateDelayPanLFOFreq(pf);
-//}
 void DeicsOnzeGui::setDelayPanLFOFreq(double pf) {
   //int ipf = (int)(((pf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
   unsigned char message[sizeof(float)+3];
@@ -3196,15 +3167,6 @@ void DeicsOnzeGui::setDelayPanLFOFreq(double pf) {
   sendSysex(message, sizeof(float)+3);
   //updateDelayPanLFOFreq(ipf);
 }
-//void DeicsOnzeGui::setDelayPanLFODepth(int pd) {
-//  unsigned char message[4];
-//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-//  message[1]=DEICSONZE_UNIQUE_ID;
-//  message[2]=SYSEX_DELAYLFODEPTH;
-//  message[3]=(unsigned char)pd;
-//  sendSysex(message, 4);
-//  updateDelayPanLFODepth(pd);
-//}
 void DeicsOnzeGui::setDelayPanLFODepth(double pd) {
   //int ipd = (int)(pd*255.0);
   unsigned char message[sizeof(float)+3];

@@ -31,13 +31,15 @@
 #include <list>
 
 #include "libsynti/mess.h"
-#include "muse/midi.h"
-#include "muse/midictrl.h"
+#include "muse/midi_consts.h"
+#include "muse/midictrl_consts.h"
 
 #include "common_defs.h"
 #include "vam.h"
 #include "vamgui.h"
 #include "libsynti/mono.h"
+
+std::string VAM_configPath;
 
 // Denormalise floats, only actually needed for PIII and very recent PowerPC
 //#define DENORMALISE(fv) (((*(unsigned int*)&(fv))&0x7f800000)==0)?0.0f:(fv)
@@ -198,14 +200,10 @@ class VAM : public MessMono {
       VAMGui* gui;
 
     public:
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
-      //virtual void getInitData(int* n, const unsigned char**p) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual void getInitData(int* n, const unsigned char**p);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
-      //virtual bool guiVisible() const;
-      //virtual void showGui(bool);
-      //virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool);
       virtual bool hasNativeGui() const { return true; }
@@ -618,7 +616,7 @@ void VAM::noteoff(int chan, int offpitch)
             }
       }
 
-int VAM::getControllerInfo(int id, QString* name, int* controller,
+int VAM::getControllerInfo(int id, const char** name, int* controller,
    int* min, int* max, int* initval) const
       {
       return gui->getControllerInfo(id, name, controller, min, max, initval);
@@ -1103,9 +1101,10 @@ void VAM::setNativeGeometry(int x, int y, int w, int h)
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, QString*, const char* name)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
-      VAM* vam = new VAM(sr);
+      VAM_configPath = std::string(config->_configPath);
+      VAM* vam = new VAM(config->_sampleRate);
       if (vam->init(name)) {
             delete vam;
             return 0;

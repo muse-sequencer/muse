@@ -46,6 +46,7 @@
 #include "drummap.h"
 #include "audio.h"
 #include "muse_math.h"
+#include "sysex_helper.h"
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MIDI_PORTS];
@@ -284,8 +285,8 @@ bool MidiPort::sendPendingInitializations(bool force)
       for(iEvent ie = events->begin(); ie != events->end(); ++ie) 
       {
         if(ie->second.type() == Sysex)
-          last_frame += sysexDuration(ie->second.dataLen());
-        MusECore::MidiPlayEvent ev(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0, ie->second);
+          last_frame += sysexDuration(ie->second.dataLen(), MusEGlobal::sampleRate);
+        MusECore::MidiPlayEvent ev = ie->second.asMidiPlayEvent(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0);
         _device->putEvent(ev, MidiDevice::NotLate);
       }
       // Give a bit of time for the last Init sysex to settle?

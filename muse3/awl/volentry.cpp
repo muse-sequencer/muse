@@ -27,8 +27,8 @@ namespace Awl {
 //   VolEntry
 //---------------------------------------------------------
 
-VolEntry::VolEntry(QWidget* parent)
-   : FloatEntry(parent)
+VolEntry::VolEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
+   : FloatEntry(parent, leftMouseButtonCanDecrease)
       {
       setRange(-60.0f, 10.0f);
       setSpecialText(tr("off"));

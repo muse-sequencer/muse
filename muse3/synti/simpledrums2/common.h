@@ -30,15 +30,16 @@
 #ifndef __MUSE_TESTO_COMMON_H__
 #define __MUSE_TESTO_COMMON_H__
 
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
+#include <QString>
 
 #define SS_VERSIONSTRING "1.0"
 
-#define SS_DEBUG        0   
+#define SS_DEBUG        0
 #define SS_DEBUG_INIT   0
 #define SS_TRACE_FUNC   0
 #define SS_DEBUG_MIDI   0
-#define SS_DEBUG_LADSPA 0   
+#define SS_DEBUG_LADSPA 0
 #define SS_DEBUG_STATE  0
 
 #define SS_DBG(string) if (SS_DEBUG) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string);
@@ -130,8 +131,12 @@ enum {
       SS_SYSEX_PITCH_SAMPLE       // gui->synth: set pitch and reload sample
       };
 
-extern int SS_samplerate;
-extern float SS_map_pluginparam2logdomain(int pluginparam_val);
-extern int SS_map_logdomain2pluginparam(float pluginparam_log);
+extern int SS_segmentSize;
+extern int SS_minMeterVal;
+extern QString SS_globalLibPath;
+extern QString SS_projectPath;
+extern bool SS_useDenormalBias;
+extern float SS_denormalBias;
+
 #endif
 

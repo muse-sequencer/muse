@@ -41,10 +41,10 @@
 #include <sys/time.h>
 #include <sched.h>
 
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
 
 //#include "common_defs.h"
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "fluid.h"
 #include "fluidgui.h"
 
@@ -54,10 +54,10 @@
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char* name)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
       ISynth* synth = new ISynth();
-      synth->setSampleRate(sr);
+      synth->setSampleRate(config->_sampleRate);
       if (synth->init(name)) {
             delete synth;
             synth = 0;
@@ -406,7 +406,7 @@ bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
 //   getPatchName
 //---------------------------------------------------------
 
-QString ISynth::getPatchName(int /*ch*/, int val, bool /*drum*/) const
+const char* ISynth::getPatchName(int /*ch*/, int val, bool /*drum*/) const
       {
       int prog =   val & 0xff;
       if(val == MusECore::CTRL_VAL_UNKNOWN || prog == 0xff)

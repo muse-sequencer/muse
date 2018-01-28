@@ -1,5 +1,4 @@
 #include "wavepreview.h"
-#include "globals.h"
 #include <QLayout>
 
 
@@ -11,13 +10,13 @@ MusECore::WavePreview *wavePreview;
 namespace MusECore
 {
 
-WavePreview::WavePreview():
+WavePreview::WavePreview(int segmentSize):
    sf(0),
    src(0),
    isPlaying(false),
    sem(1)
 {
-   segSize = MusEGlobal::segmentSize * 10;
+   segSize = segmentSize * 10;
    tmpbuffer = new float [segSize];
    srcbuffer = new float [segSize];
 }
@@ -37,7 +36,7 @@ long WavePreview::static_srcCallback (void *cb_data, float **data)
    return wp->nread;
 }
 
-void WavePreview::play(QString path)
+void WavePreview::play(QString path, int systemSampleRate)
 {
    stop();
    memset(&sfi, 0, sizeof(sfi));   
@@ -54,7 +53,7 @@ void WavePreview::play(QString path)
          f1 = 0;
          f2 = 0;
          nread = 0;
-         sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)sfi.samplerate;
+         sd.src_ratio = ((double)systemSampleRate) / (double)sfi.samplerate;
          isPlaying = true;      
       }
       else
@@ -165,9 +164,10 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
    }
 }
 
-void initWavePreview()
+void initWavePreview(int segmentSize)
 {
-   MusEGlobal::wavePreview = new WavePreview();
+  if(!MusEGlobal::wavePreview)
+    MusEGlobal::wavePreview = new WavePreview(segmentSize);
 }
 
 void exitWavePreview()
@@ -186,7 +186,7 @@ void AudioPreviewDialog::urlChanged(const QString &str)
    }
    if(chAutoPlay->isChecked())
    {
-      MusEGlobal::wavePreview->play(str);
+      MusEGlobal::wavePreview->play(str, _systemSampleRate);
    }
 }
 
@@ -205,7 +205,7 @@ void AudioPreviewDialog::startStopWave()
          QFileInfo fi(file);
          if(fi.isFile())
          {
-            MusEGlobal::wavePreview->play(file);
+            MusEGlobal::wavePreview->play(file, _systemSampleRate);
          }
       }
 
@@ -219,9 +219,10 @@ int AudioPreviewDialog::exec()
    return r;
 }
 
-AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
+AudioPreviewDialog::AudioPreviewDialog(QWidget *parent, int systemSampleRate)
    :QFileDialog(parent),
-   lastIsPlaying(false)
+   lastIsPlaying(false),
+   _systemSampleRate(systemSampleRate)
 {
     setOption(QFileDialog::DontUseNativeDialog);
     setNameFilter(QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));

@@ -42,7 +42,7 @@
 
 #include <math.h>
 
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "icons.h"
 
 #include "common_defs.h"

@@ -32,7 +32,7 @@
 
 #include "deicsonze.h"
 #include "deicsonzegui.h"
-#include "plugins/pandelay/pandelaymodel.h"
+//#include "plugins/pandelay/pandelaymodel.h"
 
 class DeicsOnze;
 class DeicsOnzeGui;

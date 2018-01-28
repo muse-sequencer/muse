@@ -27,24 +27,16 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-// #include <cmath>
 #include <list>
-
-// #include <stdio.h>
 
 #include <QDomDocument>
 #include <QTemporaryFile>
 
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "libsynti/mess.h"
-//#include "common_defs.h"
 #include "deicsonze.h"
-
-#include "plugin.h"
-
-#include "muse/midictrl.h"
-//#include "deicsonze.h"
-#include "config.h"
+#include "libsimpleplugin/simpler_plugin.h"
+#include "muse/midictrl_consts.h"
 
 #define ABS(x) (x>=0?x:-x)
 
@@ -52,11 +44,22 @@
 float DeicsOnze::waveTable[NBRWAVES][RESOLUTION];
 int DeicsOnze::useCount = 0;
 
+QString DEI_configPath;
+QString DEI_globalLibPath;
+QString DEI_sharePath;
+unsigned int DEI_segmentSize;
+int DEI_sampleRate;
+bool DEI_useDenormalBias;
+float DEI_denormalBias;
+
 //---------------------------------------------------------
 //   DeicsOnze
 //---------------------------------------------------------
 
 DeicsOnze::DeicsOnze() : Mess(2) {
+  
+  MusESimplePlugin::SS_initPlugins(DEI_globalLibPath);
+
   if (useCount++ == 0) {
     // create sinus wave table, W1
     for(int i = 0; i < RESOLUTION; i++)
@@ -125,8 +128,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
   
-  QString sharePath(MusEGlobal::museGlobalShare);
-  _initSetPath = sharePath + QString("/presets/deicsonze/SutulaBank.dei");
+  _initSetPath = DEI_sharePath + QString("/presets/deicsonze/SutulaBank.dei");
   
   
   //TODO
@@ -134,7 +136,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _isBackgroundPix = true; //false if an initial bank must be download
   
   //"/usr/local/share/muse-1.0pre1/wallpapers/abstractdeicsonze1.jpg";
-  _backgroundPixPath = sharePath + QString("/wallpapers/paper2.jpg");    // Tim.
+  _backgroundPixPath = DEI_sharePath + QString("/wallpapers/paper2.jpg");    // Tim.
   
   
   //initialization GUI
@@ -143,15 +145,15 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _gui->setWindowTitle(QString("DeicsOnze"));
 
   //FX
-  MusECore::Plugin* p;
-  p = MusEGlobal::plugins.find("freeverb", "freeverb1");
+  MusESimplePlugin::Plugin* p;
+  p = MusESimplePlugin::plugins.find("freeverb", "freeverb1");
   _pluginIReverb = NULL;
   if(p) initPluginReverb(p);
   _pluginIChorus = NULL;
-  p = MusEGlobal::plugins.find("doublechorus", "doublechorus1");
+  p = MusESimplePlugin::plugins.find("doublechorus", "doublechorus1");
   if(p) initPluginChorus(p);
   _pluginIDelay = NULL;
-  p = MusEGlobal::plugins.find("pandelay", "pandelay");
+  p = MusESimplePlugin::plugins.find("pandelay", "pandelay");
   if(p) initPluginDelay(p);
 
   //Filter
@@ -160,7 +162,6 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _reverbFilter = new LowFilter();
   _delayFilter = new LowFilter();
   
-  // Moved here from below due to crash - _preset not initialized when loadConfiguration called. Tim.
   _initialPreset = new 
     Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
   for(int c = 0; c < NBRCHANNELS; c++) {
@@ -170,7 +171,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   
   //Load configuration
   QString defaultConf = 
-    (MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco"));
+    DEI_configPath + QString("/" DEICSONZESTR ".dco");
   FILE* f;
   f = fopen(defaultConf.toLatin1().data(), "r");
   if(f) {
@@ -183,14 +184,6 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   if(_isInitSet) loadSet(_initSetPath);
   
   //loadSutulaPresets();
-  
-  // Moved above due to crash - _preset not initialized when loadConfiguration called. Tim.
-  //_initialPreset = new 
-  //  Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
-  //for(int c = 0; c < NBRCHANNELS; c++) {
-  //  _preset[c]=_initialPreset;
-  //  setPreset(c);
-  //}
   
   //update display gui
   //update mastervol
@@ -2324,8 +2317,8 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //save the set
   //*length = (version == SYSEX_INIT_DATA_VERSION_2 ? NUM_CONFIGLENGTH : NUM_DELAY_WET_DRY_MIX)  // HACK
   *length = NUM_CONFIGLENGTH
-    + (_pluginIReverb?sizeof(float)*_pluginIReverb->plugin()->controlInPorts():0) 
-    + (_pluginIChorus?sizeof(float)*_pluginIChorus->plugin()->controlInPorts():0)
+    + (_pluginIReverb?sizeof(float)*_pluginIReverb->plugin()->parameter():0) 
+    + (_pluginIChorus?sizeof(float)*_pluginIChorus->plugin()->parameter():0)
     + baComp.size();
 
   setupInitBuffer(*length);  
@@ -2393,7 +2386,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   initBuffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
   initBuffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
   initBuffer[NUM_REVERB_PARAM_NBR]=                                         
-    (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->controlInPorts() : 0);
+    (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->parameter() : 0);
   strncpy((char*)&initBuffer[NUM_REVERB_LIB],
 	  (_pluginIReverb?
 	   _pluginIReverb->plugin()->lib().toLatin1().constData() : "\0"),
@@ -2406,7 +2399,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   initBuffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
   initBuffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
   initBuffer[NUM_CHORUS_PARAM_NBR]=                                         
-    (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->controlInPorts() : 0);
+    (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->parameter() : 0);
   strncpy((char*)&initBuffer[NUM_CHORUS_LIB],
 	  (_pluginIChorus?
 	   _pluginIChorus->plugin()->lib().toLatin1().constData() : "\0"),
@@ -2650,17 +2643,17 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   dataReverbRet[1]=(unsigned char)getReverbReturn();
   MusECore::MidiPlayEvent evReverbRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
   _gui->writeEvent(evReverbRet);
-  MusECore::Plugin* p;
-  p = MusEGlobal::plugins.find((const char*)&data[NUM_REVERB_LIB],
+  MusESimplePlugin::Plugin* p;
+  p = MusESimplePlugin::plugins.find((const char*)&data[NUM_REVERB_LIB],
                     (const char*)&data[NUM_REVERB_LABEL]);
   if(p) {
     initPluginReverb(p);
-    for(int i = 0; i < (int)_pluginIReverb->plugin()->controlInPorts(); i++) {
+    for(int i = 0; i < (int)_pluginIReverb->plugin()->parameter(); i++) {
       float val;
       //memcpy(&val, &data[(data[3] == SYSEX_INIT_DATA_VERSION_2 ? NUM_CONFIGLENGTH : NUM_DELAY_WET_DRY_MIX)  // HACK
       memcpy(&val, &data[NUM_CONFIGLENGTH
                          + sizeof(float)*i], sizeof(float));
-      _pluginIReverb->putParam(i, val);
+      _pluginIReverb->setParam(i, val);
     }
     char dataBuildRev;
     dataBuildRev = SYSEX_BUILDGUIREVERB;
@@ -2682,18 +2675,18 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   dataChorusRet[1]=(unsigned char)getChorusReturn();
   MusECore::MidiPlayEvent evChorusRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
   _gui->writeEvent(evChorusRet);
-  p = MusEGlobal::plugins.find((const char*)&data[NUM_CHORUS_LIB],
+  p = MusESimplePlugin::plugins.find((const char*)&data[NUM_CHORUS_LIB],
                     (const char*)&data[NUM_CHORUS_LABEL]);
   if(p) {
     initPluginChorus(p);
-    for(int i = 0; i < (int)_pluginIChorus->plugin()->controlInPorts(); i++) {
+    for(int i = 0; i < (int)_pluginIChorus->plugin()->parameter(); i++) {
       float val;
       //memcpy(&val, &data[(data[3] == SYSEX_INIT_DATA_VERSION_2 ? NUM_CONFIGLENGTH : NUM_DELAY_WET_DRY_MIX)  // HACK
       memcpy(&val, &data[NUM_CONFIGLENGTH
                           + sizeof(float)*(int)data[NUM_REVERB_PARAM_NBR]
                           + sizeof(float)*i],
               sizeof(float));
-      _pluginIChorus->putParam(i, val);
+      _pluginIChorus->setParam(i, val);
     }
     char dataBuildCho;
     dataBuildCho = SYSEX_BUILDGUICHORUS;
@@ -2719,7 +2712,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   float delayfloat;
   memcpy(&delayfloat, &data[NUM_DELAY_BPM], sizeof(float));
   //setDelayBPM(delayfloat);
-  if(_pluginIDelay) _pluginIDelay->putParam(0, delayfloat);
+  if(_pluginIDelay) _pluginIDelay->setParam(0, delayfloat);
   char dataDelayBPM[sizeof(float)+1];
   dataDelayBPM[0] = SYSEX_DELAYBPM;
   memcpy(&dataDelayBPM[1], &delayfloat, sizeof(float));
@@ -2729,7 +2722,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   _gui->writeEvent(evSysexDelayBPM);
   memcpy(&delayfloat, &data[NUM_DELAY_BEATRATIO], sizeof(float));
   //setDelayBeatRatio(delayfloat);
-  if(_pluginIDelay) _pluginIDelay->putParam(1, delayfloat);
+  if(_pluginIDelay) _pluginIDelay->setParam(1, delayfloat);
   char dataDelayBeatRatio[sizeof(float)+1];
   dataDelayBeatRatio[0] = SYSEX_DELAYBEATRATIO;
   memcpy(&dataDelayBeatRatio[1], &delayfloat, sizeof(float));
@@ -2739,7 +2732,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   _gui->writeEvent(evSysexDelayBeatRatio);
   memcpy(&delayfloat, &data[NUM_DELAY_FEEDBACK], sizeof(float));
   //setDelayFeedback(delayfloat);
-  if(_pluginIDelay) _pluginIDelay->putParam(2, delayfloat);
+  if(_pluginIDelay) _pluginIDelay->setParam(2, delayfloat);
   char dataDelayFeedback[sizeof(float)+1];
   dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
   memcpy(&dataDelayFeedback[1], &delayfloat, sizeof(float));
@@ -2749,7 +2742,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   _gui->writeEvent(evSysexDelayFeedback);
   memcpy(&delayfloat, &data[NUM_DELAY_LFO_FREQ], sizeof(float));
   //setDelayLFOFreq(delayfloat);
-  if(_pluginIDelay) _pluginIDelay->putParam(3, delayfloat);
+  if(_pluginIDelay) _pluginIDelay->setParam(3, delayfloat);
   char dataDelayLFOFreq[sizeof(float)+1];
   dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
   memcpy(&dataDelayLFOFreq[1], &delayfloat, sizeof(float));
@@ -2759,7 +2752,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   _gui->writeEvent(evSysexDelayLFOFreq);
   memcpy(&delayfloat, &data[NUM_DELAY_LFO_DEPTH], sizeof(float));
   //setDelayLFODepth(delayfloat);
-  if(_pluginIDelay) _pluginIDelay->putParam(4, delayfloat);
+  if(_pluginIDelay) _pluginIDelay->setParam(4, delayfloat);
   char dataDelayLFODepth[sizeof(float)+1];
   dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
   memcpy(&dataDelayLFODepth[1], &delayfloat, sizeof(float));
@@ -3024,13 +3017,13 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     }
     break;
   case SYSEX_SELECTREVERB:
-    MusECore::Plugin* pluginReverb;
-    memcpy(&pluginReverb, &d[1], sizeof(MusECore::Plugin*));
+    MusESimplePlugin::Plugin* pluginReverb;
+    memcpy(&pluginReverb, &d[1], sizeof(MusESimplePlugin::Plugin*));
     initPluginReverb(pluginReverb);
     break;
   case SYSEX_SELECTCHORUS:
-    MusECore::Plugin* pluginChorus;
-    memcpy(&pluginChorus, &d[1], sizeof(MusECore::Plugin*));
+    MusESimplePlugin::Plugin* pluginChorus;
+    memcpy(&pluginChorus, &d[1], sizeof(MusESimplePlugin::Plugin*));
     initPluginChorus(pluginChorus);
     break;
   case SYSEX_DELAYBPM:
@@ -3698,7 +3691,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 //   getPatchName
 //---------------------------------------------------------
 
-QString DeicsOnze::getPatchName(int ch, int val, bool) const {
+const char* DeicsOnze::getPatchName(int ch, int val, bool) const {
   if(_global.channel[ch].isEnable) {
     Preset* p_preset;
     int hbank = (val & 0xff0000) >> 16;
@@ -3715,7 +3708,8 @@ QString DeicsOnze::getPatchName(int ch, int val, bool) const {
     if (p_preset) tempName=const_cast<char *>(p_preset->name.c_str());
     return tempName;
   }
-  return " ";
+  //return " ";   // ??
+  return "";
 }
 
 //---------------------------------------------------------
@@ -3823,14 +3817,14 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
   \return 0 when done, otherwise return next desired controller index
 */
 //---------------------------------------------------------
-int DeicsOnze::getControllerInfo(int index, QString* name,
+int DeicsOnze::getControllerInfo(int index, const char** name,
 				 int* controller, int* min, int* max, int* initval) const
 {
     if (index >= nbrCtrl) {
 	return 0;
     }
 
-    *name = QString::fromStdString(_ctrl[index].name);
+    *name = _ctrl[index].name.c_str();
     *controller = _ctrl[index].num;
     *min = _ctrl[index].min;
     *max = _ctrl[index].max;
@@ -4497,10 +4491,17 @@ void DeicsOnze::process(unsigned pos, float** buffer, int offset, int n) {
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char*)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* /*name*/, const MessConfig* config)
 {
+    DEI_configPath = QString(config->_configPath);
+    DEI_globalLibPath = QString(config->_globalLibPath);
+    DEI_sharePath = QString(config->_globalSharePath);
+    DEI_segmentSize = config->_segmentSize;
+    DEI_sampleRate = config->_sampleRate;
+    DEI_useDenormalBias = config->_useDenormalBias;
+    DEI_denormalBias = config->_denormalBias;
     DeicsOnze* deicsonze = new DeicsOnze();
-    deicsonze->setSampleRate(sr);
+    deicsonze->setSampleRate(config->_sampleRate);
     return deicsonze;
 }
 

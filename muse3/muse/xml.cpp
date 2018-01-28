@@ -32,7 +32,6 @@
 #include <QRect>
 
 #include "xml.h"
-#include "globals.h"
 
 namespace MusECore {
 
@@ -223,7 +222,8 @@ Xml::Token Xml::parse()
       bool endFlag = false;
       nextc();
       if (c == EOF) {
-            if (level > 0 || MusEGlobal::debugMsg)
+            //if (level > 0 || MusEGlobal::debugMsg)
+            if (level > 0)
               printf("WARNING: unexpected EOF reading xml file at level %d, line %d, <%s><%s><%s>\n",
                 level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
             return level == 0 ? End : Error;

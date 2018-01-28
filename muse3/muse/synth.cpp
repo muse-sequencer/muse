@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <string>
 
 #include <QDir>
 #include <QString>
@@ -57,6 +58,9 @@
 #include "globaldefs.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
+#include "helper.h"
+#include "gconfig.h"
+#include "globals.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -192,6 +196,12 @@ bool MessSynthIF::hasNativeGui() const
       return false;
       }
 
+void MessSynthIF::guiHeartBeat()
+{
+  if(_mess)
+    _mess->guiHeartBeat();
+}
+      
 MidiPlayEvent MessSynthIF::receiveEvent()
       {
       if (_mess)
@@ -323,7 +333,25 @@ void* MessSynth::instantiate(const QString& instanceName)
             MusEGlobal::undoSetuid();
             return 0;
             }
-      Mess* mess = _descr->instantiate(MusEGlobal::sampleRate, MusEGlobal::muse, &MusEGlobal::museProject, instanceName.toLatin1().constData());
+      QByteArray configPathBA      = MusEGlobal::configPath.toLatin1();
+      QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toLatin1();
+      QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toLatin1();
+      QByteArray museUserBA        = MusEGlobal::museUser.toLatin1();
+      QByteArray museProjectBA     = MusEGlobal::museProject.toLatin1();
+      MessConfig mcfg(MusEGlobal::segmentSize,
+                      MusEGlobal::sampleRate,
+                      MusEGlobal::config.minMeter,
+                      MusEGlobal::config.useDenormalBias,
+                      MusEGlobal::denormalBias,
+                      MusEGlobal::config.leftMouseButtonCanDecrease,
+                      configPathBA.constData(),
+                      museGlobalLibBA.constData(),
+                      museGlobalShareBA.constData(),
+                      museUserBA.constData(),
+                      museProjectBA.constData());
+      Mess* mess = _descr->instantiate((unsigned long long)MusEGlobal::muse->winId(),
+                                       instanceName.toLatin1().constData(), &mcfg);
+      
       MusEGlobal::undoSetuid();
       return mess;
       }
@@ -451,7 +479,7 @@ void SynthI::recordEvent(MidiRecordEvent& event)
 
       if (MusEGlobal::midiInputTrace) {
             fprintf(stderr, "MidiInput from synth: ");
-            event.dump();
+            dumpMPEvent(&event);
             }
 
       int typ = event.type();
@@ -660,7 +688,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                     }
                   }
 
-                  MidiPlayEvent pev(0, 0, 0, ev);
+                  MidiPlayEvent pev = ev.asMidiPlayEvent(0, 0, 0);
                   _userEventBuffers->put(pev);
                   }
             iel->clear();
@@ -697,7 +725,26 @@ unsigned int SynthI::pbForwardShiftFrames() const
 
 int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
       {
-      return _mess->getControllerInfo(id, name, ctrl, min, max, initval);
+      int i_ctrl;
+      int i_min;
+      int i_max;
+      int i_initval;
+      const char* s_name;
+      
+      int ret = _mess->getControllerInfo(id, &s_name, &i_ctrl, &i_min, &i_max, &i_initval);
+      
+      if(ctrl)
+        *ctrl = i_ctrl;
+      if(min)
+        *min = i_min;
+      if(max)
+        *max = i_max;
+      if(initval)
+        *initval = i_initval;
+      if(name)
+        *name = QString(s_name);
+      
+      return ret;
       }
 
 void MessSynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_map, int
@@ -744,10 +791,10 @@ void MessSynthIF::getMapItem(int channel, int patch, int index, DrumMap& dest_ma
   dest_map.hide = base_dm.hide;
   dest_map.mute = base_dm.mute;
 
-  QString str;
+  const char* str;
   // true = Want percussion names, not melodic.
   if(_mess->getNoteSampleName(true, channel, patch, index, &str))
-    dest_map.name = str;
+    dest_map.name = QString(str);
   else
     dest_map.name = base_dm.name;
 }
@@ -1094,7 +1141,7 @@ void SynthI::read(Xml& xml)
 QString MessSynthIF::getPatchName(int channel, int prog, bool drum) const
       {
         if (_mess)
-          return _mess->getPatchName(channel, prog, drum);
+          return QString(_mess->getPatchName(channel, prog, drum));
         return "";
       }
 
@@ -1321,7 +1368,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
       if (MusEGlobal::midiOutputTrace)
       {
            fprintf(stderr, "MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
-           ev.dump();
+           dumpMPEvent(&ev);
       }
       
       int chn = ev.channel();

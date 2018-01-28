@@ -30,6 +30,7 @@
 #include "type_defs.h"
 #include "pos.h"
 #include "evdata.h"
+#include "mpevent.h"
 #include "wave.h" // for SndFileR
 
 class QString;
@@ -59,6 +60,8 @@ class Event {
       
       virtual ~Event();
 
+      MidiPlayEvent asMidiPlayEvent(unsigned time, int port, int channel) const;
+      
       bool empty() const;
       EventType type() const;
       // Shared and non-shared clone events have the same id. An empty event returns MUSE_INVALID_EVENT_ID.

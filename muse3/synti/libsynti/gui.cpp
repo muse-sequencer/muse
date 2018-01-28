@@ -23,7 +23,7 @@
 //=========================================================
 
 #include "gui.h"
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 
 #include <QThread>
 #include <unistd.h>
@@ -121,9 +121,6 @@ void MessGui::sendEvent(const MusECore::MidiPlayEvent& ev)
 
 void MessGui::sendController(int ch, int idx, int val)
       {
-//      MusECore::MidiPlayEvent pe(0, 0, ch, MusECore::ME_CONTROLLER, idx, val);
-//      sendEvent(pe);
-
       sendEvent(MusECore::MidiPlayEvent(0, 0, ch, MusECore::ME_CONTROLLER, idx, val));
       }
 
@@ -133,9 +130,6 @@ void MessGui::sendController(int ch, int idx, int val)
 
 void MessGui::sendSysex(unsigned char* p, int n)
       {
-//      MusECore::MidiPlayEvent pe(0, 0, MusECore::ME_SYSEX, p, n);
-//      sendEvent(pe);
-        
         sendEvent(MusECore::MidiPlayEvent(0, 0, MusECore::ME_SYSEX, p, n));
       }
 

@@ -50,6 +50,7 @@
 #include "gconfig.h"
 #include "track.h"
 #include "route.h"
+#include "helper.h"
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
@@ -466,7 +467,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       
       if (MusEGlobal::midiInputTrace) {
             fprintf(stderr, "MidiIn Jack: <%s>: ", name().toLatin1().constData());
-            event.dump();
+            dumpMPEvent(&event);
             }
             
       int typ = event.type();
@@ -776,7 +777,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
       
       if (MusEGlobal::midiOutputTrace) {
             fprintf(stderr, "MidiOut: Jack: <%s>: ", name().toLatin1().constData());
-            e.dump();
+            dumpMPEvent(&e);
             }
             
       switch(e.type()) {

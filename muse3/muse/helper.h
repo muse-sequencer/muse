@@ -40,11 +40,13 @@ namespace MusECore {
 class Part;
 class Track;
 class PartList;
+class MEvent;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();
 
 QString pitch2string(int v);
+void dumpMPEvent(const MEvent* ev);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<const Part*>&, bool in_range=false);
 

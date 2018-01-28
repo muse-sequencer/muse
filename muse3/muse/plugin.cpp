@@ -48,7 +48,7 @@
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
-#include "midictrl.h"
+#include "midictrl_consts.h"
 #include "plugin.h"
 #include "controlfifo.h"
 #include "xml.h"
@@ -3703,9 +3703,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       //if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                       if(LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
                         mType=Meter::DBMeter;
-                      Meter* m = new Meter(this, mType, Qt::Horizontal, Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+                      Meter* m = new Meter(this, 
+                                           mType, 
+                                           Qt::Horizontal, 
+                                           dlower, dupper,
+                                           Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+                      m->setRefreshRate(MusEGlobal::config.guiRefresh);
                       m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-                      m->setRange(dlower, dupper);
                       m->setVal(dval, dval, false);
                       m->setScaleBackBone(false);
                       m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);

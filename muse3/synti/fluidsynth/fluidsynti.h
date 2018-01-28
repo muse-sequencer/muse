@@ -43,7 +43,7 @@
 #include "libsynti/mess.h"
 #include "muse/debug.h"
 #include "muse/mpevent.h"   
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
 #include "common_defs.h"
 
 // TODO: Try to not include this. Standalone build of plugin?
@@ -157,18 +157,15 @@ public:
       virtual bool setController(int, int, int);
       void setController(int, int , int, bool);
       virtual void getInitData(int*, const unsigned char**);
-      virtual QString getPatchName(int, int, bool) const;
+      virtual const char* getPatchName(int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
       #ifdef HAVE_INSTPATCH
       // True if it found a name.
-      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const;
+      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, const char** name) const;
       #endif
 
-      //virtual bool hasGui() const { return true; }
-      //virtual bool guiVisible() const;
-      //virtual void showGui(bool val);
       virtual bool hasNativeGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool val);

@@ -441,7 +441,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 {
       if (MusEGlobal::midiOutputTrace) {
             fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
-            ev.dump();
+            dumpMPEvent(&ev);
             }
             
       int chn = ev.channel();
@@ -543,7 +543,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                 if(len > 0)
                 {
                   unsigned char buf[len];
-                  if(sysExOutProcessor()->getCurChunk(buf))
+                  if(sysExOutProcessor()->getCurChunk(buf, MusEGlobal::sampleRate))
                   {
                     snd_seq_ev_set_sysex(&event, len, buf);
                     // NOTE: Don't move this out, 'buf' would go out of scope.
@@ -905,7 +905,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
       if(len > 0)
       {
         unsigned char buf[len];
-        if(sop->getCurChunk(buf))
+        if(sop->getCurChunk(buf, MusEGlobal::sampleRate))
         {
           snd_seq_event_t event;
           snd_seq_ev_clear(&event);

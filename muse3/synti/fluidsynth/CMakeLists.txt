@@ -94,6 +94,8 @@ target_link_libraries(fluid_synth
       ${QT_LIBRARIES}
       ${FLUIDSYN_LIBRARIES}
       ${INSTPATCH_LIBRARIES}
+      mpevent_module
+      icons
       )
 
 ##

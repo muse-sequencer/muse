@@ -26,6 +26,7 @@
 #include "eventbase.h"
 #include "waveevent.h"
 #include "midievent.h"
+#include "midi.h"
 
 //#define USE_SAMPLERATE
 
@@ -183,6 +184,36 @@ Event::~Event() {
             #endif
             }
 
+MidiPlayEvent Event::asMidiPlayEvent(unsigned time, int port, int channel) const
+      {
+      MidiPlayEvent mpe;  
+      mpe.setChannel(channel);
+      mpe.setTime(time);
+      mpe.setPort(port);
+      mpe.setLoopNum(0);
+      switch(type()) {
+            case Note:
+                  mpe.setType(ME_NOTEON);
+                  mpe.setA(dataA());
+                  mpe.setB(dataB());
+                  break;
+            case Controller:
+                  mpe.setType(ME_CONTROLLER);
+                  mpe.setA(dataA());  // controller number
+                  mpe.setB(dataB());  // controller value
+                  break;
+            case Sysex:
+                  mpe.setType(ME_SYSEX);
+                  mpe.setData(eventData());
+                  break;
+            default:
+                  fprintf(stderr, "Event::asMidiPlayEvent: event type %d not implemented\n",
+                     type());
+                  break;
+            }
+      return mpe;
+      }
+            
 bool Event::empty() const      { return ev == 0; }
 EventType Event::type() const  { return ev ? ev->type() : Note;  }
 EventID_t Event::id() const { return ev ? ev->id() : MUSE_INVALID_EVENT_ID; }

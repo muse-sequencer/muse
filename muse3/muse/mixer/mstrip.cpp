@@ -1500,9 +1500,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //slider->setFillThumb(false);
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-      meter[0] = new MusEGui::Meter(0, MusEGui::Meter::LinMeter);
+      meter[0] = new Meter(0, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
+      meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
-      meter[0]->setRange(0, 127.0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       meter[0]->setFixedWidth(FIXED_METER_WIDTH);
       meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
@@ -2199,6 +2199,7 @@ void MidiStrip::configChanged()
   
   // Adjust meter and colour.
   meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+  meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
 
   // If smart focus is on redirect strip focus to slider label.
 //   if(MusEGlobal::config.smartFocus)

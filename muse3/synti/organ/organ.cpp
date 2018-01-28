@@ -28,8 +28,7 @@
 #include <cmath>
 #include <stdio.h>
 
-#include "muse/midi.h"
-//#include "libsynti/mpevent.h"
+#include "muse/midi_consts.h"
 #include "muse/mpevent.h"   
 
 //#include "common_defs.h"
@@ -685,13 +684,13 @@ void Organ::getInitData(int* n, const unsigned char**p)
 //   getControllerInfo
 //---------------------------------------------------------
 
-int Organ::getControllerInfo(int id, QString* name, int* controller,
+int Organ::getControllerInfo(int id, const char** name, int* controller,
    int* min, int* max, int* initval) const
       {
       if (id >= NUM_CONTROLLER)
             return 0;
       *controller = synthCtrl[id].num;
-      *name       = QString(synthCtrl[id].name);
+      *name       = synthCtrl[id].name;
       *initval    = synthCtrl[id].val;
       
       if(synthCtrl[id].num == MusECore::CTRL_VOLUME)
@@ -754,9 +753,9 @@ void Organ::setNativeGeometry(int x, int y, int w, int h)
 //    construct a new synthesizer instance
 //---------------------------------------------------------
 
-static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
-      Organ* synth = new Organ(sr);
+      Organ* synth = new Organ(config->_sampleRate);
       if (synth->init(name)) {
             delete synth;
             synth = 0;

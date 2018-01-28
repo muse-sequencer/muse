@@ -1,10 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: midi.h,v 1.4.2.2 2009/11/09 20:28:28 terminator356 Exp $
 //
-//  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  sysex_helper.h
+//  (C) Copyright 2018 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,38 +21,18 @@
 //
 //=========================================================
 
-#ifndef __MIDI_H__
-#define __MIDI_H__
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "midi_consts.h"
-
-class QString;
+#ifndef __SYSEX_HELPER_H__
+#define __SYSEX_HELPER_H__
 
 namespace MusECore {
 
-class EventList;
-
-enum AudioTickSound {
-    beatSound,
-    measureSound,
-    accent1Sound,
-    accent2Sound
-};
-
-class MidiInstrument;
-extern QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-extern QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
-extern QString midiMetaName(int meta);
-
-class MPEventList;
-class MidiTrack;
-extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
+// Expected duration in frames, at the current sample rate, of the 
+//  given length of sysex data. Based on 31250Hz midi baud rate in
+//  1-8-2 format. (Midi specs say 1 stop bit, but ALSA says
+//  2 stop bits are common.) A small gap time is added as well.
+// If the data includes any start/end bytes, len should also include them.
+extern unsigned int sysexDuration(unsigned int len, int sampleRate);
 
 } // namespace MusECore
 
 #endif
-

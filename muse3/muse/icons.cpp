@@ -25,8 +25,6 @@
 //          certain styles do not support it, such as QtCurve.
 //         Therefore the separate icons must be manually set upon each state.
 
-#include "globals.h"
-
 #include <QIcon>
 
 #include "xpm/track_comment.xpm"

@@ -1386,7 +1386,7 @@ void MusE::importWave()
       }
 
    }
-   MusECore::AudioPreviewDialog afd(this);
+   MusECore::AudioPreviewDialog afd(this, MusEGlobal::sampleRate);
    afd.setDirectory(MusEGlobal::lastWavePath);
    afd.setWindowTitle(tr("Import Audio File"));
    /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,

@@ -164,7 +164,7 @@ class SysExOutputProcessor
     State setEvData(const EvData& src, size_t frame);
     // Fills destination with the current chunk. The destination must have at least curChunkSize bytes.
     // Afterwards it moves on to the next chunk until the state changes to Finished. Returns true on success.
-    bool getCurChunk(unsigned char* dst);
+    bool getCurChunk(unsigned char* dst, int sampleRate);
     // Convenience method: Performs a state check, calls setEvData, and returns curChunkSize().
     size_t stageEvData(const EvData& evData, unsigned int frame);
 };

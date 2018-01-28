@@ -42,7 +42,7 @@
 
 //#include "common_defs.h"
 #include "fluidsynti.h"
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 
 
 #ifdef HAVE_INSTPATCH
@@ -106,7 +106,8 @@ FluidCtrl FluidSynth::fluidCtrl[] = {
 
 static int NUM_CONTROLLER = sizeof(FluidSynth::fluidCtrl)/sizeof(*(FluidSynth::fluidCtrl));
 
-QString *projPathPtr;
+QString projPathPtr;
+
 //
 // Fluidsynth
 //
@@ -273,10 +274,6 @@ void FluidSynth::process(unsigned /*pos*/, float** ports, int offset, int len)
 //---------------------------------------------------------
 void FluidSynth::getInitData(int* n, const unsigned char** data) 
       {
-
- //printf("projPathPtr ");
- //std::cout << *projPathPtr << std::endl;
-
       // Data setup:
       // FS_INIT_DATA (1 byte)
       // FluidSynth version (2 bytes, x.y)
@@ -300,9 +297,9 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 
             // if the soundfont is located under the projectPath we extract this from the filename
             int fileLen = it->file_name.size();
-            if (it->file_name.startsWith(*projPathPtr)) {
-                printf("project path found in filename, len %d shortened with %d\n",fileLen, projPathPtr->length()+1);
-                fileLen = fileLen - projPathPtr->length()-1;
+            if (it->file_name.startsWith(projPathPtr)) {
+                printf("project path found in filename, len %d shortened with %d\n",fileLen, projPathPtr.length()+1);
+                fileLen = fileLen - projPathPtr.length()-1;
                 }
             len+=fileLen + 2;
             }
@@ -345,11 +342,11 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 
             // if the soundfont is located under the projectPath we extract this from the filename
             int offset=0;
-            if (it->file_name.startsWith(*projPathPtr)) {
-                offset= projPathPtr->length()+1;
+            if (it->file_name.startsWith(projPathPtr)) {
+                offset= projPathPtr.length()+1;
             }
 
-            memcpy(chptr, it->file_name.toLatin1().data()+offset, it->file_name.size()-offset+1);
+            memcpy(chptr, it->file_name.toLatin1().constData()+offset, it->file_name.size()-offset+1);
             //printf("path name stored=%s\n", it->filename.c_str()+offset);
             chptr = chptr + 1 + it->file_name.size()-offset;
             }
@@ -392,7 +389,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 void FluidSynth::parseInitData(int n, const byte* d)
 {
       printf("projPathPtr ");
-      std::cout << *projPathPtr->toLatin1().data() << std::endl;
+      std::cout << projPathPtr.toLatin1().constData() << std::endl;
 
       bool load_drumchannels = true; // Introduced in initdata ver 0.3
       bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
@@ -448,13 +445,13 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nr_of_fonts; i++) {
             fonts[i].file_name = QString::fromLatin1((char*)&d[arrayIndex]);
             arrayIndex+=fonts[i].file_name.size()+1;
-            QByteArray ba = projPathPtr->toLatin1();
+            QByteArray ba = projPathPtr.toLatin1();
 
             if (QFileInfo(fonts[i].file_name).isRelative()) {
                 printf("path is relative, we append full path!\n");
                 fonts[i].file_name = QString(ba) + "/"+ fonts[i].file_name;
                 }
-            std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().data() << std::endl;
+            std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().constData() << std::endl;
             }
 
       if (d[arrayIndex] != FS_INIT_CHANNEL_SECTION) {
@@ -496,7 +493,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
 
 
       for (int i=0; i<nrOfSoundfonts; i++) {
-            pushSoundfont(fonts[i].file_name.toLatin1().data(), fonts[i].extid);
+            pushSoundfont(fonts[i].file_name.toLatin1().constData(), fonts[i].extid);
             }
       delete[] fonts;
 }
@@ -513,8 +510,6 @@ bool FluidSynth::processEvent(const MusECore::MidiPlayEvent& ev)
             case MusECore::ME_CONTROLLER:
                   if (FS_DEBUG_DATA) {
                         printf("*** FluidSynth::process - Controller. Chan: %x dataA: %x dataB: %x\n", ev.channel(), ev.dataA(), ev.dataB());
-                        for (int i=0; i< ev.len(); i++)
-                              printf("%x ", ev.data()[i]);
                         }
                   setController(ev.channel(), ev.dataA(), ev.dataB(), false);
                   //return true;  // ?? 
@@ -639,7 +634,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       else
       {
 
-          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
+          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().constData(), MusEGlobal::museProject.toLatin1().constData(), filename);
           QFileInfo fi(fn);
           if (QFile::exists(fi.fileName())) // check if the file exists in current folder
               helper->file_name = QDir::currentPath() + "/" + fi.fileName();
@@ -654,7 +649,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
 //                                      QString("Soundfonts (*.sf2);;All files (*)"));
 //              QMessageBox::warning(NULL,"No sound font found.","Could not open soundfont: " + fn, QMessageBox::Ok);
 
-              fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLatin1().data());
+              fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLatin1().constData());
 
               return false;
           }
@@ -862,7 +857,7 @@ void FluidSynth::sendSoundFontData()
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end();  ++it) {
             name_len = it->name.size() + 1;
             chunk_len = name_len + FS_SFDATALEN;
-            memcpy(chunk_start, it->name.toLatin1().data(), name_len); //First, store the fontname
+            memcpy(chunk_start, it->name.toLatin1().constData(), name_len); //First, store the fontname
             *(chunk_start + name_len) = it->extid; //The GUI only needs to know about the external id, store that here
             chunk_start += chunk_len;
             }
@@ -928,7 +923,7 @@ void FluidSynth::dumpInfo()
 
       printf("\n");
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end(); it++)
-            printf("Font: %s\tintid: %d\textid %d\tfilename:%s\n", it->name.toLatin1().data(), it->intid, it->extid, it->file_name.toLatin1().data());
+            printf("Font: %s\tintid: %d\textid %d\tfilename:%s\n", it->name.toLatin1().constData(), it->intid, it->extid, it->file_name.toLatin1().constData());
       printf("Reverb on: %d, width: %f, size: %f level: %f damp: %f\n",rev_on, rev_width, rev_size, rev_level, rev_damping);
       printf("-----------------------------------------------------\n");
       }
@@ -1146,12 +1141,12 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
 //---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
-int FluidSynth::getControllerInfo(int id, QString* name, int* controller, int* min, int* max, int* initval) const
+int FluidSynth::getControllerInfo(int id, const char** name, int* controller, int* min, int* max, int* initval) const
       {
       if (id >= NUM_CONTROLLER)
             return 0;
       *controller = fluidCtrl[id].num;
-      *name       = QString(fluidCtrl[id].name);
+      *name       = fluidCtrl[id].name;
       *min        = fluidCtrl[id].min;
       *max        = fluidCtrl[id].max;
       switch(id)
@@ -1199,12 +1194,12 @@ int FluidSynth::getControllerInfo(int id, QString* name, int* controller, int* m
 
       if (FS_DEBUG)
             printf("FluidSynth::getControllerInfo() id: %d name: %s controller: %d min: %d max: %d initval: %d\n",
-                   id,(*name).toLatin1().constData(),*controller,*min,*max,*initval);
+                   id,*name,*controller,*min,*max,*initval);
       return ++id;
       }
 
 #ifdef HAVE_INSTPATCH
-bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const
+bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, const char** name) const
 {
   if(!name || channel < 0 || channel >= FS_MAX_NR_OF_CHANNELS)
     return false;
@@ -1232,7 +1227,7 @@ bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, 
         if(insnl != pnsnl.end())
         {
           const std::string& str = insnl->second;
-          *name = QString::fromStdString(str);
+          *name = str.c_str();
           return true;
         }
       }
@@ -1363,7 +1358,7 @@ void FluidSynth::rewriteChannelSettings()
 //---------------------------------------------------------
 //   getPatchName
 //---------------------------------------------------------
-QString FluidSynth::getPatchName(int i, int, bool /*drum*/) const
+const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       {
       if (channels[i].font_intid == FS_UNSPECIFIED_FONT ||
           channels[i].font_intid == FS_UNSPECIFIED_ID)
@@ -1639,12 +1634,12 @@ class QWidget;
 static  QMutex globalFluidSynthMutex;
 
 
-static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
-      printf("fluidsynth sampleRate %d\n", sr);
-      projPathPtr=projectPathPtr;
+      printf("fluidsynth sampleRate %d\n", config->_sampleRate);
+      projPathPtr = QString(config->_projectPath);
 
-      FluidSynth* synth = new FluidSynth(sr, globalFluidSynthMutex);
+      FluidSynth* synth = new FluidSynth(config->_sampleRate, globalFluidSynthMutex);
       if (synth->init(name)) {
             delete synth;
             synth = 0;

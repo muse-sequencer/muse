@@ -61,30 +61,6 @@ namespace MusECore {
 
 extern void dump(const unsigned char* p, int n);
 
-
-const unsigned char gmOnMsg[]   = { 0x7e, 0x7f, 0x09, 0x01 };
-const unsigned char gm2OnMsg[]  = { 0x7e, 0x7f, 0x09, 0x03 };
-const unsigned char gmOffMsg[]  = { 0x7e, 0x7f, 0x09, 0x02 };
-const unsigned char gsOnMsg[]   = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
-const unsigned char gsOnMsg2[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
-const unsigned char gsOnMsg3[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
-const unsigned char xgOnMsg[]   = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
-const unsigned int  gmOnMsgLen  = sizeof(gmOnMsg);
-const unsigned int  gm2OnMsgLen = sizeof(gm2OnMsg);
-const unsigned int  gmOffMsgLen = sizeof(gmOffMsg);
-const unsigned int  gsOnMsgLen  = sizeof(gsOnMsg);
-const unsigned int  gsOnMsg2Len = sizeof(gsOnMsg2);
-const unsigned int  gsOnMsg3Len = sizeof(gsOnMsg3);
-const unsigned int  xgOnMsgLen  = sizeof(xgOnMsg);
-
-const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
-const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
-const unsigned char mmcLocateMsg[] =       { 0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01, 0, 0, 0, 0, 0 };
-
-const unsigned int  mmcDeferredPlayMsgLen = sizeof(mmcDeferredPlayMsg);
-const unsigned int  mmcStopMsgLen = sizeof(mmcStopMsg);
-const unsigned int  mmcLocateMsgLen = sizeof(mmcLocateMsg);
-
 #define CALC_TICK(the_tick) lrintf((float(the_tick) * float(MusEGlobal::config.division) + float(div/2)) / float(div));
 
 /*---------------------------------------------------------
@@ -252,27 +228,6 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
             s = QObject::tr("Switch on Yamaha XG mode");
       return s;
       }
-
-//---------------------------------------------------------
-//    sysexDuration
-//    static
-//---------------------------------------------------------
-
-unsigned int sysexDuration(unsigned int len)
-{
-  // Midi transmission characters per second, based on standard fixed bit rate of 31250 Hz.
-  // According to ALSA (aplaymidi.c), although the midi standard says one stop bit,
-  //  two are commonly used. We will use two just to be sure.
-  const unsigned int midi_cps = 31250 / (1 + 8 + 2);
-  // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
-  unsigned int frames = (len * MusEGlobal::sampleRate) / midi_cps;
-  // Add a slight delay between chunks just to be sure there's no overlap, rather a small space, and let devices catch up.
-  frames += MusEGlobal::sampleRate / 200; // 1 / 200 = 5 milliseconds.
-  // Let's be realistic, spread by at least one frame.
-  if(frames == 0)
-    frames = 1;
-  return frames;
-}
 
 //---------------------------------------------------------
 //   buildMidiEventList
@@ -1517,7 +1472,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                   }
                                 }
                                 
-                                MusECore::MidiPlayEvent mpe(frame, port, channel, ev);
+                                MusECore::MidiPlayEvent mpe = ev.asMidiPlayEvent(frame, port, channel);
                                 // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                 //       which so far was meant for (N)RPN stuff. For now, just force it.
                                 // This is the audio thread. Just set directly.
@@ -1531,7 +1486,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                           
                               if(md)
                               {
-                                 md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, ev), 
+                                 md->putEvent(ev.asMidiPlayEvent(frame, port, channel), 
                                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                               }
                               break;

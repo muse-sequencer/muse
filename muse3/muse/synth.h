@@ -357,7 +357,7 @@ class MessSynthIF : public SynthIF {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
 
-      virtual void guiHeartBeat()     { }
+      virtual void guiHeartBeat();
       virtual bool guiVisible() const { return false; }
       virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const;

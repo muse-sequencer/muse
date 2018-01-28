@@ -21,8 +21,8 @@
 //=========================================================
 
 #include "mess.h"
-#include "muse/midi.h"
-#include "muse/midictrl.h"
+#include "muse/midi_consts.h"
+#include "muse/midictrl_consts.h"
 
 static const int FIFO_SIZE = 32;
 

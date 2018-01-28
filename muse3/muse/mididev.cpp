@@ -47,6 +47,7 @@
 #include "part.h"
 #include "drummap.h"
 #include "operations.h"
+#include "helper.h"
 
 // For debugging output: Uncomment the fprintf section.
 //#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -292,7 +293,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       
       if (MusEGlobal::midiInputTrace) {
             fprintf(stderr, "MidiInput: ");
-            event.dump();
+            dumpMPEvent(&event);
             }
 
       int typ = event.type();
@@ -518,7 +519,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
   if (MusEGlobal::midiOutputTrace)
   {
     fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
-    fin_ev.dump();
+    dumpMPEvent(&fin_ev);
   }
   
   bool rv = true;
@@ -680,9 +681,8 @@ void MidiDevice::handleSeek()
   
   if(MusEGlobal::audio->isPlaying()) 
   {
-// REMOVE Tim. bugs. Removed.
-//     // TODO: Don't clear, let it play whatever was scheduled ?
-//     setStopFlag(true);
+    // TODO: Don't clear, let it play whatever was scheduled ?
+    //setStopFlag(true);
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
     {
       MidiPlayEvent ev(*i);

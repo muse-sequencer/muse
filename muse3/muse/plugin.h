@@ -377,8 +377,8 @@ class PluginIBase
 //    plugin instance
 //---------------------------------------------------------
 
-#define AUDIO_IN (LADSPA_PORT_AUDIO  | LADSPA_PORT_INPUT)
-#define AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
+#define IS_AUDIO_IN (LADSPA_PORT_AUDIO  | LADSPA_PORT_INPUT)
+#define IS_AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
 
 class PluginI : public PluginIBase {
 #ifdef LV2_SUPPORT
@@ -491,8 +491,8 @@ class PluginI : public PluginIBase {
       const char* paramOutName(unsigned long i)     { return _plugin->portName(controlsOut[i].idx); }
       LADSPA_PortDescriptor portd(unsigned long i) const { return _plugin->portd(controls[i].idx); }
       void range(unsigned long i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
-      bool isAudioIn(unsigned long k) { return (_plugin->portd(k) & AUDIO_IN) == AUDIO_IN; }
-      bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT; }
+      bool isAudioIn(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_IN) == IS_AUDIO_IN; }
+      bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
       float latency();

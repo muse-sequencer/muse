@@ -29,11 +29,10 @@
 
 #include "deicsonze.h"
 #include "deicsonzeplugin.h"
-#include "plugin.h"
-///#include "plugingui.h"
+#include "libsimpleplugin/simpler_plugin.h"
 #include "ctrl.h"
 #include "fastlog.h"
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "awl/floatentry.h"
 #include "awl/slider.h"
 #include "awl/checkbox.h"
@@ -44,15 +43,14 @@ using Awl::CheckBox;
 
 class PluginDialog;
 
-void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
+void DeicsOnze::initPluginReverb(MusESimplePlugin::Plugin* pluginReverb) {
   //init plugin
   if(_pluginIReverb) delete(_pluginIReverb);
-  _pluginIReverb = new MusECore::PluginI();
+  _pluginIReverb = new MusESimplePlugin::PluginI();
 
-  _pluginIReverb->initPluginInstance(pluginReverb, 2);
+  _pluginIReverb->initPluginInstance(
+    pluginReverb, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
 
-  //for(int i = 0; i < pluginReverb->parameter(); i++) {
-  //for(int i = 0; i < (int)pluginReverb->controlInPorts(); i++) {
   for(int i = 0; i < (int)_pluginIReverb->parameters(); i++) {
 
 
@@ -70,7 +68,7 @@ void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
     
     //setReverbParam(i, pluginReverb->defaultValue(i));
     //setReverbParam(i, _pluginIReverb->defaultValue(i));
-    _pluginIReverb->putParam(i, _pluginIReverb->defaultValue(i));
+    _pluginIReverb->setParam(i, _pluginIReverb->defaultValue(i));
   }
 
   //send build gui to the gui
@@ -80,11 +78,11 @@ void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
   _gui->writeEvent(evSysex);
 }
 
-void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
+void DeicsOnze::initPluginChorus(MusESimplePlugin::Plugin* pluginChorus) {
   if(_pluginIChorus) delete(_pluginIChorus);
-  _pluginIChorus = new MusECore::PluginI();
-
-  _pluginIChorus->initPluginInstance(pluginChorus, 2);
+  _pluginIChorus = new MusESimplePlugin::PluginI();
+  _pluginIChorus->initPluginInstance(
+    pluginChorus, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
 
   //for(int i = 0; i < pluginChorus->parameter(); i++) {
   for(int i = 0; i < (int)_pluginIChorus->parameters(); i++) {
@@ -98,7 +96,7 @@ void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
     
     //setChorusParam(i, pluginChorus->defaultValue(i));
     //setChorusParam(i, _pluginIChorus->defaultValue(i));
-    _pluginIChorus->putParam(i, _pluginIChorus->defaultValue(i));
+    _pluginIChorus->setParam(i, _pluginIChorus->defaultValue(i));
   }
 
   //send build gui to the gui
@@ -108,13 +106,13 @@ void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
   _gui->writeEvent(evSysex);
 }
 
-void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
+void DeicsOnze::initPluginDelay(MusESimplePlugin::Plugin* pluginDelay) {
   if(_pluginIDelay) delete(_pluginIDelay);
-  _pluginIDelay = new MusECore::PluginI();
+  _pluginIDelay = new MusESimplePlugin::PluginI();
 
-  _pluginIDelay->initPluginInstance(pluginDelay, 2);
-
-  //for(int i = 0; i < pluginDelay->parameter(); i++) { 
+  _pluginIDelay->initPluginInstance(
+    pluginDelay, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
+  
   for(int i = 0; i < (int)_pluginIDelay->parameters(); i++) {
    
 // FIXME FIXME Tim
@@ -126,11 +124,11 @@ void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
 
     //setChorusParam(i, pluginDelay->defaultValue(i));
     //setDelayParam(i, _pluginIDelay->defaultValue(i));
-    _pluginIDelay->putParam(i, _pluginIDelay->defaultValue(i));
+    _pluginIDelay->setParam(i, _pluginIDelay->defaultValue(i));
   }
 
   //setDelayDryWet(1);
-  _pluginIDelay->putParam(5, 1.0);
+  _pluginIDelay->setParam(5, 1.0);
   
   float f;
   char dataDelayBPM[sizeof(float)+1];
@@ -314,7 +312,7 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
 void DeicsOnzeGui::buildGuiReverb() {
   if(!_deicsOnze->_pluginIReverb)
     return;
-  MusECore::PluginI* plugI = _deicsOnze->_pluginIReverb;
+  MusESimplePlugin::PluginI* plugI = _deicsOnze->_pluginIReverb;
   QString name = plugI->name();
   name.resize(name.size()-2);
   updateLadspaReverbLineEdit(name);
@@ -336,20 +334,19 @@ void DeicsOnzeGui::buildGuiReverb() {
   if(!_reverbFloatEntryVector.empty()) _reverbFloatEntryVector.clear();  
   if(!_reverbCheckBoxVector.empty()) _reverbCheckBoxVector.clear();  
   //build sliders                                         
-  //for(int i = 0; i < plugI->plugin()->parameter(); i++) { 
-  for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) { 
+  for(int i = 0; i < (int)plugI->plugin()->parameter(); i++) { 
     float min, max, val;
     plugI->range(i, &min, &max);
 
     val = _deicsOnze->getReverbParam(i);
-     if(plugI->ctrlValueType(i) == MusECore::VAL_BOOL)
+     if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->paramName(i), val > 0.0,
                         _reverbSuperWidget, grid, true);
-    else if(plugI->ctrlValueType(i) == MusECore::VAL_INT) 
+    else if(plugI->isInt(i)) 
       addPluginIntSlider(i, plugI->paramName(i), rint(min), rint(max),
                          rint(val), _reverbSuperWidget, grid, true);
     else 
-      addPluginSlider(i, plugI->paramName(i), plugI->ctrlValueType(i) == MusECore::VAL_LOG,
+      addPluginSlider(i, plugI->paramName(i), plugI->isLog(i),
                       min, max, val, _reverbSuperWidget, grid, true);
   }
   //update colors of the new sliders (and the whole gui actually)
@@ -360,7 +357,7 @@ void DeicsOnzeGui::buildGuiReverb() {
 void DeicsOnzeGui::buildGuiChorus() {
   if(!_deicsOnze->_pluginIChorus)
     return;
-  MusECore::PluginI* plugI = _deicsOnze->_pluginIChorus;
+  MusESimplePlugin::PluginI* plugI = _deicsOnze->_pluginIChorus;
   QString name = plugI->name();
   name.resize(name.size()-2);
   updateLadspaChorusLineEdit(name);
@@ -382,20 +379,19 @@ void DeicsOnzeGui::buildGuiChorus() {
   if(!_chorusFloatEntryVector.empty()) _chorusFloatEntryVector.clear();
   if(!_chorusCheckBoxVector.empty()) _chorusCheckBoxVector.clear();  
   //build sliders                              
-  //for(int i = 0; i < plugI->plugin()->parameter(); i++) {
-  for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) {
+  for(int i = 0; i < (int)plugI->plugin()->parameter(); i++) {
     float min, max, val;
     plugI->range(i, &min, &max);
     
     val = _deicsOnze->getChorusParam(i);
-    if(plugI->ctrlValueType(i) == MusECore::VAL_BOOL)
+    if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->paramName(i), val > 0.0,
                         _chorusSuperWidget, grid, false);
-    else if(plugI->ctrlValueType(i) == MusECore::VAL_INT) 
+    else if(plugI->isInt(i)) 
       addPluginIntSlider(i, plugI->paramName(i), rint(min), rint(max),
                          rint(val), _chorusSuperWidget, grid, false);
     else 
-      addPluginSlider(i, plugI->paramName(i), plugI->ctrlValueType(i) == MusECore::VAL_LOG,
+      addPluginSlider(i, plugI->paramName(i), plugI->isLog(i),
                       min, max, val, _chorusSuperWidget, grid, false);
   }
   //update colors of the new sliders (and the whole gui actually)
@@ -449,8 +445,8 @@ void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
 
 void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {
-    
-    if(_deicsOnze->_pluginIReverb->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
+
+    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
     updateReverbFloatEntry(v, i);
     updateReverbSlider(v, i);
     setReverbCheckBox(v, i); //because this send the SYSEX
@@ -460,7 +456,7 @@ void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
 void DeicsOnzeGui::setReverbSlider(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {
     
-    if(_deicsOnze->_pluginIReverb->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
+    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
     updateReverbFloatEntry(v, i);
     updateReverbSlider(v, i);
     setReverbCheckBox(v, i); //because this send the SYSEX
@@ -469,8 +465,7 @@ void DeicsOnzeGui::setReverbSlider(double v, int i) {
 }
 void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {
-
-    if(_deicsOnze->_pluginIChorus->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
+    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
     updateChorusFloatEntry(v, i);
     updateChorusSlider(v, i);
     setChorusCheckBox(v, i); //because this send the SYSEX
@@ -479,8 +474,7 @@ void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
 }
 void DeicsOnzeGui::setChorusSlider(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {  
-
-    if(_deicsOnze->_pluginIChorus->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
+    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
     updateChorusSlider(v, i);
     updateChorusFloatEntry(v, i);
     setChorusCheckBox(v, i); //because this send the SYSEX

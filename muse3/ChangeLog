@@ -1,3 +1,25 @@
+28.01.2018
+      - Fixes for #604: muse 3.0 fails to build: many undefined references. (Tim)
+        Packagers wanted to use -no-undefined linker flag. But this also requires
+         our own -DMODULES_BUILD_STATIC. The fix of 14.01.2018 fixed the main app,
+         but all the MESS synths still failed to build.
+        This MAJOR FIX rewrites all the plugins and some main app stuff, so that
+         there are NO unaccounted dependencies and the two flags should work.
+        Overview: Several complete core objects and several declarations/definitions
+         were seperated from the core to their own modules or header files:
+             sysex_helper_module memory_module evdata_module mpevent_module
+             wavepreview_module xml_module, and midictrl_consts.h, midi_consts.h
+        These modules are all build SHARED regardless of MODULES_BUILD_STATIC.
+        They are 'pure'. They have no other dependencies.
+        Several of the MESS synths directly used core components. Fixed.
+        A huge remaining problem was Deicsonze synth directly used the core's
+         plugin system (eek!), while SimpleDrums used its own plugin system.
+        So a new common SimplePlugin library was built. It is similar to our
+         main app plugin system but simplified for LADSPA, yet still has
+         instance reference counting and auto-library-close.
+        Both Deicsonze and SimpleDrums now use this library instead.
+        (It is an interesting 'clean' plugin system from the ground up. Would be
+         good to build upon this library to replace the main plugin system!)
 14.01.2018
       - Moved structure.* into muse/arranger/. -DMODULES_BUILD_STATIC=TRUE should
         work now. (Orcan)

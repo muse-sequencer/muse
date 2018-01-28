@@ -33,14 +33,10 @@
 #include <QLineEdit>
 #include <QMessageBox>
 
-#include <muse/globals.h>
-#include <muse/gconfig.h>
-
 #include "common_defs.h"
 #include "simpledrumsgui.h"
-//#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "ssplugingui.h"
 #include "wavepreview.h"
 
@@ -96,7 +92,6 @@
 #define SS_GUI_WINDOW_HEIGHT                    (SS_BTNGRP_HEIGHT + SS_MAIN_GROUPBOX_HEIGHT)
 #define SS_MAIN_GROUPBOX_WIDTH                  SS_GUI_WINDOW_WIDTH
 
-SimpleSynthGui* simplesynthgui_ptr;
 
 QString labelStrings[] = {
    "C 1 Bass drum 1",
@@ -290,11 +285,13 @@ void QChannelDial::forwardSliderMoved()
 /*!
     \fn SimpleSynthGui::SimpleSynthGui()
  */
-SimpleSynthGui::SimpleSynthGui()
+SimpleSynthGui::SimpleSynthGui(int sampleRate)
 {
    SS_TRACE_IN
          setupUi(this);
-   simplesynthgui_ptr = this;
+         
+   setSampleRate(sampleRate);
+   
    pluginGui = new SS_PluginGui(this);
    pluginGui->hide();
 
@@ -341,7 +338,7 @@ SimpleSynthGui::SimpleSynthGui()
       chnMeter[i]->setFixedWidth(9);
       chnMeter[i]->setVal(0.0, 0.0, false);
       meterVal[i] = peakVal[i] = 0.0;
-      chnMeter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
+      chnMeter[i]->setRange(SS_minMeterVal, 10.0);
       chnMeter[i]->show();
       volLayout->addWidget(chnMeter[i]);
 
@@ -437,21 +434,21 @@ SimpleSynthGui::SimpleSynthGui()
          QHBoxLayout* strip = new QHBoxLayout;
          mgbLayout->addLayout(strip, r, c);
 
-         QLabel* channelLabel = new QLabel(QString::number(i + 1) + ": (" +labelStrings[i] + ")", mainGroupBox);
+         QLabel* channelLabel = new QLabel(QString::number(i + 1) + ": (" +labelStrings[i] + ")");
          strip->addWidget(channelLabel);
 
-         sampleNameLineEdit[i] = new QLineEdit(mainGroupBox);
+         sampleNameLineEdit[i] = new QLineEdit();
          sampleNameLineEdit[i]->setReadOnly(true);
          sampleNameLineEdit[i]->setFixedWidth(180);
          strip->addWidget(sampleNameLineEdit[i]);
 
-         loadSampleButton[i] = new QChannelButton(mainGroupBox, "L", i);
+         loadSampleButton[i] = new QChannelButton(0, "L", i);
          loadSampleButton[i]->setToolTip("Load sample on channel " + QString::number(i + 1));
          loadSampleButton[i]->setFixedSize(23,23);
          strip->addWidget(loadSampleButton[i]);
          connect(loadSampleButton[i], SIGNAL(channelState(int, bool)), SLOT(loadSampleDialogue(int)));
 
-         clearSampleButton[i] = new QChannelButton(mainGroupBox, "C", i);
+         clearSampleButton[i] = new QChannelButton(0, "C", i);
          clearSampleButton[i]->setToolTip("Clear sample on channel " + QString::number(i + 1));
          clearSampleButton[i]->setFixedSize(23,23);
          strip->addWidget(clearSampleButton[i]);
@@ -461,7 +458,7 @@ SimpleSynthGui::SimpleSynthGui()
    }
 
    // Right bottom panel:
-   QGroupBox* rbPanel= new QGroupBox(mainGroupBox);
+   QGroupBox* rbPanel= new QGroupBox();
    mgbLayout->addWidget(rbPanel, 1, 3, 7, 1, Qt::AlignCenter);
    QGridLayout* rbLayout = new QGridLayout(rbPanel);
 
@@ -487,9 +484,6 @@ SimpleSynthGui::SimpleSynthGui()
    lastDir = "";
    connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
-   //connect heartBeat timer (for channel meters)
-   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
-
    SS_TRACE_OUT
 }
 
@@ -499,7 +493,6 @@ SimpleSynthGui::SimpleSynthGui()
 SimpleSynthGui::~SimpleSynthGui()
 {
    SS_TRACE_IN
-         simplesynthgui_ptr = 0;
    delete pluginGui;
    SS_TRACE_OUT
 }
@@ -659,7 +652,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
          int fxid = *(data+1);
          SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)fxid);
          ///pf->updatePluginValue(*(data+2));
-         pf->updatePluginValue(  *((unsigned*)(data+2)) );     // p4.0.27
+         pf->updatePluginValue(  *((MusESimplePlugin::PluginI**)(data+2)) );
          break;
       }
 
@@ -829,7 +822,7 @@ void SimpleSynthGui::setChannelRoute(int channel, int route)
  */
 void SimpleSynthGui::loadSampleDialogue(int channel)
 {
-   MusECore::AudioPreviewDialog dlg(this);
+   MusECore::AudioPreviewDialog dlg(this, sampleRate());
    dlg.setWindowTitle(tr("Load sample dialog"));
    dlg.setDirectory(lastDir);
    if(dlg.exec() == QFileDialog::Rejected)

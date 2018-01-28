@@ -919,7 +919,7 @@ int main(int argc, char* argv[])
 
         MusECore::initMetronome();
 
-        MusECore::initWavePreview();
+        MusECore::initWavePreview(MusEGlobal::segmentSize);
 
         MusECore::enumerateJackMidiDevices();
 
