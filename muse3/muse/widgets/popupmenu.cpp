@@ -396,7 +396,7 @@ PopupMenu* PopupMenu::getMenu()
      return 0;
    
    // We want the whole thing if multiple monitors.
-   // Resonable to assume if X can show this desktop, it can show a menu with the same width?
+   // Reasonable to assume if X can show this desktop, it can show a menu with the same width?
    int dh = QApplication::desktop()->height();
    // [danvd] Due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
    // [Tim]  It seems that sizeHint() is only slightly more costly, use it instead.

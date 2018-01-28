@@ -258,24 +258,27 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       if(mey + meh >= my && mey + meh <= my + mh)
         p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
 
-#if 0
-      QFont f(MusEGlobal::config.fonts[1]);
+      // print note name on the drawn notes
+      if (MusEGlobal::config.showNoteNamesInPianoRoll) {
+        QFont f(MusEGlobal::config.fonts[1]);
 
-      f.setPointSize(f.pointSize() * 0.75);
-      p.setFont(f);
-      printf("color lightsness %f\n", color.lightnessF());
-      if (color.lightnessF() > 0.6f) {
+        f.setPointSize(f.pointSize() * 0.85);
+        p.setFont(f);
 
-        p.setPen(Qt::black);
+        if (color.lightnessF() > 0.6f) {
 
-      } else {
+          p.setPen(Qt::black);
 
-        p.setPen(Qt::white);
+        } else {
 
+          p.setPen(Qt::white);
+
+        }
+        QString noteStr = MusECore::pitch2string(event.pitch());
+
+        p.drawText(mer,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
       }
-      p.drawText(mr,Qt::AlignHCenter|Qt::AlignCenter, MusECore::pitch2string(event.pitch()));
 
-#endif
 
       p.setWorldMatrixEnabled(wmtxen);
       }
@@ -543,7 +546,7 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         MusEGlobal::song->applyOperationGroup(operations);
       }
       else // forbid action by not applying it   
-          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
                                           //to remove "forbidden" events from the list again
       }
 
@@ -595,7 +598,7 @@ void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool rasterize) 
 
       //else forbid action by not performing it
       MusEGlobal::song->applyOperationGroup(operations);
-      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is neccessary
+      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
                                       //to remove "forbidden" events from the list again
       }
 

@@ -1390,7 +1390,7 @@ void QFrameEnvelope::env2Points(int ar, int d1r, int d1l, int d2r, int rr) {
 // processEvent(const MidiEvent&);
 //-----------------------------------------------------------
 void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
-  //Controler
+  //Controller
   if (ev.type() == MusECore::ME_CONTROLLER) {
     //printf("MusECore::ME_CONTROLLER\n");
     int id=ev.dataA();

@@ -646,7 +646,7 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
 	if (!initInited)
 	{
 		printf ("WARNING: TopWin::writeConfiguration() called although the config hasn't been\n"
-		        "				 initalized! writing default configuration\n");
+		        "				 initialized! writing default configuration\n");
 		initConfiguration();
 	}
 	xml.tag(level++, "topwin");

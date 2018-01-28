@@ -1073,7 +1073,7 @@ void ClipBase::write(int level, Xml& xml) const
       QString path = f.dirPath();
 
       //
-      // waves in the project dirctory are stored
+      // waves in the project directory are stored
       // with relative path name, others with absolute path
       //
       if (path == MusEGlobal::museProject)
@@ -1442,7 +1442,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
          return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
       }
 
-      //save project if neccesary
+      //save project if necessary
       //copy wave to project's folder,
       //rename it if there is a duplicate,
       //resample to project's rate

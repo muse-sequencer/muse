@@ -48,13 +48,13 @@ file (GLOB simpler_plugin_source_files
 ##
 ## Define target
 ##
-add_library ( simpler_plugingui ${MODULES_BUILD}
+add_library ( simpler_plugingui SHARED   ## ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h
       ${simpler_plugingui_source_files}
       ${simpler_plugingui_mocs}
       ${simpler_plugingui_uis}
       )
-add_library ( simpler_plugin ${MODULES_BUILD}
+add_library ( simpler_plugin SHARED   ## ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h
       ${simpler_plugin_source_files}
       )
@@ -98,9 +98,9 @@ target_link_libraries(simpler_plugin
 ##
 ## Install location
 ##
-if ( ${MODULES_BUILD} STREQUAL SHARED )
+# if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS simpler_plugingui simpler_plugin
               DESTINATION ${MusE_MODULES_DIR}
             )
-endif ( ${MODULES_BUILD} STREQUAL SHARED )
+# endif ( ${MODULES_BUILD} STREQUAL SHARED )
 

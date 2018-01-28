@@ -53,6 +53,7 @@ file (GLOB fluidsynth_source_files
       )
 
 include_directories(${INSTPATCH_INCLUDE_DIRS})
+include_directories(${FLUIDSYN_INCLUDE_DIRS})
 
 ##
 ## Define target

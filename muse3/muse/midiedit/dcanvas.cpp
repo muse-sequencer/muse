@@ -639,7 +639,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
     if(!operations.empty())
       MusEGlobal::song->applyOperationGroup(operations);
     else
-      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
                                       //to remove "forbidden" events from the list again
 }
 
@@ -1206,7 +1206,7 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             }
       
       MusEGlobal::song->applyOperationGroup(operations, false); // do not indicate undo
-      MusEGlobal::song->update(SC_DRUMMAP); //this update is neccessary, as it's not handled by applyOperationGroup()
+      MusEGlobal::song->update(SC_DRUMMAP); //this update is necessary, as it's not handled by applyOperationGroup()
    }
    else // if (!old_style_drummap_mode)
    {

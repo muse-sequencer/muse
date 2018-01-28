@@ -43,7 +43,7 @@ const int Xml::_latestMinorVersion = 1;   // Latest known songfile minor version
 //    this code is a Q/D hack for reading/parsing and
 //    writing XML-Files
 //    - can only handle the XML subset used by MusE
-//    - may not handle misformed XML (eg. when manually
+//    - may not handle malformed XML (eg. when manually
 //      editing MusE output)
 
 //---------------------------------------------------------

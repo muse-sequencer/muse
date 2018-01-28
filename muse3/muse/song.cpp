@@ -98,7 +98,7 @@ Song::Song(const char* name)
       _fDspLoad = 0.0;
       _xRunsCount = 0;
       
-      _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
+      _arrangerRaster     = 0; // Set to measure, the same as Arranger initial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;
@@ -382,6 +382,21 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
 #endif
               }
             }  
+          }
+        }
+
+        if (!defOutFound) { // no default port found
+          // set it to the port with highest number
+
+          for(int i = MIDI_PORTS; i >= 0; --i) {
+
+            MidiPort* mp = &MusEGlobal::midiPorts[i];
+
+            if (mp->device() != NULL) {
+
+              mt->setOutPort(i);
+              break;
+            }
           }
         }
       }

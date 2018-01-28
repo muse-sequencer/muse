@@ -890,7 +890,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
           act = popup->addAction(tr("Reset column"));
           //act->setEnabled(!all_fields_track_def_override);
           act->setData(ResetColumnID);
-          act->setToolTip(tr("Resets a whole column to the the instrument values"));
+          act->setToolTip(tr("Resets a whole column to the instrument values"));
 
           act = popup->addAction(tr("Reset list"));
           act->setEnabled(has_overrides);

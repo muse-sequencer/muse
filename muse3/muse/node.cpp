@@ -1617,7 +1617,7 @@ void AudioTrack::record()
                     // Therefore, just let the write do its thing and progress naturally,
                     //  it should work OK since everything was OK before the libsndfile change...
                     //
-                    // Tested: With the line, audio record looping sort of works, albiet with the start offset added to
+                    // Tested: With the line, audio record looping sort of works, albeit with the start offset added to
                     //  the wave file. And it overwrites existing audio. (Check transport window 'overwrite' function. Tie in somehow...)
                     // With the line, looping does NOT work with libsndfile from around early 2007 (my distro's version until now).
                     // Therefore it seems sometime between libsndfile ~2007 and today, libsndfile must have allowed

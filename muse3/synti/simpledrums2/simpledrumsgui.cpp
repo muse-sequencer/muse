@@ -714,7 +714,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
             theFile.close();
          }
          else {
-            // An error occured when opening
+            // An error occurred when opening
             QMessageBox* msgBox = new QMessageBox(QMessageBox::Warning, "SimpleDrums error Dialog", "Error opening file. Setup was not saved.",
                                                   QMessageBox::Ok, this);
             msgBox->exec();

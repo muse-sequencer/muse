@@ -149,7 +149,7 @@ void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
       {
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
-      msg.pos = 0; // seems to be unused, was uninitalized.
+      msg.pos = 0; // seems to be unused, was uninitialized.
       msg._isRecTick = isRecTick;
       msg._isPlayTick = isPlayTick;
       while (sendMsg1(&msg, sizeof(msg))) {

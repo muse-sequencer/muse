@@ -805,14 +805,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             if(uo.nEvent == n_op.oEvent)
             {
-              // Add followed by modify with old event same as addded event, is equivalent to just adding modify's new event.
+              // Add followed by modify with old event same as added event, is equivalent to just adding modify's new event.
               // Replace the existing AddEvent command's event with the requested ModifyEvent command's new event.
               uo.nEvent = n_op.nEvent;
               return;  
             }
             if(uo.nEvent == n_op.nEvent)
             {
-              // Add followed by modify with new event same as addded event, is a caller error.
+              // Add followed by modify with new event same as added event, is a caller error.
               fprintf(stderr, "MusE error: Undo::insert(): AddEvent, then ModifyEvent same new event (double AddEvent). Ignoring.\n");
               return;  
             }

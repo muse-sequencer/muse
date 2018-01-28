@@ -81,7 +81,7 @@
 #define COEFMAXATTACK 7.5
 #define COEFERRDECSUS 0.01 //for the transition between DECAY and SUSTAIN
 #define COEFERRSUSREL 0.001 //from SUSTAIN or RELEASE until no sound
-//#define ERRPORTA 0.001 //dectection to stop portamento
+//#define ERRPORTA 0.001 //detection to stop portamento
 #define COEFPORTA 0.01 //adjusted such that 10 second/octave with max porta
 #define COEFPITCHENV 0.00000025 //adjust according to a real DX11....???
 #define COEFDECAY 1.0
@@ -335,8 +335,8 @@ enum PitchEnvState{
 //---------------------------------------------------------
 
 struct Voice {
-  bool hasAttractor;//true iff the voice has an attractor (portamento occuring)
-  double attractor; //contains some coeficent for portamento TODO
+  bool hasAttractor;//true iff the voice has an attractor (portamento occurring)
+  double attractor; //contains some coefficient for portamento TODO
   PitchEnvState pitchEnvState;
   double pitchEnvCoefInct;
   double pitchEnvCoefInctPhase1;

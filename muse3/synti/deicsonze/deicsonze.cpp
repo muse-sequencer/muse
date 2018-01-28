@@ -979,7 +979,7 @@ void DeicsOnze::setLfo(int c/*channel*/)
        )/(double)MAXAMODDEPTH;
     _global.channel[c].lfoMaxAmp =
       totalaDepth * (COEFALFO(_preset[c]->sensitivity.amplitude));
-    //index is concidered on the half of the frequency of the LFO
+    //index is considered on the half of the frequency of the LFO
     _global.channel[c].lfoDelayMaxIndex = 
       delay2Time(_preset[c]->lfo.delay)*_global.channel[c].lfoFreq*2;
     _global.channel[c].lfoDelayInct = 
@@ -1595,10 +1595,10 @@ inline double pitch2freq(double p) {
 
 //---------------------------------------------------------
 // lfoUpdate
-//  update the coefficent which multiplies the current inct
+//  update the coefficient which multiplies the current inct
 //  in order to
 //  get the right current frequency with respect to the lfo
-//  update the coefficent which multiplies the amplitude.
+//  update the coefficient which multiplies the amplitude.
 //---------------------------------------------------------
 inline void lfoUpdate(Preset* p, Channel* p_c, float* wt) {
   double delayCoef;
@@ -2061,7 +2061,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
     //nbrVoices
     //question? does the configurqtion has to save the number of 
     //voices for each channel or not?
-    //temporarly or definitly under comments
+    //temporarly or definitely under comments
     /*
       if(qdEl.tagName()==NBRVOICESSTR) {
       setNbrVoices(qdEl.text().toInt());

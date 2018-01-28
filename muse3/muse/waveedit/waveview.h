@@ -85,7 +85,7 @@ class WaveView : public View {
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
       MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
 
-      int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
+      int lastGainvalue; //!< Stores the last used gainvalue when specifying gain value in the editgain dialog
    private slots:
       void setPos(int idx, unsigned val, bool adjustScrollbar);
 

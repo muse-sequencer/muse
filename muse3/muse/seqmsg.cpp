@@ -72,7 +72,7 @@ void Audio::sendMsg(AudioMsg* m)
             }
       else {
             // if audio is not running (during initialization)
-            // process commands immediatly
+            // process commands immediately
             processMsg(m);
             }
       }

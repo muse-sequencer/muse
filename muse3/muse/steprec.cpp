@@ -140,7 +140,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 			chord_timer->start();
 		}
 		
-		goto steprec_record_foot; // this is actually unneccessary, but for clarity
+		goto steprec_record_foot; // this is actually unnecessary, but for clarity
 	}
 	else  // equals if (incoming_pitch==MusEGlobal::rcSteprecNote)
 	{
@@ -185,7 +185,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 			}
 			
 			lasttick=tick+len - part->tick();
-			goto steprec_record_foot; // this is actually unneccessary, but for clarity
+			goto steprec_record_foot; // this is actually unnecessary, but for clarity
 		}
 		else // equals if (!held_notes)
 		{

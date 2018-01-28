@@ -190,7 +190,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                         }
                 }
 
-                // If the port or channel is overriden by a drum map, DO NOT add the event here
+                // If the port or channel is overridden by a drum map, DO NOT add the event here
                 //  because it requires its own track. That is taken care of in exportMidi().
                 if(fin_port != port ||
                   // Channel is allowed to be different but can only cause a new track in format 1.
@@ -278,7 +278,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                   }
                 }
 
-                // If the port or channel is overriden by a drum map, DO NOT add the event here
+                // If the port or channel is overridden by a drum map, DO NOT add the event here
                 //  because it requires its own track. That is taken care of in exportMidi().
                 if(fin_port != port ||
                   // Channel is allowed to be different but can only cause a new track in format 1.

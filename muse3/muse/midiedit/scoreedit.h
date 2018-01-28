@@ -417,7 +417,7 @@ class FloItem
 				case REST_END:
 					return (this->pos == that.pos);
 				
-				//the following may only occurr once in a set
+				//the following may only occur once in a set
 				//so we don't search for "the time signature with 4/4
 				//at t=0", but only for "some time signature at t=0"
 				//that's why true is returned, and not some conditional
@@ -454,7 +454,7 @@ struct floComp
 			case FloItem::REST_END:
 				return (a.pos < b.pos);
 			
-			//the following may only occurr once in a set
+			//the following may only occur once in a set
 			//so we don't search for "the time signature with 4/4
 			//at t=0", but only for "some time signature at t=0"
 			//that's why true is returned, and not some conditional

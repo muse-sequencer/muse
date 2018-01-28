@@ -140,7 +140,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       
       if(desc->_label.isEmpty())
       {
-        // the thought was to aquire the correct Aux name for each Aux
+        // the thought was to acquire the correct Aux name for each Aux
         // now they are only called Aux1, Aux2, which isn't too usable.
         desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
         if (desc->_label.length() > 8) { // shorten name
@@ -379,7 +379,7 @@ void AudioComponentRack::scanAuxComponents()
       case aStripAuxComponent:
       {
         // TODO: This is just brute-force deletion and recreation of all the auxs. 
-        //       Make this more efficient by only removing what's neccessary and updating/re-using the rest.
+        //       Make this more efficient by only removing what's necessary and updating/re-using the rest.
         to_be_erased.push_back(ic);
       }
       break;
@@ -403,7 +403,7 @@ void AudioComponentRack::scanAuxComponents()
     {
       for (int idx = 0; idx < auxsSize; ++idx) 
       {
-        // the thought was to aquire the correct Aux name for each Aux
+        // the thought was to acquire the correct Aux name for each Aux
         // now they are only called Aux1, Aux2, which isn't too usable.
 //         QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
 //         if (title.length() > 8) { // shorten name

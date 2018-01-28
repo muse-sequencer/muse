@@ -274,7 +274,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual bool isSynti() const  { return true; }
 
       // Event time and tick must be set by caller beforehand.
-      // Overriden here because input from synths may need to be treated specially.
+      // Overridden here because input from synths may need to be treated specially.
       virtual void recordEvent(MidiRecordEvent&);
 
       virtual Plugin::PluginFeatures pluginFeatures() const { return _sif->requiredFeatures(); }

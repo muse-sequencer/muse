@@ -73,4 +73,4 @@ included specifications if Doxygen is available.  For example:
     ./waf configure --docs
     ./waf
 
-Specification documentation is also availabe online at <http://lv2plug.in/ns>.
+Specification documentation is also available online at <http://lv2plug.in/ns>.

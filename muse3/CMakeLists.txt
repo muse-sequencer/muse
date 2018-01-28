@@ -96,9 +96,9 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 3)
 SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "3.0.0")
-SET(MusE_VERSION_FULL  "3.0.0")
+SET(MusE_VERSION_PATCH 1)
+SET(MusE_VERSION       "3.0.1")
+SET(MusE_VERSION_FULL  "3.0.1")
 SET(MusE_INSTALL_NAME  "muse-3.0")
 SET(MusE_EXEC_NAME     "muse3")
 
@@ -388,7 +388,7 @@ else (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 endif (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 
 ##
-## Depricated FST-based VST support
+## Deprecated FST-based VST support
 ##
 
 if (ENABLE_VST)
@@ -521,7 +521,6 @@ if ( ENABLE_FLUID )
       #  synth library named 'fluid_synth' to be built later.
       PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
       if (FLUIDSYN_FOUND)
-            include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
       endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )

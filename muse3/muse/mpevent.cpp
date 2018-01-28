@@ -59,7 +59,7 @@ MEvent::MEvent(unsigned t, int port, int tpe, const unsigned char* data, int len
 int MEvent::sortingWeight() const
 {
   // Sorting weight initially worked out by Tim E. Real
-  // Sorted here by most popular for quickest reponse.
+  // Sorted here by most popular for quickest response.
   
   switch(_type)
   {

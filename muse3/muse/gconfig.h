@@ -311,6 +311,7 @@ struct GlobalConfigValues {
       // How to group the router channels together for easier multi-channel manipulation.
       int routerGroupingChannels;
       QString mixdownPath;
+      bool showNoteNamesInPianoRoll;
       };
 
 

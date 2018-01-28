@@ -344,9 +344,9 @@ bool VAM::init(const char* name)
               }
           int sr = sampleRate();
           /* Build up denormalised oscilator wavetables, these are sample_rate
-             long, costs more RAM to create them but makes freqency calcs much
-             cheaper, and means that interpolation isn't that neccesary, esp if
-             you use integer frequncies */
+             long, costs more RAM to create them but makes frequency calcs much
+             cheaper, and means that interpolation isn't that necessary, esp if
+             you use integer frequencies */
           
           float *tmp_tbl = new float[sr];
           const int lag = sr/50;
