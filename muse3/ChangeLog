@@ -1,3 +1,7 @@
+29.01.2018
+      - Silly but very severe bug fixed with selecting midi device for newly
+        created midi tracks. Looking for the last created midi device started
+        out of bounds, instant crash when built for release (rj)
 28.01.2018
       - Fixes for #604: muse 3.0 fails to build: many undefined references. (Tim)
         Packagers wanted to use -no-undefined linker flag. But this also requires

@@ -388,7 +388,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
         if (!defOutFound) { // no default port found
           // set it to the port with highest number
 
-          for(int i = MIDI_PORTS; i >= 0; --i) {
+          for(int i = MIDI_PORTS-1; i >= 0; --i) {
 
             MidiPort* mp = &MusEGlobal::midiPorts[i];
 
