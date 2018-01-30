@@ -1,3 +1,5 @@
+30.01.2018
+      *** MusE 3.0.2 ***
 29.01.2018
       - Silly but very severe bug fixed with selecting midi device for newly
         created midi tracks. Looking for the last created midi device started
