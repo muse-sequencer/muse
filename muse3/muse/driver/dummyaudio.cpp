@@ -54,12 +54,9 @@ class DummyAudioDevice : public AudioDevice {
       int _realTimePriority;
 
    public:
-      Audio::State state;
-      int _framePos;
+      unsigned _frameCounter;
       unsigned _framesAtCycleStart;
       double _timeAtCycleStart;
-      int playPos;
-      bool seekflag;
       
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
@@ -73,10 +70,12 @@ class DummyAudioDevice : public AudioDevice {
       virtual bool start(int);
       
       virtual void stop ();
-      virtual int framePos() const { 
+      virtual unsigned framePos() const {
+            // Not much choice but to do this:
+            unsigned int f = framesAtCycleStart() + framesSinceCycleStart();
             if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::framePos %d\n", _framePos);
-            return _framePos; 
+                fprintf(stderr, "DummyAudioDevice::framePos %u\n", f);
+            return f;
             }
 
       // These are meant to be called from inside process thread only.      
@@ -138,17 +137,8 @@ class DummyAudioDevice : public AudioDevice {
       virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
       virtual const char* canonicalPortName(void*) { return 0; }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
-      virtual int getState() { 
-//            if(DEBUG_DUMMY)
-//                fprintf(stderr, "DummyAudioDevice::getState %d\n", state);
-            return state; }
-      virtual unsigned getCurFrame() const { 
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::getCurFrame %d\n", _framePos);
-      
-      return _framePos; }
       virtual unsigned frameTime() const {
-            return lrint(curTime() * MusEGlobal::sampleRate);
+            return _frameCounter;
             }
       virtual double systemTime() const
       {
@@ -160,35 +150,9 @@ class DummyAudioDevice : public AudioDevice {
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
-      virtual void startTransport() {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::startTransport playPos=%d\n", playPos);
-            state = Audio::PLAY;
-            }
-      virtual void stopTransport() {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::stopTransport, playPos=%d\n", playPos);
-            state = Audio::STOP;
-            }
-      virtual int setMaster(bool) { return 1; }
 
-      virtual void seekTransport(const Pos &p)
-      {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
-            seekflag = true;
-            //pos = n;
-            playPos = p.frame();
-            
-      }
-      virtual void seekTransport(unsigned pos) {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
-            seekflag = true;
-            //pos = n;
-            playPos = pos;
-            }
       virtual void setFreewheel(bool) {}
+      virtual int setMaster(bool) { return 1; }
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -212,12 +176,9 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
         memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
 
       dummyThread = 0;
-      seekflag = false;
-      state = Audio::STOP;
-      _framePos = 0;
+      _frameCounter = 0;
       _framesAtCycleStart = 0;
       _timeAtCycleStart = 0.0;
-      playPos = 0;
       }
 
 
@@ -284,32 +245,21 @@ static void* dummyLoop(void* ptr)
 
       DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
       
-      // Adapted from muse_qt4_evolution. p4.0.20       
       for(;;) 
       {
         drvPtr->_timeAtCycleStart = curTime();
 
         if(MusEGlobal::audio->isRunning()) {
-
-          MusEGlobal::audio->process(MusEGlobal::segmentSize);
+          // Use our built-in transport, which INCLUDES the necessary
+          //  calls to Audio::sync() and ultimately Audio::process(),
+          //  and increments the built-in play position.
+          drvPtr->processTransport(MusEGlobal::segmentSize);
         }
 
         usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
 
-        if(drvPtr->seekflag) {
-
-          MusEGlobal::audio->sync(Audio::STOP, drvPtr->playPos);
-
-          drvPtr->seekflag = false;
-        }
-
-        drvPtr->_framePos += MusEGlobal::segmentSize;
+        drvPtr->_frameCounter += MusEGlobal::segmentSize;
         drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
-
-        if(drvPtr->state == Audio::PLAY) {
-
-          drvPtr->playPos += MusEGlobal::segmentSize;
-        }
       }
       pthread_exit(0);
       }

@@ -209,70 +209,26 @@ static void jack_thread_init (void* )
 
 int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 {
-      const int state_pending = jackAudio->_dummyStatePending;  // Snapshots.
-      const int pos_pending   = jackAudio->_dummyPosPending;    //
-      jackAudio->_dummyStatePending = -1;                       // Reset.
-      jackAudio->_dummyPosPending = -1;                         //
-      
       jackAudio->_frameCounter += frames;
       MusEGlobal::segmentSize = frames;
 
       if (MusEGlobal::audio->isRunning())
       {
-            // Are we not using Jack transport?
-            if(!MusEGlobal::useJackTransport.value())
-            {
-              // STOP -> STOP, STOP -> START_PLAY, PLAY -> START_PLAY all count as 'syncing'.
-              if(((jackAudio->dummyState == Audio::STOP || jackAudio->dummyState == Audio::PLAY) && state_pending == Audio::START_PLAY) 
-                 || (jackAudio->dummyState == Audio::STOP && state_pending == Audio::STOP) )
-              {
-                jackAudio->_syncTimeout = (float)frames / (float)MusEGlobal::sampleRate;  // (Re)start the timeout counter...
-                if(pos_pending != -1)
-                  jackAudio->dummyPos = pos_pending; // Set the new dummy position.
-                if((jackAudio->dummyState == Audio::STOP || jackAudio->dummyState == Audio::PLAY) && state_pending == Audio::START_PLAY)
-                  jackAudio->dummyState = Audio::START_PLAY;
-              }
-              else // All other states such as START_PLAY -> STOP, PLAY -> STOP.
-              if(state_pending != -1 && state_pending != jackAudio->dummyState)
-              {
-                jackAudio->_syncTimeout = 0.0;  // Reset.
-                jackAudio->dummyState = state_pending;                
-              }
-              
-              // Is the sync timeout counter running?
-              if(jackAudio->_syncTimeout > 0.0)
-              {
-                //printf("Jack processAudio dummy sync: state:%d pending:%d\n", jackAudio->dummyState, state_pending);  
-                // Is MusE audio ready to roll?
-                if(MusEGlobal::audio->sync(jackAudio->dummyState, jackAudio->dummyPos))
-                {
-                  jackAudio->_syncTimeout = 0.0;  // Reset.
-                  // We're ready. Switch to PLAY state.
-                  if(jackAudio->dummyState == Audio::START_PLAY)
-                    jackAudio->dummyState = Audio::PLAY;
-                }
-                else
-                {  
-                  jackAudio->_syncTimeout += (float)frames / (float)MusEGlobal::sampleRate;
-                  if(jackAudio->_syncTimeout > 5.0)  // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
-                  {
-                    if (MusEGlobal::debugMsg)
-                      puts("Jack dummy sync timeout! Starting anyway...\n");
-                    jackAudio->_syncTimeout = 0.0;  // Reset.
-                    // We're not ready, but no time left - gotta roll anyway. Switch to PLAY state, similar to how Jack is supposed to work.
-                    if(jackAudio->dummyState == Audio::START_PLAY)
-                    {
-                      jackAudio->dummyState = Audio::PLAY;
-                      // Docs say sync will be called with Rolling state when timeout expires.
-                      MusEGlobal::audio->sync(jackAudio->dummyState, jackAudio->dummyPos);
-                    }
-                  }
-                }
-              }
-            }
-            
-            //if(jackAudio->getState() != Audio::START_PLAY)  // Don't process while we're syncing. TODO: May need to deliver silence in process!
-              MusEGlobal::audio->process((unsigned long)frames);
+        // Are we using Jack transport?
+        if(MusEGlobal::useJackTransport.value())
+        {
+          // Just call the audio process normally. Jack transport will take care of itself.
+          // Don't process while we're syncing. ToDO: May need to deliver silence in process!
+          //if(jackAudio->getState() != Audio::START_PLAY)
+            MusEGlobal::audio->process((unsigned long)frames);
+        }
+        else
+        {
+          // Not using Jack transport. Use our built-in transport, which INCLUDES
+          //  the necessary calls to Audio::sync() and ultimately Audio::process(),
+          //  and increments the built-in play position.
+          jackAudio->processTransport((unsigned long)frames);
+        }
       }
       else {
             if (MusEGlobal::debugMsg)
@@ -466,8 +422,6 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
       //JackAudioDevice::jackStarted=false;
       strcpy(jackRegisteredName, name);
       _client = cl;
-      dummyState = Audio::STOP;
-      dummyPos = 0;
 }
 
 //---------------------------------------------------------
@@ -1233,8 +1187,9 @@ void JackAudioDevice::registerClient()
       jack_set_thread_init_callback(_client, (JackThreadInitCallback) jack_thread_init, 0);
       //jack_set_timebase_callback(client, 0, (JackTimebaseCallback) timebase_callback, 0);
       jack_set_process_callback(_client, processAudio, 0);
+      
+      // NOTE: We set the driver's sync timeout in the gui thread. See Song::seqSignal().
       jack_set_sync_callback(_client, processSync, 0);
-      //jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
       
       jack_on_shutdown(_client, processShutdown, 0);
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);
@@ -1646,7 +1601,7 @@ unsigned int JackAudioDevice::getCurFrame() const
     printf("JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
   
   if(!MusEGlobal::useJackTransport.value())
-    return (unsigned int)dummyPos;
+    return AudioDevice::getCurFrame();
     
   return pos.frame; 
 }
@@ -1655,7 +1610,7 @@ unsigned int JackAudioDevice::getCurFrame() const
 //   framePos
 //---------------------------------------------------------
 
-int JackAudioDevice::framePos() const
+unsigned JackAudioDevice::framePos() const
       {
       //if(!MusEGlobal::useJackTransport.value())
       //{
@@ -1670,7 +1625,7 @@ int JackAudioDevice::framePos() const
       //if (JACK_DEBUG)
       //  printf("JackAudioDevice::framePos jack frame:%d\n", (int)n);
       
-      return (int)n;
+      return n;
       }
 
 //---------------------------------------------------------
@@ -2023,6 +1978,38 @@ AudioDevice::PortDirection JackAudioDevice::portDirection(void* p) const
 }
       
 //---------------------------------------------------------
+//   setSyncTimeout
+//    Sets the amount of time to wait before sync times out, in microseconds.
+//    Note that at least with the Jack driver, this function seems not realtime friendly.
+//---------------------------------------------------------
+
+void JackAudioDevice::setSyncTimeout(unsigned usec)
+{ 
+  // Make sure our built-in transport sync timeout is set as well.
+  AudioDevice::setSyncTimeout(usec);
+  
+  if(!checkJackClient(_client)) return;
+  // Note that docs say default is 2 sec, but that's wrong, 
+  //  Jack1 does set 2 sec, but Jack2 sets a default of 10 secs !
+  jack_set_sync_timeout(_client, usec);
+}
+      
+//---------------------------------------------------------
+//   transportSyncToPlayDelay
+//   The number of frames which the driver waits to switch to PLAY
+//    mode after the audio sync function says it is ready to roll.
+//   For example Jack Transport waits one cycle while our own tranport does not.
+//---------------------------------------------------------
+
+unsigned JackAudioDevice::transportSyncToPlayDelay() const
+{ 
+  // If Jack transport is being used, it delays by one cycle.
+  if(MusEGlobal::useJackTransport.value())
+    return MusEGlobal::segmentSize;
+  return 0;
+}
+      
+//---------------------------------------------------------
 //   getState
 //---------------------------------------------------------
 
@@ -2036,7 +2023,7 @@ int JackAudioDevice::getState()
         //return MusEGlobal::audio->getState();
         //if (JACK_DEBUG)
         //  printf("JackAudioDevice::getState dummyState:%d\n", dummyState);
-        return dummyState;
+        return AudioDevice::getState();
       }
       
       //if (JACK_DEBUG)
@@ -2095,7 +2082,7 @@ void JackAudioDevice::startTransport()
       //  as if processSync was called. 
       if(!MusEGlobal::useJackTransport.value())
       {
-        _dummyStatePending = Audio::START_PLAY;
+        AudioDevice::startTransport();
         return;
       }
       
@@ -2115,7 +2102,7 @@ void JackAudioDevice::stopTransport()
       
       if(!MusEGlobal::useJackTransport.value())
       {
-        _dummyStatePending = Audio::STOP;
+        AudioDevice::stopTransport();
         return;
       }
       
@@ -2138,9 +2125,8 @@ void JackAudioDevice::seekTransport(unsigned frame)
       
       if(!MusEGlobal::useJackTransport.value())
       {
-        _dummyPosPending   = frame;
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
-        _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
+        AudioDevice::seekTransport(frame);
         return;
       }
       
@@ -2160,9 +2146,8 @@ void JackAudioDevice::seekTransport(const Pos &p)
       
       if(!MusEGlobal::useJackTransport.value())
       {
-        _dummyPosPending   = p.frame();
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
-        _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
+        AudioDevice::seekTransport(p);
         return;
       }
       

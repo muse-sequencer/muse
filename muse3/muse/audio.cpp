@@ -68,6 +68,8 @@
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
+// For debugging metronome and precount output: Uncomment the fprintf section.
+#define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::Audio* audio = NULL;
@@ -142,11 +144,15 @@ Audio::Audio()
       _previousPos.setFrame(0);
 #endif
       nextTickPos = curTickPos = 0;
+      _precountFramePos = 0;
+      framesBeat = 0;
+      precountMidiClickFrame = 0;
+      precountTotalFrames = 0;
+      _syncPlayStarting = false;
 
       midiClick     = 0;
       clickno       = 0;
       clicksMeasure = 0;
-      ticksBeat     = 0;
       _extClockHistory = new ExtMidiClock[_extClockHistoryCapacity];
       _extClockHistorySize = 0;
 
@@ -265,41 +271,165 @@ void Audio::stop(bool)
 //---------------------------------------------------------
 
 bool Audio::sync(int jackState, unsigned frame)
-      {
-      //fprintf(stderr, "Audio::sync() begin: state:%d jackState:%d frame:%u pos frame:%u\n", state, jackState, frame, _pos.frame());
-        
-      bool done = true;
-      if (state == LOOP1)
-            state = LOOP2;
-      else {
-            State s = State(jackState);
-            
-            //  STOP -> START_PLAY      start rolling
-            //  STOP -> STOP            seek in stop state
-            //  PLAY -> START_PLAY  seek in play state
+{
+  //fprintf(stderr, "Audio::sync() begin: state:%d jackState:%d frame:%u pos frame:%u\n", state, jackState, frame, _pos.frame());
+    
+  if (state == PRECOUNT)
+  {
+    //DEBUG_MIDI_METRONOME(stderr, "Audio::sync: PRECOUNT: _precountFramePos:%u precountTotalFrames:%u\n", 
+    //  _precountFramePos, precountTotalFrames);
+    return _precountFramePos >= precountTotalFrames;
+  }
+          
+  bool done = true;
+  if (state == LOOP1)
+  {
+    state = LOOP2;
+  }
+  else
+  {
+    State s = State(jackState);
+    
+    //  STOP -> START_PLAY      start rolling
+    //  STOP -> STOP            seek in stop state
+    //  PLAY -> START_PLAY  seek in play state
 
-            if (state != START_PLAY) {
-                Pos p(frame, false);
-                //fprintf(stderr, "   state != START_PLAY, calling seek...\n");
-                seek(p);
-                if (!_freewheel)
-                      done = MusEGlobal::audioPrefetch->seekDone();
-                if (s == START_PLAY)
-                      state = START_PLAY;
-                }
-            else {
-                if (frame != _pos.frame()) {
-                        // seek during seek
-                            //fprintf(stderr, "   state == START_PLAY, calling seek...\n");
-                            seek(Pos(frame, false));
-                        }
-                done = MusEGlobal::audioPrefetch->seekDone();
-                  }
-            }
-      //fprintf(stderr, "Audio::sync() end: state:%d pos frame:%u\n", state, _pos.frame());
-      return done;
+    if (state != START_PLAY)
+    {
+      Pos p(frame, false);
+      //fprintf(stderr, "   state != START_PLAY, calling seek...\n");
+      seek(p);
+      if (!_freewheel)
+        done = MusEGlobal::audioPrefetch->seekDone();
       
+      if (s == START_PLAY)
+      {
+        _syncPlayStarting = (state == STOP);
+        
+        DEBUG_MIDI_METRONOME(stderr, "state != START_PLAY: done:%d\n", done);
+        
+        // Is this a STOP to START_PLAY transition?
+        if(_syncPlayStarting)
+        {
+          // Is the audio prefetch already done?
+          if(done)
+          {
+            // Reset the flag now.
+            _syncPlayStarting = false;
+            // Does the precount start? Return false if so, to begin holding up the transport.
+            // This will start the precount if necessary and set the state to PRECOUNT.
+            if(startPreCount())
+              return false;
+          }
+        }
+        state = START_PLAY;
       }
+    }
+    else
+    {
+      if (frame != _pos.frame())
+      {
+        // seek during seek
+        //fprintf(stderr, "   state == START_PLAY, calling seek...\n");
+        seek(Pos(frame, false));
+      }
+      
+      done = MusEGlobal::audioPrefetch->seekDone();
+      
+      DEBUG_MIDI_METRONOME(stderr, "state == START_PLAY: done:%d\n", done);
+      
+      // Was this a STOP to START_PLAY transition?
+      if(_syncPlayStarting)
+      {
+        // Is the audio prefetch done?
+        if(done)
+        {
+          // Reset the flag now.
+          _syncPlayStarting = false;
+          // Does the precount start? Return false if so, to continue (or begin) holding up the transport.
+          // This will start the precount if necessary and set the state to PRECOUNT.
+          if(startPreCount())
+            return false;
+        }
+      }
+    }
+  }
+  
+  //fprintf(stderr, "Audio::sync() end: state:%d pos frame:%u\n", state, _pos.frame());
+  return done;
+}
+
+//---------------------------------------------------------
+//   startPreCount
+//    During sync(), starts count-in state if necessary and returns whether 
+//     count-in state has been started.
+//---------------------------------------------------------
+
+bool Audio::startPreCount()
+{
+  // Since other Jack clients might also set the sync timeout at any time,
+  //  we need to be constantly enforcing our desired limit!
+  // Since setSyncTimeout() may not be realtime friendly (Jack driver),
+  //  we set the driver's sync timeout in the gui thread.
+  // Sadly, we likely cannot get away with setting it here via the audio sync callback.
+  // So whenever stop, start or seek occurs, we'll try to casually enforce the timeout in Song::seqSignal().
+  // It's casual, unfortunately we can't set the EXACT timeout amount here when we really need to.
+  
+  if (MusEGlobal::precountEnableFlag
+    && MusEGlobal::song->click()
+    && !MusEGlobal::extSyncFlag.value()
+    && ((!MusEGlobal::precountPrerecord && !MusEGlobal::song->record()) || MusEGlobal::precountPrerecord))
+  {
+        DEBUG_MIDI_METRONOME(stderr, "state = PRECOUNT!\n");
+        state = PRECOUNT;
+        
+        int bar, beat;
+        unsigned tick;
+        AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+
+        int z, n;
+        if (MusEGlobal::precountFromMastertrackFlag)
+              AL::sigmap.timesig(curTickPos, z, n);
+        else {
+              z = MusEGlobal::precountSigZ;
+              n = MusEGlobal::precountSigN;
+              }
+        clickno       = 0;
+        int clicks_total = z * MusEGlobal::preMeasures;
+        clicksMeasure = z;
+        int ticks_beat     = (MusEGlobal::config.division * 4)/n;
+        // The number of frames per beat in precount state.
+        framesBeat    = MusEGlobal::tempomap.ticks2frames((MusEGlobal::config.division * 4) / n, curTickPos);
+        
+        // Reset to zero.
+        _precountFramePos = 0;
+         
+        // How many ticks are required for the precount?
+        const unsigned int precount_ticks = clicks_total * ticks_beat;
+        // How many extra precount ticks are required to 'fill in' for a mid-bar curTickPos?
+        const unsigned int extra_precount_ticks = beat * ticks_beat + tick;
+        // How many total frames are required for the precount?
+        precountTotalFrames = MusEGlobal::tempomap.ticks2frames(precount_ticks + extra_precount_ticks, curTickPos);
+        // What is the remainder when divided by the segment size?
+        // This is the value that the precount frame times should be shifted backwards so that
+        //  the very last precount frame + 1 lines up exactly with the first metronome frame.
+        // But since we cannot schedule before the current time, we trick it by shifting
+        //  forward and sacrificing one cycle. Therefore this value is referenced to the 
+        //  start of a cycle buffer, not the end.
+        // The offset ranges from 1 to segmentSize inclusive.
+        unsigned int precount_frame_offset = MusEGlobal::segmentSize - (precountTotalFrames % MusEGlobal::segmentSize);
+        // Start the precount at this frame.
+        precountMidiClickFrame = precount_frame_offset;
+
+        DEBUG_MIDI_METRONOME(stderr, "Audio::startPreCount: clicks_total:%d framesBeat:%u precount_ticks:%u extra_precount_ticks:%u\n"
+                        "precountTotalFrames:%u precount_frame_offset:%u precountMidiClickFrame:%u\n",
+          clicks_total, framesBeat, precount_ticks, extra_precount_ticks, precountTotalFrames, precount_frame_offset, precountMidiClickFrame);
+      
+        return true;
+  }
+  
+  return false;
+}
 
 //---------------------------------------------------------
 //   reSyncAudio
@@ -379,7 +509,10 @@ void Audio::process(unsigned frames)
       //if(MusEGlobal::debugMsg)
       //  printf("Audio::process Current state:%s jackState:%s\n", audioStates[state], audioStates[jackState]);
       
-      if (state == START_PLAY && jackState == PLAY) {
+      //DEBUG_MIDI_METRONOME(stderr, "Audio::process Current state:%s jackState:%s current transport frame:%u\n", 
+      //        audioStates[state], audioStates[jackState], MusEGlobal::audioDevice->curTransportFrame());
+      
+      if ((state == START_PLAY || state == PRECOUNT) && jackState == PLAY) {
             _loopCount = 0;
             MusEGlobal::song->reenableTouchedControllers();
             startRolling();
@@ -392,7 +525,7 @@ void Audio::process(unsigned frames)
             seek(newPos);
             startRolling();
             }
-      else if (isPlaying() && jackState == STOP) {
+      else if ((isPlaying() || state == PRECOUNT) && jackState == STOP) {
             stopRolling();
             }
       else if (state == START_PLAY && jackState == STOP) {
@@ -411,6 +544,9 @@ void Audio::process(unsigned frames)
       else if (state == LOOP1 && jackState == PLAY)
             ;     // treat as play
       else if (state == LOOP2 && jackState == START_PLAY) {
+            ;     // sync cycle
+            }
+      else if (state == PRECOUNT && jackState == START_PLAY) {
             ;     // sync cycle
             }
       else if (state != jackState)
@@ -597,7 +733,7 @@ void Audio::process(unsigned frames)
 
 void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       {
-      processMidi();
+      processMidi(frames);
 
       //
       // process not connected tracks
@@ -932,38 +1068,13 @@ void Audio::startRolling()
         }
       }  
 
-      /// dennis: commented check for pre-count. Something seems to be
-      /// missing here because the state is not set to PLAY so that the
-      /// sequencer doesn't start rolling in record mode.
-//      if (MusEGlobal::precountEnableFlag
-//         && MusEGlobal::song->click()
-//         && !MusEGlobal::extSyncFlag.value()
-//         && MusEGlobal::song->record()) {
-//          fprintf(stderr, "state = PRECOUNT!\n");
-//            state = PRECOUNT;
-//            int z, n;
-//            if (MusEGlobal::precountFromMastertrackFlag)
-//                  AL::sigmap.timesig(curTickPos, z, n);
-//            else {
-//                  z = MusEGlobal::precountSigZ;
-//                  n = MusEGlobal::precountSigN;
-//                  }
-//            clickno       = z * MusEGlobal::preMeasures;
-//            clicksMeasure = z;
-//            ticksBeat     = (MusEGlobal::config.division * 4)/n;
-
-//            }
-//      else {
-            //
-            // compute next midi metronome click position
-            //
-            int bar, beat;
-            unsigned tick;
-            AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
-            if (tick)
-                  beat += 1;
-            midiClick = AL::sigmap.bar2tick(bar, beat, 0);
-//            }
+      // Set the correct initial metronome midiClick.
+      int bar, beat;
+      unsigned tick;
+      AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+      if(tick)
+        beat += 1;
+      midiClick = AL::sigmap.bar2tick(bar, beat, 0);
 
       // re-enable sustain 
       for (int i = 0; i < MIDI_PORTS; ++i) {
@@ -1176,7 +1287,7 @@ unsigned int Audio::midiQueueTimeStamp(unsigned int tick) const
   {
     unsigned int cur_tick = tickPos();
     if(tick < cur_tick)
-      tick = cur_tick;
+            tick = cur_tick;
     frame = MusEGlobal::audio->extClockHistoryTick2Frame(tick - cur_tick) + MusEGlobal::segmentSize;
   }
   else

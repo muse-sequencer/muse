@@ -1,3 +1,11 @@
+21.02.2018
+      * PRECOUNT feature lives! : (Tim)
+      - Restored dead precount feature.
+      - It uses the 'slow-sync' feature of Jack Transport (and ours).
+      - Moved our 'dummy' transport feature from Jack module into
+         base class AudioDevice. This means ALL our drivers support it now.
+      - It means ALL the drivers support precount.
+      - Added README.metronome which explains a few things. Read it!
 30.01.2018
       *** MusE 3.0.2 ***
 29.01.2018

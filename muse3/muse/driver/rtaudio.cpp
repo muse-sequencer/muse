@@ -61,12 +61,9 @@ class RtAudioDevice : public AudioDevice {
       RtAudio *dac;
 
    public:
-      Audio::State state;
-      int _framePos;
+      unsigned _frameCounter;
       unsigned _framesAtCycleStart;
       double _timeAtCycleStart;
-      int playPos;
-      bool seekflag;
 
       QList<MuseRtAudioPort*> outputPortsList;
       QList<MuseRtAudioPort*> inputPortsList;
@@ -94,8 +91,9 @@ class RtAudioDevice : public AudioDevice {
       virtual bool start(int);
       
       virtual void stop ();
-      virtual int framePos() const { 
-            return _framePos; 
+      virtual unsigned  framePos() const { 
+            // Not much choice but to do this:
+            return framesAtCycleStart() + framesSinceCycleStart();; 
             }
 
       // These are meant to be called from inside process thread only.      
@@ -277,19 +275,8 @@ class RtAudioDevice : public AudioDevice {
         return 0;
       }
 
-      virtual int getState() {
-        return state;
-      }
-
-      virtual unsigned getCurFrame() const { 
-        if(DEBUG_RTAUDIO)
-            fprintf(stderr, "RtAudioDevice::getCurFrame %d\n", _framePos);
-      
-        return _framePos;
-      }
-
       virtual unsigned frameTime() const {
-        return lrint(curTime() * MusEGlobal::sampleRate);
+        return _frameCounter;
       }
 
       virtual double systemTime() const {
@@ -301,35 +288,9 @@ class RtAudioDevice : public AudioDevice {
 
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       virtual int realtimePriority() const { return 40; }
-      virtual void startTransport() {
-            if(DEBUG_RTAUDIO)
-                fprintf(stderr, "RtAudioDevice::startTransport playPos=%d\n", playPos);
-            state = Audio::PLAY;
-            }
-      virtual void stopTransport() {
-            if(DEBUG_RTAUDIO)
-                fprintf(stderr, "RtAudioDevice::stopTransport, playPos=%d\n", playPos);
-            state = Audio::STOP;
-            }
-      virtual int setMaster(bool) { return 1; }
-
-      virtual void seekTransport(const Pos &p)
-      {
-            if(DEBUG_RTAUDIO)
-                fprintf(stderr, "RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
-            seekflag = true;
-            //pos = n;
-            playPos = p.frame();
             
-      }
-      virtual void seekTransport(unsigned pos) {
-            if(DEBUG_RTAUDIO)
-                fprintf(stderr, "RtAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
-            seekflag = true;
-            //pos = n;
-            playPos = pos;
-            }
       virtual void setFreewheel(bool) {}
+      virtual int setMaster(bool) { return 1; }
 };
 
 RtAudioDevice* rtAudioDevice = 0;
@@ -340,13 +301,10 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
-      seekflag = false;
-      state = Audio::STOP;
       //startTime = curTime();
-      _framePos = 0;
+      _frameCounter = 0;
       _framesAtCycleStart = 0;
       _timeAtCycleStart = 0.0;
-      playPos = 0;
 
       RtAudio::Api api = RtAudio::UNSPECIFIED;
 
@@ -417,28 +375,17 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 {
 //  fprintf(stderr, "RtAduioDevice::processAudio %d\n", nBufferFrames);
 
+  rtAudioDevice->_timeAtCycleStart = curTime();
+  
+  if(MusEGlobal::audio->isRunning()) {
+    // Use our built-in transport, which INCLUDES the necessary
+    //  calls to Audio::sync() and ultimately Audio::process(),
+    //  and increments the built-in play position.
+    rtAudioDevice->processTransport(nBufferFrames);
+  }
+
   float *floatOutputBuffer = (float*)outputBuffer;
   float *floatInputBuffer = (float*)inputBuffer;
-
-  rtAudioDevice->_framePos += nBufferFrames;
-  rtAudioDevice->_framesAtCycleStart += nBufferFrames;
-
-  if(rtAudioDevice->seekflag)
-  {
-    MusEGlobal::audio->sync(Audio::STOP, rtAudioDevice->playPos);
-
-    rtAudioDevice->seekflag = false;
-  }
-
-  if(rtAudioDevice->state == Audio::PLAY) {
-
-    rtAudioDevice->playPos += nBufferFrames;
-  }
-
-  if (MusEGlobal::audio->isRunning()) {
-
-    MusEGlobal::audio->process((unsigned long)nBufferFrames);
-  }
 
   if (rtAudioDevice->outputPortsList.size() >= 2) {
 
@@ -483,6 +430,9 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
     //fprintf(stderr, "Too few ports in list, won't copy any data\n");
   }
 
+
+  rtAudioDevice->_frameCounter += nBufferFrames;
+  rtAudioDevice->_framesAtCycleStart += nBufferFrames;
 
   return 0;
 }

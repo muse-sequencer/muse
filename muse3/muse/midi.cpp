@@ -37,6 +37,7 @@
 #include "midictrl.h"
 #include "sync.h"
 #include "audio.h"
+#include "audiodev.h"
 #include "mididev.h"
 #include "driver/alsamidi.h"
 #include "driver/jackmidi.h"
@@ -56,6 +57,8 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_MIDI(dev, format, args...) // fprintf(dev, format, ##args);
+// For debugging metronome and precount output: Uncomment the fprintf section.
+#define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -1236,6 +1239,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
       int port    = track->outPort();
       int channel = track->outChannel();
       int defaultPort = port;
+      const unsigned int pos_fr = pos().frame();
 
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       MidiDevice* md = mp->device();
@@ -1306,7 +1310,6 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                     // If external sync is off, look up the scheduling frame from our tempo list
                     //  ie. normal playback.
                     const unsigned int fr = MusEGlobal::tempomap.tick2frame(tick);
-                    const unsigned int pos_fr = pos().frame();
                     frame = (fr < pos_fr) ? 0 : fr - pos_fr;
                     frame += syncFrame;
                   }
@@ -1504,7 +1507,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 //      executed in audio thread
 //---------------------------------------------------------
 
-void Audio::processMidi()
+void Audio::processMidi(unsigned int frames)
       {
       const bool extsync = MusEGlobal::extSyncFlag.value();
       const bool playing = isPlaying();
@@ -2285,7 +2288,7 @@ void Audio::processMidi()
                 MidiPlayEvent ev(*k);
                 ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
                 mport = ev.port();
-                if(t_port < 0)
+                if(mport < 0)
                   continue;
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
@@ -2333,103 +2336,102 @@ void Audio::processMidi()
       //    insert metronome clicks
       //---------------------------------------------------
 
+      // If in PRECOUNT state, process the precount events.
+      processPrecount(frames);
+        
       MidiDevice* md = 0;
       if (MusEGlobal::midiClickFlag)
             md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
-      if (MusEGlobal::song->click() && (playing || state == PRECOUNT)) {
+      if (MusEGlobal::song->click() && playing) {
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
-            while (midiClick < nextTickPos) {
-                  if (playing) {
-                    AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
-                    AL::sigmap.timesig(midiClick, z, n);
+            while (midiClick < nextTickPos)
+            {
+              DEBUG_MIDI_METRONOME(stderr, 
+                "Audio::processMidi: playing: syncFrame:%u _pos.frame():%u midiClick:%u nextTickPos:%u clickno:%d\n",
+                syncFrame, _pos.frame(), midiClick, nextTickPos, clickno);
+              
+              AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
+              AL::sigmap.timesig(midiClick, z, n);
 
-                    //n = 2;
-                    if (tick == 0 && beat == 0) {
-                        audioTickSound = MusECore::measureSound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
-                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
-                        audioTickSound = MusECore::accent2Sound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
-                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
-                        audioTickSound = MusECore::accent1Sound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    } else {
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
-                  }
+              //n = 2;
+              if (tick == 0 && beat == 0) {
+                  audioTickSound = MusECore::measureSound;
+                  if (MusEGlobal::debugMsg)
+                      fprintf(stderr, "meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                              midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+              }
+              else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
+                  audioTickSound = MusECore::accent2Sound;
+                  if (MusEGlobal::debugMsg)
+                      fprintf(stderr, "acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                              midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+              }
+              else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
+                  audioTickSound = MusECore::accent1Sound;
+                  if (MusEGlobal::debugMsg)
+                      fprintf(stderr, "acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                              midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+              } else {
+                  if (MusEGlobal::debugMsg)
+                      fprintf(stderr, "beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                              midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+              }
 
-                  else if (state == PRECOUNT) {
-                    if ((clickno % clicksMeasure) == 0) {
-                        audioTickSound = MusECore::measureSound;
-                    }
-                  }
-                  unsigned int evtime = MusEGlobal::audio->midiQueueTimeStamp(midiClick);
+              unsigned int evtime = MusEGlobal::audio->midiQueueTimeStamp(midiClick);
 
-                  MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
-                  if (audioTickSound == MusECore::measureSound) {
-                    ev.setA(MusEGlobal::measureClickNote);
-                    ev.setB(MusEGlobal::measureClickVelo);
+              MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+              if (audioTickSound == MusECore::measureSound) {
+                ev.setA(MusEGlobal::measureClickNote);
+                ev.setB(MusEGlobal::measureClickVelo);
+              }
+              if (audioTickSound == MusECore::accent1Sound) {
+                ev.setA(MusEGlobal::accentClick1);
+                ev.setB(MusEGlobal::accentClick1Velo);
+              }
+              if (audioTickSound == MusECore::accent2Sound) {
+                ev.setA(MusEGlobal::accentClick2);
+                ev.setB(MusEGlobal::accentClick2Velo);
+              }
+              if (md) {
+                MusECore::MidiPlayEvent evmidi = ev;
+                md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
+                // Ticksynth has been modified too.
+                evmidi.setType(MusECore::ME_NOTEOFF);
+                evmidi.setB(0);
+                evmidi.setTime(midiClick+10);
+                md->addStuckNote(evmidi);
+              }
+              if (MusEGlobal::audioClickFlag) {
+                ev.setA(audioTickSound);
+                DEBUG_MIDI_METRONOME(stderr, "Audio::processMidi: playing: metronome->putEvent\n");
+                metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                // Built-in metronome synth does not use stuck notes...
+              }
+              
+              // State machine to select next midiClick position.
+              if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
+                  if (tick == 0) {//  ON key
+                    if (beat % 2)
+                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                    else
+                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
                   }
-                  if (audioTickSound == MusECore::accent1Sound) {
-                    ev.setA(MusEGlobal::accentClick1);
-                    ev.setB(MusEGlobal::accentClick1Velo);
+                  else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
+                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
                   }
-                  if (audioTickSound == MusECore::accent2Sound) {
-                    ev.setA(MusEGlobal::accentClick2);
-                    ev.setB(MusEGlobal::accentClick2Velo);
+                  else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
+                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
                   }
-                  if (md) {
-                    MusECore::MidiPlayEvent evmidi = ev;
-                    md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
-                    // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
-                    // Ticksynth has been modified too.
-                    evmidi.setType(MusECore::ME_NOTEOFF);
-                    evmidi.setB(0);
-                    evmidi.setTime(midiClick+10);
-                    md->addStuckNote(evmidi);
-                  }
-                  if (MusEGlobal::audioClickFlag) {
-                    ev.setA(audioTickSound);
-                    metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
-                    // Built-in metronome synth does not use stuck notes...
-                  }
-                  if (playing) {
-                      // State machine to select next midiClick position.
-                      if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
-                          if (tick == 0) {//  ON key
-                            if (beat % 2)
-                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                            else
-                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
-                          }
-                          else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
-                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                          }
-                          else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
-                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
-                          }
-                      }
-                      else {
-                        midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                      }
-                  }
-                  else if (state == PRECOUNT) {
-                        midiClick += ticksBeat;
-                        if (clickno)
-                              --clickno;
-                        else
-                              state = START_PLAY;
-                  }
-               }
+              }
+              else
+              {
+                midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+              }
             }
+      }
 
       //
       // Play all midi events up to curFrame.
@@ -2463,5 +2465,96 @@ void Audio::processMidi()
       // Static.
       MidiPort::processGui2AudioEvents();
       }
+
+      
+//---------------------------------------------------------
+//   processPrecount
+//---------------------------------------------------------
+
+void Audio::processPrecount(unsigned int frames)
+{
+  //DEBUG_MIDI_METRONOME(stderr, "Audio::processPrecount: state:%d\n", state);
+  if(state != PRECOUNT)
+    return;
+  
+  const unsigned int nextPrecountFramePos = _precountFramePos + frames;
+    
+  DEBUG_MIDI_METRONOME(stderr, "Audio::processPrecount: precount: syncFrame:%u _pos.frame():%u"
+    "_precountFramePos:%u precountMidiClickFrame:%u nextPrecountFramePos:%u clickno:%d\n",
+    syncFrame, _pos.frame(), _precountFramePos, precountMidiClickFrame, nextPrecountFramePos, clickno);
+    
+  MidiDevice* md = 0;
+  if(MusEGlobal::midiClickFlag)
+    md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
+  
+  AudioTickSound audioTickSound = MusECore::beatSound;
+
+  while (precountMidiClickFrame < nextPrecountFramePos)
+  {
+    // Don't actually sound anything if we're just running out the time.
+    // There will be times when _precountFramePos >= precountTotalFrames
+    //  and we must let it run out.
+    if(_precountFramePos < precountTotalFrames)
+    {
+      if(MusEGlobal::song->click())
+      {
+        if ((clickno % clicksMeasure) == 0)
+          audioTickSound = MusECore::measureSound;
+        else
+          audioTickSound = MusECore::beatSound;
+        
+        // We need to shift ahead in time because Jack waits one more cycle,
+        //   unlike our own built-in transport which starts immediately.
+        const unsigned int evtime = syncFrame + MusEGlobal::audioDevice->transportSyncToPlayDelay() +
+          ((precountMidiClickFrame < _precountFramePos) ? 0 : precountMidiClickFrame - _precountFramePos);
+          
+        MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, 
+          MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+        
+        if (audioTickSound == MusECore::measureSound) {
+          ev.setA(MusEGlobal::measureClickNote);
+          ev.setB(MusEGlobal::measureClickVelo);
+        }
+        if (md) {
+          MusECore::MidiPlayEvent evmidi = ev;
+          md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+          // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
+          // Ticksynth has been modified too.
+          evmidi.setType(MusECore::ME_NOTEOFF);
+          evmidi.setB(0);
+          evmidi.setTime(ev.time() + MusEGlobal::tempomap.ticks2frames(10, curTickPos));
+          
+          // The precount CANNOT use the stuck notes mechanism because the stuck notes
+          //  mechanism wants ticks not frames, and it later compares those ticks
+          //  with nextTickPos and converts them into frames using midiQueueTimeStamp(),
+          //  which is not a valid mechanism during precount!
+          // Therefore we have no choice but to directly schedule a note-off.
+          // Since it is important that they not be missed, schedule these as userBuffer events.
+          // Should be OK, it's unlikely that the note-off would be missed unless the user could 
+          //  somehow seek during precount or something. (The userBuffer tries not to miss anything.)
+          // The idea behind the stuck notes mechanism was that it converts to frames
+          //  only at scheduling time so that if the user might change the tempo while
+          //  playing a song, the note-off times will be properly adjusted.
+          // But this precount mechanism CANNOT honour any tempo changes anyway because 
+          //  we must know the total required precount frames BEFOREHAND so that it can be aligned
+          //  with the metronome clicks properly. Thus negating any possible tempo change support.
+          //md->addStuckNote(evmidi);
+          md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::UserBuffer);
+        }
+        if (MusEGlobal::audioClickFlag) {
+          ev.setA(audioTickSound);
+          DEBUG_MIDI_METRONOME(stderr, "Audio::processMidi: precount: metronome->putEvent\n");
+          metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+          // Built-in metronome synth does not use stuck notes...
+        }
+      }
+    }
+    
+    precountMidiClickFrame += framesBeat;
+    ++clickno;
+  }
+  
+  _precountFramePos += frames;
+}
 
 } // namespace MusECore

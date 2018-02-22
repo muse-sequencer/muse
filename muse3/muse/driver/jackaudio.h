@@ -55,14 +55,9 @@ typedef std::list<JackCallbackEvent>::iterator iJackCallbackEvent;
 
 class JackAudioDevice : public AudioDevice {
       jack_client_t* _client;
-      float _syncTimeout;
       jack_transport_state_t transportState;
       jack_position_t pos;
       char jackRegisteredName[16];
-      int dummyState;
-      int dummyPos;
-      volatile int _dummyStatePending;
-      volatile int _dummyPosPending;
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
 
@@ -140,9 +135,17 @@ class JackAudioDevice : public AudioDevice {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
+      // Sets the amount of time to wait before sync times out, in microseconds.
+      // Note that at least with the Jack driver, this function seems not realtime friendly.
+      virtual void setSyncTimeout(unsigned usec);
+      // The number of frames that the driver waits to switch to PLAY
+      //  mode after the audio sync function says it is ready to roll.
+      // For example Jack Transport waits one cycle while our own tranport does not.
+      virtual unsigned transportSyncToPlayDelay() const;
+      
       virtual int getState();
       virtual unsigned int getCurFrame() const;
-      virtual int framePos() const;
+      virtual unsigned framePos() const;
       virtual unsigned frameTime() const     { return _frameCounter; }  
       virtual double systemTime() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }

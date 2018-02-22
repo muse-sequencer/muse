@@ -967,6 +967,16 @@ int main(int argc, char* argv[])
           MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
         //--------------------------------------------------
+        // Set the audio device sync timeout value.
+        //--------------------------------------------------
+        // Enforce a 30 second timeout.
+        // TODO: Split this up and have user adjustable normal (2 or 10 second default) value,
+        //        plus a contribution from the total required precount time.
+        //       Too bad we likely can't set it dynamically in the audio sync callback.
+        // NOTE: This is also enforced casually in Song:seqSignal after a stop, start, or seek.
+        MusEGlobal::audioDevice->setSyncTimeout(30000000);
+              
+        //--------------------------------------------------
         // Auto-fill the midi ports, if appropriate.
         //--------------------------------------------------
         if(MusEGlobal::populateMidiPortsOnStart &&

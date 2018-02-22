@@ -141,6 +141,8 @@ class Audio {
       int _loopCount;         // Number of times we have looped so far
 
       Pos _pos;               // current play position
+      // Simulated current frame during precount.
+      unsigned int _precountFramePos;
       
 #ifdef _AUDIO_USE_TRUE_FRAME_
       Pos _previousPos;       // previous play position
@@ -170,7 +172,13 @@ class Audio {
       unsigned midiClick;
       int clickno;      // precount values
       int clicksMeasure;
-      int ticksBeat;
+      // Frames per beat, in precount state.
+      unsigned framesBeat;
+      unsigned precountTotalFrames;
+      unsigned precountMidiClickFrame;
+      // Indicates transport went from STOP to START_PLAY.
+      // Used for sync to determine whether to start PRECOUNT mode.
+      bool _syncPlayStarting;
 
       double syncTime;  // wall clock at last sync point
       unsigned syncFrame;    // corresponding frame no. to syncTime
@@ -207,6 +215,16 @@ class Audio {
       
       void seekMidi();
 
+      // During sync(), starts count-in state if necessary and returns whether 
+      //  count-in state has been started.
+      bool startPreCount();
+      // In PRECOUNT state, processes the precount events.
+      // To be called by processMidi() in audio thread only.
+      void processPrecount(unsigned int frames);
+      // Process midi for a number of frames.
+      // Note that nextTickPos (and friends) will already be set before calling.
+      void processMidi(unsigned int frames);
+      
    public:
       Audio();
       virtual ~Audio();
@@ -318,7 +336,6 @@ class Audio {
 
       unsigned tickPos() const    { return curTickPos; }
       unsigned nextTick() const   { return nextTickPos; }
-      void processMidi();
       // Extrapolates current play frame on syncTime/syncFrame
       // Estimated to single-frame resolution.
       // This is an always-increasing number. Good for timestamps, and 

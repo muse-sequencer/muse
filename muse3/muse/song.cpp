@@ -2201,24 +2201,31 @@ void Song::seqSignal(int fd)
                strerror(errno));
             return;
             }
+      bool do_set_sync_timeout = false;
       for (int i = 0; i < n; ++i) {
             switch(buffer[i]) {
                   case '0':         // STOP
+                        do_set_sync_timeout = true;
                         stopRolling();
                         break;
                   case '1':         // PLAY
+                        do_set_sync_timeout = true;
                         setStopPlay(true);
                         break;
                   case '2':   // record
                         setRecord(true);
                         break;
                   case '3':   // START_PLAY + jack STOP
+                        do_set_sync_timeout = true;
                         abortRolling();
                         break;
                   case 'P':   // alsa ports changed
                         alsaScanMidiPorts();
                         break;
-                  case 'G':
+                  case 'G':   // Seek
+                        // Hm, careful here, will multiple seeks cause this
+                        //  to interfere with Jack's transport timeout countdown?
+                        do_set_sync_timeout = true;
                         clearRecAutomation(true);
                         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
                         break;
@@ -2317,6 +2324,23 @@ void Song::seqSignal(int fd)
                         fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
                         break;
                   }
+            }
+            
+            // Since other Jack clients might also set the sync timeout at any time,
+            //  we need to be constantly enforcing our desired limit!
+            // Since setSyncTimeout() may not be realtime friendly (Jack driver),
+            //  we set the driver's sync timeout here in the gui thread.
+            // Sadly, we likely cannot get away with setting it in the audio sync callback.
+            // So whenever stop, start or seek occurs, we'll try to casually enforce the timeout here.
+            // It's casual, unfortunately we can't set the EXACT timeout amount when we really need to
+            //  (that's in audio sync callback) so we try this for now...
+            if(do_set_sync_timeout && MusEGlobal::checkAudioDevice())
+            {
+              // Enforce a 30 second timeout.
+              // TODO: Split this up and have user adjustable normal (2 or 10 second default) value,
+              //        plus a contribution from the total required precount time.
+              //       Too bad we likely can't set it dynamically in the audio sync callback.
+              MusEGlobal::audioDevice->setSyncTimeout(30000000);
             }
       }
 

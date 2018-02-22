@@ -98,6 +98,9 @@ class TempoList : public TEMPOLIST {
 
       int tempo(unsigned tick) const;
       int tempoAt(unsigned tick) const;
+      // Returns the number of frames contained in the given ticks,
+      //  at the tempo at the tick given by tempoTick. Honours useList.
+      unsigned ticks2frames(unsigned ticks, unsigned tempoTick) const;
       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
       unsigned tick2frame(unsigned tick, int* sn = 0) const;
       unsigned frame2tick(unsigned frame, int* sn = 0) const;

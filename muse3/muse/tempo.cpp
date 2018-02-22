@@ -347,6 +347,18 @@ bool TempoList::setMasterFlag(unsigned /*tick*/, bool val)
       }
 
 //---------------------------------------------------------
+//   ticks2frames
+//---------------------------------------------------------
+
+unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
+{
+  const double pre_t = (double(ticks) * double(tempo(tempoTick))) /
+    (double(MusEGlobal::config.division) * globalTempo() * 10000.0);
+    
+  return lrint(pre_t * MusEGlobal::sampleRate);
+}
+
+//---------------------------------------------------------
 //   tick2frame
 //---------------------------------------------------------
 
