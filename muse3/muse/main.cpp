@@ -244,7 +244,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       Alsa midi only (using dummy audio driver)\n");
 #ifdef HAVE_RTAUDIO
-      fprintf(stderr, "   -t       Use RtAudio driver (with Pulse Audio driver).\n");
+      fprintf(stderr, "   -t       Use RtAudio driver.\n");
 #endif
       fprintf(stderr, "   -j       Use JAckAudio driver to connect to Jack audio server\n");
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
@@ -534,7 +534,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("atJjFAhvdDumMsP:Y:l:py");
+        QString optstr("aJjFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -549,6 +549,9 @@ int main(int argc, char* argv[])
   #endif
   #ifdef LV2_SUPPORT
         optstr += QString("2");
+  #endif
+  #ifdef HAVE_RTAUDIO
+        optstr += QString("t");
   #endif
 
         AudioDriverSelect audioType = DriverConfigSetting;
