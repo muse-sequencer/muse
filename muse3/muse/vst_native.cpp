@@ -1163,7 +1163,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       if(value & kVstTempoValid)
       {
          double tempo = MusEGlobal::tempomap.tempo(p.tick());
-         _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+         _timeInfo.tempo = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
          _timeInfo.flags |= kVstTempoValid;
       }
 

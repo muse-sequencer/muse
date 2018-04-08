@@ -39,6 +39,7 @@
 #include "pos.h"
 #include "gconfig.h"
 #include "utils.h"
+#include "large_int.h"
 
 #define DEBUG_DUMMY 0
 
@@ -56,7 +57,7 @@ class DummyAudioDevice : public AudioDevice {
    public:
       unsigned _frameCounter;
       unsigned _framesAtCycleStart;
-      double _timeAtCycleStart;
+      uint64_t _timeUSAtCycleStart;
       
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
@@ -82,7 +83,9 @@ class DummyAudioDevice : public AudioDevice {
       virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart; }
       virtual unsigned framesSinceCycleStart() const 
       { 
-        unsigned f =  lrint((curTime() - _timeAtCycleStart) * MusEGlobal::sampleRate);
+        // Do not round up here since time resolution is higher than (audio) frame resolution.
+        unsigned f = muse_multiply_64_div_64_to_64(curTimeUS() - _timeUSAtCycleStart, MusEGlobal::sampleRate, 1000000UL);
+        
         // Safety due to inaccuracies. It cannot be after the segment, right?
         if(f >= MusEGlobal::segmentSize)
           f = MusEGlobal::segmentSize - 1;
@@ -140,13 +143,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual unsigned frameTime() const {
             return _frameCounter;
             }
-      virtual double systemTime() const
-      {
-        struct timeval t;
-        gettimeofday(&t, 0);
-        //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
-      }
+
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
@@ -178,7 +175,7 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       dummyThread = 0;
       _frameCounter = 0;
       _framesAtCycleStart = 0;
-      _timeAtCycleStart = 0.0;
+      _timeUSAtCycleStart = 0;
       }
 
 
@@ -247,7 +244,7 @@ static void* dummyLoop(void* ptr)
       
       for(;;) 
       {
-        drvPtr->_timeAtCycleStart = curTime();
+        drvPtr->_timeUSAtCycleStart = curTimeUS();
 
         if(MusEGlobal::audio->isRunning()) {
           // Use our built-in transport, which INCLUDES the necessary

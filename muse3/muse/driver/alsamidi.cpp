@@ -1664,7 +1664,6 @@ int alsaSelectWfd()
 void alsaProcessMidiInput()
 {
       unsigned frame_ts = MusEGlobal::audio->curFrame();
-      const double time_ts = curTime();
       
       DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
               
@@ -1927,19 +1926,19 @@ void alsaProcessMidiInput()
                         if(MusEGlobal::midiInputTrace)
                           fprintf(stderr, "alsaProcessMidiInput: start port:%d curFrame:%u\n", curPort, frame_ts);
                       #endif
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START);
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE);
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP);
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK);
                         break;
 
                   case SND_SEQ_EVENT_SYSEX:

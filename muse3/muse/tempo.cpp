@@ -31,6 +31,9 @@
 #include "xml.h"
 #include "operations.h"
 
+#include <stdint.h>
+#include "large_int.h"
+
 namespace MusEGlobal {
 MusECore::TempoList tempomap;
 MusECore::TempoRecList tempo_rec_list;
@@ -143,12 +146,18 @@ void TempoList::addOperation(unsigned tick, int tempo, PendingOperationList& ops
 
 void TempoList::normalize()
       {
-      int frame = 0;
+      unsigned frame = 0;
+      const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
+      const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
+      
       for (iTEvent e = begin(); e != end(); ++e) {
             e->second->frame = frame;
-            unsigned dtick = e->first - e->second->tick;
-            double dtime = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/e->second->tempo);
-            frame += lrint(dtime * MusEGlobal::sampleRate);
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            frame += muse_multiply_64_div_64_to_64(
+              numer * (uint64_t)e->second->tempo, 
+              e->first - e->second->tick,
+              denom, true);
             }
       }
 
@@ -352,10 +361,11 @@ bool TempoList::setMasterFlag(unsigned /*tick*/, bool val)
 
 unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
 {
-  const double pre_t = (double(ticks) * double(tempo(tempoTick))) /
-    (double(MusEGlobal::config.division) * globalTempo() * 10000.0);
-    
-  return lrint(pre_t * MusEGlobal::sampleRate);
+  // Tick resolution is less than frame resolution. 
+  // Round up so that the reciprocal function (frame to tick) matches value for value.
+  return muse_multiply_64_div_64_to_64(
+    (uint64_t)MusEGlobal::sampleRate * (uint64_t)tempo(tempoTick), ticks,
+    (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, true);
 }
 
 //---------------------------------------------------------
@@ -373,21 +383,24 @@ unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn) const
 
 unsigned TempoList::tick2frame(unsigned tick, int* sn) const
       {
-      int f;
+      unsigned f;
+      const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
+      const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       if (useList) {
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("tick2frame(%d,0x%x): not found\n", tick, tick);
                   return 0;
                   }
-            unsigned dtick = tick - i->second->tick;
-            double dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
-            f = i->second->frame + dframe;
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f = i->second->frame + muse_multiply_64_div_64_to_64(
+              numer * (uint64_t)i->second->tempo, tick - i->second->tick, denom, true);
             }
       else {
-            double t = (double(tick) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f = lrint(t * MusEGlobal::sampleRate);
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick, denom, true);
             }
       if (sn)
             *sn = _tempoSN;
@@ -411,6 +424,8 @@ unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn) const
 unsigned TempoList::frame2tick(unsigned frame, int* sn) const
       {
       unsigned tick;
+      const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
+      const uint64_t denom = (uint64_t)MusEGlobal::sampleRate;
       if (useList) {
             ciTEvent e;
             for (e = begin(); e != end();) {
@@ -422,13 +437,11 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
                         break;
                   e = ee;
                   }
-            unsigned te  = e->second->tempo;
-            int dframe   = frame - e->second->frame;
-            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
+            tick = e->second->tick + muse_multiply_64_div_64_to_64(
+              numer, frame - e->second->frame, denom * (uint64_t)e->second->tempo);
             }
       else
-            tick = lrint((double(frame)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
+            tick = muse_multiply_64_div_64_to_64(numer, frame, denom * (uint64_t)_tempo);
       if (sn)
             *sn = _tempoSN;
       return tick;
@@ -440,7 +453,9 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
 
 unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) const
       {
-      int f1, f2;
+      unsigned int f1, f2;
+      const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
+      const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       if (useList) {
             ciTEvent i = upper_bound(tick1);
             if (i == end()) {
@@ -448,26 +463,27 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
                   // abort();
                   return 0;
                   }
-            unsigned dtick = tick1 - i->second->tick;
-            double dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
-            f1 = i->second->frame + dframe;
-            
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f1 = i->second->frame + muse_multiply_64_div_64_to_64(
+              numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, true);
+
             i = upper_bound(tick2);
             if (i == end()) {
                   return 0;
                   }
-            dtick = tick2 - i->second->tick;
-            dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            dframe   = lrint(dtime * MusEGlobal::sampleRate);
-            f2 = i->second->frame + dframe;
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f2 = i->second->frame + muse_multiply_64_div_64_to_64(
+              numer * (uint64_t)i->second->tempo, tick2 - i->second->tick, denom, true);
             }
       else {
-            double t = (double(tick1) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f1 = lrint(t * MusEGlobal::sampleRate);
-            
-            t = (double(tick2) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f2 = lrint(t * MusEGlobal::sampleRate);
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f1 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick1, denom, true);
+            // Tick resolution is less than frame resolution. 
+            // Round up so that the reciprocal function (frame to tick) matches value for value.
+            f2 = muse_multiply_64_div_64_to_64(numer * (uint64_t)_tempo, tick2, denom, true);
             }
       if (sn)
             *sn = _tempoSN;
@@ -484,6 +500,8 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
 unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) const
       {
       unsigned tick1, tick2;
+      const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
+      const uint64_t denom = (uint64_t)MusEGlobal::sampleRate;
       if (useList) {
             ciTEvent e;
             for (e = begin(); e != end();) {
@@ -495,10 +513,8 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                         break;
                   e = ee;
                   }
-            unsigned te  = e->second->tempo;
-            int dframe   = frame1 - e->second->frame;
-            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick1         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
+            tick1 = e->second->tick + muse_multiply_64_div_64_to_64(
+              numer, frame1 - e->second->frame, denom * (uint64_t)e->second->tempo);
             
             for (e = begin(); e != end();) {
                   ciTEvent ee = e;
@@ -509,15 +525,13 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                         break;
                   e = ee;
                   }
-            te  = e->second->tempo;
-            dframe   = frame2 - e->second->frame;
-            dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick2         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
+            tick2 = e->second->tick + muse_multiply_64_div_64_to_64(
+              numer, frame2 - e->second->frame, denom * (uint64_t)e->second->tempo);
             }
       else
       {
-            tick1 = lrint((double(frame1)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
-            tick2 = lrint((double(frame2)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
+            tick1 = muse_multiply_64_div_64_to_64(numer, frame1, denom * (uint64_t)_tempo);
+            tick2 = muse_multiply_64_div_64_to_64(numer, frame2, denom * (uint64_t)_tempo);
       }
       if (sn)
             *sn = _tempoSN;

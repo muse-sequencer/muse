@@ -795,12 +795,38 @@
        </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="precountPrerecord">
+       <widget class="QCheckBox" name="precountOnPlay">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="toolTip">
-         <string>Enable precount when recording</string>
+         <string>Enable precount when playing</string>
+        </property>
+        <property name="text">
+         <string>Precount on play</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountMuteMetronome">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Mute the metronome after precount</string>
+        </property>
+        <property name="text">
+         <string>Mute metronome</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountPrerecord">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Not supported yet</string>
         </property>
         <property name="text">
          <string>Prerecord</string>

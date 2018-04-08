@@ -36,6 +36,22 @@ AudioDevice::AudioDevice()
   _dummyPosPending = 0;
 }
 
+
+//--------------------------------------
+// Timing functions:
+//--------------------------------------
+
+uint64_t AudioDevice::systemTimeUS() const {
+  struct timeval t;
+  gettimeofday(&t, 0);
+  //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+  return ((uint64_t)t.tv_sec * 1000000UL) + (uint64_t)t.tv_usec;
+}
+
+//--------------------------------------
+// Transport functions:
+//--------------------------------------
+
 bool AudioDevice::processTransport(unsigned int frames)
 {
   const int state_pending = _dummyStatePending;  // Snapshots.

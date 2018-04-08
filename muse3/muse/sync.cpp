@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <cmath>
+
 #include "sync.h"
 #include "song.h"
 #include "utils.h"
@@ -36,6 +37,7 @@
 #include "gconfig.h"
 #include "xml.h"
 #include "midi.h"
+#include "large_int.h"
 
 namespace MusEGlobal {
 
@@ -95,11 +97,11 @@ MidiSyncInfo::MidiSyncInfo()
   _recMMC        = false;
   _recMTC        = false;
 
-  _lastClkTime   = 0.0;
-  _lastTickTime  = 0.0;
-  _lastMRTTime   = 0.0;
-  _lastMMCTime   = 0.0;
-  _lastMTCTime   = 0.0;
+  _lastClkTime   = 0;
+  _lastTickTime  = 0;
+  _lastMRTTime   = 0;
+  _lastMMCTime   = 0;
+  _lastMTCTime   = 0;
   _clockTrig     = false;
   _tickTrig      = false;
   _MRTTrig       = false;
@@ -183,7 +185,7 @@ void MidiSyncInfo::setTime()
   // Note: CurTime() makes a system call to gettimeofday(),
   //  which apparently can be slow in some cases. So I avoid calling this function
   //  too frequently by calling it (at the heartbeat rate) in Song::beat().  T356
-  double t = curTime();
+  uint64_t t = curTimeUS();
 
   if(_clockTrig)
   {
@@ -191,7 +193,7 @@ void MidiSyncInfo::setTime()
     _lastClkTime = t;
   }
   else
-  if(_clockDetect && (t - _lastClkTime >= 1.0)) // Set detect indicator timeout to about 1 second.
+  if(_clockDetect && (t - _lastClkTime >= 1000000UL)) // Set detect indicator timeout to about 1 second.
   {
     _clockDetect = false;
   }
@@ -202,7 +204,8 @@ void MidiSyncInfo::setTime()
     _lastTickTime = t;
   }
   else
-  if(_tickDetect && (t - _lastTickTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+//   if(_tickDetect && (t - _lastTickTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  if(_tickDetect && (t - _lastTickTime) >= 1000000UL) // Set detect indicator timeout to about 1 second.
     _tickDetect = false;
 
   if(_MRTTrig)
@@ -211,7 +214,8 @@ void MidiSyncInfo::setTime()
     _lastMRTTime = t;
   }
   else
-  if(_MRTDetect && (t - _lastMRTTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+//   if(_MRTDetect && (t - _lastMRTTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  if(_MRTDetect && (t - _lastMRTTime) >= 1000000UL) // Set detect indicator timeout to about 1 second.
   {
     _MRTDetect = false;
   }
@@ -222,7 +226,8 @@ void MidiSyncInfo::setTime()
     _lastMMCTime = t;
   }
   else
-  if(_MMCDetect && (t - _lastMMCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+//   if(_MMCDetect && (t - _lastMMCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  if(_MMCDetect && (t - _lastMMCTime) >= 1000000UL) // Set detect indicator timeout to about 1 second.
   {
     _MMCDetect = false;
   }
@@ -233,7 +238,8 @@ void MidiSyncInfo::setTime()
     _lastMTCTime = t;
   }
   else
-  if(_MTCDetect && (t - _lastMTCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+//   if(_MTCDetect && (t - _lastMTCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  if(_MTCDetect && (t - _lastMTCTime) >= 1000000UL) // Set detect indicator timeout to about 1 second.
   {
     _MTCDetect = false;
   }
@@ -246,7 +252,8 @@ void MidiSyncInfo::setTime()
       _lastActTime[i] = t;
     }
     else
-    if(_actDetect[i] && (t - _lastActTime[i]) >= 1.0) // Set detect indicator timeout to about 1 second.
+//     if(_actDetect[i] && (t - _lastActTime[i]) >= 1.0) // Set detect indicator timeout to about 1 second.
+    if(_actDetect[i] && (t - _lastActTime[i]) >= 1000000UL) // Set detect indicator timeout to about 1 second.
     {
       _actDetect[i] = false;
       _actDetectBits &= ~(1 << i);
@@ -581,13 +588,15 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                         if (!MusEGlobal::checkAudioDevice()) return;
                         MTC mtc(p[6] & 0x1f, p[7], p[8], p[9], p[10]);
                         int type = (p[6] >> 5) & 3;
-                        int mmcPos = lrint(mtc.time(type) * MusEGlobal::sampleRate);
+                        // MTC time resolution is less than frame resolution. 
+                        // Round up so that the reciprocal function (frame to time) matches value for value.
+                        unsigned mmcPos = muse_multiply_64_div_64_to_64(mtc.timeUS(type), MusEGlobal::sampleRate, 1000000UL, true);
 
                         Pos tp(mmcPos, false);
                         MusEGlobal::audioDevice->seekTransport(tp);
                         alignAllTicks();
                         if (MusEGlobal::debugSync) {
-                              fprintf(stderr, "MMC: LOCATE mtc type:%d time:%lf frame:%d mtc: ", type, mtc.time(), mmcPos);
+                              fprintf(stderr, "MMC: LOCATE mtc type:%d timeUS:%lu frame:%u mtc: ", type, (long unsigned)mtc.timeUS(), mmcPos);
                               mtc.print();
                               fprintf(stderr, "\n");
                               }
@@ -714,7 +723,8 @@ void MidiSyncContainer::mtcInputFull(int port, const unsigned char* p, int n)
 
       // Added by Tim.
       if(MusEGlobal::debugSync)
-        fprintf(stderr, "mtcInputFull: time:%lf stime:%lf hour byte (all bits):%hhx\n", MusEGlobal::mtcCurTime.time(), MusEGlobal::mtcCurTime.time(type), p[4]);
+        fprintf(stderr, "mtcInputFull: timeUS:%lu stimeUS:%lu hour byte (all bits):%hhx\n",
+                (long unsigned)MusEGlobal::mtcCurTime.timeUS(), (long unsigned)MusEGlobal::mtcCurTime.timeUS(type), p[4]);
       if(port != -1)
       {
         MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -724,7 +734,11 @@ void MidiSyncContainer::mtcInputFull(int port, const unsigned char* p, int n)
         // MTC in not turned on? Forget it.
         if(msync.MTCIn())
         {
-          Pos tp(lrint(MusEGlobal::mtcCurTime.time(type) * MusEGlobal::sampleRate), false);
+          // MTC time resolution is less than frame resolution. 
+          // Round up so that the reciprocal function (frame to time) matches value for value.
+          const unsigned t_frame = muse_multiply_64_div_64_to_64(MusEGlobal::mtcCurTime.timeUS(type), MusEGlobal::sampleRate, 1000000UL, true);
+          
+          Pos tp(t_frame, false);
           MusEGlobal::audioDevice->seekTransport(tp);
           alignAllTicks();
         }
@@ -837,11 +851,11 @@ void MidiSyncContainer::alignAllTicks(int frameOverride)
 //   realtimeSystemInput
 //    real time message received
 //---------------------------------------------------------
-void MidiSyncContainer::realtimeSystemInput(int port, int c, double time)
+void MidiSyncContainer::realtimeSystemInput(int port, int c)
       {
 
       if (MusEGlobal::midiInputTrace)
-            fprintf(stderr, "realtimeSystemInput port:%d 0x%x time:%f\n", port+1, c, time);
+            fprintf(stderr, "realtimeSystemInput port:%d 0x%x\n", port+1, c);
 
       MidiPort* mp = &MusEGlobal::midiPorts[port];
 
@@ -1200,11 +1214,11 @@ ExtMidiClock MidiSyncContainer::midiClockInput(int port, unsigned int frame)
 
 void MidiSyncContainer::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       {
-      double time = mtc.time();
-      double stime = mtc.time(type);
+      const uint64_t time = mtc.timeUS();
+      const uint64_t stime = mtc.timeUS(type);
       if (MusEGlobal::debugSync)
-            fprintf(stderr, "MidiSyncContainer::mtcSyncMsg time:%lf stime:%lf seekFlag:%d\n", 
-                    time, stime, seekFlag);
+            fprintf(stderr, "MidiSyncContainer::mtcSyncMsg timeUS:%lu stimeUS:%lu seekFlag:%d\n", 
+                    (long unsigned)time, (long unsigned)stime, seekFlag);
 
       if (seekFlag && MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
       {

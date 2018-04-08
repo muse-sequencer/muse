@@ -42,7 +42,7 @@
 #include "../audio.h"
 #include "minstrument.h"
 #include "mpevent.h"
-//#include "sync.h"
+#include "sync.h"
 #include "audiodev.h"
 #include "../mplugins/midiitransform.h"
 #include "../mplugins/mitplugin.h"
@@ -692,7 +692,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           case ME_CONTINUE:   
                           case ME_STOP:       
                           {
-                                MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, 0.0);
+                                MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type);
                                 return;
                           }
                           //case ME_SYSEX_END:  

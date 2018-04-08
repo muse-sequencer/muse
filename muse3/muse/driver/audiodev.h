@@ -27,6 +27,7 @@
 #include <list>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <stdint.h>
 
 class QString;
 
@@ -74,7 +75,8 @@ class AudioDevice {
       virtual unsigned framePos() const = 0;
       // A constantly increasing counter, incremented by segment size at cycle start.
       virtual unsigned frameTime() const = 0;
-      virtual double systemTime() const = 0;
+      virtual uint64_t systemTimeUS() const;
+      virtual unsigned curTransportFrame() const { return 0; }
 
       // These are meant to be called from inside process thread only.      
       virtual unsigned framesAtCycleStart() const = 0;

@@ -477,6 +477,10 @@ static void loadConfigMetronom(Xml& xml)
                               MusEGlobal::precountSigZ = xml.parseInt();
                         else if (tag == "signatureN")
                               MusEGlobal::precountSigN = xml.parseInt();
+                        else if (tag == "precountOnPlay")
+                              MusEGlobal::precountOnPlay = xml.parseInt();
+                        else if (tag == "precountMuteMetronome")
+                              MusEGlobal::precountMuteMetronome = xml.parseInt();
                         else if (tag == "prerecord")
                               MusEGlobal::precountPrerecord = xml.parseInt();
                         else if (tag == "preroll")
@@ -1359,6 +1363,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "fromMastertrack", MusEGlobal::precountFromMastertrackFlag);
       xml.intTag(level, "signatureZ", MusEGlobal::precountSigZ);
       xml.intTag(level, "signatureN", MusEGlobal::precountSigN);
+      xml.intTag(level, "precountOnPlay", MusEGlobal::precountOnPlay);
+      xml.intTag(level, "precountMuteMetronome", MusEGlobal::precountMuteMetronome);
       xml.intTag(level, "prerecord", MusEGlobal::precountPrerecord);
       xml.intTag(level, "preroll", MusEGlobal::precountPreroll);
       xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);

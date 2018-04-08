@@ -147,11 +147,12 @@ class JackAudioDevice : public AudioDevice {
       virtual unsigned int getCurFrame() const;
       virtual unsigned framePos() const;
       virtual unsigned frameTime() const     { return _frameCounter; }  
-      virtual double systemTime() const;
+      virtual uint64_t systemTimeUS() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
       // Jack does this for us.
       virtual bool setRealTime() { return false; }
       virtual int realtimePriority() const;
+      virtual unsigned curTransportFrame() const;
       
       virtual void startTransport();
       virtual void stopTransport();

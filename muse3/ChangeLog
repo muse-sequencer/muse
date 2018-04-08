@@ -1,3 +1,36 @@
+08.04.2018
+      * Major fixes to long-standing fundamental midi timing errors: (Tim)
+      - Symptoms: Midi event times were often wrong, much worse with smaller audio
+         periods. Caused jitter on almost every event, the events were booted into
+         the next cycle when they should have been played in current one.
+      - Floating point math has been BANISHED from ALL timing functions including
+         midi, sync, wall-clock, jack time etc.
+        Instead, large-integer math is used. Where 128-bit is required, the
+         3rd party libdivide library is used for compatibility reasons.
+        In functions which convert from a low resolution value to a high one,
+         rounding-up is used (NOT round-to-nearest). For example, tick to frame
+         is rounded up but NOT frame to tick. This ensures a one-to-one
+         correspondence between frame and tick. Similar with MTC <-> frame calcs.
+      - There was a fundamental problem with how we schedule midi events for playback,
+         including metronome. We compared the midi event ticks with the current
+         tranport frame range converted to ticks. This is backwards and inaccurate.
+        It now converts the midi event ticks to frames and THEN compares with the
+         current transport frame range. This is much more accurate and correct.
+      - TESTS: Precount and metronome with a tempo of 125 or 120: Timing is perfect,
+         no missed events. With a fractional tempo of 130.55: Timing is perfect,
+         event times are 'decimated' (staggered) to account for the fractional part.
+        With a wildly varying hand-drawn tempo map: Observed that all song bars do
+         show as X.0.0 when on the bar. Was not working well before, due to losses.
+      Unrelated fixes:
+      - Added transport seek anti-flood mechanism. (Tim)
+        Symptoms: When cursor was moved around, there would often be a 'flood' of
+         repeated events as the 'snap' position competes with user-dragged position.
+        A small fraction of a second delay was added after the cusrsor stops moving
+         before the engine plays any more events.
+      - Added precount 'Precount on play' and 'Mute metronome' features. (Tim)
+        Precount on play allows precount during play mode. Mute metronome mutes
+         the metronome after precount, this is handy if only precount is desired.
+      - Fixed compile error when ENABLE_LV2_GTK2 is disabled. (Tim)
 21.02.2018
       * PRECOUNT feature lives! : (Tim)
       - Restored dead precount feature.

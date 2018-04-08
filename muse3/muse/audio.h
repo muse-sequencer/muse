@@ -25,6 +25,8 @@
 #ifndef __AUDIO_H__
 #define __AUDIO_H__
 
+#include <stdint.h>
+
 #include "type_defs.h"
 #include "thread.h"
 #include "pos.h"
@@ -141,6 +143,7 @@ class Audio {
       int _loopCount;         // Number of times we have looped so far
 
       Pos _pos;               // current play position
+      unsigned int _curCycleFrames;   // Number of frames in the current process cycle.
       // Simulated current frame during precount.
       unsigned int _precountFramePos;
       
@@ -157,16 +160,6 @@ class Audio {
       static const int _extClockHistoryCapacity;
       // Holds the current size of the temporary clock history array.
       int _extClockHistorySize;
-      // Convert tick to frame using the external clock history list.
-      // The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
-      // The returned clock frames occurred during the previous audio cycle(s), so you may want to shift 
-      //  the frames forward by one audio segment size for scheduling purposes.
-      // CAUTION: There must be at least one valid clock in the history, otherwise it returns zero. 
-      //          Don't feed this a tick greater than or equal to the next tick, it will simply return the 
-      //           very last frame, which is not very useful since that will just bunch the events 
-      //           together at the last frame.
-      unsigned int extClockHistoryTick2Frame(unsigned int tick) const;
-      unsigned int extClockHistoryFrame2Tick(unsigned int frame) const;
 
       //metronome values
       unsigned midiClick;
@@ -174,13 +167,21 @@ class Audio {
       int clicksMeasure;
       // Frames per beat, in precount state.
       unsigned framesBeat;
+      // Frames per beat fractional divisor part.
+      uint32_t framesBeatDivisor;
+      // Frames per beat fractional remainder part.
+      uint32_t framesBeatRemainder;
       unsigned precountTotalFrames;
       unsigned precountMidiClickFrame;
+      // Fractional accumulator for precountMidiClick.
+      uint64_t precountMidiClickFrameRemainder;
       // Indicates transport went from STOP to START_PLAY.
       // Used for sync to determine whether to start PRECOUNT mode.
       bool _syncPlayStarting;
-
-      double syncTime;  // wall clock at last sync point
+      // Prevents flood of events during seek.
+      float _antiSeekFloodCounter;
+      
+      uint64_t syncTimeUS;  // Wall clock at last sync point in microseconds.
       unsigned syncFrame;    // corresponding frame no. to syncTime
 
       State state;
@@ -211,17 +212,20 @@ class Audio {
       void processMsg(AudioMsg* msg);
       void process1(unsigned samplePos, unsigned offset, unsigned samples);
 
-      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick);
+      void collectEvents(MidiTrack*, unsigned int startTick, unsigned int endTick, unsigned int frames);
       
       void seekMidi();
 
       // During sync(), starts count-in state if necessary and returns whether 
-      //  count-in state has been started.
+      //  count-in state has been started. Call from audio thread only.
       bool startPreCount();
       // In PRECOUNT state, processes the precount events.
       // To be called by processMidi() in audio thread only.
       void processPrecount(unsigned int frames);
-      // Process midi for a number of frames.
+      // Updates the metronome tick. Useful for after seek(), even startRolling() etc.
+      // Call from audio thread only.
+      void updateMidiClick();
+      // Process midi for a number of frames. Call from audio thread only.
       // Note that nextTickPos (and friends) will already be set before calling.
       void processMidi(unsigned int frames);
       
@@ -327,6 +331,8 @@ class Audio {
 #ifdef _AUDIO_USE_TRUE_FRAME_
       const Pos& previousPos() const { return _previousPos; }
 #endif
+      // Number of frames in the current process cycle.
+      unsigned curCycleFrames() const { return _curCycleFrames; }
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
       unsigned getStartExternalRecTick() const { return startExternalRecTick; }
@@ -351,15 +357,16 @@ class Audio {
       unsigned curSyncFrame() const { return syncFrame; }
       // This can be called from outside process thread. 
       unsigned framesSinceCycleStart() const;   
-      // Converts ticks to frames, and adds a forward frame offset, for the 
-      //  purpose of scheduling a midi event to play in the near future.
-      // If external midi clock sync is off, it uses the tempo map as usual.
-      // If external sync is on, it uses the clock history list - see the 
-      //  CAUTION for extClockHistoryTick2Frame(): There must be at least 
-      //  one valid clock in the history list, and don't pass a tick 
-      //  greater than or equal to the next tick.
-      unsigned int midiQueueTimeStamp(unsigned int tick) const;
-      
+      // Convert tick to frame using the external clock history list.
+      // The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
+      // The returned clock frames occurred during the previous audio cycle(s), so you may want to shift 
+      //  the frames forward by one audio segment size for scheduling purposes.
+      // CAUTION: There must be at least one valid clock in the history, otherwise it returns zero. 
+      //          Don't feed this a tick greater than or equal to the next tick, it will simply return the 
+      //           very last frame, which is not very useful since that will just bunch the events 
+      //           together at the last frame.
+      unsigned int extClockHistoryTick2Frame(unsigned int tick) const;
+      unsigned int extClockHistoryFrame2Tick(unsigned int frame) const;
       void recordStop(bool restart = false, Undo* operations = NULL);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);

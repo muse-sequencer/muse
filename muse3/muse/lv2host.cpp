@@ -869,7 +869,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2Synth *synth = state->synth;
    unsigned int cur_frame = MusEGlobal::audio->pos().frame();
    Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag.value() ? true : false);
-   double curBpm = (60000000.0 / MusEGlobal::tempomap.tempo(p.tick())) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+   float curBpm = (float)MusEGlobal::tempomap.globalTempo() * 600000.0f / (float)MusEGlobal::tempomap.tempo(p.tick());
    bool curIsPlaying = MusEGlobal::audio->isPlaying();
    unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
    //   if(state->curFrame != curFrame
@@ -895,7 +895,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_key(atomForge, synth->_uTime_speed);
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
-   lv2_atom_forge_float(atomForge, (float)curBpm);
+   lv2_atom_forge_float(atomForge, curBpm);
    buffer->write(nsamp, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 }
 
@@ -1227,7 +1227,9 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       bool bEmbed = false;
       bool bGtk = false;
       QWidget *ewWin = NULL;
+#ifdef HAVE_GTK2
       QWindow *x11QtWindow = NULL;
+#endif
       state->gtk2Plug = NULL;
       state->_ifeatures [synth->_fUiParent].data = NULL;
       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)

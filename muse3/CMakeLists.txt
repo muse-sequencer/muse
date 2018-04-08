@@ -621,6 +621,7 @@ file (GLOB doc_files
       AUTHORS
       ChangeLog
       COPYING
+      libdivide_LICENSE
       NEWS
       README
       README.de
