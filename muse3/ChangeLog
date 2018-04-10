@@ -1,3 +1,8 @@
+10.04.2018
+      - Small important fix: Auto-connect metronome to first audio output track. (Tim)
+        When a new AudioOutput track is added, it checks if it is the only one
+         and auto-connects the metronome to it. Also, template files having an
+         AudioOutput track have been changed. This should make metronome "just work".
 08.04.2018
       * Major fixes to long-standing fundamental midi timing errors: (Tim)
       - Symptoms: Midi event times were often wrong, much worse with smaller audio

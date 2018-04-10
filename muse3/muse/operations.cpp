@@ -524,6 +524,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                     static_cast<WaveTrackList*>(_void_track_list)->push_back(static_cast<WaveTrack*>(_track));
                     break;
               case Track::AUDIO_OUTPUT:
+                    //--------------------------------------------------------------
+                    // Connect metronome audio click
+                    //--------------------------------------------------------------
+                    // Are there no other existing AudioOutput tracks?
+                    if(static_cast<OutputList*>(_void_track_list)->empty())
+                      // Do the user a favour: Auto-connect the metronome to the track.
+                      static_cast<AudioOutput*>(_track)->setSendMetronome(true);
+                    
                     static_cast<OutputList*>(_void_track_list)->push_back(static_cast<AudioOutput*>(_track));
                     break;
               case Track::AUDIO_GROUP:
