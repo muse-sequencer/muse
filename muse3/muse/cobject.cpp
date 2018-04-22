@@ -31,6 +31,7 @@
 #include "sig_tempo_toolbar.h"
 #include "gconfig.h"
 #include "helper.h"
+#include "song.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -152,7 +153,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         QToolBar* transport_toolbar = addToolBar(tr("Transport"));
         transport_toolbar->setObjectName("Transport tool");
         transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-        transport_toolbar->setIconSize(QSize(22, 22));
+        transport_toolbar->setIconSize(ICON_SIZE);
 
         // Already has an object name.
         TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
@@ -164,6 +165,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         
         connect(tempo_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
         connect(tempo_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+
         connect(sig_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
         connect(sig_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 
@@ -751,6 +754,5 @@ TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 	}  
 	return 0;
 }
-
 
 } // namespace MusEGui

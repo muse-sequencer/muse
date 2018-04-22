@@ -144,7 +144,7 @@ void Song::putEvent(int pv)
 
 void Song::setTempo(int newTempo)
       {
-      MusEGlobal::audio->msgSetTempo(pos[0].tick(), newTempo, true);
+      applyOperation(UndoOp(UndoOp::SetTempo, pos[0].tick(), newTempo), true);
       }
 
 //---------------------------------------------------------

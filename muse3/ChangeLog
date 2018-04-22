@@ -1,3 +1,12 @@
+22.04.2018
+      * Fixes to Master Track functionality, and Transport mini-makeover: (Tim)
+        - Fixed: Was impossible to adjust static tempo when Master Track disabled.
+        - Removed superfluous tempo and sig boxes from Master Track Graphic toolbars.
+        - Enabling external sync no longer forces Master Track off.
+        - Added Master button to Tempo toolbar in all windows. Tempo box now obeys it.
+        - Replaced Transport tempo and sig boxes with editable spinbox versions.
+        - Fixed Transport controls' widths causing too-wide Transport!
+        - New Transport buttons and SVG icons.
 10.04.2018
       - Small important fix: Auto-connect metronome to first audio output track. (Tim)
         When a new AudioOutput track is added, it checks if it is the only one

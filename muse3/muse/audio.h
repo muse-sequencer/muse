@@ -284,7 +284,6 @@ class Audio {
       void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
       void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
       void msgAddTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
-      void msgSetTempo(int tick, int tempo, bool doUndoFlag = true); // FIXME FINDMICHJETZT TODO!
       void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
       void msgUpdateSoloStates(); // TODO and below
       void msgSetAux(AudioTrack*, int, double);

@@ -102,6 +102,39 @@ static inline uint64_t muse_multiply_64_div_64_to_64(
 #endif
 }
   
+class Fixed_U64
+{
+public:
+  uint64_t _dividend;
+  uint64_t _divisor;
+  //uint64_t _quotient;
+  uint64_t _remainder;
+  
+  //Fixed_U64() : _dividend(0), _divisor(1), _quotient(0), _remainder(0) { }
+  Fixed_U64() : _dividend(0), _divisor(1), _remainder(0) { }
+  //Fixed_U64(uint64_t dividend, uint64_t divisor = 1, uint64_t quotient = 0, uint64_t remainder = 0) :
+  //  _dividend(dividend), _divisor(divisor), _quotient(quotient), _remainder(remainder) { }
+  Fixed_U64(uint64_t dividend, uint64_t divisor = 1, uint64_t remainder = 0) :
+    _dividend(dividend), _divisor(divisor), _remainder(remainder) { }
+  
+  Fixed_U64 operator+(const Fixed_U64& val) 
+  { 
+    uint64_t dd = _dividend + val._dividend;
+    uint64_t dv;
+    uint64_t r;
+    if(val._divisor != _divisor)
+    {
+      dv = _dividend * val._dividend;
+      r = _remainder * val._dividend;
+    }
+    
+    //uint64_t q = _dividend + val._dividend;
+    //uint64_t r = _dividend + val._dividend;
+    //return Fixed_U64(dd, dv, q, r);
+    return Fixed_U64(dd, dv, r);
+  }
+};
+  
 } // namespace MusECore
 
 #endif

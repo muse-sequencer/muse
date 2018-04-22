@@ -342,6 +342,16 @@ void TempoList::delTempo(unsigned tick, bool do_normalize)
       }
 
 //---------------------------------------------------------
+//   setStaticTempo
+//---------------------------------------------------------
+
+void TempoList::setStaticTempo(int newTempo)
+      {
+      _tempo = newTempo;
+      ++_tempoSN;
+      }
+
+//---------------------------------------------------------
 //   setMasterFlag
 //---------------------------------------------------------
 
@@ -367,6 +377,18 @@ unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
     (uint64_t)MusEGlobal::sampleRate * (uint64_t)tempo(tempoTick), ticks,
     (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, true);
 }
+
+// REMOVE Tim. tempo. Added.
+// //---------------------------------------------------------
+// //   frames2ticks
+// //---------------------------------------------------------
+// 
+// unsigned TempoList::frames2ticks(unsigned frames, unsigned tempoTick) const
+// {
+//   const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
+//   const uint64_t denom = (uint64_t)MusEGlobal::sampleRate;
+//   return muse_multiply_64_div_64_to_64(numer, frames, denom * (uint64_t)tempo(tempoTick));
+// }
 
 //---------------------------------------------------------
 //   tick2frame

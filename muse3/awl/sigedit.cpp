@@ -47,9 +47,9 @@ SigEdit::SigEdit(QWidget* parent)
       nSpin = new SigSpinBox(this);
       zSpin->setFocusPolicy(Qt::StrongFocus);
       nSpin->setFocusPolicy(Qt::StrongFocus);
-      zSpin->setRange(1,100);
+      zSpin->setRange(1,99);
       nSpin->setDenominator();
-      nSpin->setRange(1,128);
+      nSpin->setRange(1,64);
       layout = new QHBoxLayout(this);
       layout->setContentsMargins(0,0,0,0);
       layout->setSpacing(1);

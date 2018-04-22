@@ -28,6 +28,8 @@
 #include <QPainter>
 #include <cmath>
 
+#include "type_defs.h"
+
 class QCheckBox;
 class QLabel;
 
@@ -80,7 +82,10 @@ class BigTime : public QWidget {
       bool tickmode;
       MusE* seq;
       
+      unsigned _curPos;
+      
       bool setString(unsigned);
+      void updateValue();
 
       VerticalMetronomeWidget *metronome;
       QWidget *dwin;
@@ -107,6 +112,7 @@ class BigTime : public QWidget {
    public slots:
       void setPos(int, unsigned, bool);
       void configChanged();
+      void songChanged(MusECore::SongChangedFlags_t);
       void fmtButtonToggled(bool);
    signals:
       void closed();

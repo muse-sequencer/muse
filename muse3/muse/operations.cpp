@@ -108,6 +108,7 @@ int PendingOperationItem::getIndex() const
     case UpdateSoloStates:
     case EnableAllAudioControllers:
     case ModifyAudioSamples:
+    case SetStaticTempo:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -1152,6 +1153,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       flags |= SC_TEMPO;
     break;
     
+    case SetStaticTempo:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetStaticTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
+#endif      
+      _tempo_list->setStaticTempo(_intA);
+      flags |= SC_TEMPO;
+    break;
+    
     case SetGlobalTempo:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage SetGlobalTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
@@ -2057,6 +2066,18 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
+      case PendingOperationItem::SetStaticTempo:
+#ifdef _PENDING_OPS_DEBUG_
+        fprintf(stderr, "PendingOperationList::add() SetStaticTempo\n");
+#endif      
+        if(poi._type == PendingOperationItem::SetStaticTempo && poi._tempo_list == op._tempo_list)
+        {
+          // Simply replace the value.
+          poi._intA = op._intA; 
+          return true;
+        }
+      break;
+        
       case PendingOperationItem::SetGlobalTempo:
 #ifdef _PENDING_OPS_DEBUG_
         fprintf(stderr, "PendingOperationList::add() SetGlobalTempo\n");

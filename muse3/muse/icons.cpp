@@ -182,6 +182,7 @@
 #include "xpm/configure.xpm"
 #include "xpm/panic.xpm"
 #include "xpm/metronome.xpm"
+#include "xpm/metronome_off.xpm"
 
 
 // next two lines will vanish soon
@@ -436,6 +437,9 @@ QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
 QPixmap* metronomeIcon;
+QPixmap* metronomeOffIcon;
+QIcon* metronomeQIcon;
+QIcon* metronomeOffQIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -605,6 +609,18 @@ QPixmap* recArmOnSVGPixmap;
 QPixmap* monitorOffSVGPixmap;
 QPixmap* monitorOnSVGPixmap;
 
+QPixmap* externSyncOffSVGPixmap;
+QPixmap* externSyncOnSVGPixmap;
+
+QPixmap* masterTrackOffSVGPixmap;
+QPixmap* masterTrackOnSVGPixmap;
+
+QPixmap* jackTransportOffSVGPixmap;
+QPixmap* jackTransportOnSVGPixmap;
+
+QPixmap* metronomeOffSVGPixmap;
+QPixmap* metronomeOnSVGPixmap;
+
 
 QIcon* routingInputSVGIcon;
 QIcon* routingOutputSVGIcon;
@@ -655,6 +671,18 @@ QIcon* playSVGIcon;
 QIcon* fastForwardSVGIcon;
 QIcon* rewindSVGIcon;
 QIcon* rewindToStartSVGIcon;
+
+QIcon* externSyncOffSVGIcon;
+QIcon* externSyncOnSVGIcon;
+
+QIcon* masterTrackOffSVGIcon;
+QIcon* masterTrackOnSVGIcon;
+
+QIcon* jackTransportOffSVGIcon;
+QIcon* jackTransportOnSVGIcon;
+
+QIcon* metronomeOffSVGIcon;
+QIcon* metronomeOnSVGIcon;
 
 //---------------------------------------------------------
 //   initIcons
@@ -753,7 +781,10 @@ void initIcons()
       editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
       panicIcon  = new MPIXMAP(panic_xpm, NULL);
-      metronomeIcon  = new MPIXMAP(metronome_xpm, NULL);
+      metronomeIcon      = new MPIXMAP(metronome_xpm, NULL);
+      metronomeOffIcon   = new MPIXMAP(metronome_off_xpm, NULL);
+      metronomeQIcon     = new MICON(*metronomeIcon, NULL);
+      metronomeOffQIcon  = new MICON(*metronomeOffIcon, NULL);
 
       editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
@@ -979,7 +1010,19 @@ void initIcons()
       //monitorOffSVGPixmap = new MPIXMAP(":/svg/headphones_off.svg", NULL);
       //monitorOnSVGPixmap = new MPIXMAP(":/svg/headphones_on.svg", NULL);
 
+      externSyncOffSVGPixmap = new MPIXMAP(":/svg/extern_sync_off.svg", NULL);
+      externSyncOnSVGPixmap = new MPIXMAP(":/svg/extern_sync_on.svg", NULL);
 
+      masterTrackOffSVGPixmap = new MPIXMAP(":/svg/master_track_off.svg", NULL);
+      masterTrackOnSVGPixmap = new MPIXMAP(":/svg/master_track_on.svg", NULL);
+
+      jackTransportOffSVGPixmap = new MPIXMAP(":/svg/jack_transport_off.svg", NULL);
+      jackTransportOnSVGPixmap = new MPIXMAP(":/svg/jack_transport_on.svg", NULL);
+
+      metronomeOffSVGPixmap = new MPIXMAP(":/svg/metronome_off.svg", NULL);
+      metronomeOnSVGPixmap = new MPIXMAP(":/svg/metronome_on.svg", NULL);
+
+      
       routingInputSVGIcon = new QIcon(*routingInputSVGPixmap);
       routingOutputSVGIcon = new QIcon(*routingOutputSVGPixmap);
       routingInputUnconnectedSVGIcon = new QIcon(*routingInputUnconnectedSVGPixmap);
@@ -1048,6 +1091,18 @@ void initIcons()
       rewindSVGIcon = new QIcon(":/svg/rewind.svg");
 
       rewindToStartSVGIcon = new QIcon(":/svg/rewind_to_start.svg");
+      
+      externSyncOffSVGIcon = new QIcon(*externSyncOffSVGPixmap);
+      externSyncOnSVGIcon = new QIcon(*externSyncOnSVGPixmap);
+      
+      masterTrackOffSVGIcon = new QIcon(*masterTrackOffSVGPixmap);
+      masterTrackOnSVGIcon = new QIcon(*masterTrackOnSVGPixmap);
+      
+      jackTransportOffSVGIcon = new QIcon(*jackTransportOffSVGPixmap);
+      jackTransportOnSVGIcon = new QIcon(*jackTransportOnSVGPixmap);
+      
+      metronomeOffSVGIcon = new QIcon(*metronomeOffSVGPixmap);
+      metronomeOnSVGIcon = new QIcon(*metronomeOnSVGPixmap);
       }
 
 //---------------------------------------------------------
@@ -1144,6 +1199,10 @@ void deleteIcons()
       delete editmuteIcon;
       delete editmuteSIcon;
       delete panicIcon;
+      delete metronomeIcon;
+      delete metronomeOffIcon;
+      delete metronomeQIcon;
+      delete metronomeOffQIcon;
 
       delete editcutIconSet;     
       delete editcopyIconSet;    
@@ -1350,6 +1409,18 @@ void deleteIcons()
 
       delete monitorOffSVGPixmap;
       delete monitorOnSVGPixmap;
+      
+      delete externSyncOffSVGPixmap;
+      delete externSyncOnSVGPixmap;
+
+      delete masterTrackOffSVGPixmap;
+      delete masterTrackOnSVGPixmap;
+
+      delete jackTransportOffSVGPixmap;
+      delete jackTransportOnSVGPixmap;
+
+      delete metronomeOffSVGPixmap;
+      delete metronomeOnSVGPixmap;
 
 
       delete routingInputSVGIcon;
@@ -1401,6 +1472,18 @@ void deleteIcons()
       delete fastForwardSVGIcon;
       delete rewindSVGIcon;
       delete rewindToStartSVGIcon;
+      
+      delete externSyncOffSVGIcon;
+      delete externSyncOnSVGIcon;
+      
+      delete masterTrackOffSVGIcon;
+      delete masterTrackOnSVGIcon;
+
+      delete jackTransportOffSVGIcon;
+      delete jackTransportOnSVGIcon;
+      
+      delete metronomeOffSVGIcon;
+      delete metronomeOnSVGIcon;
       }
 
 } // namespace MusEGui

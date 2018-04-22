@@ -24,14 +24,13 @@
 #include "awl.h"
 #include "posedit.h"
 #include "al/sig.h"
-//#include "sig.h"
-//#include "sync.h"  // Tim.
 
 #include <QApplication>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QStyle>
 #include <QString>
+#include <QStyleOption>
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -39,7 +38,6 @@ extern int mtcType;
 
 namespace Awl {
 
-      ///using AL::mtcType;
       using AL::sigmap;
 
 //---------------------------------------------------------
@@ -58,23 +56,31 @@ PosEdit::PosEdit(QWidget* parent)
       initialized = false;
       setReadOnly(false);
       setSmpte(false);
-      
-      //connect(this, SIGNAL(editingFinished()), SLOT(finishEdit()));
-      //connect(this, SIGNAL(returnPressed()), SLOT(enterPressed()));
       }
 
 QSize PosEdit::sizeHint() const
 	{
-      //QFontMetrics fm(font());
+    if(const QStyle* st = style())
+    {
+      st = st->proxy();
+      
+      QStyleOptionSpinBox option;
+      option.initFrom(this);
+      option.rect = rect();
+      option.state = QStyle::State_Active | QStyle::State_Enabled;
+      const QRect b_rect = st->subControlRect(QStyle::CC_SpinBox, &option, QStyle::SC_SpinBoxUp);
+      
       QFontMetrics fm = fontMetrics();
-      int fw = style()->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
+      const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
       int h  = fm.height() + fw * 2;
-      int w = fw * 4 + 10;	// HACK: 10 = spinbox up/down arrows
+      int w = fw * 2 + b_rect.width();
       if (_smpte)
-            w  += 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
+            w  += fm.width(QString("000:00:00:00"));
       else
-            w  += 2 + fm.width('9') * 9 + fm.width('.') * 2 + fw * 4;
+            w  += fm.width(QString("0000.00.000"));
       return QSize(w, h).expandedTo(QApplication::globalStrut());
+    }
+    return QSize(20, 20).expandedTo(QApplication::globalStrut());      
 	}
 
 //---------------------------------------------------------
@@ -204,10 +210,8 @@ void PosEdit::setSmpte(bool f)
       {
       _smpte = f;
       if (_smpte)
-            //lineEdit()->setInputMask("999:99:99:99");
             lineEdit()->setInputMask("999:99:99:99;0");
       else
-            //lineEdit()->setInputMask("9999.99.999");
             lineEdit()->setInputMask("9999.99.999;0");
       updateValue();
       }
@@ -338,11 +342,8 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
             int bar, beat;
             unsigned tick;
             AL::sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
-            //sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
             unsigned tb = AL::sigmap.ticksBeat(_pos.tick());
-            //unsigned tb = sigmap.ticksBeat(_pos.tick());
             unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
-            //unsigned tm = sigmap.ticksMeasure(_pos.tick());
             int bm = tm / tb;
 
             switch (segment) {

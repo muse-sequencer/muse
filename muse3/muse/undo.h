@@ -56,7 +56,9 @@ struct UndoOp {
             AddPart,  DeletePart,  MovePart, ModifyPartLength, ModifyPartName, SelectPart,
             AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
             AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-            AddTempo, DeleteTempo, ModifyTempo, SetGlobalTempo, 
+            // Add, delete and modify operate directly on the list.
+            // setTempo does only if master is set, otherwise it operates on the static tempo value.
+            AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, 
             AddSig,   DeleteSig,   ModifySig,
             AddKey,   DeleteKey,   ModifyKey,
             ModifyTrackName, ModifyTrackChannel,

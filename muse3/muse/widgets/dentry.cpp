@@ -225,6 +225,19 @@ void Dentry::keyPressEvent(QKeyEvent* e)
   bool inc = true;
   switch (e->key())
   {
+    case Qt::Key_Escape:
+      if(isModified())
+      {
+        // Restore the displayed current value.
+        blockSignals(true);
+        setString(val);
+        blockSignals(false);
+      }
+      // Let ancestor have it, such as for yielding focus.
+      e->ignore();
+      return;
+    break;
+
     case Qt::Key_Up:
       inc = true;
     break;

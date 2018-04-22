@@ -541,6 +541,23 @@ void Audio::reSyncAudio()
 #ifdef _AUDIO_USE_TRUE_FRAME_
     _previousPos = _pos;
 #endif
+    // NOTE: Comment added by Tim: This line is crucial if the tempo is changed during playback,
+    //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
+    //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
+    //  so that the relation between ticks and frames in all our tempo routines remains correct.
+    // But the relation betweeen actual transport frame and current tick will still be incorrect
+    //  for the given new tempo value, that is why this adjustment to our _pos is needed.
+    // Another solution would be to actually seek the transport to the correct frame.
+    // In either solution any waves will jump to a new position but midi will continue on.
+    // A third solution is not jump at all. Instead curTickPos is incremented with a 'delta' rather
+    //  than by incrementing _pos and converting to tick. Both midi and audio progress naturally.
+    // But this has a problem in that we cannot use fractional remainder techniques because the
+    //  tempo is part of the denominator and changes with every tempo change, so adding incremental
+    //  fractions with different denominators together would be tough (cross multiply etc.).
+    // Seems the only way for a delta then is to express it as say microticks (1/1,000,000 of a tick).
+    // But even microticks may not be enough, calculations show nanoticks would be better.
+    // The issue is that the resolution must be very high so that the slight error in the
+    //  increment value does not build up over time and cause drift between frame and tick.
     _pos.setTick(curTickPos);
     syncFrame     = MusEGlobal::audioDevice->framesAtCycleStart();
     syncTimeUS    = curTimeUS();

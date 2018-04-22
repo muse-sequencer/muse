@@ -96,11 +96,17 @@ class TempoList : public TEMPOLIST {
       void write(int, Xml&) const;
       void dump() const;
 
+      // Returns a tempo value from the list if master is on, or else the static tempo value.
       int tempo(unsigned tick) const;
+      // Returns a tempo value from the list if master is on, or else the static tempo value.
       int tempoAt(unsigned tick) const;
       // Returns the number of frames contained in the given ticks,
       //  at the tempo at the tick given by tempoTick. Honours useList.
       unsigned ticks2frames(unsigned ticks, unsigned tempoTick) const;
+// REMOVE Tim. tempo. Added.
+//       // Returns the number of ticks contained in the given frames,
+//       //  at the tempo at the tick given by tempoTick. Honours useList.
+//       unsigned frames2ticks(unsigned frames, unsigned tempoTick) const;
       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
       unsigned tick2frame(unsigned tick, int* sn = 0) const;
       unsigned frame2tick(unsigned frame, int* sn = 0) const;
@@ -109,7 +115,12 @@ class TempoList : public TEMPOLIST {
       unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
       
       int tempoSN() const { return _tempoSN; }
+      // Sets the tempo value in the list if master is on, or else the static tempo value.
       void setTempo(unsigned tick, int newTempo);
+      // Returns the static tempo value (the one used when the master is off).
+      int staticTempo() const           { return _tempo; }
+      // Sets the static tempo value (the one used when the master is off).
+      void setStaticTempo(int newTempo);
       void addTempo(unsigned t, int tempo, bool do_normalize = true);
       void delTempo(unsigned tick, bool do_normalize = true);
       bool masterFlag() const { return useList; }

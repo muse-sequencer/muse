@@ -361,7 +361,6 @@ bool MusE::importMidi(const QString name, bool merge)
 
             bool masterF = !MusEGlobal::tempomap.empty();
             MusEGlobal::song->setMasterFlag(masterF);
-            transport->setMasterFlag(masterF);
 
             MusEGlobal::song->updatePos();
 

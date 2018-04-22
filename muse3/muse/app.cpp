@@ -405,22 +405,22 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::transportAction = new QActionGroup(this);
       MusEGlobal::transportAction->setExclusive(false);
 
-      MusEGlobal::loopAction = new QAction(QIcon(*MusEGui::loop1Icon),
-         tr("Loop"), MusEGlobal::transportAction);
+      MusEGlobal::loopAction = new QAction(QIcon( *MusEGui::loop1Icon), tr("Loop"), 
+                                           MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
       MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
-      MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon),
-         tr("Punchin"), MusEGlobal::transportAction);
+      MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon), tr("Punchin"), 
+                                              MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
-      MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon),
-         tr("Punchout"), MusEGlobal::transportAction);
+      MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon), tr("Punchout"), 
+                                               MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
       MusEGlobal::punchoutAction->setWhatsThis(tr("record stops at right mark"));
@@ -430,26 +430,26 @@ MusE::MusE() : QMainWindow()
       tseparator->setSeparator(true);
       MusEGlobal::transportAction->addAction(tseparator);
 
-      MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon,
-         tr("Start"), MusEGlobal::transportAction);
+      MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon, tr("Start"), 
+                                             MusEGlobal::transportAction);
 
       MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
-      MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon,
-         tr("Rewind"), MusEGlobal::transportAction);
+      MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon, tr("Rewind"), 
+                                              MusEGlobal::transportAction);
 
       MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
-      MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon,
-         tr("Forward"), MusEGlobal::transportAction);
+      MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon, tr("Forward"), 
+                                               MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
-      MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon,
-         tr("Stop"), MusEGlobal::transportAction);
+      MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon, tr("Stop"), 
+                                            MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
       MusEGlobal::stopAction->setWhatsThis(tr("stop sequencer"));
@@ -466,7 +466,8 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
-      MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), 
+                                              MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
@@ -744,6 +745,7 @@ MusE::MusE() : QMainWindow()
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
+      transportToolbar->setIconSize(ICON_SIZE);
 
       // Already has an object name.
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
@@ -962,6 +964,8 @@ MusE::MusE() : QMainWindow()
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
       connect(tempo_tb, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+      
       connect(sig_tb,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
       connect(sig_tb,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
 
@@ -3160,6 +3164,7 @@ void MusE::showBigtime(bool on)
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
             connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
+            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), bigtime, SLOT(songChanged(MusECore::SongChangedFlags_t)));
             connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
             bigtime->resize(MusEGlobal::config.geometryBigTime.size());
             bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());

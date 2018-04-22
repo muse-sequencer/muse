@@ -131,6 +131,9 @@ extern QPixmap* editmuteIcon;
 extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
 extern QPixmap* metronomeIcon;
+extern QPixmap* metronomeOffIcon;
+extern QIcon* metronomeQIcon;
+extern QIcon* metronomeOffQIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
@@ -337,6 +340,18 @@ extern QPixmap* stereoOnSVGPixmap;
 extern QPixmap* preFaderOffSVGPixmap;
 extern QPixmap* preFaderOnSVGPixmap;
 
+extern QPixmap* externSyncOffSVGPixmap;
+extern QPixmap* externSyncOnSVGPixmap;
+
+extern QPixmap* masterTrackOffSVGPixmap;
+extern QPixmap* masterTrackOnSVGPixmap;
+
+extern QPixmap* jackTransportOffSVGPixmap;
+extern QPixmap* jackTransportOnSVGPixmap;
+
+extern QPixmap* metronomeOffSVGPixmap;
+extern QPixmap* metronomeOnSVGPixmap;
+
 extern QPixmap* recArmOffSVGPixmap;
 extern QPixmap* recArmOnSVGPixmap;
 
@@ -393,6 +408,18 @@ extern QIcon* playSVGIcon;
 extern QIcon* fastForwardSVGIcon;
 extern QIcon* rewindSVGIcon;
 extern QIcon* rewindToStartSVGIcon;
+
+extern QIcon* externSyncOffSVGIcon;
+extern QIcon* externSyncOnSVGIcon;
+
+extern QIcon* masterTrackOffSVGIcon;
+extern QIcon* masterTrackOnSVGIcon;
+
+extern QIcon* jackTransportOffSVGIcon;
+extern QIcon* jackTransportOnSVGIcon;
+
+extern QIcon* metronomeOffSVGIcon;
+extern QIcon* metronomeOnSVGIcon;
 
 } // namespace MusEGui
 

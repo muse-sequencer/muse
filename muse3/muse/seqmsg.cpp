@@ -689,15 +689,6 @@ void Audio::msgAddTempo(int tick, int tempo, bool doUndoFlag)
       }
 
 //---------------------------------------------------------
-//   msgSetTempo
-//---------------------------------------------------------
-
-void Audio::msgSetTempo(int tick, int tempo, bool doUndoFlag)
-      {
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
-      }
-
-//---------------------------------------------------------
 //   msgSetGlobalTempo
 //---------------------------------------------------------
 
