@@ -496,7 +496,6 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
       connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
 
-      connect(MusEGlobal::song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
       hbox->addLayout(button1);
