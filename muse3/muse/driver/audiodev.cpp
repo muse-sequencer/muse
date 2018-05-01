@@ -22,6 +22,7 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
+#include "large_int.h"
 
 namespace MusECore {
   
@@ -44,7 +45,7 @@ AudioDevice::AudioDevice()
 uint64_t AudioDevice::systemTimeUS() const {
   struct timeval t;
   gettimeofday(&t, 0);
-  //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+  //fprintf(stderr, "%lu %lu\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
   return ((uint64_t)t.tv_sec * 1000000UL) + (uint64_t)t.tv_usec;
 }
 

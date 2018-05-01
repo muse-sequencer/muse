@@ -103,7 +103,7 @@ class TempoList : public TEMPOLIST {
       // Returns the number of frames contained in the given ticks,
       //  at the tempo at the tick given by tempoTick. Honours useList.
       unsigned ticks2frames(unsigned ticks, unsigned tempoTick) const;
-// REMOVE Tim. tempo. Added.
+// TODO
 //       // Returns the number of ticks contained in the given frames,
 //       //  at the tempo at the tick given by tempoTick. Honours useList.
 //       unsigned frames2ticks(unsigned frames, unsigned tempoTick) const;

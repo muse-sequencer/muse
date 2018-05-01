@@ -38,10 +38,10 @@
 #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
-#include "utils.h"
 #include "large_int.h"
 
-#define DEBUG_DUMMY 0
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_DUMMY(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -50,15 +50,39 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class DummyAudioDevice : public AudioDevice {
+   private:
       pthread_t dummyThread;
       float* buffer;
       int _realTimePriority;
 
-   public:
-      unsigned _frameCounter;
-      unsigned _framesAtCycleStart;
-      uint64_t _timeUSAtCycleStart;
+      // Critical variables that need to all update at once.
+      // We employ a 'flipping' technique.
+      unsigned _framesAtCycleStart[2];
+      uint64_t _timeUSAtCycleStart[2];
+      unsigned _frameCounter[2];
+      unsigned _criticalVariablesIdx;
       
+   public:
+      // Time in microseconds at which the driver was created.
+      uint64_t _start_timeUS;
+      
+      // For callback usage only.
+      void setCriticalVariables(unsigned segmentSize)
+      {
+        static bool _firstTime = true;
+        const unsigned idx = (_criticalVariablesIdx + 1) % 2;
+        _timeUSAtCycleStart[idx] = systemTimeUS();
+        // Let these start at zero and only increment on subsequent callbacks.
+        if(!_firstTime)
+        {
+          _framesAtCycleStart[idx] = _framesAtCycleStart[_criticalVariablesIdx] + segmentSize;
+          _frameCounter[idx] = _frameCounter[_criticalVariablesIdx] + segmentSize;
+        }
+        _firstTime = false;
+        // Now 'flip' the variables all at once.
+        _criticalVariablesIdx = idx;
+      }
+
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
       { 
@@ -73,18 +97,21 @@ class DummyAudioDevice : public AudioDevice {
       virtual void stop ();
       virtual unsigned framePos() const {
             // Not much choice but to do this:
-            unsigned int f = framesAtCycleStart() + framesSinceCycleStart();
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::framePos %u\n", f);
-            return f;
+            const unsigned int facs = framesAtCycleStart();
+            const unsigned int fscs = framesSinceCycleStart();
+            DEBUG_DUMMY(stderr, "DummyAudioDevice::framePos framesAtCycleStart:%u framesSinceCycleStart:%u\n", facs, fscs);
+            return facs + fscs; 
             }
 
       // These are meant to be called from inside process thread only.      
-      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart; }
+      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart[_criticalVariablesIdx]; }
       virtual unsigned framesSinceCycleStart() const 
       { 
+        const uint64_t ct = systemTimeUS();
+        DEBUG_DUMMY(stderr, "DummyAudioDevice::framesSinceCycleStart systemTimeUS:%lu timeUSAtCycleStart:%lu\n", 
+                ct, _timeUSAtCycleStart[_criticalVariablesIdx]);
         // Do not round up here since time resolution is higher than (audio) frame resolution.
-        unsigned f = muse_multiply_64_div_64_to_64(curTimeUS() - _timeUSAtCycleStart, MusEGlobal::sampleRate, 1000000UL);
+        unsigned f = muse_multiply_64_div_64_to_64(ct - _timeUSAtCycleStart[_criticalVariablesIdx], MusEGlobal::sampleRate, 1000000UL);
         
         // Safety due to inaccuracies. It cannot be after the segment, right?
         if(f >= MusEGlobal::segmentSize)
@@ -141,7 +168,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual const char* canonicalPortName(void*) { return 0; }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       virtual unsigned frameTime() const {
-            return _frameCounter;
+            return _frameCounter[_criticalVariablesIdx];
             }
 
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
@@ -173,9 +200,14 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
         memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
 
       dummyThread = 0;
-      _frameCounter = 0;
-      _framesAtCycleStart = 0;
-      _timeUSAtCycleStart = 0;
+      _start_timeUS = systemTimeUS();
+      _criticalVariablesIdx = 0;
+      for(unsigned x = 0; x < 2; ++x)
+      {
+        _timeUSAtCycleStart[x] = 0;
+        _framesAtCycleStart[x] = 0;
+        _frameCounter[x] = 0;
+      }
       }
 
 
@@ -244,8 +276,8 @@ static void* dummyLoop(void* ptr)
       
       for(;;) 
       {
-        drvPtr->_timeUSAtCycleStart = curTimeUS();
-
+        drvPtr->setCriticalVariables(MusEGlobal::segmentSize);
+  
         if(MusEGlobal::audio->isRunning()) {
           // Use our built-in transport, which INCLUDES the necessary
           //  calls to Audio::sync() and ultimately Audio::process(),
@@ -254,9 +286,6 @@ static void* dummyLoop(void* ptr)
         }
 
         usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
-
-        drvPtr->_frameCounter += MusEGlobal::segmentSize;
-        drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
       }
       pthread_exit(0);
       }

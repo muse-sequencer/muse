@@ -1,3 +1,13 @@
+30.04.2018
+      - RtAudio, dummy driver fixes if realtime scheduling NOT available. (Tim)
+        Symptom: "...processTrackCtrls *** Error: evframe:123 < frame:299.."
+        Cause: Two variables - time at cycle start, and frames at cycle start -
+         were updated at different times in the audio device callback, causing 
+         timestamp requests to be wrong.
+        Cure: The variables need protection in the callbacks when no realtime
+         scheduling is available. Added a 'flipping variable buffer' scheme
+         where all the variables are updated at once.
+      - Submitted a patch to RtAudio project, to enable realtime for Pulse.
 22.04.2018
       * Fixes to Master Track functionality, and Transport mini-makeover: (Tim)
         - Fixed: Was impossible to adjust static tempo when Master Track disabled.

@@ -378,7 +378,7 @@ unsigned TempoList::ticks2frames(unsigned ticks, unsigned tempoTick) const
     (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL, true);
 }
 
-// REMOVE Tim. tempo. Added.
+// TODO
 // //---------------------------------------------------------
 // //   frames2ticks
 // //---------------------------------------------------------

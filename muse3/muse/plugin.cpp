@@ -3043,8 +3043,9 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, "PluginI::apply *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
-          evframe, frame, v.frame, v.idx, v.value, v.unique);
+        fprintf(stderr, 
+          "PluginI::apply *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%lu nframes:%lu v.frame:%lu\n",
+          evframe, frame, v.idx, v.value, v.unique, syncFrame, n, v.frame);
 
         // No choice but to ignore it.
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.

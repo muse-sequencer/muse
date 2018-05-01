@@ -38,13 +38,14 @@
 #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
-#include "utils.h"
+//#include "utils.h"
 #include "large_int.h"
-
-#define DEBUG_RTAUDIO 0
 
 #define MASTER_LEFT (void*)1
 #define MASTER_RIGHT (void*)2
+
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_RTAUDIO(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -58,16 +59,39 @@ struct MuseRtAudioPort {
 };
 
 class RtAudioDevice : public AudioDevice {
-
+  private:
       RtAudio *dac;
-
+      
+      // Critical variables that need to all update at once.
+      // We employ a 'flipping' technique.
+      unsigned _framesAtCycleStart[2];
+      uint64_t _timeUSAtCycleStart[2];
+      unsigned _frameCounter[2];
+      unsigned _criticalVariablesIdx;
+      
    public:
-      unsigned _frameCounter;
-      unsigned _framesAtCycleStart;
-      uint64_t _timeUSAtCycleStart;
+      // Time in microseconds at which the driver was created.
+      uint64_t _start_timeUS;
 
       QList<MuseRtAudioPort*> outputPortsList;
       QList<MuseRtAudioPort*> inputPortsList;
+
+      // For callback usage only.
+      void setCriticalVariables(unsigned segmentSize)
+      {
+        static bool _firstTime = true;
+        const unsigned idx = (_criticalVariablesIdx + 1) % 2;
+        _timeUSAtCycleStart[idx] = systemTimeUS();
+        // Let these start at zero and only increment on subsequent callbacks.
+        if(!_firstTime)
+        {
+          _framesAtCycleStart[idx] = _framesAtCycleStart[_criticalVariablesIdx] + segmentSize;
+          _frameCounter[idx] = _frameCounter[_criticalVariablesIdx] + segmentSize;
+        }
+        _firstTime = false;
+        // Now 'flip' the variables all at once.
+        _criticalVariablesIdx = idx;
+      }
 
       RtAudioDevice(bool forceDefault);
       virtual ~RtAudioDevice()
@@ -94,15 +118,21 @@ class RtAudioDevice : public AudioDevice {
       virtual void stop ();
       virtual unsigned  framePos() const { 
             // Not much choice but to do this:
-            return framesAtCycleStart() + framesSinceCycleStart();; 
+            const unsigned int facs = framesAtCycleStart();
+            const unsigned int fscs = framesSinceCycleStart();
+            DEBUG_RTAUDIO(stderr, "RtAudioDevice::framePos framesAtCycleStart:%u framesSinceCycleStart:%u\n", facs, fscs);
+            return facs + fscs; 
             }
 
       // These are meant to be called from inside process thread only.      
-      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart; }
+      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart[_criticalVariablesIdx]; }
       virtual unsigned framesSinceCycleStart() const 
       { 
+        const uint64_t ct = systemTimeUS();
+        DEBUG_RTAUDIO(stderr, "RtAudioDevice::framesSinceCycleStart systemTimeUS:%lu timeUSAtCycleStart:%lu\n", 
+                      ct, _timeUSAtCycleStart[_criticalVariablesIdx]);
         // Do not round up here since time resolution is higher than (audio) frame resolution.
-        unsigned f = muse_multiply_64_div_64_to_64(curTimeUS() - _timeUSAtCycleStart, MusEGlobal::sampleRate, 1000000UL);
+        unsigned f = muse_multiply_64_div_64_to_64(ct - _timeUSAtCycleStart[_criticalVariablesIdx], MusEGlobal::sampleRate, 1000000UL);
         
         // Safety due to inaccuracies. It cannot be after the segment, right?
         if(f >= MusEGlobal::segmentSize)
@@ -196,71 +226,57 @@ class RtAudioDevice : public AudioDevice {
       virtual AudioDevice::PortDirection portDirection(void*) const { return OutputPort; }
       virtual void unregisterPort(void*) {}
       virtual bool connect(void* /*src*/, void* /*dst*/)  {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::connect\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::connect\n");
         return false;
       }
       virtual bool connect(const char* /*src*/, const char* /*dst*/)  {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::connect2\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::connect2\n");
         return false;
       }
       virtual bool disconnect(void* /*src*/, void* /*dst*/)  { return false; }
       virtual bool disconnect(const char* /*src*/, const char* /*dst*/)  { return false; }
       virtual int connections(void* /* clientPort */) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::connections\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::connections\n");
         return 1; // always return nonzero, for now
       }
       virtual bool portConnectedTo(void*, const char*) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portConnectedTo\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portConnectedTo\n");
         return false;
       }
       virtual bool portsCanDisconnect(void* /*src*/, void* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCanDisconnect\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCanDisconnect\n");
         return false;
       }
       virtual bool portsCanDisconnect(const char* /*src*/, const char* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCanDisconnect2\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCanDisconnect2\n");
         return false;
       }
       virtual bool portsCanConnect(void* /*src*/, void* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCanConnect\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCanConnect\n");
         return false;
       }
       virtual bool portsCanConnect(const char* /*src*/, const char* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCanConnect\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCanConnect\n");
         return false;
       }
       virtual bool portsCompatible(void* /*src*/, void* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCompatible\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCompatible\n");
         return false;
       }
       virtual bool portsCompatible(const char* /*src*/, const char* /*dst*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portCompatible2\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portCompatible2\n");
         return false;
       }
       virtual void setPortName(void*, const char*) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::setPortName\n");
-
+        DEBUG_RTAUDIO(stderr, "RtAudio::setPortName\n");
       }
       virtual void* findPort(const char*) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::findPort\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::findPort\n");
         return 0;
       }
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portName %s\n", str);
+        DEBUG_RTAUDIO(stderr, "RtAudio::portName %s\n", str);
         if(str_size == 0) {
           return 0;
         }
@@ -268,18 +284,16 @@ class RtAudioDevice : public AudioDevice {
         return str;
       }
       virtual const char* canonicalPortName(void*) {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::canonicalPortName\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::canonicalPortName\n");
         return 0;
       }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const {
-        if(DEBUG_RTAUDIO)
-          fprintf(stderr, "RtAudio::portLatency\n");
+        DEBUG_RTAUDIO(stderr, "RtAudio::portLatency\n");
         return 0;
       }
 
       virtual unsigned frameTime() const {
-        return _frameCounter;
+        return _frameCounter[_criticalVariablesIdx];
       }
 
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
@@ -297,10 +311,14 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.deviceAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
 
-      //startTime = curTime();
-      _frameCounter = 0;
-      _framesAtCycleStart = 0;
-      _timeUSAtCycleStart = 0;
+      _start_timeUS = systemTimeUS();
+      _criticalVariablesIdx = 0;
+      for(unsigned x = 0; x < 2; ++x)
+      {
+        _timeUSAtCycleStart[x] = 0;
+        _framesAtCycleStart[x] = 0;
+        _frameCounter[x] = 0;
+      }
 
       RtAudio::Api api = RtAudio::UNSPECIFIED;
 
@@ -367,11 +385,9 @@ bool initRtAudio(bool forceDefault = false)
 //   processAudio
 //---------------------------------------------------------
 int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-         double /* streamTime */, RtAudioStreamStatus /* status */, void * /* userData */ )
+         double /*streamTime*/, RtAudioStreamStatus /* status */, void * /* userData */ )
 {
-//  fprintf(stderr, "RtAduioDevice::processAudio %d\n", nBufferFrames);
-
-  rtAudioDevice->_timeUSAtCycleStart = curTimeUS();
+  rtAudioDevice->setCriticalVariables(nBufferFrames);
   
   if(MusEGlobal::audio->isRunning()) {
     // Use our built-in transport, which INCLUDES the necessary
@@ -425,23 +441,27 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 
     //fprintf(stderr, "Too few ports in list, won't copy any data\n");
   }
-
-
-  rtAudioDevice->_frameCounter += nBufferFrames;
-  rtAudioDevice->_framesAtCycleStart += nBufferFrames;
-
+  
   return 0;
 }
 
 //---------------------------------------------------------
 //   start
 //---------------------------------------------------------
-bool RtAudioDevice::start(int /* priority */)
+bool RtAudioDevice::start(int priority)
 {
   if (dac->isStreamRunning()) {
     stop();
   }
 
+  RtAudio::StreamOptions options;
+  options.flags = RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
+  options.numberOfBuffers = 2;
+  options.priority = priority;
+  options.streamName = "MusE";
+  DEBUG_RTAUDIO(stderr, "RtAudioDevice:start desired options: flags:%d numberOfBuffers:%d priority:%d streamName:%s\n", 
+          options.flags, options.numberOfBuffers, options.priority, options.streamName.c_str());
+  
   RtAudio::StreamParameters outParameters;
   outParameters.deviceId = dac->getDefaultOutputDevice();
   outParameters.nChannels = 2;
@@ -550,7 +570,10 @@ bool RtAudioDevice::start(int /* priority */)
 
   try {
 
-    dac->openStream( &outParameters, &inParameters, RTAUDIO_FLOAT32, MusEGlobal::sampleRate, &MusEGlobal::segmentSize, &processAudio, (void *)&data );
+    dac->openStream( &outParameters, &inParameters, RTAUDIO_FLOAT32, 
+                     MusEGlobal::sampleRate, &MusEGlobal::segmentSize, 
+                     &processAudio, (void *)&data, 
+                     &options );
     dac->startStream();
 
   } catch ( RtAudioError& e ) {
@@ -559,6 +582,9 @@ bool RtAudioDevice::start(int /* priority */)
     fprintf(stderr, "Error: RtAudioDevice: Cannot open device for streaming!.\n");
     return false;
   }
+
+  DEBUG_RTAUDIO(stderr, "RtAudioDevice:start actual options: flags:%d numberOfBuffers:%d priority:%d streamName:%s\n", 
+          options.flags, options.numberOfBuffers, options.priority, options.streamName.c_str());
 
   return true;
 }
