@@ -1,3 +1,5 @@
+06.05.2018
+      - SimplePlugin system: Rearranged sampleRate, add segmentSize. (Tim)
 30.04.2018
       - RtAudio, dummy driver fixes if realtime scheduling NOT available. (Tim)
         Symptom: "...processTrackCtrls *** Error: evframe:123 < frame:299.."

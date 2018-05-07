@@ -43,6 +43,7 @@ file (GLOB simpler_plugingui_source_files
       )
 file (GLOB simpler_plugin_source_files
       simpler_plugin.cpp
+#       simpler_plugin_lv2.cpp
       )
 
 ##

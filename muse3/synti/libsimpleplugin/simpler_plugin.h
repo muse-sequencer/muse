@@ -53,9 +53,13 @@ struct Port {
 
 class Plugin
    {
+   public:
+     // Can be Or'd together.
+     enum PluginFeature { NoFeatures=0x00, FixedBlockSize=0x01, PowerOf2BlockSize=0x02, NoInPlaceProcessing=0x04 };
+     typedef int PluginFeatures;
+     
    protected:
       QFileInfo fi;
-
       void* _libHandle;
       int _references;
       int _instNo;
@@ -71,27 +75,29 @@ class Plugin
       unsigned long _outports;
       unsigned long _controlInPorts;
       unsigned long _controlOutPorts;
-      bool _inPlaceCapable;
 
-      //PluginFeatures _requiredFeatures;
+      PluginFeatures _requiredFeatures;
       
       std::vector<unsigned long> pIdx; //control port numbers
       std::vector<unsigned long> poIdx; //control out port numbers
       std::vector<unsigned long> iIdx; //input port numbers
       std::vector<unsigned long> oIdx; //output port numbers
-
+      
    public:
-      Plugin(const QFileInfo* f);
+      Plugin(const QFileInfo* f) 
+        : fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
+          _portCount(0),_inports(0), _outports(0),
+          _controlInPorts(0),_controlOutPorts(0),
+          _requiredFeatures(NoFeatures) { }
       virtual ~Plugin() {}
       
+      PluginFeatures requiredFeatures() const { return _requiredFeatures; }
+        
       int references() const            { return _references; }
       virtual int incReferences(int)    { return _references; }
       int instNo()                      { return _instNo++;   }
       virtual void* instantiate(int /*sampleRate*/) { return 0; }
-      
-      virtual int sampleRate() const { return 44100; }
-      virtual void setSampleRate(int) { }
-      
+
       QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
@@ -108,7 +114,7 @@ class Plugin
       unsigned long parameterOut() const    { return _controlOutPorts; }
       unsigned long inports() const         { return _inports;     }
       unsigned long outports() const        { return _outports;     }
-      bool inPlaceCapable() const           { return _inPlaceCapable; }
+      bool inPlaceCapable() const           { return _requiredFeatures & NoInPlaceProcessing; }
 
       virtual bool isAudioIn(unsigned long) const { return false; }
       virtual bool isAudioOut(unsigned long) const { return false; }
@@ -120,11 +126,11 @@ class Plugin
       virtual bool isInt(unsigned long) const         { return false; }
       virtual bool isLinear(unsigned long) const      { return false; }
       virtual float defaultValue(unsigned long) const { return 0.0f;  }
-      virtual void range(unsigned long, float* min, float* max) const {
+      virtual void range(unsigned long, int /*sampleRate*/, float* min, float* max) const {
             if(min) *min = 0.0f;
             if(max) *max = 1.0f;
             }
-      virtual void rangeOut(unsigned long, float* min, float* max) const {
+      virtual void rangeOut(unsigned long, int /*sampleRate*/, float* min, float* max) const {
             if(min) *min = 0.0f;
             if(max) *max = 1.0f;
             }
@@ -165,19 +171,13 @@ private:
       const LADSPA_Descriptor* plugin;
       
       // Accepts a master port index.
-      void port_range(unsigned long i, float*, float*) const;
+      void port_range(unsigned long i, int sampleRate, float* min, float* max) const;
       
-   protected:
-      int _sampleRate;
-
    public:
       LadspaPlugin(const QFileInfo* f, const LADSPA_Descriptor_Function, const LADSPA_Descriptor* d);
       virtual ~LadspaPlugin() { }
 
       virtual int incReferences(int);
-      
-      virtual int sampleRate() const { return _sampleRate; }
-      virtual void setSampleRate(int rate) { _sampleRate = rate; }
       
       virtual bool isAudioIn(unsigned long k) const {
             return (plugin->PortDescriptors[k] & IS_AUDIO_IN) == IS_AUDIO_IN;
@@ -209,8 +209,8 @@ private:
                    !LADSPA_IS_HINT_LOGARITHMIC(r.HintDescriptor) &&
                    !LADSPA_IS_HINT_TOGGLED(r.HintDescriptor);
             }
-      virtual void range(unsigned long i, float*, float*) const;
-      virtual void rangeOut(unsigned long i, float*, float*) const;
+      virtual void range(unsigned long i, int sampleRate, float*, float*) const;
+      virtual void rangeOut(unsigned long i, int sampleRate, float*, float*) const;
       virtual const char* getParameterName(unsigned long i) const {
             return plugin->PortNames[pIdx[i]];
             }
@@ -219,7 +219,7 @@ private:
             }
       virtual float defaultValue(unsigned long) const;
 
-      float convertGuiControlValue(unsigned long parameter, int val) const;
+      float convertGuiControlValue(unsigned long parameter, int sampleRate, int val) const;
 
       virtual void* instantiate(int sampleRate);
       virtual void connectInport(void* handle, unsigned long k, void* datalocation);
@@ -251,6 +251,8 @@ private:
 
 class PluginI {
       Plugin* _plugin;
+      int _sampleRate;
+      unsigned int _segmentSize;
       int channel;
       int instances;
       int _id;
@@ -283,7 +285,9 @@ class PluginI {
 
       Plugin* plugin() const { return _plugin; }
 
-      //virtual Plugin::PluginFeatures requiredFeatures() const { return _plugin->requiredFeatures(); }
+      Plugin::PluginFeatures requiredFeatures() const {
+        if(!_plugin) return Plugin::NoFeatures; 
+        return _plugin->requiredFeatures(); }
       
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
@@ -301,6 +305,10 @@ class PluginI {
       bool initPluginInstance(Plugin* plug, int channels, 
                               int sampleRate, unsigned int segmentSize,
                               bool useDenormalBias, float denormalBias);
+      int sampleRate() const { return _sampleRate; }
+      void setSampleRate(int rate) { _sampleRate = rate; }
+      unsigned int segmentSize() const { return _segmentSize; }
+      int channels() const { return channel; }
       void setChannels(int);
       // Runs the plugin for frames. Any ports involved must already be connected.
       void process(unsigned long frames);
@@ -353,11 +361,11 @@ class PluginI {
             
       void range(unsigned long i, float* min, float* max) const {
             if(!_plugin) return;
-            _plugin->range(i, min, max);
+              _plugin->range(i, _sampleRate, min, max);
             }
       void rangeOut(unsigned long i, float* min, float* max) const {
             if(!_plugin) return;
-            _plugin->rangeOut(i, min, max);
+              _plugin->rangeOut(i, _sampleRate, min, max);
             }
       const char* getParameterName(unsigned long i) const {
             if(!_plugin) return 0;

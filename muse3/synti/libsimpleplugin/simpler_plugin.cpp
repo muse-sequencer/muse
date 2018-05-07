@@ -219,22 +219,6 @@ PluginList::~PluginList()
      delete (*i);
    }
 }
-      
-//---------------------------------------------------------
-//   Plugin
-//---------------------------------------------------------
-
-Plugin::Plugin(const QFileInfo* f)
-   : fi(*f)
-      {
-      _instNo = 0;
-      _libHandle = 0;
-      _references = 0;
-      
-      _libHandle = 0;
-      _references = 0;
-      _instNo     = 0;
-      }
 
 //---------------------------------------------------------
 //   LadspaPlugin
@@ -246,13 +230,6 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
    : Plugin(f), ladspa(ldf), plugin(d)
       {
       SP_TRACE_IN
-      _inports        = 0;
-      _outports       = 0;
-      _controlInPorts = 0;
-      _controlOutPorts = 0;
-      _sampleRate     = 44100;
-      
-      _instNo = 0;
       
       _label = QString(d->Label);
       _name = QString(d->Name);
@@ -302,10 +279,9 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             printf("Output ports: %d\n\n", oIdx.size());
             }*/
 
-      LADSPA_Properties properties = plugin->Properties;
-      _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(properties);
-      if (_inports != _outports)
-            _inPlaceCapable = false;
+      if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(plugin->Properties)))
+        _requiredFeatures |= NoInPlaceProcessing;
+      
       SP_TRACE_OUT
       }
 
@@ -435,10 +411,8 @@ int LadspaPlugin::incReferences(int val)
     return 0;
   }
 
-  LADSPA_Properties properties = plugin->Properties;
-  _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(properties);
-  if(_inports != _outports)
-    _inPlaceCapable = false;
+  if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(plugin->Properties)))
+    _requiredFeatures |= NoInPlaceProcessing;
   
   _references = newref;
 
@@ -451,9 +425,8 @@ int LadspaPlugin::incReferences(int val)
 
 void* LadspaPlugin::instantiate(int sampleRate)
 {
-  _sampleRate = sampleRate;
   bool success = false;
-  LADSPA_Handle h = plugin->instantiate(plugin, _sampleRate);
+  LADSPA_Handle h = plugin->instantiate(plugin, sampleRate);
   success = (h != NULL);
   if (success)
         SP_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
@@ -464,7 +437,7 @@ void* LadspaPlugin::instantiate(int sampleRate)
 //   range
 //---------------------------------------------------------
 
-void LadspaPlugin::port_range(unsigned long i, float* min, float* max) const
+void LadspaPlugin::port_range(unsigned long i, int sampleRate, float* min, float* max) const
       {
       LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
       LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
@@ -475,7 +448,7 @@ void LadspaPlugin::port_range(unsigned long i, float* min, float* max) const
             }
       float m = 1.0;
       if (desc & LADSPA_HINT_SAMPLE_RATE)
-            m = (float) _sampleRate;
+            m = (float) sampleRate;
 
       if (desc & LADSPA_HINT_BOUNDED_BELOW)
             *min =  range.LowerBound * m;
@@ -491,11 +464,11 @@ void LadspaPlugin::port_range(unsigned long i, float* min, float* max) const
 //   range
 //---------------------------------------------------------
 
-void LadspaPlugin::range(unsigned long i, float* min, float* max) const
+void LadspaPlugin::range(unsigned long i, int sampleRate, float* min, float* max) const
       {
       SP_TRACE_IN
       i = pIdx[i];
-      port_range(i, min, max);
+      port_range(i, sampleRate, min, max);
       SP_TRACE_OUT
       }
 
@@ -503,11 +476,11 @@ void LadspaPlugin::range(unsigned long i, float* min, float* max) const
 //   range
 //---------------------------------------------------------
 
-void LadspaPlugin::rangeOut(unsigned long i, float* min, float* max) const
+void LadspaPlugin::rangeOut(unsigned long i, int sampleRate, float* min, float* max) const
       {
       SP_TRACE_IN
       i = poIdx[i];
-      port_range(i, min, max);
+      port_range(i, sampleRate, min, max);
       SP_TRACE_OUT
       }
 
@@ -632,12 +605,12 @@ void LadspaPlugin::connectCtrlOutport(void* handle, unsigned long k, void* datal
 //  scale control value to gui-slider/checkbox representation
 //---------------------------------------------------------
 
-float LadspaPlugin::convertGuiControlValue(unsigned long parameter, int val) const
+float LadspaPlugin::convertGuiControlValue(unsigned long parameter, int sampleRate, int val) const
       {
       SP_TRACE_IN
       float floatval = 0;
       float min, max;
-      range(parameter, &min, &max);
+      range(parameter, sampleRate, &min, &max);
 
       if (isLog(parameter)) {
             if (val > 0) {
@@ -670,6 +643,8 @@ float LadspaPlugin::convertGuiControlValue(unsigned long parameter, int val) con
 void PluginI::init()
       {
       _plugin           = 0;
+      _sampleRate       = 44100;
+      _segmentSize      = 0;
       instances         = 0;
       handle            = 0;
       controls          = 0;
@@ -839,7 +814,7 @@ void PluginI::setChannels(int c)
           {
             // Create a new plugin instance with handle.
             // Use the plugin's current sample rate.
-            handles[i] = _plugin->instantiate(_plugin->sampleRate());
+            handles[i] = _plugin->instantiate(_sampleRate);
             if(handles[i] == NULL)
             {
               fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
@@ -987,6 +962,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c,
                                  int sampleRate, unsigned int segmentSize,
                                  bool useDenormalBias, float denormalBias)
       {
+      _sampleRate = sampleRate;
+      _segmentSize = segmentSize;
       channel = c;
       if(plug == 0)
       {
@@ -1038,7 +1015,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c,
         fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
         #endif
 
-        handle[i] = _plugin->instantiate(sampleRate);
+        handle[i] = _plugin->instantiate(_sampleRate);
         if(handle[i] == NULL)
           return true;
       }
@@ -1121,7 +1098,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c,
         }
       }
 
-      int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * segmentSize);
+      int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * _segmentSize);
 
       if(rv != 0)
       {
@@ -1132,17 +1109,17 @@ bool PluginI::initPluginInstance(Plugin* plug, int c,
 
       if(useDenormalBias)
       {
-          for(unsigned q = 0; q < segmentSize; ++q)
+          for(unsigned q = 0; q < _segmentSize; ++q)
           {
             _audioInSilenceBuf[q] = denormalBias;
           }
       }
       else
       {
-          memset(_audioInSilenceBuf, 0, sizeof(float) * segmentSize);
+          memset(_audioInSilenceBuf, 0, sizeof(float) * _segmentSize);
       }
 
-      rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * segmentSize);
+      rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * _segmentSize);
 
       if(rv != 0)
       {
