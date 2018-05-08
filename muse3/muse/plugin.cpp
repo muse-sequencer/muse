@@ -703,7 +703,7 @@ int Plugin::incReferences(int val)
 
   int newref = _references + val;
 
-  if(newref == 0)
+  if(newref <= 0)
   {
     _references = 0;
     if(_handle)

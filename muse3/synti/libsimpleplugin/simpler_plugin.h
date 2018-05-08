@@ -44,22 +44,24 @@ namespace MusESimplePlugin {
 //---------------------------------------------------------
 
 struct Port {
-      float val;
+      float _val;
       };
 
 //---------------------------------------------------------
-//   Plugin
+//   Plugin base class
 //---------------------------------------------------------
+
+class PluginI;
 
 class Plugin
    {
    public:
      // Can be Or'd together.
      enum PluginFeature { NoFeatures=0x00, FixedBlockSize=0x01, PowerOf2BlockSize=0x02, NoInPlaceProcessing=0x04 };
-     typedef int PluginFeatures;
+     typedef int PluginFeaturesType;
      
    protected:
-      QFileInfo fi;
+      QFileInfo _fi;
       void* _libHandle;
       int _references;
       int _instNo;
@@ -76,37 +78,51 @@ class Plugin
       unsigned long _controlInPorts;
       unsigned long _controlOutPorts;
 
-      PluginFeatures _requiredFeatures;
+      PluginFeaturesType _requiredFeatures;
       
-      std::vector<unsigned long> pIdx; //control port numbers
-      std::vector<unsigned long> poIdx; //control out port numbers
-      std::vector<unsigned long> iIdx; //input port numbers
-      std::vector<unsigned long> oIdx; //output port numbers
+      std::vector<unsigned long> _pIdx; //control port numbers
+      std::vector<unsigned long> _poIdx; //control out port numbers
+      std::vector<unsigned long> _iIdx; //input port numbers
+      std::vector<unsigned long> _oIdx; //output port numbers
       
    public:
       Plugin(const QFileInfo* f) 
-        : fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
+        : _fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
           _portCount(0),_inports(0), _outports(0),
           _controlInPorts(0),_controlOutPorts(0),
           _requiredFeatures(NoFeatures) { }
       virtual ~Plugin() {}
       
-      PluginFeatures requiredFeatures() const { return _requiredFeatures; }
+      //----------------------------------------------------
+      // The following methods can be called regardless of
+      //  whether the libray is open or not, ie. zero or more
+      //  instances exist. The information is cached.
+      //----------------------------------------------------
+      
+      // Returns features required by the plugin.
+      PluginFeaturesType requiredFeatures() const { return _requiredFeatures; }
         
+      // Create and initialize a plugin instance. Returns null if failure.
+      // Equivalent to calling (new ***PlugI())->initPluginInstance(this, ...).
+      // The returned type depends on the derived class (LadspaPluginI*, Lv2PluginI*, etc).
+      // Caller is responsible for deleting the returned object.
+      virtual PluginI* createPluginI(int chans, float sampleRate, unsigned int segmentSize,
+                             bool useDenormalBias, float denormalBias) = 0;
+      
       int references() const            { return _references; }
       virtual int incReferences(int)    { return _references; }
       int instNo()                      { return _instNo++;   }
-      virtual void* instantiate(int /*sampleRate*/) { return 0; }
+      virtual void* instantiate(float /*sampleRate*/) { return 0; }
 
       QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
       QString maker() const                        { return _maker; }
       QString copyright() const                    { return _copyright; }
-      QString lib(bool complete = true) const      { return complete ? fi.completeBaseName() : fi.baseName(); }
-      QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
-      QString filePath() const                     { return fi.filePath(); }
-      QString fileName() const                     { return fi.fileName(); }
+      QString lib(bool complete = true) const      { return complete ? _fi.completeBaseName() : _fi.baseName(); }
+      QString dirPath(bool complete = true) const  { return complete ? _fi.absolutePath() : _fi.path(); }
+      QString filePath() const                     { return _fi.filePath(); }
+      QString fileName() const                     { return _fi.fileName(); }
       
       // Total number of ports.
       unsigned long portCount() const       { return _portCount; }
@@ -116,6 +132,12 @@ class Plugin
       unsigned long outports() const        { return _outports;     }
       bool inPlaceCapable() const           { return _requiredFeatures & NoInPlaceProcessing; }
 
+      
+      //----------------------------------------------------
+      // The following methods require the library be open,
+      //  ie. at least one instance exists.
+      //----------------------------------------------------
+      
       virtual bool isAudioIn(unsigned long) const { return false; }
       virtual bool isAudioOut(unsigned long) const { return false; }
       virtual bool isParameterIn(unsigned long) const { return false; }
@@ -126,14 +148,8 @@ class Plugin
       virtual bool isInt(unsigned long) const         { return false; }
       virtual bool isLinear(unsigned long) const      { return false; }
       virtual float defaultValue(unsigned long) const { return 0.0f;  }
-      virtual void range(unsigned long, int /*sampleRate*/, float* min, float* max) const {
-            if(min) *min = 0.0f;
-            if(max) *max = 1.0f;
-            }
-      virtual void rangeOut(unsigned long, int /*sampleRate*/, float* min, float* max) const {
-            if(min) *min = 0.0f;
-            if(max) *max = 1.0f;
-            }
+      virtual bool range(unsigned long, float /*sampleRate*/, float* min, float* max) const = 0;
+      virtual bool rangeOut(unsigned long, float /*sampleRate*/, float* min, float* max) const = 0;
       virtual const char* getParameterName(unsigned long /*param*/) const    { return ""; }
       virtual const char* getParameterOutName(unsigned long /*param*/) const { return ""; }
 
@@ -159,113 +175,142 @@ class Plugin
 
 class LadspaPlugin : public Plugin
    {
-private:
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-private-field"
-#endif
-      LADSPA_Descriptor_Function ladspa;
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
-      const LADSPA_Descriptor* plugin;
+   private:
+      const LADSPA_Descriptor* _plugin;
       
       // Accepts a master port index.
-      void port_range(unsigned long i, int sampleRate, float* min, float* max) const;
+      bool port_range(unsigned long k, float sampleRate, float* min, float* max) const;
       
    public:
       LadspaPlugin(const QFileInfo* f, const LADSPA_Descriptor_Function, const LADSPA_Descriptor* d);
       virtual ~LadspaPlugin() { }
 
-      virtual int incReferences(int);
+      // Create and initialize a LADSPA plugin instance. Returns null if failure.
+      // Equivalent to calling (new LadspaPlugI())->initPluginInstance(this, ...).
+      // The returned type depends on the this class (LadspaPluginI*, Lv2PluginI*, etc).
+      // Caller is responsible for deleting the returned object.
+      PluginI* createPluginI(int chans, float sampleRate, unsigned int segmentSize,
+                             bool useDenormalBias, float denormalBias);
+
+      int incReferences(int);
       
-      virtual bool isAudioIn(unsigned long k) const {
-            return (plugin->PortDescriptors[k] & IS_AUDIO_IN) == IS_AUDIO_IN;
+      bool isAudioIn(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            return (_plugin->PortDescriptors[k] & IS_AUDIO_IN) == IS_AUDIO_IN;
             }
-      virtual bool isAudioOut(unsigned long k) const {
-            return (plugin->PortDescriptors[k] & IS_AUDIO_OUT) == IS_AUDIO_OUT;
+      bool isAudioOut(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            return (_plugin->PortDescriptors[k] & IS_AUDIO_OUT) == IS_AUDIO_OUT;
             }
-      virtual bool isParameterIn(unsigned long k) const {
-            return (plugin->PortDescriptors[k] & IS_PARAMETER_IN) == IS_PARAMETER_IN;
+      bool isParameterIn(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            return (_plugin->PortDescriptors[k] & IS_PARAMETER_IN) == IS_PARAMETER_IN;
             }
-      virtual bool isParameterOut(unsigned long k) const {
-            return (plugin->PortDescriptors[k] & IS_PARAMETER_OUT) == IS_PARAMETER_OUT;
+      bool isParameterOut(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            return (_plugin->PortDescriptors[k] & IS_PARAMETER_OUT) == IS_PARAMETER_OUT;
             }
       
-      virtual bool isLog(unsigned long k) const {
-            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
+      bool isLog(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            LADSPA_PortRangeHint r = _plugin->PortRangeHints[_pIdx[k]];
             return LADSPA_IS_HINT_LOGARITHMIC(r.HintDescriptor);
             }
-      virtual bool isBool(unsigned long k) const {
-            return LADSPA_IS_HINT_TOGGLED(plugin->PortRangeHints[pIdx[k]].HintDescriptor);
+      bool isBool(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            return LADSPA_IS_HINT_TOGGLED(_plugin->PortRangeHints[_pIdx[k]].HintDescriptor);
             }
-      virtual bool isInt(unsigned long k) const {
-            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
+      bool isInt(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            LADSPA_PortRangeHint r = _plugin->PortRangeHints[_pIdx[k]];
             return LADSPA_IS_HINT_INTEGER(r.HintDescriptor);
             }
-      virtual bool isLinear(unsigned long k) const {
-            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
+      bool isLinear(unsigned long k) const {
+            if(!_plugin)
+              return false;
+            LADSPA_PortRangeHint r = _plugin->PortRangeHints[_pIdx[k]];
             return !LADSPA_IS_HINT_INTEGER(r.HintDescriptor) &&
                    !LADSPA_IS_HINT_LOGARITHMIC(r.HintDescriptor) &&
                    !LADSPA_IS_HINT_TOGGLED(r.HintDescriptor);
             }
-      virtual void range(unsigned long i, int sampleRate, float*, float*) const;
-      virtual void rangeOut(unsigned long i, int sampleRate, float*, float*) const;
-      virtual const char* getParameterName(unsigned long i) const {
-            return plugin->PortNames[pIdx[i]];
+      bool range(unsigned long k, float sampleRate, float*, float*) const;
+      bool rangeOut(unsigned long k, float sampleRate, float*, float*) const;
+      const char* getParameterName(unsigned long k) const {
+            if(!_plugin)
+              return 0;
+            return _plugin->PortNames[_pIdx[k]];
             }
-      virtual const char* getParameterOutName(unsigned long i) const {
-            return plugin->PortNames[poIdx[i]];
+      const char* getParameterOutName(unsigned long k) const {
+            if(!_plugin)
+              return 0;
+            return _plugin->PortNames[_poIdx[k]];
             }
-      virtual float defaultValue(unsigned long) const;
+      float defaultValue(unsigned long k) const;
 
-      float convertGuiControlValue(unsigned long parameter, int sampleRate, int val) const;
+      float convertGuiControlValue(unsigned long k, float sampleRate, int val) const;
 
-      virtual void* instantiate(int sampleRate);
-      virtual void connectInport(void* handle, unsigned long k, void* datalocation);
-      virtual void connectOutport(void* handle, unsigned long k, void* datalocation);
-      virtual void connectCtrlInport(void* handle, unsigned long k, void* datalocation);
-      virtual void connectCtrlOutport(void* handle, unsigned long k, void* datalocation);
+      void* instantiate(float sampleRate);
+      void connectInport(void* handle, unsigned long k, void* datalocation);
+      void connectOutport(void* handle, unsigned long k, void* datalocation);
+      void connectCtrlInport(void* handle, unsigned long k, void* datalocation);
+      void connectCtrlOutport(void* handle, unsigned long k, void* datalocation);
       
-      virtual void activate(void* handle) {
-            if (plugin && plugin->activate)
-                  plugin->activate((LADSPA_Handle)handle);
+      void activate(void* handle) {
+            if (_plugin && _plugin->activate)
+                  _plugin->activate((LADSPA_Handle)handle);
             }
-      virtual void deactivate(void* handle) {
-            if (plugin && plugin->deactivate)
-                  plugin->deactivate((LADSPA_Handle)handle);
+      void deactivate(void* handle) {
+            if (_plugin && _plugin->deactivate)
+                  _plugin->deactivate((LADSPA_Handle)handle);
             }
-      virtual void cleanup(void* handle) {
-            if (plugin && plugin->cleanup)
-                  plugin->cleanup((LADSPA_Handle)handle);
+      void cleanup(void* handle) {
+            if (_plugin && _plugin->cleanup)
+                  _plugin->cleanup((LADSPA_Handle)handle);
             }
-      virtual void connectPort(void* handle, unsigned long port, float* datalocation) {
-            if(plugin)
-              plugin->connect_port((LADSPA_Handle)handle, port, datalocation);
+      void connectPort(void* handle, unsigned long port, float* datalocation) {
+            if(_plugin)
+              _plugin->connect_port((LADSPA_Handle)handle, port, datalocation);
             }
-      virtual void apply(void* handle, unsigned long n) {
-            if(plugin && plugin->run)
-              plugin->run((LADSPA_Handle)handle, n);
+      void apply(void* handle, unsigned long n) {
+            if(_plugin && _plugin->run)
+              _plugin->run((LADSPA_Handle)handle, n);
             }
    };
 
+//--------------------------------
+//  PluginI
+//  Plugin Instance base class
+//--------------------------------
+      
 class PluginI {
+   private:
+      void init();
+      
+   protected:
       Plugin* _plugin;
-      int _sampleRate;
+      // Some APIs may need to point to a float or double samplerate, or both (LV2).
+      float _sampleRate;
+      double _dSampleRate;
       unsigned int _segmentSize;
-      int channel;
-      int instances;
+      int _channel;
+      int _instances;
       int _id;
 
-      LADSPA_Handle* handle; // per instance
-      Port* controls;
-      Port* controlsOut;
-      Port* controlsOutDummy;
+      Port* _controls;
+      Port* _controlsOut;
+      Port* _controlsOutDummy;
 
-      unsigned long audioInPorts;
-      unsigned long audioOutPorts;
-      unsigned long controlPorts;
-      unsigned long controlOutPorts;
+      unsigned long _audioInPorts;
+      unsigned long _audioOutPorts;
+      unsigned long _controlPorts;
+      unsigned long _controlOutPorts;
       
       bool          _hasLatencyOutPort;
       unsigned long _latencyOutPort;
@@ -277,15 +322,13 @@ class PluginI {
       QString _name;
       QString _label;
 
-      void init();
-
    public:
       PluginI();
       virtual ~PluginI();
 
       Plugin* plugin() const { return _plugin; }
 
-      Plugin::PluginFeatures requiredFeatures() const {
+      Plugin::PluginFeaturesType requiredFeatures() const {
         if(!_plugin) return Plugin::NoFeatures; 
         return _plugin->requiredFeatures(); }
       
@@ -302,22 +345,22 @@ class PluginI {
         }
 
       // Returns true on error.
-      bool initPluginInstance(Plugin* plug, int channels, 
-                              int sampleRate, unsigned int segmentSize,
-                              bool useDenormalBias, float denormalBias);
-      int sampleRate() const { return _sampleRate; }
-      void setSampleRate(int rate) { _sampleRate = rate; }
+      virtual bool initPluginInstance(Plugin* plug, int channels, 
+                              float sampleRate, unsigned int segmentSize,
+                              bool useDenormalBias, float denormalBias) = 0;
+      float sampleRate() const { return _sampleRate; }
+      void setSampleRate(float rate) { _sampleRate = rate; _dSampleRate = rate; }
       unsigned int segmentSize() const { return _segmentSize; }
-      int channels() const { return channel; }
-      void setChannels(int);
+      int channels() const { return _channel; }
+      virtual void setChannels(int chans) = 0;
       // Runs the plugin for frames. Any ports involved must already be connected.
-      void process(unsigned long frames);
+      virtual void process(unsigned long frames) = 0;
       // Runs the plugin for frames. This automatically connects the given 
       //  data locations to the ports each time it is called.
       void apply(unsigned pos, unsigned long frames, unsigned long ports, float** bufIn, float** bufOut);
 
       // Connects ports with data locations. Multiple sources and destinations, with offset.
-      void connect(unsigned long ports, unsigned long offset, float** src, float** dst);
+      virtual void connect(unsigned long ports, unsigned long offset, float** src, float** dst) = 0;
 //       // Connects a single audio input port to a data location. 
 //       void connectInport(unsigned long k, void* datalocation);
 //       // Connects a single audio output port to a data location. 
@@ -381,9 +424,9 @@ class PluginI {
             }
       
       // Return true on success.
-      bool activate();
+      virtual bool activate() = 0;
       // Return true on success.
-      bool deactivate();
+      virtual bool deactivate() = 0;
       QString pluginLabel() const    { return _plugin->label(); }
       QString label() const          { return _label; }
       QString name() const           { return _name; }
@@ -393,14 +436,14 @@ class PluginI {
 
       bool setControl(const QString& s, float val);
 
-      unsigned long inports() const           { return audioInPorts; }
-      unsigned long outports() const          { return audioOutPorts; }
-      unsigned long parameters() const        { return controlPorts; }
-      unsigned long parametersOut() const     { return controlOutPorts; }
+      unsigned long inports() const           { return _audioInPorts; }
+      unsigned long outports() const          { return _audioOutPorts; }
+      unsigned long parameters() const        { return _controlPorts; }
+      unsigned long parametersOut() const     { return _controlOutPorts; }
       
       void setParam(unsigned long i, float val);
-      float param(unsigned long i) const { if(i >= controlPorts) return 0.0; return controls[i].val; }
-      float paramOut(unsigned long i) const { if(i >= controlOutPorts) return 0.0; return controlsOut[i].val; }
+      float param(unsigned long i) const { if(i >= _controlPorts) return 0.0; return _controls[i]._val; }
+      float paramOut(unsigned long i) const { if(i >= _controlOutPorts) return 0.0; return _controlsOut[i]._val; }
       
       // Alias for getParameterName.
       const char* paramName(unsigned long i) const    { return getParameterName(i); }
@@ -412,6 +455,46 @@ class PluginI {
       
       int   getGuiControlValue(unsigned long parameter) const;
       float convertGuiControlValue(unsigned long parameter, int val) const;
+      };
+
+      
+//--------------------------------
+//  LadspaPluginI
+//  Ladspa Plugin Instance class
+//--------------------------------
+      
+class LadspaPluginI : public PluginI {
+   private:
+      LADSPA_Handle* _handle; // per instance
+      void init();
+
+   public:
+      LadspaPluginI();
+      virtual ~LadspaPluginI();
+
+      // Returns true on error.
+      bool initPluginInstance(Plugin* plug, int channels, 
+                              float sampleRate, unsigned int segmentSize,
+                              bool useDenormalBias, float denormalBias);
+      void setChannels(int chans);
+      // Runs the plugin for frames. Any ports involved must already be connected.
+      void process(unsigned long frames);
+
+      // Connects ports with data locations. Multiple sources and destinations, with offset.
+      void connect(unsigned long ports, unsigned long offset, float** src, float** dst);
+//       // Connects a single audio input port to a data location. 
+//       void connectInport(unsigned long k, void* datalocation);
+//       // Connects a single audio output port to a data location. 
+//       void connectOutport(unsigned long k, void* datalocation);
+//       // Connects a single control parameter input port to a data location. 
+//       void connectCtrlInport(unsigned long k, void* datalocation);
+//       // Connects a single control parameter output port to a data location. 
+//       void connectCtrlOutport(unsigned long k, void* datalocation);
+      
+      // Return true on success.
+      bool activate();
+      // Return true on success.
+      bool deactivate();
       };
 
 static inline float fast_log2 (float val)

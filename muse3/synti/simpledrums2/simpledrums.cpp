@@ -1858,37 +1858,30 @@ void SimpleSynth::guiSendError(const char* errorstring)
  */
 bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
 {
-   SS_TRACE_IN
-         bool success = false;
-   if (sendEffects[id].plugin) {
-      //Cleanup if one was already there:
-      cleanupPlugin(id);
-   }
-   MusESimplePlugin::Plugin* plug = MusESimplePlugin::plugins.find(lib, name);
-   if(!plug)
-   {
-      fprintf(stderr, "initSendEffect: cannot find plugin id:%d lib:%s name:%s\n",
-          id, lib.toLatin1().constData(), name.toLatin1().constData());
-      return false;
-   }
-   
-   MusESimplePlugin::PluginI* plugin = new MusESimplePlugin::PluginI();
-   if(plugin->initPluginInstance(
-      plug,
+    SS_TRACE_IN
+          bool success = false;
+    if (sendEffects[id].plugin) {
+        //Cleanup if one was already there:
+        cleanupPlugin(id);
+    }
+    MusESimplePlugin::Plugin* plug = MusESimplePlugin::plugins.find(lib, name);
+    if(!plug)
+    {
+        fprintf(stderr, "initSendEffect: cannot find plugin id:%d lib:%s name:%s\n",
+            id, lib.toLatin1().constData(), name.toLatin1().constData());
+        return false;
+    }
+
+    MusESimplePlugin::PluginI* plugin = plug->createPluginI(
       2,    // Channels
       sampleRate(), 
       SS_segmentSize,
       SS_useDenormalBias,
-      SS_denormalBias))
-   {
-     fprintf(stderr, "initSendEffect: cannot instantiate plugin <%s>\n",
-         plug->name().toLatin1().constData());
-     // Make sure to delete the plugini.
-     delete plugin;
-     return false;
-   }
+      SS_denormalBias);
+    if(!plugin)
+      return false;
    
-   sendEffects[id].plugin  = plugin;
+    sendEffects[id].plugin  = plugin;
     
 
     sendEffects[id].inputs  = plugin->inports();

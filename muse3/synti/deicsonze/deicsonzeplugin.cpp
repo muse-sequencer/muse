@@ -44,12 +44,17 @@ using Awl::CheckBox;
 class PluginDialog;
 
 void DeicsOnze::initPluginReverb(MusESimplePlugin::Plugin* pluginReverb) {
-  //init plugin
   if(_pluginIReverb) delete(_pluginIReverb);
-  _pluginIReverb = new MusESimplePlugin::PluginI();
-
-  _pluginIReverb->initPluginInstance(
-    pluginReverb, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
+  _pluginIReverb = 0;
+  
+  _pluginIReverb = pluginReverb->createPluginI(
+    2,    // Channels
+    sampleRate(), 
+    DEI_segmentSize, 
+    DEI_useDenormalBias, 
+    DEI_denormalBias);
+  if(!_pluginIReverb)
+    return;
 
   for(int i = 0; i < (int)_pluginIReverb->parameters(); i++) {
 
@@ -80,9 +85,16 @@ void DeicsOnze::initPluginReverb(MusESimplePlugin::Plugin* pluginReverb) {
 
 void DeicsOnze::initPluginChorus(MusESimplePlugin::Plugin* pluginChorus) {
   if(_pluginIChorus) delete(_pluginIChorus);
-  _pluginIChorus = new MusESimplePlugin::PluginI();
-  _pluginIChorus->initPluginInstance(
-    pluginChorus, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
+  _pluginIChorus = 0;
+  
+  _pluginIChorus = pluginChorus->createPluginI(
+    2,    // Channels
+    sampleRate(), 
+    DEI_segmentSize, 
+    DEI_useDenormalBias, 
+    DEI_denormalBias);
+  if(!_pluginIChorus)
+    return;
 
   //for(int i = 0; i < pluginChorus->parameter(); i++) {
   for(int i = 0; i < (int)_pluginIChorus->parameters(); i++) {
@@ -108,11 +120,17 @@ void DeicsOnze::initPluginChorus(MusESimplePlugin::Plugin* pluginChorus) {
 
 void DeicsOnze::initPluginDelay(MusESimplePlugin::Plugin* pluginDelay) {
   if(_pluginIDelay) delete(_pluginIDelay);
-  _pluginIDelay = new MusESimplePlugin::PluginI();
-
-  _pluginIDelay->initPluginInstance(
-    pluginDelay, 2, sampleRate(), DEI_segmentSize, DEI_useDenormalBias, DEI_denormalBias);
+  _pluginIDelay = 0;
   
+  _pluginIDelay = pluginDelay->createPluginI(
+    2,    // Channels
+    sampleRate(), 
+    DEI_segmentSize, 
+    DEI_useDenormalBias, 
+    DEI_denormalBias);
+  if(!_pluginIDelay)
+    return;
+
   for(int i = 0; i < (int)_pluginIDelay->parameters(); i++) {
    
 // FIXME FIXME Tim
