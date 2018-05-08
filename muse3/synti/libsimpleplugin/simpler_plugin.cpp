@@ -106,6 +106,7 @@ static void loadPluginLib(QFileInfo* fi)
                         "Are you sure this is a LADSPA plugin file?\n",
                         fi->filePath().toLatin1().constData(),
                         txt);
+                  dlclose(handle);
                   return;//exit(1);
                   }
             }
