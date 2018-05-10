@@ -112,7 +112,7 @@ class Plugin
       int references() const            { return _references; }
       virtual int incReferences(int)    { return _references; }
       int instNo()                      { return _instNo++;   }
-      virtual void* instantiate(float /*sampleRate*/) { return 0; }
+      virtual void* instantiate(float /*sampleRate*/, void* /*data*/) { return 0; }
 
       QString label() const                        { return _label; }
       QString name() const                         { return _name; }
@@ -256,7 +256,7 @@ class LadspaPlugin : public Plugin
 
       float convertGuiControlValue(unsigned long k, float sampleRate, int val) const;
 
-      void* instantiate(float sampleRate);
+      void* instantiate(float sampleRate, void* /*data*/);
       void connectInport(void* handle, unsigned long k, void* datalocation);
       void connectOutport(void* handle, unsigned long k, void* datalocation);
       void connectCtrlInport(void* handle, unsigned long k, void* datalocation);

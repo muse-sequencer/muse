@@ -327,7 +327,7 @@ PluginI* LadspaPlugin::createPluginI(int chans, float sampleRate, unsigned int s
 int LadspaPlugin::incReferences(int val)
 {
   #ifdef PLUGIN_DEBUGIN
-  fprintf(stderr, "Plugin::incReferences _references:%d val:%d\n", _references, val);
+  fprintf(stderr, "LadspaPlugin::incReferences _references:%d val:%d\n", _references, val);
   #endif
 
   int newref = _references + val;
@@ -338,11 +338,11 @@ int LadspaPlugin::incReferences(int val)
     if(_libHandle)
     {
       #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "Plugin::incReferences no more instances, closing library\n");
+      fprintf(stderr, "LadspaPlugin::incReferences no more instances, closing library\n");
       #endif
 
       // REMOVE Tim. scan. Added.
-      //fprintf(stderr, "Plugin::incReferences no more instances, closing library\n");
+      //fprintf(stderr, "LadspaPlugin::incReferences no more instances, closing library\n");
       
       dlclose(_libHandle);
     }
@@ -360,13 +360,13 @@ int LadspaPlugin::incReferences(int val)
   if(_libHandle == 0)
   {
     // REMOVE Tim. scan. Added.
-    //fprintf(stderr, "Plugin::incReferences opening library...\n");
+    //fprintf(stderr, "LadspaPlugin::incReferences opening library...\n");
     
     _libHandle = dlopen(_fi.filePath().toLatin1().constData(), RTLD_NOW);
 
     if(_libHandle == 0)
     {
-      fprintf(stderr, "Plugin::incReferences dlopen(%s) failed: %s\n",
+      fprintf(stderr, "LadspaPlugin::incReferences dlopen(%s) failed: %s\n",
                     _fi.filePath().toLatin1().constData(), dlerror());
       return 0;
     }
@@ -445,7 +445,7 @@ int LadspaPlugin::incReferences(int val)
     dlclose(_libHandle);
     _libHandle = 0;
     _references = 0;
-    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLatin1().constData());
+    fprintf(stderr, "LadspaPlugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLatin1().constData());
     return 0;
   }
 
@@ -461,7 +461,7 @@ int LadspaPlugin::incReferences(int val)
 //   instantiate
 //---------------------------------------------------------
 
-void* LadspaPlugin::instantiate(float sampleRate)
+void* LadspaPlugin::instantiate(float sampleRate, void*)
 {
   if(!_plugin)
     return NULL;
@@ -470,7 +470,7 @@ void* LadspaPlugin::instantiate(float sampleRate)
   success = (h != NULL);
   if(success)
   {
-    SP_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
+    SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLatin1().constData());
   }
   return h;
 }
@@ -1022,13 +1022,12 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
                                  float sampleRate, unsigned int segmentSize,
                                  bool useDenormalBias, float denormalBias)
 {
-  _sampleRate  = sampleRate;
-  _dSampleRate = _sampleRate;
+  _sampleRate = _dSampleRate = sampleRate;
   _segmentSize = segmentSize;
   _channel = chans;
   if(plug == 0)
   {
-    fprintf(stderr, "initPluginInstance: zero plugin\n");
+    fprintf(stderr, "LadspaPluginI::initPluginInstance: zero plugin\n");
     return true;
   }
   _plugin = plug;
@@ -1073,10 +1072,10 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
   for(int i = 0; i < _instances; ++i)
   {
     #ifdef PLUGIN_DEBUGIN
-    fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
+    fprintf(stderr, "LadspaPluginI::initPluginInstance instance:%d\n", i);
     #endif
 
-    _handle[i] = _plugin->instantiate(_sampleRate);
+    _handle[i] = _plugin->instantiate(_sampleRate, NULL);
     if(_handle[i] == NULL)
       return true;
   }
@@ -1164,7 +1163,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
   if(rv != 0)
   {
       fprintf(stderr, 
-        "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
+        "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf posix_memalign returned error:%d. Aborting!\n", rv);
       abort();
   }
 
@@ -1184,7 +1183,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
 
   if(rv != 0)
   {
-      fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
+      fprintf(stderr, "ERROR: LadspaPluginI::initPluginInstance: _audioOutDummyBuf posix_memalign returned error:%d. Aborting!\n", rv);
       abort();
   }
 
@@ -1244,10 +1243,10 @@ void LadspaPluginI::setChannels(int chans)
           {
             // Create a new plugin instance with handle.
             // Use the plugin's current sample rate.
-            handles[i] = _plugin->instantiate(_sampleRate);
+            handles[i] = _plugin->instantiate(_sampleRate, NULL);
             if(handles[i] == NULL)
             {
-              fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
+              fprintf(stderr, "LadspaPluginI::setChannels: cannot instantiate instance %d\n", i);
 
               // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert().
               // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
