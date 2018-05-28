@@ -29,6 +29,7 @@
 #include <QRect>
 #include <QShowEvent>
 #include <QString>
+#include <QButtonGroup>
 
 #include "genset.h"
 #include "app.h"

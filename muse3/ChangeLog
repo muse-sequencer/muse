@@ -1,3 +1,5 @@
+28.05.2018
+      - Added missing #includes needed by newer Qt >= 5.11 (Orcan)
 10.05.2018
       - SimplePlugin system: More improvements. (Tim)
         Various changes. Added Plugin::createPluginI().

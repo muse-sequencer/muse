@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <QAction>
+
 #include "mitplugin.h"
 #include "app.h"
 #include "event.h"
