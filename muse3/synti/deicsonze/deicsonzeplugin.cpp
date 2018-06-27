@@ -184,7 +184,7 @@ void DeicsOnze::initPluginDelay(MusESimplePlugin::Plugin* pluginDelay) {
   char dataDelayLFODepth[sizeof(float)+1];
   dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
   f = getDelayLFODepth();
-  memcpy(&dataDelayLFODepth, &f, sizeof(float)+1);
+  memcpy(&dataDelayLFODepth[1], &f, sizeof(float));
   MusECore::MidiPlayEvent evSysexDelayLFODepth(0, 0,MusECore::ME_SYSEX,
 				 (const unsigned char*)dataDelayLFODepth,
 				 sizeof(float)+1);
@@ -192,7 +192,7 @@ void DeicsOnze::initPluginDelay(MusESimplePlugin::Plugin* pluginDelay) {
   char dataDelayWetDryMix[sizeof(float)+1];
   dataDelayWetDryMix[0] = SYSEX_DELAYWETDRYMIX;
   f = getDelayDryWet();
-  memcpy(&dataDelayWetDryMix, &f, sizeof(float)+1);
+  memcpy(&dataDelayWetDryMix[1], &f, sizeof(float));
   MusECore::MidiPlayEvent evSysexDelayWetDryMix(0, 0,MusECore::ME_SYSEX,
                                  (const unsigned char*)dataDelayWetDryMix,
                                  sizeof(float)+1);

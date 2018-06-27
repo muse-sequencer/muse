@@ -19,7 +19,7 @@
 //=========================================================
 
 #include <QMessageBox>
-#include <RtAudio.h>
+#include <rtaudio/RtAudio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -331,7 +331,7 @@ else (ENABLE_LASH)
 endif (ENABLE_LASH)
 
 if (ENABLE_RTAUDIO)
-      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)

@@ -76,7 +76,6 @@ QT5_WRAP_CPP ( muse_moc_headers
       transport.h
       value.h
       steprec.h
-      lv2host.h
       vst_native.h
       )
 
@@ -106,7 +105,6 @@ file (GLOB core_source_files
       ctrl.cpp
       dialogs.cpp
       dssihost.cpp
-      lv2host.cpp
       event.cpp
       eventlist.cpp
       exportmidi.cpp
@@ -185,7 +183,7 @@ file (GLOB wavepreview_source_files
 file (GLOB xml_source_files
       xml.cpp
       )
-      
+
 ##
 ## Define target
 ##
@@ -370,27 +368,58 @@ if(OSC_SUPPORT)
       target_link_libraries(core ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
+# Certain warnings in lv2 headers are causing errors with recent gcc.
+# It seems there's no way to suppress -Werror from within code.
+# The slightest warning in some header file can now trigger an error.
+# Gcc help warns that only some warnings can be suppressed.
+# 'pragma GCC diagnostic ignored "-Wparentheses"' didn't work.
+# Looks like no choice but to make the lv2host a module with separate flags.
+#     
 if(LV2_SUPPORT)
+      ##
+      ## Expand Qt macros in source files
+      ##
+      QT5_WRAP_CPP ( lv2host_moc_headers
+            lv2host.h
+            )
+      file (GLOB lv2host_source_files
+            lv2host.cpp
+            )
+      add_library ( lv2host_module ${MODULES_BUILD}
+            ${lv2host_moc_headers}
+            ${lv2host_source_files}
+            )
+      set_target_properties( lv2host_module
+            # Avoid treating warnings as errors here, unlike the rest of the app.
+            PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -Wno-error"
+            OUTPUT_NAME muse_lv2host_module
+            )
+            
       if(LV2_USE_SUPPLIED_VERSION)
             message("Building and linking internal LV2 support libraries (lv2, lilv, sord etc.)")
             message("")
-            target_link_libraries(core lv2_support)
+            target_link_libraries(lv2host_module lv2_support)
             if (PCRE_FOUND)
-                    target_link_libraries(core ${PCRE_LIBRARIES})
+                    target_link_libraries(lv2host_module ${PCRE_LIBRARIES})
             endif (PCRE_FOUND)
       else(LV2_USE_SUPPLIED_VERSION)
             message("Linking system LV2 support libraries (lv2, lilv, sord etc.)")
             message("")
-            target_link_libraries(core ${LILV_LIBRARIES})
-            target_link_libraries(core ${SORD_LIBRARIES})
-            target_link_libraries(core ${LV2_LIBRARIES})
+            target_link_libraries(lv2host_module ${LILV_LIBRARIES})
+            target_link_libraries(lv2host_module ${SORD_LIBRARIES})
+            target_link_libraries(lv2host_module ${LV2_LIBRARIES})
       endif(LV2_USE_SUPPLIED_VERSION)
       
       if(HAVE_GTK2)
-            target_link_libraries(core lv2_gtk2_support)
+            target_link_libraries(lv2host_module lv2_gtk2_support)
       endif(HAVE_GTK2)
+
+#       target_link_libraries(lv2host_module ${QT_LIBRARIES})
       
+      target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
+
+
 
 target_link_libraries(muse
       midiedit
@@ -423,6 +452,7 @@ if ( ${MODULES_BUILD} STREQUAL SHARED )
               # sysex_helper_module 
               # memory_module 
               # evdata_module 
+              lv2host_module 
               # mpevent_module 
               # wavepreview_module
               # xml_module
