@@ -114,7 +114,8 @@ class MetronomeSynthIF : public SynthIF
       
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
-      virtual void preProcessAlways() { }
+// REMOVE Tim. latency. Removed.
+//       virtual void preProcessAlways() { }
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }

@@ -57,6 +57,46 @@ class Undo;
 class WorkingDrumMapList;
 class WorkingDrumMapPatchList;
 struct MidiCtrlValRemapOperation;
+class LatencyCompensator;
+
+// During latency computations each process cycle,
+//  this holds cached computed latency values.
+struct TrackLatencyInfo
+{
+  // Whether this information is valid (has already
+  //  been gathered in the current process cycle).
+  // This is reset near the beginning of the process handler.
+  bool _processed;
+  // Whether this information is valid (has already been gathered
+  //  in the forward latency scan in the current process cycle).
+  // This is reset near the beginning of the process handler.
+  bool _forwardProcessed;
+  // Contributions to latency from rack plugins and/or Jack ports etc.
+  // This value is the worst-case latency of all the channels in a track.
+  // See AudioTrack::trackLatency().
+  float _trackLatency;
+  float _forwardTrackLatency;
+  // The absolute latency of all signals leaving a track, relative to audio driver frame (transport, etc).
+  // This value is the cumulative value of all series routes connected to this track, plus some
+  //  adjustment for the track's own members' latency.
+  // The goal is to have equal latency output on all channels.
+  // Thus the value will be the WORST-CASE latency of any channel. All other channels are delayed to match it.
+  // For example, a Wave Track can use this total value to appropriately shift recordings of the signals
+  //  arriving at its inputs.
+  float _outputLatency;
+  float _forwardOutputLatency;
+  // Maximum amount of latency that this track's input can correct.
+  float _inputAvailableCorrection;
+  float _forwardInputAvailableCorrection;
+  // Maximum amount of latency that this track's output can correct.
+  float _outputAvailableCorrection;
+  float _forwardOutputAvailableCorrection;
+};
+
+// Default available wave track latency corrections. Just arbitrarily large values. 
+// A track may supply something different (default for others is 0).
+#define DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION 4194304
+#define DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION 4194304
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -130,6 +170,9 @@ class Track {
       // The selected track with the highest selected order is the most recent selected.
       int _selectionOrder;
 
+      // Holds latency computations each cycle.
+      TrackLatencyInfo _latencyInfo;
+      
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -183,6 +226,8 @@ class Track {
       // routing
       RouteList* inRoutes()    { return &_inRoutes; }
       RouteList* outRoutes()   { return &_outRoutes; }
+      const RouteList* inRoutes() const { return &_inRoutes; }
+      const RouteList* outRoutes() const { return &_outRoutes; }
       virtual bool noInRoute() const   { return _inRoutes.empty();  }
       virtual bool noOutRoute() const  { return _outRoutes.empty(); }
       void writeRouting(int, Xml&) const;
@@ -258,6 +303,11 @@ class Track {
       // Returns true if monitored.
       virtual bool recMonitor() const    { return _recMonitor; }
 
+      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+      virtual float inputLatencyCorrection() const { return 0.0f; }
+      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+      virtual float outputLatencyCorrection() const { return 0.0f; }
+      
       // Internal use...
       static void clearSoloRefCounts();
       void updateSoloState();
@@ -507,6 +557,11 @@ class AudioTrack : public Track {
       float*  audioOutDummyBuf;
       // Internal temporary buffers for getData().
       float** _dataBuffers;
+      // REMOVE Tim. latency. Added.
+      // Audio latency compensator.
+      LatencyCompensator* _latencyComp;
+      // Used during latency compensation processing.
+      unsigned long _latCompWriteOffset;
 
       // These two are not the same as the number of track channels which is always either 1 (mono) or 2 (stereo):
       // Total number of output channels.
@@ -580,7 +635,11 @@ class AudioTrack : public Track {
       virtual void updateInternalSoloStates();
       
       // Puts to the recording fifo.
-      void putFifo(int channels, unsigned long n, float** bp);
+// REMOVE Tim. latency. Changed.
+//       void putFifo(int channels, unsigned long n, float** bp);
+      // This also performs adjustments for latency compensation before putting to the fifo.
+      // Returns true on success.
+      bool putFifo(int channels, unsigned long n, float** bp);
       // Transfers the recording fifo to _recFile.
       void record();
       // Returns the recording fifo current count.
@@ -619,7 +678,14 @@ class AudioTrack : public Track {
       
       void readVolume(Xml& xml);
 
-      virtual void preProcessAlways() { _processed = false; }
+// REMOVE Tim. latency. Changed.
+//       virtual void preProcessAlways() { _processed = false; }
+      virtual void preProcessAlways() { 
+        _processed = false; 
+        _latencyInfo._processed = false;
+        _latencyInfo._forwardProcessed = false;
+        _latCompWriteOffset = 0;
+      }
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
       //  otherwise it is given by the bulk 'add' flag.
@@ -641,7 +707,32 @@ class AudioTrack : public Track {
       
       virtual bool hasAuxSend() const { return false; }
 
-      virtual float latency(int channel); 
+      // The contribution to latency by the track's own members (audio effect rack, etc).
+      virtual float trackLatency(int channel) const;
+// REMOVE Tim. latency. Added.
+      // The absolute latency of all signals leaving this track, relative to audio driver frame (transport, etc).
+      // This value is the cumulative value of all series routes connected to this track, plus some
+      //  adjustment for the track's own members' latency.
+      // The goal is to have equal latency output on all channels. Thus there is no 'channel' parameter.
+      // The value will be the WORST-CASE latency of any channel. All other channels are delayed to match it.
+      // For example, a Wave Track can use this total value to appropriately shift recordings of the signals
+      //  arriving at its inputs.
+      //virtual float outputLatency(); // const; 
+      
+// REMOVE Tim. latency. Added.
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo getLatencyInfo();
+      // Returns forward latency computations (from wavetracks outward) during each cycle.
+      // If the computations have already been done this cycle, cached values are returned,
+      //  otherwise they are computed, cached, then returned.
+      virtual TrackLatencyInfo getForwardLatencyInfo();
+      //
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      //  needed only to equalize the timing of all the AudioOutput tracks.
+      // It is applied as a direct offset in the latency delay compensator in getData().
+      virtual unsigned long latencyCompWriteOffset() const { return _latCompWriteOffset; }
+      virtual void setLatencyCompWriteOffset(unsigned long off) { _latCompWriteOffset = off; }
       
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
@@ -674,7 +765,7 @@ class AudioTrack : public Track {
 
 class AudioInput : public AudioTrack {
       void* jackPorts[MAX_CHANNELS];
-      virtual bool getData(unsigned, int, unsigned, float**);
+      bool getData(unsigned, int, unsigned, float**);
       static bool _isVisible;
       void internal_assign(const Track& t, int flags);
       
@@ -683,21 +774,23 @@ class AudioInput : public AudioTrack {
       AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
 
-      virtual float latency(int channel); 
-      virtual void assign(const Track&, int flags);
+      float trackLatency(int channel) const; 
+// REMOVE Tim. latency. Added.
+//       float outputLatency() const; 
+      void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
-      virtual AudioInput* newTrack() const { return new AudioInput(); }
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
-      virtual void setName(const QString& s);
+      AudioInput* newTrack() const { return new AudioInput(); }
+      void read(Xml&);
+      void write(int, Xml&) const;
+      void setName(const QString& s);
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
-      virtual void setChannels(int n);
-      virtual bool hasAuxSend() const { return true; }
+      void setChannels(int n);
+      bool hasAuxSend() const { return true; }
       // Number of routable inputs/outputs for each Route::RouteType.
-      virtual RouteCapabilitiesStruct routeCapabilities() const;
+      RouteCapabilitiesStruct routeCapabilities() const;
       static void setVisible(bool t) { _isVisible = t; }
-      virtual int height() const;
+      int height() const;
       static bool visible() { return _isVisible; }
     };
 
@@ -718,6 +811,7 @@ class AudioOutput : public AudioTrack {
       AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
 
+      virtual float trackLatency(int channel) const;
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }
@@ -803,6 +897,7 @@ class WaveTrack : public AudioTrack {
       static bool _isVisible;
 
       void internal_assign(const Track&, int flags);
+      bool getDataPrivate(unsigned, int, unsigned, float**);
       
    public:
 
@@ -827,6 +922,19 @@ class WaveTrack : public AudioTrack {
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 
+// REMOVE Tim. latency. Added.
+      // Returns latency computations during each cycle. If the computations have already been done 
+      //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
+      TrackLatencyInfo getLatencyInfo();
+      // Returns forward latency computations (from wavetracks outward) during each cycle.
+      // If the computations have already been done this cycle, cached values are returned,
+      //  otherwise they are computed, cached, then returned.
+      TrackLatencyInfo getForwardLatencyInfo();
+      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+      float inputLatencyCorrection() const { return DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION; }
+      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+      float outputLatencyCorrection() const { return DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION; }
+      
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       Fifo* prefetchFifo()          { return &_prefetchFifo; }
       virtual void setChannels(int n);

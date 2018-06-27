@@ -29,22 +29,33 @@ namespace MusECore {
 class LatencyCompensator
 {
   private:
-    unsigned long _channels;
+    int _channels;
     unsigned long   _bufferSize; // Must be power of two.
-    unsigned long*  _writePointers;
-    unsigned long*  _delays; // One for each channel. In samples.
-    float** _input;
-    float** _output;
+    unsigned long*  _readPointers;
     float** _buffer;
 
   public:
-    LatencyCompensator(unsigned long channels = 1, unsigned long bufferSize = 16384);
+    LatencyCompensator(unsigned long bufferSize = 16384) : 
+      _channels(0), _bufferSize(bufferSize), _readPointers(0), _buffer(0) { }
+    LatencyCompensator(int channels, unsigned long bufferSize = 16384);
     virtual ~LatencyCompensator();
     
     void clear();
     void setBufferSize(unsigned long size);
-    void setChannels(unsigned long channels);
-    void run(unsigned long SampleCount, float** data);
+    void setChannels(int channels);
+//     void run(unsigned long sampleCount, float** data);
+    // Read a block of data on each channel.
+    // The block is cleared after a read.
+    void read(unsigned long sampleCount, float** data);
+    // Convenient single channel version of read.
+    void read(int channel, unsigned long sampleCount, float* data);
+    // Write a block of data on each channel at the given write offsets (from the read position).
+    // All writes are additive. Read will clear the blocks.
+    void write(unsigned long sampleCount, const unsigned long* const writeOffsets, const float* const* data);
+    // Convenient single channel version of write.
+    void write(int channel, unsigned long sampleCount, unsigned long writeOffset, const float* const data);
+    // Convenient version of write with common write offset for all channels.
+    void write(unsigned long sampleCount, unsigned long writeOffset, const float* const* data);
 };
 
 } // namespace MusECore

@@ -1234,7 +1234,7 @@ void Pipeline::initBuffers()
 //  latency
 //---------------------------------------------------------
 
-float Pipeline::latency()
+float Pipeline::latency() const
 {
   float l = 0.0;
   PluginI* p;
@@ -2461,7 +2461,7 @@ void PluginI::activate()
 //   latency
 //---------------------------------------------------------
 
-float PluginI::latency()
+float PluginI::latency() const
 {
   if(!_hasLatencyOutPort)
     return 0.0;

@@ -197,7 +197,7 @@ class SynthIF : public PluginIBase {
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i);
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
-      virtual float latency();
+      virtual float latency() const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
       };
@@ -232,7 +232,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap;
 
-      void preProcessAlways();
+// REMOVE Tim. latency. Removed. Moved into public.
+//       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
       // Returns the number of frames to shift forward output event scheduling times when putting events
       //  into the eventFifos.
@@ -262,7 +263,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
-      virtual float latency(int channel) { return _sif->latency() + AudioTrack::latency(channel); }
+      virtual float trackLatency(int channel) const { return _sif->latency() + AudioTrack::trackLatency(channel); }
 
       void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -323,6 +324,8 @@ class SynthI : public AudioTrack, public MidiDevice,
             }
 
       virtual void processMidi(unsigned int /*curFrame*/ = 0);
+// REMOVE Tim. latency. Added. Moved here from protected.
+      void preProcessAlways();
 
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }

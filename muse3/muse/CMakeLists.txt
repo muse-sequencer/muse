@@ -164,6 +164,9 @@ file (GLOB icons_source_files
       icons.cpp
       )
 
+file (GLOB latency_compensator_source_files
+      latency_compensator.cpp
+      )
 file (GLOB sysex_helper_source_files
       sysex_helper.cpp
       )
@@ -176,9 +179,6 @@ file (GLOB evdata_source_files
 file (GLOB mpevent_source_files
       mpevent.cpp
       )
-file (GLOB event_source_files
-      event.cpp
-      )
 file (GLOB wavepreview_source_files
       wavepreview.cpp
       )
@@ -190,6 +190,9 @@ file (GLOB xml_source_files
 ## Define target
 ##
 
+add_library ( latency_compensator_module SHARED
+      ${latency_compensator_source_files}
+      )
 add_library ( sysex_helper_module SHARED
       ${sysex_helper_source_files}
       )
@@ -279,6 +282,10 @@ set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
+set_target_properties( latency_compensator_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_latency_compensator_module
+      )
 set_target_properties( sysex_helper_module
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_sysex_helper_module
@@ -335,6 +342,7 @@ target_link_libraries(core
       evdata_module
       icons
       instruments
+      latency_compensator_module
       liste
       marker
       master
@@ -409,6 +417,7 @@ install( TARGETS muse
       )
       
 install(TARGETS
+        latency_compensator_module
         sysex_helper_module 
         memory_module 
         evdata_module 
@@ -420,6 +429,7 @@ install(TARGETS
       
 if ( ${MODULES_BUILD} STREQUAL SHARED )
       install(TARGETS core icons 
+              # latency_compensator_module
               # sysex_helper_module 
               # memory_module 
               # evdata_module 

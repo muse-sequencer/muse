@@ -21,114 +21,222 @@
 //
 //===================================================================
 
-#include <string.h>
+#include <cstring>
 
 #include "latency_compensator.h"
 
-#define DELAY_BUFFER_SIZE 16384
-
 namespace MusECore {
 
-LatencyCompensator::LatencyCompensator(unsigned long channels, unsigned long bufferSize)
+LatencyCompensator::LatencyCompensator(int channels, unsigned long bufferSize)
   : _channels(channels), _bufferSize(bufferSize)
 {
-  _buffer = new float*[channels];
-  _delays = new unsigned long[channels];
-  _writePointers = new unsigned long[channels];
+  _buffer = new float*[_channels];
+  _readPointers = new unsigned long[_channels];
 
   for(int i = 0; i < _channels; ++i)
   {
     _buffer[i] = new float[_bufferSize];
-    memset(_buffer[i],  0, sizeof(float) * _bufferSize);
-    _delays[i] = 0;
-    _writePointers[i] = 0;
+    std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+    _readPointers[i] = 0;
   }
 }
 
 LatencyCompensator::~LatencyCompensator()
 {
-  for(int i = 0; i < _channels; ++i)
-    delete [] _buffer[i];
-  delete [] _buffer;
-  delete [] _delays;
-  delete [] _writePointers;
+  if(_buffer)
+  {
+    for(int i = 0; i < _channels; ++i)
+      delete [] _buffer[i];
+    delete [] _buffer;
+  }
+  if(_readPointers)
+    delete [] _readPointers;
 }
 
 void LatencyCompensator::clear()
 {
   for(int i = 0; i < _channels; ++i)
-    memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+    std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
 }
 
 void LatencyCompensator::setBufferSize(unsigned long size)
 {
   _bufferSize = size;
-  for(int i = 0; i < _channels; ++i)
+  if(_buffer)
   {
-    delete [] _buffer[i];
-    _buffer[i] = new float[_bufferSize];
-    memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+    for(int i = 0; i < _channels; ++i)
+    {
+      delete [] _buffer[i];
+      _buffer[i] = new float[_bufferSize];
+      std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+      _readPointers[i] = 0;
+    }
   }
 }
 
-void LatencyCompensator::setChannels(unsigned long channels)
+void LatencyCompensator::setChannels(int channels)
 {
-  for(int i = 0; i < _channels; ++i)
-    delete [] _buffer[i];
-  delete [] _buffer;
-  delete [] _delays;
-  delete [] _writePointers;
-
-  _buffer = new float*[channels];
-  _delays = new unsigned long[channels];
-  _writePointers = new unsigned long[channels];
-
-  for(int i = 0; i < _channels; ++i)
+  if(_buffer)
   {
-    _buffer[i] = new float[_bufferSize];
-    memset(_buffer[i],  0, sizeof(float) * _bufferSize);
-    _delays[i] = 0;
-    _writePointers[i] = 0;
+    for(int i = 0; i < _channels; ++i)
+      delete [] _buffer[i];
+    delete [] _buffer;
+  }
+  if(_readPointers)
+    delete [] _readPointers;
+
+  _channels = channels;
+  if(_channels > 0)
+  {
+    _buffer = new float*[_channels];
+    _readPointers = new unsigned long[_channels];
+
+    for(int i = 0; i < _channels; ++i)
+    {
+      _buffer[i] = new float[_bufferSize];
+      std::memset(_buffer[i],  0, sizeof(float) * _bufferSize);
+      _readPointers[i] = 0;
+    }
   }
 }
 
-void LatencyCompensator::run(unsigned long SampleCount, float** data)
-{
-  float inputSample;
-  unsigned long readOffset;
-  unsigned long bufsz_mask;
-  unsigned long writeOffset;
-  unsigned long i;
-
-  bufsz_mask = _bufferSize - 1;
+// void LatencyCompensator::run(unsigned long SampleCount, float** data)
+// {
+//   float inputSample;
+//   unsigned long readOffset;
+//   unsigned long bufsz_mask;
+//   unsigned long writeOffset;
+//   unsigned long i;
+// 
+//   bufsz_mask = _bufferSize - 1;
+//   
+//   float* input;
+//   float* output;
+//   float* buf;
+//   
+//   for(int ch = 0; ch < _channels; ++ch)
+//   {
+//     input = data[ch];
+//     output = data[ch];
+//     buf = _buffer[ch];
+// 
+//     writeOffset = _writePointers[ch];
+//     readOffset = writeOffset + _bufferSize - _delays[ch];
+//     //readOffset = writeOffset + _bufferSize - (_delays[ch] & bufsz_mask);
+//     
+//     for(i = 0; i < SampleCount; i++) 
+//     {
+//       inputSample = *(input++);
+// 
+//       *(output++) = (buf[((i + readOffset) & bufsz_mask)]);
+//       //*(output++) = (buf[((i + readOffset) % _bufferSize)]);
+// 
+//       buf[((i + writeOffset) & bufsz_mask)] = inputSample;
+//       //buf[((i + writeOffset) % _bufferSize)] = inputSample;
+//     }
+//     
+//     _writePointers[ch] = (_writePointers[ch] + SampleCount) & bufsz_mask;
+//     //_writePointers[ch] = (_writePointers[ch] + SampleCount) % _bufferSize;
+//   }
+// }
   
-  float* input;
-  float* output;
-  float* buf;
+void LatencyCompensator::read(unsigned long sampleCount, float** data)
+{
+  unsigned long bufsz_mask = _bufferSize - 1;
+  unsigned long read_position, i, idx;
+  float *output, *buf;
+  
+  for(int ch = 0; ch < _channels; ++ch)
+  {
+    output = data[ch];
+    buf = _buffer[ch];
+    read_position = _readPointers[ch];
+    for(i = 0; i < sampleCount; i++) 
+    {
+      idx = (i + read_position) & bufsz_mask;
+      *(output++) = buf[idx];
+      // Clear the data so that the next time around, simple addition of data can be used.
+      // Like the erase head of a (imaginary) multi-record-head latency-correction tape loop
+      //  mechanism, where in this simulation the erase head is just after the read head.
+      buf[idx] = 0.0f;
+    }
+    _readPointers[ch] = (_readPointers[ch] + sampleCount) & bufsz_mask;
+  }
+}
+
+void LatencyCompensator::read(int channel, unsigned long sampleCount, float* data)
+{
+  if(channel >= _channels)
+    return;
+  
+  unsigned long bufsz_mask = _bufferSize - 1;
+  unsigned long read_position, i, idx;
+  float *output, *buf;
+  
+  output = data;
+  buf = _buffer[channel];
+  read_position = _readPointers[channel];
+  for(i = 0; i < sampleCount; i++) 
+  {
+    idx = (i + read_position) & bufsz_mask;
+    *(output++) = buf[idx];
+    // Clear the data so that the next time around, simple addition of data can be used.
+    // Like the erase head of a (imaginary) multi-record-head latency-correction tape loop
+    //  mechanism, where in this simulation the erase head is just after the read head.
+    buf[idx] = 0.0f;
+  }
+  _readPointers[channel] = (_readPointers[channel] + sampleCount) & bufsz_mask;
+}
+
+void LatencyCompensator::write(unsigned long sampleCount, const unsigned long* const writeOffsets, const float* const* data)
+{
+  unsigned long bufsz_mask = _bufferSize - 1;
+  unsigned long write_position, i;
+  const float *input;
+  float *buf;
   
   for(int ch = 0; ch < _channels; ++ch)
   {
     input = data[ch];
-    output = data[ch];
     buf = _buffer[ch];
-
-    writeOffset = _writePointers[ch];
-    readOffset = writeOffset + _bufferSize - _delays[ch];
-    
-    for(i = 0; i < SampleCount; i++) 
-    {
-      inputSample = *(input++);
-
-      *(output++) = (buf[((i + readOffset) & bufsz_mask)]);
-      //*(output++) = (buf[((i + readOffset) % _bufferSize)]);
-
-      buf[((i + writeOffset) & bufsz_mask)] = inputSample;
-      //buf[((i + writeOffset) % _bufferSize)] = inputSample;
-    }
-    
-    _writePointers[ch] = (_writePointers[ch] + SampleCount) & bufsz_mask;
-    //_writePointers[ch] = (_writePointers[ch] + SampleCount) % _bufferSize;
+    write_position = _readPointers[ch] + writeOffsets[ch];
+    for(i = 0; i < sampleCount; i++) 
+      buf[((i + write_position) & bufsz_mask)] += *(input++);
   }
 }
+
+void LatencyCompensator::write(int channel, unsigned long sampleCount, unsigned long writeOffset, const float* const data)
+{
+  if(channel >= _channels)
+    return;
   
+  unsigned long bufsz_mask = _bufferSize - 1;
+  unsigned long write_position, i;
+  const float *input;
+  float *buf;
+  
+  input = data;
+  buf = _buffer[channel];
+  write_position = _readPointers[channel] + writeOffset;
+  for(i = 0; i < sampleCount; i++) 
+    buf[((i + write_position) & bufsz_mask)] += *(input++);
+}
+    
+void LatencyCompensator::write(unsigned long sampleCount, unsigned long writeOffset, const float* const* data)
+{
+  unsigned long bufsz_mask = _bufferSize - 1;
+  unsigned long write_position, i;
+  const float *input;
+  float *buf;
+  
+  for(int ch = 0; ch < _channels; ++ch)
+  {
+    input = data[ch];
+    buf = _buffer[ch];
+    write_position = _readPointers[ch] + writeOffset;
+    for(i = 0; i < sampleCount; i++) 
+      buf[((i + write_position) & bufsz_mask)] += *(input++);
+  }
+}
+
 } // namespace MusECore

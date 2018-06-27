@@ -168,7 +168,7 @@ LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
-float SynthIF::latency() { return 0.0; }
+float SynthIF::latency() const { return 0.0; }
 CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
 CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; };
 
@@ -1192,9 +1192,12 @@ void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, bool)
 
 void SynthI::preProcessAlways()
 {
+// REMOVE Tim. latency. Added.
+  AudioTrack::preProcessAlways();
   if(_sif)
     _sif->preProcessAlways();
-  _processed = false;
+// REMOVE Tim. latency. Removed.
+//   _processed = false;
 
   // TODO: p4.0.15 Tim. Erasure of already-played events was moved from Audio::processMidi()
   //  to each of the midi devices - ALSA, Jack, or Synth in SynthI::getData() below.

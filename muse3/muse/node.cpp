@@ -43,6 +43,7 @@
 #include "ticksynth.h"  // metronome
 #include "wavepreview.h"
 #include "al/dsp.h"
+#include "latency_compensator.h"
 
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_SIMPLIFIED_SOLO_CHAIN_
@@ -1320,12 +1321,120 @@ void AudioOutput::setChannels(int n)
 //   putFifo
 //---------------------------------------------------------
 
-void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
+// REMOVE Tim. latency. Changed.
+// void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
+bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
+{
+  const RouteList* rl = inRoutes();
+  float route_worst_case_latency = 0.0f;
+  for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+        if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+          continue;
+        AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+        //const float lat = atrack->outputLatency();
+        //if(lat > route_worst_case_latency)
+        //  route_worst_case_latency = lat;
+        const TrackLatencyInfo li = atrack->outputLatency();
+        if(li._outputLatency > route_worst_case_latency)
+          route_worst_case_latency = li._outputLatency;
+        }
+        
+  // REMOVE Tim. latency. Added. No, this would only be for playback.
+  // Adjust for THIS track's contribution to latency.
+  // The goal is to have equal latency output on all channels on this track.
+  //const int track_out_channels = totalOutChannels();
+//       const int track_out_channels = totalProcessBuffers();
+//       float track_worst_case_chan_latency = 0.0f;
+//       for(int i = 0; i < track_out_channels; ++i)
+//       {
+//         const float lat = trackLatency(i);
+//         if(lat > track_worst_case_chan_latency)
+//           track_worst_case_chan_latency = lat;
+//       }
+  
+  // The absolute latency of signals leaving this track is the sum of
+  //  any connected route latencies and this track's latency.
+//   return route_worst_case_latency + track_worst_case_chan_latency;
+
+  
+  
+  
+  
+  
+  
+// REMOVE Tim. latency. Added. Moved here and changed from WaveTrack::getData().
+/*        
+  unsigned int lat = 0;
+  bool lat_found = false;
+  
+  if(!noInRoute())
+  {
+    //---------------------------------------------
+    // Try to determine the input latency:
+    //---------------------------------------------
+
+    const RouteList* rl = inRoutes();
+    bool first = true;
+    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      const Route& r = *ir;
+      if(r.type == Route::TRACK_ROUTE)
       {
-      if (fifo.put(channels, n, bp, MusEGlobal::audio->pos().frame())) {
-            fprintf(stderr, "   overrun ???\n");
-            }
+        const Track* t = r.track;
+        // Continue if midi track or circular route, or muted.
+        if(!t || t == this || t->isMidiTrack() || t->isMute())
+          continue;
+        const AudioTrack* at = static_cast<const AudioTrack*>(t);
+        const int chans = at->channels();
+        int ch = 0;
+        for( ; ch < chans; ++ch)
+        {
+          //const unsigned int l = (unsigned int)at->latency(ch);
+          const unsigned int l = outputLatency();
+          if(first)
+          {
+            first = false;
+            lat_found = true;
+            lat = l;
+          }
+          else if(l != lat)
+          {
+            lat_found = false;
+            break;
+          }
+        }
+        if(ch < chans)
+          break;
       }
+    }
+  }
+
+  const unsigned int fin_lat = lat_found ? lat : 0;
+  
+  // REMOVE Tim. latency. Added.
+  if(lat_found)
+    fprintf(stderr, "AudioTrack::putFifo: latency:%d\n", fin_lat);*/
+
+  //const unsigned int fin_frame = MusEGlobal::audio->pos().frame() + fin_lat;
+  const unsigned int fin_frame = MusEGlobal::audio->pos().frame();
+        
+        
+  // REMOVE Tim. latency. Added.
+  fprintf(stderr, "AudioTrack::putFifo: latency:%f\n", route_worst_case_latency);
+        
+        
+// REMOVE Tim. latency. Changed.
+//       if (fifo.put(channels, n, bp, MusEGlobal::audio->pos().frame())) {
+//             fprintf(stderr, "   overrun ???\n");
+//             }
+  if(fifo.put(channels, n, bp, fin_frame, route_worst_case_latency))
+  {
+    fprintf(stderr, "AudioTrack::putFifo: fifo overrun: frame:%d, channels:%d, nframes:%lu\n", fin_frame, channels, n);
+    return false;
+  }
+  
+  return true;
+}
 
 //---------------------------------------------------------
 //   getData
@@ -1336,7 +1445,10 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       {
       // use supplied buffers
 
-      RouteList* rl = inRoutes();
+// REMOVE Tim. latency. Changed.
+//       RouteList* rl = inRoutes();
+      const RouteList* rl = inRoutes();
+      const int rl_sz = rl->size();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
@@ -1347,8 +1459,86 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       for(int i = 0; i < channels; ++i)
         used_in_chan_array[i] = false;
 
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            if(ir->track->isMidiTrack())
+// REMOVE Tim. latency. Added.
+//       struct buf_pos_struct {
+//         int _channels;
+//         unsigned long _pos;
+//         buf_pos_struct(int channels, unsigned long pos) { _channels = channels; _pos = pos; }
+//       };
+//       int tot_chans = 0;
+//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+//             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//               continue;
+//             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//           ++tot_chans;
+//       }
+//       int idx = 0;
+      unsigned long latency_array[rl_sz]; // REMOVE Tim. latency. Added.
+      int latency_array_cnt = 0;
+      unsigned long route_worst_case_latency = 0;
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+              continue;
+            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//             const int atrack_out_channels = atrack->totalOutChannels();
+//             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+//             const int src_chs = ir->channels;
+//             int fin_src_chs = src_chs;
+//             if(src_ch + fin_src_chs >  atrack_out_channels)
+//               fin_src_chs = atrack_out_channels - src_ch;
+//             const int next_src_chan = src_ch + fin_src_chs;
+//             // The goal is to have equal latency output on all channels on this track.
+//             for(int i = src_ch; i < next_src_chan; ++i)
+//             {
+//               const float lat = atrack->trackLatency(i);
+//               if(lat > worst_case_latency)
+//                 worst_case_latency = lat;
+//             }
+            //const unsigned long lat = atrack->outputLatency();
+            //latency_array[latency_array_cnt] = lat;
+            //if(lat > route_worst_case_latency)
+            //  route_worst_case_latency = lat;
+            const TrackLatencyInfo li = atrack->getLatencyInfo();
+            latency_array[latency_array_cnt] = li._outputLatency;
+            if(li._outputLatency > route_worst_case_latency)
+              route_worst_case_latency = li._outputLatency;
+            }
+            
+      // Adjust for THIS track's contribution to latency.
+      // The goal is to have equal latency output on all channels on this track.
+      const int track_out_channels = totalOutChannels();
+      //const int track_out_channels = totalProcessBuffers();
+      unsigned long track_worst_case_chan_latency = 0;
+      for(int i = 0; i < track_out_channels; ++i)
+      {
+        const unsigned long lat = trackLatency(i);
+        if(lat > track_worst_case_chan_latency)
+          track_worst_case_chan_latency = lat;
+      }
+      
+      //return worst_case_latency;
+      //latency_array[0] = latency_array[0]; // REMOVE. Just to compile...
+      
+      const unsigned long total_latency = route_worst_case_latency + track_worst_case_chan_latency;
+      
+      
+      // Now prepare the latency array to be passed to the compensator's writer,
+      //  by adjusting each route latency value. ie. the route with the worst-case
+      //  latency will get ZERO delay, while routes having smaller latency will get
+      //  MORE delay, to match all the signals' timings together.
+      for(int i = 0; i < rl_sz; ++i)
+        latency_array[i] = total_latency - latency_array[i];
+      
+
+      // REMOVE Tim. latency. Added.
+      latency_array_cnt = 0;
+      
+// REMOVE Tim. latency. Changed.
+//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+// REMOVE Tim. latency. Changed.
+//             if(ir->track->isMidiTrack())
+            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
               continue;
 
             // Only this track knows how many destination channels there are,
@@ -1376,18 +1566,39 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
                                                           dst_ch, dst_chs, fin_dst_chs,
                                                           src_ch, src_chs,
                                                           nframes, buffer,
-                                                          false, used_in_chan_array);
+// REMOVE Tim. latency. Changed.
+//                                                           false, used_in_chan_array);
+                                                          false);
+            
+            // REMOVE Tim. latency. Added.
+            // Write the buffers to the latency compensator.
+            // By now, each copied channel should have the same latency, 
+            //  so we use this convenient common-latency version of write.
+            // Also factor in the write offset required by AudioOutput tracks.
+            // TODO: Make this per-channel.
+            if(_latencyComp)
+              //_latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
+              _latencyComp->write(nframes, latency_array[latency_array_cnt] + latencyCompWriteOffset(), buffer);
+            
             const int next_chan = dst_ch + fin_dst_chs;
             for(int i = dst_ch; i < next_chan; ++i)
               used_in_chan_array[i] = true;
             have_data = true;
             }
 
-      // Fill unsused channels with silence.
+//       // Fill unused channels with silence.
       for(int i = 0; i < channels; ++i)
       {
         if(used_in_chan_array[i])
+        {
+          // REMOVE Tim. latency. Added.
+          // Read back the latency compensated signals, using the buffers in-place.
+          if(_latencyComp)
+            _latencyComp->read(i, nframes, buffer[i]);
+        
           continue;
+        }
+        // Fill unused channels with silence.
         // Channel is unused. Zero the supplied buffer.
         if(MusEGlobal::config.useDenormalBias)
         {
@@ -1409,6 +1620,30 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffer)
       {
       if (!MusEGlobal::checkAudioDevice()) return false;
+      
+      
+// REMOVE Tim. latency. Added.
+      unsigned long latency_array[channels]; // REMOVE Tim. latency. Added.
+      unsigned long worst_case_latency = 0;
+      for(int i = 0; i < channels; ++i) {
+        // For Audio Input tracks this is the track latency (rack plugins etc) 
+        //  PLUS the Jack latency, on the given channel.
+        // Note that if there are multiple connections to one of our Jack ports,
+        //  we ask Jack for the maximum latency, even though there's nothing we 
+        //  can do about it since the data has already been mixed.
+        // (Therefore always best for user to use separate ports or channels or 
+        //  input tracks for each input connection.)
+        const float f = trackLatency(i);
+        latency_array[i] = f;
+        if(f > worst_case_latency)
+          worst_case_latency = f;
+      }
+      // Adjust the array values to arrive at forward write offsets to be passed to the latency compensator.
+      for(int i = 0; i < channels; ++i)
+        latency_array[i] = worst_case_latency - latency_array[i];
+
+
+      
       for (int ch = 0; ch < channels; ++ch)
       {
             void* jackPort = jackPorts[ch];
@@ -1429,14 +1664,28 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   float* jackbuf = MusEGlobal::audioDevice->getBuffer(jackPort, nframes);
                   AL::dsp->cpy(buffer[ch], jackbuf, nframes);
 
-                  if (MusEGlobal::config.useDenormalBias)
+// REMOVE Tim. latency. Changed.
+//                   if (MusEGlobal::config.useDenormalBias)
+                  // Take care of the denormals now if there's no latency compensator.
+                  if (!_latencyComp && MusEGlobal::config.useDenormalBias)
                   {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] += MusEGlobal::denormalBias;
                   }
+                  
+                  // REMOVE Tim. latency. Added.
+                  // Write the buffers to the latency compensator.
+                  // They will be read back later, in-place.
+                  if(_latencyComp)
+                    _latencyComp->write(ch, nframes, latency_array[ch], buffer[ch]);
             }
             else
             {
+                // REMOVE Tim. latency. Added.
+                // Don't bother setting the denormal data here if using the latency compensator.
+                if(!_latencyComp)
+                {
+                    
                   if (MusEGlobal::config.useDenormalBias)
                   {
                       for (unsigned int i=0; i < nframes; i++)
@@ -1446,8 +1695,28 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   {
                               memset(buffer[ch], 0, nframes * sizeof(float));
                   }
+                  
+                }
+                  
             }
       }
+      
+      // REMOVE Tim. latency. Added.
+      if(_latencyComp)
+      {
+        // Read back the latency compensated signals, using the buffers in-place.
+        _latencyComp->read(nframes, buffer);
+        
+        if(MusEGlobal::config.useDenormalBias)
+        {
+          for(int ch = 0; ch < channels; ++ch)
+          {
+            for(unsigned int i = 0; i < nframes; i++)
+              buffer[ch][i] += MusEGlobal::denormalBias;
+          }
+        }
+      }
+      
       return true;
 }
 
@@ -1592,9 +1861,12 @@ bool WaveTrack::canEnableRecord() const
 void AudioTrack::record()
       {
       unsigned pos = 0;
+      unsigned latency = 0;
       float* buffer[_channels];
       while(fifo.getCount()) {
-            if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
+// REMOVE Tim. latency. Changed.
+//             if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
+            if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos, &latency)) {
                   fprintf(stderr, "AudioTrack::record(): empty fifo\n");
                   return;
                   }
@@ -1646,9 +1918,16 @@ void AudioTrack::record()
                     if( (pos >= fr) && (!MusEGlobal::song->punchout() || (!MusEGlobal::song->loop() && pos < MusEGlobal::song->rPos().frame())) )
                     {
                       pos -= fr;
-                      // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
-                      _recFile->seek(pos, 0);
-                      _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
+                      
+// REMOVE Tim. basic latency. Added.
+                      if(pos >= latency)
+                      {
+                        pos -= latency;
+                      
+                        // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
+                        _recFile->seek(pos, 0);
+                        _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
+                      }
                     }
 
                     }
@@ -1809,7 +2088,9 @@ void Fifo::clear()
 //    return true if fifo full
 //---------------------------------------------------------
 
-bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
+// REMOVE Tim. latency. Changed.
+// bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
+bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos, unsigned latency)
       {
       #ifdef FIFO_DEBUG
       fprintf(stderr, "FIFO::put segs:%d samples:%lu pos:%u count:%d\n", segs, samples, pos, muse_atomic_read(&count));
@@ -1845,6 +2126,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       b->size = samples;
       b->segs = segs;
       b->pos  = pos;
+      b->latency = latency;
       for (int i = 0; i < segs; ++i)
             AL::dsp->cpy(b->buffer + i * samples, src[i], samples);
       add();
@@ -1856,7 +2138,9 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
 //    return true if fifo empty
 //---------------------------------------------------------
 
-bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
+// REMOVE Tim. latency. Changed.
+// bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
+bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos, unsigned* latency)
       {
       #ifdef FIFO_DEBUG
       fprintf(stderr, "FIFO::get segs:%d samples:%lu count:%d\n", segs, samples, muse_atomic_read(&count));
@@ -1875,6 +2159,8 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
 
       if (pos)
             *pos = b->pos;
+      if (latency)
+            *latency = b->latency;
 
       for (int i = 0; i < segs; ++i)
             dst[i] = b->buffer + samples * (i % b->segs);
@@ -1994,6 +2280,10 @@ void AudioTrack::setChannels(int n)
       Track::setChannels(n);
       if (_efxPipe)
             _efxPipe->setChannels(n);
+      
+      // REMOVE Tim. latency. Added.
+      if(_latencyComp)
+        _latencyComp->setChannels(totalProcessBuffers());
       }
 
 //---------------------------------------------------------

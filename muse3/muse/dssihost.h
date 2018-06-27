@@ -160,7 +160,8 @@ class DssiSynthIF : public SynthIF
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       
-      virtual void preProcessAlways();
+// REMOVE Tim. latency. Removed.
+//       virtual void preProcessAlways();
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
@@ -216,7 +217,7 @@ class DssiSynthIF : public SynthIF
       const char* paramOutName(unsigned long i);
       LADSPA_PortRangeHint range(unsigned long i);
       LADSPA_PortRangeHint rangeOut(unsigned long i);
-      float latency();
+      float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const; 
       CtrlList::Mode ctrlMode(unsigned long i) const; 
 

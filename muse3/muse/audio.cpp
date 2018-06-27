@@ -824,7 +824,9 @@ void Audio::process(unsigned frames)
 #ifdef _AUDIO_USE_TRUE_FRAME_
       _previousPos = _pos;
 #endif
+// REMOVE Tim. latency. Changed. Hm, doesn't work. Position takes a long time to start moving.
       if (isPlaying()) {
+      //if(isPlaying() || (MusEGlobal::extSyncFlag.value() && MusEGlobal::midiSyncContainer.isPlaying())) {
             _pos += frames;
             // With jack timebase this might not be accurate if we 
             //  set curTickPos (above) from the reported current tick.
@@ -877,6 +879,45 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Pre-process the metronome.
       ((AudioTrack*)metronome)->preProcessAlways();
       
+      // REMOVE Tim. latency. Added.
+      //---------------------------------------------
+      // Latency correction/compensation processing
+      //---------------------------------------------
+
+      OutputList* ol = MusEGlobal::song->outputs();
+      const int rl_sz = ol->size();
+      unsigned long latency_array[rl_sz];
+      int latency_array_cnt = 0;
+      float route_worst_latency = 0.0f;
+      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
+      {
+        track = static_cast<AudioTrack*>(*i);
+        TrackLatencyInfo li = track->getLatencyInfo();
+        latency_array[latency_array_cnt] = li._outputLatency;
+        if(li._outputLatency > route_worst_latency)
+          route_worst_latency = li._outputLatency;
+      }
+      // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = static_cast<AudioTrack*>(*it);
+        if(track->type() == Track::AUDIO_OUTPUT)
+          continue;
+        track->getLatencyInfo();
+      }      
+      // Now prepare the latency array to be passed to the compensator's writer,
+      //  by adjusting each route latency value. ie. the route with the worst-case
+      //  latency will get ZERO delay, while routes having smaller latency will get
+      //  MORE delay, to match all the signals' timings together.
+      for(int i = 0; i < rl_sz; ++i)
+        latency_array[i] = route_worst_latency - latency_array[i];
+      
+      //---------------------------------------------
+      // Audio processing
+      //---------------------------------------------
+      
       // Process Aux tracks first.
       for(ciTrack it = tl->begin(); it != tl->end(); ++it)
       {
@@ -897,9 +938,18 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         }
       }
       
-      OutputList* ol = MusEGlobal::song->outputs();
-      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 
-        (*i)->process(samplePos, offset, frames);
+      // REMOVE Tim. latency. Changed.
+//       OutputList* ol = MusEGlobal::song->outputs();
+//       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i)
+//         (*i)->process(samplePos, offset, frames);
+      // Reset.
+      latency_array_cnt = 0;
+      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
+      {
+        AudioOutput* otrack = static_cast<AudioOutput*>(*i);
+        otrack->setLatencyCompWriteOffset(latency_array[latency_array_cnt]);
+        otrack->process(samplePos, offset, frames);
+      }
             
       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       // Not just unconnected ones, as previously done, but ones whose output path ultimately leads nowhere.
@@ -921,6 +971,8 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
+          // REMOVE Tim. latency. Added.
+          
           //fprintf(stderr, "Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, -1, channels, channels, -1, -1, frames, buffer);
         }

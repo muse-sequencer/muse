@@ -830,7 +830,7 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
 //   latency
 //---------------------------------------------------------
 
-float DssiSynthIF::latency()
+float DssiSynthIF::latency() const
 {
   if(!_hasLatencyOutPort)
     return 0.0;
@@ -1030,14 +1030,15 @@ void DssiSynthIF::write(int level, Xml& xml) const
         xml.doubleTag(level, "param", _controls[c].val);
 }
 
-//---------------------------------------------------------
-//   preProcessAlways
-//---------------------------------------------------------
-
-void DssiSynthIF::preProcessAlways()
-{
-
-}
+// REMOVE Tim. latency. Removed.
+// //---------------------------------------------------------
+// //   preProcessAlways
+// //---------------------------------------------------------
+// 
+// void DssiSynthIF::preProcessAlways()
+// {
+// 
+// }
 
 //---------------------------------------------------------
 //   processEvent
