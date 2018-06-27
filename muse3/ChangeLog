@@ -1,3 +1,15 @@
+26.05.2018
+      - More fixes for newer gcc warnings treated as errors. (Tim)
+        Oops. Fixed some funny business with memcpy in DeicsOnze::initPluginDelay().
+        Oops. Fixed missing switch/case breaks in Slider::setOrientation().
+        Bump up required RtAudio version to 5.0 and fix wrong include statement
+         in rtaudio.cpp from rtaudio.h to rtaudio/RtAudio.h
+        Attempt to fix warning (error) in lilv.h: "error: unnecessary parentheses
+         in declaration of ‘i’ [-Werror=parentheses]". Can't seem to suppress this,
+         was forced to turn lv2host.cpp/h into a separate module with its own
+         -Wno-error compile flag. Tested OK with muse built as static modules
+         or normal build. Bit of a hack, could it fail if something else includes
+         lv2host.h first before the module is compiled?
 28.05.2018
       - Added missing #includes needed by newer Qt >= 5.11 (Orcan)
 10.05.2018
