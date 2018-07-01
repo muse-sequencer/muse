@@ -392,7 +392,7 @@ void WaveView::viewMousePressEvent(QMouseEvent* event)
       viewMouseMoveEvent(event);
       }
 
-#define WHEEL_STEPSIZE 40
+#define WHEEL_STEPSIZE 50
 #define WHEEL_DELTA   120
 //---------------------------------------------------------
 //   wheelEvent

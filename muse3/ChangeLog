@@ -1,4 +1,9 @@
-26.05.2018
+01.07.2018
+      - Fix non-functional mouse wheel in Canvas::wheelEvent(). (Tim)
+        Broke with fixes of 15.12.2017. I tried to repect what that fix did,
+         hopefully works OK with either touch pad (I don't have one) or mouse wheel.
+        Increased step size slightly from 40 to 50.
+26.06.2018
       - More fixes for newer gcc warnings treated as errors. (Tim)
         Oops. Fixed some funny business with memcpy in DeicsOnze::initPluginDelay().
         Oops. Fixed missing switch/case breaks in Slider::setOrientation().

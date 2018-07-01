@@ -831,7 +831,7 @@ QPoint WaveCanvas::raster(const QPoint& p) const
       return QPoint(x, y);
       }
 
-#define WHEEL_STEPSIZE 40
+#define WHEEL_STEPSIZE 50
 #define WHEEL_DELTA   120
 //---------------------------------------------------------
 //   wheelEvent
