@@ -125,6 +125,10 @@ class Route {
       // Always same as the port name. When connection disappears, this holds on to the name.
       char persistentJackPortName[ROUTE_PERSISTENT_NAME_SIZE]; 
       
+      // Temporary used during latency calculations during each cycle.
+      // Holds the output latency of this node, so that it can be compared with others.
+      float audioLatencyOut;
+      
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);
       Route(MidiDevice* d, int ch = -1);  

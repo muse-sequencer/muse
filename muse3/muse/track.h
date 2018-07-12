@@ -67,7 +67,7 @@ struct TrackLatencyInfo
   //  been gathered in the current process cycle).
   // This is reset near the beginning of the process handler.
   bool _processed;
-  // Whether this information is valid (has already been gathered
+  // Whether the 'forward' information is valid (has already been gathered
   //  in the forward latency scan in the current process cycle).
   // This is reset near the beginning of the process handler.
   bool _forwardProcessed;
@@ -85,16 +85,18 @@ struct TrackLatencyInfo
   //  arriving at its inputs.
   float _outputLatency;
   float _forwardOutputLatency;
-  // Maximum amount of latency that this track's input can correct.
+  // Maximum amount of latency that this track's input can CORRECT (not just COMPENSATE).
   float _inputAvailableCorrection;
   float _forwardInputAvailableCorrection;
-  // Maximum amount of latency that this track's output can correct.
+  // Maximum amount of latency that this track's output can CORRECT (not just COMPENSATE).
   float _outputAvailableCorrection;
   float _forwardOutputAvailableCorrection;
 };
 
 // Default available wave track latency corrections. Just arbitrarily large values. 
 // A track may supply something different (default for others is 0).
+#define DEFAULT_AUDIOTRACK_IN_LATENCY_CORRECTION 4194304
+#define DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION 4194304
 #define DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION 4194304
 #define DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION 4194304
 
@@ -304,9 +306,9 @@ class Track {
       virtual bool recMonitor() const    { return _recMonitor; }
 
       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
-      virtual float inputLatencyCorrection() const { return 0.0f; }
+      virtual float inputLatencyCorrection() const;
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
-      virtual float outputLatencyCorrection() const { return 0.0f; }
+      virtual float outputLatencyCorrection() const;
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -777,6 +779,13 @@ class AudioInput : public AudioTrack {
       float trackLatency(int channel) const; 
 // REMOVE Tim. latency. Added.
 //       float outputLatency() const; 
+      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+      // Audio Input tracks always return 0 even if its inputs are unterminated.
+      float inputLatencyCorrection() const { return 0.0f; }
+      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+      // Audio Input tracks always return 0 even if its inputs are unterminated.
+      float outputLatencyCorrection() const { return 0.0f; }
+      
       void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
       AudioInput* newTrack() const { return new AudioInput(); }
@@ -812,6 +821,13 @@ class AudioOutput : public AudioTrack {
       virtual ~AudioOutput();
 
       virtual float trackLatency(int channel) const;
+// REMOVE Tim. latency. Added.
+      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+      // Audio Output tracks always return 0 even if its outputs are unterminated.
+      float inputLatencyCorrection() const { return 0.0f; }
+      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+      // Audio Output tracks always return 0 even if its outputs are unterminated.
+      float outputLatencyCorrection() const { return 0.0f; }
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }

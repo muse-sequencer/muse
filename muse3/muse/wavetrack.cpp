@@ -326,7 +326,7 @@ bool WaveTrack::getDataPrivate(unsigned pos, int channels, unsigned nframes, flo
             //latency_array[latency_array_cnt] = lat;
             //if(lat > route_worst_case_latency)
             //  route_worst_case_latency = lat;
-            const TrackLatencyInfo li = atrack->outputLatency();
+            const TrackLatencyInfo li = atrack->getLatencyInfo();
             latency_array[latency_array_cnt] = li._outputLatency;
             if(li._outputLatency > route_worst_case_latency)
               route_worst_case_latency = li._outputLatency;
@@ -595,40 +595,7 @@ TrackLatencyInfo WaveTrack::getLatencyInfo()
       if(_latencyInfo._processed)
         return _latencyInfo;
       
-      const RouteList* rl = inRoutes();
-      float route_worst_latency = 0.0f;
-
-      // These values have a range from 0 (worst) to negative inf (best) or close to it.
-      const float track_avail_out_corr = outputLatencyCorrection();
-      float route_worst_out_corr = track_avail_out_corr;
-      
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-              continue;
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//             const int atrack_out_channels = atrack->totalOutChannels();
-//             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
-//             const int src_chs = ir->channels;
-//             int fin_src_chs = src_chs;
-//             if(src_ch + fin_src_chs >  atrack_out_channels)
-//               fin_src_chs = atrack_out_channels - src_ch;
-//             const int next_src_chan = src_ch + fin_src_chs;
-//             // The goal is to have equal latency output on all channels on this track.
-//             for(int i = src_ch; i < next_src_chan; ++i)
-//             {
-//               const float lat = atrack->trackLatency(i);
-//               if(lat > worst_case_latency)
-//                 worst_case_latency = lat;
-//             }
-            TrackLatencyInfo li = atrack->getLatencyInfo();
-            if(li._outputLatency > route_worst_latency)
-              route_worst_latency = li._outputLatency;
-            
-            if(li._outputAvailableCorrection > route_worst_out_corr)
-              route_worst_out_corr = li._outputAvailableCorrection;
-            }
-            
-      // Adjust for THIS track's contribution to latency.
+      // Get THIS track's channels' worst contribution to latency.
       // The goal is to have equal latency output on all channels on this track.
       const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
       float track_worst_chan_latency = 0.0f;
@@ -639,6 +606,58 @@ TrackLatencyInfo WaveTrack::getLatencyInfo()
             track_worst_chan_latency = lat;
       }
       
+      float route_worst_latency = 0.0f;
+//       // These values have a range from 0 (worst) to negative inf (best) or close to it.
+      // These values have a range from 0 (worst) to positive inf (best) or close to it.
+      // TODO Custom WaveTrack method override for outputLatencyCorrection().
+      float track_avail_out_corr = outputLatencyCorrection();
+      float route_worst_out_corr = track_avail_out_corr;
+
+      // If record monitor is on we must consider the track's inputs...
+      //if(recMonitor())
+      {
+        const RouteList* rl = inRoutes();
+        for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+              if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+                continue;
+              AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+  //             const int atrack_out_channels = atrack->totalOutChannels();
+  //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+  //             const int src_chs = ir->channels;
+  //             int fin_src_chs = src_chs;
+  //             if(src_ch + fin_src_chs >  atrack_out_channels)
+  //               fin_src_chs = atrack_out_channels - src_ch;
+  //             const int next_src_chan = src_ch + fin_src_chs;
+  //             // The goal is to have equal latency output on all channels on this track.
+  //             for(int i = src_ch; i < next_src_chan; ++i)
+  //             {
+  //               const float lat = atrack->trackLatency(i);
+  //               if(lat > worst_case_latency)
+  //                 worst_case_latency = lat;
+  //             }
+              TrackLatencyInfo li = atrack->getLatencyInfo();
+              if(li._outputLatency > route_worst_latency)
+                route_worst_latency = li._outputLatency;
+              
+  //             if(li._outputAvailableCorrection > route_worst_out_corr)
+              if(li._outputAvailableCorrection < route_worst_out_corr)
+                route_worst_out_corr = li._outputAvailableCorrection;
+              }
+              
+      }
+//       else
+//       {
+//         float lat = track_worst_chan_latency - track_avail_out_corr;
+//         if(lat < 0.0)
+//           lat = 0.0;
+//         // Reduce the available correction.
+//         float new_track_avail_out_corr = track_avail_out_corr - track_worst_chan_latency;
+//         if(new_track_avail_out_corr < 0.0)
+//           new_track_avail_out_corr = 0.0;
+//         track_avail_out_corr = new_track_avail_out_corr;
+//         track_worst_chan_latency = lat;
+//       }
+            
       // The absolute latency of signals leaving this track is the sum of
       //  any connected route latencies and this track's latency.
       _latencyInfo._trackLatency  = track_worst_chan_latency;
@@ -654,7 +673,7 @@ TrackLatencyInfo WaveTrack::getLatencyInfo()
 //   getForwardLatencyInfo
 //---------------------------------------------------------
 
-TrackLatencyInfo AudioTrack::getForwardLatencyInfo()
+TrackLatencyInfo WaveTrack::getForwardLatencyInfo()
 {
 // TODO TODO TODO: Adjust compensation for when 'monitor' is on !!! It will change the latency.
   
@@ -672,7 +691,8 @@ TrackLatencyInfo AudioTrack::getForwardLatencyInfo()
       
       const RouteList* rl = outRoutes();
       float route_worst_latency = 0.0f;
-      // This value has a range from 0 (worst) to negative inf (best) or close to it.
+//       // This value has a range from 0 (worst) to negative inf (best) or close to it.
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
       float route_worst_out_corr = 0.0f;
       bool item_found = false;
       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
@@ -685,7 +705,8 @@ TrackLatencyInfo AudioTrack::getForwardLatencyInfo()
             
             if(item_found)
             {
-              if(li._outputAvailableCorrection > route_worst_out_corr)
+//               if(li._outputAvailableCorrection > route_worst_out_corr)
+              if(li._outputAvailableCorrection < route_worst_out_corr)
                 route_worst_out_corr = li._outputAvailableCorrection;
             }
             else

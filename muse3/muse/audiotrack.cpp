@@ -1151,12 +1151,15 @@ TrackLatencyInfo AudioTrack::getLatencyInfo()
       if(_latencyInfo._processed)
         return _latencyInfo;
       
-      const RouteList* rl = inRoutes();
+      RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
       float route_worst_latency = 0.0f;
-      // This value has a range from 0 (worst) to negative inf (best) or close to it.
-      float route_worst_out_corr = 0.0f;
+      
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+      float route_worst_out_corr = outputLatencyCorrection();
+      
       bool item_found = false;
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
               continue;
             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
@@ -1175,12 +1178,14 @@ TrackLatencyInfo AudioTrack::getLatencyInfo()
 //                 worst_case_latency = lat;
 //             }
             TrackLatencyInfo li = atrack->getLatencyInfo();
+            ir->audioLatencyOut = li._outputLatency;
             if(li._outputLatency > route_worst_latency)
               route_worst_latency = li._outputLatency;
             
             if(item_found)
             {
-              if(li._outputAvailableCorrection > route_worst_out_corr)
+//               if(li._outputAvailableCorrection > route_worst_out_corr)
+              if(li._outputAvailableCorrection < route_worst_out_corr)
                 route_worst_out_corr = li._outputAvailableCorrection;
             }
             else
@@ -1222,7 +1227,7 @@ TrackLatencyInfo AudioTrack::getForwardLatencyInfo()
       // We need some of the info from the reverse scanning.
       // If all goes well, all nodes should be reverse-processed by now.
       // But in case this one hasn't do it now, starting from this node backwards.
-      getLatencyInfo();
+      //getLatencyInfo();
 
       // Have we been here before during this forward scan in this process cycle?
       // Just return the cached value.
@@ -1231,27 +1236,62 @@ TrackLatencyInfo AudioTrack::getForwardLatencyInfo()
       
       const RouteList* rl = outRoutes();
       float route_worst_latency = 0.0f;
-      // This value has a range from 0 (worst) to negative inf (best) or close to it.
-      float route_worst_out_corr = 0.0f;
+//       // This value has a range from 0 (worst) to negative inf (best) or close to it.
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+      //float route_worst_out_corr = 0.0f;
+      float route_worst_out_corr = outputLatencyCorrection();
+      // This value has a range from 0 (worst) to positive inf (best) or close to it.
+      float rev_route_worst_out_corr = outputLatencyCorrection();
       bool item_found = false;
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+      //bool rev_item_found = false;
+      for (ciRoute o_r = rl->begin(); o_r != rl->end(); ++o_r) {
+            if(o_r->type != Route::TRACK_ROUTE || !o_r->track || o_r->track->isMidiTrack())
               continue;
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-            TrackLatencyInfo li = atrack->getForwardLatencyInfo();
-            if(li._forwardOutputLatency > route_worst_latency)
-              route_worst_latency = li._forwardOutputLatency;
+            AudioTrack* atrack = static_cast<AudioTrack*>(o_r->track);
+            TrackLatencyInfo rev_li = atrack->getLatencyInfo();
+            TrackLatencyInfo fwd_li = atrack->getForwardLatencyInfo();
+            
+            if(fwd_li._forwardOutputLatency > route_worst_latency)
+              route_worst_latency = fwd_li._forwardOutputLatency;
             
             if(item_found)
             {
-              if(li._outputAvailableCorrection > route_worst_out_corr)
-                route_worst_out_corr = li._outputAvailableCorrection;
+//               if(li._outputAvailableCorrection > route_worst_out_corr)
+              if(fwd_li._outputAvailableCorrection < route_worst_out_corr)
+                route_worst_out_corr = fwd_li._outputAvailableCorrection;
+              
+              if(rev_li._outputAvailableCorrection < rev_route_worst_out_corr)
+                rev_route_worst_out_corr = rev_li._outputAvailableCorrection;
             }
             else
             {
-              route_worst_out_corr = li._outputAvailableCorrection;
+              route_worst_out_corr = fwd_li._outputAvailableCorrection;
+              rev_route_worst_out_corr = rev_li._outputAvailableCorrection;
               item_found = true;
             }
+            
+//             // This value has a range from 0 (worst) to positive inf (best) or close to it.
+//             float i_route_worst_out_corr = 0.0f;
+//             bool i_item_found = false;
+//             const RouteList* irl = atrack->inRoutes();
+//             for (ciRoute i_r = irl->begin(); i_r != irl->end(); ++i_r) {
+//                   if(i_r->type != Route::TRACK_ROUTE || !i_r->track || i_r->track->isMidiTrack())
+//                     continue;
+//                   AudioTrack* ir_track = static_cast<AudioTrack*>(i_r->track);
+//                   TrackLatencyInfo ir_li = ir_track->getLatencyInfo();
+//                   if(i_item_found)
+//                   {
+//                     //if(ir_li._outputAvailableCorrection > i_route_worst_out_corr)
+//                     if(ir_li._outputAvailableCorrection < route_worst_out_corr)
+//                       i_route_worst_out_corr = ir_li._outputAvailableCorrection;
+//                   }
+//                   else
+//                   {
+//                     i_route_worst_out_corr = ir_li._outputAvailableCorrection;
+//                     i_item_found = true;
+//                   }
+//             }
+
       }
             
       // Adjust for THIS track's contribution to latency.

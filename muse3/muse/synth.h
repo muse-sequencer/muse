@@ -141,7 +141,9 @@ class SynthIF : public PluginIBase {
       virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
       virtual bool hasNativeGui() const = 0;
-      virtual void preProcessAlways() = 0;
+// REMOVE Tim. latency. Changed.
+//       virtual void preProcessAlways() = 0;
+      virtual void preProcessAlways() { }
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;

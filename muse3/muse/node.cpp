@@ -1334,7 +1334,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
         //const float lat = atrack->outputLatency();
         //if(lat > route_worst_case_latency)
         //  route_worst_case_latency = lat;
-        const TrackLatencyInfo li = atrack->outputLatency();
+        const TrackLatencyInfo li = atrack->getLatencyInfo();
         if(li._outputLatency > route_worst_case_latency)
           route_worst_case_latency = li._outputLatency;
         }
@@ -1446,9 +1446,9 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       // use supplied buffers
 
 // REMOVE Tim. latency. Changed.
-//       RouteList* rl = inRoutes();
-      const RouteList* rl = inRoutes();
-      const int rl_sz = rl->size();
+      RouteList* rl = inRoutes();
+      //const RouteList* rl = inRoutes();
+      //const int rl_sz = rl->size();
 
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
@@ -1459,83 +1459,108 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       for(int i = 0; i < channels; ++i)
         used_in_chan_array[i] = false;
 
-// REMOVE Tim. latency. Added.
-//       struct buf_pos_struct {
-//         int _channels;
-//         unsigned long _pos;
-//         buf_pos_struct(int channels, unsigned long pos) { _channels = channels; _pos = pos; }
-//       };
-//       int tot_chans = 0;
-//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+// // REMOVE Tim. latency. Added.
+// //       struct buf_pos_struct {
+// //         int _channels;
+// //         unsigned long _pos;
+// //         buf_pos_struct(int channels, unsigned long pos) { _channels = channels; _pos = pos; }
+// //       };
+// //       int tot_chans = 0;
+// //       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+// //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+// //               continue;
+// //             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+// //           ++tot_chans;
+// //       }
+// //       int idx = 0;
+//       //unsigned long latency_array[rl_sz]; // REMOVE Tim. latency. Added.
+//       //int latency_array_cnt = 0;
+//       unsigned long route_worst_case_latency = 0;
+//       // This value has a range from 0 (worst) to positive inf (best) or close to it.
+//       float route_worst_out_corr = 0.0f;
+//       bool item_found = false;
+//       //for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+//       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
 //             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
 //               continue;
 //             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//           ++tot_chans;
-//       }
-//       int idx = 0;
-      unsigned long latency_array[rl_sz]; // REMOVE Tim. latency. Added.
-      int latency_array_cnt = 0;
-      unsigned long route_worst_case_latency = 0;
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-              continue;
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-//             const int atrack_out_channels = atrack->totalOutChannels();
-//             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
-//             const int src_chs = ir->channels;
-//             int fin_src_chs = src_chs;
-//             if(src_ch + fin_src_chs >  atrack_out_channels)
-//               fin_src_chs = atrack_out_channels - src_ch;
-//             const int next_src_chan = src_ch + fin_src_chs;
-//             // The goal is to have equal latency output on all channels on this track.
-//             for(int i = src_ch; i < next_src_chan; ++i)
+// //             const int atrack_out_channels = atrack->totalOutChannels();
+// //             const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+// //             const int src_chs = ir->channels;
+// //             int fin_src_chs = src_chs;
+// //             if(src_ch + fin_src_chs >  atrack_out_channels)
+// //               fin_src_chs = atrack_out_channels - src_ch;
+// //             const int next_src_chan = src_ch + fin_src_chs;
+// //             // The goal is to have equal latency output on all channels on this track.
+// //             for(int i = src_ch; i < next_src_chan; ++i)
+// //             {
+// //               const float lat = atrack->trackLatency(i);
+// //               if(lat > worst_case_latency)
+// //                 worst_case_latency = lat;
+// //             }
+//             //const unsigned long lat = atrack->outputLatency();
+//             //latency_array[latency_array_cnt] = lat;
+//             //if(lat > route_worst_case_latency)
+//             //  route_worst_case_latency = lat;
+//             const TrackLatencyInfo li = atrack->getLatencyInfo();
+//             //latency_array[latency_array_cnt] = li._outputLatency;
+//             ir->audioLatencyOut = li._outputLatency;
+//             if(li._outputLatency > route_worst_case_latency)
+//               route_worst_case_latency = li._outputLatency;
+//             
+//             if(item_found)
 //             {
-//               const float lat = atrack->trackLatency(i);
-//               if(lat > worst_case_latency)
-//                 worst_case_latency = lat;
+// //               if(li._outputAvailableCorrection > route_worst_out_corr)
+//               if(li._outputAvailableCorrection < route_worst_out_corr)
+//                 route_worst_out_corr = li._outputAvailableCorrection;
 //             }
-            //const unsigned long lat = atrack->outputLatency();
-            //latency_array[latency_array_cnt] = lat;
-            //if(lat > route_worst_case_latency)
-            //  route_worst_case_latency = lat;
-            const TrackLatencyInfo li = atrack->getLatencyInfo();
-            latency_array[latency_array_cnt] = li._outputLatency;
-            if(li._outputLatency > route_worst_case_latency)
-              route_worst_case_latency = li._outputLatency;
-            }
-            
-      // Adjust for THIS track's contribution to latency.
-      // The goal is to have equal latency output on all channels on this track.
-      const int track_out_channels = totalOutChannels();
-      //const int track_out_channels = totalProcessBuffers();
-      unsigned long track_worst_case_chan_latency = 0;
-      for(int i = 0; i < track_out_channels; ++i)
-      {
-        const unsigned long lat = trackLatency(i);
-        if(lat > track_worst_case_chan_latency)
-          track_worst_case_chan_latency = lat;
-      }
-      
-      //return worst_case_latency;
-      //latency_array[0] = latency_array[0]; // REMOVE. Just to compile...
-      
-      const unsigned long total_latency = route_worst_case_latency + track_worst_case_chan_latency;
+//             else
+//             {
+//               route_worst_out_corr = li._outputAvailableCorrection;
+//               item_found = true;
+//             }
+//             
+//             }
+//             
+//       // Adjust for THIS track's contribution to latency.
+//       // The goal is to have equal latency output on all channels on this track.
+//       const int track_out_channels = totalOutChannels();
+//       //const int track_out_channels = totalProcessBuffers();
+//       unsigned long track_worst_case_chan_latency = 0;
+//       for(int i = 0; i < track_out_channels; ++i)
+//       {
+//         const unsigned long lat = trackLatency(i);
+//         if(lat > track_worst_case_chan_latency)
+//           track_worst_case_chan_latency = lat;
+//       }
+//       
+//       //return worst_case_latency;
+//       //latency_array[0] = latency_array[0]; // REMOVE. Just to compile...
+//       
+//       const unsigned long total_latency = route_worst_case_latency + track_worst_case_chan_latency;
       
       
-      // Now prepare the latency array to be passed to the compensator's writer,
-      //  by adjusting each route latency value. ie. the route with the worst-case
-      //  latency will get ZERO delay, while routes having smaller latency will get
-      //  MORE delay, to match all the signals' timings together.
-      for(int i = 0; i < rl_sz; ++i)
-        latency_array[i] = total_latency - latency_array[i];
+//       // Now prepare the latency array to be passed to the compensator's writer,
+//       //  by adjusting each route latency value. ie. the route with the worst-case
+//       //  latency will get ZERO delay, while routes having smaller latency will get
+//       //  MORE delay, to match all the signals' timings together.
+//       for(int i = 0; i < rl_sz; ++i)
+//         latency_array[i] = total_latency - latency_array[i];
       
 
       // REMOVE Tim. latency. Added.
-      latency_array_cnt = 0;
+      //latency_array_cnt = 0;
+      // The latency info should have already been calculated so that this returns the cached values.
+      const TrackLatencyInfo li = getLatencyInfo();
       
+      int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
+      unsigned int q;
+      float fl;
+      unsigned long int l;
 // REMOVE Tim. latency. Changed.
 //       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+      //for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir, ++latency_array_cnt) {
+      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
 // REMOVE Tim. latency. Changed.
 //             if(ir->track->isMidiTrack())
             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
@@ -1544,14 +1569,14 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             // Only this track knows how many destination channels there are,
             //  while only the route track knows how many source channels there are.
             // So take care of the destination channels here, and let the route track handle the source channels.
-            const int dst_ch = ir->channel <= -1 ? 0 : ir->channel;
+            dst_ch = ir->channel <= -1 ? 0 : ir->channel;
             if(dst_ch >= channels)
               continue;
-            const int dst_chs = ir->channels <= -1 ? channels : ir->channels;
-            const int src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
-            const int src_chs = ir->channels;
+            dst_chs = ir->channels <= -1 ? channels : ir->channels;
+            src_ch = ir->remoteChannel <= -1 ? 0 : ir->remoteChannel;
+            src_chs = ir->channels;
 
-            int fin_dst_chs = dst_chs;
+            fin_dst_chs = dst_chs;
             if(dst_ch + fin_dst_chs > channels)
               fin_dst_chs = channels - dst_ch;
 
@@ -1577,17 +1602,32 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             // Also factor in the write offset required by AudioOutput tracks.
             // TODO: Make this per-channel.
             if(_latencyComp)
+            {
               //_latencyComp->write(nframes, latency_array[latency_array_cnt], buffer);
-              _latencyComp->write(nframes, latency_array[latency_array_cnt] + latencyCompWriteOffset(), buffer);
+              //_latencyComp->write(nframes, latency_array[latency_array_cnt] + latencyCompWriteOffset(), buffer);
+              
+              // Prepare the latency value to be passed to the compensator's writer,
+              //  by adjusting each route latency value. ie. the route with the worst-case
+              //  latency will get ZERO delay, while routes having smaller latency will get
+              //  MORE delay, to match all the signal timings together.
+              // The route's audioLatencyOut should have already been calculated and
+              //  conveniently stored in the route.
+              fl = li._outputLatency - ir->audioLatencyOut;
+              l = fl;
+              // Should not happen, but just in case.
+              if(l < 0)
+                l = 0;
+              _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
+            }
             
-            const int next_chan = dst_ch + fin_dst_chs;
-            for(int i = dst_ch; i < next_chan; ++i)
+            next_chan = dst_ch + fin_dst_chs;
+            for(i = dst_ch; i < next_chan; ++i)
               used_in_chan_array[i] = true;
             have_data = true;
             }
 
 //       // Fill unused channels with silence.
-      for(int i = 0; i < channels; ++i)
+      for(i = 0; i < channels; ++i)
       {
         if(used_in_chan_array[i])
         {
@@ -1602,7 +1642,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
         // Channel is unused. Zero the supplied buffer.
         if(MusEGlobal::config.useDenormalBias)
         {
-          for(unsigned int q = 0; q < nframes; ++q)
+          for(q = 0; q < nframes; ++q)
             buffer[i][q] = MusEGlobal::denormalBias;
         }
         else
