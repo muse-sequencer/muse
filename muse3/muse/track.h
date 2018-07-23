@@ -91,6 +91,15 @@ struct TrackLatencyInfo
   // Maximum amount of latency that this track's output can CORRECT (not just COMPENSATE).
   float _outputAvailableCorrection;
   float _forwardOutputAvailableCorrection;
+  
+  // Whether this track (and the branch it is in) can force other parallel branches to
+  //  increase their latency compensation to match this one.
+  // If false, this branch will NOT disturb other parallel branches' compensation,
+  //  intead only allowing compensation UP TO the worst case in other branches.
+  bool _canDominateOutputLatency;
+  bool _canDominateInputLatency;
+  // Whether this track and it's branch require latency correction, not just compensation.
+  bool _requiresInputCorrection;
 };
 
 // Default available wave track latency corrections. Just arbitrarily large values. 
@@ -309,6 +318,15 @@ class Track {
       virtual float inputLatencyCorrection() const;
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
       virtual float outputLatencyCorrection() const;
+      // Whether this track (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
+      virtual bool canDominateOutputLatency() const;
+      virtual bool canDominateInputLatency() const;
+      // Whether this track and it's branch require latency correction, not just compensation.
+      virtual bool requiresInputLatencyCorrection() const;
+
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -687,6 +705,9 @@ class AudioTrack : public Track {
         _latencyInfo._processed = false;
         _latencyInfo._forwardProcessed = false;
         _latCompWriteOffset = 0;
+        //_canDominateOutputLatency = false;
+        //_canDominateInputLatency = false;
+        //_requiresInputCorrection = false;
       }
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
@@ -785,6 +806,8 @@ class AudioInput : public AudioTrack {
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
       // Audio Input tracks always return 0 even if its inputs are unterminated.
       float outputLatencyCorrection() const { return 0.0f; }
+      // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches.
+      bool canDominateOutputLatency() const { return true; }
       
       void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
@@ -828,6 +851,9 @@ class AudioOutput : public AudioTrack {
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
       // Audio Output tracks always return 0 even if its outputs are unterminated.
       float outputLatencyCorrection() const { return 0.0f; }
+      // Audio Output tracks have no correction available. They ALWAYS dominate any parallel branches.
+      bool canDominateInputLatency() const { return true; }
+      
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }
@@ -950,6 +976,11 @@ class WaveTrack : public AudioTrack {
       float inputLatencyCorrection() const { return DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION; }
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
       float outputLatencyCorrection() const { return DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION; }
+      // Depending on the Monitor setting, Wave Tracks can have available correction.
+      // If unmonitored, they will never dominate parallel branches.
+      bool canDominateOutputLatency() const;
+      bool canDominateInputLatency() const;
+      bool requiresInputLatencyCorrection() const;
       
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       Fifo* prefetchFifo()          { return &_prefetchFifo; }

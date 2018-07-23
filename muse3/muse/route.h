@@ -128,6 +128,7 @@ class Route {
       // Temporary used during latency calculations during each cycle.
       // Holds the output latency of this node, so that it can be compared with others.
       float audioLatencyOut;
+      bool canDominateLatency;
       
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);

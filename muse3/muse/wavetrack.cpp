@@ -737,6 +737,24 @@ TrackLatencyInfo WaveTrack::getForwardLatencyInfo()
       return _latencyInfo;
 }
 
+bool WaveTrack::canDominateOutputLatency() const
+{
+  // TODO Account for monitor. It depends on what feeds this track.
+  return false;
+}
+
+bool WaveTrack::canDominateInputLatency() const
+{
+  // TODO Account for monitor. It depends on what this track feeds.
+  return false;
+}
+
+bool WaveTrack::requiresInputLatencyCorrection() const
+{
+  // TODO Account for monitor. It depends on what this track feeds.
+  return false;
+}
+
 //---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------

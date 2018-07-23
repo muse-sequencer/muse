@@ -627,6 +627,21 @@ float Track::outputLatencyCorrection() const
     return DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION;
 }
 
+bool Track::canDominateOutputLatency() const
+{
+  return MusEGlobal::config.correctUnterminatedOutBranchLatency;
+}
+
+bool Track::canDominateInputLatency() const
+{
+  return MusEGlobal::config.correctUnterminatedInBranchLatency;
+}
+
+bool Track::requiresInputLatencyCorrection() const
+{
+  return MusEGlobal::config.correctUnterminatedInBranchLatency;
+}
+
 //---------------------------------------------------------
 //   MidiTrack
 //---------------------------------------------------------
