@@ -63,14 +63,22 @@ class LatencyCompensator;
 //  this holds cached computed latency values.
 struct TrackLatencyInfo
 {
-  // Whether this information is valid (has already
-  //  been gathered in the current process cycle).
+  // Whether the dominance information is valid (has already been
+  //  gathered in the in the dominance latency scan).
   // This is reset near the beginning of the process handler.
-  bool _processed;
+  bool _dominanceProcessed;
   // Whether the 'forward' information is valid (has already been gathered
-  //  in the forward latency scan in the current process cycle).
+  //  in the forward latency scan).
   // This is reset near the beginning of the process handler.
   bool _forwardProcessed;
+  // Whether the correction information is valid (has already been gathered
+  //  in the correction latency scan).
+  // This is reset near the beginning of the process handler.
+  bool _correctionProcessed;
+  // Whether the final latency information is valid (has already been gathered
+  //  in the in the final latency scan).
+  // This is reset near the beginning of the process handler.
+  bool _processed;
   // Contributions to latency from rack plugins and/or Jack ports etc.
   // This value is the worst-case latency of all the channels in a track.
   // See AudioTrack::trackLatency().
@@ -98,9 +106,19 @@ struct TrackLatencyInfo
   //  intead only allowing compensation UP TO the worst case in other branches.
   bool _canDominateOutputLatency;
   bool _canDominateInputLatency;
-  // Whether this track and it's branch require latency correction, not just compensation.
+  // Whether this track and its branch require latency correction, not just compensation.
   bool _requiresInputCorrection;
+  // Whether this track and its branch can correct for latency, not just compensate.
+  bool _canCorrectOutputLatency;
+  // For tracks which can correct for latency, this is the value that the track
+  //  must shift (ahead) to correct. It is essentially the programmed latency value
+  //  of the track's ultimate source (wave file etc.). Therefore it will be NEGATIVE
+  //  when requiring correction, but never POSITIVE (that would be unneccessary,
+  //  a subsequent compensator delay can do that).
+  float _sourceCorrectionValue;
 };
+
+//enum TrackLatencyScanType { DominanceLatencyScan, CorrectionLatencyScan, FinalLatencyScan };
 
 // Default available wave track latency corrections. Just arbitrarily large values. 
 // A track may supply something different (default for others is 0).
@@ -324,9 +342,10 @@ class Track {
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatency() const;
       virtual bool canDominateInputLatency() const;
-      // Whether this track and it's branch require latency correction, not just compensation.
+      // Whether this track and its branch require latency correction, not just compensation.
       virtual bool requiresInputLatencyCorrection() const;
-
+      // Whether this track and its branch can correct for latency, not just compensate.
+      virtual bool canCorrectOutputLatency() const { return false; }
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -701,13 +720,15 @@ class AudioTrack : public Track {
 // REMOVE Tim. latency. Changed.
 //       virtual void preProcessAlways() { _processed = false; }
       virtual void preProcessAlways() { 
-        _processed = false; 
-        _latencyInfo._processed = false;
+        _processed = false;
+        _latencyInfo._dominanceProcessed = false;
         _latencyInfo._forwardProcessed = false;
+        _latencyInfo._correctionProcessed = false;
+        _latencyInfo._processed = false;
         _latCompWriteOffset = 0;
-        //_canDominateOutputLatency = false;
-        //_canDominateInputLatency = false;
-        //_requiresInputCorrection = false;
+        //_latencyInfo._canDominateOutputLatency = false;
+        //_latencyInfo._canDominateInputLatency = false;
+        //_latencyInfo._requiresInputCorrection = false;
       }
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.
       // If the per-channel 'addArray' is supplied, whether to copy or add each channel is given in the array,
@@ -745,11 +766,19 @@ class AudioTrack : public Track {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo getLatencyInfo();
+      virtual TrackLatencyInfo& getDominanceLatencyInfo();
+      // The finalWorstLatency is the grand final worst-case latency, of any output track or open branch,
+      //  determined in the complete getDominanceLatencyInfo() scan.
+      // The callerBranchLatency is the inherent branch latency of the calling track, or zero if calling from
+      //  the very top outside of the branch heads (outside of output tracks or open branches).
+      // The callerBranchLatency is accumulated as setCorrectionLatencyInfo() is called on each track
+      //  in a branch of the graph.
+      virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      virtual TrackLatencyInfo& getLatencyInfo();
       // Returns forward latency computations (from wavetracks outward) during each cycle.
       // If the computations have already been done this cycle, cached values are returned,
       //  otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo getForwardLatencyInfo();
+      virtual TrackLatencyInfo& getForwardLatencyInfo();
       //
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
@@ -937,6 +966,9 @@ class AudioAux : public AudioTrack {
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
       static bool _isVisible;
+      // Temporary variables used during latency calculations:
+      // Holds the output latency of the wave file playback contribution to latency.
+      float _waveLatencyOut;
 
       void internal_assign(const Track&, int flags);
       bool getDataPrivate(unsigned, int, unsigned, float**);
@@ -967,11 +999,13 @@ class WaveTrack : public AudioTrack {
 // REMOVE Tim. latency. Added.
       // Returns latency computations during each cycle. If the computations have already been done 
       //  this cycle, cached values are returned, otherwise they are computed, cached, then returned.
-      TrackLatencyInfo getLatencyInfo();
+      //TrackLatencyInfo& getDominanceLatencyInfo();
+      void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
+      TrackLatencyInfo& getLatencyInfo();
       // Returns forward latency computations (from wavetracks outward) during each cycle.
       // If the computations have already been done this cycle, cached values are returned,
       //  otherwise they are computed, cached, then returned.
-      TrackLatencyInfo getForwardLatencyInfo();
+      TrackLatencyInfo& getForwardLatencyInfo();
       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
       float inputLatencyCorrection() const { return DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION; }
       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
@@ -981,6 +1015,7 @@ class WaveTrack : public AudioTrack {
       bool canDominateOutputLatency() const;
       bool canDominateInputLatency() const;
       bool requiresInputLatencyCorrection() const;
+      bool canCorrectOutputLatency() const;
       
       void clearPrefetchFifo()      { _prefetchFifo.clear(); }
       Fifo* prefetchFifo()          { return &_prefetchFifo; }

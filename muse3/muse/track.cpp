@@ -629,7 +629,8 @@ float Track::outputLatencyCorrection() const
 
 bool Track::canDominateOutputLatency() const
 {
-  return MusEGlobal::config.correctUnterminatedOutBranchLatency;
+  // Return true only if the track is on and the user wants unterminated branches counted.
+  return !off() && MusEGlobal::config.correctUnterminatedOutBranchLatency;
 }
 
 bool Track::canDominateInputLatency() const

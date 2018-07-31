@@ -124,11 +124,19 @@ class Route {
 
       // Always same as the port name. When connection disappears, this holds on to the name.
       char persistentJackPortName[ROUTE_PERSISTENT_NAME_SIZE]; 
-      
-      // Temporary used during latency calculations during each cycle.
+
+      //--------------------------------------------------------
+      // Temporary variables used during latency calculations:
       // Holds the output latency of this node, so that it can be compared with others.
       float audioLatencyOut;
+      // Whether this node (and the branch it is in) can force other parallel branches to
+      //  increase their latency compensation to match this one.
+      // If false, this branch will NOT disturb other parallel branches' compensation,
+      //  intead only allowing compensation UP TO the worst case in other branches.
       bool canDominateLatency;
+      // Whether this node and its branch can correct for latency, not just compensate.
+      bool canCorrectOutputLatency;
+      //--------------------------------------------------------
       
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);

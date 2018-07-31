@@ -892,7 +892,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
       {
         track = static_cast<AudioTrack*>(*i);
-        TrackLatencyInfo li = track->getLatencyInfo();
+        const TrackLatencyInfo& li = track->getLatencyInfo();
         latency_array[latency_array_cnt] = li._outputLatency;
         if(li._outputLatency > route_worst_latency)
           route_worst_latency = li._outputLatency;
