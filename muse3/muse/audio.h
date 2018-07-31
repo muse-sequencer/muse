@@ -200,9 +200,6 @@ class Audio {
 
       long m_Xruns;
       
-      // Holds latency computations each cycle.
-      TrackLatencyInfo _latencyInfo;
-      
       // Can be called by any thread.
       void sendLocalOff();
       
