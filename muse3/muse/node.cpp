@@ -1551,11 +1551,11 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       // REMOVE Tim. latency. Added.
       //latency_array_cnt = 0;
       // The latency info should have already been calculated so that this returns the cached values.
-      const TrackLatencyInfo li = getLatencyInfo();
+//       const TrackLatencyInfo li = getLatencyInfo();
       
       int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
       unsigned int q;
-      float fl;
+//       float fl;
       unsigned long int l;
 // REMOVE Tim. latency. Changed.
 //       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
@@ -1612,11 +1612,12 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
               //  MORE delay, to match all the signal timings together.
               // The route's audioLatencyOut should have already been calculated and
               //  conveniently stored in the route.
-              fl = li._outputLatency - ir->audioLatencyOut;
-              l = fl;
-              // Should not happen, but just in case.
-              if(l < 0)
-                l = 0;
+//               fl = li._outputLatency - ir->audioLatencyOut;
+//               l = fl;
+//               // Should not happen, but just in case.
+//               if(l < 0)
+//                 l = 0;
+              l = ir->audioLatencyOut;
               _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
             }
             

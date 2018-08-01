@@ -866,7 +866,7 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
       // This value has a range from 0 (worst) to positive inf (best) or close to it.
       //float route_worst_out_corr = outputLatencyCorrection();
       // Get the default domination for this track type.
-      bool can_dominate_out_lat = canDominateOutputLatency();
+//       bool can_dominate_out_lat = canDominateOutputLatency();
       
       // Gather latency info from all connected input branches,
       //  but ONLY if monitored and not off.
@@ -897,7 +897,7 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
                 
                 // Temporarily store these values conveniently in the actual route.
                 // They will be used by the latency compensator in the audio process pass.
-                ir->canDominateLatency = li._canDominateOutputLatency;
+//                 ir->canDominateLatency = li._canDominateOutputLatency;
                 //ir->canCorrectOutputLatency = li._canCorrectOutputLatency;
                 ir->audioLatencyOut = li._outputLatency;
                 
@@ -919,23 +919,23 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
                   
                   // If any one of the branches can dominate the latency,
                   //  that overrides any which cannot.
-                  if(li._canDominateOutputLatency)
-                  {
-                    can_dominate_out_lat = true;
+//                   if(li._canDominateOutputLatency)
+//                   {
+//                     can_dominate_out_lat = true;
                     // Override the current worst value if the latency is greater,
                     //  but ONLY if the branch can dominate.
                     if(li._outputLatency > route_worst_latency)
                       route_worst_latency = li._outputLatency;
-                  }
+//                   }
                 }
                 else
                 {
                   item_found = true;
                   // Override the defaults with this first item's values.
                   //route_worst_out_corr = li._outputAvailableCorrection;
-                  can_dominate_out_lat = li._canDominateOutputLatency;
+//                   can_dominate_out_lat = li._canDominateOutputLatency;
                   // Override the default worst value, but ONLY if the branch can dominate.
-                  if(can_dominate_out_lat)
+//                   if(can_dominate_out_lat)
                     route_worst_latency = li._outputLatency;
                 }
           }
@@ -994,8 +994,8 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
                 //if(!ir->canDominateLatency)
                 // If the branch cannot correct the latency, force it to be
                 //  equal to the worst-case value.
-                if(!ir->canCorrectOutputLatency)
-                  ir->audioLatencyOut = route_worst_latency;
+//                 if(!ir->canCorrectOutputLatency)
+//                   ir->audioLatencyOut = route_worst_latency;
                 
                 
                 // Prepare the latency value to be passed to the compensator's writer,
@@ -1032,73 +1032,73 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
 }
 
 // REMOVE Tim. latency. Added.
-//---------------------------------------------------------
-//   getForwardLatencyInfo
-//---------------------------------------------------------
-
-TrackLatencyInfo& WaveTrack::getForwardLatencyInfo()
-{
-// TODO TODO TODO: Adjust compensation for when 'monitor' is on !!! It will change the latency.
-  
-  
-      // Has the normal reverse latency been processed yet?
-      // We need some of the info from the reverse scanning.
-      // If all goes well, all nodes should be reverse-processed by now.
-      // But in case this one hasn't do it now, starting from this node backwards.
-      getLatencyInfo();
-
-      // Have we been here before during this forward scan in this process cycle?
-      // Just return the cached value.
-      if(_latencyInfo._forwardProcessed)
-        return _latencyInfo;
-      
-      const RouteList* rl = outRoutes();
-      float route_worst_latency = 0.0f;
-//       // This value has a range from 0 (worst) to negative inf (best) or close to it.
-      // This value has a range from 0 (worst) to positive inf (best) or close to it.
-      float route_worst_out_corr = 0.0f;
-      bool item_found = false;
-      for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
-              continue;
-            AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
-            const TrackLatencyInfo& li = atrack->getForwardLatencyInfo();
-            if(li._forwardOutputLatency > route_worst_latency)
-              route_worst_latency = li._forwardOutputLatency;
-            
-            if(item_found)
-            {
-//               if(li._outputAvailableCorrection > route_worst_out_corr)
-              if(li._outputAvailableCorrection < route_worst_out_corr)
-                route_worst_out_corr = li._outputAvailableCorrection;
-            }
-            else
-            {
-              route_worst_out_corr = li._outputAvailableCorrection;
-              item_found = true;
-            }
-      }
-            
-      // Adjust for THIS track's contribution to latency.
-      // The goal is to have equal latency output on all channels on this track.
-      const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
-      float track_worst_chan_latency = 0.0f;
-      for(int i = 0; i < track_out_channels; ++i)
-      {
-        const float lat = trackLatency(i);
-        if(lat > track_worst_chan_latency)
-            track_worst_chan_latency = lat;
-      }
-      
-      // The absolute latency of signals leaving this track is the sum of
-      //  any connected route latencies and this track's latency.
-      _latencyInfo._forwardTrackLatency  = track_worst_chan_latency;
-      _latencyInfo._forwardOutputLatency = track_worst_chan_latency + route_worst_latency;
-      _latencyInfo._forwardOutputAvailableCorrection = route_worst_out_corr;
-
-      _latencyInfo._forwardProcessed = true;
-      return _latencyInfo;
-}
+// //---------------------------------------------------------
+// //   getForwardLatencyInfo
+// //---------------------------------------------------------
+// 
+// TrackLatencyInfo& WaveTrack::getForwardLatencyInfo()
+// {
+// // TODO TODO TODO: Adjust compensation for when 'monitor' is on !!! It will change the latency.
+//   
+//   
+//       // Has the normal reverse latency been processed yet?
+//       // We need some of the info from the reverse scanning.
+//       // If all goes well, all nodes should be reverse-processed by now.
+//       // But in case this one hasn't do it now, starting from this node backwards.
+//       getLatencyInfo();
+// 
+//       // Have we been here before during this forward scan in this process cycle?
+//       // Just return the cached value.
+//       if(_latencyInfo._forwardProcessed)
+//         return _latencyInfo;
+//       
+//       const RouteList* rl = outRoutes();
+//       float route_worst_latency = 0.0f;
+// //       // This value has a range from 0 (worst) to negative inf (best) or close to it.
+//       // This value has a range from 0 (worst) to positive inf (best) or close to it.
+//       float route_worst_out_corr = 0.0f;
+//       bool item_found = false;
+//       for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+//             if(ir->type != Route::TRACK_ROUTE || !ir->track || ir->track->isMidiTrack())
+//               continue;
+//             AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//             const TrackLatencyInfo& li = atrack->getForwardLatencyInfo();
+//             if(li._forwardOutputLatency > route_worst_latency)
+//               route_worst_latency = li._forwardOutputLatency;
+//             
+//             if(item_found)
+//             {
+// //               if(li._outputAvailableCorrection > route_worst_out_corr)
+//               if(li._outputAvailableCorrection < route_worst_out_corr)
+//                 route_worst_out_corr = li._outputAvailableCorrection;
+//             }
+//             else
+//             {
+//               route_worst_out_corr = li._outputAvailableCorrection;
+//               item_found = true;
+//             }
+//       }
+//             
+//       // Adjust for THIS track's contribution to latency.
+//       // The goal is to have equal latency output on all channels on this track.
+//       const int track_out_channels = totalProcessBuffers(); // totalOutChannels();
+//       float track_worst_chan_latency = 0.0f;
+//       for(int i = 0; i < track_out_channels; ++i)
+//       {
+//         const float lat = trackLatency(i);
+//         if(lat > track_worst_chan_latency)
+//             track_worst_chan_latency = lat;
+//       }
+//       
+//       // The absolute latency of signals leaving this track is the sum of
+//       //  any connected route latencies and this track's latency.
+//       _latencyInfo._forwardTrackLatency  = track_worst_chan_latency;
+//       _latencyInfo._forwardOutputLatency = track_worst_chan_latency + route_worst_latency;
+//       _latencyInfo._forwardOutputAvailableCorrection = route_worst_out_corr;
+// 
+//       _latencyInfo._forwardProcessed = true;
+//       return _latencyInfo;
+// }
 
 bool WaveTrack::canDominateOutputLatency() const
 {
@@ -1106,11 +1106,11 @@ bool WaveTrack::canDominateOutputLatency() const
   return false;
 }
 
-bool WaveTrack::canDominateInputLatency() const
-{
-  // TODO Account for monitor. It depends on what this track feeds.
-  return false;
-}
+// bool WaveTrack::canDominateInputLatency() const
+// {
+//   // TODO Account for monitor. It depends on what this track feeds.
+//   return false;
+// }
 
 bool WaveTrack::requiresInputLatencyCorrection() const
 {

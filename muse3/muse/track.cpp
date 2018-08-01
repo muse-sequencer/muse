@@ -601,31 +601,31 @@ RouteCapabilitiesStruct Track::routeCapabilities() const
   return s;
 }
 
-float Track::inputLatencyCorrection() const
-{
-  // By default all unterminated audio tracks types have the maximum value - as if
-  //  they were able to fully correct even though they can't - so that they
-  //  are basically ignored during calculations. But the user can choose to NOT ignore.
-  // Audio input and output and wave tracks will override this method and provide
-  //  their own values.
-  if(MusEGlobal::config.correctUnterminatedInBranchLatency)
-    return 0.0f;
-  else
-    return DEFAULT_AUDIOTRACK_IN_LATENCY_CORRECTION;
-}
-
-float Track::outputLatencyCorrection() const
-{ 
-  // By default all unterminated audio tracks types have the maximum value - as if
-  //  they were able to fully correct even though they can't - so that they
-  //  are basically ignored during calculations. But the user can choose to NOT ignore.
-  // Audio input and output and wave tracks will override this method and provide
-  //  their own values.
-  if(MusEGlobal::config.correctUnterminatedOutBranchLatency)
-    return 0.0f;
-  else
-    return DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION;
-}
+// float Track::inputLatencyCorrection() const
+// {
+//   // By default all unterminated audio tracks types have the maximum value - as if
+//   //  they were able to fully correct even though they can't - so that they
+//   //  are basically ignored during calculations. But the user can choose to NOT ignore.
+//   // Audio input and output and wave tracks will override this method and provide
+//   //  their own values.
+//   if(MusEGlobal::config.correctUnterminatedInBranchLatency)
+//     return 0.0f;
+//   else
+//     return DEFAULT_AUDIOTRACK_IN_LATENCY_CORRECTION;
+// }
+// 
+// float Track::outputLatencyCorrection() const
+// { 
+//   // By default all unterminated audio tracks types have the maximum value - as if
+//   //  they were able to fully correct even though they can't - so that they
+//   //  are basically ignored during calculations. But the user can choose to NOT ignore.
+//   // Audio input and output and wave tracks will override this method and provide
+//   //  their own values.
+//   if(MusEGlobal::config.correctUnterminatedOutBranchLatency)
+//     return 0.0f;
+//   else
+//     return DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION;
+// }
 
 bool Track::canDominateOutputLatency() const
 {
@@ -633,10 +633,10 @@ bool Track::canDominateOutputLatency() const
   return !off() && MusEGlobal::config.correctUnterminatedOutBranchLatency;
 }
 
-bool Track::canDominateInputLatency() const
-{
-  return MusEGlobal::config.correctUnterminatedInBranchLatency;
-}
+// bool Track::canDominateInputLatency() const
+// {
+//   return MusEGlobal::config.correctUnterminatedInBranchLatency;
+// }
 
 bool Track::requiresInputLatencyCorrection() const
 {

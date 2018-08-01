@@ -69,8 +69,8 @@ struct TrackLatencyInfo
   bool _dominanceProcessed;
   // Whether the 'forward' information is valid (has already been gathered
   //  in the forward latency scan).
-  // This is reset near the beginning of the process handler.
-  bool _forwardProcessed;
+//   // This is reset near the beginning of the process handler.
+//   bool _forwardProcessed;
   // Whether the correction information is valid (has already been gathered
   //  in the correction latency scan).
   // This is reset near the beginning of the process handler.
@@ -83,7 +83,7 @@ struct TrackLatencyInfo
   // This value is the worst-case latency of all the channels in a track.
   // See AudioTrack::trackLatency().
   float _trackLatency;
-  float _forwardTrackLatency;
+//   float _forwardTrackLatency;
   // The absolute latency of all signals leaving a track, relative to audio driver frame (transport, etc).
   // This value is the cumulative value of all series routes connected to this track, plus some
   //  adjustment for the track's own members' latency.
@@ -92,20 +92,20 @@ struct TrackLatencyInfo
   // For example, a Wave Track can use this total value to appropriately shift recordings of the signals
   //  arriving at its inputs.
   float _outputLatency;
-  float _forwardOutputLatency;
-  // Maximum amount of latency that this track's input can CORRECT (not just COMPENSATE).
-  float _inputAvailableCorrection;
-  float _forwardInputAvailableCorrection;
-  // Maximum amount of latency that this track's output can CORRECT (not just COMPENSATE).
-  float _outputAvailableCorrection;
-  float _forwardOutputAvailableCorrection;
+//   float _forwardOutputLatency;
+//   // Maximum amount of latency that this track's input can CORRECT (not just COMPENSATE).
+//   float _inputAvailableCorrection;
+//   float _forwardInputAvailableCorrection;
+//   // Maximum amount of latency that this track's output can CORRECT (not just COMPENSATE).
+//   float _outputAvailableCorrection;
+//   float _forwardOutputAvailableCorrection;
   
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,
   //  intead only allowing compensation UP TO the worst case in other branches.
   bool _canDominateOutputLatency;
-  bool _canDominateInputLatency;
+//   bool _canDominateInputLatency;
   // Whether this track and its branch require latency correction, not just compensation.
   bool _requiresInputCorrection;
   // Whether this track and its branch can correct for latency, not just compensate.
@@ -116,6 +116,14 @@ struct TrackLatencyInfo
   //  when requiring correction, but never POSITIVE (that would be unneccessary,
   //  a subsequent compensator delay can do that).
   float _sourceCorrectionValue;
+
+  // Initializes (resets) the structure to prepare for (re)computation.
+  void initialize() {
+    _dominanceProcessed = false;
+//     _forwardProcessed = false;
+    _correctionProcessed = false;
+    _processed = false;
+  }
 };
 
 //enum TrackLatencyScanType { DominanceLatencyScan, CorrectionLatencyScan, FinalLatencyScan };
@@ -332,16 +340,16 @@ class Track {
       // Returns true if monitored.
       virtual bool recMonitor() const    { return _recMonitor; }
 
-      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
-      virtual float inputLatencyCorrection() const;
-      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
-      virtual float outputLatencyCorrection() const;
+//       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+//       virtual float inputLatencyCorrection() const;
+//       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+//       virtual float outputLatencyCorrection() const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
       //  intead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatency() const;
-      virtual bool canDominateInputLatency() const;
+//       virtual bool canDominateInputLatency() const;
       // Whether this track and its branch require latency correction, not just compensation.
       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
@@ -721,11 +729,18 @@ class AudioTrack : public Track {
 //       virtual void preProcessAlways() { _processed = false; }
       virtual void preProcessAlways() { 
         _processed = false;
-        _latencyInfo._dominanceProcessed = false;
-        _latencyInfo._forwardProcessed = false;
-        _latencyInfo._correctionProcessed = false;
-        _latencyInfo._processed = false;
+//         _latencyInfo._dominanceProcessed = false;
+// //         _latencyInfo._forwardProcessed = false;
+//         _latencyInfo._correctionProcessed = false;
+//         _latencyInfo._processed = false;
+        
+        // Reset some latency info to prepare for (re)computation.
+        // TODO: Instead of doing this blindly every cycle, do it only when
+        //        a latency controller changes or a connection is made etc,
+        //        ie only when something changes.
+        _latencyInfo.initialize();
         _latCompWriteOffset = 0;
+        
         //_latencyInfo._canDominateOutputLatency = false;
         //_latencyInfo._canDominateInputLatency = false;
         //_latencyInfo._requiresInputCorrection = false;
@@ -775,10 +790,10 @@ class AudioTrack : public Track {
       //  in a branch of the graph.
       virtual void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getLatencyInfo();
-      // Returns forward latency computations (from wavetracks outward) during each cycle.
-      // If the computations have already been done this cycle, cached values are returned,
-      //  otherwise they are computed, cached, then returned.
-      virtual TrackLatencyInfo& getForwardLatencyInfo();
+//       // Returns forward latency computations (from wavetracks outward) during each cycle.
+//       // If the computations have already been done this cycle, cached values are returned,
+//       //  otherwise they are computed, cached, then returned.
+//       virtual TrackLatencyInfo& getForwardLatencyInfo();
       //
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
@@ -829,12 +844,12 @@ class AudioInput : public AudioTrack {
       float trackLatency(int channel) const; 
 // REMOVE Tim. latency. Added.
 //       float outputLatency() const; 
-      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
-      // Audio Input tracks always return 0 even if its inputs are unterminated.
-      float inputLatencyCorrection() const { return 0.0f; }
-      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
-      // Audio Input tracks always return 0 even if its inputs are unterminated.
-      float outputLatencyCorrection() const { return 0.0f; }
+//       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+//       // Audio Input tracks always return 0 even if its inputs are unterminated.
+//       float inputLatencyCorrection() const { return 0.0f; }
+//       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+//       // Audio Input tracks always return 0 even if its inputs are unterminated.
+//       float outputLatencyCorrection() const { return 0.0f; }
       // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches.
       bool canDominateOutputLatency() const { return true; }
       
@@ -874,14 +889,14 @@ class AudioOutput : public AudioTrack {
 
       virtual float trackLatency(int channel) const;
 // REMOVE Tim. latency. Added.
-      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
-      // Audio Output tracks always return 0 even if its outputs are unterminated.
-      float inputLatencyCorrection() const { return 0.0f; }
-      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
-      // Audio Output tracks always return 0 even if its outputs are unterminated.
-      float outputLatencyCorrection() const { return 0.0f; }
-      // Audio Output tracks have no correction available. They ALWAYS dominate any parallel branches.
-      bool canDominateInputLatency() const { return true; }
+//       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+//       // Audio Output tracks always return 0 even if its outputs are unterminated.
+//       float inputLatencyCorrection() const { return 0.0f; }
+//       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+//       // Audio Output tracks always return 0 even if its outputs are unterminated.
+//       float outputLatencyCorrection() const { return 0.0f; }
+//       // Audio Output tracks have no correction available. They ALWAYS dominate any parallel branches.
+//       bool canDominateInputLatency() const { return true; }
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
@@ -1002,18 +1017,18 @@ class WaveTrack : public AudioTrack {
       //TrackLatencyInfo& getDominanceLatencyInfo();
       void setCorrectionLatencyInfo(float finalWorstLatency, float callerBranchLatency = 0.0f);
       TrackLatencyInfo& getLatencyInfo();
-      // Returns forward latency computations (from wavetracks outward) during each cycle.
-      // If the computations have already been done this cycle, cached values are returned,
-      //  otherwise they are computed, cached, then returned.
-      TrackLatencyInfo& getForwardLatencyInfo();
-      // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
-      float inputLatencyCorrection() const { return DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION; }
-      // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
-      float outputLatencyCorrection() const { return DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION; }
+//       // Returns forward latency computations (from wavetracks outward) during each cycle.
+//       // If the computations have already been done this cycle, cached values are returned,
+//       //  otherwise they are computed, cached, then returned.
+//       TrackLatencyInfo& getForwardLatencyInfo();
+//       // The amount that this track type can CORRECT for input latency (not just COMPENSATE for it).
+//       float inputLatencyCorrection() const { return DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION; }
+//       // The amount that this track type can CORRECT for output latency (not just COMPENSATE for it).
+//       float outputLatencyCorrection() const { return DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION; }
       // Depending on the Monitor setting, Wave Tracks can have available correction.
       // If unmonitored, they will never dominate parallel branches.
       bool canDominateOutputLatency() const;
-      bool canDominateInputLatency() const;
+//       bool canDominateInputLatency() const;
       bool requiresInputLatencyCorrection() const;
       bool canCorrectOutputLatency() const;
       
