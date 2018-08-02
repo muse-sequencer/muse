@@ -1317,6 +1317,71 @@ void AudioOutput::setChannels(int n)
       AudioTrack::setChannels(n);
       }
 
+// bool AudioTrack::isLatencyInputTerminal() const
+// {
+//   bool res = true;
+//   const RouteList* rl = inRoutes();
+//   for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+//     switch(ir->type)
+//     {
+//       case Route::TRACK_ROUTE:
+//         if(!ir->track)
+//           continue;
+//         if(ir->track->isMidiTrack())
+//         {
+//           // TODO
+//         }
+//         else
+//         {
+//           AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+//           if(!atrack->off())
+//           {
+//             res = false;
+//             break;
+//           }
+//         }
+//       break;
+// 
+//       default:
+//       break;
+//     }
+//   }
+//   return res;
+// }
+
+bool AudioTrack::isLatencyOutputTerminal()
+{
+  bool res = true;
+  const RouteList* rl = outRoutes();
+  for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+    switch(ir->type)
+    {
+      case Route::TRACK_ROUTE:
+        if(!ir->track)
+          continue;
+        if(ir->track->isMidiTrack())
+        {
+          // TODO
+        }
+        else
+        {
+          AudioTrack* atrack = static_cast<AudioTrack*>(ir->track);
+          if(!atrack->off() && (!atrack->canRecordMonitor() || (atrack->canRecordMonitor() && atrack->isRecMonitored())))
+          {
+            res = false;
+            break;
+          }
+        }
+      break;
+
+      default:
+      break;
+    }
+  }
+  _latencyInfo._isLatencyOuputTerminal = res;
+  return res;
+}
+
 //---------------------------------------------------------
 //   putFifo
 //---------------------------------------------------------
@@ -1334,7 +1399,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
         //const float lat = atrack->outputLatency();
         //if(lat > route_worst_case_latency)
         //  route_worst_case_latency = lat;
-        const TrackLatencyInfo li = atrack->getLatencyInfo();
+        const TrackLatencyInfo& li = atrack->getLatencyInfo();
         if(li._outputLatency > route_worst_case_latency)
           route_worst_case_latency = li._outputLatency;
         }
@@ -1617,7 +1682,10 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 //               // Should not happen, but just in case.
 //               if(l < 0)
 //                 l = 0;
-              l = ir->audioLatencyOut;
+              if((long int)ir->audioLatencyOut < 0)
+                l = 0;
+              else
+                l = ir->audioLatencyOut;
               _latencyComp->write(nframes, l + latencyCompWriteOffset(), buffer);
             }
             

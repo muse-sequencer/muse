@@ -884,35 +884,113 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Latency correction/compensation processing
       //---------------------------------------------
 
-      OutputList* ol = MusEGlobal::song->outputs();
-      const int rl_sz = ol->size();
-      unsigned long latency_array[rl_sz];
-      int latency_array_cnt = 0;
+      //---------------------------------------------
+      // PASS 1: Find any dominant branches:
+      //---------------------------------------------
       float route_worst_latency = 0.0f;
-      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
-      {
-        track = static_cast<AudioTrack*>(*i);
-        const TrackLatencyInfo& li = track->getLatencyInfo();
-        latency_array[latency_array_cnt] = li._outputLatency;
-        if(li._outputLatency > route_worst_latency)
-          route_worst_latency = li._outputLatency;
-      }
-      // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
       {
         if((*it)->isMidiTrack())
           continue;
         track = static_cast<AudioTrack*>(*it);
-        if(track->type() == Track::AUDIO_OUTPUT)
+        
+        // We are looking for the end points of branches.
+        // This includes Audio Outputs, and open-ended branches
+        //  that go nowhere or are effectively disconnected from
+        //  their destination(s).
+        // This caches its result in the track's _latencyInfo structure
+        //  in the _isLatencyOutputTerminal member so it can be used
+        //  faster in the correction pass or final pass.
+        if(!track->isLatencyOutputTerminal())
           continue;
-        track->getLatencyInfo();
+        
+        // Gather the branch's dominance latency info.
+        const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+        // If the branch can dominate and its latency value is greater
+        //  than the current worst, overwrite the worst.
+        if(li._canDominateOutputLatency && li._outputLatency > route_worst_latency)
+          route_worst_latency = li._outputLatency;
       }      
-      // Now prepare the latency array to be passed to the compensator's writer,
-      //  by adjusting each route latency value. ie. the route with the worst-case
-      //  latency will get ZERO delay, while routes having smaller latency will get
-      //  MORE delay, to match all the signals' timings together.
-      for(int i = 0; i < rl_sz; ++i)
-        latency_array[i] = route_worst_latency - latency_array[i];
+      
+      //---------------------------------------------
+      // PASS 2: Set correction values:
+      //---------------------------------------------
+      // Now that we know the worst case latency,
+      //  set all the branch correction values.
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = static_cast<AudioTrack*>(*it);
+        
+        // Grab the branch's dominance latency info.
+        // This should already be cached from the dominance pass.
+        const TrackLatencyInfo& li = track->getDominanceLatencyInfo();
+        // We are looking for the end points of branches.
+        if(!li._isLatencyOuputTerminal)
+          continue;
+        
+        // Set branch correction values, for any tracks which support it.
+        track->setCorrectionLatencyInfo(route_worst_latency);
+      }      
+      
+      //----------------------------------------------------------
+      // PASS 3: Gather final latency values and set compensators:
+      //----------------------------------------------------------
+      // Now that all branch correction values have been set,
+      //  gather all final latency info.
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = static_cast<AudioTrack*>(*it);
+        
+        // Grab the branch's dominance latency info.
+        // This should already be cached from the dominance pass.
+        const TrackLatencyInfo& dli = track->getDominanceLatencyInfo();
+        // We are looking for the end points of branches.
+        if(!dli._isLatencyOuputTerminal)
+          continue;
+        
+        // Gather the branch's final latency info, which also sets the
+        //  latency compensators.
+        //const TrackLatencyInfo& li = track->getLatencyInfo();
+        track->getLatencyInfo();
+        
+        // Set this end point's latency compensator write offset.
+        track->setLatencyCompWriteOffset(route_worst_latency);
+      }      
+      
+      
+//       OutputList* ol = MusEGlobal::song->outputs();
+//       const int rl_sz = ol->size();
+//       unsigned long latency_array[rl_sz];
+//       int latency_array_cnt = 0;
+//       //float route_worst_latency = 0.0f;
+//       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
+//       {
+//         track = static_cast<AudioTrack*>(*i);
+//         const TrackLatencyInfo& li = track->getLatencyInfo();
+//         latency_array[latency_array_cnt] = li._outputLatency;
+//         if(li._outputLatency > route_worst_latency)
+//           route_worst_latency = li._outputLatency;
+//       }
+//       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
+//       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+//       {
+//         if((*it)->isMidiTrack())
+//           continue;
+//         track = static_cast<AudioTrack*>(*it);
+//         if(track->type() == Track::AUDIO_OUTPUT)
+//           continue;
+//         track->getLatencyInfo();
+//       }      
+//       // Now prepare the latency array to be passed to the compensator's writer,
+//       //  by adjusting each route latency value. ie. the route with the worst-case
+//       //  latency will get ZERO delay, while routes having smaller latency will get
+//       //  MORE delay, to match all the signals' timings together.
+//       for(int i = 0; i < rl_sz; ++i)
+//         latency_array[i] = route_worst_latency - latency_array[i];
       
       //---------------------------------------------
       // Audio processing
@@ -939,17 +1017,17 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       }
       
       // REMOVE Tim. latency. Changed.
-//       OutputList* ol = MusEGlobal::song->outputs();
-//       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i)
-//         (*i)->process(samplePos, offset, frames);
-      // Reset.
-      latency_array_cnt = 0;
-      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
-      {
-        AudioOutput* otrack = static_cast<AudioOutput*>(*i);
-        otrack->setLatencyCompWriteOffset(latency_array[latency_array_cnt]);
-        otrack->process(samplePos, offset, frames);
-      }
+      OutputList* ol = MusEGlobal::song->outputs();
+      for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i)
+        (*i)->process(samplePos, offset, frames);
+//       // Reset.
+//       latency_array_cnt = 0;
+//       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i, ++latency_array_cnt)
+//       {
+//         AudioOutput* otrack = static_cast<AudioOutput*>(*i);
+//         otrack->setLatencyCompWriteOffset(latency_array[latency_array_cnt]);
+//         otrack->process(samplePos, offset, frames);
+//       }
             
       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       // Not just unconnected ones, as previously done, but ones whose output path ultimately leads nowhere.

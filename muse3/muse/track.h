@@ -100,6 +100,10 @@ struct TrackLatencyInfo
 //   float _outputAvailableCorrection;
 //   float _forwardOutputAvailableCorrection;
   
+  // Whether any of the connected output routes are effectively connected.
+  // That means track is not off, track is monitored where applicable, etc,
+  //   ie. signal can actually flow.
+  bool _isLatencyOuputTerminal;
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,
@@ -116,6 +120,8 @@ struct TrackLatencyInfo
   //  when requiring correction, but never POSITIVE (that would be unneccessary,
   //  a subsequent compensator delay can do that).
   float _sourceCorrectionValue;
+  // Balances end points (Audio Outputs or open branches) of parallel branches.
+  unsigned long int _compensatorWriteOffset;
 
   // Initializes (resets) the structure to prepare for (re)computation.
   void initialize() {
@@ -123,6 +129,7 @@ struct TrackLatencyInfo
 //     _forwardProcessed = false;
     _correctionProcessed = false;
     _processed = false;
+    _compensatorWriteOffset = 0;
   }
 };
 
@@ -130,10 +137,10 @@ struct TrackLatencyInfo
 
 // Default available wave track latency corrections. Just arbitrarily large values. 
 // A track may supply something different (default for others is 0).
-#define DEFAULT_AUDIOTRACK_IN_LATENCY_CORRECTION 4194304
-#define DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION 4194304
-#define DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION 4194304
-#define DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION 4194304
+//#define DEFAULT_AUDIOTRACK_IN_LATENCY_CORRECTION 4194304
+// #define DEFAULT_AUDIOTRACK_OUT_LATENCY_CORRECTION 4194304
+// #define DEFAULT_WAVETRACK_IN_LATENCY_CORRECTION 4194304
+// #define DEFAULT_WAVETRACK_OUT_LATENCY_CORRECTION 4194304
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -273,7 +280,7 @@ class Track {
       void updateAuxRoute(int refInc, Track* dst);  // Internal use. 
       // Number of routable inputs/outputs for each Route::RouteType.
       virtual RouteCapabilitiesStruct routeCapabilities() const;
-      
+
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
       Part* findPart(unsigned tick);
@@ -354,6 +361,13 @@ class Track {
       virtual bool requiresInputLatencyCorrection() const;
       // Whether this track and its branch can correct for latency, not just compensate.
       virtual bool canCorrectOutputLatency() const { return false; }
+      // Whether any of the connected input routes are effectively connected.
+      // That means track is not off, etc. ie. signal can actually flow.
+      //virtual bool isLatencyInputTerminal() const { return true; }
+      // Whether any of the connected output routes are effectively connected.
+      // That means track is not off, track is monitored where applicable, etc,
+      //   ie. signal can actually flow.
+      virtual bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOuputTerminal = true; return true; }
       
       // Internal use...
       static void clearSoloRefCounts();
@@ -608,7 +622,7 @@ class AudioTrack : public Track {
       // Audio latency compensator.
       LatencyCompensator* _latencyComp;
       // Used during latency compensation processing.
-      unsigned long _latCompWriteOffset;
+//       unsigned long _latCompWriteOffset;
 
       // These two are not the same as the number of track channels which is always either 1 (mono) or 2 (stereo):
       // Total number of output channels.
@@ -739,7 +753,7 @@ class AudioTrack : public Track {
         //        a latency controller changes or a connection is made etc,
         //        ie only when something changes.
         _latencyInfo.initialize();
-        _latCompWriteOffset = 0;
+        //_latCompWriteOffset = 0;
         
         //_latencyInfo._canDominateOutputLatency = false;
         //_latencyInfo._canDominateInputLatency = false;
@@ -798,8 +812,10 @@ class AudioTrack : public Track {
       // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
-      virtual unsigned long latencyCompWriteOffset() const { return _latCompWriteOffset; }
-      virtual void setLatencyCompWriteOffset(unsigned long off) { _latCompWriteOffset = off; }
+      virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
+      virtual void setLatencyCompWriteOffset(float worstCase);
+      //virtual bool isLatencyInputTerminal() const;
+      virtual bool isLatencyOutputTerminal();
       
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
@@ -852,6 +868,8 @@ class AudioInput : public AudioTrack {
 //       float outputLatencyCorrection() const { return 0.0f; }
       // Audio Input tracks have no correction available. They ALWAYS dominate any parallel branches.
       bool canDominateOutputLatency() const { return true; }
+      // Audio Input is considered a termination point.
+      //bool isLatencyInputTerminal() const { return true; }
       
       void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
@@ -897,6 +915,8 @@ class AudioOutput : public AudioTrack {
 //       float outputLatencyCorrection() const { return 0.0f; }
 //       // Audio Output tracks have no correction available. They ALWAYS dominate any parallel branches.
 //       bool canDominateInputLatency() const { return true; }
+      // Audio Output is considered a termination point.
+      bool isLatencyOutputTerminal() { _latencyInfo._isLatencyOuputTerminal = true; return true; }
       
       virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
@@ -983,7 +1003,7 @@ class WaveTrack : public AudioTrack {
       static bool _isVisible;
       // Temporary variables used during latency calculations:
       // Holds the output latency of the wave file playback contribution to latency.
-      float _waveLatencyOut;
+      unsigned long int _waveLatencyOut;
 
       void internal_assign(const Track&, int flags);
       bool getDataPrivate(unsigned, int, unsigned, float**);

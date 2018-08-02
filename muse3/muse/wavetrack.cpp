@@ -1006,14 +1006,14 @@ TrackLatencyInfo& WaveTrack::getLatencyInfo()
                 //  conveniently stored in the route.
                 ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
                 // Should not happen, but just in case.
-                if((int)ir->audioLatencyOut < 0)
+                if((long int)ir->audioLatencyOut < 0)
                   ir->audioLatencyOut = 0.0f;
           }
         }
 
         _waveLatencyOut = route_worst_latency - _waveLatencyOut;
         // Should not happen, but just in case.
-        if((int)_waveLatencyOut < 0)
+        if((long int)_waveLatencyOut < 0)
           _waveLatencyOut = 0.0f;
         
       }

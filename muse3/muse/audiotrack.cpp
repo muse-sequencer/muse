@@ -1270,6 +1270,11 @@ TrackLatencyInfo& AudioTrack::getDominanceLatencyInfo()
       // Take advantage of this first stage to initialize the track's
       //  correction value to zero.
       _latencyInfo._sourceCorrectionValue = 0.0f;
+      // Take advantage of this first stage to initialize the track's
+      //  write offset to zero.
+      _latencyInfo._compensatorWriteOffset = 0;
+      // Set whether this track is a branch end point.
+      //_latencyInfo._isLatencyOuputTerminal = isLatencyOutputTerminal();
 
       _latencyInfo._dominanceProcessed = true;
       return _latencyInfo;
@@ -1443,7 +1448,7 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
               //  conveniently stored in the route.
               ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
               // Should not happen, but just in case.
-              if((int)ir->audioLatencyOut < 0)
+              if((long int)ir->audioLatencyOut < 0)
                 ir->audioLatencyOut = 0.0f;
         }
             
@@ -1578,6 +1583,16 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo()
 //       _latencyInfo._forwardProcessed = true;
 //       return _latencyInfo;
 // }
+
+void AudioTrack::setLatencyCompWriteOffset(float worstCase)
+{
+  const long unsigned int wc = worstCase;
+  const long unsigned int ol = _latencyInfo._outputLatency;
+  if(ol > wc)
+    _latencyInfo._compensatorWriteOffset = 0;
+  else
+    _latencyInfo._compensatorWriteOffset = wc - ol;
+}
 
 //---------------------------------------------------------
 //   volume
@@ -2449,7 +2464,6 @@ AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
       _nframes = 0;
-      _latCompWriteOffset = 0;
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
@@ -2460,7 +2474,6 @@ AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   for (int i = 0; i < MAX_CHANNELS; ++i)
         jackPorts[i] = 0;
   _nframes = 0;
-  _latCompWriteOffset = 0;
 
   // Register ports.
   if(MusEGlobal::checkAudioDevice())
