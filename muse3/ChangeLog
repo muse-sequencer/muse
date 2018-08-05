@@ -1,3 +1,7 @@
+05.08.2018
+      - Further LV2 GUI fixes - see 29.11.2017. Fixed X11 GUI size. (Tim)
+        For example DrumGizmo should open OK and not be allowed
+         to shrink below its supplied size.
 01.07.2018
       - Fix non-functional mouse wheel in Canvas::wheelEvent(). (Tim)
         Broke with fixes of 15.12.2017. I tried to repect what that fix did,

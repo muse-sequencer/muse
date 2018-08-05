@@ -1413,6 +1413,9 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                }
                else
                {
+                  // Set the minimum size to the supplied uiX11Size.
+                  win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                  
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                      win->resize(ewWin->size());
                }
@@ -4273,6 +4276,12 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
       // Because of the bug, no matter what we must supply a position,
       //  even upon first showing...
       
+      // Check if there is an X11 gui size.
+      if(w == 0)
+        w = _state->uiX11Size.width();
+      if(h == 0)
+        h = _state->uiX11Size.height();
+      
       // Check sane size.
       if(w == 0)
         w = _state->pluginWindow->sizeHint().width();
@@ -4533,6 +4542,12 @@ void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 #ifdef QT_SHOW_POS_BUG_WORKAROUND
   // Because of the bug, no matter what we must supply a position,
   //  even upon first showing...
+  
+  // Check if there is an X11 gui size.
+  if(w == 0)
+    w = _state->uiX11Size.width();
+  if(h == 0)
+    h = _state->uiX11Size.height();
   
   // Check sane size.
   if(w == 0)
