@@ -750,6 +750,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
+                        else if (tag == "useThemeIconsIfPossible")
+                              MusEGlobal::config.useThemeIconsIfPossible = xml.parseInt();
                         else if (tag == "autoSave")
                               MusEGlobal::config.autoSave = xml.parseInt();
                         else if (tag == "scrollableSubMenus")
@@ -822,8 +824,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.palette[14] = readColor(xml);
                         else if (tag == "palette15")
                               MusEGlobal::config.palette[15] = readColor(xml);
-                        else if (tag == "palette16")
-                              MusEGlobal::config.palette[16] = readColor(xml);
 
                         else if (tag == "partColor0")
                               MusEGlobal::config.partColors[0] = readColor(xml);
@@ -1755,6 +1755,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
       xml.strTag(level, "theme", MusEGlobal::config.style);
+      xml.intTag(level, "useThemeIconsIfPossible", MusEGlobal::config.useThemeIconsIfPossible);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);

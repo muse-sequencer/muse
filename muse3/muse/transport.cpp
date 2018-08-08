@@ -145,7 +145,7 @@ TempoSig::TempoSig(QWidget* parent)
       _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
       _masterButton->setContentsMargins(0, 0, 0, 0);
       _masterButton->setCheckable(true);
-      _masterButton->setToolTip(tr("use tempo master track"));
+      _masterButton->setToolTip(tr("use mastertrack tempo"));
       _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       _masterButton->setFocusPolicy(Qt::NoFocus);
       connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
@@ -157,7 +157,7 @@ TempoSig::TempoSig(QWidget* parent)
       l1 = new TempoEdit();
       l1->setContentsMargins(0, 0, 0, 0);
       l1->setFocusPolicy(Qt::StrongFocus);
-      l1->setToolTip(tr("master track tempo at current position, or fixed tempo"));
+      l1->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
       hb1->addWidget(l1);
       vb2->addLayout(hb1);
       

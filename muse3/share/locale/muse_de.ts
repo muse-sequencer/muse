@@ -11219,8 +11219,8 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
     </message>
     <message>
         <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
-        <translation>MusE Ei&amp;nstellungen</translation>
+        <source>Se&amp;ttings</source>
+        <translation>Ei&amp;nstellungen</translation>
     </message>
     <message>
         <location line="+23"/>

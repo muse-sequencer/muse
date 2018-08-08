@@ -183,6 +183,8 @@ GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 
+      true,                         // useThemeIconsIfPossible Whether to try to see if various icons are available from the theme.
+      
       false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
