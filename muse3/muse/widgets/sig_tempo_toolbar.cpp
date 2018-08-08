@@ -58,12 +58,12 @@ void TempoToolbar::init()
   _masterButton->setContentsMargins(0, 0, 0, 0);
   _masterButton->setFocusPolicy(Qt::NoFocus);
   _masterButton->setCheckable(true);
-  _masterButton->setToolTip(tr("use tempo master track"));
+  _masterButton->setToolTip(tr("use mastertrack tempo"));
   _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
   connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
   
   tempo_edit=new TempoEdit(this);
-  tempo_edit->setToolTip(tr("master track tempo at current position, or fixed tempo"));
+  tempo_edit->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
   tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 

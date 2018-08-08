@@ -11115,7 +11115,7 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
+        <source>Se&amp;ttings</source>
         <translation>Configuraciones</translation>
     </message>
     <message>

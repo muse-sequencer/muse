@@ -92,6 +92,8 @@ extern QPixmap* findIcon;
 extern QPixmap* masterIcon;
 extern QPixmap* filenewIcon;
 extern QPixmap* filenewIconS;
+extern QPixmap* filecloseIcon;
+extern QPixmap* appexitIcon;
 extern QPixmap* homeIcon;
 extern QPixmap* backIcon;
 extern QPixmap* forwardIcon;
@@ -132,8 +134,6 @@ extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
 extern QPixmap* metronomeIcon;
 extern QPixmap* metronomeOffIcon;
-extern QIcon* metronomeQIcon;
-extern QIcon* metronomeOffQIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;

@@ -756,7 +756,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             case MusECore::Track::MIDI: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
+//                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);

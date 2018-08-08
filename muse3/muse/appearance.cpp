@@ -579,6 +579,10 @@ void Appearance::resetValues()
       maxAliasedPointSize->setValue(config->maxAliasedPointSize);
       maxAliasedPointSize->blockSignals(false);
       
+      useThemeIcons->blockSignals(true);
+      useThemeIcons->setChecked(config->useThemeIconsIfPossible);
+      useThemeIcons->blockSignals(false);
+      
       // Grab all the colours.
       updateColorItems();
 
@@ -815,6 +819,12 @@ bool Appearance::apply()
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
 
+      if(config->useThemeIconsIfPossible != useThemeIcons->isChecked())
+      {
+        restart_required = true;
+        config->useThemeIconsIfPossible = useThemeIcons->isChecked();
+      }
+      
       if (radioButtonDrawOutline->isChecked())
         config->waveDrawing = MusEGlobal::WaveOutLine;
       else

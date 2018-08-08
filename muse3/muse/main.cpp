@@ -103,7 +103,7 @@ extern void setAlsaClientName(const char*);
 }
 
 namespace MusEGui {
-void initIcons();
+void initIcons(bool useThemeIconsIfPossible);
 void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
@@ -724,7 +724,7 @@ int main(int argc, char* argv[])
         AL::initDsp();
         MusECore::initAudio();
 
-        MusEGui::initIcons();
+        MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
 
         MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
 

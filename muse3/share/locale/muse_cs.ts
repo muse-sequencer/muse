@@ -11296,7 +11296,7 @@ Také můžete v nabídce Soubor vybrat příkaz Uložit.</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="878"/>
-        <source>MusE Se&amp;ttings</source>
+        <source>Se&amp;ttings</source>
         <translation>Nas&amp;tavení</translation>
     </message>
     <message>

@@ -519,6 +519,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
+      //connect(canvas, SIGNAL(selectionChanged()), parent, SLOT(selectionChanged()));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));

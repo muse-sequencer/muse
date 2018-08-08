@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <drumMapPatch patch="268435456">
+    <entry idx="35">
+      <name>Kick L</name>
+    </entry>
+    <entry idx="36">
+      <name>Kick R</name>
+    </entry>
+    <entry idx="37">
+      <name>Snare Rim</name>
+    </entry>
+    <entry idx="38">
+      <name>Snare</name>
+    </entry>
+    <entry idx="39">
+      <name>Snare Rest</name>
+    </entry>
+    <entry idx="40">
+      <name>Snare Rimshot</name>
+    </entry>
+    <entry idx="41">
+      <name>Tom 4</name>
+    </entry>
+    <entry idx="42">
+      <name>HH Closed</name>
+    </entry>
+    <entry idx="43">
+      <name>Tom 3</name>
+    </entry>
+    <entry idx="44">
+      <name>HH Pedal</name>
+    </entry>
+    <entry idx="45">
+      <mute>1</mute>
+      <hide>1</hide>
+    </entry>
+    <entry idx="46">
+      <name>HH Open</name>
+    </entry>
+    <entry idx="47">
+      <name>Tom 2</name>
+    </entry>
+    <entry idx="48">
+      <name>Tom 1</name>
+    </entry>
+    <entry idx="49">
+      <name>Crash L</name>
+    </entry>
+    <entry idx="50">
+      <mute>1</mute>
+      <hide>1</hide>
+    </entry>
+    <entry idx="51">
+      <name>Ride</name>
+    </entry>
+    <entry idx="52">
+      <name>China R</name>
+    </entry>
+    <entry idx="53">
+      <name>Ride Bell</name>
+    </entry>
+    <entry idx="54">
+      <name>China L</name>
+    </entry>
+    <entry idx="55">
+      <name>Splash L</name>
+    </entry>
+    <entry idx="56">
+      <name>Crash L Choke</name>
+    </entry>
+    <entry idx="57">
+      <name>Crash R</name>
+    </entry>
+    <entry idx="58">
+      <name>Splash R</name>
+    </entry>
+    <entry idx="59">
+      <name>Crash R 2</name>
+    </entry>
+    <entry idx="60">
+      <hide>1</hide>
+    </entry>
+    <entry idx="61">
+      <mute>1</mute>
+      <hide>1</hide>
+    </entry>
+    <entry idx="62">
+      <hide>1</hide>
+    </entry>
+    <entry idx="63">
+      <hide>1</hide>
+    </entry>
+    <entry idx="64">
+      <hide>1</hide>
+    </entry>
+    <entry idx="65">
+      <hide>1</hide>
+    </entry>
+    <entry idx="66">
+      <mute>0</mute>
+      <hide>1</hide>
+    </entry>
+    <entry idx="67">
+      <hide>1</hide>
+    </entry>
+    <entry idx="68">
+      <hide>1</hide>
+    </entry>
+    <entry idx="69">
+      <hide>1</hide>
+    </entry>
+    <entry idx="70">
+      <hide>1</hide>
+    </entry>
+    <entry idx="71">
+      <hide>1</hide>
+    </entry>
+    <entry idx="72">
+      <hide>1</hide>
+    </entry>
+    <entry idx="73">
+      <name>HH Pedal + Hit</name>
+    </entry>
+    <entry idx="74">
+      <hide>1</hide>
+    </entry>
+    <entry idx="75">
+      <name>Crash R Choke</name>
+    </entry>
+    <entry idx="76">
+      <hide>1</hide>
+    </entry>
+    <entry idx="77">
+      <hide>1</hide>
+    </entry>
+    <entry idx="78">
+      <name>HH X-Hat</name>
+    </entry>
+    <entry idx="79">
+      <hide>1</hide>
+    </entry>
+    <entry idx="80">
+      <name>HH Semi-Open</name>
+    </entry>
+    <entry idx="81">
+      <hide>1</hide>
+    </entry>
+  </drumMapPatch>
+</muse>

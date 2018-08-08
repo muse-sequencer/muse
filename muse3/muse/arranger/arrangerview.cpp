@@ -157,6 +157,13 @@ ArrangerView::ArrangerView(QWidget* parent)
   editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
   editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
 
+  select->addAction(editSelectAllAction);
+  select->addAction(editDeselectAllAction);
+  select->addAction(editInvertSelectionAction);
+  select->addAction(editInsideLoopAction);
+  select->addAction(editOutsideLoopAction);
+  select->addAction(editAllPartsAction);
+  
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
   scoreSubmenu->setIcon(QIcon(*scoreIconSet));
@@ -164,20 +171,17 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreAllInOneSubsubmenu = new QMenu(tr("all tracks in one staff"), this);
   scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per track"), this);
 
+  startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
+  scoreSubmenu->addAction(startScoreEditAction);
+  
   scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
   scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
   updateScoreMenus();
 
-  startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
   startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
   startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
   startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
   startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
-
-  master = new QMenu(tr("Mastertrack"), this);
-  master->setIcon(QIcon(*edit_mastertrackIcon));
-  masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
-  masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
 
   midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
 
@@ -212,38 +216,27 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(editPasteDialogAction);
   menuEdit->addAction(editInsertEMAction);
   menuEdit->addSeparator();
-  menuEdit->addAction(editShrinkPartsAction);
-  menuEdit->addAction(editExpandPartsAction);
-  menuEdit->addAction(editCleanPartsAction);
+  menuEdit->addMenu(select);
+  menuEdit->addSeparator();
+  
   menuEdit->addSeparator();
   menuEdit->addAction(editDeleteSelectedAction);
 
   menuEdit->addMenu(addTrack);
   menuEdit->addAction(editDuplicateSelTrackAction);
-  menuEdit->addMenu(select);
-    select->addAction(editSelectAllAction);
-    select->addAction(editDeselectAllAction);
-    select->addAction(editInvertSelectionAction);
-    select->addAction(editInsideLoopAction);
-    select->addAction(editOutsideLoopAction);
-    select->addAction(editAllPartsAction);
   menuEdit->addSeparator();
 
   menuEdit->addAction(startPianoEditAction);
   menuEdit->addMenu(scoreSubmenu);
-  menuEdit->addAction(startScoreEditAction);
+//   menuEdit->addAction(startScoreEditAction);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
 
-  menuEdit->addMenu(master);
-    master->addAction(masterGraphicAction);
-    master->addAction(masterListAction);
-  menuEdit->addSeparator();
-
-  menuEdit->addAction(midiTransformerAction);
-
-  QMenu* menuStructure = menuEdit->addMenu(tr("&Structure"));
+  QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
+  functions_menu->addAction(midiTransformerAction);
+  functions_menu->addSeparator();
+  QMenu* menuStructure = functions_menu->addMenu(tr("&Structure"));
     menuStructure->addAction(strGlobalCutAction);
     menuStructure->addAction(strGlobalInsertAction);
     menuStructure->addAction(strGlobalSplitAction);
@@ -251,10 +244,7 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalCutSelAction);
     menuStructure->addAction(strGlobalInsertSelAction);
     menuStructure->addAction(strGlobalSplitSelAction);
-
-  
-  
-  QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
+  functions_menu->addSeparator();
 		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize Notes"), editSignalMapper, SLOT(map()));
 		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), editSignalMapper, SLOT(map()));
 		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), editSignalMapper, SLOT(map()));
@@ -275,7 +265,10 @@ ArrangerView::ArrangerView(QWidget* parent)
 		editSignalMapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
 		editSignalMapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
 		editSignalMapper->setMapping(func_legato_action, CMD_LEGATO);
-
+  functions_menu->addSeparator();
+  functions_menu->addAction(editShrinkPartsAction);
+  functions_menu->addAction(editExpandPartsAction);
+  functions_menu->addAction(editCleanPartsAction);
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
@@ -342,10 +335,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
   connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
   connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
-
-
-  connect(masterGraphicAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startMasterEditor()));
-  connect(masterListAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startLMasterEditor()));
 
   connect(midiTransformerAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startMidiTransformer()));
 
@@ -735,9 +724,6 @@ void ArrangerView::updateShortcuts()
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
       startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
 
-      masterGraphicAction->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
-      masterListAction->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key);
-  
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
       strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);

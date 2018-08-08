@@ -11487,8 +11487,8 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
     </message>
     <message>
         <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
-        <translation>Régla&amp;ges de MusE</translation>
+        <source>Se&amp;ttings</source>
+        <translation>Régla&amp;ges</translation>
     </message>
     <message>
         <location line="+23"/>

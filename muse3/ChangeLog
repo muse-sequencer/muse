@@ -1,3 +1,16 @@
+07.08.2018
+      - Menu cleanups, rearrangement. (Tim)
+        Moved several Edit menu items to the Functions menu.
+        Moved Mastertrack menu items over to View menu since they
+         don't have much to do with editing tracks or parts.
+        Eliminated Automation menu. Moved all those items into Audio menu,
+         since they're all audio related.
+        As requested: Added a Close item in the File menu. Currently it
+         does NOT clear the midi devices and ports, they remain as last set.
+        Added File Save As and Application Exit icons.
+        Changed name of 'MusE Settings' menu to just 'Settings'.
+        Added new checkbox in Appearance Settings: "Use theme icons if available",
+         which activates a dormant feature of using theme icons if they are found.
 05.08.2018
       - Further LV2 GUI fixes - see 29.11.2017. Fixed X11 GUI size. (Tim)
         For example DrumGizmo should open OK and not be allowed

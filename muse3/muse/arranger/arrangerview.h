@@ -88,7 +88,6 @@ class ArrangerView : public TopWin
 		// Edit Menu actions
 		QMenu* select;
 		QMenu* addTrack;
-		QMenu* master;
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
@@ -100,7 +99,6 @@ class ArrangerView : public TopWin
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
 		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
-		QAction *masterGraphicAction, *masterListAction;
 		QAction *midiTransformerAction;
 		QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
 
