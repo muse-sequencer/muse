@@ -474,7 +474,18 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->plugin_uri = lilv_node_new_from_node(world, object);
 		if (!state->dir && graph) {
-			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
+			
+			// REMOVE Tim. Changed. Dir should be a file path, not a URI.
+			//state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
+			//
+			const char *lfp = lilv_file_uri_parse((const char*)sord_node_get_string(graph), NULL);
+			if(lfp)
+			{
+				state->dir = lilv_strdup(lfp);
+				// Must free this.
+				lilv_free((void*)lfp);
+			}
+			
 		}
 		sord_iter_free(i);
 	} else if (sord_ask(model,
@@ -495,7 +506,18 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->label = lilv_strdup((const char*)sord_node_get_string(object));
 		if (!state->dir) {
-			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
+			
+			// REMOVE Tim. Changed. Dir should be a file path, not a URI.
+			//state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
+			//
+			const char *lfp = lilv_file_uri_parse((const char*)sord_node_get_string(graph), NULL);
+			if(lfp)
+			{
+				state->dir = lilv_strdup(lfp);
+				// Must free this.
+				lilv_free((void*)lfp);
+			}
+			
 		}
 		sord_iter_free(i);
 	}

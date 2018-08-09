@@ -1,3 +1,16 @@
+09.08.2018
+      - Fixed compile error when using internal LV2 support. (Tim)
+        System LV2 include paths were being included, taking priority,
+         fixed in top CMakeLists.txt file.
+      - Fixed internal LV2 lilv state.c new_state_from_model() (Tim)
+        I found state->dir should be a file path, not a URI.
+        Symptom: With linuxsampler LV2 plugin for example,
+         the filename sent to it was wrong, it was a full URI.
+        Prepared a patch for submission to LV2, pending testing the fix.
+      - Fixed internal LV2 compiler warning "unneccessary parentheses"
+         treated as as error in LV2 util.h LV2_ATOM_OBJECT_FOREACH, 
+         LV2_ATOM_OBJECT_BODY_FOREACH, LV2_ATOM_SEQUENCE_FOREACH, 
+         LV2_ATOM_SEQUENCE_BODY_FOREACH, and in lilv.h LILV_FOREACH.
 07.08.2018
       - Menu cleanups, rearrangement. (Tim)
         Moved several Edit menu items to the Functions menu.
