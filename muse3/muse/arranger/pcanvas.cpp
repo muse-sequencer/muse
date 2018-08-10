@@ -482,25 +482,30 @@ void PartCanvas::partsChanged()
 void PartCanvas::updateSelection()
 {
       Undo operations;
-      bool changed=false;
+//       bool changed=false;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
-            NPart* part = (NPart*)(i->second);
-            operations.push_back(UndoOp(UndoOp::SelectPart, part->part(), i->second->isSelected(), part->part()->selected()));
-            if (i->second->isSelected() != part->part()->selected())
-                changed=true;
+            NPart* npart = (NPart*)(i->second);
+//             operations.push_back(UndoOp(UndoOp::SelectPart, part->part(), i->second->isSelected(), part->part()->selected()));
+            if (i->second->isSelected() != npart->part()->selected())
+//             {
+                operations.push_back(UndoOp(UndoOp::SelectPart, npart->part(), i->second->isSelected(), npart->part()->selected()));
+//                 changed=true;
+//             }
       }
 
-      if (changed)
-      {
-            MusEGlobal::song->applyOperationGroup(operations);
-            redraw();
-      }
+//       if (changed)
+//       {
+//             MusEGlobal::song->applyOperationGroup(operations);
+            if(MusEGlobal::song->applyOperationGroup(operations))
+              redraw();
+//       }
 
-      // TODO FIXME: this must be emitted always, because CItem is broken by design:
-      //             CItems hold an Event smart-pointer which allows write access.
-      //             This means, that items can (and will!) be selected bypassing the
-      //             UndoOp::SelectEvent message! FIX THAT! (flo93)
-      emit selectionChanged();
+// REMOVE Tim. citem. Removed. Unused.
+//       // TODO FIXME: this must be emitted always, because CItem is broken by design:
+//       //             CItems hold an Event smart-pointer which allows write access.
+//       //             This means, that items can (and will!) be selected bypassing the
+//       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
+//       emit selectionChanged();
 }
 
 //---------------------------------------------------------

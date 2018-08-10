@@ -46,6 +46,7 @@ class CItem {
       MusECore::Part* _part;
 
    protected:
+      bool _isSelected; // REMOVE Tim. citem. Added.
       bool _isMoving;
       QPoint moving;
       QRect  _bbox;
@@ -60,8 +61,10 @@ class CItem {
 
       bool isMoving() const        { return _isMoving;  }
       void setMoving(bool f)       { _isMoving = f;     }
-      bool isSelected() const;
-      void setSelected(bool f);
+//       bool isSelected() const;
+//       void setSelected(bool f);
+      bool isSelected() const      { return _isSelected; }
+      void setSelected(bool f)     { _isSelected = f; }
 
       int width() const            { return _bbox.width(); }
       void setWidth(int l)         { _bbox.setWidth(l); }

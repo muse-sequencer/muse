@@ -34,6 +34,7 @@ namespace MusEGui {
 
 CItem::CItem()
       {
+      _isSelected = false;
       _isMoving = false;
       }
 
@@ -42,6 +43,7 @@ CItem::CItem(const QPoint&p, const QRect& r)
       _part = NULL;  
       _pos   = p;
       _bbox  = r;
+      _isSelected = false;
       _isMoving = false;
       }
 
@@ -49,26 +51,28 @@ CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
       {
       _event = e;
       _part  = p;
+      _isSelected = false;
       _isMoving = false;
       }
 
-//---------------------------------------------------------
-//   isSelected
-//---------------------------------------------------------
-
-bool CItem::isSelected() const
-      {
-      return _event.empty() ? _part->selected() : _event.selected();
-      }
-
-//---------------------------------------------------------
-//   setSelected
-//---------------------------------------------------------
-
-void CItem::setSelected(bool f)
-      {
-      _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
-      }
+// REMOVE Tim. citem. Removed.
+// //---------------------------------------------------------
+// //   isSelected
+// //---------------------------------------------------------
+// 
+// bool CItem::isSelected() const
+//       {
+//       return _event.empty() ? _part->selected() : _event.selected();
+//       }
+// 
+// //---------------------------------------------------------
+// //   setSelected
+// //---------------------------------------------------------
+// 
+// void CItem::setSelected(bool f)
+//       {
+//       _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
+//       }
 
 //---------------------------------------------------------
 //   CItemList
