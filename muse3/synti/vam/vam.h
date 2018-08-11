@@ -21,7 +21,9 @@
 #ifndef __VAM_H
 #define __VAM_H
 
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
+
+#include <string>
 
 enum {
         //DCO1_PITCHMOD, 
@@ -42,5 +44,8 @@ enum {
 #define INIT_DATA_CMD           1
 
 //#define VAM_DEBUG  
+
+extern std::string VAM_configPath;
+
 
 #endif /* __VAM_H */

@@ -44,8 +44,8 @@ namespace Awl {
 //   FloatEntry
 //---------------------------------------------------------
 
-FloatEntry::FloatEntry(QWidget* parent)
-   : QLineEdit(parent)
+FloatEntry::FloatEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
+   : QLineEdit(parent), _leftMouseButtonCanDecrease(leftMouseButtonCanDecrease)
       {
       _id        = 0;
       _minValue  = 0.0;
@@ -264,7 +264,7 @@ void FloatEntry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  if (!MusEGlobal::config.leftMouseButtonCanDecrease)
+                  if (!_leftMouseButtonCanDecrease)
                     return;
                   // else fall through
             case Qt::MidButton:

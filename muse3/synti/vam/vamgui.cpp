@@ -42,12 +42,10 @@
 #include <QLCDNumber>
 #include <QSignalMapper>
 #include <QSlider>
-#include <QSocketNotifier>
 
-#include "muse/globals.h"
 #include "muse/xml.h"
-#include "muse/midi.h"
-#include "muse/midictrl.h"
+#include "muse/midi_consts.h"
+#include "muse/midictrl_consts.h"
 #include "muse/icons.h"
 
 const char *vam_ctrl_names[] = {
@@ -180,8 +178,7 @@ VAMGui::VAMGui()
 	MessGui()
 {
       setupUi(this);
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
       loadPresets->setIcon(QIcon(*MusEGui::openIcon));
       savePresets->setIcon(QIcon(*MusEGui::saveIcon));
@@ -248,7 +245,6 @@ VAMGui::VAMGui()
 	ctrlLo = 0;
 	dataHi = 0;
 	dataLo = 0;
-  presetFileName = NULL; 
       }
 
 //---------------------------------------------------------
@@ -302,7 +298,7 @@ int VAMGui::getController(int idx)
       return val;
       }
 
-int VAMGui::getControllerInfo(int id, QString* name, int* controller,
+int VAMGui::getControllerInfo(int id, const char** name, int* controller,
    int* min, int* max, int* /*initval*/) const
       {
       if (id >= NUM_CONTROLLER)
@@ -311,7 +307,7 @@ int VAMGui::getControllerInfo(int id, QString* name, int* controller,
       //*controller = id;
       *controller = id + VAM_FIRST_CTRL;    // p4.0.27
 
-      *name = QString(vam_ctrl_names[id]);
+      *name = vam_ctrl_names[id];
       const SynthGuiCtrl* ctrl = (const SynthGuiCtrl*)&dctrl[id];
       //int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
@@ -593,15 +589,8 @@ void VAMGui::processEvent(const MusECore::MidiPlayEvent& ev)
 void VAMGui::loadPresetsPressed()
 {
 #if 1   // TODO
-	QString iname;
-	QString s(MusEGlobal::configPath);
-	
-/*      QString filename = QFileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
-                                                      this,
-                                                      "Load Soundfont dialog",
-                                                      "Choose soundfont");*/
         QString fn = QFileDialog::getOpenFileName(this, tr("MusE: Load VAM Presets"), 
-                                                  s, "Presets (*.vam)");
+                                                  QString::fromStdString(VAM_configPath), "Presets (*.vam)");
 
 	if (fn.isEmpty())
 		return;
@@ -657,8 +646,6 @@ ende:
 	else
 		fclose(f);
 
-	if (presetFileName) delete presetFileName;
-	presetFileName = new QString(fn);
 	QString dots ("...");
 	fileName->setText(fn.right(32).insert(0, dots));
 
@@ -709,9 +696,9 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 void VAMGui::savePresetsPressed()
 {
 #if 1 // TODO
-        QString s(MusEGlobal::configPath);
 	QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
-                                                  s, "Presets (*.vam)");
+                                                  QString::fromStdString(VAM_configPath),
+                                                  "Presets (*.vam)");
 	if (fn.isEmpty())
 		return;
 	doSavePresets (fn, true);
@@ -725,17 +712,12 @@ void VAMGui::savePresetsPressed()
 
 void VAMGui::savePresetsToFilePressed()
 {
-	if (!presetFileName ) {
- 
-      QString s(MusEGlobal::configPath);
-      QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
-                                                s, "Presets (*.vam)");
-      presetFileName = new QString(fn);
-      }
-  if (*presetFileName == QString(""))
+      QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"),
+                                                QString::fromStdString(VAM_configPath),
+                                                "Presets (*.vam)");
+  if (fn == QString(""))
     return;
-  //if presetFileName->
-	doSavePresets (*presetFileName, false);
+	doSavePresets(fn, false);
 }
 
 //---------------------------------------------------------
@@ -751,7 +733,7 @@ void VAMGui::deletePresetPressed()
 //   readMessage
 //---------------------------------------------------------
 
-void VAMGui::readMessage(int)
+void VAMGui::readMessage()
       {
       MessGui::readMessage();
       }

@@ -23,15 +23,17 @@
 //
 //
 
-#include "muse/midictrl.h"
-#include "muse/midi.h"
-//#include "libsynti/mpevent.h"
+#include "muse/midictrl_consts.h"
+#include "muse/midi_consts.h"
 #include "muse/mpevent.h"   
 //#include "common_defs.h"
 #include "simpledrums.h"
-#include "globals.h"
+
+#include <cmath>
+#include <string.h>
 
 #include <samplerate.h>
+#include <QString>
 #include <QFileDialog>
 
 const char* SimpleSynth::synth_state_descr[] =
@@ -60,33 +62,13 @@ const char* SimpleSynth::channel_state_descr[] =
 
 #define SS_CHANNEL_VOLUME_QUOT 100.0
 #define SS_MASTER_VOLUME_QUOT  100.0
-int SS_samplerate;
+int SS_segmentSize;
+int SS_minMeterVal;
+bool SS_useDenormalBias;
+float SS_denormalBias;
+QString SS_globalLibPath;
+QString SS_projectPath;
 
-#define SS_LOG_MAX   0
-#define SS_LOG_MIN -10
-#define SS_LOG_OFFSET SS_LOG_MIN
-
-
-//
-// Map plugin parameter on domain [SS_PLUGIN_PARAM_MIN, SS_PLUGIN_PARAM_MAX] to domain [SS_LOG_MIN, SS_LOG_MAX] (log domain)
-//
-float SS_map_pluginparam2logdomain(int pluginparam_val)
-{
-   float scale = (float) (SS_LOG_MAX - SS_LOG_MIN)/ (float) SS_PLUGIN_PARAM_MAX;
-   float scaled = (float) pluginparam_val * scale;
-   float mapped = scaled + SS_LOG_OFFSET;
-   return mapped;
-}
-//
-// Map plugin parameter on domain to domain [SS_LOG_MIN, SS_LOG_MAX] to [SS_PLUGIN_PARAM_MIN, SS_PLUGIN_PARAM_MAX]  (from log-> [0,127])
-// (inverse func to the above)
-int SS_map_logdomain2pluginparam(float pluginparam_log)
-{
-   float mapped = pluginparam_log - SS_LOG_OFFSET;
-   float scale = (float) SS_PLUGIN_PARAM_MAX / (float) (SS_LOG_MAX - SS_LOG_MIN);
-   int scaled  = (int) round(mapped * scale);
-   return scaled;
-}
 
 double rangeToPitch(int value)
 {
@@ -136,13 +118,15 @@ SimpleSynth::SimpleSynth(int sr)
    gui(0)
 {
    SS_TRACE_IN
-         SS_samplerate = sr;
-   SS_initPlugins();
+   setSampleRate(sr);
+         
+   synth_state = SS_INITIALIZING;
+   
+   MusESimplePlugin::SS_initPlugins(SS_globalLibPath);
 
    initBuffer  = 0;
    initLen     = 0;
 
-   simplesynth_ptr = this;
    master_vol = 100.0 / SS_MASTER_VOLUME_QUOT;
    master_vol_ctrlval = 100;
 
@@ -280,14 +264,12 @@ SimpleSynth::~SimpleSynth()
          delete channels[i].sample;
       }
    }
-   simplesynth_ptr = NULL;
 
-   SS_DBG("Deleting pluginlist");
-   //Cleanup plugins:
-   for (iPlugin i = plugins.begin(); i != plugins.end(); ++i) {
-      delete (*i);
+   SS_DBG("Deleting plugin instances");
+   for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
+      if(sendEffects[i].plugin)
+        delete sendEffects[i].plugin;
    }
-   plugins.clear();
 
    SS_DBG("Deleting sendfx buffers");
    //Delete sendfx buffers:
@@ -411,8 +393,6 @@ bool SimpleSynth::processEvent(const MusECore::MidiPlayEvent& ev)
       case MusECore::ME_CONTROLLER:
          if (SS_DEBUG_MIDI) {
             printf("SimpleSynth::processEvent - Controller. Chan: %x dataA: %x dataB: %x\n", ev.channel(), ev.dataA(), ev.dataB());
-            for (int i=0; i< ev.len(); i++)
-               printf("%x ", ev.data()[i]);
          }
          setController(ev.channel(), ev.dataA(), ev.dataB(), false);
          //return true;  // ??
@@ -480,7 +460,10 @@ bool SimpleSynth::setController(int channel, int id, int val)
          if (channels[ch].sample != 0)
          {
             std::string bkStr = channels[ch].sample->filename;
-            resample(channels[ch].originalSample,channels[ch].sample,rangeToPitch(channels[ch].pitchInt));
+            resample(channels[ch].originalSample,
+                     channels[ch].sample,
+                     rangeToPitch(channels[ch].pitchInt),
+                     sampleRate());
          }
          break;
 
@@ -684,8 +667,11 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
       int parameter = data[2];
       int val = data[3];
       // Write it to the plugin:
-      float floatval = sendEffects[fxid].plugin->convertGuiControlValue(parameter, val);
-      setFxParameter(fxid, parameter, floatval);
+      if(sendEffects[fxid].plugin)
+      {
+        float floatval = sendEffects[fxid].plugin->convertGuiControlValue(parameter, val);
+        setFxParameter(fxid, parameter, floatval);
+      }
       break;
    }
 
@@ -732,7 +718,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
     \return QString with patchname
  */
 //---------------------------------------------------------
-QString SimpleSynth::getPatchName(int /*index*/, int, bool) const
+const char* SimpleSynth::getPatchName(int /*index*/, int, bool) const
 {
    SS_TRACE_IN
          SS_TRACE_OUT
@@ -770,7 +756,7 @@ const MidiPatch* SimpleSynth::getPatchInfo(int /*index*/, const MidiPatch* /*pat
     \return 0 when done, otherwise return next desired controller index
  */
 //---------------------------------------------------------
-int SimpleSynth::getControllerInfo(int index, QString* name, int* controller, int* min, int* max, int* initval) const
+int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max, int* initval) const
 {
    SS_TRACE_IN
          if (index >= SS_NR_OF_CONTROLLERS) {
@@ -778,7 +764,7 @@ int SimpleSynth::getControllerInfo(int index, QString* name, int* controller, in
             return 0;
    }
 
-   *name = QString::fromStdString(controllers[index].name);
+   *name = controllers[index].name.c_str();
    *controller = controllers[index].num;
    *min = controllers[index].min;
    *max = controllers[index].max;
@@ -786,7 +772,8 @@ int SimpleSynth::getControllerInfo(int index, QString* name, int* controller, in
    *initval = 0;                // p4.0.27 FIXME NOTE TODO
 
    if (SS_DEBUG_MIDI) {
-      printf("setting controller info: index %d name %s controller %d min %d max %d\n", index, (*name).toLatin1().constData(), *controller, *min, *max);
+      printf("setting controller info: index %d name %s controller %d min %d max %d\n",
+             index, *name, *controller, *min, *max);
    }
    SS_TRACE_OUT
          return (index +1);
@@ -967,19 +954,22 @@ void SimpleSynth::process(unsigned /*pos*/, float** out, int offset, int len)
       // Do something funny with the sendies:
       for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
          if (sendEffects[j].state == SS_SENDFX_ON) {
-            sendEffects[j].plugin->process(len);
-            for (int i=0; i<len; i++) {
-               //Effect has mono output:
-               if (sendEffects[j].outputs == 1) {
-                  //Add the result to both channels:
-                  out[0][i+offset]+=((sendEffects[j].retgain * sendFxReturn[j][0][i]) / 2.0);
-                  out[1][i+offset]+=((sendEffects[j].retgain * sendFxReturn[j][0][i]) / 2.0);
-               }
-               else if (sendEffects[j].outputs == 2) {
-                  // Effect has stereo output
-                  out[0][i+offset]+=(sendEffects[j].retgain * sendFxReturn[j][0][i]);
-                  out[1][i+offset]+=(sendEffects[j].retgain * sendFxReturn[j][1][i]);
-               }
+            if(sendEffects[j].plugin)
+            {
+              sendEffects[j].plugin->process(len);
+              for (int i=0; i<len; i++) {
+                //Effect has mono output:
+                if (sendEffects[j].outputs == 1) {
+                    //Add the result to both channels:
+                    out[0][i+offset]+=((sendEffects[j].retgain * sendFxReturn[j][0][i]) / 2.0);
+                    out[1][i+offset]+=((sendEffects[j].retgain * sendFxReturn[j][0][i]) / 2.0);
+                }
+                else if (sendEffects[j].outputs == 2) {
+                    // Effect has stereo output
+                    out[0][i+offset]+=(sendEffects[j].retgain * sendFxReturn[j][0][i]);
+                    out[1][i+offset]+=(sendEffects[j].retgain * sendFxReturn[j][1][i]);
+                }
+              }
             }
          }
       }
@@ -1006,6 +996,12 @@ void SimpleSynth::showNativeGui(bool val)
    SS_TRACE_OUT
 }
 
+void SimpleSynth::guiHeartBeat()
+{
+  if(gui)
+    gui->heartBeat();
+};
+
 //---------------------------------------------------------
 /*!
     \fn SimpleSynth::init
@@ -1017,8 +1013,8 @@ void SimpleSynth::showNativeGui(bool val)
 bool SimpleSynth::init(const char* name)
 {
    SS_TRACE_IN
-         SWITCH_SYNTH_STATE(SS_INITIALIZING);
-   gui = new SimpleSynthGui();
+   SWITCH_SYNTH_STATE(SS_INITIALIZING);
+   gui = new SimpleSynthGui(sampleRate());
    //gui->show();
    gui->setWindowTitle(name);
    for(int i = 0; i < SS_NR_OF_CHANNELS; i++){
@@ -1072,10 +1068,10 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
    len++; //Add place for SS_SYSEX_INIT_DATA_VERSION, as control
 
    for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
-      Plugin* plugin = sendEffects[i].plugin;
+      MusESimplePlugin::PluginI* plugin = sendEffects[i].plugin;
       if (plugin) {
          int namelen = plugin->lib().size() + 2;
-         int labelnamelen = plugin->label().size() + 2;
+         int labelnamelen = plugin->pluginLabel().size() + 2;
          len+=(namelen + labelnamelen);
 
          ///len+=3; //1 byte for nr of parameters, 1 byte for return gain, 1 byte for effect on/off
@@ -1186,9 +1182,9 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
    i++;
    for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
       if (sendEffects[j].plugin) {
-         int labelnamelen = sendEffects[j].plugin->label().size() + 1;
+         int labelnamelen = sendEffects[j].plugin->pluginLabel().size() + 1;
          initBuffer[i] = labelnamelen;
-         memcpy((initBuffer+i+1), sendEffects[j].plugin->label().toLatin1().constData(), labelnamelen);
+         memcpy((initBuffer+i+1), sendEffects[j].plugin->pluginLabel().toLatin1().constData(), labelnamelen);
          if (SS_DEBUG_INIT) {
             printf("initBuffer[%d] - labelnamelen: %d\n", i, labelnamelen);
             printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+1), (i+1) + labelnamelen - 1);
@@ -1441,7 +1437,8 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                //old code//printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%d\n", long(ptr-data, i, j, *ptr);
                printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%hhd\n", long(ptr-data), i, j, *ptr);
             }
-            setFxParameter(i, j, sendEffects[i].plugin->convertGuiControlValue(j, *(ptr)));
+            if(sendEffects[i].plugin)
+              setFxParameter(i, j, sendEffects[i].plugin->convertGuiControlValue(j, *(ptr)));
             ptr++;
          }
       }
@@ -1467,6 +1464,8 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
    SS_SampleLoader* loader = new SS_SampleLoader;
    loader->channel = ch;
    loader->ch_no   = chno;
+   loader->synth = this;
+   loader->sampleRate = sampleRate();
    if (SS_DEBUG) {
       printf("Loader filename is: %s\n", filename);
    }
@@ -1477,8 +1476,10 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
    }
    else
    {
-      printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
-      //MusEGlobal::museProject
+      printf("current path: %s\nmuseProject %s\nfilename %s\n", 
+             QDir::currentPath().toLatin1().constData(),
+             SS_projectPath.toLatin1().constData(), 
+             filename);
       QFileInfo fi(filename);
       if (QFile::exists(fi.fileName()))
          loader->filename = QDir::currentPath().toStdString() + "/" + fi.fileName().toStdString();
@@ -1514,14 +1515,14 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
 }
 
 
-void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch)
+void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch, int sample_rate)
 {
    // Get new nr of frames:
-   double srcratio = (double) SS_samplerate/ (double) origSample->samplerate * pitch;
+   double srcratio = (double) sample_rate / (double) origSample->samplerate * pitch;
    newSample->frames = (long) floor(((double) origSample->frames * srcratio));
    //smp->frames = (sfi.channels == 1 ? smp->frames * 2 : smp->frames ); // Double nr of new frames if mono->stereo
    newSample->samples = newSample->frames * newSample->channels;
-   newSample->samplerate = SS_samplerate;
+   newSample->samplerate = sample_rate;
 
    // Allocate mem for the new one
    float* newData = new float[newSample->frames * newSample->channels];
@@ -1557,7 +1558,7 @@ void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch)
 
 /*!
     \fn loadSampleThread(void* p)
-    \brief Since process needs to respond withing a certain time, loading of samples need to be done in a separate thread
+    \brief Since process needs to respond within a certain time, loading of samples need to be done in a separate thread
  */
 static void* loadSampleThread(void* p)
 {
@@ -1565,11 +1566,14 @@ static void* loadSampleThread(void* p)
          pthread_mutex_lock(&SS_LoaderMutex);
 
    // Crit section:
-   SS_State prevState = synth_state;
-   SWITCH_SYNTH_STATE(SS_LOADING_SAMPLE);
    SS_SampleLoader* loader = (SS_SampleLoader*) p;
+   SimpleSynth* synth = loader->synth;
+   SS_State prevState = synth->synth_state;
+   synth->SWITCH_SYNTH_STATE(SS_LOADING_SAMPLE);
+   
    SS_Channel* ch = loader->channel;
-   int ch_no      = loader->ch_no;
+   const int ch_no      = loader->ch_no;
+   const int sample_rate = loader->sampleRate;
 
    if (ch->sample) {
       delete[] ch->sample->data;
@@ -1586,8 +1590,8 @@ static void* loadSampleThread(void* p)
    sf = sf_open(filename, SFM_READ, &sfi);
    if (sf == 0) {
       fprintf(stderr,"Error opening file: %s\n", filename);
-      SWITCH_SYNTH_STATE(prevState);
-      simplesynth_ptr->guiSendSampleLoaded(false, loader->ch_no, filename);
+      synth->SWITCH_SYNTH_STATE(prevState);
+      synth->guiSendSampleLoaded(false, loader->ch_no, filename);
       delete ch->sample; ch->sample = 0;
       delete loader;
       pthread_mutex_unlock(&SS_LoaderMutex);
@@ -1634,9 +1638,9 @@ static void* loadSampleThread(void* p)
       int frames_read = sf_readf_float(sf, origSample, sfi.frames);
       if (frames_read != sfi.frames) {
          fprintf(stderr,"Error reading sample %s\n", filename);
-         simplesynth_ptr->guiSendSampleLoaded(false, loader->ch_no, filename);
+         synth->guiSendSampleLoaded(false, loader->ch_no, filename);
          sf_close(sf);
-         SWITCH_SYNTH_STATE(prevState);
+         synth->SWITCH_SYNTH_STATE(prevState);
          delete ch->sample; ch->sample = 0;
          delete loader;
          pthread_mutex_unlock(&SS_LoaderMutex);
@@ -1649,32 +1653,18 @@ static void* loadSampleThread(void* p)
       origSmp->samplerate = sfi.samplerate;
       origSmp->data = origSample;
 
-      resample(origSmp, smp, rangeToPitch(ch->pitchInt));
+      resample(origSmp, smp, rangeToPitch(ch->pitchInt), sample_rate);
    }
    //Just close the dam thing
    sf_close(sf);
-   SWITCH_SYNTH_STATE(prevState);
+   synth->SWITCH_SYNTH_STATE(prevState);
    ch->sample->filename = loader->filename;
-   simplesynth_ptr->guiSendSampleLoaded(true, ch_no, filename);
+   synth->guiSendSampleLoaded(true, ch_no, filename);
    delete loader;
    pthread_mutex_unlock(&SS_LoaderMutex);
    SS_TRACE_OUT
          pthread_exit(0);
 }
-
-
-//static Mess* instantiate(int sr, const char* name)
-static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
-{
-   printf("SimpleSynth sampleRate %d\n", sr);
-   SimpleSynth* synth = new SimpleSynth(sr);
-   if (!synth->init(name)) {
-      delete synth;
-      synth = 0;
-   }
-   return synth;
-}
-
 
 /*!
     \fn SimpleSynth::updateBalance(int pan)
@@ -1863,91 +1853,77 @@ void SimpleSynth::guiSendError(const char* errorstring)
    SS_TRACE_OUT
 }
 
-extern "C"
-{
-static MESS descriptor = {
-   "SimpleDrums",
-   "SimpleDrums by Mathias Lundgren",   // (lunar_shuttle@users.sf.net)",
-   "0.1.1",      //Version string
-   MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
-   instantiate,
-};
-// We must compile with -fvisibility=hidden to avoid namespace
-// conflicts with global variables.
-// Only visible symbol is "mess_descriptor".
-// (TODO: all plugins should be compiled this way)
-
-__attribute__ ((visibility("default")))
-const MESS* mess_descriptor() { return &descriptor; }
-}
-
-
 /*!
     \fn SimpleSynth::initSendEffect(int sendeffectid, QString lib, QString name)
  */
 bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
 {
-   SS_TRACE_IN
-         bool success = false;
-   if (sendEffects[id].plugin) {
-      //Cleanup if one was already there:
-      cleanupPlugin(id);
-   }
-   sendEffects[id].plugin  = (LadspaPlugin*) plugins.find(lib, name);
-   LadspaPlugin* plugin = sendEffects[id].plugin;
-   if (plugin) { //We found one
+    SS_TRACE_IN
+          bool success = false;
+    if (sendEffects[id].plugin) {
+        //Cleanup if one was already there:
+        cleanupPlugin(id);
+    }
+    MusESimplePlugin::Plugin* plug = MusESimplePlugin::plugins.find(lib, name);
+    if(!plug)
+    {
+        fprintf(stderr, "initSendEffect: cannot find plugin id:%d lib:%s name:%s\n",
+            id, lib.toLatin1().constData(), name.toLatin1().constData());
+        return false;
+    }
 
-      sendEffects[id].inputs  = plugin->inports();
-      sendEffects[id].outputs = plugin->outports();
+    MusESimplePlugin::PluginI* plugin = plug->createPluginI(
+      2,    // Channels
+      sampleRate(), 
+      SS_segmentSize,
+      SS_useDenormalBias,
+      SS_denormalBias);
+    if(!plugin)
+      return false;
+   
+    sendEffects[id].plugin  = plugin;
+    
 
-      if (plugin->instantiate()) {
-         SS_DBG2("Plugin instantiated", name.toLatin1().constData());
-         SS_DBG_I("Parameters", plugin->parameter());
-         SS_DBG_I("No of inputs", plugin->inports());
-         SS_DBG_I("No of outputs",plugin->outports());
-         SS_DBG_I("Inplace-capable", plugin->inPlaceCapable());
+    sendEffects[id].inputs  = plugin->inports();
+    sendEffects[id].outputs = plugin->outports();
 
-         // Connect inputs/outputs:
-         // If single output/input, only use first channel in sendFxLineOut/sendFxReturn
-         SS_DBG("Connecting ports...");
-         plugin->connectInport(0, sendFxLineOut[id][0]);
-         if (plugin->inports() == 2)
-            plugin->connectInport(1, sendFxLineOut[id][1]);
-         else if (plugin->inports() > 2) {
-            fprintf(stderr, "Plugin has more than 2 inputs, not supported\n");
-         }
+    SS_DBG2("Plugin instantiated", name.toLatin1().constData());
+    SS_DBG_I("Parameters",     (int)plugin->parameters());
+    SS_DBG_I("No of inputs",   (int)plugin->inports());
+    SS_DBG_I("No of outputs",  (int)plugin->outports());
+    SS_DBG_I("Inplace-capable",     plugin->inPlaceCapable());
 
-         plugin->connectOutport(0, sendFxReturn[id][0]);
-         if (plugin->outports() == 2)
-            plugin->connectOutport(1, sendFxReturn[id][1]);
-         else if (plugin->outports() > 2) {
-            fprintf(stderr, "Plugin has more than 2 outputs, not supported\n");
-         }
-         SS_DBG("Ports connected");
-         if (plugin->start()) {
-            sendEffects[id].state = SS_SENDFX_ON;
-            success = true;
+    // Connect inputs/outputs:
+    plugin->connect(
+      2,  // ports
+      0,  // offset
+      sendFxLineOut[id],
+      sendFxReturn[id]);
+    
+    SS_DBG("Ports connected");
+    if (plugin->start()) 
+    {
+      sendEffects[id].state = SS_SENDFX_ON;
+      success = true;
 
-            int n = plugin->parameter();
-            sendEffects[id].nrofparameters = n;
+      int n = plugin->parameters();
+      sendEffects[id].nrofparameters = n;
 
-            // This is not nice, but freeverb doesn't want to play until some values are set:
-            if (name == "freeverb3") {
-               setFxParameter(id, 2, 0.5);
-               setFxParameter(id, 3, 0.5);
-               setFxParameter(id, 4, 0.5);
-               guiUpdateFxParameter(id, 2, 0.5);
-               guiUpdateFxParameter(id, 3, 0.5);
-               guiUpdateFxParameter(id, 4, 0.5);
-            }
-         }
-         //TODO: cleanup if failed
+      // This is not nice, but freeverb doesn't want to play until some values are set:
+      if (name == "freeverb3") {
+          setFxParameter(id, 2, 0.5);
+          setFxParameter(id, 3, 0.5);
+          setFxParameter(id, 4, 0.5);
+          guiUpdateFxParameter(id, 2, 0.5);
+          guiUpdateFxParameter(id, 3, 0.5);
+          guiUpdateFxParameter(id, 4, 0.5);
       }
-   }
+    }
+    //TODO: cleanup if failed
 
    //Notify gui
    ///int len = 3;
-   int len = 2 + 4;  // Char is not enough for many plugins. Was causing crash. Changed to 32 bits. p4.0.27 Tim.
+   int len = 2 + sizeof(MusESimplePlugin::PluginI*);
    //int len = 5;
    byte out[len];
    out[0] = SS_SYSEX_LOAD_SENDEFFECT_OK;
@@ -1956,16 +1932,11 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
    //out[1] = SIMPLEDRUMS_UNIQUE_ID;
    //out[2] = SS_SYSEX_LOAD_SENDEFFECT_OK;
    //out[3] = id;
-   int j=0;
-   for (iPlugin i = plugins.begin(); i!=plugins.end(); i++, j++) {
-      if ((*i)->lib() == plugin->lib() && (*i)->label() == plugin->label()) {
-         ///out[2] = j;
-         //out[4] = j;
-         *((unsigned*)(out + 2)) = j;
-         MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, out, len);
-         gui->writeEvent(ev);
-      }
-   }
+   ///out[2] = j;
+   //out[4] = j;
+   *((MusESimplePlugin::PluginI**)(&out[2])) = plugin;
+   MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, out, len);
+   gui->writeEvent(ev);
 
    if (!success) {
       QString errorString = "Error loading plugin \"" + plugin->label() + "\"";
@@ -1993,11 +1964,15 @@ void SimpleSynth::setSendFxLevel(int channel, int effectid, double val)
 void SimpleSynth::cleanupPlugin(int id)
 {
    SS_TRACE_IN
-         LadspaPlugin* plugin = sendEffects[id].plugin;
-   plugin->stop();
-   SS_DBG2("Stopped fx", plugin->label().toLatin1().constData());
+   MusESimplePlugin::PluginI* plugin = sendEffects[id].plugin;
+   //plugin->stop();
+   if(plugin)
+     SS_DBG2("Stopped fx", plugin->label().toLatin1().constData());
    sendEffects[id].nrofparameters = 0;
    sendEffects[id].state = SS_SENDFX_OFF;
+   if(plugin)
+     delete plugin;
+   
    sendEffects[id].plugin = 0;
 
    byte d[2];
@@ -2022,11 +1997,14 @@ void SimpleSynth::cleanupPlugin(int id)
 void SimpleSynth::setFxParameter(int fxid, int param, float val)
 {
    SS_TRACE_IN
-         LadspaPlugin* plugin = sendEffects[fxid].plugin;
-   if (SS_DEBUG_LADSPA) {
-      printf("Setting fx parameter: %f\n", val);
+   MusESimplePlugin::PluginI* plugin = sendEffects[fxid].plugin;
+   if(plugin)
+   {
+    if (SS_DEBUG_LADSPA) {
+        printf("Setting fx parameter: %f\n", val);
+    }
+    plugin->setParam(param, val);
    }
-   plugin->setParam(param, val);
    //sendEffects[fxid].parameter[param] = val;
    //guiUpdateFxParameter(fxid, param, val);
    SS_TRACE_OUT
@@ -2041,27 +2019,31 @@ void SimpleSynth::setFxParameter(int fxid, int param, float val)
 void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
 {
    SS_TRACE_IN
-         LadspaPlugin* plugin = sendEffects[fxid].plugin;
-   float min, max;
-   plugin->range(param, &min, &max);
-   //offset:
-   val-= min;
+   MusESimplePlugin::PluginI* plugin = sendEffects[fxid].plugin;
+   int intval = 0;
+   if(plugin)
+   {
+    float min, max;
+    plugin->range(param, &min, &max);
+    //offset:
+    val-= min;
 
-   int intval = plugin->getGuiControlValue(param);
-   /*if (plugin->isLog(param)) {
-            intval = SS_map_logdomain2pluginparam(logf(val/(max - min) + min));
-            }
-      else if (plugin->isBool(param)) {
-            intval = (int) val;
-            }
-      else {
-            float scale = SS_PLUGIN_PARAM_MAX / (max - min);
-            intval = (int) ((val - min) * scale);
-            }*/
-   if (SS_DEBUG_MIDI) {
-      printf("Updating gui, fx parameter. fxid=%d, param=%d val=%d\n", fxid, param, intval);
+    intval = plugin->getGuiControlValue(param);
+    /*if (plugin->isLog(param)) {
+              intval = SS_map_logdomain2pluginparam(logf(val/(max - min) + min));
+              }
+        else if (plugin->isBool(param)) {
+              intval = (int) val;
+              }
+        else {
+              float scale = SS_PLUGIN_PARAM_MAX / (max - min);
+              intval = (int) ((val - min) * scale);
+              }*/
+    if (SS_DEBUG_MIDI) {
+        printf("Updating gui, fx parameter. fxid=%d, param=%d val=%d\n", fxid, param, intval);
+    }
    }
-
+   
    byte d[4];
    //byte d[6];
    d[0] = SS_SYSEX_SET_PLUGIN_PARAMETER_OK;
@@ -2131,3 +2113,40 @@ void SimpleSynth::guiNotifySampleCleared(int ch)
    gui->writeEvent(ev);
    SS_TRACE_OUT
 }
+
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
+{
+   printf("SimpleSynth sampleRate:%d minMeterVal:%d\n", config->_sampleRate, config->_minMeterVal);
+   SS_segmentSize       = config->_segmentSize;
+   SS_minMeterVal       = config->_minMeterVal;
+   SS_useDenormalBias   = config->_useDenormalBias;
+   SS_denormalBias      = config->_denormalBias;
+   SS_globalLibPath     = QString(config->_globalLibPath);
+   SS_projectPath       = QString(config->_projectPath);
+   SimpleSynth* synth = new SimpleSynth(config->_sampleRate);
+   if (!synth->init(name)) {
+      delete synth;
+      synth = 0;
+   }
+   return synth;
+}
+
+extern "C"
+{
+static MESS descriptor = {
+   "SimpleDrums",
+   "SimpleDrums by Mathias Lundgren",   // (lunar_shuttle@users.sf.net)",
+   "0.1.1",      //Version string
+   MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
+   instantiate,
+};
+// We must compile with -fvisibility=hidden to avoid namespace
+// conflicts with global variables.
+// Only visible symbol is "mess_descriptor".
+// (TODO: all plugins should be compiled this way)
+
+__attribute__ ((visibility("default")))
+const MESS* mess_descriptor() { return &descriptor; }
+}
+
+

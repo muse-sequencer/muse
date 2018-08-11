@@ -67,6 +67,7 @@
 #include "ctrl.h"
 #include "utils.h"
 #include "muse_math.h"
+#include "operations.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_AUDIO_STRIP(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -139,7 +140,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
       
       if(desc->_label.isEmpty())
       {
-        // the thought was to aquire the correct Aux name for each Aux
+        // the thought was to acquire the correct Aux name for each Aux
         // now they are only called Aux1, Aux2, which isn't too usable.
         desc->_label = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(desc->_index)))->auxName();
         if (desc->_label.length() > 8) { // shorten name
@@ -378,7 +379,7 @@ void AudioComponentRack::scanAuxComponents()
       case aStripAuxComponent:
       {
         // TODO: This is just brute-force deletion and recreation of all the auxs. 
-        //       Make this more efficient by only removing what's neccessary and updating/re-using the rest.
+        //       Make this more efficient by only removing what's necessary and updating/re-using the rest.
         to_be_erased.push_back(ic);
       }
       break;
@@ -402,7 +403,7 @@ void AudioComponentRack::scanAuxComponents()
     {
       for (int idx = 0; idx < auxsSize; ++idx) 
       {
-        // the thought was to aquire the correct Aux name for each Aux
+        // the thought was to acquire the correct Aux name for each Aux
         // now they are only called Aux1, Aux2, which isn't too usable.
 //         QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
 //         if (title.length() > 8) { // shorten name
@@ -907,6 +908,7 @@ void AudioStrip::configChanged()
   {
     meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
     meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+    meter[c]->setRefreshRate(MusEGlobal::config.guiRefresh);
   }
 
   // If smart focus is on redirect strip focus to slider label.
@@ -1048,9 +1050,10 @@ void AudioStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      // No undo.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
-      MusEGlobal::song->update(SC_MUTE);
+      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackOff));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
 
 //---------------------------------------------------------
@@ -1132,9 +1135,10 @@ void AudioStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  // No undo.
-  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
-  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(track, v, MusECore::PendingOperationItem::SetTrackRecMonitor));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -1291,9 +1295,9 @@ void AudioStrip::updateChannels()
                   setClipperTooltip(cc);
                   _clipperLayout->addWidget(_clipperLabel[cc]);
                   connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
-            
-                  meter[cc] = new Meter(this);
-                  meter[cc]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+
+                  meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+                  meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
                   meter[cc]->setFixedWidth(FIXED_METER_WIDTH);
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
@@ -1428,8 +1432,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       int ch = 0;
       for (; ch < channel; ++ch)
       {
-            meter[ch] = new Meter(this);
-            meter[ch]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+            meter[ch] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+            meter[ch]->setRefreshRate(MusEGlobal::config.guiRefresh);
             meter[ch]->setFixedWidth(FIXED_METER_WIDTH);
             meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             _clipperLabel[ch] = new ClipperLabel(this);
@@ -1535,6 +1539,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+            meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
             meter[i]->setFixedWidth(Strip::FIXED_METER_WIDTH);
             meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
             meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);

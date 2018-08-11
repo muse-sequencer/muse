@@ -1687,8 +1687,9 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, "DssiSynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
-          evframe, frame, v.frame, v.idx, v.value, v.unique);
+        fprintf(stderr, 
+          "DssiSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%lu nframes:%u v.frame:%lu\n",
+          evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
         // No choice but to ignore it.
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.

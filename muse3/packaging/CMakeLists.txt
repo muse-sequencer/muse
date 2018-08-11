@@ -30,7 +30,7 @@ configure_file (
       )
 
 #
-# install the desktop and mime files
+# install the appdata, desktop and mime files
 #
 install( FILES muse_icon.png
       DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/
@@ -40,5 +40,8 @@ install( FILES ${PROJECT_BINARY_DIR}/packaging/muse.desktop
       )
 install( FILES muse.xml
       DESTINATION ${SHARE_INSTALL_PREFIX}/mime/packages/
+      )
+install( FILES muse.appdata.xml
+      DESTINATION ${SHARE_INSTALL_PREFIX}/metainfo/
       )
 

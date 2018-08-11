@@ -195,7 +195,7 @@ void Arranger::setHeaderToolTips()
 
 void Arranger::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to ouput for monitoring.\n"
+      header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
                                                  "See also Settings: Automatically Monitor On Record Arm."));
       header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle.\n"
                                             "See also Settings: Automatically Monitor On Record Arm."));
@@ -264,7 +264,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       for (int i = 0; i < 6; i++)
             _rasterCombo->insertItem(i, tr(gArrangerRasterStrings[i]), gArrangerRasterTable[i]);
       _rasterCombo->setCurrentIndex(1);
-      // Set the audio record part snapping. Set to 0 (bar), the same as this combo box intial raster.
+      // Set the audio record part snapping. Set to 0 (bar), the same as this combo box initial raster.
       MusEGlobal::song->setArrangerRaster(0);
       toolbar->addWidget(_rasterCombo);
       connect(_rasterCombo, SIGNAL(activated(int)), SLOT(rasterChanged(int)));
@@ -519,6 +519,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
+      connect(canvas, SIGNAL(selectionChanged()), parent, SLOT(selectionChanged()));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));

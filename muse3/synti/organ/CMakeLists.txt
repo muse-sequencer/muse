@@ -42,8 +42,6 @@ QT5_WRAP_UI ( organ_uis ${organ_ui_files} )
 file (GLOB organ_source_files
       organ.cpp
       organgui.cpp
-      # reverb.cpp
-      # routing.cpp
       )
 
 ##
@@ -82,6 +80,7 @@ target_link_libraries(organ
       synti
       # awl
       ${QT_LIBRARIES}
+      mpevent_module
       )
 
 ##

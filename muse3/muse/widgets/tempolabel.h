@@ -58,6 +58,8 @@ class TempoEdit : public DoubleSpinBox {
       Q_OBJECT
 
       double curVal;
+      // External sync mode.
+      bool _extern;
       
    protected:
       QSize sizeHint() const;
@@ -72,8 +74,9 @@ class TempoEdit : public DoubleSpinBox {
       void tempoChanged(double);
 
    public:
-      TempoEdit(QWidget*);
+      TempoEdit(QWidget* parent = 0);
       //int tempo() const;
+      void setExternalMode(bool on);
       };
 
 } // namespace MusEGui

@@ -30,15 +30,14 @@
 #include "libsynti/mess.h"
 #include "common.h"
 #include "common_defs.h"
-//#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 #include "simpledrumsgui.h"
-#include "ssplugin.h"
+#include "libsimpleplugin/simpler_plugin.h"
 
 #define SS_NO_SAMPLE       0
 #define SS_NO_PLUGIN       0
 
-#define SS_PROCESS_BUFFER_SIZE 4096 //TODO: Add initialization method for nr of frames in each process from MusE - if nr of frames > than this, this will fail
+#define SS_PROCESS_BUFFER_SIZE SS_segmentSize
 #define SS_SENDFX_BUFFER_SIZE  SS_PROCESS_BUFFER_SIZE
 
 enum SS_ChannelState
@@ -64,7 +63,7 @@ enum SS_SendFXState
 struct SS_SendFx
 {
    SS_SendFXState state;
-   LadspaPlugin*  plugin;
+   MusESimplePlugin::PluginI*       plugin;
    int            inputs;
    int            outputs;
    int            retgain_ctrlval;
@@ -126,13 +125,6 @@ struct SS_Controller
    int min, max;
 };
 
-struct SS_SampleLoader
-{
-   SS_Channel*  channel;
-   std::string  filename;
-   int          ch_no;
-};
-
 double rangeToPitch(int value);
 //int pitchToRange(double pitch);
 
@@ -143,28 +135,27 @@ public:
 
    virtual ~SimpleSynth();
 
-   //virtual bool guiVisible() const;
-   //virtual bool hasGui() const;
    virtual bool nativeGuiVisible() const;
    virtual bool hasNativeGui() const;
    virtual bool playNote(int arg1, int arg2, int arg3);
    virtual bool processEvent(const MusECore::MidiPlayEvent& arg1);
    virtual bool setController(int arg1, int arg2, int arg3);
    virtual bool sysex(int arg1, const unsigned char* arg2);
-   virtual QString getPatchName(int arg1, int arg2, bool arg3) const;
+   virtual const char* getPatchName(int arg1, int arg2, bool arg3) const;
    virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
-   virtual int getControllerInfo(int arg1, QString* arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
+   virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
    virtual void processMessages();
    virtual void process(unsigned pos, float** data, int offset, int len);
-   //virtual void showGui(bool arg1);
    virtual void showNativeGui(bool arg1);
-   ///virtual void getInitData(int*, const unsigned char**) const;
+   virtual void guiHeartBeat();
    virtual void getInitData(int*, const unsigned char**);
    // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
    virtual int oldMidiStateHeader(const unsigned char** data) const;
    bool init(const char* name);
    void guiSendSampleLoaded(bool success, int ch, const char* filename);
    void guiSendError(const char* errorstring);
+   
+   SS_State synth_state;
 
    static const char* synth_state_descr[];
    static const char* channel_state_descr[];
@@ -194,6 +185,7 @@ private:
    void guiUpdateMasterVol(int val);
    void guiUpdateFxParameter(int fxid, int param, float val);
    void guiUpdateSendFxLevel(int channel, int fxid, int level);
+   // Returns true on success.
    bool initSendEffect(int sendeffectid, QString lib, QString name);
    void setSendFxLevel(int channel, int effectid, double val);
    void cleanupPlugin(int id);
@@ -210,10 +202,17 @@ private:
    double* processBuffer[2];
 };
 
-void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch);
+struct SS_SampleLoader
+{
+   SS_Channel*  channel;
+   std::string  filename;
+   int          ch_no;
+   SimpleSynth* synth;
+   int sampleRate;
+};
+
+void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch, int sample_rate);
 static void* loadSampleThread(void*);
 static pthread_mutex_t SS_LoaderMutex;
-static SS_State synth_state;
-static SimpleSynth* simplesynth_ptr;
 
 #endif

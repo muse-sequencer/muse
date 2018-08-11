@@ -2066,7 +2066,7 @@ void ClipBase::write(int level, Xml& xml) const
       QString path = f.dirPath();
 
       //
-      // waves in the project dirctory are stored
+      // waves in the project directory are stored
       // with relative path name, others with absolute path
       //
       if (path == MusEGlobal::museProject)
@@ -2379,7 +2379,7 @@ void MusE::importWave()
       }
 
    }
-   MusECore::AudioPreviewDialog afd(this);
+   MusECore::AudioPreviewDialog afd(this, MusEGlobal::sampleRate);
    afd.setDirectory(MusEGlobal::lastWavePath);
    afd.setWindowTitle(tr("Import Audio File"));
    /*QString fn = afd.getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
@@ -2436,217 +2436,218 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       }
 
 // REMOVE Tim. samplerate. Removed. TESTING Audio converters. Reinstate!
+#if 0
+      //save project if necessary
+      //copy wave to project's folder,
+      //rename it if there is a duplicate,
+      //resample to project's rate
 
-//       //save project if neccesary
-//       //copy wave to project's folder,
-//       //rename it if there is a duplicate,
-//       //resample to project's rate
-// 
-//       if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
-//       {
-//          if(!MusEGlobal::muse->saveAs())
-//             return true;
-//       }
-// 
-//       QFileInfo fi(f.name());
-//       QString projectPath = MusEGlobal::museProject + QDir::separator();
-//       QString fExt = "wav";
-//       QString fBaseName = fi.baseName();
-//       QString fNewPath = "";
-//       bool bNameIsNotUsed = false;
-//       for(int i = 0; i < 1000; i++)
-//       {
-//          fNewPath = projectPath + fBaseName + ((i == 0) ? "" : QString::number(i)) +  "." + fExt;
-//          if(!QFile(fNewPath).exists())
-//          {
-//             bNameIsNotUsed = true;
-//             break;
-//          }
-//       }
-// 
-//       if(!bNameIsNotUsed)
-//       {
-//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-//                                tr("There are too many wave files\n"
-//                                   "of the same base name as imported wave file\n"
-//                                   "Can not continue."));
-//          return true;
-//       }
-// 
-//       SF_INFO sfiNew;
-//       sfiNew.channels = f.channels();
-//       sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
-//       sfiNew.frames = 0;
-//       sfiNew.samplerate = MusEGlobal::sampleRate;
-//       sfiNew.seekable = 1;
-//       sfiNew.sections = 0;
-// 
-//       SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
-//       if(sfNew == NULL)
-//       {
-//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-//                                tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
-//          return true;
-//       }
-// 
-//       int srErr = 0;
-//       SRC_STATE *srState = src_new(SRC_SINC_BEST_QUALITY, sfiNew.channels, &srErr);
-//       if(!srState)
-//       {
-//          QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
-//                                tr("Failed to initialize sample rate converter!"));
-//          sf_close(sfNew);
-//          QFile(fNewPath).remove();
-//          return true;
-//       }
-// 
-// 
-// 
-//       float fPeekMax = 1.0f; //if output save file will peek above this walue
-//       //it should be normalized later
-//       float fNormRatio = 1.0f / fPeekMax;
-//       int nTriesMax = 5;
-//       int nCurTry = 0;
-//       do
-//       {
-//          QProgressDialog pDlg(MusEGlobal::muse);
-//          pDlg.setMinimum(0);
-//          pDlg.setMaximum(f.samples());
-//          pDlg.setCancelButtonText(tr("Cancel"));
-//          if(nCurTry == 0)
-//          {
-//             pDlg.setLabelText(tr("Resampling wave file\n"
-//                                     "\"%1\"\n"
-//                                     "from %2 to %3 Hz...")
-//                                  .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
-//          }
-//          else
-//          {
-//             pDlg.setLabelText(tr("Output has clipped\n"
-//                                  "Resampling again and normalizing wave file\n"
-//                                  "\"%1\"\n"
-//                                  "Try %2 of %3...")
-//                               .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
-//          }
-//          pDlg.setWindowModality(Qt::WindowModal);
-//          src_reset(srState);
-//          SRC_DATA sd;
-//          sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
-//          sf_count_t szBuf = 8192;
-//          float srcBuffer [szBuf];
-//          float dstBuffer [szBuf];
-//          unsigned sChannels = f.channels();
-//          sf_count_t szBufInFrames = szBuf / sChannels;
-//          sf_count_t szFInFrames = f.samples();
-//          sf_count_t nFramesRead = 0;
-//          sf_count_t nFramesWrote = 0;
-//          sd.end_of_input = 0;
-//          bool bEndOfInput = false;
-//          pDlg.setValue(0);
-// 
-//          f.seek(0, SEEK_SET);
-// 
-//          while(sd.end_of_input == 0)
-//          {
-//             size_t nFramesBuf = 0;
-//             if(bEndOfInput)
-//                sd.end_of_input = 1;
-//             else
-//             {
-//                nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
-//                if(nFramesBuf == 0)
-//                   break;
-//                nFramesRead += nFramesBuf;
-//             }
-// 
-//             sd.data_in = srcBuffer;
-//             sd.data_out = dstBuffer;
-//             sd.input_frames = nFramesBuf;
-//             sd.output_frames = szBufInFrames;
-//             sd.input_frames_used = 0;
-//             sd.output_frames_gen = 0;
-//             do
-//             {
-//                if(src_process(srState, &sd) != 0)
-//                   break;
-//                sd.data_in += sd.input_frames_used * sChannels;
-//                sd.input_frames -= sd.input_frames_used;
-// 
-//                if(sd.output_frames_gen > 0)
-//                {
-//                   nFramesWrote += sd.output_frames_gen;
-//                   //detect maximum peek value;
-//                   for(unsigned ch = 0; ch < sChannels; ch++)
-//                   {
-// 
-//                      for(long k = 0; k < sd.output_frames_gen; k++)
-//                      {
-//                         dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
-//                         float fCurPeek = dstBuffer [k * sChannels + ch];
-//                         if(fPeekMax < fCurPeek)
-//                         {
-//                            //update maximum peek value
-//                            fPeekMax = fCurPeek;
-//                         }
-//                      }
-//                   }
-//                   sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
-//                }
-//                else
-//                   break;
-// 
-//             }
-//             while(true);
-// 
-//             pDlg.setValue(nFramesRead);
-// 
-//             if(nFramesRead >= szFInFrames)
-//             {
-//                bEndOfInput = true;
-//             }
-// 
-//             if(pDlg.wasCanceled())//free all resources
-//             {
-//                src_delete(srState);
-//                sf_close(sfNew);
-//                f.close();
-//                f = NULL;
-//                QFile(fNewPath).remove();
-//                return true;
-//             }
-//          }
-// 
-//          pDlg.setValue(szFInFrames);
-// 
-//          if(fPeekMax > 1.0f) //output has clipped. Normilize it
-//          {
-//             nCurTry++;
-//             sf_seek(sfNew, 0, SEEK_SET);
-//             f.seek(0, SEEK_SET);
-//             pDlg.setValue(0);
-//             fNormRatio = 1.0f / fPeekMax;
-//             fPeekMax = 1.0f;
-//          }
-//          else
-//             break;
-//       }
-//       while(nCurTry <= nTriesMax);
-// 
-//       src_delete(srState);
-// 
-//       sf_close(sfNew);
-// 
-//       f.close();
-//       f = NULL;
-// 
-//       //reopen resampled wave again
-//       f = MusECore::getWave(fNewPath, true);
-//       if(!f)
-//       {
-//          printf("import audio file failed\n");
-//          return true;
-//       }
-//       samples = f->samples();
+      if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+      {
+         if(!MusEGlobal::muse->saveAs())
+            return true;
+      }
+
+      QFileInfo fi(f.name());
+      QString projectPath = MusEGlobal::museProject + QDir::separator();
+      QString fExt = "wav";
+      QString fBaseName = fi.baseName();
+      QString fNewPath = "";
+      bool bNameIsNotUsed = false;
+      for(int i = 0; i < 1000; i++)
+      {
+         fNewPath = projectPath + fBaseName + ((i == 0) ? "" : QString::number(i)) +  "." + fExt;
+         if(!QFile(fNewPath).exists())
+         {
+            bNameIsNotUsed = true;
+            break;
+         }
+      }
+
+      if(!bNameIsNotUsed)
+      {
+         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                               tr("There are too many wave files\n"
+                                  "of the same base name as imported wave file\n"
+                                  "Can not continue."));
+         return true;
+      }
+
+      SF_INFO sfiNew;
+      sfiNew.channels = f.channels();
+      sfiNew.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+      sfiNew.frames = 0;
+      sfiNew.samplerate = MusEGlobal::sampleRate;
+      sfiNew.seekable = 1;
+      sfiNew.sections = 0;
+
+      SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
+      if(sfNew == NULL)
+      {
+         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                               tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
+         return true;
+      }
+
+      int srErr = 0;
+      SRC_STATE *srState = src_new(SRC_SINC_BEST_QUALITY, sfiNew.channels, &srErr);
+      if(!srState)
+      {
+         QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
+                               tr("Failed to initialize sample rate converter!"));
+         sf_close(sfNew);
+         QFile(fNewPath).remove();
+         return true;
+      }
+
+
+
+      float fPeekMax = 1.0f; //if output save file will peek above this walue
+      //it should be normalized later
+      float fNormRatio = 1.0f / fPeekMax;
+      int nTriesMax = 5;
+      int nCurTry = 0;
+      do
+      {
+         QProgressDialog pDlg(MusEGlobal::muse);
+         pDlg.setMinimum(0);
+         pDlg.setMaximum(f.samples());
+         pDlg.setCancelButtonText(tr("Cancel"));
+         if(nCurTry == 0)
+         {
+            pDlg.setLabelText(tr("Resampling wave file\n"
+                                    "\"%1\"\n"
+                                    "from %2 to %3 Hz...")
+                                 .arg(f.name()).arg(f.samplerate()).arg(sfiNew.samplerate));
+         }
+         else
+         {
+            pDlg.setLabelText(tr("Output has clipped\n"
+                                 "Resampling again and normalizing wave file\n"
+                                 "\"%1\"\n"
+                                 "Try %2 of %3...")
+                              .arg(QFileInfo(fNewPath).fileName()).arg(nCurTry).arg(nTriesMax));
+         }
+         pDlg.setWindowModality(Qt::WindowModal);
+         src_reset(srState);
+         SRC_DATA sd;
+         sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)f.samplerate();
+         sf_count_t szBuf = 8192;
+         float srcBuffer [szBuf];
+         float dstBuffer [szBuf];
+         unsigned sChannels = f.channels();
+         sf_count_t szBufInFrames = szBuf / sChannels;
+         sf_count_t szFInFrames = f.samples();
+         sf_count_t nFramesRead = 0;
+         sf_count_t nFramesWrote = 0;
+         sd.end_of_input = 0;
+         bool bEndOfInput = false;
+         pDlg.setValue(0);
+
+         f.seek(0, SEEK_SET);
+
+         while(sd.end_of_input == 0)
+         {
+            size_t nFramesBuf = 0;
+            if(bEndOfInput)
+               sd.end_of_input = 1;
+            else
+            {
+               nFramesBuf = f.readDirect(srcBuffer, szBufInFrames);
+               if(nFramesBuf == 0)
+                  break;
+               nFramesRead += nFramesBuf;
+            }
+
+            sd.data_in = srcBuffer;
+            sd.data_out = dstBuffer;
+            sd.input_frames = nFramesBuf;
+            sd.output_frames = szBufInFrames;
+            sd.input_frames_used = 0;
+            sd.output_frames_gen = 0;
+            do
+            {
+               if(src_process(srState, &sd) != 0)
+                  break;
+               sd.data_in += sd.input_frames_used * sChannels;
+               sd.input_frames -= sd.input_frames_used;
+
+               if(sd.output_frames_gen > 0)
+               {
+                  nFramesWrote += sd.output_frames_gen;
+                  //detect maximum peek value;
+                  for(unsigned ch = 0; ch < sChannels; ch++)
+                  {
+
+                     for(long k = 0; k < sd.output_frames_gen; k++)
+                     {
+                        dstBuffer [k * sChannels + ch] *= fNormRatio; //normilize if needed
+                        float fCurPeek = dstBuffer [k * sChannels + ch];
+                        if(fPeekMax < fCurPeek)
+                        {
+                           //update maximum peek value
+                           fPeekMax = fCurPeek;
+                        }
+                     }
+                  }
+                  sf_writef_float(sfNew, dstBuffer, sd.output_frames_gen);
+               }
+               else
+                  break;
+
+            }
+            while(true);
+
+            pDlg.setValue(nFramesRead);
+
+            if(nFramesRead >= szFInFrames)
+            {
+               bEndOfInput = true;
+            }
+
+            if(pDlg.wasCanceled())//free all resources
+            {
+               src_delete(srState);
+               sf_close(sfNew);
+               f.close();
+               f = NULL;
+               QFile(fNewPath).remove();
+               return true;
+            }
+         }
+
+         pDlg.setValue(szFInFrames);
+
+         if(fPeekMax > 1.0f) //output has clipped. Normilize it
+         {
+            nCurTry++;
+            sf_seek(sfNew, 0, SEEK_SET);
+            f.seek(0, SEEK_SET);
+            pDlg.setValue(0);
+            fNormRatio = 1.0f / fPeekMax;
+            fPeekMax = 1.0f;
+         }
+         else
+            break;
+      }
+      while(nCurTry <= nTriesMax);
+
+      src_delete(srState);
+
+      sf_close(sfNew);
+
+      f.close();
+      f = NULL;
+
+      //reopen resampled wave again
+      f = MusECore::getWave(fNewPath, true);
+      if(!f)
+      {
+         printf("import audio file failed\n");
+         return true;
+      }
+      samples = f->samples();
+#endif
    }
 
    MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);

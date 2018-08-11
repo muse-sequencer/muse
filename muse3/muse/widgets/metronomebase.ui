@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
-    <height>513</height>
+    <width>543</width>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,7 +81,7 @@
           <item>
            <widget class="QRadioButton" name="radioSamples2">
             <property name="text">
-             <string>Two samples (old samples)</string>
+             <string>&amp;Two samples (old samples)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -91,7 +91,7 @@
           <item>
            <widget class="QRadioButton" name="radioSamples4">
             <property name="text">
-             <string>Four samples (new samples, with accents)</string>
+             <string>Four samples (&amp;new samples, with accents)</string>
             </property>
            </widget>
           </item>
@@ -612,9 +612,6 @@
      <property name="mouseTracking">
       <bool>false</bool>
      </property>
-     <property name="toolTip">
-      <string>Disabled since jack does not support it</string>
-     </property>
      <property name="title">
       <string>Precount</string>
      </property>
@@ -637,7 +634,10 @@
       <item>
        <widget class="QCheckBox" name="precountEnable">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Enable the precount</string>
         </property>
         <property name="text">
          <string>enable</string>
@@ -667,7 +667,10 @@
         <item>
          <widget class="QSpinBox" name="precountBars">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Number of bars</string>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -683,7 +686,7 @@
         <item>
          <widget class="QLabel" name="TextLabel7">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Bars</string>
@@ -698,13 +701,13 @@
       <item>
        <widget class="QCheckBox" name="precountFromMastertrack">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Use Mastertrack time signature</string>
         </property>
         <property name="text">
          <string>From Mastertrack</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -728,7 +731,10 @@
         <item>
          <widget class="QSpinBox" name="precountSigZ">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Beats per bar</string>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -744,7 +750,7 @@
         <item>
          <widget class="QLabel" name="TextLabel8">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>/</string>
@@ -757,7 +763,10 @@
         <item>
          <widget class="QSpinBox" name="precountSigN">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Beat note type</string>
           </property>
           <property name="minimum">
            <number>2</number>
@@ -773,7 +782,7 @@
         <item>
          <widget class="QLabel" name="TextLabel9">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Signature</string>
@@ -786,9 +795,38 @@
        </layout>
       </item>
       <item>
+       <widget class="QCheckBox" name="precountOnPlay">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Enable precount when playing</string>
+        </property>
+        <property name="text">
+         <string>Precount on play</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountMuteMetronome">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Mute the metronome after precount</string>
+        </property>
+        <property name="text">
+         <string>Mute metronome</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="precountPrerecord">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Not supported yet</string>
         </property>
         <property name="text">
          <string>Prerecord</string>
@@ -799,6 +837,9 @@
        <widget class="QCheckBox" name="precountPreroll">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Not supported yet</string>
         </property>
         <property name="text">
          <string>Preroll</string>

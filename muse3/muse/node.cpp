@@ -58,50 +58,6 @@
 namespace MusECore {
 
 //---------------------------------------------------------
-//   isMute
-//---------------------------------------------------------
-
-bool MidiTrack::isMute() const
-      {
-      if (_solo || (_internalSolo && !_mute))
-            return false;
-
-      if (_soloRefCnt)
-            return true;
-
-      return _mute;
-      }
-
-bool AudioTrack::isMute() const
-      {
-      if (_solo || (_internalSolo && !_mute))
-            return false;
-
-      if (_soloRefCnt)
-            return true;
-
-      return _mute;
-      }
-
-//---------------------------------------------------------
-//   setMute
-//---------------------------------------------------------
-
-void MidiTrack::setMute(bool val)
-      {
-      _mute = val;
-      }
-
-//---------------------------------------------------------
-//   setOff
-//---------------------------------------------------------
-
-void MidiTrack::setOff(bool val)
-      {
-      _off = val;
-      }
-
-//---------------------------------------------------------
 //   setSolo
 //---------------------------------------------------------
 
@@ -378,25 +334,6 @@ void AudioTrack::updateSoloStates(bool noDec)
   _nodeTraversed = false; // Reset.
 }
 
-
-//---------------------------------------------------------
-//   setMute
-//---------------------------------------------------------
-
-void Track::setMute(bool val)
-      {
-      _mute = val;
-      }
-
-//---------------------------------------------------------
-//   setOff
-//---------------------------------------------------------
-
-void Track::setOff(bool val)
-      {
-      _off = val;
-      }
-
 //---------------------------------------------------------
 //   processTrackCtrls
 //   If trackChans is 0, just process controllers only, not audio (do not 'run').
@@ -516,8 +453,9 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, "AudioTrack::processTrackCtrls *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n",
-          evframe, v.frame, v.idx, v.value, v.unique);
+        fprintf(stderr, 
+          "AudioTrack::processTrackCtrls *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%lu nframes:%u v.frame:%lu\n",
+          evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
         // No choice but to ignore it.
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
@@ -1125,8 +1063,12 @@ void AudioTrack::copyData(unsigned pos,
          _isClipped[c] = true;
     }
 
-    if(isMute())
+// REMOVE Tim. monitor. Changed.
+//    if(isMute())
+    // Are both playback and input are muted?
+    if(isMute() && !isRecMonitored())
     {
+      // Nothing to do. Zero the supplied buffers.
       for(i = dstStartChan; i < (dstStartChan + availDstChannels); ++i)
       {
         if(addArray ? addArray[i] : add)
@@ -1678,7 +1620,7 @@ void AudioTrack::record()
                     // Therefore, just let the write do its thing and progress naturally,
                     //  it should work OK since everything was OK before the libsndfile change...
                     //
-                    // Tested: With the line, audio record looping sort of works, albiet with the start offset added to
+                    // Tested: With the line, audio record looping sort of works, albeit with the start offset added to
                     //  the wave file. And it overwrites existing audio. (Check transport window 'overwrite' function. Tie in somehow...)
                     // With the line, looping does NOT work with libsndfile from around early 2007 (my distro's version until now).
                     // Therefore it seems sometime between libsndfile ~2007 and today, libsndfile must have allowed

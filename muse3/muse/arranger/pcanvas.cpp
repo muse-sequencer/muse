@@ -203,7 +203,7 @@ void PartCanvas::returnPressed()
       {
       lineEditor->hide();
       if (editMode) {
-          //this check is neccessary, because it returnPressed may be called
+          //this check is necessary, because it returnPressed may be called
           //twice. the second call would cause a crash, however!
           MusECore::Part* part = editPart->part();
           // Indicate do undo, and do port controller values but not clone parts.
@@ -756,7 +756,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             case MusECore::Track::MIDI: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
+//                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);

@@ -39,7 +39,7 @@
 #include "deicsonzeplugin.h"
 #include "deicsonzefilter.h"
 #include "libsynti/mess.h"
-#include "plugin.h"
+#include "libsimpleplugin/simpler_plugin.h"
 
 #define DEICSONZESTR "deicsonze"
 
@@ -81,7 +81,7 @@
 #define COEFMAXATTACK 7.5
 #define COEFERRDECSUS 0.01 //for the transition between DECAY and SUSTAIN
 #define COEFERRSUSREL 0.001 //from SUSTAIN or RELEASE until no sound
-//#define ERRPORTA 0.001 //dectection to stop portamento
+//#define ERRPORTA 0.001 //detection to stop portamento
 #define COEFPORTA 0.01 //adjusted such that 10 second/octave with max porta
 #define COEFPITCHENV 0.00000025 //adjust according to a real DX11....???
 #define COEFDECAY 1.0
@@ -335,8 +335,8 @@ enum PitchEnvState{
 //---------------------------------------------------------
 
 struct Voice {
-  bool hasAttractor;//true iff the voice has an attractor (portamento occuring)
-  double attractor; //contains some coeficent for portamento TODO
+  bool hasAttractor;//true iff the voice has an attractor (portamento occurring)
+  double attractor; //contains some coefficient for portamento TODO
   PitchEnvState pitchEnvState;
   double pitchEnvCoefInct;
   double pitchEnvCoefInctPhase1;
@@ -474,13 +474,13 @@ class DeicsOnze : public Mess {
   Preset* _initialPreset;
 
   //FX
-  MusECore::PluginI* _pluginIReverb;
-  MusECore::PluginI* _pluginIChorus;
-  MusECore::PluginI* _pluginIDelay;
+  MusESimplePlugin::PluginI* _pluginIReverb;
+  MusESimplePlugin::PluginI* _pluginIChorus;
+  MusESimplePlugin::PluginI* _pluginIDelay;
 
-  void initPluginReverb(MusECore::Plugin*);
-  void initPluginChorus(MusECore::Plugin*);
-  void initPluginDelay(MusECore::Plugin*);
+  void initPluginReverb(MusESimplePlugin::Plugin*);
+  void initPluginChorus(MusESimplePlugin::Plugin*);
+  void initPluginDelay(MusESimplePlugin::Plugin*);
   
   void setReverbParam(int i, float val);
   float getReverbParam(int i) const;
@@ -592,12 +592,11 @@ class DeicsOnze : public Mess {
   bool sysex(int length, const unsigned char* data, bool fromGui); 
   virtual bool sysex(int l, const unsigned char* d);
   
-  virtual QString getPatchName(int ch, int number, bool) const; 
+  virtual const char* getPatchName(int ch, int number, bool) const; 
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
 
-  virtual int getControllerInfo(int arg1, QString* arg2, 
+  virtual int getControllerInfo(int arg1, const char** arg2, 
 				int* arg3, int* arg4, int* arg5, int* arg6) const;
-  ///virtual void getInitData(int* length, const unsigned char** data) const;
   virtual void getInitData(int* length, const unsigned char** data);
   // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
   virtual int oldMidiStateHeader(const unsigned char** data) const;
@@ -607,9 +606,6 @@ class DeicsOnze : public Mess {
   virtual void process(unsigned pos, float** buffer, int offset, int n);
   
   // GUI interface routines
-  //virtual bool hasGui() const { return true; }
-  //virtual bool guiVisible() const;
-  //virtual void showGui(bool);
   virtual bool hasNativeGui() const { return true; }
   virtual bool nativeGuiVisible() const;
   virtual void showNativeGui(bool);
@@ -620,5 +616,11 @@ class DeicsOnze : public Mess {
   virtual ~DeicsOnze();
 };
 
+extern QString DEI_configPath;
+extern QString DEI_sharePath;
+extern unsigned int DEI_segmentSize;
+extern int DEI_sampleRate;
+extern bool DEI_useDenormalBias;
+extern float DEI_denormalBias;
 
 #endif /* __DEICSONZE_H */

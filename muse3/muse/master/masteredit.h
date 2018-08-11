@@ -38,7 +38,6 @@ using Awl::SigEdit;
 
 class QCloseEvent;
 class QToolBar;
-class QToolButton;
 
 namespace MusEGui {
 class HitScale;
@@ -69,13 +68,10 @@ class MasterEdit : public MidiEditor {
       MusEGui::HitScale* zhits;
       TScale* tscale;
 
-      MusEGui::TempoEdit* curTempo;
-      SigEdit* curSig;
       MusEGui::LabelCombo* rasterLabel;
       QToolBar* tools;
       MusEGui::PosLabel* cursorPos;
       MusEGui::TempoLabel* tempo;
-      QToolButton* enableButton;
       
       static int _rasterInit;
       
@@ -83,11 +79,8 @@ class MasterEdit : public MidiEditor {
 
    private slots:
       void _setRaster(int);
-      void posChanged(int,unsigned,bool);
       void setTime(unsigned);
       void setTempo(int);
-      void sigChange(const AL::TimeSignature&);
-      void tempoChange(double);
 
    public slots:
       void songChanged(MusECore::SongChangedFlags_t);

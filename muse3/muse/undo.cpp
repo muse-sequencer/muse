@@ -64,7 +64,7 @@ const char* UndoOp::typeName()
             "AddPart",  "DeletePart", "MovePart", "ModifyPartLength", "ModifyPartName", "SelectPart",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddAudioCtrlVal", "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
-            "AddTempo", "DeleteTempo", "ModifyTempo", "SetGlobalTempo",
+            "AddTempo", "DeleteTempo", "ModifyTempo", "SetTempo", "SetStaticTempo", "SetGlobalTempo",
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
             "ModifyTrackName", "ModifyTrackChannel",
@@ -437,6 +437,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyTempo:
       fprintf(stderr, "Undo::insert: ModifyTempo old:%d new:%d tick:%d\n", n_op.b, n_op.c, n_op.a);
     break;
+    case UndoOp::SetTempo:
+      fprintf(stderr, "Undo::insert: SetTempo tempo:%d tick:%d\n", n_op.b, n_op.a);
+    break;
+    case UndoOp::SetStaticTempo:
+      fprintf(stderr, "Undo::insert: SetStaticTempo\n");
+    break;
     case UndoOp::SetGlobalTempo:
       fprintf(stderr, "Undo::insert: SetGlobalTempo\n");
     break;
@@ -805,14 +811,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             if(uo.nEvent == n_op.oEvent)
             {
-              // Add followed by modify with old event same as addded event, is equivalent to just adding modify's new event.
+              // Add followed by modify with old event same as added event, is equivalent to just adding modify's new event.
               // Replace the existing AddEvent command's event with the requested ModifyEvent command's new event.
               uo.nEvent = n_op.nEvent;
               return;  
             }
             if(uo.nEvent == n_op.nEvent)
             {
-              // Add followed by modify with new event same as addded event, is a caller error.
+              // Add followed by modify with new event same as added event, is a caller error.
               fprintf(stderr, "MusE error: Undo::insert(): AddEvent, then ModifyEvent same new event (double AddEvent). Ignoring.\n");
               return;  
             }
@@ -936,7 +942,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             // Simply replace the value. 
             uo.b = n_op.b;
-            return;  
+            return;
           }
           else if(uo.type == UndoOp::DeleteTempo && uo.a == n_op.a)  
           {
@@ -951,8 +957,18 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // Modify followed by add. Simply replace the value.
             // a is already the tick, b is already the existing value from ModifyTempo, c is the new value.
             uo.c = n_op.b;
-            return;  
+            return;
           }
+//           else if(uo.type == UndoOp::SetTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is on.
+//             if(MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Simply replace the value. 
+//               uo.b = n_op.b;
+//               return;
+//             }
+//           }
         break;
         
         case UndoOp::DeleteTempo:
@@ -974,6 +990,16 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // a is already the tick, b is already the existing old value from ModifyTempo.
             return;  
           }
+//           else if(uo.type == UndoOp::SetTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is on.
+//             if(MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+//               erase(iuo);
+//               return;
+//             }
+//           }
         break;
         
         case UndoOp::ModifyTempo:
@@ -997,8 +1023,75 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             uo.c = n_op.c;
             return;  
           }
+//           else if(uo.type == UndoOp::SetTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is on.
+//             if(MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Add followed by modify. Simply replace the add value.
+//               uo.b = n_op.c;
+//               return;
+//             }
+//           }
         break;
           
+//         case UndoOp::SetTempo:
+//           if(uo.type == UndoOp::SetTempo && uo.a == n_op.a)  
+//           {
+//             // Simply replace the value. 
+//             uo.b = n_op.b;
+//             return;  
+//           }
+//           else if(uo.type == UndoOp::AddTempo && uo.a == n_op.a)  
+//           {
+//             // Simply replace the value. 
+//             uo.b = n_op.b;
+//             return;
+//           }
+//           else if(uo.type == UndoOp::DeleteTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is on.
+//             if(MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Delete followed by add. Transform the existing DeleteTempo operation into a ModifyTempo.
+//               uo.type = UndoOp::ModifyTempo;
+//               // a is already the tick, b is already the existing value from DeleteTempo, c is the new value.
+//               uo.c = n_op.b;
+//               return;
+//             }
+//           }
+//           else if(uo.type == UndoOp::ModifyTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is on.
+//             if(MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Modify followed by add. Simply replace the value.
+//               // a is already the tick, b is already the existing value from ModifyTempo, c is the new value.
+//               uo.c = n_op.b;
+//               return;
+//             }
+//           }
+//           else if(uo.type == UndoOp::SetStaticTempo && uo.a == n_op.a)  
+//           {
+//             // Only if the master is not on.
+//             if(!MusEGlobal::tempomap.masterFlag())
+//             {
+//               // Simply replace the value. 
+//               uo.b = n_op.b;
+//               return;
+//             }
+//           }
+//         break;
+        
+        case UndoOp::SetStaticTempo:
+          if(uo.type == UndoOp::SetStaticTempo)
+          {
+            // Simply replace a with the new value.
+            uo.a = n_op.a;
+            return;  
+          }
+        break;
+
         case UndoOp::SetGlobalTempo:
           if(uo.type == UndoOp::SetGlobalTempo)  
           {
@@ -1340,7 +1433,8 @@ UndoOp::UndoOp()
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       {
       assert(type_==AddKey || type_==DeleteKey || type_== ModifyKey ||
-             type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || type_==SetGlobalTempo ||  
+             type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
+             type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo ||  
              type_==AddSig || type_==DeleteSig ||
              type_==ModifySongLen || type_==MoveTrack);
       
@@ -1373,6 +1467,45 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
             b = ite->second->tempo;
           }
         }
+        break;
+        
+        case UndoOp::SetTempo:
+        {
+          // Only if the master is on.
+          if(MusEGlobal::tempomap.masterFlag())
+          {
+            int t = a;
+            if(t > MAX_TICK)
+              t = MAX_TICK;
+            iTEvent ite = MusEGlobal::tempomap.upper_bound(t);
+            if((int)ite->second->tick == t)
+            {
+              // Transform the SetTempo operation into a ModifyTempo.
+              // a is already the tick, b is the existing value, c is the new value.
+              type = UndoOp::ModifyTempo;
+              c = b;
+              b = ite->second->tempo;
+            }
+            else
+            {
+              // Transform the SetTempo operation into an AddTempo.
+              type = UndoOp::AddTempo;
+            }
+          }
+          else
+          {
+            // a is the new tempo, b is the existing tempo.
+            a = b;
+            b = MusEGlobal::tempomap.staticTempo();
+            // Transform the SetTempo operation into a SetStaticTempo.
+            type = UndoOp::SetStaticTempo;
+          }
+        }
+        break;
+        
+        case UndoOp::SetStaticTempo:
+          // a is already the new tempo, b is the existing tempo.
+          b = MusEGlobal::tempomap.staticTempo();
         break;
         
         case UndoOp::AddSig:
@@ -1574,9 +1707,11 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_, bool noUndo)
       {
       assert(type_==ModifyMarker);
-      assert(copyMarker_);
-      assert(realMarker_);
-      
+// REMOVE Tim. global cut. Changed. copyMarker_ or realMarker_ can be null.
+//      assert(copyMarker_);
+//      assert(realMarker_);
+      assert(copyMarker_ || realMarker_);
+
       type    = type_;
       realMarker  = realMarker_;
       copyMarker  = copyMarker_;
@@ -1953,7 +2088,9 @@ void Song::revertOperationGroup1(Undo& operations)
                         if(!editable_track->setRecordFlag1(!i->a))
                           break;
                         pendingOperations.add(PendingOperationItem(editable_track, !i->a, PendingOperationItem::SetTrackRecord));
-                        updateFlags |= SC_RECFLAG;
+                        // FIXME: No choice but to include monitor flag. Really should try to merge pending ops flags
+                        //  with undo flags after executing the pending ops in revertOperationGroup3...
+                        updateFlags |= (SC_RECFLAG | SC_TRACK_REC_MONITOR);
                         break;
 
                   case UndoOp::SetTrackMute:
@@ -2222,6 +2359,28 @@ void Song::revertOperationGroup1(Undo& operations)
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
 #endif                        
                         MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+                        updateFlags |= SC_TEMPO;
+                        break;
+                        
+//                   case UndoOp::SetTempo:
+//                         // Only if the master is on.
+//                         if(MusEGlobal::tempomap.masterFlag())
+//                         {
+// #ifdef _UNDO_DEBUG_
+//                           fprintf(stderr, "Song::revertOperationGroup1:SetTempo ** calling tempomap.delOperation tick:%d\n", i->a);
+// #endif                        
+//                           MusEGlobal::tempomap.delOperation(i->a, pendingOperations);
+//                         }
+//                         else
+//                           pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->b, PendingOperationItem::SetStaticTempo));
+//                         updateFlags |= SC_TEMPO;
+//                         break;
+                        
+                  case UndoOp::SetStaticTempo:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:SetStaticTempo ** adding SetStaticTempo operation\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->b, PendingOperationItem::SetStaticTempo));
                         updateFlags |= SC_TEMPO;
                         break;
                         
@@ -2653,7 +2812,9 @@ void Song::executeOperationGroup1(Undo& operations)
                         if(!editable_track->setRecordFlag1(i->a))
                           break;
                         pendingOperations.add(PendingOperationItem(editable_track, i->a, PendingOperationItem::SetTrackRecord));
-                        updateFlags |= SC_RECFLAG;
+                        // FIXME: No choice but to include monitor flag. Really should try to merge pending ops flags
+                        //  with undo flags after executing the pending ops in executeOperationGroup3...
+                        updateFlags |= (SC_RECFLAG | SC_TRACK_REC_MONITOR);
                         break;
 
                   case UndoOp::SetTrackMute:
@@ -2974,6 +3135,28 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_TEMPO;
                         break;
 
+//                   case UndoOp::SetTempo:
+//                         // Only if the master is on.
+//                         if(MusEGlobal::tempomap.masterFlag())
+//                         {
+// #ifdef _UNDO_DEBUG_
+//                           fprintf(stderr, "Song::executeOperationGroup1:SetTempo ** calling tempomap.addOperation tick:%d tempo:%d\n", i->a, i->b);
+// #endif                        
+//                           MusEGlobal::tempomap.addOperation(i->a, i->b, pendingOperations);
+//                         }
+//                         else
+//                           pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->a, PendingOperationItem::SetStaticTempo));
+//                         updateFlags |= SC_TEMPO;
+//                         break;
+                        
+                  case UndoOp::SetStaticTempo:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:SetStaticTempo ** adding SetStaticTempo operation\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(&MusEGlobal::tempomap, i->a, PendingOperationItem::SetStaticTempo));
+                        updateFlags |= SC_TEMPO;
+                        break;
+                        
                   case UndoOp::SetGlobalTempo:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:SetGlobalTempo ** adding SetGlobalTempo operation\n");

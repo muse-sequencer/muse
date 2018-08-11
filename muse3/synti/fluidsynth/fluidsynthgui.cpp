@@ -36,14 +36,13 @@
 #include <QIcon>
 #include <QLabel>
 #include <QMenu>
-#include <QSocketNotifier>
 #include <QTableWidgetItem>
 #include <QTreeWidgetItem>
 #include <QHeaderView>
 
 #include <math.h>
 
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "icons.h"
 
 #include "common_defs.h"
@@ -71,9 +70,7 @@ FluidSynthGui::FluidSynthGui()
       ChorusType->setItemIcon(0, QIcon(*MusEGui::sineIcon));
       ChorusType->setItemIcon(1, QIcon(*MusEGui::sawIcon));
 
-      //Connect socketnotifier to fifo
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
       connect (Push, SIGNAL (clicked()), SLOT(loadClicked()));
 
       lastdir = "";
@@ -109,25 +106,6 @@ FluidSynthGui::FluidSynthGui()
       connect(ChorusSpeed, SIGNAL (valueChanged (int)), SLOT(changeChorusSpeed (int)));
       connect(ChorusDepth, SIGNAL (valueChanged (int)), SLOT(changeChorusDepth (int)));
       connect(ChorusLevel, SIGNAL (valueChanged (int)), SLOT(changeChorusLevel (int)));
-/*
-      _notifier = new QSocketNotifier(0, QSocketNotifier::Read);
-      connect(_notifier, SIGNAL(activated(int)), SLOT(readData(int)));
-
-      //Setup the ListView
-      sfListView->setColumnWidthMode(MUSE_FLUID_ID_COL,QListView::Maximum);
-      sfListView->setColumnWidthMode(MUSE_FLUID_SFNAME_COL,QListView::Maximum);
-
-      sfListView->setColumnAlignment(MUSE_FLUID_ID_COL,AlignHCenter);
-      sfListView->setSorting(MUSE_FLUID_ID_COL,true);
-      channelListView->setColumnAlignment(MUSE_FLUID_CHANNEL_COL,AlignHCenter);
-
-      _currentlySelectedFont = -1; //No selected font to start with
-      //  The GUI-process is killed every time the window is shut,
-         //  need to get all parameters from the synth
-
-      requestAllParameters();
-
-      */
 
       //Clear channels
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++)
@@ -430,7 +408,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
 //---------------------------------------------------------
 //   readMessage
 //---------------------------------------------------------
-void FluidSynthGui::readMessage(int)
+void FluidSynthGui::readMessage()
       {
       MessGui::readMessage();
       }

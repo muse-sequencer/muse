@@ -42,6 +42,7 @@ namespace Awl
 namespace MusEGui
 {
   class TempoEdit;
+  class IconButton;
 
   class TempoToolbar : public QToolBar
   {
@@ -51,6 +52,7 @@ namespace MusEGui
       QLabel* label;
       TempoEdit* tempo_edit;
       QToolButton *tap_button;
+      IconButton* _masterButton;
 
       QTimer tap_timer;
       QDateTime last_tap_time;
@@ -60,16 +62,21 @@ namespace MusEGui
     public:
       TempoToolbar(QWidget* parent = 0);
       TempoToolbar(const QString& title, QWidget* parent = 0);
+      bool masterTrack() const;
+      void setMasterTrack(bool);
     
     signals:
       void returnPressed();
       void escapePressed();
+      void masterTrackChanged(bool);
             
     private slots:
       void pos_changed(int,unsigned,bool);
       void song_changed(MusECore::SongChangedFlags_t);
+      void syncChanged(bool);
       void tap_tempo();
       void tap_timer_signal();
+      void masterToggled(bool);
   };
 
 

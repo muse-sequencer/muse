@@ -4,6 +4,9 @@
 #include <QMouseEvent>
 #include <stdio.h>
 #include <QLineEdit>
+#include <QStyle>
+#include <QStyleOption>
+#include <QApplication>
 
 class MyLineEdit : public QLineEdit
 {
@@ -78,3 +81,29 @@ void SigSpinBox::stepBy(int step)
     }
   }
 }
+
+//---------------------------------------------------------
+//   sizeHint
+//---------------------------------------------------------
+
+QSize SigSpinBox::sizeHint() const
+      {
+      if(const QStyle* st = style())
+      {
+        st = st->proxy();
+        
+        QStyleOptionSpinBox option;
+        option.initFrom(this);
+        option.rect = rect();
+        option.state = QStyle::State_Active | QStyle::State_Enabled;
+        const QRect b_rect = st->subControlRect(QStyle::CC_SpinBox, &option, QStyle::SC_SpinBoxUp);
+        
+        QFontMetrics fm(font());
+        const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
+        int h  = fm.height() + fw * 2;
+        int w  = fw * 2 + b_rect.width() + fm.width(QString("00"));
+        return QSize(w, h).expandedTo(QApplication::globalStrut());
+      }
+      return QSize(20, 20).expandedTo(QApplication::globalStrut());      
+      }
+      

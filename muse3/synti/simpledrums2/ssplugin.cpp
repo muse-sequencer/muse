@@ -34,6 +34,32 @@
 #include "ssplugin.h"
 #include "common.h"
 
+#define SS_LOG_MAX   0
+#define SS_LOG_MIN -10
+#define SS_LOG_OFFSET SS_LOG_MIN
+
+
+//
+// Map plugin parameter on domain [SS_PLUGIN_PARAM_MIN, SS_PLUGIN_PARAM_MAX] to domain [SS_LOG_MIN, SS_LOG_MAX] (log domain)
+//
+float SS_map_pluginparam2logdomain(int pluginparam_val)
+{
+   float scale = (float) (SS_LOG_MAX - SS_LOG_MIN)/ (float) SS_PLUGIN_PARAM_MAX;
+   float scaled = (float) pluginparam_val * scale;
+   float mapped = scaled + SS_LOG_OFFSET;
+   return mapped;
+}
+//
+// Map plugin parameter on domain to domain [SS_LOG_MIN, SS_LOG_MAX] to [SS_PLUGIN_PARAM_MIN, SS_PLUGIN_PARAM_MAX]  (from log-> [0,127])
+// (inverse func to the above)
+int SS_map_logdomain2pluginparam(float pluginparam_log)
+{
+   float mapped = pluginparam_log - SS_LOG_OFFSET;
+   float scale = (float) SS_PLUGIN_PARAM_MAX / (float) (SS_LOG_MAX - SS_LOG_MIN);
+   int scaled  = (int) round(mapped * scale);
+   return scaled;
+}
+
 PluginList plugins;
 
 
@@ -52,10 +78,10 @@ static void loadPluginLib(QFileInfo* fi)
       if (SS_DEBUG_LADSPA) {
             printf("loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
             }
-      void* handle = dlopen(fi->filePath().toLatin1().data(), RTLD_NOW);
+      void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
       if (handle == 0) {
             fprintf(stderr, "dlopen(%s) failed: %s\n",
-              fi->filePath().toLatin1().data(), dlerror());
+              fi->filePath().toLatin1().constData(), dlerror());
             return;
             }
       LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
@@ -67,7 +93,7 @@ static void loadPluginLib(QFileInfo* fi)
                         "Unable to find ladspa_descriptor() function in plugin "
                         "library file \"%s\": %s.\n"
                         "Are you sure this is a LADSPA plugin file?\n",
-                        fi->filePath().toLatin1().data(),
+                        fi->filePath().toLatin1().constData(),
                         txt);
                   return;//exit(1);
                   }

@@ -97,6 +97,7 @@ class Meter : public QFrame, public ScaleIf {
       MeterType mtype;
       Qt::Orientation _orient;
       ScalePos _scalePos;
+      int _refreshRate;
       int _scaleDist;
       bool overflow;
       double val;
@@ -130,15 +131,19 @@ class Meter : public QFrame, public ScaleIf {
       Meter(QWidget* parent, 
             MeterType type = DBMeter, 
             Qt::Orientation orient = Qt::Vertical, 
+            double scaleMin = -60.0, double scaleMax = 10.0,
             ScalePos scalePos = None, 
             const QColor& primaryColor = QColor(0, 255, 0),
-            ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone);
+            ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone,
+            int refreshRate = 20);
       
       QColor primaryColor() const { return _primaryColor; }
       void setPrimaryColor(const QColor& color);
       
       void setRange(double min, double max);
 
+      void setRefreshRate(int rate);
+      
       bool showText() const { return _showText; }
       void setShowText(bool v) { _showText = v; update(); }
       

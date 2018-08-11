@@ -24,6 +24,8 @@
 #ifndef __MTC_H__
 #define __MTC_H__
 
+#include <stdint.h>
+
 namespace MusECore {
 
 //---------------------------------------------------------
@@ -64,7 +66,7 @@ class MTC {
       int s() const  { return _s; }
       int f() const  { return _f; }
       int sf() const { return _sf; }
-      double time(int type = -1) const;
+      uint64_t timeUS(int type = -1) const;
       void print() const;
       };
 

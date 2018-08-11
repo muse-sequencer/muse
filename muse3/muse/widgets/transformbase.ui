@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>826</width>
-    <height>545</height>
+    <width>885</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,16 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>11</number>
+   </property>
+   <property name="topMargin">
+    <number>11</number>
+   </property>
+   <property name="rightMargin">
+    <number>11</number>
+   </property>
+   <property name="bottomMargin">
     <number>11</number>
    </property>
    <property name="spacing">
@@ -28,7 +37,16 @@
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -107,7 +125,16 @@
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -138,7 +165,16 @@
       <string>Processing</string>
      </property>
      <layout class="QGridLayout">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>11</number>
+      </property>
+      <property name="topMargin">
+       <number>11</number>
+      </property>
+      <property name="rightMargin">
+       <number>11</number>
+      </property>
+      <property name="bottomMargin">
        <number>11</number>
       </property>
       <property name="spacing">
@@ -418,8 +454,8 @@
       </item>
       <item row="2" column="1">
        <widget class="MusEGui::SpinBoxFP" name="procVal1a">
-        <property name="maximum" stdset="0">
-         <number>99999999</number>
+        <property name="maximum">
+         <double>99999999.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -450,26 +486,31 @@
           <string>Divide</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Randomize</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="2" column="2">
-        <widget class="MusEGui::SpinBoxFP" name="procVal2a">
-         <property name="maximum" stdset="0">
-         <number>99999999</number>
+       <widget class="MusEGui::SpinBoxFP" name="procVal2a">
+        <property name="maximum">
+         <double>99999999.000000000000000</double>
         </property>
        </widget>
       </item>
       <item row="2" column="3">
-        <widget class="MusEGui::SpinBoxFP" name="procLenA">
-          <property name="maximum" stdset="0">
-         <number>99999999</number>
+       <widget class="MusEGui::SpinBoxFP" name="procLenA">
+        <property name="maximum">
+         <double>99999999.000000000000000</double>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-        <widget class="MusEGui::SpinBoxFP" name="procPosA">
-          <property name="maximum" stdset="0">
-         <number>99999999</number>
+       <widget class="MusEGui::SpinBoxFP" name="procPosA">
+        <property name="maximum">
+         <double>99999999.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -482,7 +523,16 @@
       <string>Filter</string>
      </property>
      <layout class="QGridLayout">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>11</number>
+      </property>
+      <property name="topMargin">
+       <number>11</number>
+      </property>
+      <property name="rightMargin">
+       <number>11</number>
+      </property>
+      <property name="bottomMargin">
        <number>11</number>
       </property>
       <property name="spacing">
@@ -798,19 +848,19 @@
        </widget>
       </item>
       <item row="3" column="4">
-        <widget class="MusEGui::SpinBoxFP" name="selBarB">
-        <property name="decimals" stdset="0">
+       <widget class="MusEGui::SpinBoxFP" name="selBarB">
+        <property name="decimals">
          <number>3</number>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-        <widget class="MusEGui::SpinBoxFP" name="selBarA">
-        <property name="minimum" stdset="0">
-         <number>1000</number>
-        </property>
-        <property name="decimals" stdset="0">
+       <widget class="MusEGui::SpinBoxFP" name="selBarA">
+        <property name="decimals">
          <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>1000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -822,7 +872,16 @@
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -834,7 +893,16 @@
         <property name="spacing">
          <number>6</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>11</number>
+        </property>
+        <property name="topMargin">
+         <number>11</number>
+        </property>
+        <property name="rightMargin">
+         <number>11</number>
+        </property>
+        <property name="bottomMargin">
          <number>11</number>
         </property>
         <item>
@@ -842,7 +910,16 @@
           <property name="spacing">
            <number>6</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -885,7 +962,16 @@
         <property name="spacing">
          <number>6</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>11</number>
+        </property>
+        <property name="topMargin">
+         <number>11</number>
+        </property>
+        <property name="rightMargin">
+         <number>11</number>
+        </property>
+        <property name="bottomMargin">
          <number>11</number>
         </property>
         <item>
@@ -921,7 +1007,16 @@
         <property name="spacing">
          <number>6</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>11</number>
+        </property>
+        <property name="topMargin">
+         <number>11</number>
+        </property>
+        <property name="rightMargin">
+         <number>11</number>
+        </property>
+        <property name="bottomMargin">
          <number>11</number>
         </property>
         <item>
@@ -974,7 +1069,7 @@
          </widget>
         </item>
         <item>
-         <widget class="MusEGui::ComboQuant" name="funcQuantVal" native="true"/>
+         <widget class="MusEGui::ComboQuant" name="funcQuantVal"/>
         </item>
        </layout>
       </widget>
@@ -985,11 +1080,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-   <customwidget>
-     <class>MusEGui::SpinBoxFP</class>
-     <extends>QDoubleSpinBox</extends>
-     <header>spinboxFP.h</header>
-   </customwidget>
+  <customwidget>
+   <class>MusEGui::SpinBoxFP</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>spinboxFP.h</header>
+  </customwidget>
   <customwidget>
    <class>MusEGui::ComboQuant</class>
    <extends>QComboBox</extends>

@@ -76,13 +76,10 @@ class ISynth : public Mess {
       virtual bool sysex(int len, const unsigned char* p);
     
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
-      virtual QString getPatchName (int, int, bool) const;
+      virtual const char* getPatchName (int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
       virtual void getInitData(int*, const unsigned char**);
 
-      //virtual bool guiVisible() const;
-      //virtual void showGui(bool);
-      //virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool);
       virtual bool hasNativeGui() const { return true; }

@@ -28,12 +28,15 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/widgets
    ${PROJECT_SOURCE_DIR}/synti
+   # Make sure to include the uic generated headers paths.
+   ${CMAKE_CURRENT_BINARY_DIR}/libsimpleplugin
    )
 
 set (SubDirs
+      libsimpleplugin
+      libsynti
       deicsonze
       # deicsonze2
-      libsynti
       organ
       # simpledrums
       simpledrums2

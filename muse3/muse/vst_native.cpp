@@ -226,7 +226,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
 
             case audioMasterPinConnected:
-                  // inquire if an input or output is beeing connected;
+                  // inquire if an input or output is being connected;
                   // index enumerates input or output counting from zero:
                   // value is 0 for input and != 0 otherwise. note: the
                   // return value is 0 for <true> such that older versions
@@ -470,7 +470,7 @@ static void scanVstNativeLib(QFileInfo& fi)
         VstIntPtr id = plugin->dispatcher(plugin, 24 + 46 /* effShellGetNextPlugin */, 0, 0, cPlugName, 0);
         if(id != 0 && cPlugName [0] != 0)
         {
-           shellPlugs.insert(std::make_pair<int, std::string>(id, std::string(cPlugName)));
+           shellPlugs.insert(std::make_pair(id, std::string(cPlugName)));
         }
         else
            break;
@@ -1163,7 +1163,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       if(value & kVstTempoValid)
       {
          double tempo = MusEGlobal::tempomap.tempo(p.tick());
-         _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+         _timeInfo.tempo = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
          _timeInfo.flags |= kVstTempoValid;
       }
 
@@ -1375,7 +1375,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       return 0;
 
    case audioMasterPinConnected:
-      // inquire if an input or output is beeing connected;
+      // inquire if an input or output is being connected;
       // index enumerates input or output counting from zero:
       // value is 0 for input and != 0 otherwise. note: the
       // return value is 0 for <true> such that older versions
@@ -1629,7 +1629,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
 
       // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
       // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio
-      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      //  position, so that by the time of the NEXT process, THOSE events have also occurred in the previous period.
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
@@ -1682,7 +1682,7 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
                     int type = ev->midiData[0] & 0xff;
                     switch(type)
                     {
-// TODO: Sysex NOT suppported with Vestige !
+// TODO: Sysex NOT supported with Vestige !
 //                           case ME_SYSEX:
 //
 //                                 // TODO: Deal with large sysex, which are broken up into chunks!
@@ -2902,8 +2902,9 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, "VstNativeSynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
-          evframe, frame, v.frame, v.idx, v.value, v.unique);
+        fprintf(stderr, 
+          "VstNativeSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu\n",
+          evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
         // No choice but to ignore it.
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.

@@ -50,6 +50,7 @@
 #include "song.h"
 #include "gconfig.h"
 #include "warn_bad_timing.h"
+#include "large_int.h"
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq = NULL;
@@ -471,7 +472,7 @@ void MidiSeq::start(int /*priority*/, void*)
 void MidiSeq::checkAndReportTimingResolution()
 {
     int freq = timer->getTimerFreq();
-    fprintf(stderr, "Aquired timer frequency: %d\n", freq);
+    fprintf(stderr, "Acquired timer frequency: %d\n", freq);
     if (freq < 500) {
         if(MusEGlobal::config.warnIfBadTiming)
         {
@@ -535,18 +536,20 @@ void MidiSeq::processTimerTick()
       unsigned curFrame = MusEGlobal::audio->curFrame();
       
       if (!MusEGlobal::extSyncFlag.value()) {
-            int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * double(MusEGlobal::tempomap.globalTempo()) * double(MusEGlobal::config.division) * 10000.0 / double(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos())));
-              
-            int mclock = MusEGlobal::midiSyncContainer.midiClock();
+            const unsigned int curTick = muse_multiply_64_div_64_to_64(
+              (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL, curFrame,
+              (uint64_t)MusEGlobal::sampleRate * (uint64_t)MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+            
+            unsigned int mclock = MusEGlobal::midiSyncContainer.midiClock();
             if(mclock > curTick)
             {
               mclock = curTick;
               MusEGlobal::midiSyncContainer.setMidiClock(mclock);
             }
 
-            int div = MusEGlobal::config.division/24;
+            const unsigned int div = MusEGlobal::config.division/24;
             if(curTick >= mclock + div)  {
-                  int perr = (curTick - mclock) / div;
+                  const unsigned int perr = (curTick - mclock) / div;
                   
                   bool used = false;
                   
@@ -564,7 +567,7 @@ void MidiSeq::processTimerTick()
                     }
                     
                     if(MusEGlobal::debugMsg && used && perr > 1)
-                      printf("Dropped %d midi out clock(s). curTick:%d midiClock:%d div:%d\n", perr, curTick, MusEGlobal::midiSyncContainer.midiClock(), div);
+                      printf("Dropped %u midi out clock(s). curTick:%u midiClock:%u div:%u\n", perr, curTick, MusEGlobal::midiSyncContainer.midiClock(), div);
 
                   // Using equalization periods...
                   MusEGlobal::midiSyncContainer.setMidiClock(mclock + (perr * div));

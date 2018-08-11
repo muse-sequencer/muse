@@ -26,7 +26,6 @@
 //
 //
 #include "ssplugingui.h"
-#include "ssplugin.h"
 #include "simpledrumsgui.h"
 
 #define SS_PLUGINGUI_XOFF       300
@@ -41,107 +40,6 @@
 #define SS_PLUGINFRONT_INC_PARAM_MIN 60
 #define SS_PLUGINGUI_HEIGHT (SS_NR_OF_SENDEFFECTS * SS_PLUGINFRONT_MINHEIGHT)
 
-#define SS_PLUGINCHOOSER_NAMECOL     0
-#define SS_PLUGINCHOOSER_LABELCOL    1
-#define SS_PLUGINCHOOSER_INPORTSCOL  2
-#define SS_PLUGINCHOOSER_OUTPORTSCOL 3
-#define SS_PLUGINCHOOSER_CREATORCOL  4
-
-
-/*!
-    \fn SS_PluginChooser::SS_PluginChooser(QWidget* parent, const char* name = 0)
- */
-SS_PluginChooser::SS_PluginChooser(QWidget* parent)
-      :QDialog(parent)
-      {
-      SS_TRACE_IN
-      setupUi(this);
-      selectedPlugin = 0;
-
-      for (iPlugin i=plugins.begin(); i !=plugins.end(); i++) {
-            //Support for only 2 or 1 inport/outports
-            if ( ((*i)->outports() == 2 || (*i)->outports() == 1) && ((*i)->inports() == 2 || (*i)->inports() == 1) ) {
-                  QTreeWidgetItem* tmpItem = new QTreeWidgetItem(effectsListView);
-                  tmpItem->setText(SS_PLUGINCHOOSER_NAMECOL, (*i)->name());
-                  tmpItem->setText(SS_PLUGINCHOOSER_LABELCOL, (*i)->label());
-                  tmpItem->setText(SS_PLUGINCHOOSER_INPORTSCOL, QString::number((*i)->inports()));
-                  tmpItem->setText(SS_PLUGINCHOOSER_OUTPORTSCOL, QString::number((*i)->outports()));
-                  tmpItem->setText(SS_PLUGINCHOOSER_CREATORCOL, (*i)->maker());
-                  effectsListView->addTopLevelItem(tmpItem);
-                  }
-            }
-      connect(okButton, SIGNAL(pressed()), SLOT(okPressed()));
-      connect(cancelButton, SIGNAL(pressed()), SLOT(cancelPressed()));
-      
-      //connect(effectsListView, SIGNAL(selectionChanged(QTreeWidgetItem*)), SLOT(selectionChanged(QTreeWidgetItem*)));
-      //connect(effectsListView, SIGNAL(doubleClicked(QTreeWidgetItem*)), SLOT(doubleClicked(QTreeWidgetItem*)));
-      connect(effectsListView, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));                            // p4.0.27
-      connect(effectsListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(doubleClicked(QTreeWidgetItem*)));  //
-      
-      SS_TRACE_OUT
-      }
-
-/*!
-    \fn SS_PluginChooser::selectionChanged(QListViewItem* item)
- */
-//void SS_PluginChooser::selectionChanged(QTreeWidgetItem* item)
-void SS_PluginChooser::selectionChanged()
-      {
-      SS_TRACE_IN
-      //selectedItem  = item;
-      selectedItem = effectsListView->currentItem();  
-      SS_TRACE_OUT
-      }
-
-/*!
-    \fn SS_PluginChooser::okPressed()
- */
-void SS_PluginChooser::okPressed()
-      {
-      SS_TRACE_IN
-      selectedPlugin = findSelectedPlugin();
-      done(QDialog::Accepted);
-      SS_TRACE_OUT
-      }
-
-/*!
-    \fn SS_PluginChooser::cancelPressed()
- */
-void SS_PluginChooser::cancelPressed()
-      {
-      SS_TRACE_IN
-      SS_TRACE_OUT
-      done(QDialog::Rejected);
-      }
-
-/*!
-    \fn SS_PluginChooser::doubleClicked(QListViewItem* item)
- */
-void SS_PluginChooser::doubleClicked(QTreeWidgetItem* item)
-      {
-      SS_TRACE_IN
-      selectedItem = item;    // p4.0.27 Tim
-      selectedPlugin = findSelectedPlugin();
-      SS_TRACE_OUT
-      done(QDialog::Accepted);
-      }
-
-/*!
-    \fn SS_PluginChooser::getSelectedPlugin()
- */
-LadspaPlugin* SS_PluginChooser::findSelectedPlugin()
-      {
-      SS_TRACE_IN
-      if(!selectedItem)        // p4.0.27 Tim
-        return 0;
-      LadspaPlugin* selected = 0;
-      for (iPlugin i=plugins.begin(); i != plugins.end(); i++) {
-            if ((*i)->name() == selectedItem->text(SS_PLUGINCHOOSER_NAMECOL))
-                  selected = (LadspaPlugin*) (*i);
-            }
-      SS_TRACE_OUT
-      return selected;
-      }
 
 /*!
     \fn SS_PluginFront::SS_PluginFront(QWidget* parent, const char* name = 0)
@@ -290,11 +188,11 @@ void SS_PluginFront::loadButton()
       {
       SS_TRACE_IN
       if (!pluginChooser)
-            pluginChooser = new SS_PluginChooser(this);
+            pluginChooser = new MusESimplePlugin::SimplerPluginChooser(this);
 
       pluginChooser->exec();
       if ((pluginChooser->result() == QDialog::Accepted) && pluginChooser->getSelectedPlugin()) {
-            Plugin* p = pluginChooser->getSelectedPlugin();
+            MusESimplePlugin::Plugin* p = pluginChooser->getSelectedPlugin();
             //printf("Selected plugin: %s\n", pluginChooser->getSelectedPlugin()->name().toLatin1().constData());
             emit loadPlugin(fxid, p->lib(), p->label());
             }
@@ -309,11 +207,10 @@ void SS_PluginFront::returnSliderMoved(int val)
       emit returnLevelChanged(fxid, val);
       }
 
-
 /*!
-    \fn SS_PluginFront::updatePluginValue(unsigned i)
+    \fn SS_PluginFront::updatePluginValue(PluginI* plugi)
  */
-void SS_PluginFront::updatePluginValue(unsigned k)
+void SS_PluginFront::updatePluginValue(MusESimplePlugin::PluginI* plugi)
       {
       SS_TRACE_IN
       // If parameters are shown - close them
@@ -321,15 +218,7 @@ void SS_PluginFront::updatePluginValue(unsigned k)
             expandButtonPressed();
             }
 
-      unsigned j=0;
-      if (k > plugins.size()) {
-            fprintf(stderr, "Internal error, tried to update plugin w range outside of list\n");
-            return;
-            }
-
-      iPlugin i;
-      for (i = plugins.begin(); j != k; i++, j++) ;
-      plugin = (LadspaPlugin*) *(i);
+      plugin = plugi;
       setPluginName(plugin->label());
       outGainSlider->setEnabled(true);
       clearFxButton->setEnabled(true);
@@ -406,7 +295,7 @@ void SS_PluginFront::expandButtonPressed()
       QRect pf = geometry();
 
       if (!expanded) {
-            plugin->parameter() == 1 ? sizeIncrease = SS_PLUGINFRONT_INC_PARAM_MIN : sizeIncrease = plugin->parameter() * SS_PLUGINFRONT_INC_PARAM;
+            plugin->parameters() == 1 ? sizeIncrease = SS_PLUGINFRONT_INC_PARAM_MIN : sizeIncrease = plugin->parameters() * SS_PLUGINFRONT_INC_PARAM;
             pf.setHeight(pf.height() + sizeIncrease);
             setMinimumSize(QSize(pf.width(), pf.height()));
             setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, pf.height()));
@@ -424,7 +313,7 @@ void SS_PluginFront::expandButtonPressed()
             expGroup->deleteLater();
             paramWidgets.clear();
             expGroup = 0;
-            plugin->parameter() == 1 ? sizeIncrease = (0-SS_PLUGINFRONT_INC_PARAM_MIN) : sizeIncrease = 0 - (plugin->parameter() * SS_PLUGINFRONT_INC_PARAM);
+            plugin->parameters() == 1 ? sizeIncrease = (0-SS_PLUGINFRONT_INC_PARAM_MIN) : sizeIncrease = 0 - (plugin->parameters() * SS_PLUGINFRONT_INC_PARAM);
             expandButton->setText("->");
             expanded = false;
             pf.setHeight(pf.height() + sizeIncrease);
@@ -450,7 +339,7 @@ void SS_PluginFront::createPluginParameters()
       expGroup = new QGroupBox(this);
 
       expGroup->setMinimumSize(QSize(50, 50));
-      expGroup->setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, (plugin->parameter() * SS_PLUGINFRONT_INC_PARAM  - SS_PLUGINFRONT_MARGIN)));
+      expGroup->setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, (plugin->parameters() * SS_PLUGINFRONT_INC_PARAM  - SS_PLUGINFRONT_MARGIN)));
       expGroup->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       expLayout->addWidget(expGroup);
       expGroup->show();
@@ -459,7 +348,7 @@ void SS_PluginFront::createPluginParameters()
 //TD      expGroupLayout->setResizeMode(QLayout::FreeResize);
       expGroupLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
 
-      for (int i=0; i < plugin->parameter(); i++) {
+      for (unsigned long i=0; i < plugin->parameters(); i++) {
             QHBoxLayout* paramStrip = new QHBoxLayout; // (expGroupLayout, 3);
             expGroupLayout->addLayout(paramStrip);
             paramStrip->setAlignment(Qt::AlignLeft);
@@ -474,7 +363,7 @@ void SS_PluginFront::createPluginParameters()
             if (plugin->isBool(i)) {
                   SS_ParameterCheckBox* paramCheckBox = new SS_ParameterCheckBox(expGroup, plugin, fxid, i);
                   paramCheckBox->setEnabled(true);
-                  paramCheckBox->setParamValue((int) plugin->getControlValue(i));
+                  paramCheckBox->setParamValue((int) plugin->param(i));
                   paramCheckBox->show();
                   paramStrip->addWidget(paramCheckBox);
                   connect(paramCheckBox, SIGNAL(valueChanged(int, int, int)), SLOT(parameterValueChanged(int, int, int)));
@@ -533,17 +422,18 @@ SS_PluginGui::SS_PluginGui(QWidget* parent)
             pluginFronts[i] = new SS_PluginFront(this, i);
             pluginFronts[i]->update();
             layout->addWidget(pluginFronts[i]);
-            connect(pluginFronts[i], SIGNAL(loadPlugin(int, QString, QString)), simplesynthgui_ptr, SLOT(loadEffectInvoked(int, QString, QString)));
-            connect(pluginFronts[i], SIGNAL(returnLevelChanged(int, int)), simplesynthgui_ptr, SLOT(returnLevelChanged(int, int)));
-            connect(pluginFronts[i], SIGNAL(fxToggled(int, int)), simplesynthgui_ptr, SLOT(toggleEffectOnOff(int, int)));
-            connect(pluginFronts[i], SIGNAL(clearPlugin(int)), simplesynthgui_ptr, SLOT(clearPlugin(int)));
+            connect(pluginFronts[i], SIGNAL(loadPlugin(int, QString, QString)), 
+                    parent, SLOT(loadEffectInvoked(int, QString, QString)));
+            connect(pluginFronts[i], SIGNAL(returnLevelChanged(int, int)), 
+                    parent, SLOT(returnLevelChanged(int, int)));
+            connect(pluginFronts[i], SIGNAL(fxToggled(int, int)), 
+                    parent, SLOT(toggleEffectOnOff(int, int)));
+            connect(pluginFronts[i], SIGNAL(clearPlugin(int)), 
+                    parent, SLOT(clearPlugin(int)));
             connect(pluginFronts[i], SIGNAL(sizeChanged(int, int)), SLOT(pluginFrontSizeChanged(int, int)));
-            connect(pluginFronts[i], SIGNAL(effectParameterChanged(int, int, int)), simplesynthgui_ptr, SLOT(effectParameterChanged(int, int, int)));
+            connect(pluginFronts[i], SIGNAL(effectParameterChanged(int, int, int)), 
+                    parent, SLOT(effectParameterChanged(int, int, int)));
             }
-            
-      // FIXME: These are causing window height to be fixed way too small - can't see anything. Why? It was working before. Tim p4.0.49
-      //setMinimumSize(QSize(SS_PLUGINGUI_WIDTH, geometry().height()));
-      //setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, geometry().height()));
       }
 
 

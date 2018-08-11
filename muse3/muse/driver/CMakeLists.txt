@@ -25,6 +25,7 @@
 ## List of source files to compile
 ##
 file (GLOB driver_source_files
+       audiodev.cpp
        alsamidi.cpp
        alsatimer.cpp
        dummyaudio.cpp

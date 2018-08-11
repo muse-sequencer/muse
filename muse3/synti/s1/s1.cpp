@@ -61,14 +61,11 @@ class S1 : public MessMono {
       virtual void note(int channel, int pitch, int velo);
       //virtual void processMessages();
       virtual void process(unsigned pos, float** buffer, int offset, int n);
-      //virtual bool hasGui() const { return true; }
-      //virtual bool guiVisible() const { return _showGui; }
-      //virtual void showGui(bool);
       virtual bool hasNativeGui() const { return true; }
       virtual bool nativeGuiVisible() const { return _showGui; }
       virtual void showNativeGui(bool);
       virtual bool setController(int channel, int ctrl, int val);
-      virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) const;
+      virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) const;
 
    public:
       S1();
@@ -208,10 +205,10 @@ bool S1::setController(int, int ctrl, int val)
       return true;
       }
 
-int S1::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval) const
+int S1::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) const
       {
         if (id == 0) {
-            *name = QString("Modulation");
+            *name = "Modulation";
             *ctrl = 1;
             *min = 0;
             *max = 127;
@@ -228,10 +225,10 @@ int S1::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, 
 class QWidget;
 
 
-static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char*)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* /*name*/, const MessConfig* config)
       {
       S1* s1 = new S1();
-      s1->setSampleRate(sr);
+      s1->setSampleRate(config->_sampleRate);
       return s1;
       }
 

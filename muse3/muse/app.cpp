@@ -408,22 +408,22 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::transportAction = new QActionGroup(this);
       MusEGlobal::transportAction->setExclusive(false);
 
-      MusEGlobal::loopAction = new QAction(QIcon(*MusEGui::loop1Icon),
-         tr("Loop"), MusEGlobal::transportAction);
+      MusEGlobal::loopAction = new QAction(QIcon( *MusEGui::loop1Icon), tr("Loop"), 
+                                           MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
       MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
-      MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon),
-         tr("Punchin"), MusEGlobal::transportAction);
+      MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon), tr("Punchin"), 
+                                              MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
-      MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon),
-         tr("Punchout"), MusEGlobal::transportAction);
+      MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon), tr("Punchout"), 
+                                               MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
       MusEGlobal::punchoutAction->setWhatsThis(tr("record stops at right mark"));
@@ -433,33 +433,33 @@ MusE::MusE() : QMainWindow()
       tseparator->setSeparator(true);
       MusEGlobal::transportAction->addAction(tseparator);
 
-      MusEGlobal::startAction = new QAction(QIcon(*MusEGui::startIcon),
-         tr("Start"), MusEGlobal::transportAction);
+      MusEGlobal::startAction = new QAction(*MusEGui::rewindToStartSVGIcon, tr("Start"), 
+                                             MusEGlobal::transportAction);
 
       MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
-      MusEGlobal::rewindAction = new QAction(QIcon(*MusEGui::frewindIcon),
-         tr("Rewind"), MusEGlobal::transportAction);
+      MusEGlobal::rewindAction = new QAction(*MusEGui::rewindSVGIcon, tr("Rewind"), 
+                                              MusEGlobal::transportAction);
 
       MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
-      MusEGlobal::forwardAction = new QAction(QIcon(*MusEGui::fforwardIcon),
-         tr("Forward"), MusEGlobal::transportAction);
+      MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon, tr("Forward"), 
+                                               MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
-      MusEGlobal::stopAction = new QAction(QIcon(*MusEGui::stopIcon),
-         tr("Stop"), MusEGlobal::transportAction);
+      MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon, tr("Stop"), 
+                                            MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
       MusEGlobal::stopAction->setWhatsThis(tr("stop sequencer"));
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
+      MusEGlobal::playAction = new QAction(*MusEGui::playSVGIcon,
                      tr("Play") + " (" + shrtToStr(MusEGui::SHRT_PLAY_TOGGLE)
                          + ")<br>"+ tr("Restart rec")+" (" + QKeySequence(MusEGui::shortcuts[MusEGui::SHRT_REC_RESTART].key).toString() + ")",
                      MusEGlobal::transportAction);
@@ -469,7 +469,8 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
-      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon), tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction = new QAction(*MusEGui::recMasterSVGIcon, tr("Record"), 
+                                              MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
@@ -514,8 +515,10 @@ MusE::MusE() : QMainWindow()
       "editing.  You will be prompted for a file name.\n"
       "You can also select the Save command from the File menu."));
 
-      fileSaveAsAction = new QAction(tr("Save &As"), this);
+      fileSaveAsAction = new QAction(QIcon(*MusEGui::saveasIcon), tr("Save &As"), this);
 
+      fileCloseAction = new QAction(QIcon(*MusEGui::filecloseIcon), tr("Close"), this);
+      
       fileImportMidiAction = new QAction(tr("Import Midifile"), this);
       fileExportMidiAction = new QAction(tr("Export Midifile"), this);
       fileImportPartAction = new QAction(tr("Import Part"), this);
@@ -523,7 +526,7 @@ MusE::MusE() : QMainWindow()
       fileImportWaveAction = new QAction(tr("Import Audio File"), this);
       fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
-      quitAction = new QAction(tr("&Quit"), this);
+      quitAction = new QAction(QIcon(*MusEGui::appexitIcon), tr("&Quit"), this);
 
       editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info"), this);
 
@@ -545,6 +548,12 @@ MusE::MusE() : QMainWindow()
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
+      QMenu* master = new QMenu(tr("Mastertrack"), this);
+      master->setIcon(QIcon(*edit_mastertrackIcon));
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
+      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+      master->addAction(masterGraphicAction);
+      master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -618,6 +627,8 @@ MusE::MusE() : QMainWindow()
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
 
+      connect(fileCloseAction, SIGNAL(triggered()), SLOT(fileClose()));
+      
       connect(fileImportMidiAction, SIGNAL(triggered()), SLOT(importMidi()));
       connect(fileExportMidiAction, SIGNAL(triggered()), SLOT(exportMidi()));
       connect(fileImportPartAction, SIGNAL(triggered()), SLOT(importPart()));
@@ -636,6 +647,8 @@ MusE::MusE() : QMainWindow()
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
       connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
       connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+      connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
+      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
@@ -747,6 +760,7 @@ MusE::MusE() : QMainWindow()
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
+      transportToolbar->setIconSize(ICON_SIZE);
 
       // Already has an object name.
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
@@ -796,6 +810,8 @@ MusE::MusE() : QMainWindow()
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
       menu_file->addSeparator();
+      menu_file->addAction(fileCloseAction);
+      menu_file->addSeparator();
       menu_file->addAction(editSongInfoAction);
       menu_file->addSeparator();
       menu_file->addAction(fileImportMidiAction);
@@ -826,6 +842,10 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
       menuView->addAction(viewArrangerAction);
+      menuView->addSeparator();
+      menuView->addMenu(master);
+//       menuView->addAction(masterGraphicAction);
+//       menuView->addAction(masterListAction);
       menuView->addSeparator();
       menuView->addAction(fullscreenAction);
 
@@ -871,20 +891,11 @@ MusE::MusE() : QMainWindow()
       menu_audio->addAction(audioBounce2FileAction);
       menu_audio->addSeparator();
       menu_audio->addAction(audioRestartAction);
-
-
-      //-------------------------------------------------------------
-      //    popup Automation
-      //-------------------------------------------------------------
-
-      menuAutomation = new QMenu(tr("A&utomation"), this);
-      menuBar()->addMenu(menuAutomation);
-      trailingMenus.push_back(menuAutomation);
-
-      menuAutomation->addAction(autoMixerAction);
-      menuAutomation->addSeparator();
-      menuAutomation->addAction(autoSnapshotAction);
-      menuAutomation->addAction(autoClearAction);
+      menu_audio->addSeparator();
+      menu_audio->addAction(autoMixerAction);
+      //menu_audio->addSeparator();
+      menu_audio->addAction(autoSnapshotAction);
+      menu_audio->addAction(autoClearAction);
 
       //-------------------------------------------------------------
       //    popup Windows
@@ -903,7 +914,7 @@ MusE::MusE() : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = new QMenu(tr("MusE Se&ttings"), this);
+      menuSettings = new QMenu(tr("Se&ttings"), this);
       menuBar()->addMenu(menuSettings);
       trailingMenus.push_back(menuSettings);
 
@@ -965,6 +976,8 @@ MusE::MusE() : QMainWindow()
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
       connect(tempo_tb, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+      
       connect(sig_tb,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
       connect(sig_tb,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
 
@@ -989,9 +1002,6 @@ MusE::MusE() : QMainWindow()
           projectRecentList.append(projFile.readLine().simplified());
         }
       }
-
-      arrangerView->populateAddTrack();
-      arrangerView->updateShortcuts();
 
       transport = new MusEGui::Transport(this, "transport");
       bigtime   = 0;
@@ -1019,6 +1029,13 @@ void MusE::heartBeat()
   cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(), 
                             MusEGlobal::song->dspLoad(), 
                             MusEGlobal::song->xRunsCount());
+}
+
+void MusE::populateAddTrack()
+{
+  arrangerView->populateAddTrack();
+  arrangerView->updateShortcuts();
+
 }
 
 void MusE::blinkTimerSlot()
@@ -1330,7 +1347,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       }
 
 // REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
-//  not restoring on project reload. Didn't want to have to reenable this, IIRC there
+//  not restoring on project reload. Didn't want to have to re-enable this, IIRC there
 //  was a problem with using this (interference with other similar competing settings),
 //  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
       resize(MusEGlobal::config.geometryMain.size());
@@ -1373,6 +1390,43 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       showMarker(MusEGlobal::config.markerVisible);
       }
 
+//---------------------------------------------------------
+//   fileClose
+//---------------------------------------------------------
+
+void MusE::fileClose()
+{
+  // For now we just don't read the ports, leaving the last setup intact.
+  const bool doReadMidiPorts = false;
+  
+//   if (mixer1)
+//         mixer1->clearAndDelete();
+//   if (mixer2)
+//         mixer2->clearAndDelete();
+//   _arranger->clear();      // clear track info
+  if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+        return;
+  
+  //setConfigDefaults();
+  QString name(MusEGui::getUniqueUntitledName());
+  MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+  //QDir::setCurrent(QDir::homePath());
+  QDir::setCurrent(MusEGlobal::museProject);
+  project.setFile(name);
+  setWindowTitle(projectTitle(name));
+  
+  //writeTopwinState=true;
+  
+  MusEGlobal::song->dirty = false;
+  
+  // Inform the rest of the app the song changed, with all flags.
+  MusEGlobal::song->update(SC_EVERYTHING);
+  MusEGlobal::song->updatePos();
+  arrangerView->clipboardChanged(); // enable/disable "Paste"
+  arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+  arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+}
+      
 //---------------------------------------------------------
 //   setUntitledProject
 //---------------------------------------------------------
@@ -1529,7 +1583,7 @@ void MusE::closeEvent(QCloseEvent* event)
                "Save Current Project?"),
                tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
-                  if (!save())      // dont quit if save failed
+                  if (!save())      // don't quit if save failed
                   {
                         setRestartingApp(false); // Cancel any restart.
                         event->ignore();
@@ -2417,7 +2471,7 @@ void MusE::kbAccel(int key)
 static void catchSignal(int sig)
       {
       if (MusEGlobal::debugMsg)
-            fprintf(stderr, "MusE: signal %d catched\n", sig);
+            fprintf(stderr, "MusE: signal %d caught\n", sig);
       if (sig == SIGSEGV) {
             fprintf(stderr, "MusE: segmentation fault\n");
             abort();
@@ -3120,6 +3174,8 @@ void MusE::updateConfiguration()
       viewMixerAAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MIXER].key);
       viewMixerBAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MIXER2].key);
       //viewCliplistAction has no acceleration
+      masterGraphicAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_GRAPHIC_MASTER].key);
+      masterListAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_LIST_MASTER].key);
       viewMarkerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key);
 
 
@@ -3173,6 +3229,7 @@ void MusE::showBigtime(bool on)
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
             connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
+            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), bigtime, SLOT(songChanged(MusECore::SongChangedFlags_t)));
             connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
             bigtime->resize(MusEGlobal::config.geometryBigTime.size());
             bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());
@@ -3682,7 +3739,7 @@ void MusE::updateWindowMenu()
   sep=false;
   for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
     if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-    // the isVisibleTo check is neccessary because isVisible returns false if a
+    // the isVisibleTo check is necessary because isVisible returns false if a
     // MdiSubWin is actually visible, but the muse main window is hidden for some reason
     {
       if (!sep)

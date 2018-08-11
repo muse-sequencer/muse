@@ -367,7 +367,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                     //  us in a really BAD state: mouse is grabbed (and hidden) and no way out !
                     //
                     // That is likely just how QWidget works, but here using global cursor overrides 
-                    //  it is disasterous. TESTED: Yes, that is how other controls work. Hitting another 
+                    //  it is disastrous. TESTED: Yes, that is how other controls work. Hitting another 
                     //  button while the mouse has been dragged outside causes it to bypass us !
                     setMouseGrab(true); // CAUTION
                     
@@ -793,7 +793,7 @@ void SliderBase::focusOutEvent(QFocusEvent* e)
 
   // Was a mouse button already pressed before focus was lost?
   // We will NOT get a mouseReleaseEvent! Take care of it here.
-  // Typically this happens when popping up a menu in reponse to a click.
+  // Typically this happens when popping up a menu in response to a click.
   if(_pressed)
   {
     // Clear everything.

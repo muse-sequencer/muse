@@ -34,7 +34,7 @@
 
 #include "common_defs.h"
 #include "fluidgui.h"
-#include "muse/midi.h"
+#include "muse/midi_consts.h"
 #include "muse/mpevent.h"
 #include "muse/icons.h"
 

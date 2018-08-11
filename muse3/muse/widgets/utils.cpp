@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
-//#include <time.h>
 
 #include <QApplication>
 #include <QFrame>
@@ -48,10 +47,10 @@
 namespace MusECore {
 
 //---------------------------------------------------------
-//   curTime
+//   curTimeUS
 //---------------------------------------------------------
 
-double curTime()
+uint64_t curTimeUS()
       {
       // No audio device yet? Just get wall clock time.
       if(!MusEGlobal::audioDevice)  
@@ -59,14 +58,14 @@ double curTime()
         struct timeval t;
         gettimeofday(&t, 0);
         //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+        return ((uint64_t)t.tv_sec * 1000000UL) + (uint64_t)t.tv_usec;
       }
       
       // Ask the driver for the system time. 
       // May depend on selected clock source. 
       // With Jack, may be based upon wallclock time, the   
       //  processor cycle counter or the HPET clock etc.
-      return MusEGlobal::audioDevice->systemTime();
+      return MusEGlobal::audioDevice->systemTimeUS();
       
       /*
       struct timespec t;

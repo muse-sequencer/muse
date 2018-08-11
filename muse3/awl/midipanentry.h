@@ -34,6 +34,8 @@ namespace Awl {
 class MidiPanEntry : public FloatEntry {
       Q_OBJECT
 
+      bool _leftMouseButtonCanDecrease;
+      
    protected:
       virtual void valueChange();
 
@@ -42,8 +44,11 @@ class MidiPanEntry : public FloatEntry {
             FloatEntry::setValue(v - 64.0f);
             }
    public:
-      MidiPanEntry(QWidget* parent);
+      MidiPanEntry(QWidget* parent, bool leftMouseButtonCanDecrease = false);
       virtual double value() const  { return _value + 64.0f; }
+      
+      bool leftMouseButtonCanDecrease() const { return _leftMouseButtonCanDecrease; }
+      void setLeftMouseButtonCanDecrease(bool v) { _leftMouseButtonCanDecrease = v; }
       };
 }
 

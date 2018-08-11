@@ -11368,8 +11368,8 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
     </message>
     <message>
         <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
-        <translation>Us&amp;tawienia MusE</translation>
+        <source>Se&amp;ttings</source>
+        <translation>Us&amp;tawienia</translation>
     </message>
     <message>
         <location line="+23"/>

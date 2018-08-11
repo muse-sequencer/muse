@@ -57,6 +57,7 @@ class FloatEntry : public QLineEdit {
       QString _suffix;
       int _precision;
       bool _log;
+      bool _leftMouseButtonCanDecrease;
 
       double calcIncrement() const;
       
@@ -91,7 +92,7 @@ class FloatEntry : public QLineEdit {
       void valueChanged(double, int);
 
    public:
-      FloatEntry(QWidget*);
+      FloatEntry(QWidget* parent, bool leftMouseButtonCanDecrease = false);
       virtual QSize sizeHint() const;
       virtual double value() const;
       int id() const                        { return _id; }
@@ -121,6 +122,9 @@ class FloatEntry : public QLineEdit {
       void setSuffix(const QString& s)      { _suffix = s; }
       bool log() const                      { return _log;      }
       void setLog(bool v)                   { _log = v;         }
+      
+      bool leftMouseButtonCanDecrease() const { return _leftMouseButtonCanDecrease; }
+      void setLeftMouseButtonCanDecrease(bool v) { _leftMouseButtonCanDecrease = v; }
       };
 
 }

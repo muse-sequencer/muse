@@ -46,8 +46,6 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       int dataHi;
       int dataLo;
       SynthGuiCtrl dctrl[NUM_CONTROLLER];
-      QString * presetFileName;
-
       
       void sendControllerChange(int ctrl, int val);
       void initParameter();
@@ -68,14 +66,14 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       void deletePresetPressed();
       void doSavePresets(const QString&, bool);
       void savePresetsToFilePressed();
-      void readMessage(int);
+      void readMessage();
 
    protected:
       virtual void sysexReceived(const unsigned char*, int);
 
    public:
       int getController(int idx);
-      int getControllerInfo(int id, QString* name, int* controller, int* min, int* max, int* initval) const;
+      int getControllerInfo(int id, const char** name, int* controller, int* min, int* max, int* initval) const;
       VAMGui();
       };
 

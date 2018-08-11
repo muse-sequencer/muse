@@ -71,7 +71,7 @@ class Quantize(QtGui.QWidget):
         testFile.close()
         random.seed()
         
-        beatDiv = self.beatEdit.itemData(self.beatEdit.currentIndex()).toInt()[0]
+        beatDiv = self.beatEdit.itemData(self.beatEdit.currentIndex())
         minSize=0 # fill in when we get the beat size value
         outputEvents=[]
         quantLen=0
@@ -104,7 +104,7 @@ class Quantize(QtGui.QWidget):
               print ("float =%f int = %d"%((float(newTick+beatLen)) / beatLen/2,((newTick+beatLen))/beatLen/2))
               if  ((float(newTick+beatLen)) / beatLen/2 - ((newTick+beatLen))/beatLen/2) < 0.1:
                   print ("adding swing to:",newTick)
-                  newTick=int(random.gauss(newTick,self.spreadEdit.text().toInt()[0]))
+                  newTick=int(random.gauss(newTick,int(self.spreadEdit.text())))
                   if (newTick < 0):
                     newTick=0
 

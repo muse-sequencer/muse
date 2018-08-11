@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <cmath>
+#include <stdint.h>
 
 #include "pos.h"
 #include "xml.h"
@@ -108,25 +109,24 @@ Pos::Pos(int measure, int beat, int tick)
 
 Pos::Pos(int min, int sec, int frame, int subframe)
       {
-      double time = min * 60.0 + sec;
-
-      double f = frame + subframe/100.0;
+      uint64_t time = (uint64_t)MusEGlobal::sampleRate * (min * 60UL + sec);
+      const uint64_t f = (uint64_t)MusEGlobal::sampleRate * (frame * 100UL + subframe);
       switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
-                  time += f * 1.0/24.0;
+                  time += f / 2400UL;
                   break;
             case 1:     // 25
-                  time += f * 1.0/25.0;
+                  time += f / 2500UL;
                   break;
             case 2:     // 30 drop frame
-                  time += f * 1.0/30.0;
+                  time += f / 3000UL;
                   break;
             case 3:     // 30 non drop frame
-                  time += f * 1.0/30.0;
+                  time += f / 3000UL;
                   break;
             }
       _type  = FRAMES;
-      _frame = lrint(time * MusEGlobal::sampleRate);
+      _frame = time;
       sn     = -1;
       }
 

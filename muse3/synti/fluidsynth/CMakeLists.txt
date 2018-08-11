@@ -26,6 +26,7 @@
 ##
 QT5_WRAP_CPP ( fluidsynth_mocs
       fluidsynthgui.h
+      fluidsynti.h
       )
 
 ##
@@ -52,6 +53,7 @@ file (GLOB fluidsynth_source_files
       )
 
 include_directories(${INSTPATCH_INCLUDE_DIRS})
+include_directories(${FLUIDSYN_INCLUDE_DIRS})
 
 ##
 ## Define target
@@ -93,6 +95,8 @@ target_link_libraries(fluid_synth
       ${QT_LIBRARIES}
       ${FLUIDSYN_LIBRARIES}
       ${INSTPATCH_LIBRARIES}
+      mpevent_module
+      icons
       )
 
 ##

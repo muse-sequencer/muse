@@ -60,6 +60,7 @@ set_target_properties ( s1
 ##
 target_link_libraries(s1
       synti
+      ${QT_LIBRARIES}
       )
 
 ##

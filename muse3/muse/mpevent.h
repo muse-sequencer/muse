@@ -38,7 +38,6 @@
 
 namespace MusECore {
 
-class Event;
 class EvData;
 
 //---------------------------------------------------------
@@ -63,7 +62,6 @@ class MEvent {
         : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
       MEvent(unsigned t, int p, int type, const unsigned char* data, int len);
       MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
-      MEvent(unsigned t, int port, int channel, const Event& e);
 
       virtual ~MEvent()         {}
 
@@ -102,8 +100,7 @@ class MEvent {
       int len() const                 { return edata.dataLen; }
       void setData(const EvData& e)   { edata = e; }
       void setData(const unsigned char* p, int len) { edata.setData(p, len); }
-      
-      void dump() const;
+
       bool isNote() const      { return _type == 0x90; }
       bool isNoteOff() const   { return (_type == 0x80)||(_type == 0x90 && _b == 0); }
       bool operator<(const MEvent&) const;
@@ -160,8 +157,6 @@ class MidiPlayEvent : public MEvent {
         : MEvent(t, p, type, data, len) {}
       MidiPlayEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
-      MidiPlayEvent(unsigned t, int port, int channel, const Event& e)
-        : MEvent(t, port, channel, e) {}
       virtual ~MidiPlayEvent() {}
       };
 

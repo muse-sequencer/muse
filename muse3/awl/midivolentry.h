@@ -37,11 +37,16 @@ class MidiVolEntry : public FloatEntry {
 
   	int _max;
 
+    bool _leftMouseButtonCanDecrease;
+      
    public:
       virtual void setValue(double);
    	void setMax(int val) { _max = val; }
       int max() const      { return _max; }
-      MidiVolEntry(QWidget* parent);
+      MidiVolEntry(QWidget* parent, bool leftMouseButtonCanDecrease = false);
+      
+      bool leftMouseButtonCanDecrease() const { return _leftMouseButtonCanDecrease; }
+      void setLeftMouseButtonCanDecrease(bool v) { _leftMouseButtonCanDecrease = v; }
       };
 }
 

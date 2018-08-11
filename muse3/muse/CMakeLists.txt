@@ -76,8 +76,10 @@ QT5_WRAP_CPP ( muse_moc_headers
       transport.h
       value.h
       steprec.h
-      lv2host.h
       vst_native.h
+      )
+
+QT5_WRAP_CPP ( wavepreview_moc_headers
       wavepreview.h
       )
 
@@ -102,8 +104,6 @@ file (GLOB core_source_files
       ctrl.cpp
       dialogs.cpp
       dssihost.cpp
-      lv2host.cpp
-      evdata.cpp
       event.cpp
       eventlist.cpp
       exportmidi.cpp
@@ -115,7 +115,6 @@ file (GLOB core_source_files
       importmidi.cpp
       key.cpp
       keyevent.cpp
-      memory.cpp
       midi.cpp
       midictrl.cpp
       mididev.cpp
@@ -125,7 +124,6 @@ file (GLOB core_source_files
       midiport.cpp
       midiseq.cpp
       miditransform.cpp
-      mpevent.cpp
       mtc.cpp
       node.cpp
       operations.cpp
@@ -140,7 +138,6 @@ file (GLOB core_source_files
       song.cpp
       songfile.cpp
       stringparam.cpp
-      structure.cpp
       sync.cpp
       synth.cpp
       tempo.cpp
@@ -156,9 +153,7 @@ file (GLOB core_source_files
       wave.cpp
       waveevent.cpp
       wavetrack.cpp
-      xml.cpp
       steprec.cpp
-      wavepreview.cpp
       )
 file (GLOB main_source_files
       main.cpp
@@ -167,16 +162,59 @@ file (GLOB icons_source_files
       icons.cpp
       )
 
+file (GLOB sysex_helper_source_files
+      sysex_helper.cpp
+      )
+file (GLOB memory_source_files
+      memory.cpp
+      )
+file (GLOB evdata_source_files
+      evdata.cpp
+      )
+file (GLOB mpevent_source_files
+      mpevent.cpp
+      )
+file (GLOB event_source_files
+      event.cpp
+      )
+file (GLOB wavepreview_source_files
+      wavepreview.cpp
+      )
+file (GLOB xml_source_files
+      xml.cpp
+      )
+
 ##
 ## Define target
 ##
+
+add_library ( sysex_helper_module SHARED
+      ${sysex_helper_source_files}
+      )
+add_library ( memory_module SHARED
+      ${memory_source_files}
+      )
+add_library ( evdata_module SHARED
+      ${evdata_source_files}
+      )
+add_library ( mpevent_module SHARED
+      ${mpevent_source_files}
+      )
+add_library ( wavepreview_module SHARED
+      ${wavepreview_moc_headers}
+      ${wavepreview_source_files}
+      )
+add_library ( xml_module SHARED
+      ${xml_source_files}
+      )
+
 add_library ( core ${MODULES_BUILD}
-      ${muse_qrc_files}
       ${muse_moc_headers}
       ${core_source_files}
       )
 add_executable ( muse
       ${main_source_files}
+      ${muse_qrc_files}
       )
 add_library ( icons ${MODULES_BUILD}
       ${icons_source_files}
@@ -240,9 +278,52 @@ set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
+set_target_properties( sysex_helper_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_sysex_helper_module
+      )
+set_target_properties( memory_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_memory_module
+      )
+set_target_properties( evdata_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_evdata_module
+      )
+set_target_properties( mpevent_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_mpevent_module
+      )
+set_target_properties( wavepreview_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_wavepreview_module
+      )
+set_target_properties( xml_module
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_xml_module
+      )
+      
 ##
 ## Linkage
 ##
+
+target_link_libraries(evdata_module
+      memory_module
+      sysex_helper_module
+      )
+target_link_libraries(mpevent_module
+      evdata_module
+      sysex_helper_module
+      )
+target_link_libraries(wavepreview_module
+      ${QT_LIBRARIES}
+      ${SNDFILE_LIBRARIES}
+      ${SAMPLERATE_LIBRARIES}
+      )
+target_link_libraries(xml_module
+      ${QT_LIBRARIES}
+      )
+
 target_link_libraries(core
       al
       arranger
@@ -251,19 +332,25 @@ target_link_libraries(core
       cliplist
       ctrl
       driver
+      evdata_module
       icons
       instruments
       liste
       marker
       master
+      memory_module
       midiedit
       mixer
+      mpevent_module
       mplugins
       muse_string
       synti
+      sysex_helper_module
       waveedit
+      wavepreview_module
       widgets
       widgets_functiondialogs
+      xml_module
 
       ${QT_LIBRARIES}
       ## Bring in the dssi alsa compatibility libraries if required
@@ -284,27 +371,58 @@ if(OSC_SUPPORT)
       target_link_libraries(core ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
+# Certain warnings in lv2 headers are causing errors with recent gcc.
+# It seems there's no way to suppress -Werror from within code.
+# The slightest warning in some header file can now trigger an error.
+# Gcc help warns that only some warnings can be suppressed.
+# 'pragma GCC diagnostic ignored "-Wparentheses"' didn't work.
+# Looks like no choice but to make the lv2host a module with separate flags.
+#     
 if(LV2_SUPPORT)
+      ##
+      ## Expand Qt macros in source files
+      ##
+      QT5_WRAP_CPP ( lv2host_moc_headers
+            lv2host.h
+            )
+      file (GLOB lv2host_source_files
+            lv2host.cpp
+            )
+      add_library ( lv2host_module ${MODULES_BUILD}
+            ${lv2host_moc_headers}
+            ${lv2host_source_files}
+            )
+      set_target_properties( lv2host_module
+            # Avoid treating warnings as errors here, unlike the rest of the app.
+            PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -Wno-error"
+            OUTPUT_NAME muse_lv2host_module
+            )
+            
       if(LV2_USE_SUPPLIED_VERSION)
             message("Building and linking internal LV2 support libraries (lv2, lilv, sord etc.)")
             message("")
-            target_link_libraries(core lv2_support)
+            target_link_libraries(lv2host_module lv2_support)
             if (PCRE_FOUND)
-                    target_link_libraries(core ${PCRE_LIBRARIES})
+                    target_link_libraries(lv2host_module ${PCRE_LIBRARIES})
             endif (PCRE_FOUND)
       else(LV2_USE_SUPPLIED_VERSION)
             message("Linking system LV2 support libraries (lv2, lilv, sord etc.)")
             message("")
-            target_link_libraries(core ${LILV_LIBRARIES})
-            target_link_libraries(core ${SORD_LIBRARIES})
-            target_link_libraries(core ${LV2_LIBRARIES})
+            target_link_libraries(lv2host_module ${LILV_LIBRARIES})
+            target_link_libraries(lv2host_module ${SORD_LIBRARIES})
+            target_link_libraries(lv2host_module ${LV2_LIBRARIES})
       endif(LV2_USE_SUPPLIED_VERSION)
       
       if(HAVE_GTK2)
-            target_link_libraries(core lv2_gtk2_support)
+            target_link_libraries(lv2host_module lv2_gtk2_support)
       endif(HAVE_GTK2)
+
+#       target_link_libraries(lv2host_module ${QT_LIBRARIES})
       
+      target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
+
+
 
 target_link_libraries(muse
       midiedit
@@ -321,8 +439,26 @@ target_link_libraries(icons
 install( TARGETS muse
       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
       )
+      
+install(TARGETS
+        sysex_helper_module 
+        memory_module 
+        evdata_module 
+        mpevent_module 
+        wavepreview_module
+        xml_module
+      DESTINATION ${MusE_MODULES_DIR}
+      )
+      
 if ( ${MODULES_BUILD} STREQUAL SHARED )
-      install(TARGETS core icons
+      install(TARGETS core icons 
+              # sysex_helper_module 
+              # memory_module 
+              # evdata_module 
+              lv2host_module 
+              # mpevent_module 
+              # wavepreview_module
+              # xml_module
             DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )

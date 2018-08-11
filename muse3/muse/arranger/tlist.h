@@ -37,6 +37,7 @@ class QMouseEvent;
 class QPaintEvent;
 class QScrollBar;
 class QWheelEvent;
+class QMenu;
 
 namespace MusECore {
 class Track;
@@ -82,6 +83,7 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
+      QMenu* addTrackMenu;
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
@@ -91,6 +93,7 @@ class TList : public QWidget {
       unsigned ctrl_at_tick;
       MusECore::Track* editTrack;
       MusECore::Track* editAutomation;
+
 
       int startY;
       int curY;
@@ -161,6 +164,7 @@ class TList : public QWidget {
       TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
+      void populateAddTrack();
       };
 
 } // namespace MusEGui

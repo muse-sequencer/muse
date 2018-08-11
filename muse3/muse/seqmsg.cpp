@@ -72,7 +72,7 @@ void Audio::sendMsg(AudioMsg* m)
             }
       else {
             // if audio is not running (during initialization)
-            // process commands immediatly
+            // process commands immediately
             processMsg(m);
             }
       }
@@ -528,10 +528,23 @@ void Audio::msgPlay(bool val)
       if (val) {
             if (MusEGlobal::audioDevice)
             {
-                unsigned sfr = MusEGlobal::song->cPos().frame();
-                unsigned dcfr = MusEGlobal::audioDevice->getCurFrame();
-                if(dcfr != sfr)
-                  MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
+// REMOVE Tim. countin. Removed. This is not good. It's been here for years, and the idea 
+//  was that the transport frame should start at what the user sees - the cursor tick position.
+// But cursor tick position should follow audio frame position, not the other way around.
+// The transport stops on some frame in-between ticks, and here virtually always it wants to jump back
+//  to the cursor position's frame value upon play. It is almost never the same as the device frame position.
+// Nothing should ever set the cursor position then seek the audio. All seeking is done
+//  through audio, and gui is informed that way. This causes problems with audio sync callback: 
+//  the seek happens while it is starting play mode, which it supports, but we don't want that.
+// Since this only happens with OUR transport buttons and NOT any another Jack Transport client (QJackCtl),
+//  it is a strong argument among others pro and con, to remove this for consistency with the other clients.
+// Whatever issues removing this may cause should be fixable (they might be mistakes in the first place).
+// User will need to be aware that the transport may be in-between ticks, ie. should view the frames,
+//  which currently are really only seen via the BigTime window.
+//                 unsigned sfr = MusEGlobal::song->cPos().frame();
+//                 unsigned dcfr = MusEGlobal::audioDevice->getCurFrame();
+//                 if(dcfr != sfr)
+//                   MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
                 MusEGlobal::audioDevice->startTransport();
             }
               
@@ -671,15 +684,6 @@ void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag, bo
 //---------------------------------------------------------
 
 void Audio::msgAddTempo(int tick, int tempo, bool doUndoFlag)
-      {
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
-      }
-
-//---------------------------------------------------------
-//   msgSetTempo
-//---------------------------------------------------------
-
-void Audio::msgSetTempo(int tick, int tempo, bool doUndoFlag)
       {
       MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
       }

@@ -32,7 +32,7 @@
       <locked>1</locked>
       <selected>1</selected>
       <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
+      <sendMetronome>1</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>

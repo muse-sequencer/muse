@@ -48,6 +48,7 @@
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
+#include "mpevent.h"
 
 #include <strings.h>
 
@@ -103,6 +104,28 @@ QString pitch2string(int v)
       }
 
 
+//---------------------------------------------------------
+//   dumpMPEvent
+//---------------------------------------------------------
+
+void dumpMPEvent(const MEvent* ev)
+      {
+      fprintf(stderr, "time:%d port:%d chan:%d ", ev->time(), ev->port(), ev->channel()+1);
+      if (ev->type() == ME_NOTEON) {   
+            QString s = pitch2string(ev->dataA());
+            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+           }
+      else if (ev->type() == ME_NOTEOFF) {  
+            QString s = pitch2string(ev->dataA());
+            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+           }
+      else if (ev->type() == ME_SYSEX) {
+            fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->data()[0]);
+            }
+      else
+            fprintf(stderr, "type:0x%02x a=%d b=%d\n", ev->type(), ev->dataA(), ev->dataB());
+      }
+      
 #if 0
 
 // -------------------------------------------------------------------------------------------------------
@@ -376,7 +399,7 @@ void populateMidiPorts()
   int port_num = 0;
   int jack_midis_found = 0;
   bool def_in_found = false;
-  bool def_out_found = false;
+//  bool def_out_found = false;
 
   // If Jack is running, prefer Jack midi devices over ALSA.
   if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::JACK_AUDIO)  
@@ -390,13 +413,17 @@ void populateMidiPorts()
         MidiPort* mp = &MusEGlobal::midiPorts[port_num];
         MusEGlobal::audio->msgSetMidiDevice(mp, dev);
 
-        // Global function initMidiPorts() already sets defs to port #1, but this will override.
-        if(!def_out_found && dev->rwFlags() & 0x1)
-        {
-          mp->setDefaultOutChannels(1);
-          def_out_found = true;
-        }
-        else
+// robert: removing the default init on several places to allow for the case
+// where you rather want the midi track to default to the last created port
+// this can only happen if there is _no_ default set
+
+//        // Global function initMidiPorts() already sets defs to port #1, but this will override.
+//        if(!def_out_found && dev->rwFlags() & 0x1)
+//        {
+//          mp->setDefaultOutChannels(1);
+//          def_out_found = true;
+//        }
+//        else
           mp->setDefaultOutChannels(0);
 
         if(!def_in_found && dev->rwFlags() & 0x2)
@@ -428,13 +455,17 @@ void populateMidiPorts()
       MidiPort* mp = &MusEGlobal::midiPorts[port_num];
       MusEGlobal::audio->msgSetMidiDevice(mp, dev);
 
-      // Global function initMidiPorts() already sets defs to port #1, but this will override.
-      if(!def_out_found && dev->rwFlags() & 0x1)
-      {
-        mp->setDefaultOutChannels(1);
-        def_out_found = true;
-      }
-      else
+      // robert: removing the default init on several places to allow for the case
+      // where you rather want the midi track to default to the last created port
+      // this can only happen if there is _no_ default set
+
+//      // Global function initMidiPorts() already sets defs to port #1, but this will override.
+//      if(!def_out_found && dev->rwFlags() & 0x1)
+//      {
+//        mp->setDefaultOutChannels(1);
+//        def_out_found = true;
+//      }
+//      else
         mp->setDefaultOutChannels(0);
 
       if(!def_in_found && dev->rwFlags() & 0x2)
@@ -1801,7 +1832,7 @@ void loadTheme(const QString& s, bool force)
             fprintf(stderr, "   App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
           }
 
-          // No style object name? It will hapen when a stylesheet is active.
+          // No style object name? It will happen when a stylesheet is active.
           // Give it a name. NOTE: The object names always seem to be lower case while
           //  the style factory key names are not.
           if(qApp->style()->objectName().isEmpty())
@@ -1825,7 +1856,7 @@ void loadTheme(const QString& s, bool force)
               fprintf(stderr, "   app style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
             }
 
-            // No style object name? It will hapen when a stylesheet is active.
+            // No style object name? It will happen when a stylesheet is active.
             // Give it a name. NOTE: The object names always seem to be lower case while
             //  the style factory key names are not.
             if(qApp->style()->objectName().isEmpty())

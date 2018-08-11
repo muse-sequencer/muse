@@ -42,7 +42,7 @@
 #include "../audio.h"
 #include "minstrument.h"
 #include "mpevent.h"
-//#include "sync.h"
+#include "sync.h"
 #include "audiodev.h"
 #include "../mplugins/midiitransform.h"
 #include "../mplugins/mitplugin.h"
@@ -50,6 +50,7 @@
 #include "gconfig.h"
 #include "track.h"
 #include "route.h"
+#include "helper.h"
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
@@ -466,7 +467,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       
       if (MusEGlobal::midiInputTrace) {
             fprintf(stderr, "MidiIn Jack: <%s>: ", name().toLatin1().constData());
-            event.dump();
+            dumpMPEvent(&event);
             }
             
       int typ = event.type();
@@ -578,7 +579,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       
       // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
       // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio 
-      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      //  position, so that by the time of the NEXT process, THOSE events have also occurred in the previous period.
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
@@ -691,7 +692,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           case ME_CONTINUE:   
                           case ME_STOP:       
                           {
-                                MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, 0.0);
+                                MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type);
                                 return;
                           }
                           //case ME_SYSEX_END:  
@@ -776,7 +777,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
       
       if (MusEGlobal::midiOutputTrace) {
             fprintf(stderr, "MidiOut: Jack: <%s>: ", name().toLatin1().constData());
-            e.dump();
+            dumpMPEvent(&e);
             }
             
       switch(e.type()) {

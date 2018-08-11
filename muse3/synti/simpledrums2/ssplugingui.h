@@ -32,20 +32,17 @@
 #include <QSlider>
 #include <QButtonGroup>
 #include <QtWidgets>
-//#include <QHBoxLayout>
-//#include <QVBoxLayout>
 
-#include "ui_sspluginchooserbase.h"
 #include "common.h"
-#include "ssplugin.h"
+#include "libsimpleplugin/simpler_plugin.h"
+#include "libsimpleplugin/simpler_plugingui.h"
 
 class SS_ParameterWidget
       {
    protected:
       int fxid;
       int parameter;
-
-      LadspaPlugin* plugin;
+      MusESimplePlugin::PluginI* plugin;
 
    public:
       SS_ParameterWidget() { }
@@ -62,7 +59,7 @@ class SS_ParameterCheckBox : public QCheckBox, public SS_ParameterWidget
    Q_OBJECT
 
    public:
-      SS_ParameterCheckBox(QWidget* parent, LadspaPlugin* in_plugin, int in_id, int in_parameter)
+      SS_ParameterCheckBox(QWidget* parent, MusESimplePlugin::PluginI* in_plugin, int in_id, int in_parameter)
          : QCheckBox(parent) , SS_ParameterWidget()
          {
          SS_TRACE_IN
@@ -87,7 +84,7 @@ class SS_ParameterSlider : public QSlider, public SS_ParameterWidget
    Q_OBJECT
 
    public:
-      SS_ParameterSlider(QWidget* parent, LadspaPlugin* in_plugin, int in_id, int in_parameter)
+      SS_ParameterSlider(QWidget* parent, MusESimplePlugin::PluginI* in_plugin, int in_id, int in_parameter)
          : QSlider(Qt::Horizontal, parent), SS_ParameterWidget()
          {
          SS_TRACE_IN
@@ -120,33 +117,6 @@ typedef std::list<SS_ParameterWidget*>           SS_ParameterWidgetList;
 typedef std::list<SS_ParameterWidget*>::iterator SS_iParameterWidgetList ;
 
 //-------------------------------
-// SS_PluginChooser
-//-------------------------------
-class SS_PluginChooser : public QDialog, Ui::SS_PluginChooserBase
-{
-   Q_OBJECT
-   private:
-         LadspaPlugin* selectedPlugin;
-   protected:
-
-   public:
-         SS_PluginChooser(QWidget* parent);
-         LadspaPlugin* getSelectedPlugin() { SS_TRACE_IN SS_TRACE_OUT return selectedPlugin; }
-
-   private slots:
-      void okPressed();
-      void cancelPressed();
-      ///void selectionChanged(QTreeWidgetItem* item);
-      void selectionChanged();
-      void doubleClicked(QTreeWidgetItem* item);
-
-   private:
-      QTreeWidgetItem* selectedItem;
-      LadspaPlugin* findSelectedPlugin();
-
-};
-
-//-------------------------------
 // SS_PluginGuiFront
 //-------------------------------
 class SS_PluginFront : public QGroupBox
@@ -161,10 +131,9 @@ class SS_PluginFront : public QGroupBox
       QPushButton*      clearFxButton;
       QPushButton*      expandButton;
       QSlider*          outGainSlider;
-      SS_PluginChooser* pluginChooser;
-      LadspaPlugin*     plugin;
+      MusESimplePlugin::SimplerPluginChooser* pluginChooser;
+      MusESimplePlugin::PluginI*     plugin;
       QGroupBox*     expGroup;
-
       int               fxid;
       bool              expanded;
 
@@ -177,7 +146,7 @@ class SS_PluginFront : public QGroupBox
       SS_PluginFront(QWidget* parent, int id);
       void setPluginName(QString name);
       ~SS_PluginFront();
-      void updatePluginValue(unsigned i);
+      void updatePluginValue(MusESimplePlugin::PluginI* plugi);
       void clearPluginDisplay();
       void setParameterValue(int param, int val);
       void setRetGain(int val);

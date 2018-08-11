@@ -46,6 +46,7 @@
 #include "drummap.h"
 #include "audio.h"
 #include "muse_math.h"
+#include "sysex_helper.h"
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MIDI_PORTS];
@@ -86,7 +87,13 @@ void initMidiPorts()
             // Set the first channel on the first port to auto-connect to midi track outputs.
             if(i == 0)
             {
-              port->setDefaultOutChannels(1);
+
+              // robert: removing the default init on several places to allow for the case
+              // where you rather want the midi track to default to the last created port
+              // this can only happen if there is _no_ default set
+              //
+              // port->setDefaultOutChannels(1);
+
               port->setDefaultInChannels(1);
             }
             }
@@ -284,8 +291,8 @@ bool MidiPort::sendPendingInitializations(bool force)
       for(iEvent ie = events->begin(); ie != events->end(); ++ie) 
       {
         if(ie->second.type() == Sysex)
-          last_frame += sysexDuration(ie->second.dataLen());
-        MusECore::MidiPlayEvent ev(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0, ie->second);
+          last_frame += sysexDuration(ie->second.dataLen(), MusEGlobal::sampleRate);
+        MusECore::MidiPlayEvent ev = ie->second.asMidiPlayEvent(last_frame + MusEGlobal::audio->curSyncFrame(), port, 0);
         _device->putEvent(ev, MidiDevice::NotLate);
       }
       // Give a bit of time for the last Init sysex to settle?

@@ -31,7 +31,23 @@
 
 #ifdef LV2_SUPPORT
 
+// Disable warnings for parentheses. Did not work!
+// #if defined(__clang__)
+// #    pragma clang diagnostic push
+// #    pragma clang diagnostic ignored "-Wparentheses"
+// #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+// #    pragma GCC diagnostic push
+// #    pragma GCC diagnostic warning "-Wparentheses"
+// #endif
+
 #include "lilv/lilv.h"
+
+// #if defined(__clang__)
+// #    pragma clang diagnostic pop
+// #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+// #    pragma GCC diagnostic pop
+// #endif
+
 #include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
@@ -202,7 +218,7 @@ struct LV2ControlPort
    float defVal; //default control value
    float minVal; //minimum control value
    float maxVal; //maximum control value
-   char *cName; //cached value to share beetween function calls
+   char *cName; //cached value to share between function calls
    char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;
@@ -556,7 +572,8 @@ struct LV2PluginWrapper_State {
       plugControlEvt(LV2_RT_FIFO_SIZE),
       gtk2ResizeCompleted(false),
       gtk2AllocateCompleted(false),
-      songDirtyPending(false)
+      songDirtyPending(false),
+      uiIsOpening(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -643,6 +660,7 @@ struct LV2PluginWrapper_State {
     bool gtk2ResizeCompleted;
     bool gtk2AllocateCompleted;
     bool songDirtyPending;
+    bool uiIsOpening;
 };
 
 

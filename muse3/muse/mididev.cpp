@@ -47,6 +47,7 @@
 #include "part.h"
 #include "drummap.h"
 #include "operations.h"
+#include "helper.h"
 
 // For debugging output: Uncomment the fprintf section.
 //#define DEBUG_MIDI_DEVICE(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -292,7 +293,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       
       if (MusEGlobal::midiInputTrace) {
             fprintf(stderr, "MidiInput: ");
-            event.dump();
+            dumpMPEvent(&event);
             }
 
       int typ = event.type();
@@ -518,7 +519,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
   if (MusEGlobal::midiOutputTrace)
   {
     fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
-    fin_ev.dump();
+    dumpMPEvent(&fin_ev);
   }
   
   bool rv = true;
@@ -550,7 +551,14 @@ void MidiDevice::processStuckNotes()
   // MusEGlobal::audio->isPlaying() might not be true during seek right now.
   //if(MusEGlobal::audio->isPlaying())  
   {
+    const bool extsync = MusEGlobal::extSyncFlag.value();
+    const unsigned syncFrame = MusEGlobal::audio->curSyncFrame();
+    const unsigned curTickPos = MusEGlobal::audio->tickPos();
     const unsigned nextTick = MusEGlobal::audio->nextTick();
+    // What is the current transport frame?
+    const unsigned int pos_fr = MusEGlobal::audio->pos().frame();
+    // What is the (theoretical) next transport frame?
+    const unsigned int next_pos_fr = pos_fr + MusEGlobal::audio->curCycleFrames();
     ciMPEvent k;
 
     //---------------------------------------------------
@@ -558,11 +566,33 @@ void MidiDevice::processStuckNotes()
     //---------------------------------------------------
 
     for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
-          if (k->time() >= nextTick)  
-                break;
           MidiPlayEvent ev(*k);
-          ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
-            _userEventBuffers->put(ev);
+          unsigned int off_tick = ev.time();
+          // If external sync is not on, we can take advantage of frame accuracy but
+          //  first we must allow the next tick position to be included in the search
+          //  even if it is equal to the current tick position.
+          if (extsync ? (off_tick >= nextTick) : (off_tick > nextTick))  
+                break;
+          unsigned int off_frame = 0;
+          if(extsync)
+          {
+            if(off_tick < curTickPos)
+              off_tick = curTickPos;
+            off_frame = MusEGlobal::audio->extClockHistoryTick2Frame(off_tick - curTickPos) + MusEGlobal::segmentSize;
+          }
+          else
+          {
+            // What is the exact transport frame that the event should be played at?
+            const unsigned int fr = MusEGlobal::tempomap.tick2frame(off_tick);
+            // Is the event frame outside of the current transport frame range?
+            if(fr >= next_pos_fr)
+              break;
+            off_frame = (fr < pos_fr) ? 0 : fr - pos_fr;
+            off_frame += syncFrame;
+          }
+          ev.setTime(off_frame);
+
+          _userEventBuffers->put(ev);
           }
     _stuckNotes.erase(_stuckNotes.begin(), k);
 
@@ -681,7 +711,7 @@ void MidiDevice::handleSeek()
   if(MusEGlobal::audio->isPlaying()) 
   {
     // TODO: Don't clear, let it play whatever was scheduled ?
-    setStopFlag(true);
+    //setStopFlag(true);
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
     {
       MidiPlayEvent ev(*i);

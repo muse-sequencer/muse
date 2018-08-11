@@ -101,7 +101,7 @@ Song::Song(const char* name)
       _fDspLoad = 0.0;
       _xRunsCount = 0;
       
-      _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
+      _arrangerRaster     = 0; // Set to measure, the same as Arranger initial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;
@@ -180,7 +180,7 @@ void Song::putEvent(int pv)
 
 void Song::setTempo(int newTempo)
       {
-      MusEGlobal::audio->msgSetTempo(pos[0].tick(), newTempo, true);
+      applyOperation(UndoOp(UndoOp::SetTempo, pos[0].tick(), newTempo), true);
       }
 
 //---------------------------------------------------------
@@ -418,6 +418,21 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
 #endif
               }
             }  
+          }
+        }
+
+        if (!defOutFound) { // no default port found
+          // set it to the port with highest number
+
+          for(int i = MIDI_PORTS-1; i >= 0; --i) {
+
+            MidiPort* mp = &MusEGlobal::midiPorts[i];
+
+            if (mp->device() != NULL) {
+
+              mt->setOutPort(i);
+              break;
+            }
           }
         }
       }
@@ -1002,16 +1017,17 @@ void Song::setLoop(bool f)
 //---------------------------------------------------------
 void Song::clearTrackRec()
 {
-  Undo operations;
-  for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
-    operations.push_back(UndoOp(UndoOp::SetTrackRecord, *it, false));
-    // No undo.
-  if(!operations.empty())
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  for(iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
   {
-    // No undo.
-    applyOperationGroup(operations, false);
-    update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+    if(!(*it)->setRecordFlag1(false))
+    {
+      //continue;
+    }
+    operations.add(MusECore::PendingOperationItem((*it), false, MusECore::PendingOperationItem::SetTrackRecord));
   }
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -1056,17 +1072,16 @@ void Song::setRecord(bool f, bool autoRecEnable)
                             }
                       }
                 if (!alreadyRecEnabled && selectedTracks.size() >0) {
-                  
-                      Undo operations;
+                      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                      MusECore::PendingOperationList operations;
                       foreach (Track *t, selectedTracks)
-                        setRecordFlag(t, true, &operations);
-                      if(!operations.empty())
                       {
-                        // No undo.
-                        applyOperationGroup(operations, false);
-                        update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+                        if(!t->setRecordFlag1(true))
+                          continue;
+                        operations.add(MusECore::PendingOperationItem(t, true, MusECore::PendingOperationItem::SetTrackRecord));
                       }
-                      
+                      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
                       }
                 else if (alreadyRecEnabled)  {
                       // do nothing
@@ -1823,27 +1838,21 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
 
 void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 {
-  if(!track->setRecordFlag1(val))
-    return;
-
-  Undo ops;
-  Undo* opsp = operations ? operations : &ops;
-
-  // No undo.
-  opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
-  //opsp->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, true));
-//   MusEGlobal::audio->msgSetRecord(track, val);
-//   update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
-  
-  if(!operations)
+  if(operations)
   {
-    if(!ops.empty())
-    {
-      //applyOperationGroup(ops);
-      // No undo.
-      applyOperationGroup(ops, false);
-      update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
-    }
+    // The undo system calls setRecordFlag1 for us.
+    operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val));
+    //operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, true)); // No undo.
+  }
+  else
+  {
+    // The pending operations system does not call setRecordFlag1 for us. Call it now.
+    if(!track->setRecordFlag1(val))
+      return;
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackRecord));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
   }
 }
 
@@ -2228,24 +2237,31 @@ void Song::seqSignal(int fd)
                strerror(errno));
             return;
             }
+      bool do_set_sync_timeout = false;
       for (int i = 0; i < n; ++i) {
             switch(buffer[i]) {
                   case '0':         // STOP
+                        do_set_sync_timeout = true;
                         stopRolling();
                         break;
                   case '1':         // PLAY
+                        do_set_sync_timeout = true;
                         setStopPlay(true);
                         break;
                   case '2':   // record
                         setRecord(true);
                         break;
                   case '3':   // START_PLAY + jack STOP
+                        do_set_sync_timeout = true;
                         abortRolling();
                         break;
                   case 'P':   // alsa ports changed
                         alsaScanMidiPorts();
                         break;
-                  case 'G':
+                  case 'G':   // Seek
+                        // Hm, careful here, will multiple seeks cause this
+                        //  to interfere with Jack's transport timeout countdown?
+                        do_set_sync_timeout = true;
                         clearRecAutomation(true);
                         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
                         break;
@@ -2344,6 +2360,23 @@ void Song::seqSignal(int fd)
                         fprintf(stderr, "unknown Seq Signal <%c>\n", buffer[i]);
                         break;
                   }
+            }
+            
+            // Since other Jack clients might also set the sync timeout at any time,
+            //  we need to be constantly enforcing our desired limit!
+            // Since setSyncTimeout() may not be realtime friendly (Jack driver),
+            //  we set the driver's sync timeout here in the gui thread.
+            // Sadly, we likely cannot get away with setting it in the audio sync callback.
+            // So whenever stop, start or seek occurs, we'll try to casually enforce the timeout here.
+            // It's casual, unfortunately we can't set the EXACT timeout amount when we really need to
+            //  (that's in audio sync callback) so we try this for now...
+            if(do_set_sync_timeout && MusEGlobal::checkAudioDevice())
+            {
+              // Enforce a 30 second timeout.
+              // TODO: Split this up and have user adjustable normal (2 or 10 second default) value,
+              //        plus a contribution from the total required precount time.
+              //       Too bad we likely can't set it dynamically in the audio sync callback.
+              MusEGlobal::audioDevice->setSyncTimeout(30000000);
             }
       }
 

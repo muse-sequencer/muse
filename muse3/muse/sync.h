@@ -29,6 +29,8 @@
 #include "value.h"
 #include "globaldefs.h"
 
+#include <stdint.h>
+
 namespace MusECore {
 
 class Xml;
@@ -56,13 +58,14 @@ class MidiSyncInfo
     int _recMTCtype;
     
     bool _recRewOnStart;
+
+    uint64_t _lastClkTime;
+    uint64_t _lastTickTime;
+    uint64_t _lastMRTTime;
+    uint64_t _lastMMCTime;
+    uint64_t _lastMTCTime;
+    uint64_t _lastActTime[MIDI_CHANNELS];
     
-    double   _lastClkTime;
-    double   _lastTickTime;
-    double   _lastMRTTime;
-    double   _lastMMCTime;
-    double   _lastMTCTime;
-    double   _lastActTime[MIDI_CHANNELS];
     bool     _clockTrig;
     bool     _tickTrig;
     bool     _MRTTrig;
@@ -218,7 +221,7 @@ class ExtMidiClock
 
 class MidiSyncContainer {
   private:
-      int _midiClock; // Accumulator for clock output.
+      unsigned int _midiClock; // Accumulator for clock output.
 
 /* Testing */
       ExtMidiClock::ExternState playStateExt;   // used for keeping play state in sync functions
@@ -248,8 +251,8 @@ class MidiSyncContainer {
       MidiSyncContainer();
       virtual ~MidiSyncContainer();
 
-      int midiClock() const { return _midiClock; }
-      void setMidiClock(int val) { _midiClock = val; }
+      unsigned int midiClock() const { return _midiClock; }
+      void setMidiClock(unsigned int val) { _midiClock = val; }
       ExtMidiClock::ExternState externalPlayState() const { return playStateExt; }
       void setExternalPlayState(ExtMidiClock::ExternState v) { playStateExt = v; }
       bool isPlaying() const
@@ -286,7 +289,7 @@ class MidiSyncContainer {
         };
         return false;
       }
-      void realtimeSystemInput(int port, int type, double time = 0.0);
+      void realtimeSystemInput(int port, int type);
       // Starts transport if necessary. Adds clock to tempo list.
       // Returns a clock structure including frame, state, and whether the clock was a
       //  'first clock' after a start or continue message.

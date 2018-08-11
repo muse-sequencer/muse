@@ -183,8 +183,6 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void setChannelRoute(int channel, int route);
       void displayPluginGui();
       QGroupBox* channelButtonGroups[SS_NR_OF_CHANNELS];
-      QGroupBox*           masterButtonGroup;
-      QGroupBox*              mainGroupBox;
       
       ///QInvertedChannelSlider* volumeSliders[SS_NR_OF_CHANNELS];
       QChannelSlider*         volumeSliders[SS_NR_OF_CHANNELS];       // p4.0.27 Tim. Inverted not correct. Was WIP? 
@@ -219,16 +217,27 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       QString lastProjectDir;
       SS_PluginGui* pluginGui;
 
+      int _sampleRate;
+      
    public:
-      SimpleSynthGui();
+      SimpleSynthGui(int sampleRate);
       virtual ~SimpleSynthGui();
 
+      int sampleRate() const { return _sampleRate; }
+      // Returns true if the value was changed.
+      bool setSampleRate(int sampleRate) { 
+        bool r = _sampleRate != sampleRate; 
+        _sampleRate = sampleRate; 
+        return r;
+      }
+      
    public slots:
       void loadEffectInvoked(int fxid, QString lib, QString label);
       void returnLevelChanged(int fxid, int val);
       void toggleEffectOnOff(int fxid, int state);
       void clearPlugin(int fxid);
       void effectParameterChanged(int fxid, int parameter, int val);
+      void heartBeat();
 
    private slots:
       void volumeChanged(int channel, int val);
@@ -238,7 +247,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void channelNoteOffIgnore(int channel, bool state);
       void masterVolChanged(int val);
       void loadSampleDialogue(int channel);
-      void readMessage(int);
+      void readMessage();
       void clearSample(int ch);
       void sendFxChanged(int ch, int fxid, int val);
       void openPluginButtonClicked();
@@ -246,13 +255,8 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void loadSetup();
       void saveSetup();
       void routeChanged(int index);
-   protected slots:
-      virtual void heartBeat();
 
       friend class SimpleSynth;
-
    };
-
-extern SimpleSynthGui* simplesynthgui_ptr;
 
 #endif

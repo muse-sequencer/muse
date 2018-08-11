@@ -8905,8 +8905,8 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
         <translation>&amp;Fönster</translation>
     </message>
     <message>
-        <source>MusE Se&amp;ttings</source>
-        <translation>MusE &amp;konfiguration</translation>
+        <source>Se&amp;ttings</source>
+        <translation>&amp;konfiguration</translation>
     </message>
     <message>
         <source>&amp;Help</source>

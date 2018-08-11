@@ -33,9 +33,9 @@ private:
    QSemaphore sem;
    static long static_srcCallback (void *cb_data, float **data);
 public:
-   WavePreview();
+   WavePreview(int segmentSize);
    virtual ~WavePreview();
-   void play(QString path);
+   void play(QString path, int systemSampleRate);
    void stop();
    void addData(int channels, int nframes, float *buffer []);
    bool getIsPlaying() { return isPlaying; }
@@ -48,19 +48,20 @@ private:
     QCheckBox *chAutoPlay;
     QPushButton *btnStop;
     bool lastIsPlaying;
+    int _systemSampleRate;
 private slots:
     void urlChanged(const QString &str);
     void startStopWave();
 public slots:
     virtual int exec();
 public:
-   AudioPreviewDialog(QWidget *parent);
+   AudioPreviewDialog(QWidget *parent, int systemSampleRate);
    ~AudioPreviewDialog();
    void timerEvent(QTimerEvent *);
 };
 
 
-extern void initWavePreview();
+extern void initWavePreview(int segmentSize);
 extern void exitWavePreview();
 
 }

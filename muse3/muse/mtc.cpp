@@ -31,31 +31,31 @@ extern int mtcType;
 namespace MusECore {
 
 //---------------------------------------------------------
-//   MTC::time
-//    converts MTC Time to seconds according to
+//   MTC::timeUS
+//    converts MTC Time to microseconds according to
 //    global mtcType
 //---------------------------------------------------------
 
-double MTC::time(int type) const
+uint64_t MTC::timeUS(int type) const
       {
-      double time = _h * 3600 + _m * 60 + _s;
-      double ft = 0.0;
+      uint64_t time = 1000000UL * (_h * 3600UL + _m * 60UL + _s);
+      uint64_t f = 10000UL * (_f * 100UL + _sf);
       if(type == -1)
         type = MusEGlobal::mtcType;
       switch (type) {
             case 0:     // 24 frames sec
-                  ft = 1.0/24.0;
+                  time += f / 24UL;
                   break;
             case 1:     // 25
-                  ft = 0.04;
+                  time += f / 25UL;
                   break;
             case 2:     // 30 drop frame        TODO
             case 3:     // 30 non drop frame
             default:
-                  ft = 1.0/30.0;
+                  time += f / 30UL;
                   break;
             }
-      return time + ft *_f + 0.01 * ft * _sf;
+      return time;
       }
 
 //---------------------------------------------------------

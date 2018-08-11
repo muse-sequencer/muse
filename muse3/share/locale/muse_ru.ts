@@ -8808,7 +8808,7 @@ You can also select the Save command from the File menu.</source>
         <translation>&amp;Окна</translation>
     </message>
     <message>
-        <source>MusE Se&amp;ttings</source>
+        <source>Se&amp;ttings</source>
         <translation>Н&amp;астройки</translation>
     </message>
     <message>

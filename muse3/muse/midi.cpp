@@ -37,6 +37,7 @@
 #include "midictrl.h"
 #include "sync.h"
 #include "audio.h"
+#include "audiodev.h"
 #include "mididev.h"
 #include "driver/alsamidi.h"
 #include "driver/jackmidi.h"
@@ -56,34 +57,22 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_MIDI(dev, format, args...) // fprintf(dev, format, ##args);
+// For debugging metronome and precount output: Uncomment the fprintf section.
+#define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
+// For debugging midi timing: Uncomment the fprintf section.
+#define DEBUG_MIDI_TIMING(dev, format, args...) // fprintf(dev, format, ##args);
+// For debugging midi event time differences.
+//#define DEBUG_MIDI_TIMING_DIFFS ;
 
 namespace MusECore {
 
+#ifdef DEBUG_MIDI_TIMING_DIFFS
+// For testing.
+unsigned _lastEvTime = 0;
+#endif
+
+  
 extern void dump(const unsigned char* p, int n);
-
-
-const unsigned char gmOnMsg[]   = { 0x7e, 0x7f, 0x09, 0x01 };
-const unsigned char gm2OnMsg[]  = { 0x7e, 0x7f, 0x09, 0x03 };
-const unsigned char gmOffMsg[]  = { 0x7e, 0x7f, 0x09, 0x02 };
-const unsigned char gsOnMsg[]   = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
-const unsigned char gsOnMsg2[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
-const unsigned char gsOnMsg3[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
-const unsigned char xgOnMsg[]   = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
-const unsigned int  gmOnMsgLen  = sizeof(gmOnMsg);
-const unsigned int  gm2OnMsgLen = sizeof(gm2OnMsg);
-const unsigned int  gmOffMsgLen = sizeof(gmOffMsg);
-const unsigned int  gsOnMsgLen  = sizeof(gsOnMsg);
-const unsigned int  gsOnMsg2Len = sizeof(gsOnMsg2);
-const unsigned int  gsOnMsg3Len = sizeof(gsOnMsg3);
-const unsigned int  xgOnMsgLen  = sizeof(xgOnMsg);
-
-const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
-const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
-const unsigned char mmcLocateMsg[] =       { 0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01, 0, 0, 0, 0, 0 };
-
-const unsigned int  mmcDeferredPlayMsgLen = sizeof(mmcDeferredPlayMsg);
-const unsigned int  mmcStopMsgLen = sizeof(mmcStopMsg);
-const unsigned int  mmcLocateMsgLen = sizeof(mmcLocateMsg);
 
 #define CALC_TICK(the_tick) lrintf((float(the_tick) * float(MusEGlobal::config.division) + float(div/2)) / float(div));
 
@@ -252,27 +241,6 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
             s = QObject::tr("Switch on Yamaha XG mode");
       return s;
       }
-
-//---------------------------------------------------------
-//    sysexDuration
-//    static
-//---------------------------------------------------------
-
-unsigned int sysexDuration(unsigned int len)
-{
-  // Midi transmission characters per second, based on standard fixed bit rate of 31250 Hz.
-  // According to ALSA (aplaymidi.c), although the midi standard says one stop bit,
-  //  two are commonly used. We will use two just to be sure.
-  const unsigned int midi_cps = 31250 / (1 + 8 + 2);
-  // Estimate the number of audio frames it should take (or took) to transmit the current midi chunk.
-  unsigned int frames = (len * MusEGlobal::sampleRate) / midi_cps;
-  // Add a slight delay between chunks just to be sure there's no overlap, rather a small space, and let devices catch up.
-  frames += MusEGlobal::sampleRate / 200; // 1 / 200 = 5 milliseconds.
-  // Let's be realistic, spread by at least one frame.
-  if(frames == 0)
-    frames = 1;
-  return frames;
-}
 
 //---------------------------------------------------------
 //   buildMidiEventList
@@ -997,6 +965,22 @@ void Audio::seekMidi()
     if(md && playing)
       md->handleSeek();
     
+    //---------------------------------------------------
+    //    reset sustain
+    //---------------------------------------------------
+    
+    if(md)
+    {
+      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      {
+        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+        {
+          const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+          md->putEvent(ev, MidiDevice::NotLate);
+        }
+      }
+    }
+    
     MidiInstrument* instr = mp->instrument();
     MidiCtrlValListList* cll = mp->controller();
 
@@ -1090,18 +1074,14 @@ void Audio::seekMidi()
           }
         }
 
-        // Don't bother sending any sustain values if not playing. Just set the hw state.
         const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
-        if(fin_ctlnum == CTRL_SUSTAIN && !playing)
-          // This is the audio thread. Just set directly.
-          fin_mp->setHwCtrlState(ev);
-        else
-        {
-          // This is the audio thread. Just set directly.
-          fin_mp->setHwCtrlState(ev);
-          if(fin_mp->device())
-            fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
-        }
+        // This is the audio thread. Just set directly.
+        fin_mp->setHwCtrlState(ev);
+        // Don't bother sending any sustain values to the device, because we already
+        //  just sent out zero sustain values, above. Just set the hw state.
+        // When play resumes, the correct values are sent again if necessary in Audio::startRolling().
+        if(fin_ctlnum != CTRL_SUSTAIN && fin_mp->device())
+          fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
       }
 
       // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
@@ -1118,30 +1098,13 @@ void Audio::seekMidi()
           MidiController* mc = imc->second;
           if(mc->initVal() != CTRL_VAL_UNKNOWN)
           {
-            //fprintf(stderr, "Audio::handleSeek: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
+            //fprintf(stderr, "Audio::seekMidi: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
             // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
             const MidiPlayEvent ev(0, i, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias());
             // This is the audio thread. Just set directly.
             mp->setHwCtrlState(ev);
-            if(mp->device())
-              mp->device()->putEvent(ev, MidiDevice::NotLate);
+            md->putEvent(ev, MidiDevice::NotLate);
           }
-        }
-      }
-      
-      //---------------------------------------------------
-      //    reset sustain
-      //---------------------------------------------------
-      
-      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-      {
-        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-        {
-          const MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-          // This is the audio thread. Just set directly.
-          mp->setHwCtrlState(ev);
-          if(mp->device())
-            mp->device()->putEvent(ev, MidiDevice::NotLate);
         }
       }
       
@@ -1166,7 +1129,7 @@ void Audio::seekMidi()
 //   extClockHistoryTick2Frame
 //    Convert tick to frame using the external clock history list.
 //    The function takes a tick relative to zero (ie. relative to the first event in a processing batch).
-//    The returned clock frames occured during the previous audio cycle(s), so you may want to shift 
+//    The returned clock frames occurred during the previous audio cycle(s), so you may want to shift 
 //     the frames forward by one audio segment size for scheduling purposes.
 //    CAUTION: There must be at least one valid clock in the history,
 //              otherwise it returns zero. Don't feed this a tick 
@@ -1281,31 +1244,38 @@ unsigned int Audio::extClockHistoryFrame2Tick(unsigned int frame) const
 //    collect events for next audio segment
 //---------------------------------------------------------
 
-void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned int nts)
+void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned int nts, unsigned int frames)
       {
+      DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: cts:%u nts:%u\n", cts, nts);
+      const bool extsync = MusEGlobal::extSyncFlag.value();
+      const int delay = track->delay;
+      // If external sync is not on, we can take advantage of frame accuracy but
+      //  first we must allow the next tick position to be included in the search
+      //  even if it is equal to the current tick position.
+      if((extsync && cts >= nts) ||
+         (!extsync && cts > nts))
+        return;
+        
       int port    = track->outPort();
       int channel = track->outChannel();
       int defaultPort = port;
+      const unsigned int pos_fr = _pos.frame();
+      const unsigned int next_pos_fr = pos_fr + frames;
 
+      DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
+      
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       MidiDevice* md = mp->device();
 
       PartList* pl = track->parts();
       for (iPart p = pl->begin(); p != pl->end(); ++p) {
             MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
-            // dont play muted parts
+            // don't play muted parts
             if (part->mute())
                   continue;
             const EventList& events = part->events();
             unsigned partTick = part->tick();
             unsigned partLen  = part->lenTick();
-            int delay         = track->delay;
-
-            if (cts > nts) {
-                  fprintf(stderr, "processMidi: FATAL: cur > next %d > %d\n",
-                     cts, nts);
-                  return;
-                  }
             unsigned offset = delay + partTick;
             if (offset > nts)
                   continue;
@@ -1315,14 +1285,25 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
             if(etick > partLen)
               continue;
 
+            // The start and end tick are a rough range to make the loop faster instead of having
+            //  to iterate the whole list each time, comparing frames.
+            // Use upper_bound because we need to include the 'next' last item because it may have a 
+            //  fractional tick component that we would otherwise miss with lower_bound. The loop will
+            //  decide whether to process iterated items or not by precisely comparing frames.
+            // We rely on the tempo value being 'stable' during the process period - that is
+            //  no user changes in-between cycles. We don't have that capability currently anyway -
+            //  to break the process up into chunks (like our controllers) depending on tempo frames, 
+            //  our tempo map is not frame-accurate, only tick-accurate.
             ciEvent ie   = events.lower_bound(stick);
-            ciEvent iend = events.lower_bound(etick);
+            ciEvent iend = events.upper_bound(etick);
 
+            DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: part events stick:%u etick:%u\n", stick, etick);
+            
             for (; ie != iend; ++ie) {
                   Event ev = ie->second;
                   port = defaultPort; //Reset each loop
                   //
-                  //  dont play any meta events
+                  //  don't play any meta events
                   //
                   if (ev.type() == Meta)
                         continue;
@@ -1340,15 +1321,17 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                         }
                   unsigned tick  = ev.tick() + offset;
                   
+                  DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
+      
                   //-----------------------------------------------------------------
                   // Determining the playback scheduling frame from the event's tick:
                   //-----------------------------------------------------------------
                   unsigned frame;
-                  if(MusEGlobal::extSyncFlag.value())
+                  if(extsync)
                     // If external sync is on, look up the scheduling frame from the tick,
                     //  in the external clock history list (which is cleared, re-composed, and processed each cycle).
                     // The function takes a tick relative to zero (ie. relative to the first event in this batch).
-                    // The returned clock frame occured during the previous audio cycle(s), so shift the frame 
+                    // The returned clock frame occurred during the previous audio cycle(s), so shift the frame 
                     //  forward by one audio segment size.
                     frame = extClockHistoryTick2Frame(tick - stick) + MusEGlobal::segmentSize;
                   else
@@ -1356,11 +1339,24 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                     // If external sync is off, look up the scheduling frame from our tempo list
                     //  ie. normal playback.
                     const unsigned int fr = MusEGlobal::tempomap.tick2frame(tick);
-                    const unsigned int pos_fr = pos().frame();
-                    frame = (fr < pos_fr) ? 0 : fr - pos_fr;
+                    
+                    DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event: frame:%u\n", fr);
+                      
+                    // Take advantage of frame-accurate comparison ability here.
+                    // At some point, the event's frame time and the 'swept' current range of pos frame will intersect,
+                    //  so all events should be accounted for.
+                    if(fr < pos_fr || fr >= next_pos_fr)
+                    {
+                      DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: Ignoring event\n");
+                      continue;
+                    }
+                    
+                    frame = fr - pos_fr;
                     frame += syncFrame;
                   }
                   
+                  DEBUG_MIDI(stderr, "Audio::collectEvents: event: tick:%u final frame:%u\n", tick, frame);
+                    
                   switch (ev.type()) {
                         case Note:
                               {
@@ -1423,7 +1419,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     veloOff = 0;
 
                               len = (len *  track->len) / 100;
-                              if (len <= 0)     // dont allow zero length
+                              if (len <= 0)     // don't allow zero length
                                     len = 1;
 
                               if (port == defaultPort) {
@@ -1522,7 +1518,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                   }
                                 }
                                 
-                                MusECore::MidiPlayEvent mpe(frame, port, channel, ev);
+                                MusECore::MidiPlayEvent mpe = ev.asMidiPlayEvent(frame, port, channel);
                                 // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                 //       which so far was meant for (N)RPN stuff. For now, just force it.
                                 // This is the audio thread. Just set directly.
@@ -1536,7 +1532,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                           
                               if(md)
                               {
-                                 md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, ev), 
+                                 md->putEvent(ev.asMidiPlayEvent(frame, port, channel), 
                                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                               }
                               break;
@@ -1554,7 +1550,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 //      executed in audio thread
 //---------------------------------------------------------
 
-void Audio::processMidi()
+void Audio::processMidi(unsigned int frames)
       {
       const bool extsync = MusEGlobal::extSyncFlag.value();
       const bool playing = isPlaying();
@@ -1743,26 +1739,28 @@ void Audio::processMidi()
       for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t)
       {
             MidiTrack* track = *t;
-            const int port = track->outPort();
-            //const int channel = track->outChannel();
+            const int t_port = track->outPort();
+            const int t_channel = track->outChannel();
             MidiPort* mp = 0;
-            if(port >= 0 && port < MIDI_PORTS)
-              mp = &MusEGlobal::midiPorts[port];
+            if(t_port >= 0 && t_port < MIDI_PORTS)
+              mp = &MusEGlobal::midiPorts[t_port];
             MidiDevice* md = 0;
             if(mp)
               md = mp->device();
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
-              if(playing && (curTickPos < nextTickPos))
-                collectEvents(track, curTickPos, nextTickPos);
+              if(playing)
+                collectEvents(track, curTickPos, nextTickPos, frames);
             }
 
             //
             //----------midi recording
             //
             const bool track_rec_flag = track->recordFlag();
-            const bool track_rec_monitor = track->recMonitor(); // Separate monitor and record functions.
+// REMOVE Tim. monitor. Changed.
+//            const bool track_rec_monitor = track->recMonitor(); // Separate monitor and record functions.
+            const bool track_rec_monitor = track->isRecMonitored(); // Separate monitor and record functions.
 
             if(track_rec_monitor || track_rec_flag)
             {
@@ -1809,8 +1807,9 @@ void Audio::processMidi()
                             for(int i = 0; i < count; ++i)
                             {
                               MidiRecordEvent event(rf.peek(i));
-                              event.setPort(port);
-                              // dont't echo controller changes back to software
+                              event.setPort(t_port);
+                              event.setChannel(t_channel);
+                              // don't echo controller changes back to software
                               // synthesizer:
                               if(md && track_rec_monitor)
                               {
@@ -1896,7 +1895,8 @@ void Audio::processMidi()
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
-                                event.setChannel(channel);
+                                event.setPort(t_port);
+                                event.setChannel(t_channel);
 
                                 if (event.isNote() || event.isNoteOff())
                                 {
@@ -2036,7 +2036,7 @@ void Audio::processMidi()
                                 // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent(). p3.3.35
                                 // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
 
-                                // dont't echo controller changes back to software
+                                // don't echo controller changes back to software
                                 // synthesizer:
 
                                 // Zero means zero. Should mean no note at all?
@@ -2065,14 +2065,16 @@ void Audio::processMidi()
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
-                                        event.setPort(port);
-                                        if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                        event.setPort(t_port);
+                                        // REMOVE Tim. monitor. Changed.
+                                        //if(md && track_rec_monitor && !track->off() && !track->isMute())
+                                        if(md && track_rec_monitor)
                                         {
                                           // Do not echo synth events back to the same synth instance under any circumstances,
                                           //  not even if monitor (echo) is on.
                                           if(!dev->isSynti() || dev != md)
                                           {
-                                            MidiInstrument* minstr = MusEGlobal::midiPorts[port].instrument();
+                                            MidiInstrument* minstr = MusEGlobal::midiPorts[t_port].instrument();
                                             const MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
                                             // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
                                             // This allows drum input triggers (no note offs at all), although it is awkward to
@@ -2081,7 +2083,7 @@ void Audio::processMidi()
                                             {
                                               if(event.isNoteOff())
                                                 // Try to remove any corresponding stuck live note.
-                                                track->removeStuckLiveNote(port, event.channel(), event.dataA());
+                                                track->removeStuckLiveNote(t_port, event.channel(), event.dataA());
 //                                               md->addScheduledEvent(event);
                                               md->putEvent(event, MidiDevice::NotLate);
                                             }
@@ -2089,7 +2091,7 @@ void Audio::processMidi()
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
-                                              if(track->removeStuckLiveNote(port, event.channel(), event.dataA()))
+                                              if(track->removeStuckLiveNote(t_port, event.channel(), event.dataA()))
 //                                                 md->addScheduledEvent(event);
                                                 md->putEvent(event, MidiDevice::NotLate);
                                             }
@@ -2099,13 +2101,13 @@ void Audio::processMidi()
                                               ciMidiTrack it_other = mtl->begin();
                                               for( ; it_other != mtl->end(); ++it_other)
                                               {
-                                                if((*it_other)->stuckLiveNoteExists(port, event.channel(), event.dataA()))
+                                                if((*it_other)->stuckLiveNoteExists(t_port, event.channel(), event.dataA()))
                                                   break;
                                               }
                                               // Only if NO stuck live note existed do we schedule the note on to play.
                                               if(it_other == mtl->end())
                                               {
-                                                if(track->addStuckLiveNote(port, event.channel(), event.dataA()))
+                                                if(track->addStuckLiveNote(t_port, event.channel(), event.dataA()))
 //                                                   md->addScheduledEvent(event);
                                                   md->putEvent(event, MidiDevice::NotLate);
                                               }
@@ -2115,7 +2117,7 @@ void Audio::processMidi()
                                               // TODO Maybe grab the flag from the 'Optimize Controllers' Global Setting,
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
                                               // This is the audio thread. Just set directly.
-                                              MusEGlobal::midiPorts[port].setHwCtrlState(event);
+                                              MusEGlobal::midiPorts[t_port].setHwCtrlState(event);
                                               md->putEvent(event, MidiDevice::NotLate);
                                             }
                                           }
@@ -2123,7 +2125,9 @@ void Audio::processMidi()
                                       }
                                   else {
                                         MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
-                                        if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                        // REMOVE Tim. monitor. Changed.
+                                        //if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
+                                        if(mdAlt && track_rec_monitor)
                                         {
                                           // Do not echo synth events back to the same synth instance under any circumstances,
                                           //  not even if monitor (echo) is on.
@@ -2237,8 +2241,8 @@ void Audio::processMidi()
                                           drumRecEvent.setA(ctl | drumRecPitch);
                                           // In this case, preVelo is simply the controller value.
                                           drumRecEvent.setB(preVelo);
-                                          drumRecEvent.setPort(port); //rec-event to current port
-                                          drumRecEvent.setChannel(channel); //rec-event to current channel
+                                          drumRecEvent.setPort(t_port); //rec-event to current port
+                                          drumRecEvent.setChannel(t_channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                       else
@@ -2248,8 +2252,8 @@ void Audio::processMidi()
                                           drumRecEvent.setB(preVelo);
                                           // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
                                           //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
-                                          drumRecEvent.setPort(port);  //rec-event to current port
-                                          drumRecEvent.setChannel(channel); //rec-event to current channel
+                                          drumRecEvent.setPort(t_port);  //rec-event to current port
+                                          drumRecEvent.setChannel(t_channel); //rec-event to current channel
                                           track->mpevents.add(drumRecEvent);
                                       }
                                     }
@@ -2261,8 +2265,8 @@ void Audio::processMidi()
                                                 recEvent.setA(prePitch);
                                           if (preVelo)
                                                 recEvent.setB(preVelo);
-                                          recEvent.setPort(port);
-                                          recEvent.setChannel(channel);
+                                          recEvent.setPort(t_port);
+                                          recEvent.setChannel(t_channel);
 
                                           track->mpevents.add(recEvent);
                                     }
@@ -2282,6 +2286,10 @@ void Audio::processMidi()
           ciMPEvent k;
           MidiDevice* mdev;
           int mport;
+          // What is the current transport frame?
+          const unsigned int pos_fr = _pos.frame();
+          // What is the (theoretical) next transport frame?
+          const unsigned int next_pos_fr = pos_fr + frames;
 
           // If muted or off we want to send all playback note-offs immediately.
           if(track->isMute() || track->off())
@@ -2322,16 +2330,39 @@ void Audio::processMidi()
             {
               for(k = mel.begin(); k != mel.end(); ++k)
               {
-                if(k->time() >= nextTickPos)
-                      break;
                 MidiPlayEvent ev(*k);
-                ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
+                unsigned int off_tick = ev.time();
+                // If external sync is not on, we can take advantage of frame accuracy but
+                //  first we must allow the next tick position to be included in the search
+                //  even if it is equal to the current tick position.
+                if(extsync ? (off_tick >= nextTickPos) : (off_tick > nextTickPos))
+                      break;
                 mport = ev.port();
-                if(port < 0)
+                if(mport < 0)
                   continue;
                 mdev = MusEGlobal::midiPorts[mport].device();
                 if(!mdev)
                   continue;
+                
+                unsigned int off_frame = 0;
+                if(extsync)
+                {
+                  if(off_tick < curTickPos)
+                    off_tick = curTickPos;
+                  off_frame = extClockHistoryTick2Frame(off_tick - curTickPos) + MusEGlobal::segmentSize;
+                }
+                else
+                {
+                  // What is the exact transport frame that the event should be played at?
+                  const unsigned int fr = MusEGlobal::tempomap.tick2frame(off_tick);
+                  // Is the event frame outside of the current transport frame range?
+                  if(fr >= next_pos_fr)
+                    break;
+                  off_frame = (fr < pos_fr) ? 0 : fr - pos_fr;
+                  off_frame += syncFrame;
+                }
+                ev.setTime(off_frame);
+                
                 // TODO: DECIDE: Hm, we don't want the device to miss any note offs.
                 //               So I guess schedule this as a user event rather than a playback event.
                 mdev->putEvent(ev, MidiDevice::NotLate);
@@ -2341,8 +2372,9 @@ void Audio::processMidi()
           }
 
           // If no monitor or off, or not rec-armed (or muted), we want to cancel all 'live' (rec) stuck notes immediately.
-          if(!track_rec_monitor || track->off() ||
-             track->isMute())
+          // REMOVE Tim. monitor. Changed.
+          //if(!track_rec_monitor || track->off() || track->isMute())
+          if(!track_rec_monitor)
           {
             //------------------------------------------------------------
             //    Send all track-related 'live' (rec) note-offs
@@ -2374,45 +2406,91 @@ void Audio::processMidi()
       //    insert metronome clicks
       //---------------------------------------------------
 
+      // If in PRECOUNT state, process the precount events.
+      processPrecount(frames);
+
+      // Should the metronome be muted after precount?
+      const bool precount_mute_metronome = MusEGlobal::precountEnableFlag
+        && MusEGlobal::song->click()
+        && !MusEGlobal::extSyncFlag.value()
+        && ((!MusEGlobal::song->record() && MusEGlobal::precountOnPlay) || MusEGlobal::song->record())
+        && MusEGlobal::precountMuteMetronome;
+      
       MidiDevice* md = 0;
-      if (MusEGlobal::midiClickFlag)
+      if (MusEGlobal::midiClickFlag && !precount_mute_metronome)
             md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
-      if (MusEGlobal::song->click() && (playing || state == PRECOUNT)) {
+      if (playing) {
+            // What is the current transport frame?
+            const unsigned int pos_fr = _pos.frame();
+            // What is the (theoretical) next transport frame?
+            const unsigned int next_pos_fr = pos_fr + frames;
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
-            while (midiClick < nextTickPos) {
-                  if (playing) {
-                    AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
-                    AL::sigmap.timesig(midiClick, z, n);
+            // If external sync is not on, we can take advantage of frame accuracy but
+            //  first we must allow the next tick position to be included in the search
+            //  even if it is equal to the current tick position.
+            while (extsync ? (midiClick < nextTickPos) : (midiClick <= nextTickPos))
+            {
+              bool do_play = true;
+              unsigned int evtime = 0;
+              if(extsync)
+              {
+                if(midiClick < curTickPos)
+                  midiClick = curTickPos;
+                evtime = extClockHistoryTick2Frame(midiClick - curTickPos) + MusEGlobal::segmentSize;
+              }
+              else
+              {
+                // What is the exact transport frame that the midiClick should be played at?
+                const unsigned int fr = MusEGlobal::tempomap.tick2frame(midiClick);
+                // Is the midiClick frame outside of the current transport frame range?
+                if(fr < pos_fr || fr >= next_pos_fr)
+                {
+                  // Break out of the loop if midiClick equals nextTickPos.
+                  if(midiClick == nextTickPos)
+                    break;
+                  // Continue on, but do not play any notes.
+                  do_play = false;
+                }
+                evtime = fr - pos_fr;
+                evtime += syncFrame;
+              }
+                  
+              DEBUG_MIDI_METRONOME(stderr, 
+                "Audio::processMidi: playing: syncFrame:%u _pos.frame():%u midiClick:%u nextTickPos:%u clickno:%d\n",
+                syncFrame, _pos.frame(), midiClick, nextTickPos, clickno);
+              
+              AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
+              AL::sigmap.timesig(midiClick, z, n);
 
-                    //n = 2;
-                    if (tick == 0 && beat == 0) {
-                        audioTickSound = MusECore::measureSound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
-                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
-                        audioTickSound = MusECore::accent2Sound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
-                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
-                        audioTickSound = MusECore::accent1Sound;
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    } else {
-                        if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
-                    }
+              if (do_play && MusEGlobal::song->click() 
+                  && (MusEGlobal::audioClickFlag || MusEGlobal::midiClickFlag)
+                  && !precount_mute_metronome) {
+                
+                  //n = 2;
+                  if (tick == 0 && beat == 0) {
+                      audioTickSound = MusECore::measureSound;
+                      if (MusEGlobal::debugMsg)
+                          fprintf(stderr, "meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                                  midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                   }
-
-                  else if (state == PRECOUNT) {
-                    if ((clickno % clicksMeasure) == 0) {
-                        audioTickSound = MusECore::measureSound;
-                    }
+                  else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
+                      audioTickSound = MusECore::accent2Sound;
+                      if (MusEGlobal::debugMsg)
+                          fprintf(stderr, "acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                                  midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                   }
-                  unsigned int evtime = MusEGlobal::audio->midiQueueTimeStamp(midiClick);
+                  else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
+                      audioTickSound = MusECore::accent1Sound;
+                      if (MusEGlobal::debugMsg)
+                          fprintf(stderr, "acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                                  midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                  } else {
+                      if (MusEGlobal::debugMsg)
+                          fprintf(stderr, "beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", 
+                                  midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                  }
 
                   MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
                   if (audioTickSound == MusECore::measureSound) {
@@ -2429,6 +2507,12 @@ void Audio::processMidi()
                   }
                   if (md) {
                     MusECore::MidiPlayEvent evmidi = ev;
+                    
+#ifdef DEBUG_MIDI_TIMING_DIFFS
+                    fprintf(stderr, "EVENT TIME DIFF:%u\n", evmidi.time() - _lastEvTime);
+                    _lastEvTime = evmidi.time();
+#endif
+          
                     md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                     // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
                     // Ticksynth has been modified too.
@@ -2437,40 +2521,35 @@ void Audio::processMidi()
                     evmidi.setTime(midiClick+10);
                     md->addStuckNote(evmidi);
                   }
-                  if (MusEGlobal::audioClickFlag) {
+                  if (MusEGlobal::audioClickFlag && !precount_mute_metronome) {
                     ev.setA(audioTickSound);
+                    DEBUG_MIDI_METRONOME(stderr, "Audio::processMidi: playing: metronome->putEvent\n");
                     metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                     // Built-in metronome synth does not use stuck notes...
                   }
-                  if (playing) {
-                      // State machine to select next midiClick position.
-                      if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
-                          if (tick == 0) {//  ON key
-                            if (beat % 2)
-                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                            else
-                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
-                          }
-                          else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
-                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                          }
-                          else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
-                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
-                          }
-                      }
-                      else {
-                        midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
-                      }
+              }
+
+              // State machine to select next midiClick position.
+              if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
+                  if (tick == 0) {//  ON key
+                    if (beat % 2)
+                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                    else
+                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
                   }
-                  else if (state == PRECOUNT) {
-                        midiClick += ticksBeat;
-                        if (clickno)
-                              --clickno;
-                        else
-                              state = START_PLAY;
+                  else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
+                      midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
                   }
-               }
+                  else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
+                      midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
+                  }
+              }
+              else
+              {
+                midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+              }
             }
+      }
 
       //
       // Play all midi events up to curFrame.
@@ -2504,5 +2583,113 @@ void Audio::processMidi()
       // Static.
       MidiPort::processGui2AudioEvents();
       }
+
+      
+//---------------------------------------------------------
+//   processPrecount
+//---------------------------------------------------------
+
+void Audio::processPrecount(unsigned int frames)
+{
+  //DEBUG_MIDI_METRONOME(stderr, "Audio::processPrecount: state:%d\n", state);
+  if(state != PRECOUNT)
+    return;
+  
+  const unsigned int nextPrecountFramePos = _precountFramePos + frames;
+    
+  DEBUG_MIDI_METRONOME(stderr, "Audio::processPrecount: precount: syncFrame:%u _pos.frame():%u"
+    "_precountFramePos:%u precountMidiClickFrame:%u nextPrecountFramePos:%u clickno:%d\n",
+    syncFrame, _pos.frame(), _precountFramePos, precountMidiClickFrame, nextPrecountFramePos, clickno);
+    
+  MidiDevice* md = 0;
+  if(MusEGlobal::midiClickFlag)
+    md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
+  
+  AudioTickSound audioTickSound = MusECore::beatSound;
+
+  while(true)
+  {
+    const unsigned precount_click_frame = precountMidiClickFrame + (precountMidiClickFrameRemainder ? 1 :0);
+    if(precount_click_frame >= nextPrecountFramePos)
+      break;
+    // Don't actually sound anything if we're just running out the time.
+    // There will be times when _precountFramePos >= precountTotalFrames
+    //  and we must let it run out.
+    if(_precountFramePos < precountTotalFrames)
+    {
+      if(MusEGlobal::song->click())
+      {
+        if ((clickno % clicksMeasure) == 0)
+          audioTickSound = MusECore::measureSound;
+        else
+          audioTickSound = MusECore::beatSound;
+        
+        // We need to shift ahead in time because Jack waits one more cycle,
+        //   unlike our own built-in transport which starts immediately.
+        const unsigned int evtime = syncFrame + MusEGlobal::audioDevice->transportSyncToPlayDelay() +
+          ((precount_click_frame < _precountFramePos) ? 0 : precount_click_frame - _precountFramePos);
+          
+        MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, 
+          MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+        
+        if (audioTickSound == MusECore::measureSound) {
+          ev.setA(MusEGlobal::measureClickNote);
+          ev.setB(MusEGlobal::measureClickVelo);
+        }
+        if (md) {
+          MusECore::MidiPlayEvent evmidi = ev;
+          
+#ifdef DEBUG_MIDI_TIMING_DIFFS
+          fprintf(stderr, "EVENT TIME DIFF:%u\n", ev.time() - _lastEvTime);
+                    _lastEvTime = ev.time();
+#endif
+          
+          md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+          // Internal midi paths are now all note off aware. Driver handles note offs. Convert.
+          // Ticksynth has been modified too.
+          evmidi.setType(MusECore::ME_NOTEOFF);
+          evmidi.setB(0);
+          evmidi.setTime(ev.time() + MusEGlobal::tempomap.ticks2frames(10, curTickPos));
+
+          // The precount CANNOT use the stuck notes mechanism because the stuck notes
+          //  mechanism wants ticks not frames, and it later compares those ticks
+          //  with nextTickPos and converts them into frames using midiQueueTimeStamp(),
+          //  which is not a valid mechanism during precount!
+          // Therefore we have no choice but to directly schedule a note-off.
+          // Since it is important that they not be missed, schedule these as userBuffer events.
+          // Should be OK, it's unlikely that the note-off would be missed unless the user could 
+          //  somehow seek during precount or something. (The userBuffer tries not to miss anything.)
+          // The idea behind the stuck notes mechanism was that it converts to frames
+          //  only at scheduling time so that if the user might change the tempo while
+          //  playing a song, the note-off times will be properly adjusted.
+          // But this precount mechanism CANNOT honour any tempo changes anyway because 
+          //  we must know the total required precount frames BEFOREHAND so that it can be aligned
+          //  with the metronome clicks properly. Thus negating any possible tempo change support.
+          //md->addStuckNote(evmidi);
+          md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::UserBuffer);
+        }
+        if (MusEGlobal::audioClickFlag) {
+          ev.setA(audioTickSound);
+          DEBUG_MIDI_METRONOME(stderr, "Audio::processMidi: precount: metronome->putEvent\n");
+          metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+          // Built-in metronome synth does not use stuck notes...
+        }
+      }
+    }
+    
+    precountMidiClickFrame += framesBeat;
+    
+    precountMidiClickFrameRemainder += framesBeatRemainder;
+    if(precountMidiClickFrameRemainder >= framesBeatDivisor)
+    {
+      precountMidiClickFrame++;
+      precountMidiClickFrameRemainder -= framesBeatDivisor;
+    }
+    
+    ++clickno;
+  }
+  
+  _precountFramePos += frames;
+}
 
 } // namespace MusECore

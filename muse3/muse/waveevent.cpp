@@ -297,7 +297,7 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       xml.intTag(level, "frame", _spos);  // offset in wave file
 
       //
-      // waves in the project dirctory are stored
+      // waves in the project directory are stored
       // with relative path name, others with absolute path
       //
       QString path = f.dirPath();
@@ -610,7 +610,7 @@ void WaveEventBase::readAudio(unsigned frame, float** buffer, int channel, int n
     // Point the out buffer at our local buffers.
   //  poutbuf = &outbuffer[0];
   
-  // Converter channels are fixed at creation time! Can't change them on the fly. Can't use 'channel' paramter.
+  // Converter channels are fixed at creation time! Can't change them on the fly. Can't use 'channel' parameter.
   //rn = f.read(inbuffer, inFrames);
   rn = f.readDirect(inbuffer, inFrames);
   

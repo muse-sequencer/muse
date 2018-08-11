@@ -85,7 +85,7 @@ long vstHostCallback(AEffect* effect,
                   return 0;
 
             case audioMasterPinConnected:
-                  // inquire if an input or output is beeing connected;
+                  // inquire if an input or output is being connected;
                   // index enumerates input or output counting from zero:
                   // value is 0 for input and != 0 otherwise. note: the
                   // return value is 0 for <true> such that older versions

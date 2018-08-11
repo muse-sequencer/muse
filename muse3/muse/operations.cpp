@@ -121,6 +121,7 @@ int PendingOperationItem::getIndex() const
     case UpdateSoloStates:
     case EnableAllAudioControllers:
     case ModifyAudioSamples:
+    case SetStaticTempo:
     // REMOVE Tim. samplerate. Added.
     case ModifyLocalAudioConverterSettings:
     case ModifyDefaultAudioConverterSettings:
@@ -131,7 +132,6 @@ int PendingOperationItem::getIndex() const
     case ModifyStretchListRatio:
     //case ModifySamplerateRatio:
     //case ModifyPitchRatio:
-      
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -601,6 +601,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
                     static_cast<WaveTrackList*>(_void_track_list)->push_back(static_cast<WaveTrack*>(_track));
                     break;
               case Track::AUDIO_OUTPUT:
+                    //--------------------------------------------------------------
+                    // Connect metronome audio click
+                    //--------------------------------------------------------------
+                    // Are there no other existing AudioOutput tracks?
+                    if(static_cast<OutputList*>(_void_track_list)->empty())
+                      // Do the user a favour: Auto-connect the metronome to the track.
+                      static_cast<AudioOutput*>(_track)->setSendMetronome(true);
+                    
                     static_cast<OutputList*>(_void_track_list)->push_back(static_cast<AudioOutput*>(_track));
                     break;
               case Track::AUDIO_GROUP:
@@ -1174,6 +1182,14 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyTempo: tempolist:%p event:%p: tick:%d old_tempo:%d new_tempo:%d\n", 
                        _tempo_list, _iTEvent->second, _iTEvent->second->tick,  _iTEvent->second->tempo, _intA);
       _iTEvent->second->tempo = _intA;
+      flags |= SC_TEMPO;
+    break;
+    
+    case SetStaticTempo:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SetStaticTempo: tempolist:%p new_tempo:%d\n", _tempo_list, _intA);
+#endif      
+      _tempo_list->setStaticTempo(_intA);
       flags |= SC_TEMPO;
     break;
     
@@ -2244,6 +2260,18 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
+      case PendingOperationItem::SetStaticTempo:
+#ifdef _PENDING_OPS_DEBUG_
+        fprintf(stderr, "PendingOperationList::add() SetStaticTempo\n");
+#endif      
+        if(poi._type == PendingOperationItem::SetStaticTempo && poi._tempo_list == op._tempo_list)
+        {
+          // Simply replace the value.
+          poi._intA = op._intA; 
+          return true;
+        }
+      break;
+        
       case PendingOperationItem::SetGlobalTempo:
         DEBUG_OPERATIONS(stderr, "PendingOperationList::add() SetGlobalTempo\n");
         if(poi._type == PendingOperationItem::SetGlobalTempo && poi._tempo_list == op._tempo_list)

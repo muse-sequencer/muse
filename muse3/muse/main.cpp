@@ -105,7 +105,7 @@ extern void setAlsaClientName(const char*);
 }
 
 namespace MusEGui {
-void initIcons();
+void initIcons(bool useThemeIconsIfPossible);
 void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
@@ -246,7 +246,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       Alsa midi only (using dummy audio driver)\n");
 #ifdef HAVE_RTAUDIO
-      fprintf(stderr, "   -t       Use RtAudio driver (with Pulse Audio driver).\n");
+      fprintf(stderr, "   -t       Use RtAudio driver.\n");
 #endif
       fprintf(stderr, "   -j       Use JAckAudio driver to connect to Jack audio server\n");
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
@@ -330,11 +330,8 @@ static void usage(const char* prog, const char* txt)
 void fallbackDummy() {
 
   fprintf(stderr, "Falling back to dummy audio driver\n");
-  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                  "<i>MusE will continue <b>without audio support</b> (-a switch)!</i><br><br>"
-                                                  "If this was not intended check that Jack was started. "
-                                                  "If Jack <i>was</i> started check that it was\n"
-                                                  "started as the same user as MusE.\n");
+  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find selected <b>audio server</b>.<br><br>"
+                                                  "<i>MusE will continue <b>without audio support</b> (-a switch)!</i>");
   MusEGlobal::realTimeScheduling = true;
   MusECore::initDummyAudio();
 }
@@ -547,7 +544,7 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
         MusEGui::updateThemeAndStyle();
 
-        QString optstr("atJjFAhvdDumMsP:Y:l:py");
+        QString optstr("aJjFAhvdDumMsP:Y:l:py");
   #ifdef VST_SUPPORT
         optstr += QString("V");
   #endif
@@ -562,6 +559,9 @@ int main(int argc, char* argv[])
   #endif
   #ifdef LV2_SUPPORT
         optstr += QString("2");
+  #endif
+  #ifdef HAVE_RTAUDIO
+        optstr += QString("t");
   #endif
 
         AudioDriverSelect audioType = DriverConfigSetting;
@@ -734,7 +734,7 @@ int main(int argc, char* argv[])
         AL::initDsp();
         MusECore::initAudio();
 
-        MusEGui::initIcons();
+        MusEGui::initIcons(MusEGlobal::config.useThemeIconsIfPossible);
 
         MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
 
@@ -847,11 +847,14 @@ int main(int argc, char* argv[])
                 fprintf(stderr, "\n");
 
                 MusEGlobal::realTimeScheduling = true;
+#ifdef HAVE_RTAUDIO
                 if(MusECore::initRtAudio())
                   fallbackDummy();
                 else
                   fprintf(stderr, "Using rtAudio\n");
-              
+#else
+                fallbackDummy();
+#endif
                 break;
               }
             case MusEGlobal::JackAudio:
@@ -861,10 +864,14 @@ int main(int argc, char* argv[])
                 {
                   MusEGlobal::realTimeScheduling = true;
                   // Force default Pulse.
+#ifdef HAVE_RTAUDIO
                   if(MusECore::initRtAudio(true))
                     fallbackDummy();
                   else
                     fprintf(stderr, "Using rtAudio Pulse\n");
+#else
+                  fallbackDummy();
+#endif
                 }
                 else
                 {
@@ -925,7 +932,7 @@ int main(int argc, char* argv[])
 
         MusECore::initMetronome();
 
-        MusECore::initWavePreview();
+        MusECore::initWavePreview(MusEGlobal::segmentSize);
 
         MusECore::enumerateJackMidiDevices();
 
@@ -957,6 +964,8 @@ int main(int argc, char* argv[])
                     perror("WARNING: Cannot lock memory:");
               }
 
+        MusEGlobal::muse->populateAddTrack(); // could possibly be done in a thread.
+
         MusEGlobal::muse->show();
 
         // Let the configuration settings take effect. Do not save.
@@ -970,6 +979,16 @@ int main(int argc, char* argv[])
         if(MusEGlobal::midiSeq)
           MusEGlobal::midiSeq->checkAndReportTimingResolution();
 
+        //--------------------------------------------------
+        // Set the audio device sync timeout value.
+        //--------------------------------------------------
+        // Enforce a 30 second timeout.
+        // TODO: Split this up and have user adjustable normal (2 or 10 second default) value,
+        //        plus a contribution from the total required precount time.
+        //       Too bad we likely can't set it dynamically in the audio sync callback.
+        // NOTE: This is also enforced casually in Song:seqSignal after a stop, start, or seek.
+        MusEGlobal::audioDevice->setSyncTimeout(30000000);
+              
         //--------------------------------------------------
         // Auto-fill the midi ports, if appropriate.
         //--------------------------------------------------

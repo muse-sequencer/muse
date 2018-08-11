@@ -211,7 +211,8 @@ struct PendingOperationItem
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
                               RemapDrumControllers,
                               AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-                              AddTempo,          DeleteTempo,           ModifyTempo,        SetGlobalTempo, 
+                              AddTempo,          DeleteTempo,           ModifyTempo,        SetStaticTempo,
+                              SetGlobalTempo, 
                               AddSig,            DeleteSig,             ModifySig,
                               AddKey,            DeleteKey,             ModifyKey,
                               //REMOVE Tim. samplerate. Added.
@@ -490,7 +491,8 @@ struct PendingOperationItem
   PendingOperationItem(TempoList* tl, const iTEvent& ite, int tempo, PendingOperationType type = ModifyTempo)
     { _type = type; _tempo_list = tl; _iTEvent = ite; _intA = tempo; }
     
-  PendingOperationItem(TempoList* tl, int tempo, PendingOperationType type = SetGlobalTempo)
+  // type is SetGlobalTempo, SetStaticTempo.
+  PendingOperationItem(TempoList* tl, int tempo, PendingOperationType type)
     { _type = type; _tempo_list = tl; _intA = tempo; }
 
     

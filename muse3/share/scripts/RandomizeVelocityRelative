@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Michael Oswald 2018
+# Randomize the Velocity relative to it's current position
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+
+import sys,time
+from PyQt4 import QtGui, QtCore
+import random
+
+class Quantize(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.setWindowTitle('Randomize note velocity relative to it\'s current velocity')
+
+        self.spreadEdit = QtGui.QLineEdit()
+        self.spreadEdit.setText('3')
+        
+        button = QtGui.QPushButton("Execute")
+        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(3)
+
+        grid.addWidget(QtGui.QLabel('Spread'), 2, 0)
+        grid.addWidget(self.spreadEdit, 2, 1)
+        grid.addWidget(button, 3, 1)
+
+        self.setLayout(grid)
+        self.resize(300, 150)
+        button.setFocus()
+
+    def execute(self):
+        testFile = open(sys.argv[1],"r")
+        inputEvents = testFile.readlines()
+        testFile.close()
+        
+        minSize=0 # fill in when we get the beat size value
+        outputEvents=[]
+        quantLen=0
+        random.seed()
+
+        #loop through events and quantize to the given beat
+        eventList=[]
+        for line in inputEvents:
+            if line.startswith('NOTE'):
+              tag,tick,pitch,length,velocity = line.split(' ')
+
+              newVelo = int(velocity)
+              # apply random value to velocity
+              newVelo=int(random.gauss(newVelo,int(self.spreadEdit.text())))
+              if newVelo < 0:
+                newVelo = 1
+              if newVelo > 127:
+                newVelo = 127
+
+              newLine="NOTE "+ tick + " " + pitch  + " "+ length + " " + str(newVelo) + "\n"
+              print ("oldVelo:", velocity)
+              print ("newLine:",newLine.strip())
+              outputEvents.append(newLine)
+            else:
+              outputEvents.append(line)
+            
+
+
+        testFile = open(sys.argv[1],"w")
+        testFile.writelines(outputEvents)
+        testFile.close()
+
+        quit()
+
+
+app = QtGui.QApplication(sys.argv)
+qb = Quantize()
+qb.show()
+sys.exit(app.exec_())

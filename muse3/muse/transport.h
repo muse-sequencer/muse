@@ -31,6 +31,7 @@
 
 namespace Awl {
       class PosEdit;
+      class SigEdit;
       };
 
 using Awl::PosEdit;
@@ -40,6 +41,7 @@ class QHBoxLayout;
 class QLabel;
 class QSlider;
 class QToolButton;
+class QKeyEvent;
 
 namespace MusECore {
 class Pos;
@@ -48,6 +50,8 @@ class Pos;
 namespace MusEGui {
 class DoubleLabel;
 class SigLabel;
+class IconButton;
+class TempoEdit;
 
 //---------------------------------------------------------
 //    TempoSig
@@ -56,25 +60,32 @@ class SigLabel;
 class TempoSig : public QWidget {
     Q_OBJECT
     
-      DoubleLabel* l1;
-      SigLabel* l2;
+      IconButton* _masterButton;
+      TempoEdit* l1;
+      Awl::SigEdit* l2;
       QLabel* l3;
       
-
    private slots:
       void configChanged();
+      void masterToggled(bool);
 
    public slots:
-      void setTempo(double);
+      void newTempo(double);
       void setTempo(int tempo);
 
    signals:
       void tempoChanged(int);
       void sigChanged(const AL::TimeSignature&);
+      void masterTrackChanged(bool);
+      void returnPressed();
+      void escapePressed();
 
    public:
       TempoSig(QWidget* parent=0);
       void setTimesig(int a, int b);
+      void setExternalMode(bool on);
+      bool masterTrack() const;
+      void setMasterTrack(bool);
       };
 
 //---------------------------------------------------------
@@ -108,13 +119,11 @@ class Transport : public QWidget
       QSlider* slider;
       TempoSig* tempo;
       QHBoxLayout* tb;
-      QToolButton* masterButton;
       QComboBox* recMode;
       QComboBox* cycleMode;
-      QToolButton* quantizeButton;
-      QToolButton* clickButton;
-      QToolButton* syncButton;
-      QToolButton* jackTransportButton;
+      IconButton* clickButton;
+      IconButton* syncButton;
+      IconButton* jackTransportButton;
       QToolButton* buttons[6];      // transport buttons
       QLabel* l2;
       QLabel* l3;
@@ -122,6 +131,9 @@ class Transport : public QWidget
       QLabel* l6;
 
       Handle *lefthandle, *righthandle;
+      
+ protected:
+      virtual void keyPressEvent(QKeyEvent *);
 
  private slots:
       void cposChanged(const MusECore::Pos&);
@@ -145,7 +157,6 @@ class Transport : public QWidget
       void setPos(int,unsigned, bool);
       void setMasterFlag(bool);
       void setClickFlag(bool);
-      void setQuantizeFlag(bool);
       void setSyncFlag(bool);
       void setPlay(bool f);
       void setHandleColor(QColor);

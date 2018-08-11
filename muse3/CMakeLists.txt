@@ -97,9 +97,9 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 3)
 SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "3.0.0pre2")
-SET(MusE_VERSION_FULL  "3.0.0pre2")
+SET(MusE_VERSION_PATCH 1)
+SET(MusE_VERSION       "3.0.2")
+SET(MusE_VERSION_FULL  "3.0.2")
 SET(MusE_INSTALL_NAME  "muse-3.0")
 SET(MusE_EXEC_NAME     "muse3")
 
@@ -173,9 +173,13 @@ if ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD STATIC )
 else ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD SHARED )
-      SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-      SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
+#       SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+#       SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 endif ( MODULES_BUILD_STATIC )
+# We need these always, for a few of the shared modules in the muse/core build,
+#  even when building muse/core as static. Otherwise it can't find them on run. Tim.
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 
 ##
 ## Just print a notice if this is OS X
@@ -330,7 +334,7 @@ else (ENABLE_LASH)
 endif (ENABLE_LASH)
 
 if (ENABLE_RTAUDIO)
-      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)
@@ -387,7 +391,7 @@ else (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 endif (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
 
 ##
-## Depricated FST-based VST support
+## Deprecated FST-based VST support
 ##
 
 if (ENABLE_VST)
@@ -453,19 +457,8 @@ if (ENABLE_LV2)
     set (muse_serd_ver "0.22.0")
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
-    if (LILV_FOUND)
-            include_directories(${LILV_INCLUDE_DIRS})
-    endif (LILV_FOUND)
-    
     PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
-    if (SORD_FOUND)
-            include_directories(${SORD_INCLUDE_DIRS})
-    endif (SORD_FOUND)
-    
     PKG_CHECK_MODULES(LV2 lv2>=${muse_lv2_ver})
-    if (LV2_FOUND)
-            include_directories(${LV2_INCLUDE_DIRS})
-    endif (LV2_FOUND)
 
     if (ENABLE_LV2_SUPPLIED)
         set (LV2_USE_SUPPLIED_VERSION TRUE)
@@ -491,6 +484,16 @@ if (ENABLE_LV2)
             ${muse_serd_dir}
             ${muse_lilv_dir}
         )
+    else (LV2_USE_SUPPLIED_VERSION)
+        if (LILV_FOUND)
+            include_directories(${LILV_INCLUDE_DIRS})
+        endif (LILV_FOUND)
+        if (SORD_FOUND)
+            include_directories(${SORD_INCLUDE_DIRS})
+        endif (SORD_FOUND)
+        if (LV2_FOUND)
+            include_directories(${LV2_INCLUDE_DIRS})
+        endif (LV2_FOUND)
     endif (LV2_USE_SUPPLIED_VERSION)
     
 else (ENABLE_LV2)
@@ -520,7 +523,6 @@ if ( ENABLE_FLUID )
       #  synth library named 'fluid_synth' to be built later.
       PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
       if (FLUIDSYN_FOUND)
-            include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
       endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )
@@ -641,6 +643,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Werror=format-security -Wextra -Winvalid-pch -f
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
+##  Use this instead of the above if trying to debug our internal LV2 support
+##   and getting an error about unneccesary brackets.
+# set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG} -Wno-error " CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
@@ -651,6 +656,7 @@ file (GLOB doc_files
       AUTHORS
       ChangeLog
       COPYING
+      libdivide_LICENSE
       NEWS
       README
       README.de

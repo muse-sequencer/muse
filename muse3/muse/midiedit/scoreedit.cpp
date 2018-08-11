@@ -716,7 +716,7 @@ void ScoreEdit::canvas_height_changed(int height)
 void ScoreEdit::viewport_height_changed(int height)
 {
     int val=score_canvas->canvas_height() - height;
-    // FINDMICHJETZT canvas_height() is uninitalized!
+    // FINDMICHJETZT canvas_height() is uninitialized!
     if (val<0) val=0;
     yscroll->setPageStep(height * PAGESTEP);
     yscroll->setMaximum(val);
@@ -1307,7 +1307,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
     dragged_event_part=NULL;
 
     last_len=384;
-    new_len=-1; // will be initalized with new_len_init by ScoreEdit::ScoreEdit();
+    new_len=-1; // will be initialized with new_len_init by ScoreEdit::ScoreEdit();
 
     _quant_power2=_quant_power2_init; // ScoreEdit relies on this to be done!
  _pixels_per_whole = _pixels_per_whole_init;
@@ -2279,7 +2279,7 @@ void staff_t::create_itemlist()
     int lastevent=0;
     int next_measure=-1;
     int last_measure=-1;
-    vector<int> emphasize_list=create_emphasize_list(4,4); //actually unneccessary, for safety
+    vector<int> emphasize_list=create_emphasize_list(4,4); //actually unnecessary, for safety
 
     itemlist.clear();
 
@@ -2316,7 +2316,7 @@ void staff_t::create_itemlist()
                 }
                 else
                 {
-                    // if neccessary, insert rest at between last note and end-of-measure
+                    // if necessary, insert rest at between last note and end-of-measure
                     int rest=t-lastevent;
                     if (rest)
                     {
@@ -2436,7 +2436,7 @@ void staff_t::process_itemlist()
 {
     map<int,int> occupied;
     int last_measure=0;
-    vector<int> emphasize_list=create_emphasize_list(4,4); //unneccessary, only for safety
+    vector<int> emphasize_list=create_emphasize_list(4,4); //unnecessary, only for safety
 
     //iterate through all times with items
     for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
@@ -2605,7 +2605,7 @@ void staff_t::process_itemlist()
 
                         // the following will work even on start-new-group,
                         // because lastit will be "untouched", and that's why
-                        // still be initalized to "false"
+                        // still be initialized to "false"
                         it->ausweich=!lastit->ausweich;
 
                         count++;
@@ -2898,7 +2898,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 {
     int xbegin = reserve_akkolade_space ? AKKOLADE_LEFTMARGIN+AKKOLADE_WIDTH+AKKOLADE_RIGHTMARGIN : 0;
     int xend=width();
-    // FINDMICHJETZT y is uninitalized!
+    // FINDMICHJETZT y is uninitialized!
 
     p.setPen(Qt::black);
 
@@ -3034,7 +3034,7 @@ void ScoreCanvas::calc_pos_add_list()
     for (MusECore::iKeyEvent it=MusEGlobal::keymap.begin(); it!=MusEGlobal::keymap.end(); it++)
     {
         MusECore::key_enum new_key=it->second.key;
-        list<int> aufloes_list=calc_accidentials(curr_key, VIOLIN, new_key); //clef argument is unneccessary
+        list<int> aufloes_list=calc_accidentials(curr_key, VIOLIN, new_key); //clef argument is unnecessary
         list<int> new_acc_list=calc_accidentials(new_key, VIOLIN);           //in this case
         int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
         pos_add_list[it->second.tick]+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
@@ -3072,7 +3072,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y, staff_t& staff, int x1, int x2)
     //so for drawing ties, we need to increment to_it, so that the
     //"first time not drawn at all any more" is the last which gets
     //actually drawn.
-    if (to_it!=staff.itemlist.end()) to_it++; //do one tick more than neccessary. this will draw ties
+    if (to_it!=staff.itemlist.end()) to_it++; //do one tick more than necessary. this will draw ties
 
     draw_items(p,y, staff, from_it, to_it);
 }
@@ -4448,7 +4448,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
     if (x_pos!=0) tick=x_to_tick(x_pos);
     // the above saves us from a division by zero when initalizing
     // ScoreCanvas; then x_pos will be 0 and x_to_tick (causing the
-    // divison by zero) won't be called. also, when x_pos=0, and the
+    // division by zero) won't be called. also, when x_pos=0, and the
     // above would not be done, after that function, x_pos will be
     // not zero, but at the position of the first note (which isn't
     // zero!)
@@ -4698,7 +4698,7 @@ void ScoreCanvas::add_new_parts(const std::map< const MusECore::Part*, std::set<
 
 //note: recalculating event- and itemlists "from zero"
 //      could happen in realtime, as it is pretty fast.
-//      however, this adds unneccessary cpu usage.
+//      however, this adds unnecessary cpu usage.
 //      it is NO problem to recalc the stuff "from zero"
 //      every time something changes.
 
@@ -4792,7 +4792,7 @@ void ScoreCanvas::add_new_parts(const std::map< const MusECore::Part*, std::set<
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o draw a margin around notes which are in a bright color
  *   o support drum tracks in the score editor (x-note-heads etc.)
- *   o drum list: scroll while dragging: probably unneccessary with the "reorder list" function
+ *   o drum list: scroll while dragging: probably unnecessary with the "reorder list" function
  *
  *
  * stuff for the other muse developers

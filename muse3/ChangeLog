@@ -1,3 +1,223 @@
+09.08.2018
+      - Fixed compile error when using internal LV2 support. (Tim)
+        System LV2 include paths were being included, taking priority,
+         fixed in top CMakeLists.txt file.
+      - Fixed internal LV2 lilv state.c new_state_from_model() (Tim)
+        I found state->dir should be a file path, not a URI.
+        Symptom: With linuxsampler LV2 plugin for example,
+         the filename sent to it was wrong, it was a full URI.
+        Prepared a patch for submission to LV2, pending testing the fix.
+      - Fixed internal LV2 compiler warning "unneccessary parentheses"
+         treated as as error in LV2 util.h LV2_ATOM_OBJECT_FOREACH, 
+         LV2_ATOM_OBJECT_BODY_FOREACH, LV2_ATOM_SEQUENCE_FOREACH, 
+         LV2_ATOM_SEQUENCE_BODY_FOREACH, and in lilv.h LILV_FOREACH.
+07.08.2018
+      - Menu cleanups, rearrangement. (Tim)
+        Moved several Edit menu items to the Functions menu.
+        Moved Mastertrack menu items over to View menu since they
+         don't have much to do with editing tracks or parts.
+        Eliminated Automation menu. Moved all those items into Audio menu,
+         since they're all audio related.
+        As requested: Added a Close item in the File menu. Currently it
+         does NOT clear the midi devices and ports, they remain as last set.
+        Added File Save As and Application Exit icons.
+        Changed name of 'MusE Settings' menu to just 'Settings'.
+        Added new checkbox in Appearance Settings: "Use theme icons if available",
+         which activates a dormant feature of using theme icons if they are found.
+05.08.2018
+      - Further LV2 GUI fixes - see 29.11.2017. Fixed X11 GUI size. (Tim)
+        For example DrumGizmo should open OK and not be allowed
+         to shrink below its supplied size.
+01.07.2018
+      - Fix non-functional mouse wheel in Canvas::wheelEvent(). (Tim)
+        Broke with fixes of 15.12.2017. I tried to repect what that fix did,
+         hopefully works OK with either touch pad (I don't have one) or mouse wheel.
+        Increased step size slightly from 40 to 50.
+26.06.2018
+      - More fixes for newer gcc warnings treated as errors. (Tim)
+        Oops. Fixed some funny business with memcpy in DeicsOnze::initPluginDelay().
+        Oops. Fixed missing switch/case breaks in Slider::setOrientation().
+        Bump up required RtAudio version to 5.0 and fix wrong include statement
+         in rtaudio.cpp from rtaudio.h to rtaudio/RtAudio.h
+        Attempt to fix warning (error) in lilv.h: "error: unnecessary parentheses
+         in declaration of ‘i’ [-Werror=parentheses]". Can't seem to suppress this,
+         was forced to turn lv2host.cpp/h into a separate module with its own
+         -Wno-error compile flag. Tested OK with muse built as static modules
+         or normal build. Bit of a hack, could it fail if something else includes
+         lv2host.h first before the module is compiled?
+28.05.2018
+      - Added missing #includes needed by newer Qt >= 5.11 (Orcan)
+10.05.2018
+      - SimplePlugin system: More improvements. (Tim)
+        Various changes. Added Plugin::createPluginI().
+08.05.2018
+      - SimplePlugin system: Some improvements. (Tim)
+        After scanning, all plugin libraries are CLOSED until instantiated.
+        When all instances are freed, existing behaviour remains: Library closes.
+        New class LadspaPluginI derived from PluginI which is a base class now.
+        SimplePlugin system remains modular. WIP: Lv2Plugin, Lv2PluginI, others.
+06.05.2018
+      - SimplePlugin system: Rearranged sampleRate, add segmentSize. (Tim)
+30.04.2018
+      - RtAudio, dummy driver fixes if realtime scheduling NOT available. (Tim)
+        Symptom: "...processTrackCtrls *** Error: evframe:123 < frame:299.."
+        Cause: Two variables - time at cycle start, and frames at cycle start -
+         were updated at different times in the audio device callback, causing 
+         timestamp requests to be wrong.
+        Cure: The variables need protection in the callbacks when no realtime
+         scheduling is available. Added a 'flipping variable buffer' scheme
+         where all the variables are updated at once.
+      - Submitted a patch to RtAudio project, to enable realtime for Pulse.
+22.04.2018
+      * Fixes to Master Track functionality, and Transport mini-makeover: (Tim)
+        - Fixed: Was impossible to adjust static tempo when Master Track disabled.
+        - Removed superfluous tempo and sig boxes from Master Track Graphic toolbars.
+        - Enabling external sync no longer forces Master Track off.
+        - Added Master button to Tempo toolbar in all windows. Tempo box now obeys it.
+        - Replaced Transport tempo and sig boxes with editable spinbox versions.
+        - Fixed Transport controls' widths causing too-wide Transport!
+        - New Transport buttons and SVG icons.
+10.04.2018
+      - Small important fix: Auto-connect metronome to first audio output track. (Tim)
+        When a new AudioOutput track is added, it checks if it is the only one
+         and auto-connects the metronome to it. Also, template files having an
+         AudioOutput track have been changed. This should make metronome "just work".
+08.04.2018
+      * Major fixes to long-standing fundamental midi timing errors: (Tim)
+      - Symptoms: Midi event times were often wrong, much worse with smaller audio
+         periods. Caused jitter on almost every event, the events were booted into
+         the next cycle when they should have been played in current one.
+      - Floating point math has been BANISHED from ALL timing functions including
+         midi, sync, wall-clock, jack time etc.
+        Instead, large-integer math is used. Where 128-bit is required, the
+         3rd party libdivide library is used for compatibility reasons.
+        In functions which convert from a low resolution value to a high one,
+         rounding-up is used (NOT round-to-nearest). For example, tick to frame
+         is rounded up but NOT frame to tick. This ensures a one-to-one
+         correspondence between frame and tick. Similar with MTC <-> frame calcs.
+      - There was a fundamental problem with how we schedule midi events for playback,
+         including metronome. We compared the midi event ticks with the current
+         tranport frame range converted to ticks. This is backwards and inaccurate.
+        It now converts the midi event ticks to frames and THEN compares with the
+         current transport frame range. This is much more accurate and correct.
+      - TESTS: Precount and metronome with a tempo of 125 or 120: Timing is perfect,
+         no missed events. With a fractional tempo of 130.55: Timing is perfect,
+         event times are 'decimated' (staggered) to account for the fractional part.
+        With a wildly varying hand-drawn tempo map: Observed that all song bars do
+         show as X.0.0 when on the bar. Was not working well before, due to losses.
+      Unrelated fixes:
+      - Added transport seek anti-flood mechanism. (Tim)
+        Symptoms: When cursor was moved around, there would often be a 'flood' of
+         repeated events as the 'snap' position competes with user-dragged position.
+        A small fraction of a second delay was added after the cusrsor stops moving
+         before the engine plays any more events.
+      - Added precount 'Precount on play' and 'Mute metronome' features. (Tim)
+        Precount on play allows precount during play mode. Mute metronome mutes
+         the metronome after precount, this is handy if only precount is desired.
+      - Fixed compile error when ENABLE_LV2_GTK2 is disabled. (Tim)
+21.02.2018
+      * PRECOUNT feature lives! : (Tim)
+      - Restored dead precount feature.
+      - It uses the 'slow-sync' feature of Jack Transport (and ours).
+      - Moved our 'dummy' transport feature from Jack module into
+         base class AudioDevice. This means ALL our drivers support it now.
+      - It means ALL the drivers support precount.
+      - Added README.metronome which explains a few things. Read it!
+30.01.2018
+      *** MusE 3.0.2 ***
+29.01.2018
+      - Silly but very severe bug fixed with selecting midi device for newly
+        created midi tracks. Looking for the last created midi device started
+        out of bounds, instant crash when built for release (rj)
+28.01.2018
+      - Fixes for #604: muse 3.0 fails to build: many undefined references. (Tim)
+        Packagers wanted to use -no-undefined linker flag. But this also requires
+         our own -DMODULES_BUILD_STATIC. The fix of 14.01.2018 fixed the main app,
+         but all the MESS synths still failed to build.
+        This MAJOR FIX rewrites all the plugins and some main app stuff, so that
+         there are NO unaccounted dependencies and the two flags should work.
+        Overview: Several complete core objects and several declarations/definitions
+         were seperated from the core to their own modules or header files:
+             sysex_helper_module memory_module evdata_module mpevent_module
+             wavepreview_module xml_module, and midictrl_consts.h, midi_consts.h
+        These modules all build SHARED regardless of MODULES_BUILD_STATIC.
+        Several of the MESS synths directly used core components. Eliminated now.
+        A huge remaining problem was Deicsonze synth directly used the core's
+         plugin system (eek!), while SimpleDrums used its own plugin system.
+        So a new common SimplePlugin library was built. It is similar to our
+         main app plugin system but simplified for LADSPA, yet still has
+         instance reference counting and auto-library-close.
+        Both Deicsonze and SimpleDrums now use this library instead.
+        (It is an interesting 'clean' plugin system from the ground up. Would be
+         good to build upon this library to replace the main plugin system!)
+        TODO: There is a flaw in how our plugin systems connect 2-1 or 1-2 ins/outs.
+        TODO: There are still a couple of ugly but harmless dependencies, such as
+         some synths depend on our widgets library but only depnd on widgets which
+         don't depend on other things, and one synth depends on WavePreview.
+23.01.2018
+      - Added an appdata file. Distros want it these days (Orcan)
+17.01.2018
+      - Added ability to /not/ specify a default out, instead a created midi track
+        defaults to the port with highest number (usually the last created)
+        this is also the default behaviour now (rj)
+16.01.2018
+      *** MusE 3.0.1 ***
+14.01.2018
+      - Moved structure.* into muse/arranger/. -DMODULES_BUILD_STATIC=TRUE should
+        work now. (Orcan)
+      - Print out note name on events in Pianoroll
+        possibly this should be a setting (rj)
+11.01.2018
+      - Fixed looping not playing first note in loops since 17.12.2017. (Tim)
+        Was a line in MidiDevice::handleSeek() I was not sure of.
+      - Fixed midi sustain controller problems since 17.12.2017. (Tim)
+        Sustain was not handled right, and was being reset to zero.
+08.01.2018
+      - Fixed build against newer gcc (4.5+ with c++11 enabled) and glibc 2.27+ (Orcan)
+08.01.2018
+      - Oops! Fix #602 Wave tracks lose sync if muted / unmuted. (Tim)
+        Slight rework of WaveTrack::getData().
+        TODO: Same thing happens if clicking track off/on.
+06.01.2018
+      *** MusE 3.0.0 ***
+        Final release of MusE 3.0.0
+      - Changed remaining toLatin1() into toLocal8Bit() for fluidsynth path operations. (rj)
+05.01.2018
+      - Merged feature from Michael Oswald, Mid transformer support for (rj)
+        randomizing event
+04.01.2018
+      - Fixed Zynaddsubfx LV2 not working in Muse (#599) (Tim)
+        (X11UI ui type would not show after the first show, and looked ugly.)
+        Used QMainWindow instead of QWindow for X11UI LV2 ui type.
+        Added a flag state->uiIsOpening which forces the gui update timer
+         to re-send all controls and program to the gui upon re-opening in 
+         LV2PluginWrapper_Window::updateGui + LV2Synth::lv2ui_SendChangedControls.
+02.01.2018
+      - Fix fluidsynth not loading font although it shows valid filename. (Tim)
+        Out-of-scope QString byte array constData in LoadFontWorker::execLoadFont.
+01.01.2018
+      - Ported QThread and removal of QSocketNotifier from
+        platformindependence branch (rj)
+      - Removed Gui calls from nongui thread of fluidsynth plugin (rj)
+        as they caused a lockup.
+        TODO: The gui calls were there to handle when a soundfont was
+        not found, to be able to load an alternative. Currently
+        the fonts are omitted silently, a better solution should be found.
+      - fixed regression, context menu for tracks had vanished (rj)
+      - Some attempts to fix 'global cut' crash. Working on it...(Tim)
+      - New SVG icons for transport stop, play, ff, rew, rew-to-start. (Tim)
+31.12.2017
+      - As requested: Track monitor now works regardless of track mute. (Tim)
+        Allows to listen to input while muting playback material.
+        Note that turning a track off, or 'proxy muting' it will still
+         mute the track.
+      - Fix monitored midi output on wrong channel. Editing error from 17.12.2017
+      - New master record icon, dual-state red LED style.
+      - Missing ifdefs for RTAUDIO, build patch from Dennis Schulmeister added (rj)
+      - Moved instantiation of Add Track Menu so it is only done once (rj)
+29.12.2017
+      - Revert some new undo stuff and replace with pending operations. (Tim)
+        Undo was behaving oddly for things like mute, rec, monitor, off etc.
 27.12.2017
       - Jack is now the default audio device selection. (Tim)
         If that fails, it tries rtAudio with Pulse, and if that fails,
@@ -157,7 +377,7 @@
          - Fix #592 MusE doesn't record some controllers. (Tim)
 08.06.2017
          - QString::sprintf is obsoleted. Changed most sprintf and all QString::sprintf to 
-            QString::arg usage or similar code, or snprintf. Compiler warned of some suspicous 
+            QString::arg usage or similar code, or snprintf. Compiler warned of some suspicious 
             sprintf usage with not enough dest space. Fixed a few other compiler complaints. (Tim)
          - lv2Gtk2Support module: Build with -Wno-error to avoid stopping on warnings. (Tim)
          - Track list: Fix double error message box on track rename with duplicate name. (Tim)
@@ -186,7 +406,7 @@
            As recommended by ALSA support, step through and try freqs as before.
            Fixed div by 0 crash in ALSA timer if freq too high - set ticks to 1 if 0.
            In view of the above, the RTC timer now takes priority. MusE tries it first,
-            and falls back to ALSA (typically the HR timer or else the sytem timer).
+            and falls back to ALSA (typically the HR timer or else the system timer).
            Updated README with modern info about setting up systems for timers.
          - Bug #567 from Krzysztof Gajdemski: Older Qt: Build fails at QMetaObject::inherits().
            Oops, remove line. Next line qobject_cast() will take care of it.
@@ -394,7 +614,7 @@
          - Old drum tracks hidden now. Will be removed later since they are no longer needed.
 09.11.2016
          - Bug #548 by funkmuscle: New DrumGizmo version 0.9.11 causes crash. (Tim)
-           Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel priveleges).
+           Removed seteuid()/setreuid() code supporting ancient givertcap tool (kernel privileges).
            Was interfering with DrumGizmo's use of semaphores.
            TODO: Remove further old rtcaps code such as main.cpp:getCapabilities().
            Tested OK so far, with self- or externally- started Jack, or dummy audio driver,
@@ -760,7 +980,7 @@
             - Traditional look
             - Sync to arranger
             - Manually rearrange mixer with drag and drop
-            - Allow individual strips to be hidden (reenable them from the view menu)
+            - Allow individual strips to be hidden (re-enable them from the view menu)
           Still bugs to iron out and allow mixer B to also work (rj)
 08.01.2016
         - Fixed icon pos for transport toolbar (rj)
@@ -878,7 +1098,7 @@
            found in the xml module. Increment it wisely given these new warnings, 
            especially if 'auto-converters' are 'quietly' enacted while loading.
         - Added conversion code to transform older loaded files into the format
-           which this verion currently stands at.
+           which this version currently stands at.
         - Saving and loading tests OK so far but may need a few tweaks.
         
       * Midi config dialog:
@@ -947,7 +1167,7 @@
          - Added link library sndfile for SimpleDrums (rj)
          - typo with duplicate tracks shortcut fixed (rj)
 15.01.2015:
-         - Ported code to Qt5. Port works rather stable - no crashes and artefacts
+         - Ported code to Qt5. Port works rather stable - no crashes and artifacts
            during 4 days testing (danvd)
          - Added scrollable submenus option to global settings (danvd)
          - Added CPU load toolbar (danvd)
@@ -956,7 +1176,7 @@
          - Integrated Presets submenu into midi track's programs menu for LV2 synths (danvd)
          - Implemented presets saving and updating for LV2 synths/rack plugins (danvd)
          - LV2 presets are stored in common format and can be
-           shared beetween lv2 hosts (danvd)
+           shared between lv2 hosts (danvd)
          - Integrated lv2,lilv,sord,serd,sratom,zix libraries into MusE's source tree.
            Now MusE can be compiled without external LV2 dependences at all (danvd)
          - Reworked Appearance::defaultStyle static QString variable (static var init fiasco fix) (danvd)
@@ -1198,7 +1418,7 @@
          - Fixed gain adjustment with 'Other' choice in wave editor, it was reversed (rj)
 02.02.2013:
          * Solved: "Old style" Drums: Track channel/port re-enabled, drum list columns default to them. (Tim...)
-           The drum list port and channel columns are now blank by default until overriden by user.
+           The drum list port and channel columns are now blank by default until overridden by user.
            When blank they default to the track port and channel.
            Internally, -1 is now an acceptable value for members DrumMap::port and ::channel, meaning default to track.
            All built-in drum maps have been changed, as well as the initial and blank DrumMap structures.
@@ -1558,7 +1778,7 @@
         - Remap or remove mappers when rack items moved or removed.
 04.06.2012:
         - Side branch r2_0_extra, copied from release_2_0:
-        * Feature: Midi control of audio paramters. (Tim)
+        * Feature: Midi control of audio parameters. (Tim)
         - More important timing, accuracy fixes.
 03.06.2012:
         - Merged documentation from local source to repository LaTeX document, 80% done (rj)
@@ -1854,7 +2074,7 @@
           Fixed mixer windows raising above others, even briefly: Do not raise mixer windows in MusE::focusInEvent().
         - Fixed bigtime leak: Not destroyed. Give it a parent in MusE::showBigtime().
 20.12.2011:
-        - Litle break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
+        - Little break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
         * Fixed: Hopefully, finally: Non-appearing track info scroll bar.  (Tim)
                  Simple movement of recursive call of sb->setVisible() to end of TLLayout::setGeometry(). 
         - Audio strip prefader now controls audio. (Tim)
@@ -2046,7 +2266,7 @@
 27.10.2011:
         - Adapt context menu in arranger after what track types are currently visible there
           Now it only allows to create the track types which are set to be visible (rj)
-        - Uninitalized value fixes in ScoreEdit (flo)
+        - Uninitialized value fixes in ScoreEdit (flo)
 26.10.2011:
         - Changed visibility of utility tracks so they are not seen by default in arranger (rj)
         - Added a default audio connection in default.med (rj)
@@ -2216,7 +2436,7 @@
           TODO: Fix some painting corruption, improve discrete display, add transparency etc. etc.
         - Applied compilation patch to rhythmbase.ui by Jean-Damien Durand. (Tim)
 28.08.2011:
-        - Fixed wierd column expansion for [rec] column by removing autoexpand of the last column. Still
+        - Fixed weird column expansion for [rec] column by removing autoexpand of the last column. Still
           something fishy with moving columns (rj)
 27.08.2011:
         - Changed mousewheel behaviour, vertical scrolling is default and horizontal scrolling (shift) is reversed (rj)
@@ -2297,7 +2517,7 @@
         - removed "midi in" button from score editor (flo93)
         - added a spinbox to the arranger's "Ch:" column (flo93)
 29.05.2011:
-        - moved cut,copy'n'paste to functions.cpp, removed unneccessary duplication (flo93)
+        - moved cut,copy'n'paste to functions.cpp, removed unnecessary duplication (flo93)
         - changed behaviour of paste: now the pasted, not the original notes are selected (flo93)
 28.05.2011:
         - fixed dragging and resizing of track header, also changed default index of new 
@@ -2333,19 +2553,19 @@
     Function-related changes:
         - made all the stuff in the "functions" menu global
         - added crescendo, legato functions, improved erase function
-        - removed unneccessary _to and _quant* - stuff from piano roll and drum edit
+        - removed unnecessary _to and _quant* - stuff from piano roll and drum edit
           this also involved changing the Toolbar1 
         - changed behaviour for step-recording: the note-length is now the "raster"-
           value instead of the "quant"-value
         - changed behaviour for scripts: the "quant"-parameter they get isn't the
           quant-combo's setting, but the snap-combo's now
-        - removed unneccessary short cuts: SHRT_OVER_QUANTIZE etc. instead added
+        - removed unnecessary short cuts: SHRT_OVER_QUANTIZE etc. instead added
           SHRT_QUANTIZE
 
     Score-Editor-related changes:
         - using the proper AL::raster functions in the score editor
         - added support for selections to the score editor
-        - distance between staves is now automatically increased if neccessary
+        - distance between staves is now automatically increased if necessary
         - fixed "change pitch freezes scoreeditor"-bug
         - added clef-combobox to midi tracks (rj and flo)
         - don't install the *.mf files any more
@@ -2452,8 +2672,8 @@
           * editing tempo signature is now atleast working
           * editing time position is now atleast working
           * double clicking a line moves the playpointer to this position if we are not playing
-          * changed adding tempo/sig/key so they pick the postion from the play pointer instead
-            of just incrementing the time position, I can't fathom when that would be preferrable
+          * changed adding tempo/sig/key so they pick the position from the play pointer instead
+            of just incrementing the time position, I can't fathom when that would be preferable
             (if there is a time, I'm sure someone will let me know :) )
           - song changed not implemented yet
           - undo/redo is not implemented
@@ -2719,7 +2939,7 @@
               o Removed explicit rpath to ${QT_LIBRARY_DIR}. cmake should add it automatically
                 if there's need.
               o Removed unnecessary linkage to libQtSvg.
-              o utils are installed with executable permissons.
+              o utils are installed with executable permissions.
 25.12.2010:
         - Added fancy background selection widget with live preview to Appearance Settings. (Orcan)
         - Applied Geoff King's second capitalization patch.
@@ -3034,7 +3254,7 @@
         - Fixed audio and midi strips and converted to Qt4. Looks OK now, but will be better... (Tim)
           TODO: Convert Slider, Knob, EffectRack, ComboBox classes etc. (After that the strips will be perfect.)
 08.11.2010
-	- Add missing link to libdl.so. Caused bulid failure on Fedora 14 (Orcan)
+	- Add missing link to libdl.so. Caused build failure on Fedora 14 (Orcan)
         - Fixed strip name label colours, also name label auto-font-sizing. (Tim) 
         - Updated some window flags (stay on top, delete on close...) (Tim)
 07.11.2010
@@ -3233,9 +3453,9 @@
                 when adding or deleting markers. (T356)
       * Fixed: Graphics corruption in arranger and track list when vertically scrolling. (T356)
         - Changed rectangle to full w/h in 'shift down' section of View::setYPos() and TList::setYPos().
-          Should not have to do this, but it cured my problems. No noticable change in speed.
-        - Arranger corruption occured on more than one machine with xorg nv, ati drivers. More severe arranger AND track list 
-           corruption occured with proprietary drivers. Corruption is also observed in several other windows (ex. ladspa browser) 
+          Should not have to do this, but it cured my problems. No noticeable change in speed.
+        - Arranger corruption occurred on more than one machine with xorg nv, ati drivers. More severe arranger AND track list 
+           corruption occurred with proprietary drivers. Corruption is also observed in several other windows (ex. ladspa browser) 
            but there's not much I can do, the corruption is found in ordinary usage of QListView for example.
       * Changed: Increased arranger vertical scroll step, was too slow to scroll. (T356)
       * Possible fix: Auto-scroll in pianoroll and arranger take waaay too long to stop scrolling. (T356)
@@ -3282,7 +3502,7 @@
       * Fixed: Shortcut for moving between tracks in arranger. Ctrl+Up/Down (rj)
 19.04.2010
       * Patch: Fix for libdir bug causing synths to not be available on some 64bit systems. By Orcan Ogetbil (rj)
-      * Fixed: Drawing of grid when snaping to less than measure (rj)
+      * Fixed: Drawing of grid when snapping to less than measure (rj)
 12.04.2010
       * Fixed: LADSPA rack effects: Do not display LADSPA output controls (such as latency). (T356)
       * Fixed: Bug when cancelling 'save as' operation, says 'file exists'. Caused by my earlier compressed save fixes. (T356)
@@ -3293,8 +3513,8 @@
 06.04.2010
       * Fixed: Jack midi, and DSSI: Midi controller knobs, sliders, boxes etc. not updating with current values. (T356)
         - Copied code in MidiPort::sendEvent() to JackMidi::processMidi() and DssiSynthIF::getData().
-      * Fixed: DSSI: Crashing with unkown controllers sent to synths. (T356)
-        - Ignore unkown controllers in DssiSynthIF::processEvent(). 
+      * Fixed: DSSI: Crashing with unknown controllers sent to synths. (T356)
+        - Ignore unknown controllers in DssiSynthIF::processEvent(). 
 05.04.2010
       * Added: Rec enabled track moved with selection when only one track is rec enabled (rj)
       * Changed: Made canvas show grid the default (rj)
@@ -3361,7 +3581,7 @@
       * Fixed: Jack midi output: Stuck or missing notes. (T356)
         - Must only be one jack_midi_event_reserve() per event in handle_jack_midi_out_events().
 31.01.2010
-      * Changed: Midi sync window: Clock is now seperated from other real time commands (play/stop etc). (T356)
+      * Changed: Midi sync window: Clock is now separated from other real time commands (play/stop etc). (T356)
 31.01.2010
       * Fixed: Midi sync in: Should be very solid and 'in time' now, play/stop/continue. (T356)
         - Re-coded to begin incrementing immediately upon first-clock detection. Forbid MusE to send transport commands 
@@ -3415,7 +3635,7 @@
 19.01.2010
       * Fixed: Saving/loading compressed .gz/.bz2 MusE .med files, + loading compressed .mid/.kar files (save broken, off for now). (T356)
         - Changed filedialog.cpp:getSaveFileName() and MusE::loadProjectFile1.
-        - Added seperate save file dialog filters in globals.cpp.
+        - Added separate save file dialog filters in globals.cpp.
         - Disabled exporting of compressed midi/karaoke files (.mid/.kar) for now because
            a compressed file is opened as a pipe, and pipes can't seek, resulting in a 
            corrupted midi file in MidiFile::writeTrack(). 
@@ -3487,7 +3707,7 @@
       * Fixed: Add Synth popup menu: Show names AND descriptions. Now sorted, too. Also separate MESS, DSSI, VST, and Other. (T356)
         - Added app.cpp:populateAddSynth() function.
       * Fixed: Increased buffers for reading xml. Song files with large patchdata from vstis caused crashes (rj)
-      * Fixed: Self inflicted bug with setting inital song loading in general configuration (rj)
+      * Fixed: Self inflicted bug with setting initial song loading in general configuration (rj)
 06.12.2009:
       * Fixed: List popup synths by description. Cleaned up soft synth main list. Added persistent names, descriptions, ver, etc. (T356)
 05.12.2009:
@@ -3779,7 +3999,7 @@
         - My fault. Message is displayed when there is one output and one or more wave tracks, and the user has clicked 
            on the output but not a track, too.
       * Added: Start 'Wave editor' edit menu item, with configurable shortcut key. (T356)
-        - This will handle mutiple wave part editing. The existing right-click wave part popup menu
+        - This will handle multiple wave part editing. The existing right-click wave part popup menu
            'wave edit' item did that too, but now has been reverted back to opening a single 
            wavepart only, just like midi parts. 
       * Streamlined: All reading of 'part' xml is now done by a new routine. (T356)
@@ -3921,7 +4141,7 @@
       * Fixed: Some issues with 'Follow Song' setting and position cursor position/visibility. (T356)
         - Added 'xorg' in ppos calculations in Canvas::setPos() (and others like WaveView, but that still isn't quite right.)
         - For windows which have an appreciable x origin (space at the left of the contents), the play cursor was 
-           too far right or not visible sometimes, especialy with large horizontal zoom, particularly the arranger.
+           too far right or not visible sometimes, especially with large horizontal zoom, particularly the arranger.
           With 'Follow Continuous', the play cursor should now stay about in the middle of the windows. 
           With 'Follow Page', the view should now more or less always move in full 'pages'. 
 27.03.2009
@@ -3985,7 +4205,7 @@
       * Fixed: Midi controller graphs were displaying 'quantization' vertical lines instead of 'snap' lines. (T356)
         - Changed CtrlCanvas::draw() to use raster instead of quant value.
         - Also changed gray background colour to darkGray, so 'major' snap lines can be seen.
-      * Added: Send 'null' midi controller parameters after each RPN/NRPN controler event. (T356)
+      * Added: Send 'null' midi controller parameters after each RPN/NRPN controller event. (T356)
         - Symptom: After muse sends any RPN/NRPN controller event, operating the 'data' (MSB/LSB) 
            midi controllers affects that RPN/NRPN controller.
         - Cause: The RPN/NRPN parameters are still active, open to any subsequent data adjustments.
@@ -4332,7 +4552,7 @@
         - Added formatted program number display (like 1-1-120) for 'Val B' column.
         - Fixed Poly After Touch events display in list. They were being listed as Channel After Touch.
         - Fixed crash when 'Delete events' clicked with no actual items selected.
-        - 'Edit Contoller Event' dialog:
+        - 'Edit Controller Event' dialog:
           - Fixed 'Create New Controller' popup list: Now it actually creates the selected controller.
           - Fixed 'Program' controller not showing correct program after selecting other controllers in list.
           - Fixed too high initial value displayed for controllers without an initial value in the instrument file.
@@ -4340,7 +4560,7 @@
           - Fixed uneditable note box. Switched from PitchLabel to PitchEdit. 
       * Feature added - Pianoroll and drum editor controller graphs now have a static manual adjustment knob ! (T356)
         - Now you don't have to enter controller graph values to adjust a setting, just turn the knob.
-      * Changed 'Create New Controller' in event editor 'Edit Contoller Event' dialog, and 'add new...' controller popup 
+      * Changed 'Create New Controller' in event editor 'Edit Controller Event' dialog, and 'add new...' controller popup 
          list in piano roll. (T356)
         - Now they only list controllers not already added, instead of all of them. 
       * Fixed 'Position Edit' controls (0001.01.000 + up/down buttons) - click 'down' nothing happens. (T356)
@@ -4489,7 +4709,7 @@
       * Fixed arranger part operations (move etc.) to use selected part. (T356)
       * Fixed arranger keyboard left and right previous/next part selection. (T356)
         - Now you can use left/right arrow keys to cycle through parts in a track,
-           expecially useful for overlapping parts!
+           especially useful for overlapping parts!
       * Regarding part selection - A remaining problem is that there is no 'z-order' drawing
          scheme. The part item list has no such ordering support.
         - This means a selected part will (now) appear on top of others, but when unselected,
@@ -4520,7 +4740,7 @@
         time will tell if this is the right solution (rj)
 02.13
       * Feature request: 1650957 space bar should start/stop playback fixed by
-        adding this possiblity, old style is possible with property setting in
+        adding this possibility, old style is possible with property setting in
   configuration. (rj)
 02.09
       * Fixed bug 1645575 - Eraser tool causes segfault in drum editor (T356)
@@ -4620,7 +4840,7 @@
       * fixed faulty off value for aux when set to max (rj)
       * Allow wheeling of tracks from track list (rj)
 08.11
-      * reenabled mute for outputs (rj)
+      * re-enabled mute for outputs (rj)
 07.11
       * Fixed timing bug causing MusE to depend on jack buffer setting
         this needs testing, it involved uncommenting some code that might
@@ -5055,7 +5275,7 @@
       * Added an error popup when importing wave files fails. (rj)
 30.3
       * [DONE] midi -> edit instrument is not implemented -> remove it (js)
-      * [DONE] same for random rythm gen -> is not implemented -> remove it (js)
+      * [DONE] same for random rhythm gen -> is not implemented -> remove it (js)
       * [DONE] BUG: pianoroll editor -> tools resize wrong, they should stay on max they need instead of width fit (js)
       * have to go to the dentist on 7.3.2005, god help me, i fear this will kill me (js)
 29.3
@@ -5139,7 +5359,7 @@
 14.12
       * Disable of fluidsynth works (rj)
       * Added test for libsamplerate (rj)
-      * Reenabled --enable-suid-install (rj)
+      * Re-enabled --enable-suid-install (rj)
       * Added <iostream> to simpledrums.h (rj)
       * Added -no-rtti to simpledrums (ml)
 
@@ -5156,7 +5376,7 @@
       * crash bug on missing event in sig.cpp fixed (rj)
       * Changed default timer resolution to 1024 (rj)
       * Applied fix from Levi D. Burton to allow midi thread to run
-        realtime allthough Jack is not (rj)
+        realtime although Jack is not (rj)
       * New version (0.22) of DeicsOnze from Alin Weiller (rj)
 
 9.12
@@ -5193,7 +5413,7 @@
         available, though not easily selectable yet. (rj)
       * Made some changes to how threads are created, for systems
         where thread creation has been erratic, linux2.6 in various
-        configurations. Not yet verified if it makes any differance. (rj)
+        configurations. Not yet verified if it makes any difference. (rj)
 08.11
       * Backported audio metronome (rj)
       * Backported open/save dialog improvements (rj)
@@ -5251,7 +5471,7 @@
         midi sync slave modes as they are currently not working (ws)
       * enabled sending midi clock (ws)
 28.06.
-      * splitted removeTrack()/insertTrack() into three phases: pre realtime
+      * split removeTrack()/insertTrack() into three phases: pre realtime
         actions - realtime actions - post realtime actions; this allows
         to move memory allocations out of realtime task (ws)
       * changed undo/redo of tracks: synti instances are now really deleted on
@@ -5405,7 +5625,7 @@
       * after loading of template, treat current project as "untitled" (ws)
       * removed data structure "Clip". All information are now in WaveEvent;
         this simplifies the structure a lot and makes reference counting more
-        reliable. Unfortunatly this also means a new incompatible *.med file
+        reliable. Unfortunately this also means a new incompatible *.med file
         version. (ws)
       * changed reference counting of Event class; simplified and more reliable (ws)
 21.04.
@@ -5440,13 +5660,13 @@
       * changed CTRL_VAL_UNKNONW as it conflicts with valid
         values for CTRL_PROGRAM (ws)
 13.4.
-      * dont crash on missing LADSPA plugin (ws)
+      * don't crash on missing LADSPA plugin (ws)
       * set metronome precount default to "false". Precount is not
         implemented. (ws)
       * fixed crash when toggling stereo or pre buttons in mixer (ws)
       * synchronize channel number in mixer/arranger-tracklist (ws)
       * changed all float printf("%f") to equivalent qt-string
-        routines; dont localize decimal point so that the
+        routines; don't localize decimal point so that the
         strings can be properly parsed; this should fix some
         save/restore problems in localized MusE versions (ws)
 12.4
@@ -5468,7 +5688,7 @@
       - added another vertical line in drum editor
 2.4   - integrated new icons (ws)
       - increased required QT-Version to 3.2 in configure.ac (ws)
-1.4   - added vertikal line in track list as suggested by Joachim Schiele
+1.4   - added vertical line in track list as suggested by Joachim Schiele
       - fixed synchronisation issue between mixer and tracklist (changing midi channel can
         add/remove mixer strip) (ws)
       - Changed pan range to -1 +1 (rj)
@@ -5500,7 +5720,7 @@
 4.3   - Fluidsynti playback restored. Gain restored. (ml)
 3.3   - Fluidsynti major rewrite, not fully functioning though (ml)
       - fixed crash on reload song with open mixer
-      - fixed crash on saving *.med: dont save aux values for channels
+      - fixed crash on saving *.med: don't save aux values for channels
         which have no aux send (like aux strips)
       - remove empty record wav files on MusE exit
       - fixed crash on undo controller editing (ws)
@@ -5788,7 +6008,7 @@
       - added swedish translations (Robert Jonsson)
       - fixed editing of pitch events in list editor
       - fixed crash in score editor
-      - check tempo entry values; dont allow invalid values which could
+      - check tempo entry values; don't allow invalid values which could
         crash MusE
       - fixed not functioning "Abort" button in MidiTransform dialog
       - fixed Ctrl-editing in drum editor
@@ -5843,7 +6063,7 @@
       - removed/changed obsolete qt code
       - update for current iiwu cvs
       - fixed initialisation bug in wave editor
-      - dont link iiwu libs static
+      - don't link iiwu libs static
       - (bh) added ladcca support
       - fixed midifile export
       - arranger, pianoroll editor, drum editor: tool popup menu
@@ -5873,7 +6093,7 @@
 
 0.6.0pre3
       - fixed drawing of drum parts in drum editor
-      - on reading *.med files reject events which dont't fit into part (more robust
+      - on reading *.med files reject events which don't fit into part (more robust
         handling of defective med files)
       - remove also synth gui when removing synth
       - implemented some of Frank Neumann's usability suggestions:
@@ -5962,12 +6182,12 @@
       - simplified organ soft synth parameter handling
       - removed illegal controller message optimizations
       - implementation of "panic" button
-      - first instantiated synti did'nt show up in port list
+      - first instantiated synti didn't show up in port list
       - size of resized drum and pianoroll editor windows are now remembered
       - fixed crash when configuring null audio device
       - removing soft synth instance did not stop midi thread; alsa client
         was not removed
-      - (bh) lots of buid system changes and general cleanups
+      - (bh) lots of build system changes and general cleanups
       - (bh) removed the use of the UICBASES make variable; .ui files can
         now be added straight into _SOURCES make variables with the new
         SUFFIXES support in automake 1.6
@@ -6121,7 +6341,7 @@
 0.4.14:
       - some makefile and compilation changes
       - audio play: noise between audioparts during playback
-      - dont stop at end of song when "loop" is active
+      - don't stop at end of song when "loop" is active
       - default magnification in wave-view set to 1
       - fixed a audio route initialization bug
       - new metronome configuration: precount configuration added
@@ -6206,7 +6426,7 @@
         This allows for routing of different midi channels to
         different tracks while recording.
       - changed max number of midi ports from 8 to 16
-      - fixed serveral bugs iiwu software synthesizer
+      - fixed several bugs iiwu software synthesizer
       - fixed compilation problems with some ALSA versions
       - fixed: changing track name changed record flag
       - fixed: remove midi editor if associated track is removed
@@ -6397,7 +6617,7 @@
         alsa version has no more problems with OSS raw midi emulation
       - new: colored activity display in arranger (Daniel Mack)
       - new: context sensitive extensions to "right mouse click
-        pulldown menues" for arranger parts (Daniel Mack)
+        pulldown menus" for arranger parts (Daniel Mack)
       - new: gui prototypes for extendend configuration of raw midi
         devices and audio mixdown file selection
       - fixed: quirks with OSS midi devices configuration
@@ -6445,7 +6665,7 @@
       - new: on popular request: "RewindToStart" button
       - fixed: changing devices while playing
       - fixed: arranger: could not scroll to the end of song
-      - fixed: song lenght on midi import
+      - fixed: song length on midi import
       - fixed: fatal error in handling "note off" events
       - new: "sustain" is reset on stop
 
@@ -6480,7 +6700,7 @@
 0.2.12:
       - fixed: wave files/tracks/parts: calculation of tick<->time;
             it should be possible again to import/play simple waves
-      - fixed: funny things happend when muting all audio tracks
+      - fixed: funny things happened when muting all audio tracks
       - fixed: core if no active record track
       - new: Rob Naccarato started with documentation; press
             <F1> in MusE and have a look
@@ -6509,7 +6729,7 @@
       - fixed: wave form display in arranger
       - fixed: core on click in arranger "no track area " with pencil tool
 0.2.8:
-      - fixed: oss midi devices now work agin
+      - fixed: oss midi devices now work again
       - reorganized midi event dispatcher
       - fixed: pitchbend for midialsa (Xavier)
 0.2.7:
@@ -6711,7 +6931,7 @@
       - bug: path handling for project file: project files are now
           saved in the correct directory
       - bug: canvas initial scaling
-      - bug: core if configured device didnt exists
+      - bug: core if configured device didn't exists
       - bug: ctrl editor produced values > 127
       - feature: Arranger: Parts are now displayed with a horizontal offset
       - feature: Arranger: added save/restore for some configuration values
@@ -6808,7 +7028,7 @@
       - error: arranger->tracklist: resize failed if columns are swapped
       - enhanced file selector for background image selection
       - more WhatsThis and ToolTip Help
-      - Backport to QT202: Filedialog: Filterlists dont work
+      - Backport to QT202: Filedialog: Filterlists don't work
       -                    Midi Config: changed signal click() to rightButtonClick()
       - missing initialisation in song constructor
       - new subdirectory for controller editor
@@ -6820,7 +7040,7 @@
       - misc toolbars changed to read qt toolbars
 0.0.2:
       - changed color for cpos to red
-      - dont play metronome clicks with time < current
+      - don't play metronome clicks with time < current
       - doubleclick on arranger trackname: entrywidget now gets
         input focus
       - midi device configuration: reworked

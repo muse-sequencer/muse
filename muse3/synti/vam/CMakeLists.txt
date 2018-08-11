@@ -82,6 +82,9 @@ target_link_libraries(vam
       # al
       synti
       ${QT_LIBRARIES}
+      icons
+      mpevent_module
+      xml_module
       )
 
 ##

@@ -27,7 +27,7 @@ In this zip file you will find two folders of C++ source code:
       of instances of the filters, with some features to control the filters at
       a macro level. You will need to link these classes into another program that
       interfaces with them. The files in the components drawer are completely
-      independant, and can be built without dependancies on anything else.
+      independent, and can be built without dependencies on anything else.
       Because of the simple interface, it should be possible to interface
       these files to any system - VST, DirectX, anything - without changing
       them AT ALL.
@@ -37,7 +37,7 @@ In this zip file you will find two folders of C++ source code:
       It was built on a PC but may compile properly for the Macintosh with
       no problems. I don't know - I don't have a Macintosh. If you've
       figured out how to compile the examples in the Steinberg VST
-      Development Kit, then you should easilly figure out how to bring the
+      Development Kit, then you should easily figure out how to bring the
       files into a project and get it working in a few minutes. It should
       be very simple.
 
@@ -79,7 +79,7 @@ with its - frankly stupid - "Hungarian notation" will know exactly what
 I mean. Coding conventions typically promote issues that are irrelevant
 up to the status of appearing supremely important. It may have helped back
 people in the days when compilers where somewhat feeble in their type-safety,
-but not in the new millenium with advanced C++ compilers.
+but not in the new millennium with advanced C++ compilers.
 
 Imagine if we rewrote the English language to conform to coding conventions.
 After all, The arguments should be just as valid for the English language as

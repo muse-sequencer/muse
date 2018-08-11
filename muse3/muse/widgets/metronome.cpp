@@ -113,6 +113,8 @@ void MetronomeConfig::updateValues()
       precountFromMastertrack->blockSignals(true);
       precountSigZ->blockSignals(true);
       precountSigN->blockSignals(true);
+      precountOnPlay->blockSignals(true);
+      precountMuteMetronome->blockSignals(true);
       precountPrerecord->blockSignals(true);
       precountPreroll->blockSignals(true);
 
@@ -152,8 +154,19 @@ void MetronomeConfig::updateValues()
       precountFromMastertrack->setChecked(MusEGlobal::precountFromMastertrackFlag);
       precountSigZ->setValue(MusEGlobal::precountSigZ);
       precountSigN->setValue(MusEGlobal::precountSigN);
+      precountOnPlay->setChecked(MusEGlobal::precountOnPlay);
+      precountMuteMetronome->setChecked(MusEGlobal::precountMuteMetronome);
       precountPrerecord->setChecked(MusEGlobal::precountPrerecord);
       precountPreroll->setChecked(MusEGlobal::precountPreroll);
+      
+      precountBars->setEnabled(MusEGlobal::precountEnableFlag);
+      precountFromMastertrack->setEnabled(MusEGlobal::precountEnableFlag);
+      precountSigZ->setEnabled(MusEGlobal::precountEnableFlag && !MusEGlobal::precountFromMastertrackFlag);
+      precountSigN->setEnabled(MusEGlobal::precountEnableFlag && !MusEGlobal::precountFromMastertrackFlag);
+      precountOnPlay->setEnabled(MusEGlobal::precountEnableFlag);
+      precountMuteMetronome->setEnabled(MusEGlobal::precountEnableFlag);
+      //precountPrerecord->setEnabled(MusEGlobal::precountEnableFlag);  // Not supported yet.
+      //precountPreroll->setEnabled(MusEGlobal::precountEnableFlag);  // Not supported yet.
 
 
       midiClick->setChecked(MusEGlobal::midiClickFlag);
@@ -180,6 +193,8 @@ void MetronomeConfig::updateValues()
       precountFromMastertrack->blockSignals(false);
       precountSigZ->blockSignals(false);
       precountSigN->blockSignals(false);
+      precountOnPlay->blockSignals(false);
+      precountMuteMetronome->blockSignals(false);
       precountPrerecord->blockSignals(false);
       precountPreroll->blockSignals(false);
 
@@ -256,10 +271,12 @@ void MetronomeConfig::apply()
 
       MusEGlobal::precountEnableFlag = precountEnable->isChecked();
       MusEGlobal::precountFromMastertrackFlag = precountFromMastertrack->isChecked();
-      MusEGlobal::precountSigZ     = precountSigZ->value();
-      MusEGlobal::precountSigN     = precountSigN->value();
+      MusEGlobal::precountSigZ      = precountSigZ->value();
+      MusEGlobal::precountSigN      = precountSigN->value();
+      MusEGlobal::precountOnPlay    = precountOnPlay->isChecked();
+      MusEGlobal::precountMuteMetronome = precountMuteMetronome->isChecked();
       MusEGlobal::precountPrerecord = precountPrerecord->isChecked();
-      MusEGlobal::precountPreroll  = precountPreroll->isChecked();
+      MusEGlobal::precountPreroll   = precountPreroll->isChecked();
 
       MusEGlobal::midiClickFlag      = midiClick->isChecked();
       MusEGlobal::audioClickFlag     = audioBeep->isChecked();
@@ -303,7 +320,10 @@ void MetronomeConfig::precountEnableChanged(bool flag)
       precountFromMastertrack->setEnabled(flag);
       precountSigZ->setEnabled(flag && !precountFromMastertrack->isChecked());
       precountSigN->setEnabled(flag && !precountFromMastertrack->isChecked());
-
+      precountOnPlay->setEnabled(flag);
+      precountMuteMetronome->setEnabled(flag);
+      //precountPrerecord->setEnabled(flag); // Not supported yet.
+      //precountPreroll->setEnabled(flag); // Not supported yet.
       }
 
 void MetronomeConfig::precountFromMastertrackChanged(bool flag)

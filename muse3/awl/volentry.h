@@ -34,8 +34,13 @@ namespace Awl {
 class VolEntry : public FloatEntry {
       Q_OBJECT
 
+      bool _leftMouseButtonCanDecrease;
+    
    public:
-      VolEntry(QWidget* parent);
+      VolEntry(QWidget* parent, bool leftMouseButtonCanDecrease = false);
+      
+      bool leftMouseButtonCanDecrease() const { return _leftMouseButtonCanDecrease; }
+      void setLeftMouseButtonCanDecrease(bool v) { _leftMouseButtonCanDecrease = v; }
       };
 
 }

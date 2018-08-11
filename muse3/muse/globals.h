@@ -195,6 +195,8 @@ extern bool precountEnableFlag;
 extern bool precountFromMastertrackFlag;
 extern int precountSigZ;
 extern int precountSigN;
+extern bool precountOnPlay;
+extern bool precountMuteMetronome;
 extern bool precountPrerecord;
 extern bool precountPreroll;
 extern bool midiClickFlag;

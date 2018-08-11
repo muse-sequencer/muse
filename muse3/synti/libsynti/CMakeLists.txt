@@ -23,6 +23,9 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
+QT5_WRAP_CPP ( mess_mocs
+      gui.h
+      )
 ##
 ## List of source files to compile
 ##
@@ -42,9 +45,14 @@ file (GLOB synti_source_files
 ##
 add_library(synti ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h
+      ${mess_mocs}
       ${synti_source_files}
       )
 
+target_link_libraries(synti
+      # TODO: Try to remove this dependency by splitting the gui out of synti.
+      ${QT_LIBRARIES}
+      )
 ##
 ## Append to the list of translations
 ##

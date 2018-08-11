@@ -195,6 +195,8 @@ struct GlobalConfigValues {
 
       WaveDrawing waveDrawing;
 
+      bool useThemeIconsIfPossible; // Whether to try to see if various icons are available from the theme.
+      
       // Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       bool fixFrozenMDISubWindows;
       
@@ -311,6 +313,7 @@ struct GlobalConfigValues {
       // How to group the router channels together for easier multi-channel manipulation.
       int routerGroupingChannels;
       QString mixdownPath;
+      bool showNoteNamesInPianoRoll;
       };
 
 

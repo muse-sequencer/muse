@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>568</width>
-    <height>596</height>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -114,7 +114,16 @@
           <string>Events</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>11</number>
+          </property>
+          <property name="topMargin">
+           <number>11</number>
+          </property>
+          <property name="rightMargin">
+           <number>11</number>
+          </property>
+          <property name="bottomMargin">
            <number>11</number>
           </property>
           <property name="spacing">
@@ -187,14 +196,14 @@
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioButtonDrawOutline">
             <property name="text">
-             <string>Only Outline</string>
+             <string>O&amp;nly Outline</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButtonDrawRmsPeak">
             <property name="text">
-             <string>RMS/PEAK(Traditional)</string>
+             <string>RMS/PEAK(&amp;Traditional)</string>
             </property>
            </widget>
           </item>
@@ -1268,6 +1277,18 @@
            </layout>
           </item>
           <item>
+           <widget class="QCheckBox" name="useThemeIcons">
+            <property name="toolTip">
+             <string>If suitable icons are available from
+ the desktop theme, use them
+ instead of the built-in icons.</string>
+            </property>
+            <property name="text">
+             <string>Use theme icons if available. Requires restarting MusE.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
              <string>MusE color scheme</string>
@@ -1817,7 +1838,16 @@ The font family is forced to 'Sans', which should
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>

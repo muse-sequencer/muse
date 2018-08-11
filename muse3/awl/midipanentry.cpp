@@ -29,8 +29,8 @@ namespace Awl {
 //   MidiPanEntry
 //---------------------------------------------------------
 
-MidiPanEntry::MidiPanEntry(QWidget* parent)
-   : FloatEntry(parent)
+MidiPanEntry::MidiPanEntry(QWidget* parent, bool leftMouseButtonCanDecrease)
+   : FloatEntry(parent, leftMouseButtonCanDecrease)
       {
       setRange(-64.0f, 63.0f);
       setFrame(true);

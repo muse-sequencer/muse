@@ -441,7 +441,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 {
       if (MusEGlobal::midiOutputTrace) {
             fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
-            ev.dump();
+            dumpMPEvent(&ev);
             }
             
       int chn = ev.channel();
@@ -543,7 +543,7 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                 if(len > 0)
                 {
                   unsigned char buf[len];
-                  if(sysExOutProcessor()->getCurChunk(buf))
+                  if(sysExOutProcessor()->getCurChunk(buf, MusEGlobal::sampleRate))
                   {
                     snd_seq_ev_set_sysex(&event, len, buf);
                     // NOTE: Don't move this out, 'buf' would go out of scope.
@@ -905,7 +905,7 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
       if(len > 0)
       {
         unsigned char buf[len];
-        if(sop->getCurChunk(buf))
+        if(sop->getCurChunk(buf, MusEGlobal::sampleRate))
         {
           snd_seq_event_t event;
           snd_seq_ev_clear(&event);
@@ -1664,7 +1664,6 @@ int alsaSelectWfd()
 void alsaProcessMidiInput()
 {
       unsigned frame_ts = MusEGlobal::audio->curFrame();
-      const double time_ts = curTime();
       
       DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
               
@@ -1927,19 +1926,19 @@ void alsaProcessMidiInput()
                         if(MusEGlobal::midiInputTrace)
                           fprintf(stderr, "alsaProcessMidiInput: start port:%d curFrame:%u\n", curPort, frame_ts);
                       #endif
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_START);
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_CONTINUE);
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_STOP);
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK, time_ts);
+                        MusEGlobal::midiSyncContainer.realtimeSystemInput(curPort, ME_TICK);
                         break;
 
                   case SND_SEQ_EVENT_SYSEX:

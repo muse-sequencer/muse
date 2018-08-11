@@ -12,7 +12,7 @@
     <!--                                                                       -->
     <!-- IMPORTANT: This synth has a bank mapping configuration which can      -->
     <!-- either be "KORG" or "GM(2)". This setting affects the MSB value to    -->
-    <!-- access the Non-GM2 sounds. Therefor there are two distinct idf files. -->
+    <!-- access the Non-GM2 sounds. Therefore there are two distinct idf files. -->
     <MidiInstrument name="Korg Krome (Bank Map: KORG)">
         <!-- Krome Sounds (Programs) -->
         <PatchGroup name="Acoustic Piano">

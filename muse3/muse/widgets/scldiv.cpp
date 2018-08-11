@@ -28,7 +28,7 @@
 
 namespace MusEGui {
 
-//	ScaleDiv - A class for building  scale divisions
+//	ScaleDiv - A class for building scale divisions
 //
 //	The ScaleDiv class can build
 //	linear and logarithmic scale divisions for specified
@@ -155,7 +155,7 @@ ScaleDiv::ScaleDiv(const ScaleDiv &s)
 //.f	ScaleDiv & ScaleDiv::operator=(const ScaleDiv &s)
 //
 //.u	Parameters
-//.p	const ScaleDiv &s -- scale divison to be assigned
+//.p	const ScaleDiv &s -- scale division to be assigned
 //------------------------------------------------------------
 
 ScaleDiv& ScaleDiv::operator=(const ScaleDiv &s)
@@ -453,8 +453,8 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
    lFirst = ceil((log10(d_lBound) - step_eps * d_majStep) / d_majStep) * d_majStep;
    lLast = floor((log10(d_hBound) + step_eps * d_majStep) / d_majStep) * d_majStep;
 
-   firstTick = pow10(lFirst);
-   lastTick = pow10(lLast);
+   firstTick = exp10(lFirst);
+   lastTick = exp10(lLast);
 
    nMaj = MusECore::qwtMin(10000, int(rint(MusECore::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
 
@@ -514,7 +514,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
          if (i >= 0)
             val = d_majMarks[i];
          else
-            val = d_majMarks[0] / pow10(d_majStep);
+            val = d_majMarks[0] / exp10(d_majStep);
 
          for (k=k0; k<= kmax; k+=kstep)
          {
@@ -555,7 +555,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
       buffer.resize((d_majMarks.size() + 1) * nMin );
 
       // substep factor = 10^substeps
-      minFactor = MusECore::qwtMax(pow10(minStep), 10.0);
+      minFactor = MusECore::qwtMax(exp10(minStep), 10.0);
 
       // Are there minor ticks below the first major tick?
       if ( d_lBound < firstTick )
@@ -569,7 +569,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
          if (i >= 0)
             val = d_majMarks[i];
          else
-            val = firstTick / pow10(d_majStep);
+            val = firstTick / exp10(d_majStep);
 
          for (k=0; k< nMin; k++)
          {

@@ -13,6 +13,7 @@ protected:
 public:
     explicit SigSpinBox(QWidget *parent = 0);
     void setDenominator();
+    QSize sizeHint() const;
 
 signals:
     void returnPressed();

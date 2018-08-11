@@ -1,3 +1,13 @@
+09.08.2018:
+         - Fixed lilv state.c new_state_from_model() (Tim)
+           I found state->dir should be a file path, not a URI.
+           Symptom: With linuxsampler LV2 plugin for example,
+            the filename sent to it was wrong, it was a full URI.
+         - Fixed compiler warning "unneccessary parentheses" treated
+            as as error in LV2 util.h 
+            LV2_ATOM_OBJECT_FOREACH, LV2_ATOM_OBJECT_BODY_FOREACH,
+            LV2_ATOM_SEQUENCE_FOREACH, LV2_ATOM_SEQUENCE_BODY_FOREACH,
+            and in lilv.h LILV_FOREACH
 12.05.2016:
          - Update all libs to latest versions. (Tim)
          * Steps to update the built-in lv2 support library versions:

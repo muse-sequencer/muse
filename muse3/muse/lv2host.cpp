@@ -530,7 +530,8 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
          {
             state->controlsMask [i] = false;
 
-            if(state->lastControls [i] != controls [i].val)
+            // Force send if re-opening.
+            if(state->uiIsOpening || state->lastControls [i] != controls [i].val)
             {
                state->lastControls [i] = controls [i].val;
                state->uiDesc->port_event(state->uiInst,
@@ -543,7 +544,8 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 
       for(uint32_t i = 0; i < numControlsOut; ++i)
       {
-         if(state->lastControlsOut [i] != controlsOut [i].val)
+         // Force send if re-opening.
+         if(state->uiIsOpening || state->lastControlsOut [i] != controlsOut [i].val)
          {
             state->lastControlsOut [i] = controlsOut [i].val;
             state->uiDesc->port_event(state->uiInst,
@@ -867,7 +869,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2Synth *synth = state->synth;
    unsigned int cur_frame = MusEGlobal::audio->pos().frame();
    Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag.value() ? true : false);
-   double curBpm = (60000000.0 / MusEGlobal::tempomap.tempo(p.tick())) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+   float curBpm = (float)MusEGlobal::tempomap.globalTempo() * 600000.0f / (float)MusEGlobal::tempomap.tempo(p.tick());
    bool curIsPlaying = MusEGlobal::audio->isPlaying();
    unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
    //   if(state->curFrame != curFrame
@@ -893,7 +895,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_key(atomForge, synth->_uTime_speed);
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
-   lv2_atom_forge_float(atomForge, (float)curBpm);
+   lv2_atom_forge_float(atomForge, curBpm);
    buffer->write(nsamp, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 }
 
@@ -1068,6 +1070,9 @@ void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 
    }
 
+   // Set the flag to tell the update timer to force sending all controls and program.
+   state->uiIsOpening = true;
+   
    state->pluginWindow->startNextTime();
 
 }
@@ -1222,19 +1227,15 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       bool bEmbed = false;
       bool bGtk = false;
       QWidget *ewWin = NULL;
+#ifdef HAVE_GTK2
       QWindow *x11QtWindow = NULL;
+#endif
       state->gtk2Plug = NULL;
       state->_ifeatures [synth->_fUiParent].data = NULL;
       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
       {
          bEmbed = true;         
-         //ewWin = new QWidget();
-         //x11QtWindow = QWindow::fromWinId(ewWin->winId());
-         x11QtWindow = new QWindow();
-         ewWin = QWidget::createWindowContainer(x11QtWindow, win);
-         state->pluginQWindow = x11QtWindow;
-         //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
-         //(static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
+         ewWin = new QWidget();
          
 #ifdef LV2_GUI_USE_QWIDGET
          QVBoxLayout* layout = new QVBoxLayout();
@@ -1246,8 +1247,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 #else
          win->setCentralWidget(ewWin);
 #endif
-         
-         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
+   
+         state->_ifeatures [synth->_fUiParent].data = (void*)ewWin->winId();
       }
       else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
@@ -1258,9 +1259,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          
          bEmbed = true;
          bGtk = true;
-         //ewWin = new QWidget();
-         //ewWin = new QX11EmbedContainer(win);
-         //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
          
 #ifdef LV2_GUI_USE_GTKPLUG
          state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_plug_new(0, state);
@@ -1268,7 +1266,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          state->gtk2Plug = MusEGui::lv2Gtk2Helper_gtk_window_new(state);
 #endif
          
-         //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
          MusEGui::lv2Gtk2Helper_register_allocate_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
          MusEGui::lv2Gtk2Helper_register_resize_cb(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
          
@@ -1412,12 +1409,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                      win->setMinimumSize(w, h);
                      win->resize(w, h);
                   }
-                  //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
 #endif                  
                }
                else
                {
-                  //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+                  // Set the minimum size to the supplied uiX11Size.
+                  win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                  
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                      win->resize(ewWin->size());
                }
@@ -1550,7 +1548,7 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
 
    state->wrkDataSize = size;
    state->wrkDataBuffer = data;
-   if(MusEGlobal::audio->freewheel()) //dont wait for a thread. Do it now
+   if(MusEGlobal::audio->freewheel()) //don't wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
       return state->wrkThread->scheduleWork();
@@ -1851,7 +1849,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
 
-   assert(state != NULL); //this should'nt happen
+   assert(state != NULL); //this shouldn't happen
    assert(state->inst != NULL || state->sif != NULL); // this too
 
    if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)
@@ -3851,8 +3849,9 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
          // Protection. Observed this condition. Why? Supposed to be linear timestamps.
          if(found && evframe < frame)
          {
-            fprintf(stderr, "LV2SynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
-                    evframe, frame, v.frame, v.idx, v.value, v.unique);
+            fprintf(stderr, 
+              "LV2SynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu\n",
+              evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
             // No choice but to ignore it.
             _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
@@ -4277,6 +4276,12 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
       // Because of the bug, no matter what we must supply a position,
       //  even upon first showing...
       
+      // Check if there is an X11 gui size.
+      if(w == 0)
+        w = _state->uiX11Size.width();
+      if(h == 0)
+        h = _state->uiX11Size.height();
+      
       // Check sane size.
       if(w == 0)
         w = _state->pluginWindow->sizeHint().width();
@@ -4538,6 +4543,12 @@ void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
   // Because of the bug, no matter what we must supply a position,
   //  even upon first showing...
   
+  // Check if there is an X11 gui size.
+  if(w == 0)
+    w = _state->uiX11Size.width();
+  if(h == 0)
+    h = _state->uiX11Size.height();
+  
   // Check sane size.
   if(w == 0)
     w = sizeHint().width();
@@ -4603,15 +4614,15 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
    stopUpdateTimer();
 
-   if(_state->gtk2Plug != NULL)
-   {
+   //if(_state->gtk2Plug != NULL)
+   //{
       if(_state->pluginQWindow != NULL)
       {
         _state->pluginQWindow->setParent(NULL);
         delete _state->pluginQWindow;
         _state->pluginQWindow = NULL;
       }
-   }
+   //}
 
    if(_state->deleteLater)
    {
@@ -4629,6 +4640,9 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
 
+   // Reset the flag, just to be sure.
+   _state->uiIsOpening = false;
+   
    // The widget is automatically deleted by use of the 
    //  WA_DeleteOnClose attribute in the constructor.
 }
@@ -4665,9 +4679,9 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state,
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 {
-//#ifdef DEBUG_LV2
+#ifdef DEBUG_LV2
    std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
-//#endif
+#endif
 }
 
 void LV2PluginWrapper_Window::startNextTime()
@@ -4694,7 +4708,8 @@ void LV2PluginWrapper_Window::updateGui()
    LV2Synth::lv2ui_SendChangedControls(_state);
 
    //send program change if any
-   if(_state->uiDoSelectPrg)
+   // Force send if re-opening.
+   if(_state->uiIsOpening || _state->uiDoSelectPrg)
    {
       _state->uiDoSelectPrg = false;
       if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
@@ -4706,6 +4721,9 @@ void LV2PluginWrapper_Window::updateGui()
       }
    }
 
+   // Reset the flag.
+   _state->uiIsOpening = false;
+   
    //call ui idle callback if any
    if(_state->uiIdleIface != NULL)
    {

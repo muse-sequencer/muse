@@ -1764,9 +1764,9 @@ Certain operations will also force them to be resent,
              <property name="geometry">
               <rect>
                <x>0</x>
-               <y>0</y>
+               <y>-300</y>
                <width>524</width>
-               <height>602</height>
+               <height>628</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
@@ -2240,6 +2240,20 @@ This option turns on a fix.
 Benign XCB connection errors may still 
  occur, slowing the program somewhat.</string>
                 </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="23" column="0">
+               <widget class="QLabel" name="label_19">
+                <property name="text">
+                 <string>Show note names on notes in pianoroll</string>
+                </property>
+               </widget>
+              </item>
+              <item row="23" column="2">
+               <widget class="QCheckBox" name="showNoteNamesCheckBox">
                 <property name="text">
                  <string/>
                 </property>

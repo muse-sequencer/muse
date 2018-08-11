@@ -22,8 +22,10 @@
 
 #include <QApplication>
 #include <QStyle>
+#include <QStyleOption>
 
 #include "tempolabel.h"
+#include "globaldefs.h"
 
 namespace MusEGui {
 
@@ -82,9 +84,13 @@ QSize TempoLabel::sizeHint() const
 TempoEdit::TempoEdit(QWidget* parent)
    : DoubleSpinBox(parent)
       {
-      curVal = -1.0;
       setSingleStep(1.0);
-      setRange(30.0, 600.0);
+      _extern = false;
+      // Be consistent with other tempo boxes such as the one in transport.
+      setDecimals(2);
+      setRange(MUSE_MIN_TEMPO_VAL, MUSE_MAX_TEMPO_VAL);
+      curVal = -1.0;
+      
       connect(this, SIGNAL(valueChanged(double)), SLOT(newValue(double)));
       }
 
@@ -94,19 +100,33 @@ TempoEdit::TempoEdit(QWidget* parent)
 
 QSize TempoEdit::sizeHint() const
       {
-      QFontMetrics fm(font());
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
-      int h  = fm.height() + fw * 2;
-      int w  = 2 + fm.width(QString("000.00")) +  fw * 4 + 30;
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      if(const QStyle* st = style())
+      {
+        st = st->proxy();
+        
+        QStyleOptionSpinBox option;
+        option.initFrom(this);
+        option.rect = rect();
+        option.state = QStyle::State_Active | QStyle::State_Enabled;
+        const QRect b_rect = st->subControlRect(QStyle::CC_SpinBox, &option, QStyle::SC_SpinBoxUp);
+        
+        QFontMetrics fm(font());
+        const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
+        int h  = fm.height() + fw * 2;
+        int w  = fw * 2 + b_rect.width() + fm.width(QString("000.00"));
+        return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
-
+      return QSize(20, 20).expandedTo(QApplication::globalStrut());
+      }
+      
 //---------------------------------------------------------
 //   tempoChanged
 //---------------------------------------------------------
 
 void TempoEdit::newValue(double val)
       {
+      if(_extern)
+        return;
       if (val != curVal) {
       curVal = val;
           emit tempoChanged(curVal);
@@ -121,20 +141,49 @@ void TempoEdit::setValue(double val)
       {
       if (val != curVal) {
         curVal = val;
-                blockSignals(true);
-        QDoubleSpinBox::setValue(val);
-                blockSignals(false);
+        if(!_extern) {
+          blockSignals(true);
+          QDoubleSpinBox::setValue(val);
+          blockSignals(false);
+                     }
                 }
       }
 
-
 //---------------------------------------------------------
-//   tempo
+//   setExternalMode
 //---------------------------------------------------------
 
-//int TempoEdit::tempo() const
-//      {
-//        return lrint(60000000.0/value());
-//      }
+void TempoEdit::setExternalMode(bool on)
+{
+  if(_extern == on)
+    return;
+  
+  _extern = on;
+  if(_extern)
+  {
+    setEnabled(false);
+    
+    // Set the special text.
+    setSpecialValueText(QString("extern"));
+    
+    // Force to minimum.
+    blockSignals(true);
+    QDoubleSpinBox::setValue(minimum());
+    blockSignals(false);
+  }
+  else
+  {
+    // Reset the special text.
+    setSpecialValueText(QString());
+    
+    // Restore.
+    blockSignals(true);
+    QDoubleSpinBox::setValue(curVal);
+    blockSignals(false);
+    
+    setEnabled(true);
+  }
+}
+
 
 } // namespace MusEGui

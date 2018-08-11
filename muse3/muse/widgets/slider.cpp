@@ -1167,6 +1167,7 @@ void Slider::setOrientation(Qt::Orientation o)
                     case None:
                     break;
                   }
+            break;
             case Qt::Horizontal:
                   switch(d_scalePos)
                   {
@@ -1185,6 +1186,7 @@ void Slider::setOrientation(Qt::Orientation o)
                     case None:
                     break;
                   }
+            break;
             }
 
       d_scale.setGeometry(0, 0, 40, so);

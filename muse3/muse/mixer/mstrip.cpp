@@ -65,6 +65,7 @@
 #include "elided_label.h"
 #include "utils.h"
 #include "muse_math.h"
+#include "operations.h"
 
 #include "synth.h"
 #ifdef LV2_SUPPORT
@@ -1499,9 +1500,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //slider->setFillThumb(false);
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-      meter[0] = new MusEGui::Meter(0, MusEGui::Meter::LinMeter);
+      meter[0] = new Meter(0, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
+      meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
-      meter[0]->setRange(0, 127.0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       meter[0]->setFixedWidth(FIXED_METER_WIDTH);
       meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
@@ -2198,6 +2199,7 @@ void MidiStrip::configChanged()
   
   // Adjust meter and colour.
   meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor);
+  meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
 
   // If smart focus is on redirect strip focus to slider label.
 //   if(MusEGlobal::config.smartFocus)
@@ -2296,9 +2298,10 @@ void MidiStrip::recMonitorToggled(bool v)
 {
   if(!track)
     return;
-  // No undo.
-  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, track, v), false);
-  MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(track, v, MusECore::PendingOperationItem::SetTrackRecMonitor));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 }
 
 //---------------------------------------------------------
@@ -2358,9 +2361,10 @@ void MidiStrip::offToggled(bool val)
       {
       if(!track)
         return;
-      // No undo.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, track, val), false);
-      MusEGlobal::song->update(SC_MUTE);
+      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+      MusECore::PendingOperationList operations;
+      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackOff));
+      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
 
 //---------------------------------------------------------

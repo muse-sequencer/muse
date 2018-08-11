@@ -25,6 +25,8 @@
 #include "tempolabel.h"
 #include "awl/sigedit.h"
 #include "song.h"
+#include "icons.h"
+#include "pixmap_button.h"
 
 #include <QLabel>
 #include <QToolButton>
@@ -51,21 +53,36 @@ TempoToolbar::TempoToolbar(const QString& title, QWidget* parent)
 void TempoToolbar::init()
 {
   setObjectName("Tempo toolbar");
+
+  _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
+  _masterButton->setContentsMargins(0, 0, 0, 0);
+  _masterButton->setFocusPolicy(Qt::NoFocus);
+  _masterButton->setCheckable(true);
+  _masterButton->setToolTip(tr("use mastertrack tempo"));
+  _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+  connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
+  
   tempo_edit=new TempoEdit(this);
-  tempo_edit->setToolTip(tr("tempo at current position"));
+  tempo_edit->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
+  tempo_edit->setContentsMargins(0, 0, 0, 0);
   tempo_edit->setFocusPolicy(Qt::StrongFocus);
 
   label=new QLabel(tr("Tempo: "),this);
+  label->setContentsMargins(0, 0, 0, 0);
 
   tap_button = new QToolButton(this);
   tap_button->setText(tr("TAP"));
+  tap_button->setContentsMargins(0, 0, 0, 0);
 
+//   addWidget(_externSyncButton);
+  addWidget(_masterButton);
   addWidget(label);
   addWidget(tempo_edit);
   addWidget(tap_button);
 
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
+  connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
 
   connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
   connect(tempo_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
@@ -85,7 +102,7 @@ void TempoToolbar::pos_changed(int,unsigned,bool)
 
 void TempoToolbar::song_changed(MusECore::SongChangedFlags_t type)
 {
-  if(type & SC_TEMPO)
+  if(type & (SC_TEMPO | SC_MASTER))
   {
     int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
     tempo_edit->blockSignals(true);
@@ -94,11 +111,16 @@ void TempoToolbar::song_changed(MusECore::SongChangedFlags_t type)
   }
   if(type & SC_MASTER)
   {
-    tempo_edit->setEnabled(MusEGlobal::song->masterFlag());
-    label->setEnabled(MusEGlobal::song->masterFlag());
-    tap_button->setEnabled(MusEGlobal::song->masterFlag());
+    setMasterTrack(MusEGlobal::song->masterFlag());
   }
 }
+
+void TempoToolbar::syncChanged(bool flag)
+      {
+        label->setEnabled(!flag);
+        tap_button->setEnabled(!flag);
+        tempo_edit->setExternalMode(flag);
+      }
 
 void TempoToolbar::tap_tempo()
 {
@@ -124,6 +146,26 @@ void TempoToolbar::tap_timer_signal()
   tap_timer.stop();
 }
 
+//---------------------------------------------------------
+//   masterToggled
+//---------------------------------------------------------
+
+void TempoToolbar::masterToggled(bool val)
+{
+  emit masterTrackChanged(val);
+}
+
+bool TempoToolbar::masterTrack() const
+{
+  return _masterButton->isChecked();
+}
+
+void TempoToolbar::setMasterTrack(bool on)
+{
+  _masterButton->blockSignals(true);
+  _masterButton->setChecked(on);
+  _masterButton->blockSignals(false);
+}
 
 //---------------------------------
 //   SigToolbar
@@ -145,11 +187,13 @@ void SigToolbar::init()
 {
   setObjectName("Signature toolbar");
   sig_edit=new Awl::SigEdit(this);
+  sig_edit->setContentsMargins(0, 0, 0, 0);
   sig_edit->setFocusPolicy(Qt::StrongFocus);
   sig_edit->setValue(AL::TimeSignature(4, 4));
   sig_edit->setToolTip(tr("time signature at current position"));
   
   label=new QLabel(tr("Signature: "),this);
+  label->setContentsMargins(0, 0, 0, 0);
   
   addWidget(label);
   addWidget(sig_edit);
@@ -179,11 +223,6 @@ void SigToolbar::song_changed(MusECore::SongChangedFlags_t type)
     sig_edit->blockSignals(true);
     sig_edit->setValue(AL::TimeSignature(z, n));
     sig_edit->blockSignals(false);
-  }
-  if(type & SC_MASTER)
-  {
-    sig_edit->setEnabled(MusEGlobal::song->masterFlag());
-    label->setEnabled(MusEGlobal::song->masterFlag());
   }
 }
 

@@ -32,7 +32,7 @@ inputEvents = testFile.readlines()
 testFile.close()
 
 outputEvents=[]
-#loop through events and omitt doubles
+#loop through events and omit doubles
 for line in inputEvents:
       if line.startswith('NOTE'):
             tag,tick,pitch,length,velocity = line.split(' ')

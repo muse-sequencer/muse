@@ -28,8 +28,7 @@
 #include <cmath>
 #include <stdio.h>
 
-#include "muse/midi.h"
-//#include "libsynti/mpevent.h"
+#include "muse/midi_consts.h"
 #include "muse/mpevent.h"   
 
 //#include "common_defs.h"
@@ -103,7 +102,7 @@ Organ::Organ(int sr)
 
       // centibels to amplitude conversion
       for (int i = 0; i < MAX_ATTENUATION; i++)
-            cb2amp_tab[i] = pow10(double(i) / -200.0);
+            cb2amp_tab[i] = exp10(double(i) / -200.0);
 
       for (int i = 0; i < 128; ++i) {
             double freq = 8.176 * exp(double(i)*log(2.0)/12.0);
@@ -280,7 +279,7 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                   freq_256_harm4 = freq_256_harm3 * 2;
                   freq_256_harm5 = freq_256_harm4 * 2;
                   for (int i = 0; i < sampleCount; i++) {
-                        int a1=0, a2=0;	//prevent compiler warning: unitialized usage of vars a1 & a2
+                        int a1=0, a2=0;	//prevent compiler warning: uninitialized usage of vars a1 & a2
                         switch(v->state1) {
                               case ATTACK:
                                     if (v->envL1.step(&a1))
@@ -348,7 +347,7 @@ void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount
                   freq_256_harm4 = freq_256 * 3;
                   freq_256_harm5 = freq_256_harm3 * 2;
                   for (int i = 0; i < sampleCount; i++) {
-                        int a1=0, a2=0;//prevent compiler warning: unitialized usage of vars a1 & a2
+                        int a1=0, a2=0;//prevent compiler warning: uninitialized usage of vars a1 & a2
                         switch(v->state1) {
                               case ATTACK:
                                     if (v->envL1.step(&a1))
@@ -685,13 +684,13 @@ void Organ::getInitData(int* n, const unsigned char**p)
 //   getControllerInfo
 //---------------------------------------------------------
 
-int Organ::getControllerInfo(int id, QString* name, int* controller,
+int Organ::getControllerInfo(int id, const char** name, int* controller,
    int* min, int* max, int* initval) const
       {
       if (id >= NUM_CONTROLLER)
             return 0;
       *controller = synthCtrl[id].num;
-      *name       = QString(synthCtrl[id].name);
+      *name       = synthCtrl[id].name;
       *initval    = synthCtrl[id].val;
       
       if(synthCtrl[id].num == MusECore::CTRL_VOLUME)
@@ -754,9 +753,9 @@ void Organ::setNativeGeometry(int x, int y, int w, int h)
 //    construct a new synthesizer instance
 //---------------------------------------------------------
 
-static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
-      Organ* synth = new Organ(sr);
+      Organ* synth = new Organ(config->_sampleRate);
       if (synth->init(name)) {
             delete synth;
             synth = 0;

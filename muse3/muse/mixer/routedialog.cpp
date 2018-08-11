@@ -1070,7 +1070,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                   rtw->columnWidth(index.column()), rtw->header()->sectionSize(index.column()), view_width);  // REMOVE Tim.
       
           
-          // From QStyledItemDelegate::paint help: Neccessary?
+          // From QStyledItemDelegate::paint help: Necessary?
           // "After painting, you should ensure that the painter is returned to its the state it was supplied in when this function
           //  was called. For example, it may be useful to call QPainter::save() before painting and QPainter::restore() afterwards."
           painter->save();

@@ -38,9 +38,10 @@
 #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
-#include "utils.h"
+#include "large_int.h"
 
-#define DEBUG_DUMMY 0
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_DUMMY(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -49,18 +50,39 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class DummyAudioDevice : public AudioDevice {
+   private:
       pthread_t dummyThread;
       float* buffer;
       int _realTimePriority;
 
-   public:
-      Audio::State state;
-      int _framePos;
-      unsigned _framesAtCycleStart;
-      double _timeAtCycleStart;
-      int playPos;
-      bool seekflag;
+      // Critical variables that need to all update at once.
+      // We employ a 'flipping' technique.
+      unsigned _framesAtCycleStart[2];
+      uint64_t _timeUSAtCycleStart[2];
+      unsigned _frameCounter[2];
+      unsigned _criticalVariablesIdx;
       
+   public:
+      // Time in microseconds at which the driver was created.
+      uint64_t _start_timeUS;
+      
+      // For callback usage only.
+      void setCriticalVariables(unsigned segmentSize)
+      {
+        static bool _firstTime = true;
+        const unsigned idx = (_criticalVariablesIdx + 1) % 2;
+        _timeUSAtCycleStart[idx] = systemTimeUS();
+        // Let these start at zero and only increment on subsequent callbacks.
+        if(!_firstTime)
+        {
+          _framesAtCycleStart[idx] = _framesAtCycleStart[_criticalVariablesIdx] + segmentSize;
+          _frameCounter[idx] = _frameCounter[_criticalVariablesIdx] + segmentSize;
+        }
+        _firstTime = false;
+        // Now 'flip' the variables all at once.
+        _criticalVariablesIdx = idx;
+      }
+
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
       { 
@@ -73,17 +95,24 @@ class DummyAudioDevice : public AudioDevice {
       virtual bool start(int);
       
       virtual void stop ();
-      virtual int framePos() const { 
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::framePos %d\n", _framePos);
-            return _framePos; 
+      virtual unsigned framePos() const {
+            // Not much choice but to do this:
+            const unsigned int facs = framesAtCycleStart();
+            const unsigned int fscs = framesSinceCycleStart();
+            DEBUG_DUMMY(stderr, "DummyAudioDevice::framePos framesAtCycleStart:%u framesSinceCycleStart:%u\n", facs, fscs);
+            return facs + fscs; 
             }
 
       // These are meant to be called from inside process thread only.      
-      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart; }
+      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart[_criticalVariablesIdx]; }
       virtual unsigned framesSinceCycleStart() const 
       { 
-        unsigned f =  lrint((curTime() - _timeAtCycleStart) * MusEGlobal::sampleRate);
+        const uint64_t ct = systemTimeUS();
+        DEBUG_DUMMY(stderr, "DummyAudioDevice::framesSinceCycleStart systemTimeUS:%lu timeUSAtCycleStart:%lu\n", 
+                ct, _timeUSAtCycleStart[_criticalVariablesIdx]);
+        // Do not round up here since time resolution is higher than (audio) frame resolution.
+        unsigned f = muse_multiply_64_div_64_to_64(ct - _timeUSAtCycleStart[_criticalVariablesIdx], MusEGlobal::sampleRate, 1000000UL);
+        
         // Safety due to inaccuracies. It cannot be after the segment, right?
         if(f >= MusEGlobal::segmentSize)
           f = MusEGlobal::segmentSize - 1;
@@ -138,57 +167,16 @@ class DummyAudioDevice : public AudioDevice {
       virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
       virtual const char* canonicalPortName(void*) { return 0; }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
-      virtual int getState() { 
-//            if(DEBUG_DUMMY)
-//                fprintf(stderr, "DummyAudioDevice::getState %d\n", state);
-            return state; }
-      virtual unsigned getCurFrame() const { 
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::getCurFrame %d\n", _framePos);
-      
-      return _framePos; }
       virtual unsigned frameTime() const {
-            return lrint(curTime() * MusEGlobal::sampleRate);
+            return _frameCounter[_criticalVariablesIdx];
             }
-      virtual double systemTime() const
-      {
-        struct timeval t;
-        gettimeofday(&t, 0);
-        //fprintf(stderr, "%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
-      }
+
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
-      virtual void startTransport() {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::startTransport playPos=%d\n", playPos);
-            state = Audio::PLAY;
-            }
-      virtual void stopTransport() {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::stopTransport, playPos=%d\n", playPos);
-            state = Audio::STOP;
-            }
-      virtual int setMaster(bool) { return 1; }
 
-      virtual void seekTransport(const Pos &p)
-      {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
-            seekflag = true;
-            //pos = n;
-            playPos = p.frame();
-            
-      }
-      virtual void seekTransport(unsigned pos) {
-            if(DEBUG_DUMMY)
-                fprintf(stderr, "DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
-            seekflag = true;
-            //pos = n;
-            playPos = pos;
-            }
       virtual void setFreewheel(bool) {}
+      virtual int setMaster(bool) { return 1; }
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -218,12 +206,14 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
         memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
 
       dummyThread = 0;
-      seekflag = false;
-      state = Audio::STOP;
-      _framePos = 0;
-      _framesAtCycleStart = 0;
-      _timeAtCycleStart = 0.0;
-      playPos = 0;
+      _start_timeUS = systemTimeUS();
+      _criticalVariablesIdx = 0;
+      for(unsigned x = 0; x < 2; ++x)
+      {
+        _timeUSAtCycleStart[x] = 0;
+        _framesAtCycleStart[x] = 0;
+        _frameCounter[x] = 0;
+      }
       }
 
 
@@ -289,32 +279,18 @@ static void* dummyLoop(void* ptr)
       {
       DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
       
-      // Adapted from muse_qt4_evolution. p4.0.20       
       for(;;) 
       {
-        drvPtr->_timeAtCycleStart = curTime();
-
+        drvPtr->setCriticalVariables(MusEGlobal::segmentSize);
+  
         if(MusEGlobal::audio->isRunning()) {
-
-          MusEGlobal::audio->process(MusEGlobal::segmentSize);
+          // Use our built-in transport, which INCLUDES the necessary
+          //  calls to Audio::sync() and ultimately Audio::process(),
+          //  and increments the built-in play position.
+          drvPtr->processTransport(MusEGlobal::segmentSize);
         }
 
         usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
-
-        if(drvPtr->seekflag) {
-
-          MusEGlobal::audio->sync(Audio::STOP, drvPtr->playPos);
-
-          drvPtr->seekflag = false;
-        }
-
-        drvPtr->_framePos += MusEGlobal::segmentSize;
-        drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
-
-        if(drvPtr->state == Audio::PLAY) {
-
-          drvPtr->playPos += MusEGlobal::segmentSize;
-        }
       }
       pthread_exit(0);
       }

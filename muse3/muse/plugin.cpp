@@ -48,7 +48,7 @@
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
-#include "midictrl.h"
+#include "midictrl_consts.h"
 #include "plugin.h"
 #include "controlfifo.h"
 #include "xml.h"
@@ -703,7 +703,7 @@ int Plugin::incReferences(int val)
 
   int newref = _references + val;
 
-  if(newref == 0)
+  if(newref <= 0)
   {
     _references = 0;
     if(_handle)
@@ -3043,8 +3043,9 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, "PluginI::apply *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
-          evframe, frame, v.frame, v.idx, v.value, v.unique);
+        fprintf(stderr, 
+          "PluginI::apply *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%lu nframes:%lu v.frame:%lu\n",
+          evframe, frame, v.idx, v.value, v.unique, syncFrame, n, v.frame);
 
         // No choice but to ignore it.
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
@@ -3703,9 +3704,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       //if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                       if(LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
                         mType=Meter::DBMeter;
-                      Meter* m = new Meter(this, mType, Qt::Horizontal, Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+                      Meter* m = new Meter(this, 
+                                           mType, 
+                                           Qt::Horizontal, 
+                                           dlower, dupper,
+                                           Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+                      m->setRefreshRate(MusEGlobal::config.guiRefresh);
                       m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-                      m->setRange(dlower, dupper);
                       m->setVal(dval, dval, false);
                       m->setScaleBackBone(false);
                       m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);

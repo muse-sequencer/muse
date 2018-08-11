@@ -193,7 +193,7 @@ void WaveTrack::seekData(sf_count_t pos)
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite)
       {
       #ifdef WAVETRACK_DEBUG
-      fprintf(stderr, "WaveTrack::fetchData %s samples:%lu pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
+      fprintf(stderr, "WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n", name().toLatin1().constData(), samples, pos, overwrite);
       #endif
 
       // reset buffer to zero
@@ -703,21 +703,47 @@ bool WaveTrack::closeAllParts()
 
 bool WaveTrack::getPrefetchData(sf_count_t framePos, int dstChannels, sf_count_t nframe, float** bp, bool overwrite)
 {
+  float* pf_buf[dstChannels];
+  
   // First, fetch any track-wide pre-mixed data, such as straight unmodified data
   //  or from prefetch-based samplerate converters, but NOT stretchers or pitch shifters -
   //  those belong POST-prefetch, below, so they can have fast response to changes.
   if(MusEGlobal::audio->freewheel())
   {
 
+//     // when freewheeling, read data direct from file:
+//     // Indicate do not seek file before each read.
+//     // This ALREADY clears the buffer!
+// //     fetchData(framePos, nframe, bp, false);
+//     fetchData(framePos, nframe, bp, false, overwrite);
+// 
+//     // REMOVE Tim. samplerate. Added.
+//     //fetchAudioData(framePos, channels, off(), nframe, bp, false, true);
+
+    
     // when freewheeling, read data direct from file:
-    // Indicate do not seek file before each read.
-    // This ALREADY clears the buffer!
-//     fetchData(framePos, nframe, bp, false);
-    fetchData(framePos, nframe, bp, false, overwrite);
-
-    // REMOVE Tim. samplerate. Added.
-    //fetchAudioData(framePos, channels, off(), nframe, bp, false, true);
-
+    if(isMute())
+    {
+      // We are muted. We need to let the fetching progress, but discard the data.
+      for(int i = 0; i < dstChannels; ++i)
+        // Set to the audio dummy buffer.
+        pf_buf[i] = audioOutDummyBuf;
+      // Indicate do not seek file before each read.
+      fetchData(framePos, nframe, pf_buf, false, overwrite);
+      // Just return whether we have input sources data.
+//       return have_data;
+      return false;
+    }
+    else
+    {
+      // Not muted. Fetch the data into the given buffers.
+      // Indicate do not seek file before each read.
+      fetchData(framePos, nframe, bp, false, overwrite);
+      // We have data.
+      return true;
+    }
+    
+    
   }
   else
   {
@@ -755,32 +781,35 @@ bool WaveTrack::getPrefetchData(sf_count_t framePos, int dstChannels, sf_count_t
 
 
     sf_count_t pos;
-    float* pf_buf[dstChannels];
 
     if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
     {
-      printf("WaveTrack::getPrefetchData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+      fprintf(stderr, "WaveTrack::getPrefetchData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
       return false;
     }
 //     if(pos != framePos)
     if(pos < framePos)
     {
       if(MusEGlobal::debugMsg)
-        printf("fifo get error expected %ld, got %ld\n", framePos, pos);
+        fprintf(stderr, "fifo get error expected %ld, got %ld\n", framePos, pos);
       while (pos < framePos)
       {
         if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
         {
-          printf("WaveTrack::getPrefetchData(%s) (B) fifo underrun\n",
+          fprintf(stderr, "WaveTrack::getPrefetchData(%s) (B) fifo underrun\n",
               name().toLocal8Bit().constData());
           return false;
         }
       }
     }
 
-
-
-
+    if(isMute())
+    {
+      // We are muted. We need to let the fetching progress, but discard the data.
+      // Just return whether we have input sources data.
+//       return have_data;
+      return false;
+    }
 
 //     if(!fail && pos >= framePos)
 //     {
@@ -1020,69 +1049,19 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   const bool track_rec_flag = recordFlag();
   const bool track_rec_monitor = recMonitor();        // Separate monitor and record functions.
 
+  //---------------------------------------------
+  // Contributions to data from input sources:
+  //---------------------------------------------
+
+  // Gather input data from connected routes.
   if((MusEGlobal::song->bounceTrack != this) && !noInRoute())
   {
     have_data = AudioTrack::getData(framePos, dstChannels, nframe, bp);
+    // Do we want to record the incoming data?
     if(have_data && track_rec_flag && MusEGlobal::audio->isRecording() && recFile())
     {
       if(MusEGlobal::audio->freewheel())
       {
-//       bool have_data = false;
-//       if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
-//
-// // REMOVE Tim. Wave. Changed.
-//             have_data = AudioTrack::getData(framePos, channels, nframe, bp);
-//
-//             if (recordFlag()) {
-//                   if (have_data && MusEGlobal::audio->isRecording() && recFile()) {
-//                         if (MusEGlobal::audio->freewheel()) {
-//                               }
-//                         else {
-//                               if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))
-//                                       printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
-//                                         framePos, channels, nframe);
-//                             }
-//                         }
-//                   return have_data;
-//                   }
-//             }
-//       if (!MusEGlobal::audio->isPlaying())
-//             return false;
-//             //return have_data;
-//
-//       // REMOVE Tim. samplerate. Changed.
-// //       if (MusEGlobal::audio->freewheel()) {
-// //
-// //             // when freewheeling, read data direct from file:
-// //             // Indicate do not seek file before each read.
-// //             fetchData(framePos, nframe, bp, false);
-// //
-// //             // REMOVE Tim. samplerate. Added.
-// //             fetchAudioData(framePos, channels, off(), nframe, bp, false, true);
-// //
-// //             }
-// //       else {
-// //             unsigned pos;
-// //             if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-// //                   printf("WaveTrack::getData(%s) (A) fifo underrun\n",
-// //                       name().toLocal8Bit().constData());
-// //                   return false;
-// //                   }
-// //             if (pos != framePos) {
-// //                   if (MusEGlobal::debugMsg)
-// //                         printf("fifo get error expected %d, got %d\n",
-// //                             framePos, pos);
-// //                   while (pos < framePos) {
-// //                         if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-// //                               printf("WaveTrack::getData(%s) (B) fifo underrun\n",
-// //                                   name().toLocal8Bit().constData());
-// //                               return false;
-// //                               }
-// //                         }
-// //                   }
-// //             }
-// //       return true;
-//       return getPrefetchData(framePos, channels, nframe, bp);
       }
       else
       {
@@ -1092,63 +1071,96 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     }
   }
 
-  //---------------------------------------------------
-  //    metering
-  //---------------------------------------------------
+  //---------------------------------------------
+  // Contributions to data from playback sources:
+  //---------------------------------------------
 
-  // If we are RECORD-ARMed (but not monitoring), display the incoming levels on the meters.
-  // For technical reasons during PLAYBACK it is very much more difficult to pass a separate,
-  //  effected, panned and attenuated signal just to the meters - WITHOUT listening - and a
-  //  different signal to the actual audio output - while also showing that signal on the meters.
-  // So for consistency we do this in PLAYBACK and STOP.
-  // A benefit is the user sees the actual record level, not the post-effect/controlled one.
-  // TODO: User-selectable metering points, a mixture of user and automatic here...
-  if(have_data && track_rec_flag && !track_rec_monitor)
-  {
-    const int trackChans = channels();
-    int chans = dstChannels;
-    if(chans > trackChans)
-      chans = trackChans;
-
-    double met[chans];
-
-    // FIXME TODO Need multichannel changes here?
-    for(int c = 0; c < chans; ++c)
-    {
-      met[c] = 0.0;
-      float* sp = bp[c];
-      for(unsigned k = 0; k < nframe; ++k)
-      {
-        const double f = fabs(*sp++);
-        if(f > met[c])
-          met[c] = f;
-      }
-      if(met[c] > _meter[c])
-        _meter[c] = met[c];
-      if(_meter[c] > _peak[c])
-        _peak[c] = _meter[c];
-
-      if(_meter [c] > 1.0)
-          _isClipped[c] = true;
-    }
-  }
-
-  if(!MusEGlobal::audio->isPlaying())
+ if(!MusEGlobal::audio->isPlaying())
   {
     if(!have_data || (track_rec_monitor && have_data))
       return have_data;
     return false;
   }
 
-  // If there was no data, or we do not want record monitoring, zero the supplied buffers.
+  // If there is no input source data or we do not want to monitor it,
+  //  overwrite the supplied buffers rather than mixing with them.
   const bool do_overwrite = !have_data || !track_rec_monitor;
 
-  // Set the return type.
-  have_data = true;
+  // Set the return value.
+  have_data = !have_data || (track_rec_monitor && have_data);
+#if 0 // REMOVE Tim. samplerate. From master. Move into getPrefetchData().
+  float* pf_buf[dstChannels];
+  
+  if(MusEGlobal::audio->freewheel())
+  {
+    // when freewheeling, read data direct from file:
+    if(isMute())
+    {
+      // We are muted. We need to let the fetching progress, but discard the data.
+      for(int i = 0; i < dstChannels; ++i)
+        // Set to the audio dummy buffer.
+        pf_buf[i] = audioOutDummyBuf;
+      // Indicate do not seek file before each read.
+      fetchData(framePos, nframe, pf_buf, false, do_overwrite);
+      // Just return whether we have input sources data.
+      return have_data;
+    }
+    else
+    {
+      // Not muted. Fetch the data into the given buffers.
+      // Indicate do not seek file before each read.
+      fetchData(framePos, nframe, bp, false, do_overwrite);
+      // We have data.
+      return true;
+    }
+  }
+  else
+  {
+    unsigned pos;
+    if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+    {
+      fprintf(stderr, "WaveTrack::getData(%s) (A) fifo underrun\n", name().toLocal8Bit().constData());
+      return have_data;
+    }
+    if(pos != framePos)
+    {
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "fifo get error expected %d, got %d\n", framePos, pos);
+      while (pos < framePos)
+      {
+        if(_prefetchFifo.get(dstChannels, nframe, pf_buf, &pos))
+        {
+          fprintf(stderr, "WaveTrack::getData(%s) (B) fifo underrun\n",
+              name().toLocal8Bit().constData());
+          return have_data;
+        }
+      }
+    }
 
+    if(isMute())
+    {
+      // We are muted. We need to let the fetching progress, but discard the data.
+      // Just return whether we have input sources data.
+      return have_data;
+    }
 
-  getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
-  return have_data;
+    if(do_overwrite)
+    {
+      for(int i = 0; i < dstChannels; ++i)
+        AL::dsp->cpy(bp[i], pf_buf[i], nframe, MusEGlobal::config.useDenormalBias);
+    }
+    else
+    {
+      for(int i = 0; i < dstChannels; ++i)
+        AL::dsp->mix(bp[i], pf_buf[i], nframe);
+    }
+    // We have data.
+    return true;
+  }
+#endif
+  const bool have_pf_data = getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
+//   return have_data;
+  return have_data || have_pf_data;
 
 //   if(MusEGlobal::audio->freewheel())
 //   {

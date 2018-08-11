@@ -103,7 +103,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       // This is absolutely required for speed! Otherwise painfully slow because we get 
       //  full rect paint events even on small scrolls! See help on QPainter::scroll().
       setAttribute(Qt::WA_OpaquePaintEvent);
-      
+
       setObjectName(name);
       ypos = 0;
       editMode = false;
@@ -1576,36 +1576,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
       TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
-                  QMenu* p = new QMenu;
-                  MusEGui::populateAddTrack(p);
-                  
-                  // Show the menu
-                  QAction* act = p->exec(ev->globalPos(), 0);
 
-                  // Valid click?
-                  if(act)
+                // Show the menu
+                QAction* act = addTrackMenu->exec(ev->globalPos(), 0);
+
+                // Valid click?
+                if(act)
+                {
+                  t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
+                  if(t && t->isVisible())
                   {
-                    t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
-                    if(t && t->isVisible())
-                    {
-                      MusEGlobal::song->selectAllTracks(false);
-                      t->setSelected(true);
-                      MusEGlobal::song->update(SC_TRACK_SELECTION);
-                      adjustScrollbar();
-                    }  
+                    MusEGlobal::song->selectAllTracks(false);
+                    t->setSelected(true);
+                    MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    adjustScrollbar();
                   }
+                }
                   
-                  // Just delete p, and all its children will go too, right?
-                  //delete synp;
-                  delete p;
             }
-            /*else if (button == Qt::LeftButton) { DELETETHIS
-              if (!ctrl) 
-              {
-                MusEGlobal::song->selectAllTracks(false);
-                emit selectionChanged(0);
-              }  
-            }*/
             return;
             }
 
@@ -1762,15 +1750,19 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       break;
                     }
 
-                    MusECore::Undo operations;
                     const bool val = !(t->recMonitor());
                     if (button == Qt::LeftButton)
                     {
-                      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, t, val));
+                      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                      MusECore::PendingOperationList operations;
+                      operations.add(MusECore::PendingOperationItem(t, val, MusECore::PendingOperationItem::SetTrackRecMonitor));
+                      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                     }
                     else if (button == Qt::RightButton)
                     {
                       // enable or disable ALL tracks of this type
+                      // This is a major operation not easily manually undoable. Let's make it undoable.
+                      MusECore::Undo operations;
                       MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
                       foreach (MusECore::Track *other_t, *all_tl)
                       {
@@ -1778,12 +1770,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           continue;
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, other_t, val));
                       }
-                    }
-                    // No Undo.
-                    if(!operations.empty())
-                    {
-                      MusEGlobal::song->applyOperationGroup(operations, false);
-                      MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+                      if(!operations.empty())
+                      {
+                        MusEGlobal::song->applyOperationGroup(operations);
+                        // Not required if undoable.
+                        //MusEGlobal::song->update(SC_TRACK_REC_MONITOR);
+                      }
                     }
                   }
                   break;
@@ -1796,7 +1788,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         break;
                       }
 
-                      MusECore::Undo operations;
                       bool val = !(t->recordFlag());
                       if (button == Qt::LeftButton) {
                         if (t->type() == MusECore::Track::AUDIO_OUTPUT)
@@ -1807,10 +1798,18 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                 break;
                               }
                         }
-                        MusEGlobal::song->setRecordFlag(t, val, &operations);
+                        // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                        if(!t->setRecordFlag1(val))
+                          break;
+                        MusECore::PendingOperationList operations;
+                        operations.add(MusECore::PendingOperationItem(t, val, MusECore::PendingOperationItem::SetTrackRecord));
+                        MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                       }
-                      else if (button == Qt::RightButton) {
+                      else if (button == Qt::RightButton)
+                      {
                         // enable or disable ALL tracks of this type
+                        // This is a major operation not easily manually undoable. Let's make it undoable.
+                        MusECore::Undo operations;
                         if (!t->isMidiTrack()) {
                               if (t->type() == MusECore::Track::AUDIO_OUTPUT) {
                                     return;
@@ -1826,12 +1825,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             MusEGlobal::song->setRecordFlag(mt, val, &operations);
                           }
                         }
-                      }
-                      // No Undo.
-                      if(!operations.empty())
-                      {
-                        MusEGlobal::song->applyOperationGroup(operations, false);
-                        MusEGlobal::song->update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+                        if(!operations.empty())
+                        {
+                          MusEGlobal::song->applyOperationGroup(operations);
+                          // Not required if undoable.
+                          //MusEGlobal::song->update(SC_RECFLAG | SC_TRACK_REC_MONITOR);
+                        }
                       }
                   }
                   break;
@@ -1863,58 +1862,82 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                   bool turnOff = (button == Qt::RightButton) || shift;
 
-                  MusECore::Undo operations;
-                  if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
+                  if((t->selected() && tracks->countSelected() > 1) || ctrl)
                   {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                      if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                        toggleMute(operations, *myt, turnOff);
-                    }
-                  }
-                  else if (ctrl) // toggle ALL tracks
-                  {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                      if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                        toggleMute(operations, *myt, turnOff);
-                    }
-                  }
-                  else { // toggle the clicked track
-                    toggleMute(operations, t, turnOff);
-                  }
-                  // No Undo.
-                  if(!operations.empty())
-                  {
-                    MusEGlobal::song->applyOperationGroup(operations, false);
-                    MusEGlobal::song->update(SC_MUTE);
-                  }
-                    
-                  break;
-               }
-            case COL_SOLO:
-                  {
+                    // These are major operations not easily manually undoable. Let's make them undoable.
                     MusECore::Undo operations;
                     if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                     {
                       for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                         if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                          toggleMute(operations, *myt, turnOff);
                       }
                     }
                     else if (ctrl) // toggle ALL tracks
                     {
                       for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
                         if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                          toggleMute(operations, *myt, turnOff);
                       }
                     }
-                    else { // toggle the clicked track
-                      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, t, !t->solo()));
-                    }
-                    // No Undo.
                     if(!operations.empty())
                     {
-                      MusEGlobal::song->applyOperationGroup(operations, false);
-                      MusEGlobal::song->update(SC_SOLO);
+                      MusEGlobal::song->applyOperationGroup(operations);
+                      // Not required if undoable.
+                      //MusEGlobal::song->update(SC_MUTE);
+                    }
+                  }
+                  else { // toggle the clicked track
+                    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                    MusECore::PendingOperationList operations;
+                    if(turnOff) {
+                      operations.add(MusECore::PendingOperationItem(t, !t->off(), MusECore::PendingOperationItem::SetTrackOff));
+                    }
+                    else
+                    {
+                      if(t->off())
+                        operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
+                      else
+                        operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+                    }
+                    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                  }
+
+                  break;
+               }
+            case COL_SOLO:
+                  {
+                    if((t->selected() && tracks->countSelected() > 1) || ctrl)
+                    {
+                      // These are major operations not easily manually undoable. Let's make them undoable.
+                      MusECore::Undo operations;
+                      if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
+                      {
+                        for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                          if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                        }
+                      }
+                      else if (ctrl) // toggle ALL tracks
+                      {
+                        for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                          if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                        }
+                      }
+                      if(!operations.empty())
+                      {
+                        MusEGlobal::song->applyOperationGroup(operations);
+                        // Not required if undoable.
+                        //MusEGlobal::song->update(SC_SOLO);
+                      }
+                    }
+                    else // toggle the clicked track
+                    {
+                      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                      MusECore::PendingOperationList operations;
+                      operations.add(MusECore::PendingOperationItem(t, !t->solo(), MusECore::PendingOperationItem::SetTrackSolo));
+                      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                     }
                   }
                   break;
@@ -1971,12 +1994,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           // 1016 is occupied.
                           p->addSeparator();
                         }
-                        
-                        QMenu* pnew = new QMenu(p);
-                        pnew->setTitle(tr("Insert Track"));
-                        pnew->setIcon(QIcon(*edit_track_addIcon));
-                        MusEGui::populateAddTrack(pnew);
-                        p->addMenu(pnew);
+                        addTrackMenu->setTitle(tr("Insert Track"));
+                        addTrackMenu->setIcon(QIcon(*edit_track_addIcon));
+                        p->addMenu(addTrackMenu);
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
                               //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
@@ -2667,6 +2687,12 @@ void TList::setHeader(Header* h)
 {
   header=h;
   redraw();
+}
+
+void TList::populateAddTrack()
+{
+  addTrackMenu = new QMenu;
+  MusEGui::populateAddTrack(addTrackMenu);
 }
 
 } // namespace MusEGui

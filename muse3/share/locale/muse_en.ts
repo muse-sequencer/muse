@@ -10459,7 +10459,7 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="878"/>
-        <source>MusE Se&amp;ttings</source>
+        <source>Se&amp;ttings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

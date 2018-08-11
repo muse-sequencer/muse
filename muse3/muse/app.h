@@ -119,9 +119,10 @@ class MusE : public QMainWindow
             CMD_LAST };
 
       // File menu actions
-      QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *testAction;
+      QAction *fileSaveAction, *fileOpenAction, *fileNewAction;
       QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
       QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
+      QAction *fileCloseAction;
       QAction *editSongInfoAction;
       
    private:
@@ -140,6 +141,7 @@ class MusE : public QMainWindow
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction, *viewArrangerAction;
       QAction* fullscreenAction;
+      QAction *masterGraphicAction, *masterListAction;
 
       // Midi Menu Actions
       QAction *midiEditInstAction, *midiResetInstAction, *midiInitInstActions, *midiLocalOffAction;
@@ -184,7 +186,7 @@ class MusE : public QMainWindow
       // when adding a menu to the main window, remember adding it to
       // either the leadingMenus or trailingMenus list!
       QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menu_help;
-      QMenu* menu_audio, *menuAutomation, *menuUtils;
+      QMenu* menu_audio, *menuUtils;
       QMenu* menu_functions, *menuScriptPlugins;
 
       QMenu* follow;
@@ -343,6 +345,7 @@ class MusE : public QMainWindow
       void closeEvent(QCloseEvent*e);
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
+      void fileClose();
       void toplevelDeleting(MusEGui::TopWin* tl);
       bool seqRestart();
       void loadTemplate();
@@ -394,6 +397,8 @@ class MusE : public QMainWindow
       float fCurCpuLoad;
    public:
       MusE();
+      void populateAddTrack();
+
       void loadDefaultSong(int argc, char** argv);
       bool loadConfigurationColors(QWidget* parent = 0);
       bool saveConfigurationColors(QWidget* parent = 0);

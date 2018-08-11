@@ -29,9 +29,9 @@
 #include <QResizeEvent>
 #include <QPainter>
 
+#include "al/sig.h"
 #include "globals.h"
 #include "bigtime.h"
-#include "song.h"
 #include "app.h"
 #include "gconfig.h"
 #include "audio.h"
@@ -54,7 +54,7 @@ namespace MusEGui {
 BigTime::BigTime(QWidget* parent)
    : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
 {
-      
+  _curPos = 0;
   tickmode = true;
   dwin = new QWidget(this, Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
   dwin->setObjectName("bigtime-dwin");
@@ -195,6 +195,16 @@ void BigTime::configChanged()
       }
 
 //---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void BigTime::songChanged(MusECore::SongChangedFlags_t flags)
+      {
+      if (flags & (SC_MASTER | SC_TEMPO | SC_SIG))
+        updateValue();
+      }
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 
@@ -328,12 +338,28 @@ void BigTime::setPos(int idx, unsigned v, bool)
 {
   if (idx == 0)
   {
+    _curPos = v;
     int calcV = v%(MusEGlobal::config.midiDivision*2);
     double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
     metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
     //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",v,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);
     setString(v);
   }
+  metronome->update();
+}
+
+//---------------------------------------------------------
+//   updateValue
+//---------------------------------------------------------
+
+void BigTime::updateValue()
+{
+  int calcV = _curPos%(MusEGlobal::config.midiDivision*2);
+  double rangeAdjuster = PI/double(MusEGlobal::config.midiDivision);
+  metronome->setMetronome(sin(double(calcV)*rangeAdjuster));
+  //printf("calcV=%d rangeAdjuster %f metronomePosition=%f midiDivision=%d\n",_curPos,rangeAdjuster, metronomePosition, MusEGlobal::config.midiDivision);
+  setString(_curPos);
+  update();
   metronome->update();
 }
 

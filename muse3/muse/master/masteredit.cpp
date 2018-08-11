@@ -76,25 +76,8 @@ void MasterEdit::songChanged(MusECore::SongChangedFlags_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
         
-      if (type & SC_TEMPO) {
-            int tempo = MusEGlobal::tempomap.tempoAt(MusEGlobal::song->cpos());  // Bypass the useList flag and read from the list.
-            curTempo->blockSignals(true);
-            curTempo->setValue(double(60000000.0/tempo));
-            
-            curTempo->blockSignals(false);
-            }
       if (type & SC_SIG) {
-            int z, n;
-            AL::sigmap.timesig(MusEGlobal::song->cpos(), z, n);
-            curSig->blockSignals(true);
-            curSig->setValue(AL::TimeSignature(z, n));
-            curSig->blockSignals(false);
             sign->redraw();
-            }
-      if (type & SC_MASTER) {
-            enableButton->blockSignals(true);
-            enableButton->setChecked(MusEGlobal::song->masterFlag());
-            enableButton->blockSignals(false);
             }
       }
 
@@ -130,17 +113,6 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
       addToolBar(tools2);
 
-      QToolBar* enableMaster = addToolBar(tr("Enable master"));
-      enableMaster->setObjectName("Enable master");
-      enableButton = new QToolButton();
-      enableButton->setFocusPolicy(Qt::NoFocus);
-      enableButton->setCheckable(true);
-      enableButton->setText(tr("Enable"));
-      enableButton->setToolTip(tr("Enable usage of master track"));
-      enableButton->setChecked(MusEGlobal::song->masterFlag());
-      enableMaster->addWidget(enableButton);
-      connect(enableButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
-
       QToolBar* info = addToolBar(tr("Info"));
       // Make it appear like a Toolbar1 object.
       info->setObjectName("Pos/Snap/Solo-tools");
@@ -169,20 +141,6 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       info->addWidget(rasterLabel);
       connect(rasterLabel, SIGNAL(activated(int)), SLOT(_setRaster(int)));
 
-      //---------values for current position---------------
-      info->addWidget(new QLabel(tr("CurPos ")));
-      curTempo = new MusEGui::TempoEdit(0);
-      curSig   = new SigEdit(0);  // SigEdit is already StrongFocus.
-      curTempo->setFocusPolicy(Qt::StrongFocus);
-      curSig->setValue(AL::TimeSignature(4, 4));
-      curTempo->setToolTip(tr("tempo at current position"));
-      curSig->setToolTip(tr("time signature at current position"));
-      info->addWidget(curTempo);
-      info->addWidget(curSig);
-
-      connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
-      connect(curTempo, SIGNAL(tempoChanged(double)), SLOT(tempoChange(double)));
-                                                                                    
       //---------------------------------------------------
       //    master
       //---------------------------------------------------
@@ -194,11 +152,9 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       vscroll->setRange(30000, 250000);
       time1     = new MusEGui::MTScale(&_raster, mainw, xscale);
       sign      = new MusEGui::SigScale(&_raster, mainw, xscale);
-//      thits     = new MusEGui::HitScale(&_raster, mainw, xscale); DELETETHIS what IS this? delete zhits as well
 
       canvas    = new Master(this, mainw, xscale, yscale);
 
-//      zhits     = new MusEGui::HitScale(&_raster, mainw, xscale);
       time2     = new MusEGui::MTScale(&_raster, mainw, xscale);
       tscale    = new TScale(mainw, yscale);
       time2->setBarLocator(true);
@@ -215,13 +171,9 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       mainGrid->addWidget(MusECore::hLine(mainw),  2, 1);
       mainGrid->addWidget(sign,          3, 1);
       mainGrid->addWidget(MusECore::hLine(mainw),  4, 1);
-//    mainGrid->addWidget(thits,         5, 1); DELETETHIS
-//    mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
       mainGrid->addWidget(canvas,        5, 1);
       mainGrid->addWidget(tscale,        5, 0);
       mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
-//    mainGrid->addWidget(zhits,         9, 1); DELETETHIS
-//    mainGrid->addWidget(MusECore::hLine(mainw),  7, 1);
       mainGrid->addWidget(time2,         7, 1);
       mainGrid->addWidget(hscroll,       8, 1);
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);
@@ -237,38 +189,24 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
       connect(hscroll, SIGNAL(scrollChanged(int)), time1,  SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), sign,   SLOT(setXPos(int)));
-//      connect(hscroll, SIGNAL(scrollChanged(int)), thits,  SLOT(setXPos(int))); DELETETHIS
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
-//      connect(hscroll, SIGNAL(scrollChanged(int)), zhits,  SLOT(setXPos(int)));DELETETHIS
       connect(hscroll, SIGNAL(scrollChanged(int)), time2,  SLOT(setXPos(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)), time1,  SLOT(setXMag(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)), sign,   SLOT(setXMag(int)));
-//      connect(hscroll, SIGNAL(scaleChanged(int)), thits,  SLOT(setXMag(int)));DELETETHIS
       connect(hscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setXMag(int)));
-//      connect(hscroll, SIGNAL(scaleChanged(int)), zhits,  SLOT(setXMag(int))); DELETETHIS
       connect(hscroll, SIGNAL(scaleChanged(int)), time2,  SLOT(setXMag(int)));
 
       connect(time1,  SIGNAL(timeChanged(unsigned)), SLOT(setTime(unsigned)));
-//      connect(sign,   SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned))); DELETETHIS
-//      connect(thits,  SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
-//      connect(canvas, SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
-//      connect(zhits,  SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
       connect(time2,  SIGNAL(timeChanged(unsigned)), SLOT(setTime(unsigned)));
 
       connect(tscale, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
-      connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(posChanged(int,unsigned,bool)));
 
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
-      connect(curSig,   SIGNAL(returnPressed()), SLOT(focusCanvas()));
-      connect(curSig,   SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      connect(curTempo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-      connect(curTempo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      
       initTopwinState();
       finalizeInit();
       }
@@ -415,27 +353,6 @@ void MasterEdit::_setRaster(int index)
       }
 
 //---------------------------------------------------------
-//   posChanged
-//---------------------------------------------------------
-
-void MasterEdit::posChanged(int idx, unsigned val, bool)
-      {
-      if (idx == 0) {
-            int z, n;
-            int tempo = MusEGlobal::tempomap.tempoAt(val); // Bypass the useList flag and read from the list.
-            AL::sigmap.timesig(val, z, n);
-            curTempo->blockSignals(true);
-            curSig->blockSignals(true);
-
-            curTempo->setValue(double(60000000.0/tempo));
-            curSig->setValue(AL::TimeSignature(z, n));
-
-            curTempo->blockSignals(false);
-            curSig->blockSignals(false);
-            }
-      }
-
-//---------------------------------------------------------
 //   setTime
 //---------------------------------------------------------
 
@@ -465,23 +382,4 @@ void MasterEdit::setTempo(int val)
             }
       }
       
-void MasterEdit::sigChange(const AL::TimeSignature& sig)
-{
-  // TODO: FIXME: Tempo/sig undo + redo broken here. Either fix tempo and sig, or finish something here...
-  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
-}
-
-void MasterEdit::tempoChange(double t)
-{
-  if(int(t) == 0)
-    return;
-  
-  // TODO: FIXME: Tempo/sig undo + redo broken here. Either fix tempo and sig, or finish something here... Also in transport.
-  //MusEGlobal::song->startUndo();
-  //iTEvent e = find(tick);
-  //MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
-  MusEGlobal::audio->msgAddTempo(MusEGlobal::song->cPos().tick(), int(60000000.0/t), true);  // Add will replace if found. 
-  //MusEGlobal::song->endUndo(SC_TEMPO);
-}
-
 } // namespace MusEGui

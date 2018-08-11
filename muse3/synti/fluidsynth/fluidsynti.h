@@ -37,12 +37,13 @@
 #include <pthread.h>
 #include <string>
 
+#include <QThread>
+#include <QMutex>
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"
-//#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
-#include "muse/midictrl.h"
+#include "muse/midictrl_consts.h"
 #include "common_defs.h"
 
 // TODO: Try to not include this. Standalone build of plugin?
@@ -96,13 +97,26 @@ static const int FS_PITCHWHEELSENS  = 0 + MusECore::CTRL_RPN_OFFSET;
 // can only have one soundfont, but one soundfont can have many channels)
 
 struct FluidChannel
-      {
+{
       byte font_extid, font_intid, preset, drumchannel;
       byte banknum; // hbank
-      //FluidSoundFont* font;
-      };
+};
+
+class LoadFontWorker : public QObject
+{
+      Q_OBJECT
+  public:
+      LoadFontWorker() {}
+      void loadFont(void*);
+  signals:
+      void loadFontSignal(void*);
+
+  private slots:
+      void execLoadFont(void*);
+};
 
 class FluidSynth : public Mess {
+
    private:
       bool pushSoundfont (const char*, int);
       void sendSysex(int l, const unsigned char* d);
@@ -120,7 +134,8 @@ class FluidSynth : public Mess {
 
       FluidChannel channels[FS_MAX_NR_OF_CHANNELS];
       std::string lastdir;
-      pthread_t fontThread;
+      QThread fontLoadThread;
+      LoadFontWorker fontWorker;
       const MidiPatch * getFirstPatch (int channel) const;
       const MidiPatch* getNextPatch (int, const MidiPatch *) const;
 
@@ -130,7 +145,7 @@ class FluidSynth : public Mess {
       int cho_num, cho_type;
 
 public:
-      FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex);
+      FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex);
       virtual ~FluidSynth();
       bool init(const char*);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
@@ -142,18 +157,15 @@ public:
       virtual bool setController(int, int, int);
       void setController(int, int , int, bool);
       virtual void getInitData(int*, const unsigned char**);
-      virtual QString getPatchName(int, int, bool) const;
+      virtual const char* getPatchName(int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);
       #ifdef HAVE_INSTPATCH
       // True if it found a name.
-      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, QString* name) const;
+      virtual bool getNoteSampleName(bool drum, int channel, int patch, int note, const char** name) const;
       #endif
 
-      //virtual bool hasGui() const { return true; }
-      //virtual bool guiVisible() const;
-      //virtual void showGui(bool val);
       virtual bool hasNativeGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool val);
@@ -168,7 +180,7 @@ public:
 
       fluid_synth_t* fluidsynth;
       FluidSynthGui* gui;
-      pthread_mutex_t *_sfloader_mutex;
+      QMutex& _sfLoaderMutex;
       int currentlyLoadedFonts; //To know whether or not to run the init-parameters
       std::list<FluidSoundFont> stack;
       int nrOfSoundfonts;

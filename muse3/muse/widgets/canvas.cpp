@@ -456,7 +456,8 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       }
 }
 
-#define WHEEL_STEPSIZE 2
+#define HR_WHEEL_STEPSIZE 2
+#define WHEEL_STEPSIZE 50
 //#define WHEEL_DELTA   120
 
 //---------------------------------------------------------
@@ -464,31 +465,55 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 void Canvas::wheelEvent(QWheelEvent* ev)
 {
+    // NOTE: X allows for Alt key + wheel, which changes from vertical
+    //        wheel values to horizontal values! Works in any window.
+  
     int keyState = ev->modifiers();
 
     QPoint delta       = ev->pixelDelta();  // WHEEL_DELTA;
+    
+    int wheel_step_sz = 0;
+    if(delta.isNull())
+    {
+      delta = ev->angleDelta() / 8;
+      if(delta.isNull())
+        return;
+      delta /= 15;
+      wheel_step_sz = WHEEL_STEPSIZE;
+    }
+    else
+    {
+      delta /= 2;
+      wheel_step_sz = HR_WHEEL_STEPSIZE;
+    }
 
     bool shift      = keyState & Qt::ShiftModifier;
     bool ctrl       = keyState & Qt::ControlModifier;
 
     if (ctrl) {  // zoom horizontally
 
-      emit horizontalZoom(ev->delta()>0, ev->globalPos());
+      int d = 0; 
+      if(delta.x() != 0)
+        d = delta.x();
+      else if(delta.y() != 0)
+        d = delta.y();
+      if(d != 0)
+        emit horizontalZoom(d > 0, ev->globalPos());
       return;
     }
 
     if (shift  || delta.x() != 0) { // scroll horizontally
 
-        int scrolldelta = - delta.x() /2;
+        int scrolldelta = - delta.x();
         if (shift) {
-          scrolldelta = - delta.y() /2;
+          scrolldelta = - delta.y();
         }
 
         int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
         if (xpixelscale <= 0) {
           xpixelscale = 1;
         }
-        int scrollstep = WHEEL_STEPSIZE * (scrolldelta);
+        int scrollstep = wheel_step_sz * (scrolldelta);
         scrollstep = scrollstep / 10;
         int newXpos = xpos + xpixelscale * scrollstep;
 
@@ -502,13 +527,13 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
     if (!shift && delta.y() != 0) { // scroll vertically
 
-        int scrolldelta = delta.y() /2;
+        int scrolldelta = delta.y();
         int ypixelscale = rmapyDev(1);
 
         if (ypixelscale <= 0)
               ypixelscale = 1;
 
-        int scrollstep = WHEEL_STEPSIZE * (-scrolldelta);
+        int scrollstep = wheel_step_sz * (-scrolldelta);
         scrollstep = scrollstep / 2;
         int newYpos = ypos + ypixelscale * scrollstep;
 
@@ -797,7 +822,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             //  us in a really BAD state: mouse is grabbed (and hidden) and no way out !
                             //
                             // That is likely just how QWidget works, but here using global cursor overrides 
-                            //  it is disasterous. TESTED: Yes, that is how other controls work. Hitting another 
+                            //  it is disastrous. TESTED: Yes, that is how other controls work. Hitting another 
                             //  button while the mouse has been dragged outside causes it to bypass us !
                             setMouseGrab(true); // CAUTION
                             

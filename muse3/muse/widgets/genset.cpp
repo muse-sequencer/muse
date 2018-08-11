@@ -29,6 +29,7 @@
 #include <QRect>
 #include <QShowEvent>
 #include <QString>
+#include <QButtonGroup>
 #include <QDialog>
 
 #include "genset.h"
@@ -204,6 +205,7 @@ void GlobalSettingsConfig::updateSettings()
       showControlValuesCheckBox->setChecked(MusEGlobal::config.showControlValues);
       monitorOnRecordCheckBox->setChecked(MusEGlobal::config.monitorOnRecord);
       lineEditStyleHackCheckBox->setChecked(MusEGlobal::config.lineEditStyleHack);
+      showNoteNamesCheckBox->setChecked(MusEGlobal::config.showNoteNamesInPianoRoll);
       preferMidiVolumeDbCheckBox->setChecked(MusEGlobal::config.preferMidiVolumeDb);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);
       warnOnFileVersionsCheckBox->setChecked(MusEGlobal::config.warnOnFileVersions);
@@ -417,6 +419,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.showControlValues = showControlValuesCheckBox->isChecked();
       MusEGlobal::config.monitorOnRecord = monitorOnRecordCheckBox->isChecked();
       MusEGlobal::config.lineEditStyleHack = lineEditStyleHackCheckBox->isChecked();
+      MusEGlobal::config.showNoteNamesInPianoRoll = showNoteNamesCheckBox->isChecked();
       MusEGlobal::config.preferMidiVolumeDb = preferMidiVolumeDbCheckBox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();

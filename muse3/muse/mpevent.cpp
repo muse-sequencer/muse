@@ -26,11 +26,8 @@
 
 #include "mpevent.h"
 
-#include "helper.h"
-#include "event.h"
-#include "midictrl.h"
-#include "midiport.h"
-#include "muse/midi.h"
+#include "midictrl_consts.h"
+#include "muse/midi_consts.h"
 
 namespace MusECore {
 
@@ -55,56 +52,6 @@ MEvent::MEvent(unsigned t, int port, int tpe, const unsigned char* data, int len
       setChannel(0);
       }
 
-MEvent::MEvent(unsigned tick, int port, int channel, const Event& e)
-      {
-      setChannel(channel);
-      setTime(tick);
-      setPort(port);
-      setLoopNum(0);
-      switch(e.type()) {
-            case Note:
-                  setType(ME_NOTEON);
-                  setA(e.dataA());
-                  setB(e.dataB());
-                  break;
-            case Controller:
-                  setType(ME_CONTROLLER);
-                  setA(e.dataA());  // controller number
-                  setB(e.dataB());  // controller value
-                  break;
-            case Sysex:
-                  setType(ME_SYSEX);
-                  setData(e.eventData());
-                  break;
-            default:
-                  fprintf(stderr, "MEvent::MEvent(): event type %d not implemented\n",
-                     type());
-                  break;
-            }
-      }
-
-//---------------------------------------------------------
-//   dump
-//---------------------------------------------------------
-
-void MEvent::dump() const
-      {
-      fprintf(stderr, "time:%d port:%d chan:%d ", _time, _port, _channel+1);
-      if (_type == ME_NOTEON) {   
-            QString s = pitch2string(_a);
-            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
-           }
-      else if (_type == ME_NOTEOFF) {  
-            QString s = pitch2string(_a);
-            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
-           }
-      else if (_type == ME_SYSEX) {
-            fprintf(stderr, "SysEx len %d 0x%0x ...\n", len(), data()[0]);
-            }
-      else
-            fprintf(stderr, "type:0x%02x a=%d b=%d\n", _type, _a, _b);
-      }
-
 //---------------------------------------------------------
 //   sortingWeight
 //---------------------------------------------------------
@@ -112,7 +59,7 @@ void MEvent::dump() const
 int MEvent::sortingWeight() const
 {
   // Sorting weight initially worked out by Tim E. Real
-  // Sorted here by most popular for quickest reponse.
+  // Sorted here by most popular for quickest response.
   
   switch(_type)
   {

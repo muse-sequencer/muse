@@ -93,7 +93,9 @@ set_target_properties ( deicsonze
 target_link_libraries(deicsonze
       al
       awl
-      widgets
+      mpevent_module
+      simpler_plugin
+      simpler_plugingui
       synti
       ${QT_LIBRARIES}
       )

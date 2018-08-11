@@ -70,58 +70,6 @@ class MidiDevice;
 class AudioPort;
 class AudioDevice;
 
-// Song changed flags:
-// These are flags, usually passed by connecting to the songChanged() signal,
-//  which inform that various things have changed and appropriate action should 
-//  be taken (redraw, refill lists etc.) upon the signal's reception.
-// NOTE: Use the SongChangedFlags_t typedef in type_defs.h to support all the bits.
-
-#define SC_TRACK_INSERTED             1L
-#define SC_TRACK_REMOVED              2L
-#define SC_TRACK_MODIFIED             4L
-#define SC_PART_INSERTED              8L
-#define SC_PART_REMOVED               0x10L
-#define SC_PART_MODIFIED              0x20L
-#define SC_EVENT_INSERTED             0x40L
-#define SC_EVENT_REMOVED              0x80L
-#define SC_EVENT_MODIFIED             0x100L
-#define SC_SIG                        0x200L        // timing signature
-#define SC_TEMPO                      0x400L        // tempo map changed
-#define SC_MASTER                     0x800L        // master flag changed
-#define SC_SELECTION                  0x1000L       // event selection. part and track selection have their own.
-#define SC_MUTE                       0x2000L
-#define SC_SOLO                       0x4000L
-#define SC_RECFLAG                    0x8000L
-#define SC_ROUTE                      0x10000L      // A route was added, changed, or deleted. Or a midi track's out channel/port was changed.
-#define SC_CHANNELS                   0x20000L
-#define SC_CONFIG                     0x40000L      // midiPort-midiDevice
-#define SC_DRUMMAP                    0x80000L      // must update drumeditor
-#define SC_MIDI_INSTRUMENT            0x100000L     // A midi port or device's instrument has changed
-#define SC_AUDIO_CONTROLLER           0x200000L     // An audio controller value was added deleted or modified.
-#define SC_AUTOMATION                 0x400000L     // A track's automation mode setting changed (off, read, touch, write etc).
-#define SC_AUX                        0x800000L     // A mixer aux was added or deleted. Not adjusted.
-#define SC_RACK                       0x1000000L    // mixer rack changed
-#define SC_CLIP_MODIFIED              0x2000000L
-#define SC_MIDI_CONTROLLER_ADD        0x4000000L    // a hardware midi controller was added or deleted
-// SC_MIDI_TRACK_PROP: A midi track's properties changed (name, thru etc). 
-// For fairly 'static' properties, not frequently changing transp del compr velo or len, 
-//  nor output channel/port (use SC_ROUTE).
-#define SC_MIDI_TRACK_PROP            0x8000000L
-#define SC_PART_SELECTION             0x10000000L   // part selection changed
-#define SC_KEY                        0x20000000L   // key map changed
-#define SC_TRACK_SELECTION            0x40000000L   // track selection changed
-#define SC_PORT_ALIAS_PREFERENCE      0x80000000L   // (Jack) port alias viewing preference has changed
-#define SC_ROUTER_CHANNEL_GROUPING    0x100000000L  // Router channel grouping changed
-#define SC_AUDIO_CONTROLLER_LIST      0x200000000L  // An audio controller list was added deleted or modified.
-#define SC_PIANO_SELECTION            0x400000000L  // Piano keyboard selected note changed.
-#define SC_DRUM_SELECTION             0x800000000L  // Drum list selected note changed.
-#define SC_TRACK_REC_MONITOR          0x1000000000L // Audio or midi track's record monitor changed.
-#define SC_TRACK_MOVED                0x2000000000L // Audio or midi track's position in track list or mixer changed.
-#define SC_TRACK_RESIZED              0x4000000000L // Audio or midi track was resized in the arranger.
-#define SC_STRETCH                    0x8000000000L // A stretch map changed.
-#define SC_AUDIO_CONVERTER            0x10000000000L // An audio converter or audio converter setting changed.
-#define SC_EVERYTHING                 -1L           // global update
-
 #define REC_NOTE_FIFO_SIZE    16
 
 //---------------------------------------------------------

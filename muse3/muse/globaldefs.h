@@ -54,5 +54,8 @@ namespace MusEGui {
 enum EditInstrumentTabType { EditInstrumentPatches=0, EditInstrumentDrumMaps=1, EditInstrumentControllers=2, EditInstrumentSysex=3, EditInstrumentInitSeq=4 };
 }
 
+#define MUSE_MIN_TEMPO_VAL 20
+#define MUSE_MAX_TEMPO_VAL 400
+
 #endif
 

@@ -27,6 +27,7 @@
 #include <list>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <stdint.h>
 
 class QString;
 
@@ -40,15 +41,30 @@ class Pos;
 
 class AudioDevice {
 
+   private:
+      //
+      // The following are for the built-in transport:
+      //
+     
+      // The amount of time to wait before sync times out, in seconds.
+      float _syncTimeout;
+      float _syncTimeoutCounter; // In seconds.
+      int _dummyState;
+      unsigned int _dummyPos;
+      volatile int _dummyStatePending;
+      volatile unsigned int _dummyPosPending;
+  
    public:
       enum { DUMMY_AUDIO=0, JACK_AUDIO=1, RTAUDIO_AUDIO=2 };
       enum PortType { UnknownType=0, AudioPort=1, MidiPort=2 };
       enum PortDirection { UnknownDirection=0, InputPort=1, OutputPort=2 };
       
-      AudioDevice() {}
+      AudioDevice();
       virtual ~AudioDevice() {}
 
       virtual int deviceType() const = 0;
+      virtual bool isRealtime() = 0;
+      virtual int realtimePriority() const = 0; // return zero if not realtime
       
       // Returns true on success.
       virtual bool start(int priority) = 0;
@@ -56,9 +72,11 @@ class AudioDevice {
       virtual void stop () = 0;
       // Estimated current frame.
       // This is meant to be called from threads other than the process thread.
-      virtual int framePos() const = 0;
+      virtual unsigned framePos() const = 0;
+      // A constantly increasing counter, incremented by segment size at cycle start.
       virtual unsigned frameTime() const = 0;
-      virtual double systemTime() const = 0;
+      virtual uint64_t systemTimeUS() const;
+      virtual unsigned curTransportFrame() const { return 0; }
 
       // These are meant to be called from inside process thread only.      
       virtual unsigned framesAtCycleStart() const = 0;
@@ -73,8 +91,6 @@ class AudioDevice {
 
       virtual const char* clientName() = 0;
       
-      //virtual void* registerOutPort(const char* name) = 0;
-      //virtual void* registerInPort(const char* name) = 0;
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
 
@@ -107,19 +123,38 @@ class AudioDevice {
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1) = 0;
       virtual const char* canonicalPortName(void*) = 0;
       virtual unsigned int portLatency(void* port, bool capture) const = 0;
-      virtual int getState() = 0;
-      virtual unsigned getCurFrame() const = 0;
-      virtual bool isRealtime() = 0;
-      virtual int realtimePriority() const = 0; // return zero if not realtime
-      virtual void startTransport() = 0;
-      virtual void stopTransport() = 0;
-      virtual void seekTransport(unsigned frame) = 0;
-      virtual void seekTransport(const Pos &p) = 0;
+      
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual void connectionsChanged() {}
-      virtual int setMaster(bool f) = 0;      
+      virtual int setMaster(bool f) = 0;
+
+      //----------------------------------------------
+      //   Functions for built-in transport.
+      //   Audio devices are free to ignore, defer to, 
+      //    override etc. the built-in transport.
+      //   For example with the Jack driver, we can use
+      //    either Jack's transport or this built-in one.
+      //----------------------------------------------
+      
+      // Sets the amount of time to wait before sync times out, in microseconds.
+      // Note that at least with the Jack driver, this function seems not realtime friendly.
+      virtual void setSyncTimeout(unsigned usec) { _syncTimeout = (float)usec / 1000000.0; }
+      // The number of frames that the driver waits to switch to PLAY
+      //  mode after the audio sync function says it is ready to roll.
+      // For example Jack Transport waits one cycle while our own tranport does not.
+      virtual unsigned transportSyncToPlayDelay() const { return 0; }
+      virtual int getState() { return _dummyState; }
+      virtual unsigned getCurFrame() const { return _dummyPos; }
+      virtual void startTransport();
+      virtual void stopTransport();
+      virtual void seekTransport(unsigned frame);
+      virtual void seekTransport(const Pos &p);
+      // This includes the necessary calls to Audio::sync() and ultimately 
+      //  Audio::process(). There's no need to call them from the device code.
+      // Returns true on success.
+      virtual bool processTransport(unsigned int frames);
       };
 
 } // namespace MusECore

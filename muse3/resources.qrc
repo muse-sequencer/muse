@@ -38,6 +38,25 @@
       <file>svg/solo_proxy_spotlight_on.svg</file>
       <file>svg/solo_proxy_spotlight_on_alone.svg</file>
       <file>svg/solo_and_proxy_spotlight_on.svg</file>
+      
+      <file>svg/stop.svg</file>
+      <file>svg/play_off.svg</file>
+      <file>svg/play_on.svg</file>
+      <file>svg/fast_forward.svg</file>
+      <file>svg/rewind.svg</file>
+      <file>svg/rewind_to_start.svg</file>
+
+      <file>svg/extern_sync_off.svg</file>
+      <file>svg/extern_sync_on.svg</file>
+
+      <file>svg/master_track_off.svg</file>
+      <file>svg/master_track_on.svg</file>
+
+      <file>svg/jack_transport_off.svg</file>
+      <file>svg/jack_transport_on.svg</file>
+
+      <file>svg/metronome_off.svg</file>
+      <file>svg/metronome_on.svg</file>
    </qresource>
 </RCC>
 

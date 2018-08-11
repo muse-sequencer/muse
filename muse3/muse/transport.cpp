@@ -30,6 +30,7 @@
 #include <QVBoxLayout>
 
 #include "awl/posedit.h"
+#include "awl/sigedit.h"
 
 #include "song.h"
 #include "transport.h"
@@ -42,6 +43,9 @@
 #include "gconfig.h"
 #include "app.h"
 #include "audio.h"
+#include "globaldefs.h"
+#include "pixmap_button.h"
+#include "tempolabel.h"
 
 namespace MusEGui {
 
@@ -49,25 +53,24 @@ namespace MusEGui {
 //   toolButton
 //---------------------------------------------------------
 
-static QToolButton* newButton(const QString& s, const QString& tt, 
-                              bool toggle=false, int height=25, QWidget* parent=0)
-      {
-      QToolButton* button = new QToolButton(parent);
-      button->setFixedHeight(height);
-      button->setText(s);
-      button->setCheckable(toggle);
-      button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-      button->setFocusPolicy(Qt::NoFocus);
-      button->setToolTip(tt);
-      return button;
-      }
-
 static QToolButton* newButton(const QPixmap* pm, const QString& tt, 
                               bool toggle=false, QWidget* parent=0)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);
       button->setIcon(QIcon(*pm));
+      button->setCheckable(toggle);
+      button->setToolTip(tt);
+      button->setFocusPolicy(Qt::NoFocus);
+      return button;
+      }
+
+static QToolButton* newButton(const QIcon* icon, const QString& tt,
+                              bool toggle=false, QWidget* parent=0)
+      {
+      QToolButton* button = new QToolButton(parent);
+      button->setFixedHeight(25);
+      button->setIcon(*icon);
       button->setCheckable(toggle);
       button->setToolTip(tt);
       button->setFocusPolicy(Qt::NoFocus);
@@ -119,6 +122,10 @@ void Handle::mousePressEvent(QMouseEvent* ev)
 TempoSig::TempoSig(QWidget* parent)
   : QWidget(parent)
       {
+      //_curVal = 0.0;
+//       _curVal = -1.0;
+//       _extern = false;
+      
       QBoxLayout* vb1 = new QVBoxLayout;
       vb1->setContentsMargins(0, 0, 0, 0);
       vb1->setSpacing(0);
@@ -127,42 +134,58 @@ TempoSig::TempoSig(QWidget* parent)
       vb2->setContentsMargins(0, 0, 0, 0);
       vb2->setSpacing(0);
 
+      QBoxLayout* hb1 = new QHBoxLayout;
+      hb1->setContentsMargins(0, 0, 0, 0);
+      hb1->setSpacing(0);
 
       QFrame* f = new QFrame;
       f->setFrameStyle(QFrame::Panel | QFrame::Sunken);
       f->setLineWidth(1);
 
-      // ORCAN get rid of l1 l2 last arguments (parent)?
-      l1 = new MusEGui::DoubleLabel(120.0, 20.0, 400.0, 0);
-      l1->setFocusPolicy(Qt::NoFocus);
-      l1->setSpecialText(QString("extern"));
-      vb2->addWidget(l1);
+      _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
+      _masterButton->setContentsMargins(0, 0, 0, 0);
+      _masterButton->setCheckable(true);
+      _masterButton->setToolTip(tr("use mastertrack tempo"));
+      _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      _masterButton->setFocusPolicy(Qt::NoFocus);
+      connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
+      hb1->addWidget(_masterButton);
       
-      l2 = new MusEGui::SigLabel(4, 4, 0);
-      l2->setFocusPolicy(Qt::NoFocus);
+      l3 = new QLabel(tr("Tempo/Sig"));
+      l3->setFont(MusEGlobal::config.fonts[2]);
+      vb2->addWidget(l3);
+      l1 = new TempoEdit();
+      l1->setContentsMargins(0, 0, 0, 0);
+      l1->setFocusPolicy(Qt::StrongFocus);
+      l1->setToolTip(tr("mastertrack tempo at current position, or fixed tempo"));
+      hb1->addWidget(l1);
+      vb2->addLayout(hb1);
+      
+      l2 = new Awl::SigEdit(this);
+      l2->setContentsMargins(0, 0, 0, 0);
+      l2->setFocusPolicy(Qt::StrongFocus);
+      l2->setToolTip(tr("time signature at current position"));
+
       vb2->addWidget(l2);
 
       f->setLayout(vb2);
       vb1->addWidget(f);
 
-      l3 = new QLabel(tr("Tempo/Sig"));
-      l3->setFont(MusEGlobal::config.fonts[2]);
-      vb1->addWidget(l3);
-
-      l1->setBackgroundRole(QPalette::Light);
       l1->setAlignment(Qt::AlignCenter);
       l1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      l2->setBackgroundRole(QPalette::Light);
-      l2->setAlignment(Qt::AlignCenter);
       l2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       l3->setAlignment(Qt::AlignCenter);
       l3->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-      connect(l1, SIGNAL(valueChanged(double,int)), SLOT(setTempo(double)));
-      ///connect(l2, SIGNAL(valueChanged(int,int)), SIGNAL(sigChanged(int,int)));
+      connect(l1, SIGNAL(tempoChanged(double)), SLOT(newTempo(double)));
       connect(l2, SIGNAL(valueChanged(const AL::TimeSignature&)), SIGNAL(sigChanged(const AL::TimeSignature&)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
+      connect(l1, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(l1, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(l2, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(l2, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      
       this->setLayout(vb1);
       }
 
@@ -176,13 +199,42 @@ void TempoSig::configChanged()
       }
 
 //---------------------------------------------------------
-//   setTempo
+//   masterToggled
 //---------------------------------------------------------
 
-void TempoSig::setTempo(double t)
+void TempoSig::masterToggled(bool val)
+{
+  emit masterTrackChanged(val);
+}
+
+bool TempoSig::masterTrack() const
+{
+  return _masterButton->isChecked();
+}
+
+void TempoSig::setMasterTrack(bool on)
+{
+  _masterButton->blockSignals(true);
+  _masterButton->setChecked(on);
+  _masterButton->blockSignals(false);
+}
+
+//---------------------------------------------------------
+//   setExternalMode
+//---------------------------------------------------------
+
+void TempoSig::setExternalMode(bool on)
+{
+  l1->setExternalMode(on);
+}
+
+//---------------------------------------------------------
+//   newTempo
+//---------------------------------------------------------
+
+void TempoSig::newTempo(double t)
       {
-      int tempo = int ((1000000.0 * 60.0)/t);
-      emit tempoChanged(tempo);
+        emit tempoChanged(int ((1000000.0 * 60.0) / t));
       }
 
 //---------------------------------------------------------
@@ -191,15 +243,7 @@ void TempoSig::setTempo(double t)
 
 void TempoSig::setTempo(int tempo)
       {
-      double t;
-      if(tempo == 0)
-        t = l1->off() - 1.0;
-      else  
-        t = (1000000.0 * 60.0)/tempo;
-      
-      l1->blockSignals(true);
-      l1->setValue(t);
-      l1->blockSignals(false);
+      l1->setValue((1000000.0 * 60.0)/tempo);
       }
 
 //---------------------------------------------------------
@@ -208,18 +252,7 @@ void TempoSig::setTempo(int tempo)
 
 void TempoSig::setTimesig(int a, int b)
       {
-      l2->setValue(a, b);
-      }
-
-//---------------------------------------------------------
-//   setRecord
-//---------------------------------------------------------
-
-void Transport::setRecord(bool flag)
-      {
-      buttons[5]->blockSignals(true);
-      buttons[5]->setChecked(flag);
-      buttons[5]->blockSignals(false);
+      l2->setValue(AL::TimeSignature(a, b));
       }
 
 //---------------------------------------------------------
@@ -316,13 +349,11 @@ Transport::Transport(QWidget* parent, const char* name)
       //  left right mark
       //-----------------------------------------------------
 
-      // ORCAN: should we change PosEdit constructor so we can call it without a parent argument?
       QVBoxLayout *marken = new QVBoxLayout;
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
       tl1 = new Awl::PosEdit(0);
-      tl1->setMinimumSize(105,0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       tl1->setFocusPolicy(Qt::NoFocus);
 
@@ -334,7 +365,6 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->addWidget(l5);
 
       tl2 = new Awl::PosEdit(0);
-      tl2->setMinimumSize(105,0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
       tl2->setFocusPolicy(Qt::NoFocus);
@@ -360,8 +390,6 @@ Transport::Transport(QWidget* parent, const char* name)
       time1 = new Awl::PosEdit(0);
       time2 = new Awl::PosEdit(0);
       time2->setSmpte(true);
-      time1->setMinimumSize(105,0);
-      time2->setMinimumSize(105,0);
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time1->setFocusPolicy(Qt::NoFocus);
@@ -384,25 +412,25 @@ Transport::Transport(QWidget* parent, const char* name)
       tb = new QHBoxLayout;
       tb->setSpacing(0);
 
-      buttons[0] = newButton(startIcon, tr("rewind to start"));
+      buttons[0] = newButton(rewindToStartSVGIcon, tr("rewind to start"));
       buttons[0]->setWhatsThis(tr("Click this button to rewind to start position"));
 
-      buttons[1] = newButton(frewindIcon, tr("rewind"));
+      buttons[1] = newButton(rewindSVGIcon, tr("rewind"));
       buttons[1]->setAutoRepeat(true);
       buttons[1]->setWhatsThis(tr("Click this button to rewind"));
 
-      buttons[2] = newButton(fforwardIcon, tr("forward"));
+      buttons[2] = newButton(fastForwardSVGIcon, tr("forward"));
       buttons[2]->setAutoRepeat(true);
       buttons[2]->setWhatsThis(tr("Click this button to forward current play position"));
 
-      buttons[3] = newButton(stopIcon, tr("stop"), true);
+      buttons[3] = newButton(stopSVGIcon, tr("stop"), true);
       buttons[3]->setChecked(true);     // set STOP
       buttons[3]->setWhatsThis(tr("Click this button to stop playback"));
 
-      buttons[4] = newButton(playIcon, tr("play"), true);
+      buttons[4] = newButton(playSVGIcon, tr("play"), true);
       buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
-      buttons[5] = newButton(recordIcon, tr("record"), true);
+      buttons[5] = newButton(recMasterSVGIcon, tr("record"), true);
       buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
@@ -430,38 +458,44 @@ Transport::Transport(QWidget* parent, const char* name)
       button1->setContentsMargins(0, 0, 0, 0);
       button1->setSpacing(0);
 
-      quantizeButton = newButton(tr("AC"), tr("quantize during record"), true,19);
+      clickButton = new IconButton(metronomeOnSVGIcon, metronomeOffSVGIcon, 0, 0, false, true);
+      clickButton->setContentsMargins(0, 0, 0, 0);
+      clickButton->setCheckable(true);
+      clickButton->setToolTip(tr("metronome on/off"));
+      clickButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+        
+      syncButton = new IconButton(externSyncOnSVGIcon, externSyncOffSVGIcon, 0, 0, false, true);
+      syncButton->setContentsMargins(0, 0, 0, 0);
+      syncButton->setCheckable(true);
+      syncButton->setToolTip(tr("external sync on/off"));
+      syncButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+        
+      jackTransportButton = new IconButton(jackTransportOnSVGIcon, jackTransportOffSVGIcon, 0, 0, false, true);
+      jackTransportButton->setContentsMargins(0, 0, 0, 0);
+      jackTransportButton->setCheckable(true);
+      jackTransportButton->setToolTip(tr("Jack Transport on/off"));
+      jackTransportButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
-      clickButton    = newButton(tr("Click"), tr("metronom click on/off"), true,19);
-      clickButton->setShortcut(shortcuts[SHRT_TOGGLE_METRO].key);
-
-      syncButton     = newButton(tr("Sync"), tr("external sync on/off"), true,19);
-
-      jackTransportButton     = newButton(tr("Jack"), tr("Use Jack Transport"), true,19);
-
-      quantizeButton->setChecked(MusEGlobal::song->quantize());
       clickButton->setChecked(MusEGlobal::song->click());
       syncButton->setChecked(MusEGlobal::extSyncFlag.value());
       jackTransportButton->setChecked(MusEGlobal::useJackTransport.value());
-      quantizeButton->setFocusPolicy(Qt::NoFocus);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
       jackTransportButton->setFocusPolicy(Qt::NoFocus);
 
-      button1->addWidget(quantizeButton);
+      button1->addStretch();
       button1->addWidget(clickButton);
       button1->addWidget(syncButton);
       button1->addWidget(jackTransportButton);
-
-      connect(quantizeButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setQuantize(bool)));
+      button1->addStretch();
+      
       connect(clickButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
-
       connect(syncButton, SIGNAL(toggled(bool)), &MusEGlobal::extSyncFlag, SLOT(setValue(bool)));
       connect(jackTransportButton, SIGNAL(toggled(bool)),&MusEGlobal::useJackTransport, SLOT(setValue(bool)));
+
       connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
       connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
 
-      connect(MusEGlobal::song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
       hbox->addLayout(button1);
@@ -474,18 +508,12 @@ Transport::Transport(QWidget* parent, const char* name)
       box5->setSpacing(0);
       box5->setContentsMargins(0, 0, 0, 0);
 
-
       tempo        = new TempoSig;
       tempo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       tempo->setFocusPolicy(Qt::NoFocus);
+      box5->addStretch();
       box5->addWidget(tempo);
-
-      masterButton = newButton(tr("Master"), tr("use master track"), true);
-      masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      masterButton->setFocusPolicy(Qt::NoFocus);
-      box5->addWidget(masterButton);
-
-      connect(masterButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+      box5->addStretch();
 
       hbox->addLayout(box5);
       
@@ -500,6 +528,9 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
       connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
+      connect(tempo, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+      connect(tempo, SIGNAL(escapePressed()), SLOT(setFocus()));
+      connect(tempo, SIGNAL(returnPressed()), SLOT(setFocus()));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
@@ -508,6 +539,9 @@ Transport::Transport(QWidget* parent, const char* name)
       this->setLayout(hbox);
       righthandle = new Handle(this);
       hbox->addWidget(righthandle);
+      
+      songChanged(SC_EVERYTHING);
+      syncChanged(MusEGlobal::extSyncFlag.value());
       }
 
 //---------------------------------------------------------
@@ -533,11 +567,7 @@ void Transport::configChanged()
 
 void Transport::setTempo(int t)
       {
-      static int tempoVal = -1;
-      if (t != tempoVal) {
-            tempo->setTempo(t);
-            tempoVal = t;
-            }
+      tempo->setTempo(t);
       blockSignals(true);
       // Make sure positional controls are updated
       unsigned v = MusEGlobal::song->cpos();
@@ -594,11 +624,11 @@ void Transport::setPos(int idx, unsigned v, bool)
                     slider->setValue(v);
                     slider->blockSignals(false);
                   }  
-                  if (MusEGlobal::song->masterFlag())
-                        setTempo(MusEGlobal::tempomap.tempo(v));
+                  if (!MusEGlobal::extSyncFlag.value())
+                    setTempo(MusEGlobal::tempomap.tempo(v));
+                  
                   {
                   int z, n;
-                  ///sigmap.timesig(v, z, n);
                   AL::sigmap.timesig(v, z, n);
                   setTimesig(z, n);
                   }
@@ -649,6 +679,17 @@ void Transport::rposChanged(const MusECore::Pos& pos)
       }
 
 //---------------------------------------------------------
+//   setRecord
+//---------------------------------------------------------
+
+void Transport::setRecord(bool flag)
+      {
+      buttons[5]->blockSignals(true);
+      buttons[5]->setChecked(flag);
+      buttons[5]->blockSignals(false);
+      }
+
+//---------------------------------------------------------
 //   setPlay
 //---------------------------------------------------------
 
@@ -668,9 +709,7 @@ void Transport::setPlay(bool f)
 
 void Transport::setMasterFlag(bool f)
       {
-      masterButton->blockSignals(true);
-      masterButton->setChecked(f);
-      masterButton->blockSignals(false);
+      tempo->setMasterTrack(f);
       }
 
 //---------------------------------------------------------
@@ -682,17 +721,6 @@ void Transport::setClickFlag(bool f)
       clickButton->blockSignals(true);
       clickButton->setChecked(f);
       clickButton->blockSignals(false);
-      }
-
-//---------------------------------------------------------
-//   setQuantizeFlag
-//---------------------------------------------------------
-
-void Transport::setQuantizeFlag(bool f)
-      {
-      quantizeButton->blockSignals(true);
-      quantizeButton->setChecked(f);
-      quantizeButton->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -732,24 +760,18 @@ void Transport::songChanged(MusECore::SongChangedFlags_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
-      int t = MusEGlobal::tempomap.tempo(cpos);
       if (flags & (SC_MASTER | SC_TEMPO)) {
-            if (MusEGlobal::extSyncFlag.value())
-                  setTempo(0);
-            else
-                  setTempo(t);
+            if(!MusEGlobal::extSyncFlag.value())
+              setTempo(MusEGlobal::tempomap.tempo(cpos));
             }
       if (flags & SC_SIG) {
             int z, n;
-            ///sigmap.timesig(cpos, z, n);
             AL::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
       if (flags & SC_MASTER)
       {
-            masterButton->blockSignals(true);
-            masterButton->setChecked(MusEGlobal::song->masterFlag());
-            masterButton->blockSignals(false);
+            tempo->setMasterTrack(MusEGlobal::song->masterFlag());
       }
       }
 
@@ -768,16 +790,11 @@ void Transport::syncChanged(bool flag)
       buttons[3]->setEnabled(!flag);      // stop
       buttons[4]->setEnabled(!flag);      // play
       slider->setEnabled(!flag);
-      masterButton->setEnabled(!flag);
-      if (flag) {
-            masterButton->blockSignals(true);
-            masterButton->setChecked(false);
-            masterButton->blockSignals(false);
-            MusEGlobal::song->setMasterFlag(false);
-            tempo->setTempo(0);         // slave mode: show "extern"
-            }
-      else
-            tempo->setTempo(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+      tempo->setExternalMode(flag);
+      if(!flag)
+        // Update or initialize the value - this might be the first time setting it.
+        tempo->setTempo(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+     
       MusEGlobal::playAction->setEnabled(!flag);
       MusEGlobal::startAction->setEnabled(!flag);
       MusEGlobal::stopAction->setEnabled(!flag);
@@ -824,6 +841,26 @@ void Transport::playToggled(bool val)
 void Transport::sigChange(const AL::TimeSignature& sig)
 {
   MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+}
+
+void Transport::keyPressEvent(QKeyEvent* ev)
+{
+  switch (ev->key())
+  {
+    case Qt::Key_Escape:
+      ev->accept();
+      // Yield the focus to the transport window.
+      setFocus();
+      return;
+    break;
+
+    default:
+    break;
+  }
+
+  // Let some other higher up window handle it if needed.
+  ev->ignore();
+  QWidget::keyPressEvent(ev);
 }
 
 
