@@ -164,9 +164,6 @@ class Song : public QObject {
        *  would need to be replicated to the newly added clone part!
        */
       // group may be changed! prepareOperationGroup is called on group!
-// REMOVE Tim. citem. Changed.
-//       bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
-//       bool applyOperation(const UndoOp& op, bool doUndo=true);
       // Sender can be set to the caller object and used by it
       //  to ignore self-generated songChanged signals.
       // The songChanged structure will contain this pointer.
@@ -378,8 +375,6 @@ public:
       //   undo, redo, operation groups
       //-----------------------------------------
 
-// REMOVE Tim. citem. Changed.
-//       void startUndo();
       // Sender can be set to the caller object and used by it
       //  to ignore self-generated songChanged signals.
       // The songChanged structure will contain this pointer.
@@ -423,8 +418,6 @@ public:
       void seekTo(int tick);
       // use allowRecursion with care! this could lock up muse if you 
       //  aren't sure that your recursion will be finite!
-// REMOVE Tim. citem. Changed.
-//       void update(MusECore::SongChangedFlags_t flags = -1, bool allowRecursion=false); 
       void update(SongChangedStruct_t flags = SongChangedStruct_t(SC_EVERYTHING),
                   bool allowRecursion=false); 
       void beat();

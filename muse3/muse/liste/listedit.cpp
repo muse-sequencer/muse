@@ -200,8 +200,6 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
        
-// REMOVE Tim. citem. Changed.
-//       if (type == 0)
       if (type._flags == 0)
             return;
       if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
@@ -216,8 +214,6 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
                   return;
                   }
             liste->setSortingEnabled(false);
-// REMOVE Tim. citem. Changed.
-//             if (type == SC_SELECTION) {
             if (type._flags == SC_SELECTION) {
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 

@@ -1346,8 +1346,6 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       if (level && !allowRecursion) {
             printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-// REMOVE Tim. citem. Changed.
-//                    "                          probably cause windows being not up-to-date.\n", (unsigned long)flags, level);
                    "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
             return;
             }
@@ -1828,8 +1826,6 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
 void Song::endMsgCmd()
       {
-// REMOVE Tim. citem. Changed.
-//       if (updateFlags) {
       if (updateFlags._flags) {
             redoList->clearDelete();
             
@@ -1855,8 +1851,6 @@ void Song::undo()
         return;
       }
 
-// REMOVE Tim. citem. Changed.
-//       updateFlags = 0;
       updateFlags = SongChangedStruct_t();
       
       Undo& opGroup = undoList->back();
@@ -1889,8 +1883,6 @@ void Song::redo()
         return;
       }
 
-// REMOVE Tim. citem. Changed.
-//       updateFlags = 0;
       updateFlags = SongChangedStruct_t();
 
       Undo& opGroup = redoList->back();

@@ -1,3 +1,13 @@
+11.08.2018
+      - New: SongChanged flags are now a structure with extra info. (Tim)
+        Introducing SongChangedStruct_t. SongChangedFlags_t is now a
+         member of that structure. New member 'subFlags' holds optional
+         extra bits (we're running out of SongChangedFlags_t bits) which
+         are intended to be a 'sub flags' NOT an extension of flags bits.
+        New member 'sender' should ease a long-time problem of how to
+         ignore self-generated SongChanged signals feeding back to an
+         object with no way to know if they were self-sent. Unused yet...
+      - Fix accidentally broken Arranger cut/paste on 07.08.2018
 09.08.2018
       - Fixed compile error when using internal LV2 support. (Tim)
         System LV2 include paths were being included, taking priority,

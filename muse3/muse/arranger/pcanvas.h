@@ -178,7 +178,7 @@ class PartCanvas : public Canvas {
       void timeChanged(unsigned);
       void tracklistChanged();
       void dclickPart(MusECore::Track*);
-      void selectionChanged(); // REMOVE Tim. citem. Removed. Unused.
+      void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void setUsedTool(int);

@@ -231,17 +231,6 @@ void UndoList::clearDelete()
 //    startUndo
 //---------------------------------------------------------
 
-// REMOVE Tim. citem. Changed.
-// void Song::startUndo()
-//       {
-//       redoList->clearDelete(); // redo must be invalidated when a new undo is started
-//       MusEGlobal::redoAction->setEnabled(false);
-//       setUndoRedoText();
-//       
-//       undoList->push_back(Undo());
-//       updateFlags = 0;
-//       undoMode = true;
-//       }
 void Song::startUndo(void* sender)
       {
       redoList->clearDelete(); // redo must be invalidated when a new undo is started
@@ -1324,13 +1313,6 @@ bool Undo::merge_combo(const Undo& other)
   return mergeable;
 }
 
-// REMOVE Tim. citem. Changed.
-// bool Song::applyOperation(const UndoOp& op, bool doUndo)
-// {
-// 	Undo operations;
-// 	operations.push_back(op);
-// 	return applyOperationGroup(operations, doUndo);
-// }
 bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
 {
 	Undo operations;
@@ -1339,33 +1321,6 @@ bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
 }
 
 
-// REMOVE Tim. citem. Changed.
-// bool Song::applyOperationGroup(Undo& group, bool doUndo)
-// {
-//       if (!group.empty())
-//       {
-//             if (doUndo)
-//                  startUndo();
-// 
-//             MusEGlobal::audio->msgExecuteOperationGroup(group);
-//             
-//             // append all elements from "group" to the end of undoList->back().
-//             if(!undoList->empty())
-//             {
-//               Undo& curUndo = undoList->back();
-//               curUndo.insert(curUndo.end(), group.begin(), group.end());
-//               if (group.combobreaker)
-//                  curUndo.combobreaker=true;
-//             }
-//             
-//             if (doUndo)
-//                  endUndo(0);
-//             
-//             return doUndo;
-//       }
-//       else
-//             return false;
-// }
 bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
 {
       if (!group.empty())
@@ -1392,8 +1347,6 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
       else
             return false;
 }
-
-
 
 //---------------------------------------------------------
 //   revertOperationGroup2

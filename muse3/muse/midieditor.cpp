@@ -210,8 +210,6 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
 void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
       {
       
-// REMOVE Tim. citem. Changed.
-//       if (type) {
       if (type._flags) {
             if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {

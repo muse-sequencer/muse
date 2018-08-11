@@ -512,8 +512,6 @@ void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool d
         sendMsg(&msg);
         operations.executeNonRTStage();
         const SongChangedStruct_t flags = operations.flags() | extraFlags;
-// REMOVE Tim. citem. Changed.
-//         if(doUpdate && flags != 0)
         if(doUpdate && flags._flags != 0)
         {
           MusEGlobal::song->update(flags);
