@@ -83,7 +83,7 @@ class MasterEdit : public MidiEditor {
       void setTempo(int);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void focusCanvas();
 
    signals:

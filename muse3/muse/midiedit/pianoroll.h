@@ -169,7 +169,7 @@ class PianoRoll : public MidiEditor {
       QWidget* genToolbar(QWidget* parent);
       void genTrackInfo(TrackInfoWidget* trackInfo);
       void switchInfo(int);
-      void trackInfoSongChange(MusECore::SongChangedFlags_t flags);
+      void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
 
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
@@ -188,11 +188,11 @@ class PianoRoll : public MidiEditor {
       void setSpeaker(bool);
       void setTime(unsigned);
       void follow(int pos);
-      void songChanged1(MusECore::SongChangedFlags_t);
+      void songChanged1(MusECore::SongChangedStruct_t);
       void configChanged();
       void newCanvasWidth(int);
       void toggleTrackInfo();
-      void updateTrackInfo(MusECore::SongChangedFlags_t);
+      void updateTrackInfo(MusECore::SongChangedStruct_t);
       void deltaModeChanged(bool);
       void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);

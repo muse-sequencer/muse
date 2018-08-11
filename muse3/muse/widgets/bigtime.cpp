@@ -198,9 +198,9 @@ void BigTime::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void BigTime::songChanged(MusECore::SongChangedFlags_t flags)
+void BigTime::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & (SC_MASTER | SC_TEMPO | SC_SIG))
+      if (flags._flags & (SC_MASTER | SC_TEMPO | SC_SIG))
         updateValue();
       }
 

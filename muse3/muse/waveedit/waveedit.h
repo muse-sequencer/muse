@@ -94,7 +94,7 @@ class WaveEdit : public MidiEditor {
       void cmd(int);
       void timeChanged(unsigned t);
       void setTime(unsigned t);
-      void songChanged1(MusECore::SongChangedFlags_t);
+      void songChanged1(MusECore::SongChangedStruct_t);
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);
       void eventColorModeChanged(int);

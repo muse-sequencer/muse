@@ -67,7 +67,7 @@ class TrackComment : public Comment {
       virtual void setText(const QString& s);
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       TrackComment(MusECore::Track*, QWidget*);

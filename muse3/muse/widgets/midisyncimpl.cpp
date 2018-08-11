@@ -268,7 +268,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(useJackTransportChanged(bool)));
   
       // Done in show().
-      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
 
@@ -280,10 +280,10 @@ MidiSyncConfig::~MidiSyncConfig()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiSyncConfig::songChanged(MusECore::SongChangedFlags_t flags)
+void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
 {
       // Is it simply a midi controller value adjustment? Forget it. Otherwise, it's mainly midi port/device changes we want.
-      if(!(flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+      if(!(flags._flags & (SC_CONFIG | SC_MASTER | SC_TEMPO | SC_SIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                     SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                     SC_MIDI_CONTROLLER_ADD)))
         return;
@@ -594,7 +594,7 @@ void MidiSyncConfig::cancel()
 void MidiSyncConfig::show()
 {
   songChanged(-1);
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
   QDialog::show();
 }
@@ -623,7 +623,7 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       }
       
       disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
-      disconnect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      disconnect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       
       e->accept();
       }

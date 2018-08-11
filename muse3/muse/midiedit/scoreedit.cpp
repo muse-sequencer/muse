@@ -214,7 +214,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
     connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
 
-    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), score_canvas, SLOT(song_changed(MusECore::SongChangedFlags_t)));
+    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), score_canvas, SLOT(song_changed(MusECore::SongChangedStruct_t)));
 
     connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
     connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
@@ -528,7 +528,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     clipboard_changed();
     selection_changed();
 
-    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(song_changed(MusECore::SongChangedFlags_t)));
+    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(song_changed(MusECore::SongChangedStruct_t)));
     connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
 
     score_canvas->fully_recalculate();
@@ -656,12 +656,12 @@ void ScoreEdit::quant_combobox_changed(int idx)
     focusCanvas();
 }
 
-void ScoreEdit::song_changed(MusECore::SongChangedFlags_t flags)
+void ScoreEdit::song_changed(MusECore::SongChangedStruct_t flags)
 {
     if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
+    if (flags._flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
     {
         map<const MusECore::Event*, const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
         if (selection.empty())
@@ -1545,16 +1545,16 @@ void ScoreCanvas::fully_recalculate()
     song_changed(SC_EVENT_MODIFIED);
 }
 
-void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
+void ScoreCanvas::song_changed(MusECore::SongChangedStruct_t flags)
 {
     if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
         return;
 
-    if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
+    if (flags._flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
     {
         update_parts();
 
-        if (flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
+        if (flags._flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
         {
             for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
                 it->cleanup_parts();
@@ -1570,7 +1570,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
         }
     }
 
-    if (flags & (SC_PART_MODIFIED |
+    if (flags._flags & (SC_PART_MODIFIED |
                  SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
                  SC_SIG  | SC_KEY) )
     {
@@ -1585,7 +1585,7 @@ void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
         emit canvas_width_changed(canvas_width());
     }
 
-    if (flags & SC_SELECTION)
+    if (flags._flags & SC_SELECTION)
     {
         redraw();
     }

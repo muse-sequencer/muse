@@ -342,7 +342,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
 
       // For the wave editor, let's start with the operation range selection tool.
       canvas->setTool(MusEGui::RangeTool);
@@ -593,12 +593,12 @@ void WaveEdit::readStatus(MusECore::Xml& xml)
 //    signal from "song"
 //---------------------------------------------------------
 
-void WaveEdit::songChanged1(MusECore::SongChangedFlags_t bits)
+void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
       {
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;
 
-        if (bits & SC_SOLO)
+        if (bits._flags & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);

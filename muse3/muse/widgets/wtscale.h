@@ -41,7 +41,7 @@ class WTScale : public View {
       bool barLocator;
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    protected:
       virtual void pdraw(QPainter&, const QRect&);

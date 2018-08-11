@@ -286,7 +286,7 @@ MarkerView::MarkerView(QWidget* parent)
       //    Rest
       //---------------------------------------------------
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       
       updateList();
 
@@ -428,7 +428,7 @@ void MarkerView::deleteMarker()
 //   songChanged
 //---------------------------------------------------------
 
-void MarkerView::songChanged(MusECore::SongChangedFlags_t /*flags*/)
+void MarkerView::songChanged(MusECore::SongChangedStruct_t /*flags*/)
 {
   updateList();
 }

@@ -532,7 +532,7 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(tempo, SIGNAL(escapePressed()), SLOT(setFocus()));
       connect(tempo, SIGNAL(returnPressed()), SLOT(setFocus()));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
@@ -756,20 +756,20 @@ void Transport::setCycleMode(int id)
 //   songChanged
 //---------------------------------------------------------
 
-void Transport::songChanged(MusECore::SongChangedFlags_t flags)
+void Transport::songChanged(MusECore::SongChangedStruct_t flags)
       {
       slider->setRange(0, MusEGlobal::song->len());
       int cpos  = MusEGlobal::song->cpos();
-      if (flags & (SC_MASTER | SC_TEMPO)) {
+      if (flags._flags & (SC_MASTER | SC_TEMPO)) {
             if(!MusEGlobal::extSyncFlag.value())
               setTempo(MusEGlobal::tempomap.tempo(cpos));
             }
-      if (flags & SC_SIG) {
+      if (flags._flags & SC_SIG) {
             int z, n;
             AL::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
-      if (flags & SC_MASTER)
+      if (flags._flags & SC_MASTER)
       {
             tempo->setMasterTrack(MusEGlobal::song->masterFlag());
       }

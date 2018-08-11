@@ -32,7 +32,7 @@ namespace MusECore {
 // These are flags, usually passed by connecting to the songChanged() signal,
 //  which inform that various things have changed and appropriate action should 
 //  be taken (redraw, refill lists etc.) upon the signal's reception.
-// NOTE: Use the SongChangedFlags_t typedef to support all the bits.
+// NOTE: Use the SongChangedStruct_t typedef to support all the bits.
 
 #define SC_TRACK_INSERTED             1
 #define SC_TRACK_REMOVED              2
@@ -79,6 +79,63 @@ namespace MusECore {
 #define SC_EVERYTHING                 -1           // global update
   
 typedef int64_t SongChangedFlags_t;
+typedef int64_t SongChangedSubFlags_t;
+
+struct SongChangedStruct_t
+{
+  // Combination of SC_XX flags.
+  SongChangedFlags_t _flags;
+  // Additional optional flags.
+  SongChangedSubFlags_t _subFlags;
+  // An optional pointer to the object which initiated this song change.
+  // The object's own songChanged() slot (if present) can use this to
+  //  ignore self-generated songChanged signals. This is the only practical
+  //  mechanism available for objects needing to do so. There's really
+  //  no other easy way to igore such signals.
+  void* _sender;
+  
+  SongChangedStruct_t(SongChangedFlags_t flags = 0, SongChangedSubFlags_t subFlags = 0, void* sender = 0) :
+    _flags(flags), _subFlags(subFlags), _sender(sender) { };
+    
+  SongChangedStruct_t& operator|=(const SongChangedStruct_t& f)
+  { _flags |= f._flags; _subFlags |= f._subFlags; return *this; }
+    
+  SongChangedStruct_t& operator|=(SongChangedFlags_t flags)
+  { _flags |= flags; return *this; }
+    
+  SongChangedStruct_t& operator&=(const SongChangedStruct_t& f)
+  { _flags &= f._flags; _subFlags &= f._subFlags; return *this; }
+    
+  SongChangedStruct_t& operator&=(SongChangedFlags_t flags)
+  { _flags &= flags; return *this; }
+    
+//   friend SongChangedStruct_t operator|(const SongChangedStruct_t& a, const SongChangedStruct_t& b)
+//   { SongChangedStruct_t c = a; return c |= b; }
+  friend SongChangedStruct_t operator|(SongChangedStruct_t a, const SongChangedStruct_t& b)
+  { return a |= b; }
+   
+//   friend SongChangedStruct_t operator|(const SongChangedStruct_t& a, SongChangedFlags_t b)
+//   { SongChangedStruct_t c = a; return c |= b; }
+//   friend SongChangedStruct_t operator|(SongChangedStruct_t a, SongChangedFlags_t b)
+//   { return a |= b; }
+  
+  friend SongChangedFlags_t operator|(const SongChangedStruct_t& a, SongChangedFlags_t b)
+  { return a._flags | b; }
+  
+//   friend SongChangedStruct_t operator&(const SongChangedStruct_t& a, const SongChangedStruct_t& b)
+//   { SongChangedStruct_t c = a; return c &= b; }
+  friend SongChangedStruct_t operator&(SongChangedStruct_t a, const SongChangedStruct_t& b)
+  { return a &= b; }
+   
+// //   friend SongChangedStruct_t operator&(const SongChangedStruct_t& a, SongChangedFlags_t b)
+// //   { SongChangedStruct_t c = a; return c &= b; }
+// //   friend SongChangedStruct_t operator&(SongChangedStruct_t a, SongChangedFlags_t b)
+// //   { return a &= b; }
+  
+//   friend SongChangedFlags_t operator&(const SongChangedStruct_t& a, SongChangedFlags_t b)
+//   { return a._flags & b; }
+};
+
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
 

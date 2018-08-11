@@ -147,9 +147,9 @@ WaveCanvas::~WaveCanvas()
 //   songChanged(type)
 //---------------------------------------------------------
 
-void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
+void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
+      if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;
@@ -215,10 +215,10 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   }
             }
       
-      if (flags & SC_CLIP_MODIFIED) {
+      if (flags._flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
             }
-      if (flags & SC_TEMPO) {
+      if (flags._flags & SC_TEMPO) {
             setPos(0, MusEGlobal::song->cpos(), false);
             setPos(1, MusEGlobal::song->lpos(), false);
             setPos(2, MusEGlobal::song->rpos(), false);
@@ -236,11 +236,11 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   }
       }
       
-      bool f1 = flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+      bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
                          SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
                          SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                          SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
-      bool f2 = flags & SC_SELECTION;
+      bool f2 = flags._flags & SC_SELECTION;
       if(f1 || f2)   // Try to avoid all unnecessary emissions.
         emit selectionChanged(x, event, part, !f1);
       

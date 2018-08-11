@@ -173,7 +173,7 @@ class CtrlCanvas : public MusEGui::View {
       void updateSelections();
       
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
       void configChanged();    
       void setCurDrumPitch(int);
 

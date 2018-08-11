@@ -116,7 +116,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void procChannelValbChanged(int);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       MidiInputTransformDialog(QDialog* parent = 0, Qt::WindowFlags fl = 0);

@@ -96,7 +96,7 @@ class AudioComponentRack : public ComponentRack
 
   public slots:
     virtual void configChanged();
-    virtual void songChanged(MusECore::SongChangedFlags_t);
+    virtual void songChanged(MusECore::SongChangedStruct_t);
     
   public:
     AudioComponentRack(MusECore::AudioTrack* track, int id = -1, bool _manageAuxs = false, QWidget* parent = 0, Qt::WindowFlags f = 0);
@@ -200,7 +200,7 @@ class AudioStrip : public Strip {
 
    public slots:
       virtual void configChanged();
-      virtual void songChanged(MusECore::SongChangedFlags_t);
+      virtual void songChanged(MusECore::SongChangedStruct_t);
       void incVolume(int v);
       void incPan(int v);
 

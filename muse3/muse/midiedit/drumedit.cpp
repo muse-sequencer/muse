@@ -602,8 +602,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)),      dlist, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)),      dlist, SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),   dlist, SLOT(setYMag(int)));
@@ -674,18 +674,18 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 //   songChanged1
 //---------------------------------------------------------
 
-void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
+void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
       {
         if(_isDeleting)  // Ignore while deleting to prevent crash.
           return;
         
-        if (bits & SC_SOLO)
+        if (bits._flags & SC_SOLO)
         {
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
         }      
         if ( !old_style_drummap_mode() && 
-             ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+             ( bits._flags & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                        SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
           ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
         

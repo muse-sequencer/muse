@@ -122,7 +122,7 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       void dlvClicked(QTreeWidgetItem*, int);
       void dlvDoubleClicked(QTreeWidgetItem*, int);
       //void renameOk(QListViewItem*, int, const QString&);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       MidiSyncConfig(QWidget* parent=0);

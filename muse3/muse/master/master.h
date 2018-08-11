@@ -77,7 +77,7 @@ class Master : public MusEGui::View {
       void newValRamp(int x1, int y1, int x2, int y2);
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
      
    signals:
       void followEvent(int);

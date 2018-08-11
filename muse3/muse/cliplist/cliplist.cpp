@@ -154,7 +154,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
       connect(editor->view, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(clicked(QTreeWidgetItem*, int)));
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(editor->start, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(startChanged(const MusECore::Pos&)));
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
@@ -193,9 +193,9 @@ void ClipListEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ClipListEdit::songChanged(MusECore::SongChangedFlags_t type)
+void ClipListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if(type & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+      if(type._flags & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
         updateList();
       }
 

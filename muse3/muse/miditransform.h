@@ -134,7 +134,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void insideLoopChanged(bool);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       MidiTransformerDialog(QDialog* parent = 0, Qt::WindowFlags fl = 0);

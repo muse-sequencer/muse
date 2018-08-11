@@ -92,7 +92,7 @@ class MarkerView : public TopWin {
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
       void updateList();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       
    signals:
       void isDeleting(MusEGui::TopWin*);

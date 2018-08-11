@@ -273,7 +273,7 @@ class Audio {
       void msgRevertOperationGroup(Undo&); // similar.
       // Bypass the Undo system and directly execute the pending operations.
       // Do a song update with accumulated flags and extra_flags, if doUpdate is true.
-      void msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate = false, SongChangedFlags_t extraFlags = 0);
+      void msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate = false, SongChangedStruct_t extraFlags = 0);
 
       void msgRemoveTracks();
       void msgRemoveTrack(Track*, bool u = true); // only does applyOperation

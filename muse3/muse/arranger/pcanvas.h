@@ -137,7 +137,7 @@ class PartCanvas : public Canvas {
       virtual void moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
-      virtual void updateSong(DragType, MusECore::SongChangedFlags_t);
+      virtual void updateSong(DragType, MusECore::SongChangedStruct_t);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void viewDropEvent(QDropEvent*);
@@ -178,7 +178,7 @@ class PartCanvas : public Canvas {
       void timeChanged(unsigned);
       void tracklistChanged();
       void dclickPart(MusECore::Track*);
-//       void selectionChanged(); // REMOVE Tim. citem. Removed. Unused.
+      void selectionChanged(); // REMOVE Tim. citem. Removed. Unused.
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void setUsedTool(int);

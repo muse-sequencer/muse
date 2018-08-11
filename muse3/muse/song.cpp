@@ -1340,13 +1340,15 @@ void Song::rewindStart()
 //   update
 //---------------------------------------------------------
 
-void Song::update(MusECore::SongChangedFlags_t flags, bool allowRecursion)
+void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
             printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags, level);
+// REMOVE Tim. citem. Changed.
+//                    "                          probably cause windows being not up-to-date.\n", (unsigned long)flags, level);
+                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags._flags, level);
             return;
             }
       ++level;
@@ -1826,7 +1828,9 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
 
 void Song::endMsgCmd()
       {
-      if (updateFlags) {
+// REMOVE Tim. citem. Changed.
+//       if (updateFlags) {
+      if (updateFlags._flags) {
             redoList->clearDelete();
             
             // It is possible the undo list is empty after removal of an empty undo, 
@@ -1851,7 +1855,9 @@ void Song::undo()
         return;
       }
 
-      updateFlags = 0;
+// REMOVE Tim. citem. Changed.
+//       updateFlags = 0;
+      updateFlags = SongChangedStruct_t();
       
       Undo& opGroup = undoList->back();
       
@@ -1883,7 +1889,9 @@ void Song::redo()
         return;
       }
 
-      updateFlags = 0;
+// REMOVE Tim. citem. Changed.
+//       updateFlags = 0;
+      updateFlags = SongChangedStruct_t();
 
       Undo& opGroup = redoList->back();
       
@@ -2298,13 +2306,13 @@ void Song::seqSignal(int fd)
 
 //                   case 'U': // Send song changed signal
 //                         {
-//                           int d_len = sizeof(SongChangedFlags_t);
+//                           int d_len = sizeof(SongChangedStruct_t);
 //                           if((n - (i + 1)) < d_len)  // i + 1 = data after this 'U' 
 //                           {
-//                             fprintf(stderr, "Song: seqSignal: case U: Not enough bytes read for SongChangedFlags_t !\n");
+//                             fprintf(stderr, "Song: seqSignal: case U: Not enough bytes read for SongChangedStruct_t !\n");
 //                             break;
 //                           }
-//                           SongChangedFlags_t f;
+//                           SongChangedStruct_t f;
 //                           memcpy(&f, &buffer[i + 1], d_len);
 //                           i += d_len; // Move pointer ahead. Loop will also add one ++i. 
 //                           update(f);

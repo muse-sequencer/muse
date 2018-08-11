@@ -1192,10 +1192,10 @@ void MidiComponentRack::patchEditNameClicked(QPoint /*p*/, int id)
 //   songChanged
 //---------------------------------------------------------
 
-void MidiComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
+void MidiComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
+  if(flags._flags & (SC_RACK | SC_MIDI_CONTROLLER_ADD | SC_MIDI_INSTRUMENT))
   {
     scanControllerComponents();
   }
@@ -1766,7 +1766,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
         setupComponentTabbing();
 
       // TODO: Activate this. But owners want to marshall this signal and send it themselves. Change that.
-      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 
@@ -2212,16 +2212,16 @@ void MidiStrip::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
+void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
-      if (mute && (val & SC_MUTE)) {      // mute && off
+      if (mute && (val._flags & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(track->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val & (SC_SOLO | SC_ROUTE))) 
+      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) 
       {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
@@ -2230,17 +2230,17 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
             updateMuteIcon();
       }
       
-      if (val & SC_RECFLAG)
+      if (val._flags & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val._flags & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       
       // Catch when label font changes. 
-      if (val & SC_CONFIG)
+      if (val._flags & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved. 
       }  
@@ -2249,11 +2249,11 @@ void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
       
-      if (val & SC_ROUTE) {
+      if (val._flags & SC_ROUTE) {
         updateRouteButtons();
       }
       
-      if(val & SC_TRACK_REC_MONITOR)
+      if(val._flags & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor)

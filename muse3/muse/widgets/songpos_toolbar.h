@@ -44,7 +44,7 @@ namespace MusEGui
 			virtual void resizeEvent(QResizeEvent*);
 		
 		private slots:
-			void song_changed(MusECore::SongChangedFlags_t);
+			void song_changed(MusECore::SongChangedStruct_t);
 		
 	};
 }

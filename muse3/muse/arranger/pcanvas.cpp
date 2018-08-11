@@ -301,7 +301,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   update
 //---------------------------------------------------------
 
-void PartCanvas::updateSong(DragType t, MusECore::SongChangedFlags_t flags)
+void PartCanvas::updateSong(DragType t, MusECore::SongChangedStruct_t flags)
       {
       MusEGlobal::song->update(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
          ? SC_PART_INSERTED : SC_PART_MODIFIED));
@@ -505,7 +505,7 @@ void PartCanvas::updateSelection()
 //       //             CItems hold an Event smart-pointer which allows write access.
 //       //             This means, that items can (and will!) be selected bypassing the
 //       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
-//       emit selectionChanged();
+      emit selectionChanged();
 }
 
 //---------------------------------------------------------

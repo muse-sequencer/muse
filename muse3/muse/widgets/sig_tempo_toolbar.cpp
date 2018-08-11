@@ -80,7 +80,7 @@ void TempoToolbar::init()
   addWidget(tempo_edit);
   addWidget(tap_button);
 
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
   connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
 
@@ -100,16 +100,16 @@ void TempoToolbar::pos_changed(int,unsigned,bool)
   song_changed(SC_TEMPO);
 }
 
-void TempoToolbar::song_changed(MusECore::SongChangedFlags_t type)
+void TempoToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type & (SC_TEMPO | SC_MASTER))
+  if(type._flags & (SC_TEMPO | SC_MASTER))
   {
     int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
     tempo_edit->blockSignals(true);
     tempo_edit->setValue(double(60000000.0/tempo));
     tempo_edit->blockSignals(false);
   }
-  if(type & SC_MASTER)
+  if(type._flags & SC_MASTER)
   {
     setMasterTrack(MusEGlobal::song->masterFlag());
   }
@@ -198,7 +198,7 @@ void SigToolbar::init()
   addWidget(label);
   addWidget(sig_edit);
   
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
   
   connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
@@ -214,9 +214,9 @@ void SigToolbar::pos_changed(int,unsigned,bool)
   song_changed(SC_SIG);
 }
 
-void SigToolbar::song_changed(MusECore::SongChangedFlags_t type)
+void SigToolbar::song_changed(MusECore::SongChangedStruct_t type)
 {
-  if(type & SC_SIG)
+  if(type._flags & SC_SIG)
   {
     int z, n;
     AL::sigmap.timesig(MusEGlobal::song->cpos(), z, n);

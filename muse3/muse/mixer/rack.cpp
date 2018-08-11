@@ -198,7 +198,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       EffectRackDelegate* er_delegate = new EffectRackDelegate(this, track);
       setItemDelegate(er_delegate);
@@ -238,9 +238,9 @@ EffectRack::~EffectRack()
 //   songChanged
 //---------------------------------------------------------
 
-void EffectRack::songChanged(MusECore::SongChangedFlags_t typ)
+void EffectRack::songChanged(MusECore::SongChangedStruct_t typ)
       {
-      if (typ & (SC_ROUTE | SC_RACK)) {
+      if (typ._flags & (SC_ROUTE | SC_RACK)) {
             updateContents();
        	    }
       }

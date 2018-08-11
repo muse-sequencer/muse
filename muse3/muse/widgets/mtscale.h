@@ -43,7 +43,7 @@ class MTScale : public View {
       bool waveMode;
 
    private slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void configChanged();
 
    protected:

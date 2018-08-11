@@ -59,7 +59,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
@@ -80,10 +80,10 @@ void MTScale::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MTScale::songChanged(MusECore::SongChangedFlags_t type)
+void MTScale::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if (type & (SC_SIG|SC_TEMPO)) {
-           if ((type & SC_TEMPO) && waveMode) {
+      if (type._flags & (SC_SIG|SC_TEMPO)) {
+           if ((type._flags & SC_TEMPO) && waveMode) {
                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
                   pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());

@@ -174,7 +174,7 @@ class WaveCanvas : public EventCanvas {
             redraw();
             }
       QString getCaption() const;
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void range(int* s, int* e) const { *s = startSample; *e = endSample; }
       void selectAtTick(unsigned int tick);
       void selectAtFrame(unsigned int frame);

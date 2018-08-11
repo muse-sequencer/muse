@@ -424,7 +424,7 @@ MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WindowFlags fl
       //---------------------------------------------------
 
       updatePresetList();
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       }
 
 //---------------------------------------------------------
@@ -440,11 +440,11 @@ MidiTransformerDialog::~MidiTransformerDialog()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiTransformerDialog::songChanged(MusECore::SongChangedFlags_t flags)
+void MidiTransformerDialog::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
   //  use SC_CONFIG here, to filter unwanted song change events.
-  if(flags & SC_CONFIG)
+  if(flags._flags & SC_CONFIG)
     updatePresetList();
 }
 
@@ -905,7 +905,7 @@ bool MidiTransformerDialog::isSelected(const MusECore::Event& event)
 
 void MidiTransformerDialog::apply()
       {
-      MusECore::SongChangedFlags_t flags = 0;
+      MusECore::SongChangedStruct_t flags = 0;
 	  
 	  Undo operations;
       bool copyExtract = (data->cmt->funcOp == MusECore::Copy)

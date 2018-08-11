@@ -257,7 +257,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       initMixer();
@@ -868,21 +868,21 @@ QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
 //   songChanged
 //---------------------------------------------------------
 
-void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
+void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
 {
-  DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags);
-  if (flags & SC_TRACK_REMOVED) {
+  DEBUG_MIXER(stderr, "AudioMixerApp::songChanged %llX\n", (long long)flags._flags);
+  if (flags._flags & SC_TRACK_REMOVED) {
         updateStripList();
   }
-  else if (flags & SC_TRACK_INSERTED) {
+  else if (flags._flags & SC_TRACK_INSERTED) {
         updateStripList();
   }
-  DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags);
+  DEBUG_MIXER(stderr, "songChanged action = %ld\n", (long int)flags._flags);
     
   
   // This costly to do every time. Try to filter it according to required flags.
   // The only flags which would require a redraw, which is very costly, are the following:
-  if (flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
+  if (flags._flags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED | SC_TRACK_MOVED
                //| SC_CHANNELS   // Channels due to one/two meters and peak labels can change the strip width.
                //| SC_AUX
               ))
@@ -893,7 +893,7 @@ void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
         (*si)->songChanged(flags);
         }
 
-  if(flags & SC_TRACK_SELECTION)
+  if(flags._flags & SC_TRACK_SELECTION)
     updateSelectedStrips();
 }
 

@@ -87,7 +87,7 @@ class CtrlPanel: public QWidget {
       void ctrlRightClicked(const QPoint& p, int id);
       void ctrlPopupTriggered(QAction* act);
       void velPerNoteClicked();
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
       void configChanged();    
       
    protected slots:

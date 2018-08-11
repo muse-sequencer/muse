@@ -55,24 +55,23 @@ CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
       _isMoving = false;
       }
 
-// REMOVE Tim. citem. Removed.
-// //---------------------------------------------------------
-// //   isSelected
-// //---------------------------------------------------------
-// 
-// bool CItem::isSelected() const
-//       {
-//       return _event.empty() ? _part->selected() : _event.selected();
-//       }
-// 
-// //---------------------------------------------------------
-// //   setSelected
-// //---------------------------------------------------------
-// 
-// void CItem::setSelected(bool f)
-//       {
-//       _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
-//       }
+//---------------------------------------------------------
+//   isSelected
+//---------------------------------------------------------
+
+bool CItem::isSelected() const
+      {
+      return _event.empty() ? _part->selected() : _event.selected();
+      }
+
+//---------------------------------------------------------
+//   setSelected
+//---------------------------------------------------------
+
+void CItem::setSelected(bool f)
+      {
+      _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
+      }
 
 //---------------------------------------------------------
 //   CItemList

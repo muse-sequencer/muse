@@ -99,7 +99,7 @@ class Song : public QObject {
 
       TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
       
-      MusECore::SongChangedFlags_t updateFlags;
+      MusECore::SongChangedStruct_t updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
       MidiTrackList  _midis;
@@ -163,8 +163,15 @@ class Song : public QObject {
        *  to AddEvent/DeleteEvent/ModifyEvent/SelectEvent events which
        *  would need to be replicated to the newly added clone part!
        */
-      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
-      bool applyOperation(const UndoOp& op, bool doUndo=true);
+      // group may be changed! prepareOperationGroup is called on group!
+// REMOVE Tim. citem. Changed.
+//       bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
+//       bool applyOperation(const UndoOp& op, bool doUndo=true);
+      // Sender can be set to the caller object and used by it
+      //  to ignore self-generated songChanged signals.
+      // The songChanged structure will contain this pointer.
+      bool applyOperationGroup(Undo& group, bool doUndo=true, void* sender = 0);
+      bool applyOperation(const UndoOp& op, bool doUndo=true, void* sender = 0);
       
       /** this sends emits a signal to each MidiEditor or whoever is interested.
        *  For each part which is 1) opened in this MidiEditor and 2) which is
@@ -371,8 +378,13 @@ public:
       //   undo, redo, operation groups
       //-----------------------------------------
 
-      void startUndo();
-      void endUndo(MusECore::SongChangedFlags_t);
+// REMOVE Tim. citem. Changed.
+//       void startUndo();
+      // Sender can be set to the caller object and used by it
+      //  to ignore self-generated songChanged signals.
+      // The songChanged structure will contain this pointer.
+      void startUndo(void* sender = 0);
+      void endUndo(MusECore::SongChangedStruct_t);
 
       void undoOp(UndoOp::UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
@@ -397,7 +409,7 @@ public:
       //-----------------------------------------
 
       void dumpMaster();
-      void addUpdateFlags(MusECore::SongChangedFlags_t f)  { updateFlags |= f; }
+      void addUpdateFlags(MusECore::SongChangedStruct_t f)  { updateFlags |= f; }
 
       //-----------------------------------------
       //   Python bridge related
@@ -411,7 +423,10 @@ public:
       void seekTo(int tick);
       // use allowRecursion with care! this could lock up muse if you 
       //  aren't sure that your recursion will be finite!
-      void update(MusECore::SongChangedFlags_t flags = -1, bool allowRecursion=false); 
+// REMOVE Tim. citem. Changed.
+//       void update(MusECore::SongChangedFlags_t flags = -1, bool allowRecursion=false); 
+      void update(SongChangedStruct_t flags = SongChangedStruct_t(SC_EVERYTHING),
+                  bool allowRecursion=false); 
       void beat();
 
       void undo();
@@ -454,7 +469,7 @@ public:
       void restartRecording(bool discard = true);
 
    signals:
-      void songChanged(MusECore::SongChangedFlags_t); 
+      void songChanged(MusECore::SongChangedStruct_t); 
       void posChanged(int, unsigned, bool);
       void loopChanged(bool);
       void recordChanged(bool);

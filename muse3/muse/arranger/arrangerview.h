@@ -128,7 +128,7 @@ class ArrangerView : public TopWin
                 void cmd(int);
                 void addNewTrack(QAction* action);
                 void configCustomColumns();
-                void songChanged(MusECore::SongChangedFlags_t);
+                void songChanged(MusECore::SongChangedStruct_t);
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);

@@ -228,7 +228,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       if (!editor->parts()->empty())
             setCurTrackAndPart();
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       setCurDrumPitch(editor->curDrumInstrument());
@@ -463,31 +463,33 @@ void CtrlCanvas::configChanged()
 //    all marked parts are added to the internal event list
 //---------------------------------------------------------
 
-void CtrlCanvas::songChanged(MusECore::SongChangedFlags_t type)
+void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
 {
   if(editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 
   
-  if(type & SC_CONFIG)
+  if(type._flags & SC_CONFIG)
     setFont(MusEGlobal::config.fonts[3]);  
   
   bool changed = false;
-  if(type & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
+  if(type._flags & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
     changed = setCurTrackAndPart();
             
   // Although changing the instrument/device in the
   //  config window generates a type of -1, we can eliminate
   //  some other useless calls using SC_CONFIG, which was not used 
   //  anywhere else in muse before now, except song header.
-  if((type & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) || ((type & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
+  if((type._flags & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP)) ||
+     ((type._flags & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
     setMidiController(_cnum);
   
   if(!curPart)         
     return;
               
-  if(type & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION | SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))
+  if(type._flags & (SC_CONFIG | SC_DRUM_SELECTION | SC_PIANO_SELECTION |
+     SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))
     updateItems();
-  else if(type & SC_SELECTION)
+  else if(type._flags & SC_SELECTION)
     updateSelections();               
 }
 

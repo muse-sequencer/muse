@@ -82,7 +82,7 @@ class ListEdit : public MidiEditor {
       void configChanged();
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void focusCanvas();
 
    signals:

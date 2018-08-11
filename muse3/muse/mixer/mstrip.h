@@ -112,7 +112,7 @@ class MidiComponentRack : public ComponentRack
     
    public slots:
     virtual void configChanged();
-    virtual void songChanged(MusECore::SongChangedFlags_t);
+    virtual void songChanged(MusECore::SongChangedStruct_t);
     
   public:
     MidiComponentRack(MusECore::MidiTrack* track, int id = -1, QWidget* parent = 0, Qt::WindowFlags f = 0);
@@ -265,7 +265,7 @@ class MidiStrip : public Strip {
       virtual void heartBeat();
 
    public slots:
-      virtual void songChanged(MusECore::SongChangedFlags_t);
+      virtual void songChanged(MusECore::SongChangedStruct_t);
       virtual void configChanged();
       void incVolume(int v);
       void incPan(int v);

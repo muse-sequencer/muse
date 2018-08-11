@@ -72,7 +72,7 @@ namespace MusEGui
             
     private slots:
       void pos_changed(int,unsigned,bool);
-      void song_changed(MusECore::SongChangedFlags_t);
+      void song_changed(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
       void tap_tempo();
       void tap_timer_signal();
@@ -100,7 +100,7 @@ namespace MusEGui
     
     private slots:
       void pos_changed(int,unsigned,bool);
-      void song_changed(MusECore::SongChangedFlags_t);
+      void song_changed(MusECore::SongChangedStruct_t);
   };
   
 }

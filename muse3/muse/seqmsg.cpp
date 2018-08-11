@@ -502,7 +502,7 @@ void Audio::msgRevertOperationGroup(Undo& operations)
 //   Bypass the Undo system and directly execute the pending operations.
 //---------------------------------------------------------
 
-void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate, SongChangedFlags_t extraFlags)
+void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool doUpdate, SongChangedStruct_t extraFlags)
 {
         if(operations.empty())
           return;
@@ -511,8 +511,10 @@ void Audio::msgExecutePendingOperations(PendingOperationList& operations, bool d
         msg.pendingOps=&operations;
         sendMsg(&msg);
         operations.executeNonRTStage();
-        const SongChangedFlags_t flags = operations.flags() | extraFlags;
-        if(doUpdate && flags != 0)
+        const SongChangedStruct_t flags = operations.flags() | extraFlags;
+// REMOVE Tim. citem. Changed.
+//         if(doUpdate && flags != 0)
+        if(doUpdate && flags._flags != 0)
         {
           MusEGlobal::song->update(flags);
           MusEGlobal::song->setDirty();

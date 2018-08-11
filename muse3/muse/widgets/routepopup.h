@@ -88,7 +88,7 @@ class RoutePopupMenu : public PopupMenu
   private slots:
     void routePopupHovered(QAction*);
     void routePopupActivated(QAction*);
-    void songChanged(MusECore::SongChangedFlags_t);
+    void songChanged(MusECore::SongChangedStruct_t);
   
   protected:  
     virtual bool event(QEvent*);

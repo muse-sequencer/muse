@@ -3967,7 +3967,7 @@ RouteDialog::RouteDialog(QWidget* parent)
   connect(srcRoutesButton, SIGNAL(clicked(bool)), SLOT(filterSrcRoutesClicked(bool)));
   connect(dstRoutesButton, SIGNAL(clicked(bool)), SLOT(filterDstRoutesClicked(bool)));
   connect(routeAliasList, SIGNAL(activated(int)), SLOT(preferredRouteAliasChanged(int)));
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 }
 
 void RouteDialog::srcTreeScrollValueChanged(int value)
@@ -4550,9 +4550,9 @@ void RouteDialog::filter(const RouteTreeItemList& srcFilterItems,
 //   songChanged
 //---------------------------------------------------------
 
-void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
+void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
 {
-  if(v & SC_PORT_ALIAS_PREFERENCE)
+  if(v._flags & SC_PORT_ALIAS_PREFERENCE)
   {
     const int idx = routeAliasList->findData(QVariant::fromValue<int>(MusEGlobal::config.preferredRouteNameOrAlias));
     if(idx != -1 && idx != routeAliasList->currentIndex())
@@ -4563,7 +4563,7 @@ void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
     }
   }
   
-  if(v & (SC_ROUTE | SC_CONFIG))
+  if(v._flags & (SC_ROUTE | SC_CONFIG))
   {
     // Refill the lists of available external ports.
     tmpJackOutPorts = MusEGlobal::audioDevice->outputPorts();
@@ -4572,7 +4572,7 @@ void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
     tmpJackMidiInPorts = MusEGlobal::audioDevice->inputPorts(true);
   }
   
-  if(v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+  if(v._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
           SC_ROUTE | SC_CONFIG | SC_CHANNELS | SC_PORT_ALIAS_PREFERENCE)) 
   {
     removeItems();                // Remove unused items.

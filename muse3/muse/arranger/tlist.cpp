@@ -123,7 +123,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(redraw()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(maybeUpdateVolatileCustomColumns()));
       }
@@ -132,16 +132,16 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 //   songChanged
 //---------------------------------------------------------
 
-void TList::songChanged(MusECore::SongChangedFlags_t flags)
+void TList::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_REC_MONITOR
+      if (flags._flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_REC_MONITOR
          | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED
          | SC_TRACK_MOVED
          | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
          | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             update();
-      if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
+      if (flags._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
             adjustScrollbar();
       }
 

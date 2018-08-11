@@ -113,7 +113,7 @@ class EventCanvas : public Canvas {
       bool midiin() const     { return _midiin; }
       bool steprec() const    { return _steprec; }
       virtual QString getCaption() const;
-      virtual void songChanged(MusECore::SongChangedFlags_t);
+      virtual void songChanged(MusECore::SongChangedStruct_t);
       virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
       void playEvents(bool flag) { _playEvents = flag; }
       virtual void selectAtTick(unsigned int tick);

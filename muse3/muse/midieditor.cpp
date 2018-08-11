@@ -207,11 +207,13 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
 //   songChanged
 //---------------------------------------------------------
 
-void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
+void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
       {
       
-      if (type) {
-            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
+// REMOVE Tim. citem. Changed.
+//       if (type) {
+      if (type._flags) {
+            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   genPartlist();
                   // close window if editor has no parts anymore
@@ -225,7 +227,7 @@ void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
             //else if (wview)
             //      wview->songChanged(type);
 
-            if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
+            if (type._flags & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   
                   updateHScrollRange();
@@ -234,7 +236,7 @@ void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
                         setWindowTitle(canvas->getCaption());
                   //else if (wview)
                   //      setWindowTitle(wview->getCaption());
-                  if (type & SC_SIG)
+                  if (type._flags & SC_SIG)
                         time->update();
                         
               }        

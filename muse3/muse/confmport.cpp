@@ -1182,7 +1182,7 @@ MPConfig::MPConfig(QWidget* parent)
       connect(addJACKDevice, SIGNAL(clicked(bool)), SLOT(addJackDeviceClicked()));
       connect(addALSADevice, SIGNAL(clicked(bool)), SLOT(addAlsaDeviceClicked(bool)));
       connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(rbClicked(QTableWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(addSynthDevice, SIGNAL(clicked()), SLOT(addInstanceClicked()));
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
@@ -1265,9 +1265,9 @@ void MPConfig::deviceSelectionChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
+void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
+      if(!(flags._flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_MIDI_INSTRUMENT)))
         return;
     
       addALSADevice->blockSignals(true);

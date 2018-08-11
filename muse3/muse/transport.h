@@ -142,7 +142,7 @@ class Transport : public QWidget
       void rposChanged(const MusECore::Pos&);
       void setRecMode(int);
       void setCycleMode(int);
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);

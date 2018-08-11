@@ -195,18 +195,20 @@ void ListEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
+void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
        
-      if (type == 0)
+// REMOVE Tim. citem. Changed.
+//       if (type == 0)
+      if (type._flags == 0)
             return;
-      if (type & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
+      if (type._flags & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
            SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
+            if (type._flags & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -214,7 +216,9 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
                   return;
                   }
             liste->setSortingEnabled(false);
-            if (type == SC_SELECTION) {
+// REMOVE Tim. citem. Changed.
+//             if (type == SC_SELECTION) {
+            if (type._flags == SC_SELECTION) {
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
@@ -589,7 +593,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       if(pl->empty())
       {

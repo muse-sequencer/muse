@@ -231,14 +231,25 @@ void UndoList::clearDelete()
 //    startUndo
 //---------------------------------------------------------
 
-void Song::startUndo()
+// REMOVE Tim. citem. Changed.
+// void Song::startUndo()
+//       {
+//       redoList->clearDelete(); // redo must be invalidated when a new undo is started
+//       MusEGlobal::redoAction->setEnabled(false);
+//       setUndoRedoText();
+//       
+//       undoList->push_back(Undo());
+//       updateFlags = 0;
+//       undoMode = true;
+//       }
+void Song::startUndo(void* sender)
       {
       redoList->clearDelete(); // redo must be invalidated when a new undo is started
       MusEGlobal::redoAction->setEnabled(false);
       setUndoRedoText();
       
       undoList->push_back(Undo());
-      updateFlags = 0;
+      updateFlags = SongChangedStruct_t(0, 0, sender);
       undoMode = true;
       }
 
@@ -246,7 +257,7 @@ void Song::startUndo()
 //   endUndo
 //---------------------------------------------------------
 
-void Song::endUndo(SongChangedFlags_t flags)
+void Song::endUndo(SongChangedStruct_t flags)
       {
       // It is possible the current list may be empty after our optimizations during appending 
       //  of given operations to the current list. (Or if no operations were pushed between startUndo and endUndo).
@@ -1313,19 +1324,54 @@ bool Undo::merge_combo(const Undo& other)
   return mergeable;
 }
 
-bool Song::applyOperation(const UndoOp& op, bool doUndo)
+// REMOVE Tim. citem. Changed.
+// bool Song::applyOperation(const UndoOp& op, bool doUndo)
+// {
+// 	Undo operations;
+// 	operations.push_back(op);
+// 	return applyOperationGroup(operations, doUndo);
+// }
+bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
 {
 	Undo operations;
 	operations.push_back(op);
-	return applyOperationGroup(operations, doUndo);
+	return applyOperationGroup(operations, doUndo, sender);
 }
 
-bool Song::applyOperationGroup(Undo& group, bool doUndo)
+
+// REMOVE Tim. citem. Changed.
+// bool Song::applyOperationGroup(Undo& group, bool doUndo)
+// {
+//       if (!group.empty())
+//       {
+//             if (doUndo)
+//                  startUndo();
+// 
+//             MusEGlobal::audio->msgExecuteOperationGroup(group);
+//             
+//             // append all elements from "group" to the end of undoList->back().
+//             if(!undoList->empty())
+//             {
+//               Undo& curUndo = undoList->back();
+//               curUndo.insert(curUndo.end(), group.begin(), group.end());
+//               if (group.combobreaker)
+//                  curUndo.combobreaker=true;
+//             }
+//             
+//             if (doUndo)
+//                  endUndo(0);
+//             
+//             return doUndo;
+//       }
+//       else
+//             return false;
+// }
+bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
 {
       if (!group.empty())
       {
             if (doUndo)
-                 startUndo();
+                 startUndo(sender);
 
             MusEGlobal::audio->msgExecuteOperationGroup(group);
             
@@ -1360,20 +1406,20 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
 
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags._flags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
+        if(updateFlags._flags & SC_SIG)
           AL::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags & SC_TRACK_INSERTED)
+        if(updateFlags._flags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -1397,20 +1443,20 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags._flags & SC_TEMPO)
         {
           MusEGlobal::tempomap.normalize();
           MusEGlobal::audio->reSyncAudio();
         }
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
+        if(updateFlags._flags & SC_SIG)
           AL::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
         //  else if it's another audio track need to add aux sends to it.
         // To save from complexity this is done here, after all the operations.
-        if(updateFlags & SC_TRACK_INSERTED)
+        if(updateFlags._flags & SC_TRACK_INSERTED)
         {
           int n = _auxs.size();
           for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i) 
@@ -2446,7 +2492,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         fprintf(stderr, "Song::revertOperationGroup1:ModifySongLen ** adding ModifySongLen operation\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->b, PendingOperationItem::ModifySongLength));
-                        updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
@@ -2886,7 +2932,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
                           removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
@@ -2909,7 +2955,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
 #ifdef _UNDO_DEBUG_
@@ -2935,7 +2981,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
-                            updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                            updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
 #ifdef _UNDO_DEBUG_
@@ -3219,7 +3265,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         fprintf(stderr, "Song::executeOperationGroup1:ModifySongLen ** adding ModifySongLen operation\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->a, PendingOperationItem::ModifySongLength));
-                        updateFlags |= -1;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         

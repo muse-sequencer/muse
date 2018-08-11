@@ -1801,9 +1801,9 @@ void DList::tracklistChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void DList::songChanged(MusECore::SongChangedFlags_t flags)
+void DList::songChanged(MusECore::SongChangedStruct_t flags)
       {
-      if (flags & SC_DRUMMAP) {
+      if (flags._flags & SC_DRUMMAP) {
             redraw();
             }
       }

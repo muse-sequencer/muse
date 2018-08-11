@@ -86,7 +86,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
    public slots:
       void setTrack(MusECore::Track*); 
       void configChanged();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
    
    signals:
       void returnPressed();
@@ -97,7 +97,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       MusECore::Track* track() const { return selected; }
       void setLabelText();
       void setLabelFont();
-      void updateTrackInfo(MusECore::SongChangedFlags_t);
+      void updateTrackInfo(MusECore::SongChangedStruct_t);
 };
 
 } // namespace MusEGui

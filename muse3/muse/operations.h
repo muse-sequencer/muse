@@ -488,9 +488,9 @@ struct PendingOperationItem
     { _type = Uninitialized; }
     
   // Execute the operation. Called only from RT stage 2.
-  SongChangedFlags_t executeRTStage(); 
+    SongChangedStruct_t executeRTStage(); 
   // Execute the operation. Called only from post RT stage 3.
-  SongChangedFlags_t executeNonRTStage(); 
+    SongChangedStruct_t executeNonRTStage(); 
   // Get an appropriate indexing value from ops like AddEvent that use it. Other ops like AddMidiCtrlValList return their type (rather than say, zero).
   int getIndex() const;
   // Whether the two special allocating ops (like AddMidiCtrlValList) are the same. 
@@ -506,20 +506,20 @@ class PendingOperationList : public std::list<PendingOperationItem>
     //  are mixed here, sorting by time is just to speed up searches, we look for operation types.
     std::multimap<int, iterator, std::less<int> > _map; 
     // Accumulated song changed flags.
-    SongChangedFlags_t _sc_flags;
+    SongChangedStruct_t _sc_flags;
     
   public: 
     PendingOperationList() : _sc_flags(0) { }
     // Add an operation. Returns false if already exists, otherwise true. Optimizes all added items (merge, discard, alter, embellish etc.)
     bool add(PendingOperationItem);
     // Execute the RT portion of the operations contained in the list. Called only from RT stage 2.
-    SongChangedFlags_t executeRTStage();
+    SongChangedStruct_t executeRTStage();
     // Execute the Non-RT portion of the operations contained in the list. Called only from post RT stage 3.
-    SongChangedFlags_t executeNonRTStage();
+    SongChangedStruct_t executeNonRTStage();
     // Clear both the list and the map, and flags.
     void clear();
     // Returns the accumulated song changed flags.
-    SongChangedFlags_t flags() const { return _sc_flags; }
+    SongChangedStruct_t flags() const { return _sc_flags; }
     // Find an existing special allocation command (like AddMidiCtrlValList). 
     // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
     iterator findAllocationOp(const PendingOperationItem& op);

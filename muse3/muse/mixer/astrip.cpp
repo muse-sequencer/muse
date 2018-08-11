@@ -653,21 +653,21 @@ void AudioComponentRack::auxRightClicked(QPoint, int)
 //   songChanged
 //---------------------------------------------------------
 
-void AudioComponentRack::songChanged(MusECore::SongChangedFlags_t flags)
+void AudioComponentRack::songChanged(MusECore::SongChangedStruct_t flags)
 {
   // Scan controllers.
-  if(flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
+  if(flags._flags & (SC_RACK | SC_AUDIO_CONTROLLER_LIST))
   {
     scanControllerComponents();
   }
   
   // Take care of scanning aux before setting aux enabled below.
-  if(flags & SC_AUX) 
+  if(flags._flags & SC_AUX) 
   {
     scanAuxComponents();
   }
   
-  if(flags & SC_ROUTE) {
+  if(flags._flags & SC_ROUTE) {
         // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
         // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
         setAuxEnabled(_track->auxRefCount() == 0);
@@ -922,45 +922,45 @@ void AudioStrip::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
+void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
       MusECore::AudioTrack* src = static_cast<MusECore::AudioTrack*>(track);
 
       // Do channels before MusEGlobal::config...
-      if (val & SC_CHANNELS)
+      if (val._flags & SC_CHANNELS)
         updateChannels();
       
       // Catch when label font, or configuration min slider and meter values change.
-      if (val & SC_CONFIG)
+      if (val._flags & SC_CONFIG)
       {
         // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved.
       }
       
-      if (mute && (val & SC_MUTE)) {      // mute && off
+      if (mute && (val._flags & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
             mute->setChecked(src->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
-      if (solo && (val & (SC_SOLO | SC_ROUTE))) {
+      if (solo && (val._flags & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
             solo->setIconSetB(track->internalSolo());
             updateMuteIcon();
             }
-      if (val & SC_RECFLAG)
+      if (val._flags & SC_RECFLAG)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val._flags & SC_TRACK_MODIFIED)
       {
             setLabelText();
       }      
       //if (val & SC_CHANNELS)
       //      updateChannels();
-      if (val & SC_ROUTE) {
+      if (val._flags & SC_ROUTE) {
             updateRouteButtons();
             if (pre) {
                   pre->blockSignals(true);
@@ -969,7 +969,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
                   }
           }
 
-      if(val & SC_TRACK_REC_MONITOR)
+      if(val._flags & SC_TRACK_REC_MONITOR)
       {
         // Set record monitor.
         if(_recMonitor) // && (_recMonitor->isChecked() != track->recMonitor()))
@@ -985,7 +985,7 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       _infoRack->songChanged(val);
       _lowerRack->songChanged(val);
 
-      if (autoType && (val & SC_AUTOMATION)) {
+      if (autoType && (val._flags & SC_AUTOMATION)) {
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
             QPalette palette;

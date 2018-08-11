@@ -166,7 +166,7 @@ class LMaster : public MidiEditor {
       void comboboxTimerSlot();
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void configChanged();
       void focusCanvas();
 

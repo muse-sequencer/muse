@@ -33,11 +33,11 @@ namespace MusEGui
 	{
 		_raster=0;
 		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
 		song_changed(0);
 	}
 	
-	void SongPosToolbarWidget::song_changed(MusECore::SongChangedFlags_t /*flags*/)
+	void SongPosToolbarWidget::song_changed(MusECore::SongChangedStruct_t /*flags*/)
 	{
 //           if(flags == )  // TODO: Filter more stuff out
 //             return;

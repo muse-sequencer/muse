@@ -79,7 +79,7 @@ WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
 
 
       connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(setPos(int,unsigned,bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       songChanged(SC_SELECTION);
       }
 
@@ -253,7 +253,7 @@ QString WaveView::getCaption() const
 //   songChanged
 //---------------------------------------------------------
 
-void WaveView::songChanged(MusECore::SongChangedFlags_t flags)
+void WaveView::songChanged(MusECore::SongChangedStruct_t flags)
       {
       if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?

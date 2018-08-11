@@ -112,7 +112,7 @@ class BigTime : public QWidget {
    public slots:
       void setPos(int, unsigned, bool);
       void configChanged();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void fmtButtonToggled(bool);
    signals:
       void closed();

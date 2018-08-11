@@ -81,7 +81,7 @@ class MidiEditor : public TopWin  {
       void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
    public slots:
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
       void setCurDrumInstrument(int instr);
 
       virtual void updateHScrollRange() { };

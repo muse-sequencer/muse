@@ -247,7 +247,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iPan, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
   connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
@@ -535,7 +535,7 @@ void MidiTrackInfo::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiTrackInfo::songChanged(MusECore::SongChangedFlags_t type)
+void MidiTrackInfo::songChanged(MusECore::SongChangedStruct_t type)
 {
   if(type & SC_TRACK_SELECTION)
   {
@@ -1531,7 +1531,7 @@ void MidiTrackInfo::iPanDoubleClicked()
 //   updateTrackInfo
 //---------------------------------------------------------
 
-void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
+void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedStruct_t flags)
 {
       if(flags == SC_SELECTION || flags == SC_PART_SELECTION || flags == SC_TRACK_SELECTION)
         return;

@@ -153,7 +153,7 @@ class DrumEdit : public MidiEditor {
       void follow(int);
       void newCanvasWidth(int);
       void configChanged();
-      void songChanged1(MusECore::SongChangedFlags_t);
+      void songChanged1(MusECore::SongChangedStruct_t);
       void setStep(QString);
       void setSpeaker(bool);
       void addCtrlClicked();

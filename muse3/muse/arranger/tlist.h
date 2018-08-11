@@ -135,7 +135,7 @@ class TList : public QWidget {
       void chanValueFinished();
       void ctrlValueFinished();
       void instrPopupActivated(QAction*);
-      void songChanged(MusECore::SongChangedFlags_t flags);
+      void songChanged(MusECore::SongChangedStruct_t flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
       void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=NULL);

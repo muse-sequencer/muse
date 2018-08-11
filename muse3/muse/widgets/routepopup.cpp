@@ -1023,7 +1023,7 @@ void RoutePopupMenu::init()
 {
   _hoverIsFromMouse = false;
   connect(this, SIGNAL(hovered(QAction*)), SLOT(routePopupHovered(QAction*)));
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 }
 
 bool RoutePopupMenu::event(QEvent* event)
@@ -2133,14 +2133,14 @@ void RoutePopupMenu::keyPressEvent(QKeyEvent* e)
   PopupMenu::keyPressEvent(e);
 }
 
-void RoutePopupMenu::songChanged(MusECore::SongChangedFlags_t val)
+void RoutePopupMenu::songChanged(MusECore::SongChangedStruct_t val)
 {
-  DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::songChanged flags:%ld", (long int)val);
-  if(val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))
+  DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::songChanged flags:%ld", (long int)val._flags);
+  if(val._flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))
     updateRouteMenus();
-  if(val & SC_PORT_ALIAS_PREFERENCE)
+  if(val._flags & SC_PORT_ALIAS_PREFERENCE)
     preferredPortAliasChanged();
-  if(val & SC_ROUTER_CHANNEL_GROUPING)
+  if(val._flags & SC_ROUTER_CHANNEL_GROUPING)
     routerChannelGroupingChanged();
 }
 

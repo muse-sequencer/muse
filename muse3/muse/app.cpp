@@ -3212,7 +3212,7 @@ void MusE::showBigtime(bool on)
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
             connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
-            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), bigtime, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), bigtime, SLOT(songChanged(MusECore::SongChangedStruct_t)));
             connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
             bigtime->resize(MusEGlobal::config.geometryBigTime.size());
             bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());

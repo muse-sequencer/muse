@@ -491,7 +491,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       vscroll->setPos(KH * 30);
       info->setEnabled(false);
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
 
       setWindowTitle(canvas->getCaption());
       
@@ -546,13 +546,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 //   songChanged1
 //---------------------------------------------------------
 
-void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
+void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
       {
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;
 
         // We must catch this first and be sure to update the strips.
-        if(bits & SC_TRACK_REMOVED)
+        if(bits._flags & SC_TRACK_REMOVED)
         {
 #ifdef _USE_TRACKINFO_ALT
           const int idx = midiTrackInfo ? 2 : 1;
@@ -580,7 +580,7 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
           }
         }
         
-        if (bits & SC_SOLO)
+        if (bits._flags & SC_SOLO)
         {
           if(canvas->track())
             toolbar->setSolo(canvas->track()->solo());
@@ -590,7 +590,7 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)
-        if (bits & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits._flags & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo(-1);
 
         // We must marshall song changed instead of connecting to the strip's song changed
@@ -646,7 +646,7 @@ void PianoRoll::genTrackInfo(TrackInfoWidget* trackInfo)
         trackInfo->addWidget(0, 1);
       }
 
-void PianoRoll::updateTrackInfo(MusECore::SongChangedFlags_t /*flags*/)
+void PianoRoll::updateTrackInfo(MusECore::SongChangedStruct_t /*flags*/)
 {
       MusECore::Part* part = curCanvasPart();
       if(part)
@@ -710,7 +710,7 @@ void PianoRoll::switchInfo(int n)
                   //  otherwise it crashes when loading another song because track is no longer valid
                   //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
                   //  gets called and has a chance to stop the crash.
-                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
                   
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -728,7 +728,7 @@ void PianoRoll::switchInfo(int n)
 //   trackInfoSongChange
 //---------------------------------------------------------
 
-void PianoRoll::trackInfoSongChange(MusECore::SongChangedFlags_t flags)
+void PianoRoll::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
 {
   if(!selected) // || !showTrackinfoFlag)
     return;

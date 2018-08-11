@@ -193,9 +193,9 @@ int PendingOperationItem::getIndex() const
   }
 }  
 
-SongChangedFlags_t PendingOperationItem::executeRTStage()
+SongChangedStruct_t PendingOperationItem::executeRTStage()
 {
-  SongChangedFlags_t flags = 0;
+    SongChangedStruct_t flags = 0;
   switch(_type)
   {
     case ModifyTrackDrumMapItem:
@@ -1290,9 +1290,9 @@ SongChangedFlags_t PendingOperationItem::executeRTStage()
   return flags;
 }
 
-SongChangedFlags_t PendingOperationItem::executeNonRTStage()
+SongChangedStruct_t PendingOperationItem::executeNonRTStage()
 {
-  SongChangedFlags_t flags = 0;
+  SongChangedStruct_t flags = 0;
   switch(_type)
   {
     case AddRoute:
@@ -1388,7 +1388,7 @@ SongChangedFlags_t PendingOperationItem::executeNonRTStage()
   return flags;
 }
 
-SongChangedFlags_t PendingOperationList::executeRTStage()
+SongChangedStruct_t PendingOperationList::executeRTStage()
 {
 #ifdef _PENDING_OPS_DEBUG_
   fprintf(stderr, "PendingOperationList::executeRTStage executing...\n");
@@ -1397,7 +1397,7 @@ SongChangedFlags_t PendingOperationList::executeRTStage()
     _sc_flags |= ip->executeRTStage();
   
   // To avoid doing this item by item, do it here.
-  if(_sc_flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
+  if(_sc_flags._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE))
   {
     MusEGlobal::song->updateSoloStates();
     _sc_flags |= SC_SOLO;
@@ -1406,7 +1406,7 @@ SongChangedFlags_t PendingOperationList::executeRTStage()
   return _sc_flags;
 }
 
-SongChangedFlags_t PendingOperationList::executeNonRTStage()
+SongChangedStruct_t PendingOperationList::executeNonRTStage()
 {
 #ifdef _PENDING_OPS_DEBUG_
   fprintf(stderr, "PendingOperationList::executeNonRTStage executing...\n");

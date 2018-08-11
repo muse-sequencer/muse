@@ -91,7 +91,7 @@ class WaveView : public View {
 
    public slots:
       void setYScale(int);
-      void songChanged(MusECore::SongChangedFlags_t type);
+      void songChanged(MusECore::SongChangedStruct_t type);
 
    signals:
       void followEvent(int);

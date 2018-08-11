@@ -189,7 +189,7 @@ class DList : public View {
 
    public slots:
       void tracklistChanged();
-      void songChanged(MusECore::SongChangedFlags_t);
+      void songChanged(MusECore::SongChangedStruct_t);
       void ourDrumMapChanged(bool);
    
    public:
