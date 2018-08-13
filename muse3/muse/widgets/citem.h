@@ -56,11 +56,17 @@ class CItem {
       CItem(const QPoint& p, const QRect& r);
       CItem();
       CItem(const MusECore::Event& e, MusECore::Part* p);
+     // REMOVE Tim. citem. Added.
+      virtual ~CItem() {}
 
       bool isMoving() const        { return _isMoving;  }
       void setMoving(bool f)       { _isMoving = f;     }
-      bool isSelected() const;
-      void setSelected(bool f);
+// REMOVE Tim. citem. Changed.
+//       bool isSelected() const;
+//       void setSelected(bool f);
+      bool isSelected() const { return _isSelected; }
+      void setSelected(bool f) { _isSelected = f; }
+      virtual bool objectIsSelected() const { return false; }
 
       int width() const            { return _bbox.width(); }
       void setWidth(int l)         { _bbox.setWidth(l); }

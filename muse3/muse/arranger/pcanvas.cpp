@@ -127,7 +127,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       automation.controllerState = doNothing;
       automation.moveController = false;
       automation.breakUndoCombo = false;
-      partsChanged();
+      updateItems();
       }
 
 PartCanvas::~PartCanvas()
@@ -282,7 +282,10 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                               items.add(np);
                               deselectAll();
                               part->setSelected(true);
-                              MusEGlobal::audio->msgAddPart(part);
+// REMOVE Tim. citem. Changed.
+//                               MusEGlobal::audio->msgAddPart(part);
+                              np->setSelected(true);
+                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
                               }
                               break;
                         case MusECore::Track::WAVE:
@@ -297,15 +300,16 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             }
       }
 
-//---------------------------------------------------------
-//   update
-//---------------------------------------------------------
-
-void PartCanvas::updateSong(DragType t, MusECore::SongChangedStruct_t flags)
-      {
-      MusEGlobal::song->update(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
-         ? SC_PART_INSERTED : SC_PART_MODIFIED));
-      }
+// REMOVE Tim. citem. Removed. Unused.
+// //---------------------------------------------------------
+// //   update
+// //---------------------------------------------------------
+// 
+// void PartCanvas::updateSong(DragType t, MusECore::SongChangedStruct_t flags)
+//       {
+//       MusEGlobal::song->update(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
+//          ? SC_PART_INSERTED : SC_PART_MODIFIED));
+//       }
 
 //---------------------------------------------------------
 //   moveCanvasItems
@@ -340,7 +344,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   }
 
   MusEGlobal::song->applyOperationGroup(operations);
-  partsChanged();
+    updateItems();
 }
 
 //---------------------------------------------------------
@@ -430,10 +434,10 @@ void PartCanvas::songIsClearing()
 }
 
 //---------------------------------------------------------
-//   partsChanged
+//   updateItems
 //---------------------------------------------------------
 
-void PartCanvas::partsChanged()
+void PartCanvas::updateItems()
       {
       int sn = -1;
       if (curItem) sn=static_cast<NPart*>(curItem)->serial();
@@ -475,6 +479,38 @@ void PartCanvas::partsChanged()
       redraw();
 }
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   updateItemSelections
+//---------------------------------------------------------
+
+void PartCanvas::updateItemSelections()
+      {
+      bool item_selected;
+      bool part_selected;
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
+//             NPart* npart = static_cast<NPart*>(i->second);
+            CItem* item = i->second;
+//             item_selected = i->second->isSelected();
+//             part_selected = npart->part()->selected();
+            item_selected = item->isSelected();
+            part_selected = item->objectIsSelected();
+//             if (item_selected != part_selected)
+            if (item_selected != part_selected)
+            {
+              // REMOVE Tim. citem. Added. Shouldn't be required.
+              // If the track is not visible, deselect all parts just to keep things tidy.
+              //if(!npart->part()->track()->isVisible())
+              //{
+              //  i->second->setSelected(false);
+              //  continue;
+              //}
+              i->second->setSelected(part_selected);
+            }
+      }
+      redraw();
+}
+
 //---------------------------------------------------------
 //   updateSelection
 //---------------------------------------------------------
@@ -482,29 +518,52 @@ void PartCanvas::partsChanged()
 void PartCanvas::updateSelection()
 {
       Undo operations;
-//       bool changed=false;
+      bool item_selected;
+      bool obj_selected;
+      bool changed=false;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
-            NPart* npart = (NPart*)(i->second);
+//             NPart* npart = (NPart*)(i->second);
+            CItem* item = i->second;
 //             operations.push_back(UndoOp(UndoOp::SelectPart, part->part(), i->second->isSelected(), part->part()->selected()));
-            if (i->second->isSelected() != npart->part()->selected())
-//             {
-                operations.push_back(UndoOp(UndoOp::SelectPart, npart->part(), i->second->isSelected(), npart->part()->selected()));
-//                 changed=true;
-//             }
+            item_selected = item->isSelected();
+            obj_selected = item->objectIsSelected();
+//             if (i->second->isSelected() != item->part()->selected())
+//             if (item->isSelected() != item->objectIsSelected())
+            if (item_selected != obj_selected)
+            {
+//                 operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), i->second->isSelected(), item->part()->selected()));
+                operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected));
+                changed=true;
+            }
       }
 
-//       if (changed)
-//       {
+      if (changed)
+      {
 //             MusEGlobal::song->applyOperationGroup(operations);
-            if(MusEGlobal::song->applyOperationGroup(operations))
-              redraw();
-//       }
 
-      // TODO FIXME: this must be emitted always, because CItem is broken by design:
-      //             CItems hold an Event smart-pointer which allows write access.
-      //             This means, that items can (and will!) be selected bypassing the
-      //             UndoOp::SelectEvent message! FIX THAT! (flo93)
-      emit selectionChanged();
+            // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
+            // Here we have a choice of whether to allow undoing of selections.
+            // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+#if 0
+            if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
+#else
+            //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
+            MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
+#endif
+            //{
+              // REMOVE Tim. citem. Added.
+              fprintf(stderr, "PartCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
+                
+              redraw();
+            //}
+      }
+
+// REMOVE Tim. citem. Removed. Unused.
+//       // TODO FIXME: this must be emitted always, because CItem is broken by design:
+//       //             CItems hold an Event smart-pointer which allows write access.
+//       //             This means, that items can (and will!) be selected bypassing the
+//       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
+//       emit selectionChanged();
 }
 
 //---------------------------------------------------------
@@ -664,7 +723,10 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
             len = AL::sigmap.rasterStep(p->tick(), *_raster);
       p->setLenTick(len);
       p->setSelected(true);
-      MusEGlobal::audio->msgAddPart(p, true); //indicate undo
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::audio->msgAddPart(p, true); //indicate undo
+      i->setSelected(true);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, p));
       }
 
 //---------------------------------------------------------
@@ -674,7 +736,10 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
 bool PartCanvas::deleteItem(CItem* i)
       {
       MusECore::Part*  p = ((NPart*)(i))->part();
-      MusEGlobal::audio->msgRemovePart(p, true); //Invokes songChanged which calls partsChanged which makes it difficult to delete them there
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::audio->msgRemovePart(p, true); //Invokes songChanged which calls partsChanged which makes it difficult to delete them there
+      // Invokes songChanged which calls partsChanged which makes it difficult to delete them there
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, p));
       return true;
       }
 
@@ -846,7 +911,9 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       break;
    case 4:
       copy(pl);
-      MusEGlobal::audio->msgRemovePart(npart->part());
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::audio->msgRemovePart(npart->part());
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, npart->part()));
       break;
    case 5:
       copy(pl);
@@ -1111,6 +1178,9 @@ MusECore::Track* PartCanvas::y2Track(int y) const
 
 void PartCanvas::keyPress(QKeyEvent* event)
       {
+      // REMOVE Tim. citem. Added.
+      fprintf(stderr, "PartCanvas::keyPress isAutoRepeat:%d\n", event->isAutoRepeat());
+      
       int key = event->key();
 
       if (editMode)
@@ -1510,6 +1580,41 @@ void PartCanvas::keyPress(QKeyEvent* event)
             }
       }
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void PartCanvas::keyRelease(QKeyEvent* event)
+{
+      const int key = event->key();
+      
+      // We do not want auto-repeat events.
+      // It does press and release repeatedly. Wait till the last release comes.
+      if(!event->isAutoRepeat())
+      {
+        // REMOVE Tim. citem. Added.
+        fprintf(stderr, "PartCanvas::keyRelease not isAutoRepeat\n");
+      
+        //event->accept();
+      
+        // Select part to the right
+        if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
+        // Select part to the left
+          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key ||
+        // Select nearest part on track above
+          key == shortcuts[SHRT_SEL_ABOVE].key || key == shortcuts[SHRT_SEL_ABOVE_ADD].key ||
+        // Select nearest part on track below
+          key == shortcuts[SHRT_SEL_BELOW].key || key == shortcuts[SHRT_SEL_BELOW_ADD].key)
+        {
+          updateSelection();
+        }
+        return;
+      }
+      
+  Canvas::keyRelease(event);
+}
+
 //---------------------------------------------------------
 //   drawPart
 //    draws a part
@@ -1543,6 +1648,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if((rr & mr).isNull())
         return;
 
+      const bool item_selected = item->isSelected();
       p.setWorldMatrixEnabled(false);
 
       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
@@ -1611,7 +1717,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             brush = QBrush(gradient);
       }
       else
-      if (part->selected())
+// REMOVE Tim. citem. Changed.
+//       if (part->selected())
+      if (item_selected)
       {
           QColor c(Qt::black);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -1698,7 +1806,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         int part_r, part_g, part_b, brightness, color_brightness;
         MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
-        if ((brightness >= 12000 && !part->selected()))
+// REMOVE Tim. citem. Changed.
+//         if ((brightness >= 12000 && !part->selected()))
+        if ((brightness >= 12000 && !item_selected))
           color_brightness=96; //0;    // too light: use dark color
         else
           color_brightness=180; //255;   // too dark: use lighter color
@@ -1750,7 +1860,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (wp)
           drawWavePart(p, rect, wp, r);
       else if (mp)
-          drawMidiPart(p, rect, mp, r, from, to);
+// REMOVE Tim. citem. Changed.
+//           drawMidiPart(p, rect, mp, r, from, to);
+          drawMidiPart(p, rect, mp, r, from, to, item_selected);
 
       p.setWorldMatrixEnabled(false);
 
@@ -1815,9 +1927,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         }
 
         if(((NPart*)item)->rightBorderTouches)
-          p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+          p.setPen(item_selected ? penSelect1V : penNormal1V);
         else
-          p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+          p.setPen(item_selected ? penSelect2V : penNormal2V);
 
         if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
         {
@@ -1826,9 +1940,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         }
 
         if(((NPart*)item)->leftBorderTouches)
-          p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//           p.setPen(part->selected() ? penSelect1V : penNormal1V);
+          p.setPen(item_selected ? penSelect1V : penNormal1V);
         else
-          p.setPen(part->selected() ? penSelect2V : penNormal2V);
+//           p.setPen(part->selected() ? penSelect2V : penNormal2V);
+          p.setPen(item_selected ? penSelect2V : penNormal2V);
 
         if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
         {
@@ -1836,7 +1952,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           p.drawLine(l4);        //  Left line
         }
 
-        p.setPen(part->selected() ? penSelect2H : penNormal2H);
+//         p.setPen(part->selected() ? penSelect2H : penNormal2H);
+        p.setPen(item_selected ? penSelect2H : penNormal2H);
 
         // Respect the requested drawing rectangle. Gives speed boost!
         QLine l1(lbx_c, ys_0, rbx_c, ys_0);
@@ -1854,7 +1971,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             tr.setX(tr.x() + 3);
             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
-            bool rev = brightness >= 12000 && !part->selected();
+//             bool rev = brightness >= 12000 && !part->selected();
+            bool rev = brightness >= 12000 && !item_selected;
             p.setFont(MusEGlobal::config.fonts[4]);
             if (rev)
               p.setPen(Qt::white);
@@ -1906,12 +2024,25 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 //    pr - part rectangle
 //---------------------------------------------------------
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect& rect, MusECore::MidiPart* midipart, const QRect& r, int from, int to)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawMidiPart(QPainter& p, const QRect& rect, MusECore::MidiPart* midipart,
+//                               const QRect& r, int from, int to)
+// {
+//     drawMidiPart(p, rect, midipart->events(), midipart->track(), midipart, r, midipart->tick(), from, to);
+// }
+void PartCanvas::drawMidiPart(QPainter& p, const QRect& rect, MusECore::MidiPart* midipart,
+                              const QRect& r, int from, int to, bool selected)
 {
-    drawMidiPart(p, rect, midipart->events(), midipart->track(), midipart, r, midipart->tick(), from, to);
+    drawMidiPart(p, rect, midipart->events(), midipart->track(), midipart, r, midipart->tick(), from, to, selected);
 }
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventList& events, MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r, int pTick, int from, int to)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventList& events,
+//                               MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r,
+//                               int pTick, int from, int to)
+void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventList& events,
+                              MusECore::MidiTrack *mt, MusECore::MidiPart* pt, const QRect& r,
+                              int pTick, int from, int to, bool selected)
 {
   int color_brightness;
   QColor eventColor;
@@ -1921,7 +2052,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
     int part_r, part_g, part_b, brightness;
     MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
-    if (brightness >= 12000 && !pt->selected()) {
+// REMOVE Tim. citem. Changed.
+//     if (brightness >= 12000 && !pt->selected()) {
+    if (brightness >= 12000 && !selected) {
       eventColor=MusEGlobal::config.partMidiDarkEventColor;
       color_brightness=54; // 96;    // too bright: use dark color
     }
@@ -3129,7 +3262,9 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                     }
                  }
                }
-               drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos);
+// REMOVE Tim. citem. Changed.
+//                drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos);
+               drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos, false);
            }
            yPos+=track->height();
       }

@@ -1313,39 +1313,117 @@ bool Undo::merge_combo(const Undo& other)
   return mergeable;
 }
 
-bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
+// REMOVE Tim. citem. Changed.
+// bool Song::applyOperation(const UndoOp& op, bool doUndo, void* sender)
+// {
+// 	Undo operations;
+// 	operations.push_back(op);
+// 	return applyOperationGroup(operations, doUndo, sender);
+// }
+bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 {
 	Undo operations;
 	operations.push_back(op);
-	return applyOperationGroup(operations, doUndo, sender);
+	return applyOperationGroup(operations, type, sender);
 }
 
 
-bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
+// REMOVE Tim. citem. Changed.
+// bool Song::applyOperationGroup(Undo& group, bool doUndo, void* sender)
+// {
+//       if (!group.empty())
+//       {
+//             if (doUndo)
+//                  startUndo(sender);
+// 
+//             MusEGlobal::audio->msgExecuteOperationGroup(group);
+//             
+//             // append all elements from "group" to the end of undoList->back().
+//             if(!undoList->empty())
+//             {
+//               Undo& curUndo = undoList->back();
+//               curUndo.insert(curUndo.end(), group.begin(), group.end());
+//               if (group.combobreaker)
+//                  curUndo.combobreaker=true;
+//             }
+//             
+//             if (doUndo)
+//                  endUndo(0);
+//             
+//             return doUndo;
+//       }
+//       else
+//             return false;
+// }
+bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
 {
-      if (!group.empty())
-      {
-            if (doUndo)
-                 startUndo(sender);
+  if (!group.empty())
+  {
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationUndoable:
+        undoMode = false;
+      break;
+      
+      case OperationExecuteUpdate:
+      case OperationUndoableUpdate:
+        // Clear the updateFlags and set sender.
+        updateFlags = SongChangedStruct_t(0, 0, sender);
+        undoMode = false;
+      break;
+        
+      case OperationUndoMode:
+        undoMode = true;
+        // Also clears updateFlags and sets sender for us.
+        startUndo(sender);
+      break;
+    }
 
-            MusEGlobal::audio->msgExecuteOperationGroup(group);
-            
-            // append all elements from "group" to the end of undoList->back().
-            if(!undoList->empty())
-            {
-              Undo& curUndo = undoList->back();
-              curUndo.insert(curUndo.end(), group.begin(), group.end());
-              if (group.combobreaker)
-                 curUndo.combobreaker=true;
-            }
-            
-            if (doUndo)
-                 endUndo(0);
-            
-            return doUndo;
-      }
-      else
-            return false;
+    MusEGlobal::audio->msgExecuteOperationGroup(group);
+    
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationExecuteUpdate:
+      break;
+      
+      case OperationUndoable:
+      case OperationUndoableUpdate:
+      case OperationUndoMode:
+        // append all elements from "group" to the end of undoList->back().
+        if(!undoList->empty())
+        {
+          Undo& curUndo = undoList->back();
+          curUndo.insert(curUndo.end(), group.begin(), group.end());
+          if (group.combobreaker)
+            curUndo.combobreaker=true;
+        }
+      break;
+    }
+
+    switch(type)
+    {
+      case OperationExecute:
+      case OperationUndoable:
+        return false;
+      break;
+      
+      case OperationExecuteUpdate:
+      case OperationUndoableUpdate:
+        emit songChanged(updateFlags);
+        return false;
+      break;
+      
+      case OperationUndoMode:
+        // Also emits songChanged and resets undoMode.
+        endUndo(0);
+        return true;
+      break;
+    }
+  }
+        
+  return false;
 }
 
 //---------------------------------------------------------
@@ -2847,7 +2925,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::DeleteRoute:
 #ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent\n");
+                        fprintf(stderr, "Song::executeOperationGroup1:DeleteRoute\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
                         updateFlags |= SC_ROUTE;
@@ -2859,7 +2937,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         // If it's an aux track, notify aux UI controls to reload, or change their names etc.
                         if(editable_track->type() == Track::AUDIO_AUX)
                           updateFlags |= SC_AUX;
-                        break;
                         break;
                         
                   case UndoOp::MoveTrack:

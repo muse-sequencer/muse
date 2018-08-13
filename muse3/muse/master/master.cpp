@@ -397,7 +397,11 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
             }
       
       for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
-        MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
+// REMOVE Tim. citem. Changed.
+//         MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
+        // Operation is undoable but do not start/end undo.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+                              it->first, it->second), MusECore::Song::OperationUndoable);
       
       return !stuff_to_do.empty();
       }
@@ -445,7 +449,11 @@ void Master::newVal(int x1, int x2, int y)
             xx1 = tmp;
             }
       deleteVal1(xx1, xx2);
-      MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+                    xx1, int(60000000000.0/(280000 - y))), MusECore::Song::OperationUndoable);
       redraw();
       }
 } // namespace MusEGui

@@ -612,7 +612,10 @@ bool PianoCanvas::deleteItem(MusEGui::CItem* item)
       if (nevent->part() == curPart) {
             MusECore::Event ev = nevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-            MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                            ev, curPart, false, false));
             return true;
             }
       return false;

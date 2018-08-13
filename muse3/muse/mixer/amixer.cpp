@@ -504,6 +504,7 @@ void AudioMixerApp::moveStrip(Strip *s)
   DEBUG_MIXER(stderr, "Recreate stripList\n");
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW) {
 
+    const int tracks_sz = MusEGlobal::song->tracks()->size();
     for (int i=0; i< stripList.size(); i++)
     {
       Strip *s2 = stripList.at(i);
@@ -516,7 +517,13 @@ void AudioMixerApp::moveStrip(Strip *s)
         // found relevant pos.
         int sTrack = MusEGlobal::song->tracks()->index(s->getTrack());
         int dTrack = MusEGlobal::song->tracks()->index(s2->getTrack());
-        MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
+// REMOVE Tim. citem. Changed.
+//         MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
+        if (sTrack >= 0 && dTrack >= 0)   // sanity check
+        {
+          if (sTrack < tracks_sz && dTrack < tracks_sz)   // sanity check
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::MoveTrack, sTrack, dTrack));
+        }
       }
     }
 

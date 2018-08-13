@@ -1669,7 +1669,9 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    part->addEvent(event);
 
    part->setName(QFileInfo(f->name()).completeBaseName());
-   MusEGlobal::audio->msgAddPart(part);
+// REMOVE Tim. citem. Changed.
+//    MusEGlobal::audio->msgAddPart(part);
+   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
    unsigned endTick = part->tick() + part->lenTick();
    if (MusEGlobal::song->len() < endTick)
       MusEGlobal::song->setLen(endTick);

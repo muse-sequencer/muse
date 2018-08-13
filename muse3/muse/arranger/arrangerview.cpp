@@ -81,6 +81,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   setWindowTitle(tr("MusE: Arranger"));
   setFocusPolicy(Qt::NoFocus);  
 
+  // Already has an object name.
+  visTracks = new VisibleTracks(this);
+  
   arranger = new Arranger(this, "arranger");
   setCentralWidget(arranger);
   //setFocusProxy(arranger);
@@ -106,8 +109,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   // Make sure name doesn't conflict with other TopWin edit toolbar object names.
   editTools->setObjectName("arrangerTools");
 
-  // Already has an object name.
-  visTracks = new VisibleTracks(this);
   addToolBar(visTracks);
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
@@ -119,7 +120,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
-  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
+// REMOVE Tim. citem. Removed. Moved contents into Arranger songChanged() and configChanged().
+//   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
 
 
@@ -371,30 +373,31 @@ void ArrangerView::closeEvent(QCloseEvent* e)
   e->accept();
 }
 
-//---------------------------------------------------------
-//   songChanged
-//---------------------------------------------------------
-
-void ArrangerView::songChanged(MusECore::SongChangedStruct_t type)
-{
-  // TEST Try these, may need more/less. Esp more: Originally songChanged was directly connected to updateVisibleTracksButtons, so... 
-  if(type._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-             //SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
-             //SC_SIG | SC_TEMPO | SC_MASTER |
-             //SC_MIDI_TRACK_PROP |
-             SC_CONFIG | 
-             SC_DRUMMAP)) 
-    visTracks->updateVisibleTracksButtons();
-  
-  if(type._flags & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
-             SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
-    selectionChanged();
-}
+// REMOVE Tim. citem. Removed. Moved contents into Arranger songChanged() and configChanged().
+// //---------------------------------------------------------
+// //   songChanged
+// //---------------------------------------------------------
+// 
+// void ArrangerView::songChanged(MusECore::SongChangedStruct_t type)
+// {
+// // REMOVE Tim. citem. Removed. Moved into Arranger::configChanged().
+// //   // TEST Try these, may need more/less. Esp more: Originally songChanged was directly connected to updateVisibleTracksButtons, so... 
+// //   if(type._flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+// //              SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+// //              //SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
+// //              //SC_SIG | SC_TEMPO | SC_MASTER |
+// //              //SC_MIDI_TRACK_PROP |
+// //              SC_CONFIG | 
+// //              SC_DRUMMAP)) 
+// //     visTracks->updateVisibleTracksButtons();
+//   
+// // REMOVE Tim. citem. Removed. Moved into Arranger::songChanged().
+// //   if(type._flags & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
+// //              SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+// //              SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+// //     selectionChanged();
+// }
       
-
-
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
 {
   xml.tag(level++, "arrangerview");

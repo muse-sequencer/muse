@@ -1161,6 +1161,8 @@ void PianoRoll::setupNewCtrl(CtrlEdit* ctrlEdit)
   connect(ctrlEdit, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
   connect(piano,    SIGNAL(curSelectedPitchChanged(int)), SLOT(setCurDrumInstrument(int)));
   //connect(piano,    SIGNAL(curSelectedPitchChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
+  // REMOVE Tim. citem. Added.
+  connect(canvas,   SIGNAL(curPartHasChanged(MusECore::Part*)), ctrlEdit, SLOT(curPartHasChanged(MusECore::Part*)));
 
   setCurDrumInstrument(piano->curSelectedPitch());
       

@@ -1446,7 +1446,10 @@ void AudioTrack::stopAutoRecord(int n, double v)
         {
           if(automationType() == AUTO_TOUCH)
           {
-              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);
+// REMOVE Tim. citem. Changed.
+//               MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);
+              MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal,
+                             this, n, MusEGlobal::audio->curFramePos(), v));
               _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));
           }
         }

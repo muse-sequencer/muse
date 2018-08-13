@@ -65,6 +65,9 @@ namespace MusEGui {
 class WEvent : public CItem {
    public:
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
+      
+      // REMOVE Tim. citem. Added.
+      bool objectIsSelected() const { return event().selected(); }
       };
 
 //---------------------------------------------------------

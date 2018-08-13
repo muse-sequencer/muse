@@ -53,6 +53,9 @@ class DrumEdit;
 class DEvent : public CItem {
    public:
       DEvent(MusECore::Event e, MusECore::Part* p, int instr);
+      
+      // REMOVE Tim. citem. Added.
+      bool objectIsSelected() const { return event().selected(); }
       };
 
 

@@ -144,7 +144,7 @@ void Song::putEvent(int pv)
 
 void Song::setTempo(int newTempo)
       {
-      applyOperation(UndoOp(UndoOp::SetTempo, pos[0].tick(), newTempo), true);
+      applyOperation(UndoOp(UndoOp::SetTempo, pos[0].tick(), newTempo));
       }
 
 //---------------------------------------------------------
@@ -155,14 +155,22 @@ void Song::setTempo(int newTempo)
 void Song::setSig(int z, int n)
       {
       if (_masterFlag) {
-            MusEGlobal::audio->msgAddSig(pos[0].tick(), z, n);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddSig(pos[0].tick(), z, n);
+            // Add will replace if found. 
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                            pos[0].tick(), z, n));
             }
       }
 
 void Song::setSig(const AL::TimeSignature& sig)
       {
       if (_masterFlag) {
-            MusEGlobal::audio->msgAddSig(pos[0].tick(), sig.z, sig.n);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddSig(pos[0].tick(), sig.z, sig.n);
+            // Add will replace if found. 
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                            pos[0].tick(), sig.z, sig.n));
             }
       }
 
@@ -2379,7 +2387,9 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             part->setName(mt->name());
             event.move(-startTick);
             part->addEvent(event);
-            MusEGlobal::audio->msgAddPart(part);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddPart(part);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part));
             return;
             }
       part = (MidiPart*)(ip->second);
@@ -2536,10 +2546,14 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   switch(sel)
   {
     case ADD_EVENT:
-          MusEGlobal::audio->msgAddACEvent(track, acid, frame, ctlval);
+// REMOVE Tim. citem. Changed.
+//           MusEGlobal::audio->msgAddACEvent(track, acid, frame, ctlval);
+          MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal, track, acid, frame, ctlval));
     break;
     case CLEAR_EVENT:
-          MusEGlobal::audio->msgEraseACEvent(track, acid, frame);
+// REMOVE Tim. citem. Changed.
+//           MusEGlobal::audio->msgEraseACEvent(track, acid, frame);
+          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, track, acid, frame));
     break;
 
     case CLEAR_RANGE:
@@ -2792,7 +2806,9 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               
             e.setTick(tick - part->tick());
             // Indicate do undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgChangeEvent(ev, e, part, true, true, true);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgChangeEvent(ev, e, part, true, true, true);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent, e, ev, part, true, true));
           }
           else
           {
@@ -2801,7 +2817,10 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
             {
               e.setTick(tick - part->tick());
               // Indicate do undo, and do port controller values and clone parts. 
-              MusEGlobal::audio->msgAddEvent(e, part, true, true, true);
+// REMOVE Tim. citem. Changed.
+//               MusEGlobal::audio->msgAddEvent(e, part, true, true, true);
+              MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 
+                              e, part, true, true));
             }
             else
             {
@@ -2814,15 +2833,19 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               part->setName(mt->name());
               e.setTick(tick - startTick);
               part->addEvent(e);
-              // Allow undo.
-              MusEGlobal::audio->msgAddPart(part);
+// REMOVE Tim. citem. Changed.
+//               MusEGlobal::audio->msgAddPart(part);
+              MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part));
             }
           }  
     }
     break;
     case CLEAR_EVENT:
           // Indicate do undo, and do port controller values and clone parts. 
-          MusEGlobal::audio->msgDeleteEvent(ev, part, true, true, true);
+// REMOVE Tim. citem. Changed.
+//           MusEGlobal::audio->msgDeleteEvent(ev, part, true, true, true);
+          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,
+                            ev, part, true, true));
     break;
 
     default:
@@ -3716,13 +3739,24 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                 sprintf(tempStr,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
                 writeStringToFile(fp,tempStr);
 
-                // Indicate no undo, and do not do port controller values and clone parts.
-                MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+// REMOVE Tim. citem. Changed.
+//                 // Indicate no undo, and do not do port controller values and clone parts.
+//                 MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+                // Operation is undoable but do not start/end undo.
+                // Indicate do not do port controller values and clone parts.
+                MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,
+                                 ev, part, false, false), Song::OperationUndoable);
+                
               } else if (ev.type()==Controller) {
                 sprintf(tempStr,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
                 writeStringToFile(fp,tempStr);
-                // Indicate no undo, and do not do port controller values and clone parts.
-                MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+// REMOVE Tim. citem. Changed.
+//                 // Indicate no undo, and do not do port controller values and clone parts.
+//                 MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+                // Operation is undoable but do not start/end undo.
+                // Indicate do not do port controller values and clone parts.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                                 ev, part, false, false), Song::OperationUndoable);
               }
             }
             fclose(fp);
@@ -3775,8 +3809,13 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                   e.setPitch(pitch);
                   e.setVelo(velo);
                   e.setLenTick(len);
-                  // Indicate no undo, and do not do port controller values and clone parts.
-                  MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+// REMOVE Tim. citem. Changed.
+//                   // Indicate no undo, and do not do port controller values and clone parts.
+//                   MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+                  // Operation is undoable but do not start/end undo.
+                  // Indicate do not do port controller values and clone parts.
+                  MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 
+                              e, part, false, false), Song::OperationUndoable);
                 }
                 if (line.startsWith("CONTROLLER"))
                 {
@@ -3789,8 +3828,13 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
                   e.setA(a);
                   e.setB(b);
                   e.setB(c);
-                  // Indicate no undo, and do not do port controller values and clone parts.
-                  MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+// REMOVE Tim. citem. Changed.
+//                   // Indicate no undo, and do not do port controller values and clone parts.
+//                   MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+                  // Operation is undoable but do not start/end undo.
+                  // Indicate do not do port controller values and clone parts.
+                  MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, 
+                              e, part, false, false), Song::OperationUndoable);
                 }
               }
               file.close();

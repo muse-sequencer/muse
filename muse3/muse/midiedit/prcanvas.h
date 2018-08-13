@@ -47,6 +47,9 @@ namespace MusEGui {
 class NEvent : public CItem {
    public:
       NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
+      
+      // REMOVE Tim. citem. Added.
+      bool objectIsSelected() const { return event().selected(); }
       };
 
 class ScrollScale;

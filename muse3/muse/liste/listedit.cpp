@@ -644,7 +644,10 @@ void ListEdit::editInsertNote()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -670,7 +673,10 @@ void ListEdit::editInsertSysEx()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -693,7 +699,10 @@ void ListEdit::editInsertCtrl()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, true, true);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddEvent(event, curPart, true, true, true);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, true, true));
             }
       }
 
@@ -716,7 +725,10 @@ void ListEdit::editInsertMeta()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, false, false));
             }
       }
 
@@ -760,10 +772,16 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
             {
               if(event.type() == MusECore::Controller)
                 // Indicate do undo, and do port controller values and clone parts. 
-                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, true, true);
+// REMOVE Tim. citem. Changed.
+//                 MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, true, true);
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  nevent, event, part, true, true));
               else  
                 // Indicate do undo, and do not do port controller values and clone parts. 
-                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, false, false);
+// REMOVE Tim. citem. Changed.
+//                 MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, false, false);
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  nevent, event, part, false, false));
             }      
           }
       }

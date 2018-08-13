@@ -1709,7 +1709,9 @@ void MPConfig::removeInstanceClicked()
     }
   }
   if(!operations.empty())
-    MusEGlobal::song->applyOperationGroup(operations, true);
+// REMOVE Tim. citem. Changed.
+//     MusEGlobal::song->applyOperationGroup(operations, true);
+    MusEGlobal::song->applyOperationGroup(operations);
 
   if(doupd)
     MusEGlobal::song->update(SC_CONFIG);

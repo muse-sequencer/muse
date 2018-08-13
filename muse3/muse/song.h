@@ -86,6 +86,21 @@ class Song : public QObject {
       enum            { CYCLE_NORMAL, CYCLE_MIX, CYCLE_REPLACE };
       enum { MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
          MARKER_TICK, MARKER_LOCK };
+      enum OperationType {
+        // Execute the operation only, the operation is not un-doable. No song update.
+        OperationExecute,
+        // Execute the operation only, the operation is not un-doable. Song is updated.
+        OperationExecuteUpdate,
+        // Execute the operation, the operation is un-doable,
+        //  and do not 'start' and 'end' the undo mode. No song update.
+        OperationUndoable,
+        // Execute the operation, the operation is un-doable,
+        //  and do not 'start' and 'end' the undo mode. Song is updated.
+        OperationUndoableUpdate,
+        // Execute the operation, the operation is un-doable,
+        //  and 'start' and 'end' the undo mode. Song is updated.
+        OperationUndoMode
+      };
 
    private:
       // fifo for note-on events
@@ -167,8 +182,11 @@ class Song : public QObject {
       // Sender can be set to the caller object and used by it
       //  to ignore self-generated songChanged signals.
       // The songChanged structure will contain this pointer.
-      bool applyOperationGroup(Undo& group, bool doUndo=true, void* sender = 0);
-      bool applyOperation(const UndoOp& op, bool doUndo=true, void* sender = 0);
+// REMOVE Tim. citem. Changed.
+//       bool applyOperationGroup(Undo& group, bool doUndo=true, void* sender = 0);
+//       bool applyOperation(const UndoOp& op, bool doUndo=true, void* sender = 0);
+      bool applyOperationGroup(Undo& group, OperationType type = OperationUndoMode, void* sender = 0);
+      bool applyOperation(const UndoOp& op, OperationType type = OperationUndoMode, void* sender = 0);
       
       /** this sends emits a signal to each MidiEditor or whoever is interested.
        *  For each part which is 1) opened in this MidiEditor and 2) which is
@@ -294,7 +312,8 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, int newPos, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
+      // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.      
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doMove, int newPos, bool doClones=false);
 
       void addPart(Part* part);
       void removePart(Part* part);

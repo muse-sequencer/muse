@@ -118,7 +118,11 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      _setCurPartIfOnlyOneEventIsSelected=false;
+      // REMOVE Tim. citem. Removed. Not sure why this is false.
+      // It may have been relevant only for new vs. old style drum,
+      //  but old has been merged into new for some time now,
+      //  and only new style is available.
+//       _setCurPartIfOnlyOneEventIsSelected=false;
       
       old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
@@ -651,7 +655,10 @@ bool DrumCanvas::deleteItem(CItem* item)
       {
       MusECore::Event ev = ((DEvent*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-      MusEGlobal::audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                      ev, ((DEvent*)item)->part(), false, false));
       return false;
       }
 
@@ -970,8 +977,13 @@ void DrumCanvas::cmd(int cmd)
                               MusECore::Event newEvent = event.clone();
                               // newEvent.setLenTick(drumMap[event.pitch()].len);
                               newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len);
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              MusEGlobal::audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
+// REMOVE Tim. citem. Changed.
+//                               // Indicate no undo, and do not do port controller values and clone parts. 
+//                               MusEGlobal::audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
+                              // Operation is undoable but do not start/end undo.
+                              // Indicate do not do port controller values and clone parts.
+                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                                newEvent, event, devent->part(), false, false), MusECore::Song::OperationUndoable);
                               }
                         }
                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
@@ -1204,9 +1216,13 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             MusECore::Event& theEvent = (*i).second;
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, theEvent, thePart, true, false));
             }
-      
-      MusEGlobal::song->applyOperationGroup(operations, false); // do not indicate undo
-      MusEGlobal::song->update(SC_DRUMMAP); //this update is necessary, as it's not handled by applyOperationGroup()
+
+// REMOVE Tim. citem. Changed.
+//       MusEGlobal::song->applyOperationGroup(operations, false); // do not indicate undo
+      // Operation is undoable but do not start/end undo.
+      MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoable);
+      // This update is necessary, as it's not handled by applyOperationGroup()
+      MusEGlobal::song->update(SC_DRUMMAP);
    }
    else // if (!old_style_drummap_mode)
    {

@@ -840,7 +840,11 @@ void Transport::playToggled(bool val)
       
 void Transport::sigChange(const AL::TimeSignature& sig)
 {
-  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+// REMOVE Tim. citem. Changed.
+//   MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);
+  // Add will replace if found. 
+  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                            MusEGlobal::song->cPos().tick(), sig.z, sig.n));
 }
 
 void Transport::keyPressEvent(QKeyEvent* ev)

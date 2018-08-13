@@ -210,9 +210,10 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       if(_panel)
         _panel->setVeloPerNoteMode(_perNoteVeloMode);
       
-      if (dynamic_cast<DrumEdit*>(editor) && dynamic_cast<DrumEdit*>(editor)->old_style_drummap_mode()==false)
-        filterTrack=true;
-      else
+// REMOVE Tim. citem. Removed.
+//       if (dynamic_cast<DrumEdit*>(editor) && dynamic_cast<DrumEdit*>(editor)->old_style_drummap_mode()==false)
+//         filterTrack=true;
+//       else
         filterTrack=false;
 
       ctrl   = &veloList;
@@ -1143,8 +1144,13 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         ev->setVal(newval);
                         MusECore::Event newEvent = event.clone();
                         newEvent.setVelo(newval);
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
+// REMOVE Tim. citem. Changed.
+//                         // Indicate no undo, and do not do port controller values and clone parts. 
+//                         MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
+                        // Operation is undoable but do not start/end undo.
+                        // Indicate do not do port controller values and clone parts.
+                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                          newEvent, event, curPart, false, false), MusECore::Song::OperationUndoable);
                         changed = true;
                         }
                   }
@@ -1163,8 +1169,13 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         if ((event.dataB() != nval)) {
                               MusECore::Event newEvent = event.clone();
                               newEvent.setB(nval);
-                              // Indicate no undo, and do port controller values and clone parts. 
-                              MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//                               // Indicate no undo, and do port controller values and clone parts. 
+//                               MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
+                              // Operation is undoable but do not start/end undo.
+                              // Indicate do port controller values and clone parts.
+                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                                newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
                               changed = true;
                               }
                         }
@@ -1267,8 +1278,13 @@ void CtrlCanvas::newVal(int x1, int y)
               {
                 MusECore::Event newEvent = event.clone();
                 newEvent.setB(nval);
-                // Indicate no undo, and do port controller values and clone parts. 
-                MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//                 // Indicate no undo, and do port controller values and clone parts. 
+//                 MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
+                // Operation is undoable but do not start/end undo.
+                // Indicate do port controller values and clone parts.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
                 
                 do_redraw = true;      
               }
@@ -1280,8 +1296,13 @@ void CtrlCanvas::newVal(int x1, int y)
                   // delete event
                   
                   deselectItem(ev);
-                  // Indicate no undo, and do port controller values and clone parts. 
-                  MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//                   // Indicate no undo, and do port controller values and clone parts. 
+//                   MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+                  // Operation is undoable but do not start/end undo.
+                  // Indicate do port controller values and clone parts.
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true), MusECore::Song::OperationUndoable);
                   
                   delete (ev);
                   i = items.erase(i);           
@@ -1321,8 +1342,13 @@ void CtrlCanvas::newVal(int x1, int y)
               else  
                 event.setB(newval);
               
-              // Indicate no undo, and do port controller values and clone parts. 
-              MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//               // Indicate no undo, and do port controller values and clone parts. 
+//               MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
+              // Operation is undoable but do not start/end undo.
+              // Indicate do port controller values and clone parts. 
+              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                                event, curPart, true, true), MusECore::Song::OperationUndoable);
               
               CEvent* newev = new CEvent(event, curPart, event.dataB());
               insertPoint = items.insert(insertPoint, newev);
@@ -1441,8 +1467,13 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             }
             
             deselectItem(ev);
-            // Indicate no undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//             // Indicate no undo, and do port controller values and clone parts. 
+//             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+            // Operation is undoable but do not start/end undo.
+            // Indicate do port controller values and clone parts.
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true), MusECore::Song::OperationUndoable);
             
             delete (ev);
             i = items.erase(i);           
@@ -1489,8 +1520,13 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             else  
               event.setB(nval);
             
-            // Indicate no undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//             // Indicate no undo, and do port controller values and clone parts. 
+//             MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
+            // Operation is undoable but do not start/end undo.
+            // Indicate do port controller values and clone parts. 
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, true, true), MusECore::Song::OperationUndoable);
             
             CEvent* newev = new CEvent(event, curPart, event.dataB());
             insertPoint = items.insert(insertPoint, newev);
@@ -1577,8 +1613,13 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
               break;
             
             deselectItem(ev);
-            // Indicate no undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+// REMOVE Tim. citem. Changed.
+//             // Indicate no undo, and do port controller values and clone parts. 
+//             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+            // Operation is undoable but do not start/end undo.
+            // Indicate do port controller values and clone parts.
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true), MusECore::Song::OperationUndoable);
             
             delete (ev);
             i = items.erase(i);           
