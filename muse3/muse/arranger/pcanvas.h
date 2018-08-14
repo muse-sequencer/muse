@@ -127,7 +127,7 @@ class PartCanvas : public Canvas {
       virtual void leaveEvent(QEvent*e);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual void updateSelection();
+      virtual void itemSelectionsChanged();
       virtual QPoint raster(const QPoint&) const;
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
@@ -219,7 +219,7 @@ class PartCanvas : public Canvas {
       virtual ~PartCanvas();
       void updateItems();
 // REMOVE Tim. citem. Added.
-      void updateItemSelections();
+      //void updateItemSelections();
 
       void cmd(int);
       void songIsClearing();

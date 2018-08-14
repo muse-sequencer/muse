@@ -143,6 +143,93 @@ WaveCanvas::~WaveCanvas()
   //delete steprec;
 }
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   updateItems
+//---------------------------------------------------------
+
+void WaveCanvas::updateItems()
+{
+  bool curItemNeedsRestore=false;
+  MusECore::Event storedEvent;
+  int partSn = 0;
+  if (curItem)
+  {
+    curItemNeedsRestore=true;
+    storedEvent=curItem->event();
+    partSn=curItem->part()->sn();
+  }
+  curItem=NULL;
+  
+  items.clearDelete();
+  startSample  = INT_MAX;
+  endSample    = 0;
+  curPart = 0;
+  for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+        MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
+        if (part->sn() == curPartId)
+              curPart = part;
+        unsigned ssample = part->frame();
+        unsigned len = part->lenFrame();
+        unsigned esample = ssample + len;
+        if (ssample < startSample)
+              startSample = ssample;
+        if (esample > endSample)
+              endSample = esample;
+
+        for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
+              const MusECore::Event& e = i->second;
+              // Do not add events which are past the end of the part.
+              if(e.frame() > len)      
+                break;
+              
+              if (e.type() == MusECore::Wave) {
+                    CItem* temp = addItem(part, e);
+                    
+                    if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+                    {
+                        if (curItem!=NULL)
+                          printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                        
+                        curItem=temp;
+                        }
+                    }
+              }
+        }
+}
+
+// REMOVE Tim. citem. Added.
+// //---------------------------------------------------------
+// //   updateItemSelections
+// //---------------------------------------------------------
+// 
+// void WaveCanvas::updateItemSelections()
+//       {
+//       bool item_selected;
+//       bool part_selected;
+//       for (iCItem i = items.begin(); i != items.end(); ++i) {
+// //             NPart* npart = static_cast<NPart*>(i->second);
+//             CItem* item = i->second;
+// //             item_selected = i->second->isSelected();
+// //             part_selected = npart->part()->selected();
+//             item_selected = item->isSelected();
+//             part_selected = item->objectIsSelected();
+// //             if (item_selected != part_selected)
+//             if (item_selected != part_selected)
+//             {
+//               // REMOVE Tim. citem. Added. Shouldn't be required.
+//               // If the track is not visible, deselect all parts just to keep things tidy.
+//               //if(!npart->part()->track()->isVisible())
+//               //{
+//               //  i->second->setSelected(false);
+//               //  continue;
+//               //}
+//               i->second->setSelected(part_selected);
+//             }
+//       }
+//       redraw();
+// }
+
 //---------------------------------------------------------
 //   songChanged(type)
 //---------------------------------------------------------
@@ -152,52 +239,54 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       if (flags._flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
-            bool curItemNeedsRestore=false;
-            MusECore::Event storedEvent;
-            int partSn = 0;
-            if (curItem)
-            {
-              curItemNeedsRestore=true;
-              storedEvent=curItem->event();
-              partSn=curItem->part()->sn();
-            }
-            curItem=NULL;
-            
-            items.clearDelete();
-            startSample  = INT_MAX;
-            endSample    = 0;
-            curPart = 0;
-            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-                  MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
-                  if (part->sn() == curPartId)
-                        curPart = part;
-                  unsigned ssample = part->frame();
-                  unsigned len = part->lenFrame();
-                  unsigned esample = ssample + len;
-                  if (ssample < startSample)
-                        startSample = ssample;
-                  if (esample > endSample)
-                        endSample = esample;
-
-                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
-                        const MusECore::Event& e = i->second;
-                        // Do not add events which are past the end of the part.
-                        if(e.frame() > len)      
-                          break;
-                        
-                        if (e.type() == MusECore::Wave) {
-                              CItem* temp = addItem(part, e);
-                              
-                              if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
-                              {
-                                  if (curItem!=NULL)
-                                    printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-                                  
-                                  curItem=temp;
-                                  }
-                              }
-                        }
-                  }
+// REMOVE Tim. citem. Changed.
+//             bool curItemNeedsRestore=false;
+//             MusECore::Event storedEvent;
+//             int partSn = 0;
+//             if (curItem)
+//             {
+//               curItemNeedsRestore=true;
+//               storedEvent=curItem->event();
+//               partSn=curItem->part()->sn();
+//             }
+//             curItem=NULL;
+//             
+//             items.clearDelete();
+//             startSample  = INT_MAX;
+//             endSample    = 0;
+//             curPart = 0;
+//             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+//                   MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
+//                   if (part->sn() == curPartId)
+//                         curPart = part;
+//                   unsigned ssample = part->frame();
+//                   unsigned len = part->lenFrame();
+//                   unsigned esample = ssample + len;
+//                   if (ssample < startSample)
+//                         startSample = ssample;
+//                   if (esample > endSample)
+//                         endSample = esample;
+// 
+//                   for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
+//                         const MusECore::Event& e = i->second;
+//                         // Do not add events which are past the end of the part.
+//                         if(e.frame() > len)      
+//                           break;
+//                         
+//                         if (e.type() == MusECore::Wave) {
+//                               CItem* temp = addItem(part, e);
+//                               
+//                               if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+//                               {
+//                                   if (curItem!=NULL)
+//                                     printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+//                                   
+//                                   curItem=temp;
+//                                   }
+//                               }
+//                         }
+//                   }
+            updateItems();
             }
 
       MusECore::Event event;
@@ -234,6 +323,14 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                   curPartId = curPart->sn();
                   curPartChanged();
                   }
+      }
+      
+      // REMOVE Tim. citem. Added.
+      if(flags._flags & (SC_PART_SELECTION))
+      {
+        // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
+        if(flags._sender != this)
+          updateItemSelections();
       }
       
       bool f1 = flags._flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
@@ -378,7 +475,9 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+// REMOVE Tim. citem. Changed.
+//                 itemSelectionsChanged();
+                redraw();
                 if (sel->x() + sel->width() > mapxDev(width())) 
                 {  
                   int mx = rmapx(sel->x());  
@@ -408,7 +507,9 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                       deselectAll();
                 CItem* sel = i->second;
                 sel->setSelected(true);
-                updateSelection();
+// REMOVE Tim. citem. Changed.
+//                 itemSelectionsChanged();
+                redraw();
                 if (sel->x() <= mapxDev(0)) 
                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
               }
@@ -440,6 +541,37 @@ void WaveCanvas::keyPress(QKeyEvent* event)
       else
             event->ignore();
       }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void WaveCanvas::keyRelease(QKeyEvent* event)
+{
+      const int key = event->key();
+      
+      // We do not want auto-repeat events.
+      // It does press and release repeatedly. Wait till the last release comes.
+      if(!event->isAutoRepeat())
+      {
+        // REMOVE Tim. citem. Added.
+        fprintf(stderr, "WaveCanvas::keyRelease not isAutoRepeat\n");
+      
+        //event->accept();
+      
+        // Select part to the right
+        if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
+        // Select part to the left
+          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key)
+        {
+          itemSelectionsChanged();
+        }
+        return;
+      }
+      
+  EventCanvas::keyRelease(event);
+}
 
 
 //---------------------------------------------------------
@@ -1971,7 +2103,7 @@ void WaveCanvas::cmd(int cmd)
             modifySelection(modifyoperation, selectionStart, selectionStop, paramA);
             }
             
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 

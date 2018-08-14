@@ -31,6 +31,8 @@
 #include "tools.h"
 #include "midictrl.h"
 #include "event.h"
+// REMOVE Tim. citem. Added.
+#include "citem.h"
 
 class QWheelEvent;
 class QMouseEvent;
@@ -54,26 +56,41 @@ class MidiEditor;
 //    ''visual'' Controller Event
 //---------------------------------------------------------
 
-class CEvent {
+// REMOVE Tim. citem. Changed.
+// class CEvent {
+class CEvent : public CItem {
    private:
-      MusECore::Event _event;
+// REMOVE Tim. citem. Removed.
+//       MusECore::Event _event;
       int       _val;
-      MusECore::MidiPart* _part;
+// REMOVE Tim. citem. Removed.
+//       MusECore::MidiPart* _part;
       int ex;
+      //bool _isSelected;
 
    public:
-      CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
-      MusECore::Event event() const          { return _event; }
-      void setEvent(MusECore::Event& ev)     { _event = ev; }
-      bool selected() const { return _event.selected(); }
-      void setSelected(bool v);
+//       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
+      CEvent(const MusECore::Event& e, MusECore::MidiPart* part, int v);
+      
+// REMOVE Tim. citem. Removed.
+//       MusECore::Event event() const          { return _event; }
+//       void setEvent(MusECore::Event& ev)     { _event = ev; }
+      
+// REMOVE Tim. citem. Changed.
+//       bool isSelected() const { return _event.selected(); }
+//       void setSelected(bool v);
+      //bool isSelected() const { return _isSelected; }
+      //void setSelected(bool f) { _isSelected = f; }
+      bool objectIsSelected() const { return _event.selected(); }
+      
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }
-      MusECore::MidiPart* part() const       { return _part;  }
-      bool contains(int x1, int x2) const;
-      bool intersects(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
-      int x()                      { return ex; }
+// REMOVE Tim. citem. Removed.
+//       MusECore::MidiPart* part() const       { return _part;  }
+      bool containsXRange(int x1, int x2) const;
+      bool intersectsController(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
+      int EX()                      { return ex; }
       };
 
 typedef std::list<CEvent*>::iterator iCEvent;
@@ -170,7 +187,11 @@ class CtrlCanvas : public MusEGui::View {
 
       void setMidiController(int);
       void updateItems();
-      void updateSelections();
+// REMOVE Tim. citem. Removed.
+//       void updateSelections();
+      // REMOVE Tim. citem. Added.
+      void itemSelectionsChanged();
+      void updateItemSelections();
       
    private slots:
       void songChanged(MusECore::SongChangedStruct_t type);

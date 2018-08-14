@@ -1026,7 +1026,7 @@ void DrumCanvas::cmd(int cmd)
                   }
                   break;
             }
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 
@@ -1633,7 +1633,7 @@ void DrumCanvas::selectCursorEvent(const MusECore::Event* ev)
           i->second->setSelected(false);
 
   }
-  updateSelection();
+  itemSelectionsChanged();
 }
 
 

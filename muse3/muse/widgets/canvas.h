@@ -151,7 +151,7 @@ class Canvas : public View {
 
       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
-      virtual void updateSelection() = 0;
+      virtual void itemSelectionsChanged() = 0;
       virtual QPoint raster(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
@@ -240,6 +240,9 @@ class Canvas : public View {
       void setCurrentPart(MusECore::Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       int getCurrentDrag();
+// REMOVE Tim. citem. Added.
+      virtual void updateItems() = 0;
+      virtual void updateItemSelections();
       };
 
 } // namespace MusEGui

@@ -890,7 +890,7 @@ void PianoCanvas::cmd(int cmd)
 //                  printf("unknown ecanvas cmd %d\n", cmd);
                   break;
             }
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 

@@ -379,6 +379,10 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             setPainter(p);
       }
 
+      
+      QPen pen;
+      pen.setCosmetic(true);
+      
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
@@ -390,10 +394,11 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       int my = mapy(y);
       int my2 = mapy(y + h);
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      pen.setColor(Qt::green);
+      p.setPen(pen);
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
             if (xp >= x && xp < x+w) {
-                  p.setPen(Qt::green);
                   p.drawLine(mapx(xp), my, mapx(xp), my2);
                   }
             }
@@ -402,7 +407,8 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //    draw location marker
       //---------------------------------------------------
 
-      p.setPen(Qt::blue);
+      pen.setColor(Qt::blue);
+      p.setPen(pen);
       int mx;
       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
             mx = mapx(pos[1]);
@@ -431,7 +437,8 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 
       if (drag == DRAG_LASSO) {
             p.setWorldMatrixEnabled(false);
-            p.setPen(Qt::blue);
+            pen.setColor(Qt::blue);
+            p.setPen(pen);
             p.setBrush(Qt::NoBrush);
             QRect _r(mapx(lasso.topLeft().x()), mapy(lasso.topLeft().y()), mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()), mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
             p.drawRect(_r);
@@ -705,7 +712,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         start.setX(curItem->x());
                         deselectAll();
                         selectItem(curItem, true);
-                        updateSelection();
+                        itemSelectionsChanged();
                         redraw();
                         }
                   else {
@@ -802,7 +809,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               deselectAll();
                               // selectItem() will be called in viewMouseReleaseEvent().
                               }
-                        updateSelection();
+                        itemSelectionsChanged();
                         redraw();
                         break;
 
@@ -1218,7 +1225,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem, true);
-                        updateSelection();
+                        itemSelectionsChanged();
                         redraw();
                         }
                   DragType dt;
@@ -1414,7 +1421,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         }
                   }
 
-                  updateSelection();
+                  itemSelectionsChanged();
                   redrawFlag = true;
                   if(curItem)
                     itemReleased(curItem, curItem->pos());
@@ -1456,7 +1463,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                        curItem->move(start);
                     }
                     resizeItem(curItem, shift, ctrl);
-                    updateSelection();
+                    itemSelectionsChanged();
                     redraw();
                     resizeDirection = RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
                   }
@@ -1476,7 +1483,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   lasso.setRect(-1, -1, -1, -1);
                   if (!ctrl)
                         deselectAll();
-                  updateSelection();
+                  itemSelectionsChanged();
                   redrawFlag = true;
                   break;
 
@@ -1485,7 +1492,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         deselectAll();
                   lasso = lasso.normalized();
                   selectLasso(ctrl);
-                  updateSelection();
+                  itemSelectionsChanged();
                   redrawFlag = true;
                   break;
 
@@ -1573,7 +1580,7 @@ void Canvas::selectLasso(bool toggle)
             }
 
       if (n) {
-            updateSelection();
+            itemSelectionsChanged();
             redraw();
             }
       }
@@ -1824,6 +1831,38 @@ int Canvas::selectionSize() const
             }
       return n;
       }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   updateItemSelections
+//---------------------------------------------------------
+
+void Canvas::updateItemSelections()
+      {
+      bool item_selected;
+      bool obj_selected;
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
+//             NPart* npart = static_cast<NPart*>(i->second);
+            CItem* item = i->second;
+//             item_selected = i->second->isSelected();
+//             part_selected = npart->part()->selected();
+            item_selected = item->isSelected();
+            obj_selected = item->objectIsSelected();
+//             if (item_selected != part_selected)
+            if (item_selected != obj_selected)
+            {
+              // REMOVE Tim. citem. Added. Shouldn't be required.
+              // If the track is not visible, deselect all parts just to keep things tidy.
+              //if(!npart->part()->track()->isVisible())
+              //{
+              //  i->second->setSelected(false);
+              //  continue;
+              //}
+              item->setSelected(obj_selected);
+            }
+      }
+      redraw();
+}
 
 //---------------------------------------------------------
 //   genCanvasPopup

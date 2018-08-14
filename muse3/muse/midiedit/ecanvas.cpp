@@ -200,47 +200,47 @@ void EventCanvas::updateItems()
 }
 
 // REMOVE Tim. citem. Added.
-//---------------------------------------------------------
-//   updateItemSelections
-//---------------------------------------------------------
-
-void EventCanvas::updateItemSelections()
-      {
-      bool item_selected;
-      bool part_selected;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-//             NPart* npart = static_cast<NPart*>(i->second);
-            CItem* item = i->second;
-//             item_selected = i->second->isSelected();
-//             part_selected = npart->part()->selected();
-            item_selected = item->isSelected();
-            part_selected = item->objectIsSelected();
+// //---------------------------------------------------------
+// //   updateItemSelections
+// //---------------------------------------------------------
+// 
+// void EventCanvas::updateItemSelections()
+//       {
+//       bool item_selected;
+//       bool part_selected;
+//       for (iCItem i = items.begin(); i != items.end(); ++i) {
+// //             NPart* npart = static_cast<NPart*>(i->second);
+//             CItem* item = i->second;
+// //             item_selected = i->second->isSelected();
+// //             part_selected = npart->part()->selected();
+//             item_selected = item->isSelected();
+//             part_selected = item->objectIsSelected();
+// //             if (item_selected != part_selected)
 //             if (item_selected != part_selected)
-            if (item_selected != part_selected)
-            {
-              // REMOVE Tim. citem. Added. Shouldn't be required.
-              // If the track is not visible, deselect all parts just to keep things tidy.
-              //if(!npart->part()->track()->isVisible())
-              //{
-              //  i->second->setSelected(false);
-              //  continue;
-              //}
-              i->second->setSelected(part_selected);
-            }
-      }
-      redraw();
-}
+//             {
+//               // REMOVE Tim. citem. Added. Shouldn't be required.
+//               // If the track is not visible, deselect all parts just to keep things tidy.
+//               //if(!npart->part()->track()->isVisible())
+//               //{
+//               //  i->second->setSelected(false);
+//               //  continue;
+//               //}
+//               i->second->setSelected(part_selected);
+//             }
+//       }
+//       redraw();
+// }
 
 //---------------------------------------------------------
-//   updateSelection
+//   itemSelectionsChanged
 //---------------------------------------------------------
 
 // REMOVE Tim. citem. Changed.
-// void EventCanvas::updateSelection()
+// void EventCanvas::itemSelectionsChanged()
 //       {
 //       MusEGlobal::song->update(SC_SELECTION);
 //       }
-void EventCanvas::updateSelection()
+void EventCanvas::itemSelectionsChanged()
 {
       MusECore::Undo operations;
       bool item_selected;
@@ -400,9 +400,9 @@ void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       }
 
       // REMOVE Tim. citem. Added.
-      if(flags._flags & (SC_PART_SELECTION))
+      if(flags._flags & (SC_SELECTION))
       {
-        // Prevent recursion: Ignore if the change was ultimately sent by the canvas itself.
+        // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
         if(flags._sender != this)
           updateItemSelections();
       }
@@ -527,7 +527,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
                 CItem* sel = i->second;
                 sel->setSelected(true);
 // REMOVE Tim. citem. Changed.
-//                 updateSelection();
+//                 itemSelectionsChanged();
                 redraw();
                 
                 if (sel->x() + sel->width() > mapxDev(width())) 
@@ -560,7 +560,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
                 CItem* sel = i->second;
                 sel->setSelected(true);
 // REMOVE Tim. citem. Changed.
-//                 updateSelection();
+//                 itemSelectionsChanged();
                 redraw();
                 if (sel->x() <= mapxDev(0)) 
                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
@@ -609,20 +609,16 @@ void EventCanvas::keyRelease(QKeyEvent* event)
       if(!event->isAutoRepeat())
       {
         // REMOVE Tim. citem. Added.
-        fprintf(stderr, "PartCanvas::keyRelease not isAutoRepeat\n");
+        fprintf(stderr, "EventCanvas::keyRelease not isAutoRepeat\n");
       
         //event->accept();
       
         // Select part to the right
         if(key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key ||
         // Select part to the left
-          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key ||
-        // Select nearest part on track above
-          key == shortcuts[SHRT_SEL_ABOVE].key || key == shortcuts[SHRT_SEL_ABOVE_ADD].key ||
-        // Select nearest part on track below
-          key == shortcuts[SHRT_SEL_BELOW].key || key == shortcuts[SHRT_SEL_BELOW_ADD].key)
+          key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key)
         {
-          updateSelection();
+            itemSelectionsChanged();
         }
         return;
       }
@@ -688,7 +684,7 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, bo
         MusEGlobal::song->applyOperationGroup(operations);
       
       moving.clear();
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 

@@ -480,42 +480,42 @@ void PartCanvas::updateItems()
 }
 
 // REMOVE Tim. citem. Added.
-//---------------------------------------------------------
-//   updateItemSelections
-//---------------------------------------------------------
-
-void PartCanvas::updateItemSelections()
-      {
-      bool item_selected;
-      bool part_selected;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-//             NPart* npart = static_cast<NPart*>(i->second);
-            CItem* item = i->second;
-//             item_selected = i->second->isSelected();
-//             part_selected = npart->part()->selected();
-            item_selected = item->isSelected();
-            part_selected = item->objectIsSelected();
+// //---------------------------------------------------------
+// //   updateItemSelections
+// //---------------------------------------------------------
+// 
+// void PartCanvas::updateItemSelections()
+//       {
+//       bool item_selected;
+//       bool part_selected;
+//       for (iCItem i = items.begin(); i != items.end(); ++i) {
+// //             NPart* npart = static_cast<NPart*>(i->second);
+//             CItem* item = i->second;
+// //             item_selected = i->second->isSelected();
+// //             part_selected = npart->part()->selected();
+//             item_selected = item->isSelected();
+//             part_selected = item->objectIsSelected();
+// //             if (item_selected != part_selected)
 //             if (item_selected != part_selected)
-            if (item_selected != part_selected)
-            {
-              // REMOVE Tim. citem. Added. Shouldn't be required.
-              // If the track is not visible, deselect all parts just to keep things tidy.
-              //if(!npart->part()->track()->isVisible())
-              //{
-              //  i->second->setSelected(false);
-              //  continue;
-              //}
-              i->second->setSelected(part_selected);
-            }
-      }
-      redraw();
-}
+//             {
+//               // REMOVE Tim. citem. Added. Shouldn't be required.
+//               // If the track is not visible, deselect all parts just to keep things tidy.
+//               //if(!npart->part()->track()->isVisible())
+//               //{
+//               //  i->second->setSelected(false);
+//               //  continue;
+//               //}
+//               i->second->setSelected(part_selected);
+//             }
+//       }
+//       redraw();
+// }
 
 //---------------------------------------------------------
-//   updateSelection
+//   itemSelectionsChanged
 //---------------------------------------------------------
 
-void PartCanvas::updateSelection()
+void PartCanvas::itemSelectionsChanged()
 {
       Undo operations;
       bool item_selected;
@@ -1607,7 +1607,7 @@ void PartCanvas::keyRelease(QKeyEvent* event)
         // Select nearest part on track below
           key == shortcuts[SHRT_SEL_BELOW].key || key == shortcuts[SHRT_SEL_BELOW_ADD].key)
         {
-          updateSelection();
+            itemSelectionsChanged();
         }
         return;
       }
@@ -1996,7 +1996,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
 void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
       {
-        p.setPen( Qt::black);
+        QPen pen;
+        pen.setCosmetic(true);
+        pen.setColor( Qt::black);
+        p.setPen(pen);
+        
         MusECore::Part* part = ((NPart*)item)->part();
         QColor c(part->mute() ? Qt::white : MusEGlobal::config.partColors[part->colorIndex()]);
         c.setAlpha(128);  // Fix this regardless of config.globalAlphaBlend setting. Should be OK.
@@ -2046,6 +2050,8 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
 {
   int color_brightness;
   QColor eventColor;
+  QPen pen;
+  pen.setCosmetic(true);
 
   if(pt)
   {
@@ -2069,7 +2075,11 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   }
 
   if (MusEGlobal::config.canvasShowPartType & 2) {      // show events
-            p.setPen(eventColor);
+// REMOVE Tim. citem. Changed.
+//             p.setPen(eventColor);
+            pen.setColor(eventColor);
+            p.setPen(pen);
+            
             // Do not allow this, causes segfault.
             if(from <= to)
             {
@@ -2105,7 +2115,11 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
 
       // draw controllers ------------------------------------------
-      p.setPen(QColor(192,192,color_brightness/2));
+// REMOVE Tim. citem. Changed.
+//       p.setPen(QColor(192,192,color_brightness/2));
+      pen.setColor(QColor(192,192,color_brightness/2));
+      p.setPen(pen);
+            
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PITCH BEND
             int t  = i->first + pTick;
 
@@ -2122,7 +2136,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
             }
       }
 
-      p.setPen(QColor(192,color_brightness/2,color_brightness/2));
+// REMOVE Tim. citem. Changed.
+//       p.setPen(QColor(192,color_brightness/2,color_brightness/2));
+      pen.setColor(QColor(192,color_brightness/2,color_brightness/2));
+      p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PAN
             int t  = i->first + pTick;
 
@@ -2139,7 +2156,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
             }
       }
 
-      p.setPen(QColor(color_brightness/2,192,color_brightness/2));
+// REMOVE Tim. citem. Changed.
+//       p.setPen(QColor(color_brightness/2,192,color_brightness/2));
+      pen.setColor(QColor(color_brightness/2,192,color_brightness/2));
+      p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // VOLUME
             int t  = i->first + pTick;
 
@@ -2156,7 +2176,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
             }
       }
 
-      p.setPen(QColor(0,0,255));
+// REMOVE Tim. citem. Changed.
+//       p.setPen(QColor(0,0,255));
+      pen.setColor(QColor(0,0,255));
+      p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PROGRAM CHANGE
             int t  = i->first + pTick;
 
@@ -2245,7 +2268,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
         if (MusEGlobal::heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");
       }
 
-      p.setPen(eventColor);
+// REMOVE Tim. citem. Changed.
+//       p.setPen(eventColor);
+      pen.setColor(eventColor);
+      p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
@@ -2301,6 +2327,9 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
    postick += drawoffset;
    pos = samplePos + MusEGlobal::tempomap.tick2frame(postick) - rootFrame - startFrame;
 
+   QPen pen;
+   pen.setCosmetic(true);
+   
    int i;
    if(x1 < eventx)
      i = eventx;
@@ -2331,9 +2360,11 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                rms  = (rms  * (rectHeight-2)) >> 9;
                int outer = peak;
                int inner = peak -1; //-1 < 0 ? 0 : peak -1;
-               p.setPen(MusEGlobal::config.partWaveColorPeak);
+               pen.setColor(MusEGlobal::config.partWaveColorPeak);
+               p.setPen(pen);
                p.drawLine(i, y - outer - cc, i, y + outer);
-               p.setPen(MusEGlobal::config.partWaveColorRms);
+               pen.setColor(MusEGlobal::config.partWaveColorRms);
+               p.setPen(pen);
                if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
                  p.drawLine(i, y - rms - cc, i, y + rms);
                else // WaveOutLine
@@ -2356,9 +2387,11 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
                      int rms  = (sa[k].rms  * (hm - 1)) >> 8;
                      int outer = peak;
                      int inner = peak -1; //-1 < 0 ? 0 : peak -1;
-                     p.setPen(MusEGlobal::config.partWaveColorPeak);
+                     pen.setColor(MusEGlobal::config.partWaveColorPeak);
+                     p.setPen(pen);
                      p.drawLine(i, y - outer - cc , i, y + outer);
-                     p.setPen(MusEGlobal::config.partWaveColorRms);
+                     pen.setColor(MusEGlobal::config.partWaveColorRms);
+                     p.setPen(pen);
                      if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
                        p.drawLine(i, y - rms - cc, i, y + rms);
                      else // WaveOutLine
@@ -3023,7 +3056,10 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       // GRID //
       //////////
       QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
-      p.setPen(baseColor);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(baseColor);
+      p.setPen(pen);
 
       //--------------------------------
       // vertical lines
@@ -3040,9 +3076,10 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             //if (xt >= mx + mw)
                   break;
             if (!((bar-1) % 4))
-                p.setPen(baseColor.dark(115));
+                pen.setColor(baseColor.dark(115));
             else
-                p.setPen(baseColor);
+                pen.setColor(baseColor);
+            p.setPen(pen);
             //p.drawLine(xt, y, xt, y+h);
             int xtm = mapx(xt);
             p.drawLine(xtm, my, xtm, my+mh);
@@ -3098,7 +3135,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
               continue;
             if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
             {
-              p.setPen(baseColor.dark(130));
+              pen.setColor(baseColor.dark(130));
+              p.setPen(pen);
               p.drawLine(mx, yy + th, mx + mw, yy + th);
             }
 
@@ -3187,13 +3225,14 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     // ^^ done
     int yPos = yoff;
     if (MusEGlobal::song->record() && MusEGlobal::audio->isPlaying()) {
+      QPen pen(Qt::black, 0, Qt::SolidLine);
+      pen.setCosmetic(true);
       for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it) {
         MusECore::Track* track = *it;
         th = track->height();
         if (!th)
           continue;
         if (track->recordFlag()) {
-           QPen pen(Qt::black, 0, Qt::SolidLine);
            p.setPen(pen);
            QColor c(MusEGlobal::config.partColors[0]);
            c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -3289,7 +3328,10 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
       //int mew = bbox.width();
       int meh = bbox.height();
 
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       QColor c(Qt::gray);
       c.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
@@ -3341,7 +3383,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
       QColor line_color(cl->color());
       line_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-      QPen pen1(line_color, 0);
+      QPen pen1(line_color);
+      pen1.setCosmetic(true);
       QString txt;
 
       // Store first value for later
@@ -3445,7 +3488,8 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
     vtx_col2.setAlpha(160);
     // If we happen to be using 1 pixel, use an inverted colour. Else use the line colour but slightly transparent.
     const QColor& vtx_col = (_automationPointWidthUnsel == 1) ? vtx_col1 : vtx_col2;
-    QPen pen(vtx_col, 0);
+    QPen pen(vtx_col);
+    pen.setCosmetic(true);
     p.setPen(pen);
 
     for(MusECore::ciCtrl ic = cl->begin(); ic != cl->end(); ++ic)
@@ -3546,7 +3590,8 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
       int ypixel = 0;
       double min, max;
       cl->range(&min,&max);
-      const QPen pen1(cl->color(), 0);
+      QPen pen1(cl->color());
+      pen1.setCosmetic(true);
       const QColor line_col = cl->color();
       QColor txt_bk((line_col.red() + line_col.green() + line_col.blue()) / 3 >= 128 ? Qt::black : Qt::white);
       txt_bk.setAlpha(150);
@@ -4150,7 +4195,7 @@ void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, boo
       moveCanvasItems(moving, dp, dx, dragtype, rasterize);
 
       moving.clear();
-      updateSelection();
+      itemSelectionsChanged();
       redraw();
       }
 

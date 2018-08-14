@@ -41,11 +41,10 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 class CItem {
-   private:
+   protected:
       MusECore::Event _event;
       MusECore::Part* _part;
-
-   protected:
+      
       bool _isSelected;
       bool _isMoving;
       QPoint moving;

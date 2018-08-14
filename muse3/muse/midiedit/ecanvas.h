@@ -80,7 +80,7 @@ class EventCanvas : public Canvas {
       QVector<MusECore::MidiPlayEvent> _stuckNotes;
       bool stuckNoteExists(int port, int channel, int pitch) const;
 
-      void updateSelection();
+      void itemSelectionsChanged();
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true) = 0;
@@ -123,8 +123,8 @@ class EventCanvas : public Canvas {
       virtual void keyPress(QKeyEvent*);      
 // REMOVE Tim. citem. Added.
       virtual void keyRelease(QKeyEvent* event);
-      void updateItems();
-      void updateItemSelections();
+      virtual void updateItems();
+      //virtual void updateItemSelections();
       };
 
 } // namespace MusEGui

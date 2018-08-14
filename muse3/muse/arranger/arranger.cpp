@@ -831,7 +831,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         // REMOVE Tim. citem. Added.
         if(type._flags & (SC_PART_SELECTION))
         {
-          // Prevent recursion: Ignore if the change was ultimately sent by the canvas itself.
+          // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
           if(type._sender != canvas)
             canvas->updateItemSelections();
         }

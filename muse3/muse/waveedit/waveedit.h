@@ -35,6 +35,7 @@
 #include "type_defs.h"
 #include "midieditor.h"
 #include "tools.h"
+//#include "event.h"
 
 class QAction;
 class QResizeEvent;
@@ -43,6 +44,7 @@ class QToolButton;
 class QPoint;
 
 namespace MusECore {
+class Part;
 class PartList;
 }
 

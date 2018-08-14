@@ -183,6 +183,10 @@ class WaveCanvas : public EventCanvas {
       void selectAtFrame(unsigned int frame);
       void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       void keyPress(QKeyEvent*);
+// REMOVE Tim. citem. Added.
+      void keyRelease(QKeyEvent* event);
+      void updateItems();
+      //void updateItemSelections();
       };
 
 } // namespace MusEGui
