@@ -107,6 +107,7 @@ int PendingOperationItem::getIndex() const
     case ModifyRouteNode:
     case UpdateSoloStates:
     case EnableAllAudioControllers:
+    case GlobalSelectAllEvents:
     case ModifyAudioSamples:
     case SetStaticTempo:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
@@ -1257,6 +1258,22 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
     
+    case GlobalSelectAllEvents:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage GlobalSelectAllEvents\n");
+#endif
+      for (iTrack it = _track_list->begin(); it != _track_list->end(); ++it)
+      {
+        //Track* t = *it;
+        //if(t->isMidiTrack())
+        //  continue;
+        if((*it)->selectEvents(_select))
+          flags |= SC_SELECTION;
+      }
+    }
+    break;
+    
     case ModifyAudioSamples:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -2279,6 +2296,27 @@ bool PendingOperationList::add(PendingOperationItem op)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double EnableAllAudioControllers. Ignoring.\n");
           return false;  
+        }
+      break;  
+
+      case PendingOperationItem::GlobalSelectAllEvents:
+#ifdef _PENDING_OPS_DEBUG_
+        fprintf(stderr, "PendingOperationList::add() GlobalSelectAllEvents\n");
+#endif      
+        if(poi._type == PendingOperationItem::GlobalSelectAllEvents && poi._track_list == op._track_list) 
+        {
+          if(poi._select == op._select)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double GlobalSelectAllEvents. Ignoring.\n");
+            return false;  
+          }
+          else
+          {
+            // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
+            // Simply replace the value.
+            poi._select = op._select; 
+            return true;
+          }
         }
       break;  
 

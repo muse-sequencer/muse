@@ -664,10 +664,13 @@ void WaveCanvas::setYScale(int val)
 //   draw
 //---------------------------------------------------------
 
-void WaveCanvas::draw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+void WaveCanvas::draw(QPainter& p, const QRect& r, const QRegion&)
       {
-      int x = r.x() < 0 ? 0 : r.x();
-      int y = r.y() < 0 ? 0 : r.y();
+//       int x = r.x() < 0 ? 0 : r.x();
+//       int y = r.y() < 0 ? 0 : r.y();
+      int x = r.x();
+      int y = r.y();
       int w = r.width();
       int h = r.height();
       int x2 = x + w;
@@ -677,6 +680,9 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
       //std::vector<CItem*> list3;
       std::vector<CItem*> list4;
 
+      QPen pen;
+      pen.setCosmetic(true);
+      
       drawCanvas(p, r);
 
       //---------------------------------------------------
@@ -753,11 +759,12 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
       int my = mapy(y);
       int my2 = mapy(y + h);
       
+      pen.setColor(Qt::green);
+      p.setPen(pen);
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = MusEGlobal::tempomap.tick2frame(m->second.tick());
             if (xp >= x && xp < x2) {
-                  p.setPen(Qt::green);
                   p.drawLine(mapx(xp), my, mapx(xp), my2);
                   }
             }
@@ -767,7 +774,8 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
       // Tip: These positions are already in units of frames.
-      p.setPen(Qt::blue);
+      pen.setColor(Qt::blue);
+      p.setPen(pen);
       int mx;
       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
             mx = mapx(pos[1]);
@@ -795,7 +803,8 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
       if (drag == DRAG_LASSO) {
-            p.setPen(Qt::blue);
+            pen.setColor(Qt::blue);
+            p.setPen(pen);
             p.setBrush(Qt::NoBrush);
             p.drawRect(lasso);
             }
@@ -894,6 +903,9 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
       
+      QPen pen;
+      pen.setCosmetic(true);
+      
       int xx,bar1, bar2, beat;
       unsigned tick;
 //      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
@@ -911,7 +923,8 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
 //            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             int xt = mapx(MusEGlobal::tempomap.tick2frame(xb));
-            p.setPen(Qt::black);
+            pen.setColor(Qt::black);
+            p.setPen(pen);
             p.drawLine(xt, my, xt, y2);
             
             int z, n;
@@ -919,7 +932,8 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
             int qq = raster;
             if (rmapx(raster) < 8)        // grid too dense
                   qq *= 2;
-            p.setPen(Qt::lightGray);
+            pen.setColor(Qt::lightGray);
+            p.setPen(pen);
             if (raster>=4) {
                         xx = xb + qq;
                         int xxx = MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, z, 0));
@@ -934,7 +948,8 @@ void WaveCanvas::drawTickRaster(QPainter& p, int x, int y, int w, int h, int ras
                                xx += qq;
                                }
                         }
-            p.setPen(Qt::gray);
+            pen.setColor(Qt::gray);
+            p.setPen(pen);
             for (int beat = 1; beat < z; beat++) {
                         xx = mapx(MusEGlobal::tempomap.tick2frame(AL::sigmap.bar2tick(bar, beat, 0)));
                         //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
@@ -1136,7 +1151,9 @@ int WaveCanvas::y2pitch(int) const
 //    draws a wave
 //---------------------------------------------------------
 
-void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect, const QRegion&)
 {
       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
       if(!wp || !wp->track())
@@ -1156,6 +1173,9 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       MusECore::Event event  = item->event();
       if(event.empty())
         return;
+      
+      QPen pen;
+      pen.setCosmetic(true);
       
       int x1 = mr.x();
       int x2 = x1 + mr.width();
@@ -1253,14 +1273,17 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                     QColor peak_color = MusEGlobal::config.wavePeakColor;
                     QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
-                    if (pos > selectionStartPos && pos < selectionStopPos) {
+// REMOVE Tim. citem. Changed.
+//                     if (pos > selectionStartPos && pos < selectionStopPos) {
+                    if (pos > selectionStartPos && pos <= selectionStopPos) {
                           peak_color = MusEGlobal::config.wavePeakColorSelected;
                           rms_color  = MusEGlobal::config.waveRmsColorSelected;
                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
                           if(!l_inv.isNull())
                           {
                             // Draw inverted
-                            p.setPen(QColor(Qt::black));
+                            pen.setColor(QColor(Qt::black));
+                            p.setPen(pen);
                             p.drawLine(l_inv);
                           }
                         }
@@ -1268,14 +1291,16 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                     QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mr);
                     if(!l_peak.isNull())
                     {
-                      p.setPen(peak_color);
+                      pen.setColor(peak_color);
+                      p.setPen(pen);
                       p.drawLine(l_peak);
                     }
 
                     QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mr);
                     if(!l_rms.isNull())
                     {
-                      p.setPen(rms_color);
+                      pen.setColor(rms_color);
+                      p.setPen(pen);
                       p.drawLine(l_rms);
                     }
 
@@ -1290,12 +1315,14 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
               int center = hhn + h2;
               if(center >= y1 && center < y2)
               {
-                p.setPen(QColor(i & 1 ? Qt::red : Qt::blue));
+                pen.setColor(QColor(i & 1 ? Qt::red : Qt::blue));
+                p.setPen(pen);
                 p.drawLine(sx, center, ex, center);
               }
               if(i != 0 && h2 >= y1 && h2 < y2)
               {
-                p.setPen(QColor(Qt::black));
+                pen.setColor(QColor(Qt::black));
+                p.setPen(pen);
                 p.drawLine(sx, h2, ex, h2);
               }
             }
@@ -1352,7 +1379,9 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void WaveCanvas::drawTopItem(QPainter& , const QRect&)
+// REMOVE Tim. citem. Changed.
+// void WaveCanvas::drawTopItem(QPainter& , const QRect&)
+void WaveCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 {}
 
 //---------------------------------------------------------
@@ -1360,13 +1389,18 @@ void WaveCanvas::drawTopItem(QPainter& , const QRect&)
 //    draws moving items
 //---------------------------------------------------------
 
-void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect, const QRegion&)
     {
       QRect mr = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       p.setBrush(QColor(0, 128, 0, 128));  // TODO: Pick a better colour, or use part colours, or grey?
       p.drawRect(mr);
     }
@@ -1744,7 +1778,9 @@ void WaveCanvas::adjustWaveOffset()
 //   draw
 //---------------------------------------------------------
 
-void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
+void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
       {
       int x = rect.x();
       int y = rect.y();

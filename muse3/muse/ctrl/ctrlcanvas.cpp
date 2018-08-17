@@ -140,7 +140,9 @@ bool CEvent::intersectsController(const MusECore::MidiController* mc, const QRec
       
       int tick1 = _event.tick() + _part->tick();
       if(ex == -1)
+// REMOVE Tim. citem. Changed.
         return tick1 < (r.x() + r.width()) && y1 < (r.y() + r.height());
+        //return tick1 <= (r.x() + r.width()) && y1 <= (r.y() + r.height());
       
       int tick2 = ex + _part->tick();
       
@@ -653,8 +655,11 @@ void CtrlCanvas::itemSelectionsChanged()
 //             if (item->isSelected() != item->objectIsSelected())
             if (item_selected != obj_selected)
             {
+                // Here we have a choice of whether to allow undoing of selections.
+                // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
                 operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
 //                                                   item->part(), i->second->isSelected(), item->part()->selected()));
+                                                  //item->event(), item->part(), item_selected, obj_selected, false));
                                                   item->event(), item->part(), item_selected, obj_selected));
                 
                 changed=true;
@@ -672,12 +677,13 @@ void CtrlCanvas::itemSelectionsChanged()
 //             MusEGlobal::song->applyOperationGroup(operations);
 
             // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
-            // Here we have a choice of whether to allow undoing of selections.
-            // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+//             // Here we have a choice of whether to allow undoing of selections.
+//             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
 #if 0
             if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
 #else
             //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
+            //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
             MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
 #endif
             //{
@@ -853,7 +859,7 @@ void CtrlCanvas::updateItemSelections()
       {
       selection.clear();
       
-      bool item_selected;
+      //bool item_selected;
       bool obj_selected;
 //       for (iCItem i = items.begin(); i != items.end(); ++i) {
       for(ciCEvent i = items.begin(); i != items.end(); ++i) {
@@ -864,11 +870,12 @@ void CtrlCanvas::updateItemSelections()
             CEvent* item = *i;
 //             item_selected = i->second->isSelected();
 //             part_selected = npart->part()->selected();
-            item_selected = item->isSelected();
+            
+            //item_selected = item->isSelected();
             obj_selected = item->objectIsSelected();
 //             if (item_selected != part_selected)
-            if (item_selected != obj_selected)
-            {
+            //if (item_selected != obj_selected)
+            //{
               // REMOVE Tim. citem. Added. Shouldn't be required.
               // If the track is not visible, deselect all parts just to keep things tidy.
               //if(!npart->part()->track()->isVisible())
@@ -880,7 +887,7 @@ void CtrlCanvas::updateItemSelections()
               
               if(obj_selected)
                 selection.push_back(item);
-            }
+            //}
       }
       redraw();
 }
@@ -1056,6 +1063,9 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
       bool ctrlKey = event->modifiers() & Qt::ControlModifier;
+      int xpos = start.x();
+      int ypos = start.y();
+      const int tickstep = rmapxDev(1);
 
       switch (drag) {
             case DRAG_RESIZE:
@@ -1069,7 +1079,12 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                   break;
 
             case DRAG_LASSO_START:
-                  lasso.setRect(-1, -1, -1, -1);
+            {
+// REMOVE Tim. citem. Changed.
+//                   lasso.setRect(-1, -1, -1, -1);
+                  //lasso.setRect(xpos, ypos, 0, 0);
+                  lasso = QRect(xpos, ypos, tickstep, rmapyDev(1));
+            }
                   //fallthrough
             case DRAG_LASSO:
 // REMOVE Tim. citem. Added.
@@ -1080,11 +1095,14 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                   {
                     lasso = lasso.normalized();
                     int h = height();
-                    int tickstep = rmapxDev(1);
+//                     int tickstep = rmapxDev(1);
                     for (iCEvent i = items.begin(); i != items.end(); ++i) {
                           if((*i)->part() != curPart)
                             continue;
+// REMOVE Tim. citem. Changed.
                           if ((*i)->intersectsController(_controller, lasso, tickstep, h)) {
+                          // If the lasso is empty treat it as a single click.
+                          //if (lasso.isEmpty() || (*i)->intersectsController(_controller, lasso, tickstep, h)) {
                                 if (ctrlKey && (*i)->isSelected())
 // REMOVE Tim. citem. Changed.
 //                                   (*i)->setSelected(false);
@@ -2148,7 +2166,9 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
 //   pdraw
 //---------------------------------------------------------
 
-void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
+void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       {
       if(!_controller)   
         return;
@@ -2295,7 +2315,9 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
 //   drawOverlay
 //---------------------------------------------------------
 
-void CtrlCanvas::drawOverlay(QPainter& p)
+// REMOVE Tim. citem. Changed.
+// void CtrlCanvas::drawOverlay(QPainter& p)
+void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       {
       QString s(_controller ? _controller->name() : QString(""));
       
@@ -2351,7 +2373,9 @@ QRect CtrlCanvas::overlayRect() const
 //   draw
 //---------------------------------------------------------
 
-void CtrlCanvas::draw(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void CtrlCanvas::draw(QPainter& p, const QRect& rect)
+void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion&)
       {
       drawTickRaster(p, rect.x(), rect.y(),
          rect.width(), rect.height(), editor->raster());

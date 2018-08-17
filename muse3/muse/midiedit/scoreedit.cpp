@@ -3528,7 +3528,9 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 }
 
 
-void ScoreCanvas::draw(QPainter& p, const QRect&)
+// REMOVE Tim. citem. Changed.
+// void ScoreCanvas::draw(QPainter& p, const QRect&)
+void ScoreCanvas::draw(QPainter& p, const QRect&, const QRegion&)
 {
     if (debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
 
@@ -3940,7 +3942,15 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
                 if (!ctrl)
                     deselect_all();
 
-            MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
+// REMOVE Tim. citem. Changed.
+//             MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+//                 !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
+//             MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+//                                     !clicked_event_ptr->selected(), clicked_event_ptr->selected(), false));
+            MusEGlobal::song->applyOperation(
+                UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+                       !clicked_event_ptr->selected(), clicked_event_ptr->selected()),
+              MusECore::Song::OperationExecuteUpdate);
         }
 
         setMouseTracking(false);
@@ -4039,7 +4049,15 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
                     if (!ctrl)
                         deselect_all();
 
-                    MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, true, clicked_event_ptr->selected()));
+// REMOVE Tim. citem. Changed.
+//                     MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr,
+//                                           selected_part, true, clicked_event_ptr->selected()));
+                    //MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr,
+                    //                      selected_part, true, clicked_event_ptr->selected(), false));
+                    MusEGlobal::song->applyOperation(
+                        UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part,
+                               true, clicked_event_ptr->selected()),
+                      MusECore::Song::OperationExecuteUpdate);
                 }
 
                 old_pitch=-1;
@@ -4520,9 +4538,13 @@ void ScoreCanvas::deselect_all()
 
     for (set<const MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
         for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
+// REMOVE Tim. citem. Changed.
             operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, *part, false, event->second.selected()));
+//             operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, *part, false, event->second.selected(), false));
 
-    MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+//     MusEGlobal::song->applyOperationGroup(operations);
+    MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 bool staff_t::cleanup_parts()
@@ -4581,11 +4603,19 @@ void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_proce
                 if (rect.contains(it2->x, it2->y))
                     if (already_processed.find(it2->source_event)==already_processed.end())
                     {
-                        operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,!it2->source_event->selected(),it2->source_event->selected()));
+// REMOVE Tim. citem. Changed.
+                        operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,
+                                                       !it2->source_event->selected(),it2->source_event->selected()));
+                        // Here we have a choice of whether to allow undoing of selections.
+                        // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+//                         operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,
+//                                                     !it2->source_event->selected(),it2->source_event->selected(), false));
                         already_processed.insert(it2->source_event);
                     }
             }
-    MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+//     MusEGlobal::song->applyOperationGroup(operations);
+    MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void ScoreCanvas::set_steprec(bool flag)

@@ -75,8 +75,12 @@ class WaveView : public View {
 
       unsigned selectionStart, selectionStop, dragstartx;
 
-      virtual void pdraw(QPainter&, const QRect&);
-      virtual void draw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void pdraw(QPainter&, const QRect&);
+      virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter& p, const QRect&);
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent*);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);

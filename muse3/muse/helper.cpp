@@ -1805,6 +1805,27 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect)
   return QLine(x1, y1, x2, y2);
 }
 
+QRect normalizeQRect(const QRect& rect)
+{
+  int x = rect.x();
+  int y = rect.y();
+  int w = rect.width();
+  int h = rect.height();
+  if(w < 0)
+  {
+    x += w;
+    w = -w;
+  }
+  
+  if(h < 0)
+  {
+    y += h;
+    h = -h;
+  }
+  
+  return QRect(x, y, w, h);
+}
+
 //---------------------------------------------------------
 //   loadTheme
 //---------------------------------------------------------

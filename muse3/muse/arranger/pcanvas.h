@@ -125,8 +125,12 @@ class PartCanvas : public Canvas {
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual void itemSelectionsChanged();
       virtual QPoint raster(const QPoint&) const;
       virtual int y2pitch(int y) const;
@@ -174,11 +178,15 @@ class PartCanvas : public Canvas {
 	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
                         const QRect& r, int from, int to, bool selected);
       MusECore::Track* y2Track(int) const;
-      void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
+// REMOVE Tim. citem. Changed.
+//       void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
+      void drawAudioTrack(QPainter& p, const QRect& r, const QRegion& rg, const QRect& bbox, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
-      void drawTopItem(QPainter& p, const QRect& rect);
+// REMOVE Tim. citem. Changed.
+//       void drawTopItem(QPainter& p, const QRect& rect);
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool slowMotion);
@@ -187,7 +195,9 @@ class PartCanvas : public Canvas {
       void newAutomationVertex(QPoint inPos);
 
    protected:
-      virtual void drawCanvas(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
 
    signals:

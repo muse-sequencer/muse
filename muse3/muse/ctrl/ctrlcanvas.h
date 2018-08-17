@@ -138,9 +138,15 @@ class CtrlCanvas : public MusEGui::View {
       void viewMouseReleaseEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
 
-      virtual void draw(QPainter&, const QRect&);
-      virtual void pdraw(QPainter&, const QRect&);
-      virtual void drawOverlay(QPainter& p);
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter& p, const QRect& rect);
+      virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void pdraw(QPainter&, const QRect&);
+      virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void drawOverlay(QPainter&)
+      virtual void drawOverlay(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual QRect overlayRect() const;
 
       void changeValRamp(int x1, int x2, int y1, int y2);

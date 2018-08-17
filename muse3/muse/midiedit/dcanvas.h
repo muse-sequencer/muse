@@ -108,10 +108,18 @@ class DrumCanvas : public EventCanvas {
       int _stepSize;
 
       
-      virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      void drawTopItem(QPainter& p, const QRect& rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       void drawTopItem(QPainter& p, const QRect& rect);
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);

@@ -115,6 +115,7 @@ class Canvas : public View {
       int canvasTools;
       DragMode drag;
       QRect lasso;
+      QRegion lassoRegion;
       QPoint start;
       QPoint end;
       QPoint global_start;
@@ -131,6 +132,7 @@ class Canvas : public View {
 
       bool supportsResizeToTheLeft;
 
+      void setLasso(const QRect& r);
       void resizeToTheLeft(const QPoint &pos);
       void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
@@ -138,7 +140,9 @@ class Canvas : public View {
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
-      virtual void draw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter&, const QRect& rect);
+      virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
       virtual void wheelEvent(QWheelEvent* e);
 
       virtual void keyPress(QKeyEvent*);
@@ -146,11 +150,19 @@ class Canvas : public View {
       virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
-      virtual void drawCanvas(QPainter&, const QRect&) = 0;
-      virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
+// REMOVE Tim. citem. Changed.
+//       virtual void drawCanvas(QPainter&, const QRect&) = 0;
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) = 0;
+// REMOVE Tim. citem. Changed.
+//       virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
+      virtual void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) = 0;
 
-      virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
+// REMOVE Tim. citem. Changed.
+//       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
+// REMOVE Tim. citem. Changed.
+//       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
       virtual void itemSelectionsChanged() = 0;
       virtual QPoint raster(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
@@ -230,6 +242,12 @@ class Canvas : public View {
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();
+      
+      // Converts a lasso-style (one-pixel thick) rectangle to a 
+      //  four-rectangle region union - enough to cover the four sides.
+      // Clears the given region first.
+      void lassoToRegion(const QRect& r_in, QRegion& rg_out) const;
+      
       // Whether we have grabbed the mouse.
       bool mouseGrabbed() const { return _mouseGrabbed; }
       bool isSingleSelection() const;

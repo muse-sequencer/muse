@@ -32,6 +32,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QPaintEvent>
+// REMOVE Tim. citem. Added.
+#include <QRegion>
 
 #include "math.h"
 
@@ -321,7 +323,9 @@ void View::paintEvent(QPaintEvent* ev)
         
       #ifdef VIEW_USE_DOUBLE_BUFFERING
       if (!pmValid)
-            paint(ev->rect());
+// REMOVE Tim. citem. Changed.
+//             paint(ev->rect());
+            paint(ev->rect(), ev->region());
       
       //bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), CopyROP, true);
       QPainter p(this);
@@ -329,7 +333,9 @@ void View::paintEvent(QPaintEvent* ev)
       p.drawPixmap(ev->rect().topLeft(), pm, ev->rect());
       
       #else
-      paint(ev->rect());
+// REMOVE Tim. citem. Changed.
+//       paint(ev->rect());
+      paint(ev->rect(), ev->region());
       #endif
       }
 
@@ -365,12 +371,30 @@ void View::redraw(const QRect& r)
       update(r);
       }
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   redraw
+//---------------------------------------------------------
+
+void View::redraw(const QRegion& r)
+      {
+      //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width());  
+      
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      paint(r);
+      #endif
+      
+      update(r);
+      }
+
 //---------------------------------------------------------
 //   paint
 //    r - phys coord system
 //---------------------------------------------------------
 
-void View::paint(const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void View::paint(const QRect& r)
+void View::paint(const QRect& r, const QRegion& rg)
       {
       #ifdef VIEW_USE_DOUBLE_BUFFERING
       if (pm.isNull())
@@ -391,6 +415,17 @@ void View::paint(const QRect& r)
       #else
       QPainter p(this);
       #endif
+
+      // REMOVE Tim. citem. Added. For testing.
+      const int rg_sz = rg.rectCount();
+      int rg_r_cnt = 0;
+      fprintf(stderr, "View::paint: rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
+              r.x(), r.y(), r.width(), r.height(), rg_sz);
+      for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+      {
+        const QRect& rg_r = *i;
+        fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+      }
       
       p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
       
@@ -400,15 +435,23 @@ void View::paint(const QRect& r)
             p.drawTiledPixmap(rr, bgPixmap, QPoint(xpos + rmapx(xorg)
                + rr.x(), ypos + rmapy(yorg) + rr.y()));
       
-      p.setClipRegion(rr);
+// REMOVE Tim. citem. Changed.
+//       p.setClipRegion(rr);
+// // Do not set a clip region. Certain drawing routines need to draw outside the update rectangle,
+// //  either for efficiency or by design (WaveCanvas selections need full top-to-bottom drawing).
+      p.setClipRegion(rg);
 
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
-      pdraw(p, rr);       // draw into pixmap
+// REMOVE Tim. citem. Changed.
+//       pdraw(p, rr);       // draw into pixmap
+      pdraw(p, rr, rg);       // draw into pixmap
 
       p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
       //p.resetTransform();
       
-      drawOverlay(p);
+// REMOVE Tim. citem. Changed.
+//       drawOverlay(p);
+      drawOverlay(p, r, rg);
       }
 
 //---------------------------------------------------------
@@ -518,61 +561,128 @@ void View::setBg(const QPixmap& bgpm)
       }
 
 //---------------------------------------------------------
+//   devToVirt
+//---------------------------------------------------------
+
+QRect View::devToVirt(const QRect& r) const
+{
+  int x = r.x();
+  int y = r.y();
+  int w = r.width();
+  int h = r.height();
+  if (xmag <= 0) {
+        // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
+        x -= 1;   
+        w += 2;
+        //x = (x + xpos + rmapx(xorg)) * (-xmag);
+        x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
+        w = w * (-xmag);
+        }
+  else {
+        //x = (x + xpos + rmapx(xorg)) / xmag;
+        x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
+        //w = (w + xmag - 1) / xmag;
+        w = lrint(double(w) / double(xmag));
+        x -= 1;
+        w += 2;
+        }
+  if (ymag <= 0) {
+        y -= 1;
+        h += 2;
+        //y = (y + ypos + rmapy(yorg)) * (-ymag);
+        y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
+        h = h * (-ymag);
+        }
+  else {
+        //y = (y + ypos + rmapy(yorg)) / ymag;
+        y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
+        //h = (h + ymag - 1) / ymag;
+        h = lrint(double(h) / double(ymag));
+        y -= 1;
+        h += 2;
+        }
+
+  if (x < 0)
+        x = 0;
+  if (y < 0)
+        y = 0;
+  
+  return QRect(x, y, w, h);
+}
+
+void View::devToVirt(const QRegion& rg_in, QRegion& rg_out) const
+{
+  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
+    rg_out += devToVirt(*i);
+}
+
+//---------------------------------------------------------
 //   pdraw
 //    r - phys coords
 //---------------------------------------------------------
 
-void View::pdraw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void View::pdraw(QPainter& p, const QRect& r)
+void View::pdraw(QPainter& p, const QRect& r, const QRegion& rg)
       {
       //printf("View::pdraw virt:%d x:%d width:%d y:%d height:%d\n", virt(), r.x(), r.width(), r.y(), r.height());  
       
       if (virt()) {
             setPainter(p);
-            int x = r.x();
-            int y = r.y();
-            int w = r.width();
-            int h = r.height();
-            if (xmag <= 0) {
-                  // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
-                  x -= 1;   
-                  w += 2;
-                  //x = (x + xpos + rmapx(xorg)) * (-xmag);
-                  x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
-                  w = w * (-xmag);
-                  }
-            else {
-                  //x = (x + xpos + rmapx(xorg)) / xmag;
-                  x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
-                  //w = (w + xmag - 1) / xmag;
-                  w = lrint(double(w) / double(xmag));
-                  x -= 1;
-                  w += 2;
-                  }
-            if (ymag <= 0) {
-                  y -= 1;
-                  h += 2;
-                  //y = (y + ypos + rmapy(yorg)) * (-ymag);
-                  y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
-                  h = h * (-ymag);
-                  }
-            else {
-                  //y = (y + ypos + rmapy(yorg)) / ymag;
-                  y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
-                  //h = (h + ymag - 1) / ymag;
-                  h = lrint(double(h) / double(ymag));
-                  y -= 1;
-                  h += 2;
-                  }
-
-            if (x < 0)
-                  x = 0;
-            if (y < 0)
-                  y = 0;
+// REMOVE Tim. citem. Changed.
+//             int x = r.x();
+//             int y = r.y();
+//             int w = r.width();
+//             int h = r.height();
+//             if (xmag <= 0) {
+//                   // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
+//                   x -= 1;   
+//                   w += 2;
+//                   //x = (x + xpos + rmapx(xorg)) * (-xmag);
+//                   x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
+//                   w = w * (-xmag);
+//                   }
+//             else {
+//                   //x = (x + xpos + rmapx(xorg)) / xmag;
+//                   x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
+//                   //w = (w + xmag - 1) / xmag;
+//                   w = lrint(double(w) / double(xmag));
+//                   x -= 1;
+//                   w += 2;
+//                   }
+//             if (ymag <= 0) {
+//                   y -= 1;
+//                   h += 2;
+//                   //y = (y + ypos + rmapy(yorg)) * (-ymag);
+//                   y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
+//                   h = h * (-ymag);
+//                   }
+//             else {
+//                   //y = (y + ypos + rmapy(yorg)) / ymag;
+//                   y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
+//                   //h = (h + ymag - 1) / ymag;
+//                   h = lrint(double(h) / double(ymag));
+//                   y -= 1;
+//                   h += 2;
+//                   }
+// 
+//             if (x < 0)
+//                   x = 0;
+//             if (y < 0)
+//                   y = 0;
+            QRect v_r = devToVirt(r);
             
-            draw(p, QRect(x, y, w, h));
+// REMOVE Tim. citem. Changed. TODO Needs TESTING
+//             draw(p, QRect(x, y, w, h));
+            QRegion v_rg;
+            for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i)
+              v_rg += devToVirt(*i);
+            draw(p, v_r, v_rg);
             }
       else
-            draw(p, r);
+// REMOVE Tim. citem. Changed.
+//             draw(p, r);
+            draw(p, r, rg);
       }
 
 //---------------------------------------------------------
@@ -860,6 +970,12 @@ QPoint View::map(const QPoint& p) const
       return QPoint(mapx(p.x()), mapy(p.y()));
       }
 
+void View::map(const QRegion& rg_in, QRegion& rg_out) const
+{
+  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
+    rg_out += map(*i);
+}
+      
 int View::mapx(int x) const
       {
       if (xmag < 0) {
@@ -957,48 +1073,5 @@ double View::rmapyDev_f(double y) const
       else
             return y / double(ymag);
       }
-
-
-
-/*
-QRect View::devToVirt(const QRect& r)
-{
-    int x = r.x();
-    int y = r.y();
-    int w = r.width();
-    int h = r.height();
-    if (xmag <= 0) {
-          x -= 1;
-          w += 2;
-          x = (x + xpos + rmapx(xorg)) * (-xmag);
-          w = w * (-xmag);
-          }
-    else {
-          x = (x + xpos + rmapx(xorg)) / xmag;
-          w = (w + xmag - 1) / xmag;
-          x -= 1;
-          w += 2;
-          }
-    if (ymag <= 0) {
-          y -= 1;
-          h += 2;
-          y = (y + ypos + rmapy(yorg)) * (-ymag);
-          h = h * (-ymag);
-          }
-    else {
-          y = (y + ypos + rmapy(yorg)) / ymag;
-          h = (h + ymag - 1) / ymag;
-          y -= 1;
-          h += 2;
-          }
-
-    if (x < 0)
-          x = 0;
-    if (y < 0)
-          y = 0;
-    
-    return QRect(x, y, w, h);
-}
-*/
 
 } // namespace MusEGui

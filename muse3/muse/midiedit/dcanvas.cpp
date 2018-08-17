@@ -735,7 +735,9 @@ void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
 //   drawItem
 //---------------------------------------------------------
 
-void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, const QRegion&)
       {
       DEvent* e   = (DEvent*) item;
       int x = 0, y = 0;
@@ -751,7 +753,10 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
       if(!r.isValid())
         return;
       
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       
       if (e->part() != curPart)
       {
@@ -793,7 +798,9 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
 //    draws moving items
 //---------------------------------------------------------
 
-void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
+void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
     {
       QPolygon pa(4);
       QPoint pt = map(item->mp());
@@ -807,7 +814,10 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       p.setBrush(Qt::black);
       p.drawPolygon(pa);
     }
@@ -816,20 +826,26 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
 //   drawCanvas
 //---------------------------------------------------------
 
-void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
+void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
       {
       int x = rect.x();
       int y = rect.y();
       int w = rect.width();
       int h = rect.height();
 
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::gray);
+      p.setPen(pen);
+      
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
       int yy  = ((y-1) / TH) * TH + TH;
       for (; yy < y + h; yy += TH) {
-            p.setPen(Qt::gray);
             p.drawLine(x, yy, x + w, yy);
             }
 
@@ -843,11 +859,16 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
+// REMOVE Tim. citem. Changed.
+// void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
+void DrumCanvas::drawTopItem(QPainter& p, const QRect&, const QRegion&)
 {
   // draw cursor
   if (_tool == CursorTool) {
-    p.setPen(Qt::black);
+    QPen pen;
+    pen.setCosmetic(true);
+    pen.setColor(Qt::black);
+    p.setPen(pen);
 
     int y = mapy(TH * cursorPos.y());
 

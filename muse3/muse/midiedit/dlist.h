@@ -155,7 +155,9 @@ class DList : public View {
       int sInstrument;
       enum { NORMAL, START_DRAG, DRAG } drag;
 
-      virtual void draw(QPainter& p, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter& p, const QRect&);
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseReleaseEvent(QMouseEvent* event);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);

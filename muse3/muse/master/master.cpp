@@ -158,7 +158,9 @@ void Master::leaveEvent(QEvent*)
 //   pdraw
 //---------------------------------------------------------
 
-void Master::pdraw(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void Master::pdraw(QPainter& p, const QRect& rect)
+void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       {
       View::pdraw(p, rect);   // calls draw()
       p.resetTransform();
@@ -213,7 +215,9 @@ void Master::pdraw(QPainter& p, const QRect& rect)
 //   draw
 //---------------------------------------------------------
 
-void Master::draw(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void Master::draw(QPainter& p, const QRect& rect)
+void Master::draw(QPainter& p, const QRect& rect, const QRegion&)
       {
       drawTickRaster(p, rect.x(), rect.y(),
          rect.width(), rect.height(), 0);

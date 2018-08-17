@@ -123,7 +123,9 @@ void HitScale::leaveEvent(QEvent*)
 //   draw
 //---------------------------------------------------------
 
-void HitScale::pdraw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void HitScale::pdraw(QPainter& p, const QRect& r)
+void HitScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
       int w = r.width();

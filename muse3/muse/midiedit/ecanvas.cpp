@@ -256,9 +256,16 @@ void EventCanvas::itemSelectionsChanged()
 //             if (item->isSelected() != item->objectIsSelected())
             if (item_selected != obj_selected)
             {
+                // REMOVE Tim. citem. Added.
+                // Here we have a choice of whether to allow undoing of selections.
+                // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+              
                 operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
-//                                                   item->part(), i->second->isSelected(), item->part()->selected()));
-                                                  item->event(), item->part(), item_selected, obj_selected));
+// REMOVE Tim. citem. Changed.
+//                  item->part(), i->second->isSelected(), item->part()->selected()));
+//                     item->event(), item->part(), item_selected, obj_selected, false));
+                    item->event(), item->part(), item_selected, obj_selected));
+
                 changed=true;
             }
       }
@@ -268,12 +275,13 @@ void EventCanvas::itemSelectionsChanged()
 //             MusEGlobal::song->applyOperationGroup(operations);
 
             // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
-            // Here we have a choice of whether to allow undoing of selections.
-            // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+//             // Here we have a choice of whether to allow undoing of selections.
+//             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
 #if 0
             if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
 #else
-            //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
+//             if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
+            //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
             MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
 #endif
             //{

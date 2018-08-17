@@ -72,7 +72,8 @@ const char* UndoOp::typeName()
             "MoveTrack",
             "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing",
-            "EnableAllAudioControllers"
+            "EnableAllAudioControllers",
+            "GlobalSelectAllEvents"
             };
       return name[type];
       }
@@ -493,6 +494,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: EnableAllAudioControllers\n");
     break;
     
+    case UndoOp::GlobalSelectAllEvents:
+      fprintf(stderr, "Undo::insert: GlobalSelectAllEvents\n");
+    break;
     
     default:
     break;
@@ -1263,6 +1267,24 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+        case UndoOp::GlobalSelectAllEvents:
+          if(uo.type == UndoOp::GlobalSelectAllEvents)
+          {
+            if(uo.a == n_op.a)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double GlobalSelectAllEvents. Ignoring.\n");
+              return;
+            }
+            else
+            {
+              // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
+              // Simply replace a with the new value.
+              uo.a = n_op.a;
+              return;  
+            }
+          }
+        break;
+        
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -1513,7 +1535,8 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
              type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo ||  
              type_==AddSig || type_==DeleteSig ||
-             type_==ModifySongLen || type_==MoveTrack);
+             type_==ModifySongLen || type_==MoveTrack ||
+             type_==GlobalSelectAllEvents);
       
       type = type_;
       a  = a_;
@@ -3305,6 +3328,14 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         pendingOperations.add(PendingOperationItem(PendingOperationItem::EnableAllAudioControllers));
                         updateFlags |= SC_AUDIO_CONTROLLER;
+                        break;
+                        
+                  case UndoOp::GlobalSelectAllEvents:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:GlobalSelectAllEvents\n");
+#endif                        
+                        pendingOperations.add(PendingOperationItem(tracks(), i->a, 0, 0, PendingOperationItem::GlobalSelectAllEvents));
+                        updateFlags |= SC_SELECTION;
                         break;
                         
                   default:

@@ -516,7 +516,9 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
 //   draw
 //---------------------------------------------------------
 
-void Piano::draw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void Piano::draw(QPainter& p, const QRect& r)
+void Piano::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       QPoint offset(0, KH*2);
       p.drawTiledPixmap(r, *octave, r.topLeft()+offset);

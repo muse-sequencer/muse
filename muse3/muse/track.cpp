@@ -1694,6 +1694,18 @@ Part* Track::findPart(unsigned tick)
       return 0;
       }
 
+bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
+{
+  bool ret = false;
+  PartList* pl = parts();
+  for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    if(ip->second->selectEvents(select, t0, t1))
+      ret = true;
+  }
+  return ret;
+}
+      
 //---------------------------------------------------------
 //   Track::writeProperties
 //---------------------------------------------------------

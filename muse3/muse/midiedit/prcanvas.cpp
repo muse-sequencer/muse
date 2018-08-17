@@ -158,8 +158,11 @@ int PianoCanvas::y2pitch(int y) const
 //    draws a note
 //---------------------------------------------------------
 
+// REMOVE Tim. citem. Changed.
+// void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
+//    const QRect& rect)
 void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
-   const QRect& rect)
+   const QRect& rect, const QRegion&)
       {
       QRect r = item->bbox();
       if(!virt())
@@ -173,7 +176,11 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       if(mr.isNull())
         return;
       
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
+      
       struct Triple {
             int r, g, b;
             };
@@ -267,11 +274,13 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
         if (color.lightnessF() > 0.6f) {
 
-          p.setPen(Qt::black);
+          pen.setColor(Qt::black);
+          p.setPen(pen);
 
         } else {
 
-          p.setPen(Qt::white);
+          pen.setColor(Qt::white);
+          p.setPen(pen);
 
         }
         QString noteStr = MusECore::pitch2string(event.pitch());
@@ -286,7 +295,9 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void PianoCanvas::drawTopItem(QPainter& , const QRect&)
+// REMOVE Tim. citem. Changed.
+// void PianoCanvas::drawTopItem(QPainter& , const QRect&)
+void PianoCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 {}
 
 //---------------------------------------------------------
@@ -294,13 +305,18 @@ void PianoCanvas::drawTopItem(QPainter& , const QRect&)
 //    draws moving items
 //---------------------------------------------------------
 
-void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
+void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect, const QRegion&)
     {
       QRect mr = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
       mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
-      p.setPen(Qt::black);
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       p.setBrush(Qt::NoBrush);
       p.drawRect(mr);
     }
@@ -753,13 +769,19 @@ void PianoCanvas::pianoReleased(int /*pitch*/, bool)
 //   draw
 //---------------------------------------------------------
 
-void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
+void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion&)
       {
       int x = rect.x();
       int y = rect.y();
       int w = rect.width();
       int h = rect.height();
 
+      QPen pen;
+      pen.setCosmetic(true);
+      pen.setColor(Qt::black);
+      p.setPen(pen);
       
       //---------------------------------------------------
       //  horizontal lines
@@ -768,12 +790,10 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
       int yy  = ((y-1) / KH) * KH + KH;
       int key = 75 - (yy / KH);
       
-      
       for (; yy < y + h; yy += KH) {
             switch (key % 7) {
                   case 0:
                   case 3:
-                        p.setPen(Qt::black);
                         p.drawLine(x, yy, x + w, yy);
                         break;
                   default:

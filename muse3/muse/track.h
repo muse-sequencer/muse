@@ -197,6 +197,11 @@ class Track {
       Part* findPart(unsigned tick);
       iPart addPart(Part* p);
 
+      // Select or unselect a range of events. If t0 == t1, ALL events will be affected.
+      // The t0 and t1 can be ticks or frames depending on the type of events. Unused for now.
+      // Returns true if anything changed.
+      bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
+      
       virtual void write(int, Xml&) const = 0;
 
       virtual Track* newTrack() const = 0;

@@ -33,6 +33,8 @@ class QPaintEvent;
 class QPainter;
 class QPixmap;
 class QResizeEvent;
+// REMOVE Tim. citem. Added.
+class QRegion;
 
 namespace MusEGui {
 
@@ -50,7 +52,6 @@ class View : public QWidget {
       QBrush brush;
       bool _virt;
       
-
    protected:
       int xorg;
       int yorg;
@@ -65,17 +66,29 @@ class View : public QWidget {
       virtual void mouseReleaseEvent(QMouseEvent* event);
       virtual void dropEvent(QDropEvent* event);
 
-      virtual void draw(QPainter&, const QRect&) {}
-      virtual void drawOverlay(QPainter&) {}
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter&, const QRect&) {}
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion()) {}
+      
+// REMOVE Tim. citem. Changed.
+//       virtual void drawOverlay(QPainter&) {}
+      virtual void drawOverlay(QPainter&, const QRect&, const QRegion& = QRegion()) {}
+      
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
       virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
 
-      virtual void pdraw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void pdraw(QPainter&, const QRect&);
+      virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
 
       virtual void paintEvent(QPaintEvent* ev);
       void redraw(const QRect&);
+// REMOVE Tim. citem. Added.
+      void redraw(const QRegion&);
 
-      void paint(const QRect& r);
+// REMOVE Tim. citem. Changed.
+//       void paint(const QRect& r);
+      void paint(const QRect&, const QRegion& = QRegion());
 
       virtual void resizeEvent(QResizeEvent*);
       virtual void viewKeyPressEvent(QKeyEvent*);
@@ -88,6 +101,7 @@ class View : public QWidget {
 
       QRect map(const QRect&) const;
       QPoint map(const QPoint&) const;
+      void map(const QRegion& rg_in, QRegion& rg_out) const;
       QRect mapDev(const QRect&) const;
       QPoint mapDev(const QPoint&) const;
 
@@ -97,7 +111,8 @@ class View : public QWidget {
       int mapxDev(int x) const;
       int rmapy(int y) const;
       int rmapyDev(int y) const;
-      //QRect devToVirt(const QRect&);
+      QRect devToVirt(const QRect&) const;
+      void devToVirt(const QRegion& rg_in, QRegion& rg_out) const;
       double rmapx_f(double x) const;
       double rmapy_f(double y) const;
       double rmapxDev_f(double x) const;

@@ -108,15 +108,23 @@ class WaveCanvas : public EventCanvas {
       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
       void drawParts(QPainter&, const QRect&, bool do_cur_part);
   
-      virtual void draw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter&, const QRect& rect);
+      virtual void draw(QPainter&, const QRect& rect, const QRegion& = QRegion());
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      void drawTopItem(QPainter &p, const QRect &rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       void drawTopItem(QPainter& p, const QRect& rect);
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
+// REMOVE Tim. citem. Changed.
+//       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
@@ -133,7 +141,9 @@ class WaveCanvas : public EventCanvas {
       int pitch2y(int) const;
       inline int y2height(int) const { return height(); }
       inline int yItemOffset() const { return 0; }
-      virtual void drawCanvas(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);

@@ -1236,9 +1236,13 @@ void select_all(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
+// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, true, event.selected()));
+// 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, true, event.selected()));
 		}
-	MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+// 	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void select_none(const set<const Part*>& parts)
@@ -1250,9 +1254,13 @@ void select_none(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
+// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, false, event.selected()));
+			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, false, event.selected(), false));
 		}
-	MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+// 	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void select_invert(const set<const Part*>& parts)
@@ -1264,9 +1272,13 @@ void select_invert(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
+// REMOVE Tim. citem. Changed.
 			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !event.selected(), event.selected()));
+			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !event.selected(), event.selected(), false));
 		}
-	MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+// 	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void select_in_loop(const set<const Part*>& parts)
@@ -1279,9 +1291,15 @@ void select_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+// REMOVE Tim. citem. Changed.
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
+         (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
+      //   (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected(), false));
 		}
-	MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+// 	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 void select_not_in_loop(const set<const Part*>& parts)
@@ -1294,9 +1312,15 @@ void select_not_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+// REMOVE Tim. citem. Changed.
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
+        !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+			//operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part,
+      //           !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected(), false));
 		}
-	MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Changed.
+// 	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate);
 }
 
 bool tracks_are_selected()

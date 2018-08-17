@@ -533,6 +533,11 @@ void PartCanvas::itemSelectionsChanged()
             {
 //                 operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), i->second->isSelected(), item->part()->selected()));
                 operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected));
+                // Here we have a choice of whether to allow undoing of selections.
+                // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+                // Operation set as not undoable.
+                //operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected, false));
+                
                 changed=true;
             }
       }
@@ -542,13 +547,14 @@ void PartCanvas::itemSelectionsChanged()
 //             MusEGlobal::song->applyOperationGroup(operations);
 
             // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
-            // Here we have a choice of whether to allow undoing of selections.
-            // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+//             // Here we have a choice of whether to allow undoing of selections.
+//             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
 #if 0
             if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
 #else
             //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
             MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
+            //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
 #endif
             //{
               // REMOVE Tim. citem. Added.
@@ -983,9 +989,15 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       Undo operations;
       if(part->hasClones())
       {
-         operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected()));
+// REMOVE Tim. citem. Changed.
+//          operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected()));
+         // Here we have a choice of whether to allow undoing of selections.
+         // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+         operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected(), false));
          for(MusECore::Part* it = p->nextClone(); it!=p; it=it->nextClone())
-            operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected()));
+//             operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected()));
+            // Operation set as not undoable.
+            operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected(), false));
 
          MusEGlobal::song->applyOperationGroup(operations);
       }
@@ -1620,7 +1632,9 @@ void PartCanvas::keyRelease(QKeyEvent* event)
 //    draws a part
 //---------------------------------------------------------
 
-void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
       {
       int from   = rect.x();
       int to     = from + rect.width();
@@ -1994,7 +2008,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 //    draws moving items
 //---------------------------------------------------------
 
-void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
+void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const QRegion&)
       {
         QPen pen;
         pen.setCosmetic(true);
@@ -3034,7 +3050,135 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //   drawCanvas
 //---------------------------------------------------------
 
-void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
+// {
+//       int x = rect.x();
+//       int w = rect.width();
+// 
+//       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
+// 
+//       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       QRect mr = map(rect);                      // Use our own map instead.
+// 
+//       p.save();
+//       p.setWorldMatrixEnabled(false);
+// 
+//       int mx = mr.x();
+//       int my = mr.y();
+//       int mw = mr.width();
+//       int mh = mr.height();
+// 
+//       //////////
+//       // GRID //
+//       //////////
+//       QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       pen.setColor(baseColor);
+//       p.setPen(pen);
+// 
+//       //--------------------------------
+//       // vertical lines
+//       //-------------------------------
+//       if (MusEGlobal::config.canvasShowGrid) {
+//           int bar, beat;
+//           unsigned tick;
+// 
+//           AL::sigmap.tickValues(x, &bar, &beat, &tick);
+//           for (;;) {
+//             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
+//             //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
+//             if (xt >= x + w)
+//             //if (xt >= mx + mw)
+//                   break;
+//             if (!((bar-1) % 4))
+//                 pen.setColor(baseColor.dark(115));
+//             else
+//                 pen.setColor(baseColor);
+//             p.setPen(pen);
+//             //p.drawLine(xt, y, xt, y+h);
+//             int xtm = mapx(xt);
+//             p.drawLine(xtm, my, xtm, my+mh);
+// 
+//             // append
+//             int noDivisors=0;
+//             if (*_raster == MusEGlobal::config.division *2)         // 1/2
+//                 noDivisors=2;
+//             else if (*_raster== MusEGlobal::config.division)        // 1/4
+//                 noDivisors=4;
+//             else if (*_raster==MusEGlobal::config.division/2)         // 1/8
+//                 noDivisors=8;
+//             else if (*_raster==MusEGlobal::config.division/4)          // 1/16
+//                 noDivisors=16;
+//             else if (*_raster==MusEGlobal::config.division/8)          // 1/16
+//                 noDivisors=32;
+//             else if (*_raster==MusEGlobal::config.division/16)          // 1/16
+//                 noDivisors=64;
+// 
+//             int r = *_raster;
+//             int rr = rmapx(r);
+//             if (*_raster > 1) {
+//               while (rr < 4) {
+//                 r *= 2;
+//                 rr = rmapx(r);
+//                 noDivisors=noDivisors/2;
+//               }
+//               p.setPen(baseColor);
+//               int xx;
+//               for (int t=1;t< noDivisors;t++)
+//               {
+//                 //p.drawLine(xt+r*t, y, xt+r*t, y+h);
+//                 xx = mapx(xt + r * t);
+//                 p.drawLine(xx, my, xx, my+mh);
+//               }
+//             }
+//           }
+//       }
+// 
+//       //--------------------------------
+//       // horizontal lines
+//       //--------------------------------
+// 
+//       MusECore::TrackList* tl = MusEGlobal::song->tracks();
+//       int yy = -rmapy(yorg) - ypos;
+//       int th;
+//       for (MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it) {
+//             if (yy > my + mh)
+//                   break;
+//             MusECore::Track* track = *it;
+//             th = track->height();
+//             if (!th)
+//               continue;
+//             if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
+//             {
+//               pen.setColor(baseColor.dark(130));
+//               p.setPen(pen);
+//               p.drawLine(mx, yy + th, mx + mw, yy + th);
+//             }
+// 
+//             // The update rectangle (rect and mr etc) is clipped at x<0 and y<0 in View::pdraw().
+//             // The 'corrupt drawing' bug of drawAudioTrack was actually because the recently added gradient
+//             //  used the update rectangle, so the gradient was also being clipped at 0,0.
+//             // One could remove that limiter, but no, that is the correct way. So instead let's construct a
+//             //  'pseudo bounding box' (half update rectangle, half bounding box), un-clipped. The gradient needs this!
+//             //
+//             // Here is a different situation than PartCanvas::drawItem which uses un-clipped part bounding boxes and
+//             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue
+//             //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim.
+//             QRect r(mx, yy, mw, th);
+//             {
+//               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
+//                     drawAudioTrack(p, mr, r, (MusECore::AudioTrack*)track);
+//               }
+//             }
+//             yy += th;
+//       }
+// 
+//       p.restore();
+// }
+
+void PartCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
 {
       int x = rect.x();
       int w = rect.width();
@@ -3043,6 +3187,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       QRect mr = map(rect);                      // Use our own map instead.
+      QRegion mrg;
+      map(rg, mrg);                              // Use our own map instead.
 
       p.save();
       p.setWorldMatrixEnabled(false);
@@ -3152,7 +3298,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             QRect r(mx, yy, mw, th);
             {
               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
-                    drawAudioTrack(p, mr, r, (MusECore::AudioTrack*)track);
+                    drawAudioTrack(p, mr, mrg, r, (MusECore::AudioTrack*)track);
               }
             }
             yy += th;
@@ -3164,7 +3310,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawLast
 //---------------------------------------------------------
-void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
+void PartCanvas::drawTopItem(QPainter& p, const QRect& rect, const QRegion&)
 {
     QRect mr = map(rect);
 
@@ -3314,7 +3462,9 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawAudioTrack
 //---------------------------------------------------------
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* /*t*/)
+// REMOVE Tim. citem. Changed.
+// void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* /*t*/)
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRegion& /*rg*/, const QRect& bbox, MusECore::AudioTrack* /*t*/)
 {
       QRect mr = r & bbox;
       if(mr.isNull())

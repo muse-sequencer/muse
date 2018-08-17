@@ -826,7 +826,9 @@ class ScoreCanvas : public MusEGui::View
 		void pos_add_changed();
 			
 	protected:
-		virtual void draw(QPainter& p, const QRect& rect);
+// REMOVE Tim. citem. Changed.
+// 		virtual void draw(QPainter& p, const QRect& rect);
+		virtual void draw(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 		ScoreEdit* parent;
 		
 		virtual void mousePressEvent (QMouseEvent* event);

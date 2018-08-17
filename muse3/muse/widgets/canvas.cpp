@@ -49,6 +49,7 @@
 #include "fastlog.h"
 #include "menutitleitem.h"
 #include "shortcuts.h"
+#include "helper.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -109,6 +110,64 @@ Canvas::~Canvas()
       delete newCItem->part();
     delete newCItem;
   }
+}
+
+//---------------------------------------------------------
+//   lassoToRegion
+//   static
+//---------------------------------------------------------
+
+void Canvas::lassoToRegion(const QRect& r_in, QRegion& rg_out) const
+{
+//   const int x = r_in.x();
+//   const int y = r_in.y();
+//   const int w = r_in.width();
+//   const int h = r_in.height();
+  
+  const QRect mr = map(r_in);
+  const int x = mr.x();
+  const int y = mr.y();
+  const int w = mr.width();
+  const int h = mr.height();
+  
+//   const int x_line_off = 1;
+//   const int y_line_off = 1;
+//   const int line_w = 3;
+//   const int line_h = 3;
+  
+  const int x_line_off = 0; //rmapx(1);
+  const int y_line_off = 0; //rmapy(1);
+  const int line_w = 8; //rmapx(1);
+  const int line_h = 8; //rmapy(1);
+  
+  // Clear the given region.
+  rg_out = QRegion();
+//   // Top line.
+//   rg_out += map(QRect(x, y - y_line_off, w, line_h));
+//   // Right line.
+//   rg_out += map(QRect(x + w - x_line_off, y, line_w, h));
+//   // Bottom line.
+//   rg_out += map(QRect(x, y + h - y_line_off, w, line_h));
+//   // Left line.
+//   rg_out += map(QRect(x - x_line_off, y, line_w, h));
+  // Top line.
+  rg_out += QRect(x, y - y_line_off, w + line_w, line_h);
+  // Right line.
+  rg_out += QRect(x + w - x_line_off, y, line_w, h + line_h);
+  // Bottom line.
+  rg_out += QRect(x, y + h - y_line_off, w + line_w, line_h);
+  // Left line.
+  rg_out += QRect(x - x_line_off, y, line_w, h + line_h);
+  
+  const int rg_sz = rg_out.rectCount();
+  int rg_r_cnt = 0;
+  fprintf(stderr, "Region rect count:%d\n", rg_sz);
+  for(QRegion::const_iterator i = rg_out.begin(); i != rg_out.end(); ++i, ++rg_r_cnt)
+  {
+    const QRect& rg_r = *i;
+    fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+  }
+  
 }
 
 void Canvas::showCursor(bool show) 
@@ -221,7 +280,250 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 //   draw
 //---------------------------------------------------------
 
-void Canvas::draw(QPainter& p, const QRect& rect)
+// REMOVE Tim. citem. Changed.
+// void Canvas::draw(QPainter& p, const QRect& rect)
+// {
+// //      printf("draw canvas %x virt %d\n", this, virt());
+// 
+//       int x = rect.x();
+//       int y = rect.y();
+//       int w = rect.width();
+//       int h = rect.height();
+//       int x2 = x + w;
+// 
+//       std::vector<CItem*> list1;
+//       std::vector<CItem*> list2;
+//       std::vector<CItem*> list4;
+// 
+//       if (virt()) {
+//             drawCanvas(p, rect);
+// 
+//             //---------------------------------------------------
+//             // draw Canvas Items
+//             //---------------------------------------------------
+// 
+//             iCItem to(items.lower_bound(x2));
+//             for(iCItem i = items.begin(); i != to; ++i)
+//             { 
+//               CItem* ci = i->second;
+//               // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+//               // Not required for now.
+//               //ci->part()->hasHiddenEvents();
+//               
+//               // Draw items from other parts behind all others.
+//               // Only for items with events (not arranger parts).
+//               if(!ci->event().empty() && ci->part() != curPart)
+//                 list1.push_back(ci);    
+//               else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+//               {
+//                 // Draw selected parts in front of all others.
+//                 if(ci->isSelected()) 
+//                   list4.push_back(ci);
+//                 else  
+//                   // Draw unselected parts.
+//                   list2.push_back(ci);
+//               }  
+//             }
+//             int i;
+//             int sz = list1.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list1[i], rect);
+//             sz = list2.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list2[i], rect);
+//             sz = list4.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list4[i], rect);
+//             
+//             // Draw items being moved, a special way in their original location.
+//             to = moving.lower_bound(x2);
+//             for (iCItem i = moving.begin(); i != to; ++i) 
+//                   drawItem(p, i->second, rect);
+// 
+//             // Draw special top item for new recordings etc.
+//             drawTopItem(p,rect);
+// 
+//             // Draw special new item for first-time placement.
+//             // It is not in the item list yet. It will be added when mouse released.
+//             if(newCItem)
+//               drawItem(p, newCItem, rect);
+//       }
+//       else {  
+//             p.save();
+//             setPainter(p);
+//            
+//             if (xmag <= 0) {
+//                   x -= 1;
+//                   w += 2;
+//                   x = (x + xpos + rmapx(xorg)) * (-xmag);
+//                   w = w * (-xmag);
+//                   }
+//             else {
+//                   x = (x + xpos + rmapx(xorg)) / xmag;
+//                   w = (w + xmag - 1) / xmag;
+//                   x -= 1;
+//                   w += 2;
+//                   }
+//             if (ymag <= 0) {
+//                   y -= 1;
+//                   h += 2;
+//                   y = (y + ypos + rmapy(yorg)) * (-ymag);
+//                   h = h * (-ymag);
+//                   }
+//             else {
+//                   y = (rect.y() + ypos + rmapy(yorg))/ymag;
+//                   h = (rect.height()+ymag-1)/ymag;
+//                   y -= 1;
+//                   h += 2;
+//                   }
+// 
+//             if (x < 0)
+//                   x = 0;
+//             if (y < 0)
+//                   y = 0;
+//             x2 = x + w;
+// 
+//             QRect new_rect(x, y, w, h);
+//             drawCanvas(p, new_rect);
+//             p.restore();
+// 
+//             //---------------------------------------------------
+//             // draw Canvas Items
+//             //---------------------------------------------------
+//             
+//             for(iCItem i = items.begin(); i != items.end(); ++i)
+//             { 
+//               CItem* ci = i->second;
+//               // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+//               // Not required for now.
+//               //ci->part()->hasHiddenEvents();
+//               
+//               // Draw items from other parts behind all others.
+//               // Only for items with events (not arranger parts).
+//               if(!ci->event().empty() && ci->part() != curPart)
+//                 list1.push_back(ci);    
+//               else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+//               {
+//                 // Draw selected parts in front of all others.
+//                 if(ci->isSelected()) 
+//                   list4.push_back(ci);
+//                 else  
+//                   // Draw unselected parts.
+//                   list2.push_back(ci);
+//               }  
+//             }
+//             int i;
+//             int sz = list1.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list1[i], rect);
+//             sz = list2.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list2[i], rect);
+//             sz = list4.size();
+//             for(i = 0; i != sz; ++i) 
+//               drawItem(p, list4[i], rect);
+// 
+//             // Draw items being moved, a special way in their original location.
+//             for (iCItem i = moving.begin(); i != moving.end(); ++i) 
+//                         drawItem(p, i->second, rect);
+//             
+//             // Draw special top item for new recordings etc.
+//             drawTopItem(p, new_rect);
+// 
+//             // Draw special new item for first-time placement.
+//             // It is not in the item list yet. It will be added when mouse released.
+//             if(newCItem)
+//               drawItem(p, newCItem, rect);
+//             
+//             p.save();
+//             setPainter(p);
+//       }
+// 
+//       
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       
+//       //---------------------------------------------------
+//       //    draw marker
+//       //---------------------------------------------------
+// 
+//       //p.save();
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//       
+//       int my = mapy(y);
+//       int my2 = mapy(y + h);
+//       MusECore::MarkerList* marker = MusEGlobal::song->marker();
+//       pen.setColor(Qt::green);
+//       p.setPen(pen);
+//       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
+//             int xp = m->second.tick();
+//             if (xp >= x && xp < x+w) {
+//                   p.drawLine(mapx(xp), my, mapx(xp), my2);
+//                   }
+//             }
+// 
+//       //---------------------------------------------------
+//       //    draw location marker
+//       //---------------------------------------------------
+// 
+//       pen.setColor(Qt::blue);
+//       p.setPen(pen);
+//       int mx;
+//       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+//             mx = mapx(pos[1]);
+//             p.drawLine(mx, my, mx, my2);
+//             }
+//       if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+//             mx = mapx(pos[2]);
+//             p.drawLine(mx, my, mx, my2);
+//             }
+//       p.setPen(Qt::red);
+//       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+//             mx = mapx(pos[0]);
+//             p.drawLine(mx, my, mx, my2);
+//             }
+//       
+//       if(drag == DRAG_ZOOM)
+//         p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
+//       
+//       //p.restore();
+//       //p.setWorldMatrixEnabled(true);
+//       p.setWorldMatrixEnabled(wmtxen);
+//       
+//       //---------------------------------------------------
+//       //    draw lasso
+//       //---------------------------------------------------
+// 
+//       if (drag == DRAG_LASSO) {
+//             p.setWorldMatrixEnabled(false);
+//             pen.setColor(Qt::blue);
+//             p.setPen(pen);
+//             p.setBrush(Qt::NoBrush);
+//             QRect _r(mapx(lasso.topLeft().x()), mapy(lasso.topLeft().y()), mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()), mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
+//             p.drawRect(_r);
+//             p.setWorldMatrixEnabled(wmtxen);
+//             }
+//       
+//       //---------------------------------------------------
+//       //    draw outlines of potential drop places of moving items
+//       //---------------------------------------------------
+//       
+//       if(virt()) 
+//       {
+//         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
+//           drawMoving(p, i->second, rect);
+//       }
+//       else 
+//       {  
+//         p.restore();
+//         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
+//           drawMoving(p, i->second, rect);
+//         setPainter(p);
+//       }
+// }
+
+void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 {
 //      printf("draw canvas %x virt %d\n", this, virt());
 
@@ -236,7 +538,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       std::vector<CItem*> list4;
 
       if (virt()) {
-            drawCanvas(p, rect);
+            drawCanvas(p, rect, rg);
 
             //---------------------------------------------------
             // draw Canvas Items
@@ -267,64 +569,70 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect);
+              drawItem(p, list1[i], rect, rg);
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect);
+              drawItem(p, list2[i], rect, rg);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect);
+              drawItem(p, list4[i], rect, rg);
             
             // Draw items being moved, a special way in their original location.
             to = moving.lower_bound(x2);
             for (iCItem i = moving.begin(); i != to; ++i) 
-                  drawItem(p, i->second, rect);
+                  drawItem(p, i->second, rect, rg);
 
             // Draw special top item for new recordings etc.
-            drawTopItem(p,rect);
+            drawTopItem(p,rect, rg);
 
             // Draw special new item for first-time placement.
             // It is not in the item list yet. It will be added when mouse released.
             if(newCItem)
-              drawItem(p, newCItem, rect);
+              drawItem(p, newCItem, rect, rg);
       }
       else {  
             p.save();
             setPainter(p);
            
-            if (xmag <= 0) {
-                  x -= 1;
-                  w += 2;
-                  x = (x + xpos + rmapx(xorg)) * (-xmag);
-                  w = w * (-xmag);
-                  }
-            else {
-                  x = (x + xpos + rmapx(xorg)) / xmag;
-                  w = (w + xmag - 1) / xmag;
-                  x -= 1;
-                  w += 2;
-                  }
-            if (ymag <= 0) {
-                  y -= 1;
-                  h += 2;
-                  y = (y + ypos + rmapy(yorg)) * (-ymag);
-                  h = h * (-ymag);
-                  }
-            else {
-                  y = (rect.y() + ypos + rmapy(yorg))/ymag;
-                  h = (rect.height()+ymag-1)/ymag;
-                  y -= 1;
-                  h += 2;
-                  }
-
-            if (x < 0)
-                  x = 0;
-            if (y < 0)
-                  y = 0;
+//             if (xmag <= 0) {
+//                   x -= 1;
+//                   w += 2;
+//                   x = (x + xpos + rmapx(xorg)) * (-xmag);
+//                   w = w * (-xmag);
+//                   }
+//             else {
+//                   x = (x + xpos + rmapx(xorg)) / xmag;
+//                   w = (w + xmag - 1) / xmag;
+//                   x -= 1;
+//                   w += 2;
+//                   }
+//             if (ymag <= 0) {
+//                   y -= 1;
+//                   h += 2;
+//                   y = (y + ypos + rmapy(yorg)) * (-ymag);
+//                   h = h * (-ymag);
+//                   }
+//             else {
+//                   y = (rect.y() + ypos + rmapy(yorg))/ymag;
+//                   h = (rect.height()+ymag-1)/ymag;
+//                   y -= 1;
+//                   h += 2;
+//                   }
+// 
+//             if (x < 0)
+//                   x = 0;
+//             if (y < 0)
+//                   y = 0;
+            
             x2 = x + w;
 
-            QRect new_rect(x, y, w, h);
-            drawCanvas(p, new_rect);
+//             QRect new_rect(x, y, w, h);
+            QRect new_rect = devToVirt(rect);
+            QRegion new_rg;
+            for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i)
+              new_rg += devToVirt(*i);
+//             drawCanvas(p, new_rect, rg);
+            drawCanvas(p, new_rect, new_rg);
             p.restore();
 
             //---------------------------------------------------
@@ -355,25 +663,25 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect);
+              drawItem(p, list1[i], rect, rg);
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect);
+              drawItem(p, list2[i], rect, rg);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect);
+              drawItem(p, list4[i], rect, rg);
 
             // Draw items being moved, a special way in their original location.
             for (iCItem i = moving.begin(); i != moving.end(); ++i) 
-                        drawItem(p, i->second, rect);
+                        drawItem(p, i->second, rect, rg);
             
             // Draw special top item for new recordings etc.
-            drawTopItem(p, new_rect);
+            drawTopItem(p, new_rect, new_rg);
 
             // Draw special new item for first-time placement.
             // It is not in the item list yet. It will be added when mouse released.
             if(newCItem)
-              drawItem(p, newCItem, rect);
+              drawItem(p, newCItem, rect, rg);
             
             p.save();
             setPainter(p);
@@ -440,7 +748,12 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             pen.setColor(Qt::blue);
             p.setPen(pen);
             p.setBrush(Qt::NoBrush);
-            QRect _r(mapx(lasso.topLeft().x()), mapy(lasso.topLeft().y()), mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()), mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
+//             QRect _r(mapx(lasso.topLeft().x()),
+//                      mapy(lasso.topLeft().y()),
+//                      mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()),
+//                      mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
+            
+            QRect _r(map(lasso));
             p.drawRect(_r);
             p.setWorldMatrixEnabled(wmtxen);
             }
@@ -452,13 +765,13 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       if(virt()) 
       {
         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-          drawMoving(p, i->second, rect);
+          drawMoving(p, i->second, rect, rg);
       }
       else 
       {  
         p.restore();
         for(iCItem i = moving.begin(); i != moving.end(); ++i) 
-          drawMoving(p, i->second, rect);
+          drawMoving(p, i->second, rect, rg);
         setPainter(p);
       }
 }
@@ -882,6 +1195,20 @@ void Canvas::scrollTimerDone()
         int dy = 0;
         bool doHMove = false;
         bool doVMove = false;
+        
+        // If lassoing, update the old lasso region.
+        // Do it BEFORE scrolling.
+        switch(drag) 
+        {
+          case DRAG_LASSO:
+                // Update the old lasso region.
+                redraw(lassoRegion);
+                break;
+                
+          default:
+                break;
+        }
+        
         switch(hscrollDir)
         {  
           case HSCROLL_RIGHT:
@@ -1008,8 +1335,13 @@ void Canvas::scrollTimerDone()
                 moveItems(ev_pos, 2, false);
                 break;
           case DRAG_LASSO:
-                lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
-                redraw();
+//                 // Update the old lasso region.
+//                 redraw(lassoRegion);
+                // Set the new lasso rectangle and compute the new lasso region.
+                setLasso(QRect(start.x(), start.y(), dist.x(), dist.y()));
+//                 redraw();
+                // Update the new lasso region.
+                redraw(lassoRegion);
                 break;
 
           case DRAG_NEW:
@@ -1182,11 +1514,40 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   // FALLTHROUGH
             case DRAG_LASSO:
                   {
-                  lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
+                  // REMOVE Tim. citem. Added.
+                  // Redraw the old lasso rectangle.
+                  //p.setWorldMatrixEnabled(false);
+//                   QRect r1(mapx(lasso.topLeft().x()), mapy(lasso.topLeft().y()),
+//                            mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()),
+//                            mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
+//                   QRect r1(mapx(lasso.x()), mapy(lasso.y()),
+//                            mapx(lasso.x() + lasso.width()) - mapx(lasso.x()),
+//                            mapy(lasso.y() + lasso.height()) - mapy(lasso.y()));
+//                   //p.setWorldMatrixEnabled(true);
+//                   redraw(r1);
+                  fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing old lassoRegion\n");
+                  // Update the old lasso region.
+                  redraw(lassoRegion);
+//                   QRegion l_rg = lassoRegion;
+                  
+                  // Set the new lasso rectangle and compute the new lasso region.
+                  setLasso(QRect(start.x(), start.y(), dist.x(), dist.y()));
+                  
                   // printf("xorg=%d xmag=%d event->x=%d, mapx(xorg)=%d rmapx0=%d xOffset=%d rmapx(xOffset()=%d\n",
                   //         xorg, xmag, event->x(),mapx(xorg), rmapx(0), xOffset(),rmapx(xOffset()));
+                  
+// REMOVE Tim. citem. Changed.
+//                   redraw();
+                  // Redraw the new lasso rectangle.
+//                   QRect r2(mapx(lasso.x()), mapy(lasso.y()),
+//                            mapx(lasso.x() + lasso.width()) - mapx(lasso.x()),
+//                            mapy(lasso.y() + lasso.height()) - mapy(lasso.y()));
+//                   redraw(r2);
+                  fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing new lassoRegion\n");
+                  // Update the new lasso region.
+                  redraw(lassoRegion);
+//                   redraw(lassoRegion + l_rg);
                   }
-                  redraw();
                   break;
 
             case DRAG_MOVE_START:
@@ -1480,7 +1841,9 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   }
                   break;
             case DRAG_LASSO_START:
-                  lasso.setRect(-1, -1, -1, -1);
+//                   lasso.setRect(-1, -1, -1, -1);
+                  // Set the new lasso rectangle and compute the new lasso region.
+                  setLasso(QRect(-1, -1, -1, -1));
                   if (!ctrl)
                         deselectAll();
                   itemSelectionsChanged();
@@ -1490,7 +1853,9 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_LASSO:
                   if (!ctrl)
                         deselectAll();
-                  lasso = lasso.normalized();
+                  // Set the new lasso rectangle and compute the new lasso region.
+                  //setLasso(lasso.normalized());
+                  setLasso(lasso);
                   selectLasso(ctrl);
                   itemSelectionsChanged();
                   redrawFlag = true;
@@ -1681,6 +2046,16 @@ CItem *Canvas::findCurrentItem(const QPoint &cStart)
       }
    }
    return item;
+}
+
+void Canvas::setLasso(const QRect& r)
+{
+//   lasso = r.normalized();
+  lasso = normalizeQRect(r);
+  
+  //lassoToRegion(map(lasso.normalized()), lassoRegion);
+  //lassoToRegion(lasso.normalized(), lassoRegion);
+  lassoToRegion(lasso, lassoRegion);
 }
 
 void Canvas::resizeToTheLeft(const QPoint &pos)

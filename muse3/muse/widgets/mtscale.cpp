@@ -229,7 +229,9 @@ void MTScale::leaveEvent(QEvent*)
 //   draw
 //---------------------------------------------------------
 
-void MTScale::pdraw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void MTScale::pdraw(QPainter& p, const QRect& r)
+void MTScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
       int w = r.width();

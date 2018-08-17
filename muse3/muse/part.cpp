@@ -663,6 +663,10 @@ Part* PartList::find(int idx)
       return 0;
       }
 
+//---------------------------------------------------------
+//   Part
+//---------------------------------------------------------
+
 Part::Part(Track* t)
       {
       _hiddenEvents = NoEventsHidden;
@@ -676,6 +680,17 @@ Part::Part(Track* t)
       _mute       = false;
       _colorIndex = 0;
       }
+
+Part::~Part()
+{
+      if (_prevClone!=this || _nextClone!=this)
+      {
+        if (MusEGlobal::debugMsg) {
+            fprintf(stderr, "Part isn't unchained in ~Part()! Unchaining now...\n");
+        }
+        unchainClone();
+      }  
+}
 
 WavePart* WavePart::duplicateEmpty() const
 {
@@ -749,6 +764,20 @@ Part* Part::duplicate() const
 	return dup;
 }
 
+bool Part::selectEvents(bool select, unsigned long /*t0*/, unsigned long /*t1*/)
+{
+  bool ret = false;
+  EventList& el = nonconst_events();
+  for(iEvent ie = el.begin(); ie != el.end(); ++ie)
+  {
+    Event& e = ie->second;
+//     if(e.type() ???) // For t0 and t1
+    if(e.selected() != select)
+      ret = true;
+    e.setSelected(select);
+  }
+  return ret;
+}
 
 //---------------------------------------------------------
 //   WavePart
@@ -759,23 +788,6 @@ WavePart::WavePart(WaveTrack* t)
       {
       setType(FRAMES);
       }
-
-
-//---------------------------------------------------------
-//   Part
-//---------------------------------------------------------
-
-Part::~Part()
-{
-      if (_prevClone!=this || _nextClone!=this)
-      {
-        if (MusEGlobal::debugMsg) {
-            fprintf(stderr, "Part isn't unchained in ~Part()! Unchaining now...\n");
-        }
-        unchainClone();
-      }  
-}
-
 
 //---------------------------------------------------------
 //   findPart

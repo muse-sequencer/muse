@@ -188,7 +188,9 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
 //   draw
 //---------------------------------------------------------
 
-void MTScaleFlo::draw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void MTScaleFlo::draw(QPainter& p, const QRect& r)
+void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
       int w = r.width();

@@ -97,7 +97,9 @@ void WaveView::setYScale(int val)
 //   draw
 //---------------------------------------------------------
 
-void WaveView::pdraw(QPainter& p, const QRect& rr)
+// REMOVE Tim. citem. Changed.
+// void WaveView::pdraw(QPainter& p, const QRect& rr)
+void WaveView::pdraw(QPainter& p, const QRect& rr, const QRegion&)
       {
       int x1 = rr.x();
       int x2 = rr.right() + 1;
@@ -196,7 +198,9 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
 //   draw
 //---------------------------------------------------------
 
-void WaveView::draw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void WaveView::draw(QPainter& p, const QRect& r)
+void WaveView::draw(QPainter& p, const QRect& r, const QRegion&)
       {
       unsigned x = r.x() < 0 ? 0 : r.x();
       unsigned y = r.y() < 0 ? 0 : r.y();

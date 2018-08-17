@@ -44,7 +44,9 @@ class HitScale : public View {
 //      void posChanged(int, int);
 
    protected:
-      virtual void pdraw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void pdraw(QPainter&, const QRect&);
+      virtual void pdraw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent* event);
       virtual void viewMouseReleaseEvent(QMouseEvent* event);

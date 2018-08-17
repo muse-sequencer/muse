@@ -127,7 +127,9 @@ void SigScale::leaveEvent(QEvent*)
 //   draw
 //---------------------------------------------------------
 
-void SigScale::pdraw(QPainter& p, const QRect& r)
+// REMOVE Tim. citem. Changed.
+// void SigScale::pdraw(QPainter& p, const QRect& r)
+void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
       int x = r.x();
       int w = r.width();

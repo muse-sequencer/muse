@@ -49,7 +49,9 @@ class MTScaleFlo : public View {
       void configChanged();
 
    protected:
-      virtual void draw(QPainter&, const QRect&);
+// REMOVE Tim. citem. Changed.
+//       virtual void draw(QPainter& p, const QRect&);
+      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void mousePressEvent(QMouseEvent* event);
       virtual void mouseMoveEvent(QMouseEvent* event);
       virtual void mouseReleaseEvent(QMouseEvent* event);

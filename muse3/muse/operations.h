@@ -213,6 +213,7 @@ struct PendingOperationItem
                               AddRouteNode,      DeleteRouteNode,       ModifyRouteNode,
                               UpdateSoloStates,
                               EnableAllAudioControllers,
+                              GlobalSelectAllEvents,
                               ModifyAudioSamples
                               }; 
                               
@@ -270,6 +271,7 @@ struct PendingOperationItem
   union {
     int _intA;
     bool _boolA;
+    bool _select;
     const QString *_name;
     double _aux_send_value;
     int _insert_at;
@@ -374,6 +376,10 @@ struct PendingOperationItem
   PendingOperationItem(TrackList* tl, int from_idx, int to_idx, PendingOperationType type = MoveTrack)
     { _type = type; _track_list = tl; _from_idx = from_idx; _to_idx = to_idx; }
 
+  PendingOperationItem(TrackList* tl, bool select, unsigned long /*t0*/, unsigned long /*t1*/,
+                       PendingOperationType type = GlobalSelectAllEvents)
+    { _type = type; _track_list = tl; _select = select; }
+    
   PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
     
@@ -481,7 +487,7 @@ struct PendingOperationItem
   PendingOperationItem(int len, PendingOperationType type = ModifySongLength)
     { _type = type; _intA = len; }
 
-  PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers (so far).
+  PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
     { _type = type; }
 
   PendingOperationItem()

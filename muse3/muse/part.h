@@ -99,6 +99,10 @@ class Part : public PosLen {
       void setName(const QString& s)   { _name = s; }
       bool selected() const            { return _selected; }
       void setSelected(bool f)         { _selected = f; }
+      // Select or unselect a range of events. If t0 == t1, ALL events will be affected.
+      // The t0 and t1 can be ticks or frames depending on the type of events. Unused for now.
+      // Returns true if anything changed.
+      bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       bool mute() const                { return _mute; }
       void setMute(bool b)             { _mute = b; }
       Track* track() const             { return _track; }
