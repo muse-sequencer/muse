@@ -44,6 +44,7 @@ class QMenu;
 namespace MusECore {
 struct CtrlVal;
 class Xml;
+class Undo;
 }
 
 //#define beats     4
@@ -131,7 +132,7 @@ class PartCanvas : public Canvas {
 // REMOVE Tim. citem. Changed.
 //       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      virtual void itemSelectionsChanged();
+      virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual QPoint raster(const QPoint&) const;
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;

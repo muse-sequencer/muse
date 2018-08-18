@@ -126,13 +126,19 @@ int PendingOperationItem::getIndex() const
     case DeletePart:
       return _iPart->second->posValue();
 
-    
+    case SelectPart:
+      return _part->posValue();
+
+      
     case AddEvent:
       return _ev.posValue();
     
     case DeleteEvent:
       return _ev.posValue();
     
+    case SelectEvent:
+      return _ev.posValue();
+      
       
     case AddMidiCtrlVal:
       return _intA;  // Tick
@@ -1012,6 +1018,16 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_PART_MODIFIED;
     break;
 
+    case SelectPart:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SelectPart part:%p select:%d\n", _part, _intA);
+#endif      
+      if(_part)
+        _part->setSelected(_intA);
+      
+      flags |= SC_PART_SELECTION;
+    break;
+
     case ModifyPartName:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
@@ -1047,6 +1063,15 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_EVENT_REMOVED;
     break;
     
+    case SelectEvent:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SelectEvent part:%p select:%d\n", _part, _intA);
+#endif
+      // Make sure we let song handle this important job, it selects corresponding events in clone parts.
+      MusEGlobal::song->selectEvent(_ev, _part, _intA);
+      flags |= SC_SELECTION;
+    break;
+
     
     case AddMidiCtrlValList:
 #ifdef _PENDING_OPS_DEBUG_
@@ -1804,6 +1829,15 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::SelectPart:
+        if(poi._type == PendingOperationItem::SelectPart && poi._part == op._part)  
+        {
+          // Simply replace the value.
+          poi._intA = op._intA;
+          return true;
+        }
+      break;
+      
       case PendingOperationItem::MovePart:
         if(poi._type == PendingOperationItem::MovePart && poi._part == op._part)  
         {
@@ -1855,6 +1889,16 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
+      case PendingOperationItem::SelectEvent:
+        if(poi._type == PendingOperationItem::SelectEvent &&
+           poi._part == op._part && poi._ev == op._ev)
+        {
+          // Simply replace the value.
+          poi._intA = op._intA;
+          return true;
+        }
+      break;
+      
       case PendingOperationItem::AddMidiCtrlVal:
         if(poi._type == PendingOperationItem::AddMidiCtrlVal && poi._mcvl == op._mcvl && poi._part == op._part)
         {

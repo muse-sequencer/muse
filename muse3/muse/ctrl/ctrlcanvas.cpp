@@ -381,7 +381,7 @@ QPoint CtrlCanvas::raster(const QPoint& p) const
 
 void CtrlCanvas::deselectAll()
       {
-        // To save time searching the potentially large 'items' list, a selection list is ued.
+        // To save time searching the potentially large 'items' list, a selection list is used.
         for(iCEvent i = selection.begin(); i != selection.end(); ++i)
             (*i)->setSelected(false);
 
@@ -632,17 +632,29 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
 //---------------------------------------------------------
 
 // REMOVE Tim. citem. Added.
-void CtrlCanvas::itemSelectionsChanged()
+bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselectAll)
 {
-      MusECore::Undo operations;
+      MusECore::Undo ops;
+      MusECore::Undo* opsp = operations ? operations : &ops;
+  
+      //MusECore::Undo operations;
       bool item_selected;
       bool obj_selected;
       bool changed=false;
       
+      // If we are deselecting all, globally deselect all events,
+      //  and don't bother individually deselecting objects, below.
+      if(deselectAll)
+      {
+        //opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, false));
+        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+        changed = true;
+      }
+      
 //       for (iCItem i = items.begin(); i != items.end(); ++i) {
 //       for(ciCEvent i = items.begin(); i != items.end(); ++i) {
       
-      // To save time searching the potentially large 'items' list, a selection list is ued.
+      // To save time searching the potentially large 'items' list, a selection list is used.
       //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
       for(ciCEvent i = selection.begin(); i != selection.end() ; ) {
 //             NPart* npart = (NPart*)(i->second);
@@ -655,14 +667,18 @@ void CtrlCanvas::itemSelectionsChanged()
 //             if (item->isSelected() != item->objectIsSelected())
             if (item_selected != obj_selected)
             {
+              // Don't bother deselecting objects if we have already deselected all, above.
+              if(item_selected || !deselectAll)
+              {
                 // Here we have a choice of whether to allow undoing of selections.
                 // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+                opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
 //                                                   item->part(), i->second->isSelected(), item->part()->selected()));
                                                   //item->event(), item->part(), item_selected, obj_selected, false));
                                                   item->event(), item->part(), item_selected, obj_selected));
                 
                 changed=true;
+              }
             }
             // Now it is OK to remove the item from the
             //  selection list if it is unselected.
@@ -672,20 +688,17 @@ void CtrlCanvas::itemSelectionsChanged()
               ++i;
       }
 
-      if (changed)
+      if (!operations && changed)
       {
 //             MusEGlobal::song->applyOperationGroup(operations);
 
-            // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
-//             // Here we have a choice of whether to allow undoing of selections.
-//             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
-#if 0
-            if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
-#else
-            //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
-            //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
-            MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
-#endif
+            // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+            // Here we have a choice of whether to allow undoing of selections.
+            if(MusEGlobal::config.selectionsUndoable)
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationUndoMode, this);
+            else
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationExecuteUpdate, this);
+            
             //{
               // REMOVE Tim. citem. Added.
               fprintf(stderr, "CtrlCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
@@ -700,6 +713,8 @@ void CtrlCanvas::itemSelectionsChanged()
 //       //             This means, that items can (and will!) be selected bypassing the
 //       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
 //       emit selectionChanged();
+
+      return changed;
 }
 
 //---------------------------------------------------------
@@ -863,7 +878,7 @@ void CtrlCanvas::updateItemSelections()
       bool obj_selected;
 //       for (iCItem i = items.begin(); i != items.end(); ++i) {
       for(ciCEvent i = items.begin(); i != items.end(); ++i) {
-      // To save time searching the potentially large 'items' list, a selection list is ued.
+      // To save time searching the potentially large 'items' list, a selection list is used.
       //for(ciCEvent i = selection.begin(); i != selection.end(); ++i) {
 //             NPart* npart = static_cast<NPart*>(i->second);
 //             CItem* item = i->second;
@@ -1087,40 +1102,68 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
             }
                   //fallthrough
             case DRAG_LASSO:
+            {
+                  //MusECore::Undo operations;
+                  //bool changed = false;
+                  
 // REMOVE Tim. citem. Added.
                   if (!ctrlKey)
+                  {
                     deselectAll();
+                    //operations.push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+                  }
                   
                   if(_controller)  
                   {
                     lasso = lasso.normalized();
                     int h = height();
+                    CEvent* item;
 //                     int tickstep = rmapxDev(1);
                     for (iCEvent i = items.begin(); i != items.end(); ++i) {
-                          if((*i)->part() != curPart)
+                          item = *i;
+                          if(item->part() != curPart)
                             continue;
+                          
 // REMOVE Tim. citem. Changed.
-                          if ((*i)->intersectsController(_controller, lasso, tickstep, h)) {
+                          if (item->intersectsController(_controller, lasso, tickstep, h)) {
                           // If the lasso is empty treat it as a single click.
                           //if (lasso.isEmpty() || (*i)->intersectsController(_controller, lasso, tickstep, h)) {
-                                if (ctrlKey && (*i)->isSelected())
+                                if (ctrlKey && item->isSelected())
 // REMOVE Tim. citem. Changed.
 //                                   (*i)->setSelected(false);
-                                  deselectItem((*i));
+                                  deselectItem(item);
                                 else
 // REMOVE Tim. citem. Changed.
 //                                   (*i)->setSelected(true);
-                                  selectItem(*i);
+                                  selectItem(item);
                               }  
                           }
                     drag = DRAG_OFF;
 // REMOVE Tim. citem. Changed.
 //                     // Let songChanged handle the redraw upon SC_SELECTION.
 //                     MusEGlobal::song->update(SC_SELECTION);
-                    itemSelectionsChanged();
+                    //if(itemSelectionsChanged(&operations))
+                    //  changed = true;
+                    itemSelectionsChanged(NULL, !ctrlKey);
                   }
-                  redraw();
-                  break;
+                  else
+                    redraw();
+                  
+                  //if(!operations.empty())
+                  //{
+                    // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+                    // Here we have a choice of whether to allow undoing of selections.
+                    // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
+                    //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
+//                     if(MusEGlobal::config.selectionsUndoable)
+//                       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
+//                     else
+//                       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
+                  //}
+                  
+//                   redraw();
+            }
+            break;
 
             default:
                   break;

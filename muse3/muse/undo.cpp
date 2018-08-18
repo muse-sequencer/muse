@@ -1983,11 +1983,15 @@ void Song::revertOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-                        editable_part->setSelected(i->selected_old);
+// REMOVE Tim. citem. Changed.
+//                         editable_part->setSelected(i->selected_old);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->selected_old, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-			selectEvent(i->nEvent, editable_part, i->selected_old);
+// REMOVE Tim. citem. Changed.
+// 			selectEvent(i->nEvent, editable_part, i->selected_old);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected_old, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
                         
@@ -2705,11 +2709,15 @@ void Song::executeOperationGroup1(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
-                        editable_part->setSelected(i->selected);
+// REMOVE Tim. citem. Changed.
+//                         editable_part->setSelected(i->selected);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->selected, PendingOperationItem::SelectPart));
                         updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
-			selectEvent(i->nEvent, editable_part, i->selected);
+// REMOVE Tim. citem. Changed.
+// 			selectEvent(i->nEvent, editable_part, i->selected);
+                        pendingOperations.add(PendingOperationItem(editable_part, i->nEvent, i->selected, PendingOperationItem::SelectEvent));
                         updateFlags |= SC_SELECTION;
                         break;
                         

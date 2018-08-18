@@ -199,8 +199,8 @@ struct PendingOperationItem
                               AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
                               SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
                               ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
-                              AddPart,           DeletePart,   MovePart, ModifyPartLength,  ModifyPartName,
-                              AddEvent,          DeleteEvent,
+                              AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartLength,  ModifyPartName,
+                              AddEvent,          DeleteEvent,  SelectEvent,
                               AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
                               RemapDrumControllers,
                               AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
@@ -359,7 +359,7 @@ struct PendingOperationItem
   PendingOperationItem(MidiDeviceList* mdl, const iMidiDevice& imd, PendingOperationType type = DeleteMidiDevice)
     { _type = type; _midi_device_list = mdl; _iMidiDevice = imd; }
 
-   // Type is ModifyMidiDeviceAddress or ModifyMidiDeviceFlags  
+  // Type is ModifyMidiDeviceAddress or ModifyMidiDeviceFlags  
   PendingOperationItem(MidiDevice* midi_device, int address_client_or_rw_flags, int address_port_or_open_flags, PendingOperationType type)
     { _type = type; _midi_device = midi_device; _intA = address_client_or_rw_flags; _intB = address_port_or_open_flags; }
     
@@ -391,9 +391,10 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, const QString* new_name, PendingOperationType type = ModifyPartName)
     { _type = type; _part = part; _name = new_name; }
     
-  // new_len must already be in the part's time domain (ticks or frames).
-  PendingOperationItem(Part* part, int new_len, PendingOperationType type = ModifyPartLength)
-    { _type = type; _part = part; _intA = new_len; }
+  // Type is ModifyPartLength or SelectPart, or some (likely) future boolean or int operation.
+  // For ModifyPartLength, v must already be in the part's time domain (ticks or frames).
+  PendingOperationItem(Part* part, int v, PendingOperationType type)
+    { _type = type; _part = part; _intA = v; }
   
   // Erases ip from part->track()->parts(), then adds part to new_track. NOTE: ip may be part->track()->parts()->end().
   // new_pos must already be in the part's time domain (ticks or frames).
@@ -415,7 +416,11 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, const iEvent& iev, PendingOperationType type = DeleteEvent)
     { _type = type; _part = part; _iev = iev; _ev = iev->second; }
 
+  // Type is SelectEvent, or some (likely) future boolean operation.
+  PendingOperationItem(Part* part, const Event& ev, int v, PendingOperationType type)
+    { _type = type; _part = part; _ev = ev; _intA = v; }
 
+    
   PendingOperationItem(MidiCtrlValListList* mcvll, MidiCtrlValList* mcvl, int channel, int control_num, PendingOperationType type = AddMidiCtrlValList)
     { _type = type; _mcvll = mcvll; _mcvl = mcvl; _intA = channel; _intB = control_num; }
     

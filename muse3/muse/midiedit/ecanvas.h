@@ -42,6 +42,7 @@ namespace MusECore {
 class MidiPart;
 class MidiTrack;
 class Part;
+class Undo;
 
 struct PartToChange
 {
@@ -80,13 +81,13 @@ class EventCanvas : public Canvas {
       QVector<MusECore::MidiPlayEvent> _stuckNotes;
       bool stuckNoteExists(int port, int channel, int pitch) const;
 
-      void itemSelectionsChanged();
+      bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
-// REMOVE Tim. citem. Removed. Let CItem::deselectAll() do it.
+// REMOVE Tim. citem. Removed. Let Canvas::deselectAll() do it.
 //       virtual void deselectAll();
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);

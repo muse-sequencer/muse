@@ -326,7 +326,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       }
       
       // REMOVE Tim. citem. Added.
-      if(flags._flags & (SC_PART_SELECTION))
+      if(flags._flags & (SC_SELECTION))
       {
         // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
         if(flags._sender != this)

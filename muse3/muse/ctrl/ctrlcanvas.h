@@ -44,6 +44,7 @@ class Event;
 class MidiPart;
 class MidiTrack;
 class PartList;
+class Undo;
 }
 
 namespace MusEGui {
@@ -196,7 +197,12 @@ class CtrlCanvas : public MusEGui::View {
 // REMOVE Tim. citem. Removed.
 //       void updateSelections();
       // REMOVE Tim. citem. Added.
-      void itemSelectionsChanged();
+      // Inform the app if local items have changed and their corresponding
+      //  objects need to be updated synchronously in the audio thread.
+      // Returns true if anything changed (or will change).
+      // Uses an internal undo operations list or optionally with a supplied list
+      //  so operations can be chained.
+      bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       void updateItemSelections();
       
    private slots:

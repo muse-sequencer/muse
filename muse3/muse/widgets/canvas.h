@@ -36,6 +36,10 @@
 class QMenu;
 class QPoint;
 
+namespace MusECore {
+class Undo;
+}
+  
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -163,7 +167,7 @@ class Canvas : public View {
 // REMOVE Tim. citem. Changed.
 //       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
-      virtual void itemSelectionsChanged() = 0;
+      virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false) = 0;
       virtual QPoint raster(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
@@ -216,7 +220,10 @@ class Canvas : public View {
       void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true) = 0;
 
-      virtual void selectLasso(bool toggle);
+// REMOVE Tim. citem. Changed.
+//       virtual void selectLasso(bool toggle);
+      // Returns true if anything was selected.
+      virtual bool selectLasso(bool toggle);
 
       virtual void itemPressed(const CItem*) {}
       virtual void itemReleased(const CItem*, const QPoint&) {}

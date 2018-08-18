@@ -314,6 +314,9 @@ struct GlobalConfigValues {
       int routerGroupingChannels;
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
+      // Whether selecting parts or events is undoable.
+      // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
+      bool selectionsUndoable;
       };
 
 

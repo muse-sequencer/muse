@@ -137,8 +137,8 @@ void Canvas::lassoToRegion(const QRect& r_in, QRegion& rg_out) const
   
   const int x_line_off = 0; //rmapx(1);
   const int y_line_off = 0; //rmapy(1);
-  const int line_w = 8; //rmapx(1);
-  const int line_h = 8; //rmapy(1);
+  const int line_w = 1; //rmapx(1);
+  const int line_h = 1; //rmapy(1);
   
   // Clear the given region.
   rg_out = QRegion();
@@ -1843,22 +1843,27 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_LASSO_START:
 //                   lasso.setRect(-1, -1, -1, -1);
                   // Set the new lasso rectangle and compute the new lasso region.
-                  setLasso(QRect(-1, -1, -1, -1));
-                  if (!ctrl)
-                        deselectAll();
-                  itemSelectionsChanged();
-                  redrawFlag = true;
-                  break;
+//                   setLasso(QRect(-1, -1, -1, -1));
+                  //setLasso(QRect(xpos, ypos, tickstep, rmapyDev(1)));
+                  setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
+//                   if (!ctrl)
+//                         deselectAll();
+//                   itemSelectionsChanged();
+//                   redrawFlag = true;
+//                   break;
+                  
+                  //fallthrough
 
             case DRAG_LASSO:
                   if (!ctrl)
                         deselectAll();
                   // Set the new lasso rectangle and compute the new lasso region.
                   //setLasso(lasso.normalized());
-                  setLasso(lasso);
+//                   setLasso(lasso);
                   selectLasso(ctrl);
-                  itemSelectionsChanged();
-                  redrawFlag = true;
+                  itemSelectionsChanged(NULL, !ctrl);
+//                   redrawFlag = true;
+                  redrawFlag = false;
                   break;
 
             case DRAG_DELETE:
@@ -1917,7 +1922,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 //   selectLasso
 //---------------------------------------------------------
 
-void Canvas::selectLasso(bool toggle)
+bool Canvas::selectLasso(bool toggle)
       {
       int n = 0;
       if (virt()) {
@@ -1944,10 +1949,13 @@ void Canvas::selectLasso(bool toggle)
                   }
             }
 
-      if (n) {
-            itemSelectionsChanged();
-            redraw();
-            }
+// REMOVE Tim. citem. Changed.
+//       if (n) {
+//             itemSelectionsChanged();
+//             redraw();
+//             }
+            
+      return n != 0;
       }
 
 

@@ -309,7 +309,7 @@ GlobalConfigValues config = {
       2,                            // routerGroupingChannels
       "",                           // mixdownPath
       true,                         // showNoteNamesInPianoRoll
-
+      false                         // selectionsUndoable Whether selecting parts or events is undoable.
     };
 
 } // namespace MusEGlobal

@@ -515,12 +515,25 @@ void PartCanvas::updateItems()
 //   itemSelectionsChanged
 //---------------------------------------------------------
 
-void PartCanvas::itemSelectionsChanged()
+bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselectAll)
 {
-      Undo operations;
+      MusECore::Undo ops;
+      MusECore::Undo* opsp = operations ? operations : &ops;
+  
+      //Undo operations;
       bool item_selected;
       bool obj_selected;
       bool changed=false;
+      
+      // If we are deselecting all, globally deselect all events,
+      //  and don't bother individually deselecting objects, below.
+      if(deselectAll)
+      {
+        //opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, false));
+        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+        changed = true;
+      }
+      
       for (iCItem i = items.begin(); i != items.end(); ++i) {
 //             NPart* npart = (NPart*)(i->second);
             CItem* item = i->second;
@@ -531,31 +544,32 @@ void PartCanvas::itemSelectionsChanged()
 //             if (item->isSelected() != item->objectIsSelected())
             if (item_selected != obj_selected)
             {
+              // Don't bother deselecting objects if we have already deselected all, above.
+              if(item_selected || !deselectAll)
+              {
 //                 operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), i->second->isSelected(), item->part()->selected()));
-                operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected));
+                opsp->push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected));
                 // Here we have a choice of whether to allow undoing of selections.
                 // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
                 // Operation set as not undoable.
                 //operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected, false));
                 
                 changed=true;
+              }
             }
       }
 
-      if (changed)
+      if (!operations && changed)
       {
 //             MusEGlobal::song->applyOperationGroup(operations);
 
-            // Set the 'sender' to this so that we can ignore slef-generated songChanged signals.
-//             // Here we have a choice of whether to allow undoing of selections.
-//             // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
-#if 0
-            if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationeUndoMode, this))
-#else
-            //if(MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this))
-            MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
-            //MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationUndoMode, this);
-#endif
+            // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+            // Here we have a choice of whether to allow undoing of selections.
+            if(MusEGlobal::config.selectionsUndoable)
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationUndoMode, this);
+            else
+              MusEGlobal::song->applyOperationGroup(ops, MusECore::Song::OperationExecuteUpdate, this);
+            
             //{
               // REMOVE Tim. citem. Added.
               fprintf(stderr, "PartCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
@@ -570,6 +584,8 @@ void PartCanvas::itemSelectionsChanged()
 //       //             This means, that items can (and will!) be selected bypassing the
 //       //             UndoOp::SelectEvent message! FIX THAT! (flo93)
 //       emit selectionChanged();
+
+      return changed;
 }
 
 //---------------------------------------------------------
