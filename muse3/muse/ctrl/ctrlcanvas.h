@@ -33,6 +33,7 @@
 #include "event.h"
 // REMOVE Tim. citem. Added.
 #include "citem.h"
+#include "undo.h"
 
 class QWheelEvent;
 class QMouseEvent;
@@ -44,7 +45,6 @@ class Event;
 class MidiPart;
 class MidiTrack;
 class PartList;
-class Undo;
 }
 
 namespace MusEGui {
@@ -182,6 +182,10 @@ class CtrlCanvas : public MusEGui::View {
       unsigned pos[3];
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       bool _perNoteVeloMode;
+      int button;
+      
+      // Accumulated operations during drawing etc.
+      MusECore::Undo _operations;
       
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
@@ -191,6 +195,7 @@ class CtrlCanvas : public MusEGui::View {
       void deselectAll();
       void selectItem(CEvent* e);
       void deselectItem(CEvent* e);
+      void removeSelection(CEvent* e);
 
       void setMidiController(int);
       void updateItems();

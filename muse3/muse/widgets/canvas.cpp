@@ -1025,7 +1025,8 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         start.setX(curItem->x());
                         deselectAll();
                         selectItem(curItem, true);
-                        itemSelectionsChanged();
+//                         itemSelectionsChanged();
+                        itemSelectionsChanged(NULL, true);
                         redraw();
                         }
                   else {
@@ -1073,6 +1074,8 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         break;
 
                   case PencilTool:
+                  {
+                        bool deselect_all = false;
                         if (curItem) {
                                 if(!virt()) { // Non-virt width is meaningless, such as drums.
                                   itemPressed(curItem);
@@ -1106,6 +1109,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   start = curItem->pos();
                                 }
                                 deselectAll();
+                                deselect_all = true;
                                 if (curItem)
                                       selectItem(curItem, true);
                               }
@@ -1120,11 +1124,14 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                     setCursor();
                                     }
                               deselectAll();
+                              deselect_all = true;
                               // selectItem() will be called in viewMouseReleaseEvent().
                               }
-                        itemSelectionsChanged();
+//                         itemSelectionsChanged();
+                        itemSelectionsChanged(NULL, deselect_all);
                         redraw();
-                        break;
+                  }
+                  break;
 
                   case PanTool:
                         {
@@ -1586,7 +1593,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem, true);
-                        itemSelectionsChanged();
+//                         itemSelectionsChanged();
+                        itemSelectionsChanged(NULL, drag == DRAG_MOVE);
                         redraw();
                         }
                   DragType dt;
@@ -1782,7 +1790,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         }
                   }
 
-                  itemSelectionsChanged();
+//                   itemSelectionsChanged();
+                  itemSelectionsChanged(NULL, !ctrl);
                   redrawFlag = true;
                   if(curItem)
                     itemReleased(curItem, curItem->pos());
@@ -1862,8 +1871,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 //                   setLasso(lasso);
                   selectLasso(ctrl);
                   itemSelectionsChanged(NULL, !ctrl);
-//                   redrawFlag = true;
-                  redrawFlag = false;
+                  redrawFlag = true;
                   break;
 
             case DRAG_DELETE:

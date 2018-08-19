@@ -517,6 +517,11 @@ void PartCanvas::updateItems()
 
 bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselectAll)
 {
+      // Whether to deselect all events when clicking on parts.
+      // This is normally undesirable but in the future we may need that ability...
+      const bool deselect_events = false;
+      const bool do_deselect_all_events = deselectAll && deselect_events;
+      
       MusECore::Undo ops;
       MusECore::Undo* opsp = operations ? operations : &ops;
   
@@ -527,7 +532,7 @@ bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
       
       // If we are deselecting all, globally deselect all events,
       //  and don't bother individually deselecting objects, below.
-      if(deselectAll)
+      if(do_deselect_all_events)
       {
         //opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, false));
         opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
@@ -542,10 +547,21 @@ bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
             obj_selected = item->objectIsSelected();
 //             if (i->second->isSelected() != item->part()->selected())
 //             if (item->isSelected() != item->objectIsSelected())
-            if (item_selected != obj_selected)
-            {
+//             if (item_selected != obj_selected)
+//             {
+//               // Don't bother deselecting objects if we have already deselected all, above.
+//               if(item_selected || !(deselectAll && deselect_events))
+                
+                
+                
               // Don't bother deselecting objects if we have already deselected all, above.
-              if(item_selected || !deselectAll)
+              if((item_selected || !do_deselect_all_events) &&
+                 ((item_selected != obj_selected) ||
+                  // Need to force this because after the 'deselect all events' command executes,
+                  //  if the item is selected another select needs to be executed even though it
+                  //  appears nothing changed here.
+                  (item_selected && do_deselect_all_events)))
+                
               {
 //                 operations.push_back(UndoOp(UndoOp::SelectPart, item->part(), i->second->isSelected(), item->part()->selected()));
                 opsp->push_back(UndoOp(UndoOp::SelectPart, item->part(), item_selected, obj_selected));
@@ -556,7 +572,7 @@ bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
                 
                 changed=true;
               }
-            }
+            //}
       }
 
       if (!operations && changed)
@@ -574,7 +590,7 @@ bool PartCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
               // REMOVE Tim. citem. Added.
               fprintf(stderr, "PartCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
                 
-              redraw();
+//               redraw();
             //}
       }
 

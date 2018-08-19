@@ -213,6 +213,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       _panel = pnl;
       drag   = DRAG_OFF;
       tool   = MusEGui::PointerTool;
+      button = Qt::NoButton;
       pos[0] = 0;
       pos[1] = 0;
       pos[2] = 0;
@@ -426,6 +427,21 @@ void CtrlCanvas::deselectItem(CEvent* e)
 //                   }
 //             }
       }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   deselectSelection
+//---------------------------------------------------------
+
+void CtrlCanvas::removeSelection(CEvent* e)
+{
+      for (iCEvent i = selection.begin(); i != selection.end(); ++i) {
+            if (*i == e) {
+                  selection.erase(i);
+                  break;
+                  }
+            }
+}
 
 //---------------------------------------------------------
 //   setController
@@ -665,10 +681,24 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
             obj_selected = item->objectIsSelected();
 //             if (i->second->isSelected() != item->part()->selected())
 //             if (item->isSelected() != item->objectIsSelected())
-            if (item_selected != obj_selected)
-            {
+//             if((item_selected != obj_selected) ||
+//                // Need to force this because after the 'deselect all events' command executes,
+//                //  if the item is selected another select needs to be executed even though it
+//                //  appears nothing changed here.
+//                (item_selected && deselectAll))
+            //{
+
+            
               // Don't bother deselecting objects if we have already deselected all, above.
-              if(item_selected || !deselectAll)
+              if((item_selected || !deselectAll) &&
+                 ((item_selected != obj_selected) ||
+                  // Need to force this because after the 'deselect all events' command executes,
+                  //  if the item is selected another select needs to be executed even though it
+                  //  appears nothing changed here.
+                  (item_selected && deselectAll)))
+                
+                
+              //if(item_selected || !deselectAll)
               {
                 // Here we have a choice of whether to allow undoing of selections.
                 // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
@@ -679,7 +709,7 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
                 
                 changed=true;
               }
-            }
+            //}
             // Now it is OK to remove the item from the
             //  selection list if it is unselected.
             if(!item_selected)
@@ -703,7 +733,7 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
               // REMOVE Tim. citem. Added.
               fprintf(stderr, "CtrlCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
                 
-              redraw();
+//               redraw();
             //}
       }
 
@@ -916,6 +946,13 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       if(!_controller || curDrumPitch==-2)
         return;
         
+      button = event->button();
+      
+      // Ignore event if (another) button is already active:
+      if (event->buttons() ^ button) {
+            return;
+            }
+      
       start = event->pos();
       MusEGui::Tool activeTool = tool;
       
@@ -973,27 +1010,36 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   break;
 
            case MusEGui::PencilTool:
+// REMOVE Tim. citem. Added.
+                  _operations.clear();
                   if ((!ctrlKey) && (type != MusECore::MidiController::Velo)) {
                               drag = DRAG_NEW;
-                              MusEGlobal::song->startUndo();
+// REMOVE Tim. citem. Removed.
+//                               MusEGlobal::song->startUndo();
                               newVal(xpos, ypos);
                         }
                   else {
                         drag = DRAG_RESIZE;
-                        MusEGlobal::song->startUndo();
+// REMOVE Tim. citem. Removed.
+//                         MusEGlobal::song->startUndo();
                         changeVal(xpos, xpos, ypos);
                         }
                   break;
 
             case MusEGui::RubberTool:
+// REMOVE Tim. citem. Added.
+                  _operations.clear();
                   if (type != MusECore::MidiController::Velo) {
                         drag = DRAG_DELETE;
-                        MusEGlobal::song->startUndo();
+// REMOVE Tim. citem. Removed.
+//                         MusEGlobal::song->startUndo();
                         deleteVal(xpos, xpos, ypos);
                         }
                   break;
 
             case MusEGui::DrawTool:
+// REMOVE Tim. citem. Added.
+                  _operations.clear();
                   if (drawLineMode) {
                         line2x = xpos;
                         line2y = ypos;
@@ -1077,22 +1123,36 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
+      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
+      {
+        // Make sure this is done. See mousePressEvent.
+        return;
+      }
+
       bool ctrlKey = event->modifiers() & Qt::ControlModifier;
       int xpos = start.x();
       int ypos = start.y();
       const int tickstep = rmapxDev(1);
 
       switch (drag) {
-            case DRAG_RESIZE:
-                  MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
-                  break;
-            case DRAG_NEW:
-                  MusEGlobal::song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
-                  break;
-            case DRAG_DELETE:
-                  MusEGlobal::song->endUndo(SC_EVENT_REMOVED);
-                  break;
-
+// REMOVE Tim. citem. Changed.
+//             case DRAG_RESIZE:
+//                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
+//                   break;
+//             case DRAG_NEW:
+//                   MusEGlobal::song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
+//                   break;
+//             case DRAG_DELETE:
+//                   MusEGlobal::song->endUndo(SC_EVENT_REMOVED);
+//                   break;
+//             case DRAG_RESIZE:
+//             case DRAG_NEW:
+//             case DRAG_DELETE:
+//                   // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+//                   // Here we have a choice of whether to allow undoing of selections.
+//                   MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoMode, this);
+//                   break;
+                  
             case DRAG_LASSO_START:
             {
 // REMOVE Tim. citem. Changed.
@@ -1146,8 +1206,6 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                     //  changed = true;
                     itemSelectionsChanged(NULL, !ctrlKey);
                   }
-                  else
-                    redraw();
                   
                   //if(!operations.empty())
                   //{
@@ -1161,11 +1219,18 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
 //                       MusEGlobal::song->applyOperationGroup(operations, MusECore::Song::OperationExecuteUpdate, this);
                   //}
                   
-//                   redraw();
+                  redraw();
             }
             break;
 
+            case DRAG_RESIZE:
+            case DRAG_NEW:
+            case DRAG_DELETE:
+            // Also in case ramp was drawn, check if any operations are required.
             default:
+// REMOVE Tim. citem. Added.
+                  // Set the 'sender' to this so that we can ignore self-generated songChanged signals.
+                  MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoMode, this);
                   break;
             }
       drag = DRAG_OFF;
@@ -1216,7 +1281,8 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
         useRaster = true;
       }  
 
-      MusECore::Undo operations;
+// REMOVE Tim. citem. Removed.
+//       MusECore::Undo operations;
 
       // delete existing events
 
@@ -1235,7 +1301,9 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             if (x >= xx2)
                   break;
             // Do port controller values and clone parts. 
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
+// REMOVE Tim. citem. Changed.
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
+            _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
             }
 
       if (ctrl)  
@@ -1268,10 +1336,13 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             else  
               event.setB(nval);
             // Do port controller values and clone parts. 
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
+// REMOVE Tim. citem. Changed.
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
+            _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
             }
               
-      MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Removed.
+//       MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -1286,7 +1357,9 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
       int h   = height();
       int type = _controller->num();
 
-      MusECore::Undo operations;
+// REMOVE Tim. citem. Removed.
+//       MusECore::Undo operations;
+      
       for (ciCEvent i = items.begin(); i != items.end(); ++i) {
             if ((*i)->containsXRange(x1, x2)) {
                   CEvent* ev       = *i;
@@ -1318,7 +1391,9 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                               MusECore::Event newEvent = event.clone();
                               newEvent.setVelo(nval);
                               // Do not do port controller values and clone parts. 
-                              operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
+// REMOVE Tim. citem. Changed.
+//                               operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
+                              _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
                               }
                         }
                   else {
@@ -1327,14 +1402,17 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                                     MusECore::Event newEvent = event.clone();
                                     newEvent.setB(nval);
                                     // Do port controller values and clone parts. 
-                                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
+// REMOVE Tim. citem. Changed.
+//                                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
+                                    _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
                                     }
                               }
                         }
                   }
             }
 
-      MusEGlobal::song->applyOperationGroup(operations);
+// REMOVE Tim. citem. Removed.
+//       MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -1371,8 +1449,10 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
 //                         MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
                         // Operation is undoable but do not start/end undo.
                         // Indicate do not do port controller values and clone parts.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-                                          newEvent, event, curPart, false, false), MusECore::Song::OperationUndoable);
+//                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+//                                           newEvent, event, curPart, false, false), MusECore::Song::OperationUndoable);
+                        _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                          newEvent, event, curPart, false, false));
                         changed = true;
                         }
                   }
@@ -1396,8 +1476,10 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
 //                               MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
                               // Operation is undoable but do not start/end undo.
                               // Indicate do port controller values and clone parts.
-                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-                                                newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
+//                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+//                                                 newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
+                              _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                                newEvent, event, curPart, true, true));
                               changed = true;
                               }
                         }
@@ -1503,10 +1585,14 @@ void CtrlCanvas::newVal(int x1, int y)
 // REMOVE Tim. citem. Changed.
 //                 // Indicate no undo, and do port controller values and clone parts. 
 //                 MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
+//                 // Operation is undoable but do not start/end undo.
+//                 // Indicate do port controller values and clone parts.
+//                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+//                                   newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
                 // Operation is undoable but do not start/end undo.
                 // Indicate do port controller values and clone parts.
-                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
-                                  newEvent, event, curPart, true, true), MusECore::Song::OperationUndoable);
+                _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                  newEvent, event, curPart, true, true));
                 
                 do_redraw = true;      
               }
@@ -1517,17 +1603,27 @@ void CtrlCanvas::newVal(int x1, int y)
             {
                   // delete event
                   
-                  deselectItem(ev);
 // REMOVE Tim. citem. Changed.
+//                   deselectItem(ev);
 //                   // Indicate no undo, and do port controller values and clone parts. 
 //                   MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+                  // We must remove the item from the selected list.
+                  removeSelection(ev);
+                  // This deselect operation should never be undoable because when redo is clicked,
+                  //  it restores the event's selection, which is not the intention here, the intention
+                  //  is to restore as unselected no matter what, to avoid visual confusion.
+                  // No, let undo/redo handle that.
+//                   _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+//                              event, curPart, false, false, false));
                   // Operation is undoable but do not start/end undo.
                   // Indicate do port controller values and clone parts.
-                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-                             event, curPart, true, true), MusECore::Song::OperationUndoable);
+//                   MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+                  _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true));
                   
                   delete (ev);
-                  i = items.erase(i);           
+                  i = items.erase(i);
                   ev = *i;
                   // Is there a previous item?
                   if(prev_ev != items.end())
@@ -1569,8 +1665,10 @@ void CtrlCanvas::newVal(int x1, int y)
 //               MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
               // Operation is undoable but do not start/end undo.
               // Indicate do port controller values and clone parts. 
-              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
-                                event, curPart, true, true), MusECore::Song::OperationUndoable);
+//               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+//                                 event, curPart, true, true), MusECore::Song::OperationUndoable);
+              _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                                event, curPart, true, true));
               
               CEvent* newev = new CEvent(event, curPart, event.dataB());
               insertPoint = items.insert(insertPoint, newev);
@@ -1688,14 +1786,24 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
               break;
             }
             
-            deselectItem(ev);
 // REMOVE Tim. citem. Changed.
+//             deselectItem(ev);
 //             // Indicate no undo, and do port controller values and clone parts. 
 //             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+            // We must remove the item from the selected list.
+            removeSelection(ev);
+            // This deselect operation should never be undoable because when redo is clicked,
+            //  it restores the event's selection, which is not the intention here, the intention
+            //  is to restore as unselected no matter what, to avoid visual confusion.
+            // No, let undo/redo handle that.
+//             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+//                         event, curPart, false, false, false));
             // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts.
-            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-                             event, curPart, true, true), MusECore::Song::OperationUndoable);
+//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+            _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true));
             
             delete (ev);
             i = items.erase(i);           
@@ -1747,8 +1855,10 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
 //             MusEGlobal::audio->msgAddEvent(event, curPart, false, true, true);
             // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts. 
-            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
-                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+//                               event, curPart, true, true), MusECore::Song::OperationUndoable);
+            _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, 
+                              event, curPart, true, true));
             
             CEvent* newev = new CEvent(event, curPart, event.dataB());
             insertPoint = items.insert(insertPoint, newev);
@@ -1834,14 +1944,24 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
             if (x >= xx2)
               break;
             
-            deselectItem(ev);
 // REMOVE Tim. citem. Changed.
+//             deselectItem(ev);
 //             // Indicate no undo, and do port controller values and clone parts. 
 //             MusEGlobal::audio->msgDeleteEvent(event, curPart, false, true, true);
+            // We must remove the item from the selected list.
+            removeSelection(ev);
+            // This deselect operation should never be undoable because when redo is clicked,
+            //  it restores the event's selection, which is not the intention here, the intention
+            //  is to restore as unselected no matter what, to avoid visual confusion.
+            // No, let undo/redo handle that.
+//             _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
+//                         event, curPart, false, false, false));
             // Operation is undoable but do not start/end undo.
             // Indicate do port controller values and clone parts.
-            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-                             event, curPart, true, true), MusECore::Song::OperationUndoable);
+//             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+//                              event, curPart, true, true), MusECore::Song::OperationUndoable);
+            _operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
+                             event, curPart, true, true));
             
             delete (ev);
             i = items.erase(i);           
@@ -1894,6 +2014,9 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
   int x = rect.x() - 1;   // compensate for 3 pixel line width
   int w = rect.width() + 2;
   int wh = height();
+//   const QColor selection_base_color(Qt::blue);
+//   const QColor selection_color(selection_base_color.lighter());
+  const QColor selection_color(0, 160, 255);
   
   noEvents=true;
 
@@ -1917,7 +2040,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
       if(fg)
       {
         if(e->isSelected())
-          p.setPen(QPen(Qt::blue, 3));
+          //p.setPen(QPen(Qt::blue, 3));
+          p.setPen(QPen(selection_color, 3));
         else
           p.setPen(QPen(MusEGlobal::config.ctrlGraphFg, 3));
       }  
@@ -2033,7 +2157,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
           p.drawLine(x1, lval, tick, lval);
         }  
         else
-          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
+          //p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
+          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? selection_color : MusEGlobal::config.ctrlGraphFg);
       }
       
       
@@ -2064,7 +2189,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
         p.drawLine(x1, lval, x + w, lval);
       }  
       else
-        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
+        //p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEGlobal::config.ctrlGraphFg);
+        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? selection_color : MusEGlobal::config.ctrlGraphFg);
     }
   }       
 }

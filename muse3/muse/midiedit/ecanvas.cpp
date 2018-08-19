@@ -250,6 +250,7 @@ bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselec
       bool obj_selected;
       bool changed=false;
       
+      // If we are deselecting all, globally deselect all events,
       //  and don't bother individually deselecting objects, below.
       if(deselectAll)
       {
@@ -267,14 +268,24 @@ bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselec
             obj_selected = item->objectIsSelected();
 //             if (i->second->isSelected() != item->part()->selected())
 //             if (item->isSelected() != item->objectIsSelected())
-            if (item_selected != obj_selected)
-            {
+//             if (item_selected != obj_selected)
+//             {
                 // REMOVE Tim. citem. Added.
                 // Here we have a choice of whether to allow undoing of selections.
                 // Disabled for now, it's too tedious in use. Possibly make the choice user settable.
               
+//               // Don't bother deselecting objects if we have already deselected all, above.
+//               if(item_selected || !deselectAll)
+                
+                
               // Don't bother deselecting objects if we have already deselected all, above.
-              if(item_selected || !deselectAll)
+              if((item_selected || !deselectAll) &&
+                 ((item_selected != obj_selected) ||
+                  // Need to force this because after the 'deselect all events' command executes,
+                  //  if the item is selected another select needs to be executed even though it
+                  //  appears nothing changed here.
+                  (item_selected && deselectAll)))
+                
               {
                 opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent,
 // REMOVE Tim. citem. Changed.
@@ -284,7 +295,7 @@ bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselec
 
                 changed=true;
               }
-            }
+//             }
       }
 
       if (!operations && changed)
@@ -302,7 +313,7 @@ bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselec
               // REMOVE Tim. citem. Added.
               fprintf(stderr, "EventCanvas::updateSelection: Applied SelectPart operations, redrawing\n");
                 
-              redraw();
+//               redraw();
             //}
       }
 
