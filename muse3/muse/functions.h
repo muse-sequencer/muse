@@ -26,6 +26,7 @@
 #include <set>
 #include "part.h"
 #include "dialogs.h"
+#include "type_defs.h"
 #include <QWidget>
 
 class QString;
@@ -41,7 +42,8 @@ class Undo;
 
 std::set<const Part*> partlist_to_set(PartList* pl);
 std::set<const Part*> part_to_set(const Part* p);
-std::map<const Event*, const Part*> get_events(const std::set<const Part*>& parts, int range);
+std::map<const Event*, const Part*> get_events(const std::set<const Part*>& parts,
+         int range, MusECore::RelevantSelectedEvents_t relevant = MusECore::NotesRelevant);
 
 //these functions simply do their job, non-interactively
 bool modify_velocity(const std::set<const Part*>& parts, int range, int rate, int offset=0);

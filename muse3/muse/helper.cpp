@@ -498,9 +498,9 @@ Part* partFromSerialNumber(int serial)
 	return NULL;
 }
 
-bool any_event_selected(const set<const Part*>& parts, bool in_range)
+bool any_event_selected(const set<const Part*>& parts, bool in_range, RelevantSelectedEvents_t relevant)
 {
-  return !get_events(parts, in_range ? 3 : 1).empty();
+  return !get_events(parts, in_range ? 3 : 1, relevant).empty();
 }
 
 bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int len)

@@ -119,31 +119,57 @@ set<const Part*> get_all_selected_parts()
 	return result;
 }
 
-bool is_relevant(const Event& event, const Part* part, int range)
+bool is_relevant(const Event& event, const Part* part, int range, RelevantSelectedEvents_t relevant)
 {
 	unsigned tick;
 	
-	if (event.type()!=Note) return false;
+  switch(event.type())
+  {
+    case Note:
+      if(!(relevant & NotesRelevant))
+        return false;
+    break;
+    
+    case Controller:
+      if(!(relevant & ControllersRelevant))
+        return false;
+    break;
+    
+    case Sysex:
+      if(!(relevant & SysexRelevant))
+        return false;
+    break;
+    
+    case Meta:
+      if(!(relevant & MetaRelevant))
+        return false;
+    break;
+    
+    case Wave:
+      if(!(relevant & WaveRelevant))
+        return false;
+    break;
+  }
 	
 	switch (range)
 	{
 		case 0: return true;
 		case 1: return event.selected();
 		case 2: tick=event.tick()+part->tick(); return (tick >= MusEGlobal::song->lpos()) && (tick < MusEGlobal::song->rpos());
-		case 3: return is_relevant(event,part,1) && is_relevant(event,part,2);
+		case 3: return is_relevant(event,part,1, relevant) && is_relevant(event,part,2, relevant);
 		default: cout << "ERROR: ILLEGAL FUNCTION CALL in is_relevant: range is illegal: "<<range<<endl;
 		         return false;
 	}
 }
 
 
-map<const Event*, const Part*> get_events(const set<const Part*>& parts, int range)
+map<const Event*, const Part*> get_events(const set<const Part*>& parts, int range, RelevantSelectedEvents_t relevant)
 {
 	map<const Event*, const Part*> events;
 	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
-			if (is_relevant(event->second, *part, range))
+			if (is_relevant(event->second, *part, range, relevant))
 				events.insert(pair<const Event*, const Part*>(&event->second, *part));
 	
 	return events;
@@ -957,7 +983,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
 
     for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
         for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range))
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
                 if (ev->second.tick() < start_tick)
                     start_tick=ev->second.tick();
 
@@ -982,7 +1008,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
     {
         xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
         for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
-            if (is_relevant(ev->second, *part, range))
+            if (is_relevant(ev->second, *part, range, AllEventsRelevant))
                 ev->second.write(level, xml, -start_tick);
         xml.etag(--level, "eventlist");
     }

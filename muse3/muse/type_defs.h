@@ -139,6 +139,13 @@ struct SongChangedStruct_t
 typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
 
+enum RelevantSelectedEvents { NotesRelevant = 0x01, ControllersRelevant = 0x02,
+                SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
+                AllEventsRelevant = NotesRelevant | ControllersRelevant |
+                                    SysexRelevant | MetaRelevant | WaveRelevant};
+typedef int RelevantSelectedEvents_t;
+
+
 }   // namespace MusECore
 
 #endif

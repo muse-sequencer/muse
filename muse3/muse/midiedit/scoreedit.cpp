@@ -663,7 +663,8 @@ void ScoreEdit::song_changed(MusECore::SongChangedStruct_t flags)
 
     if (flags._flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
     {
-        map<const MusECore::Event*, const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
+        map<const MusECore::Event*,
+          const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1, MusECore::AllEventsRelevant);
         if (selection.empty())
         {
             apply_velo_to_label->setText(tr("Apply to new notes:"));
@@ -770,7 +771,9 @@ void ScoreEdit::menu_command(int cmd)
             erase_notes(score_canvas->get_all_parts(), 1);
             break;
         case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
-        case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusECore::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
+        case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(),
+          MusECore::any_event_selected(score_canvas->get_all_parts(), MusECore::AllEventsRelevant) ?
+              3 : 2); break;
         case CMD_PASTE:
             menu_command(CMD_SELECT_NONE);
             MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());

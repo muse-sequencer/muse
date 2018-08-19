@@ -1295,7 +1295,9 @@ void DrumEdit::cmd(int cmd)
                   erase_notes(partlist_to_set(parts()), 1);
                   break;
             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-            case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusECore::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
+            case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
+              MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
+                  3 : 2); break;
             case DrumCanvas::CMD_PASTE: 
                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
                   MusECore::paste_notes(3072, false, true, canvas->part());

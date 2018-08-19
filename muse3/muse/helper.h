@@ -28,6 +28,7 @@
 #include <QStringList>
 
 #include "drummap.h"
+#include "type_defs.h"
 
 class QActionGroup;
 class QString;
@@ -48,7 +49,8 @@ void populateMidiPorts();
 QString pitch2string(int v);
 void dumpMPEvent(const MEvent* ev);
 Part* partFromSerialNumber(int serial);
-bool any_event_selected(const std::set<const Part*>&, bool in_range=false);
+bool any_event_selected(const std::set<const Part*>&, bool in_range=false,
+                        RelevantSelectedEvents_t relevant = NotesRelevant);
 
 bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int drummap_size=128);
 
