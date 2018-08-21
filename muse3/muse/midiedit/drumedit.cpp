@@ -1290,14 +1290,28 @@ void DrumEdit::cmd(int cmd)
         return;
       
       switch(cmd) {
+// REMOVE Tim. citem. Changed.
+//             case DrumCanvas::CMD_CUT:
+//                   copy_notes(partlist_to_set(parts()), 1);
+//                   erase_notes(partlist_to_set(parts()), 1);
+//                   break;
+//             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+//             case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
+//               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
+//                   3 : 2); break;
             case DrumCanvas::CMD_CUT:
-                  copy_notes(partlist_to_set(parts()), 1);
-                  erase_notes(partlist_to_set(parts()), 1);
+                  tagAllSelectedItems();
+                  MusECore::erase_items();
                   break;
-            case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-            case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
-              MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
-                  3 : 2); break;
+            case DrumCanvas::CMD_COPY:
+                  tagAllSelectedItems();
+                  MusECore::copy_items();
+                  break;
+            case DrumCanvas::CMD_COPY_RANGE:
+                  tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  MusECore::copy_items();
+                  break;
+                  
             case DrumCanvas::CMD_PASTE: 
                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
                   MusECore::paste_notes(3072, false, true, canvas->part());
@@ -1353,7 +1367,9 @@ void DrumEdit::clipboardChanged()
 
 void DrumEdit::selectionChanged()
       {
-      bool flag = canvas->selectionSize() > 0;
+// REMOVE Tim. citem. Changed.
+//       bool flag = canvas->selectionSize() > 0;
+      bool flag = itemsAreSelected();
       cutAction->setEnabled(flag);
       copyAction->setEnabled(flag);
       deleteAction->setEnabled(flag);

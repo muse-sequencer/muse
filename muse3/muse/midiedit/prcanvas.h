@@ -44,12 +44,14 @@ namespace MusEGui {
 //    ''visual'' Note Event
 //---------------------------------------------------------
 
-class NEvent : public CItem {
+// REMOVE Tim. citem. Changed.
+//class NEvent : public CItem {
+class NEvent : public EItem {
    public:
       NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
       
       // REMOVE Tim. citem. Added.
-      bool objectIsSelected() const { return event().selected(); }
+      //bool objectIsSelected() const { return event().selected(); }
       };
 
 class ScrollScale;

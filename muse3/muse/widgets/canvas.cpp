@@ -2224,6 +2224,73 @@ int Canvas::selectionSize() const
       }
 
 // REMOVE Tim. citem. Added.
+// //---------------------------------------------------------
+// //   getAllSelectedItems
+// //---------------------------------------------------------
+// 
+// void Canvas::getAllSelectedItems(CItemSet& list) const
+// {
+//   for(ciCItem i = items.begin(); i != items.end(); ++i)
+//   {
+//     CItem* item = i->second;
+//     // If we want only items for the selected part.
+//     //if(item->part() != part())
+//     //  continue;
+//     
+//     // Is the item selected and it's object not tagged yet?
+//     // NOTE: Tagged is used as a temporary flag to avoid checking
+//     //  the given list for duplicates for every item encountered.
+//     // Tagged is to be reset as soon as all selected items have been
+//     //  gathered into the list.
+//     if(item->isSelected() && !item->isObjectTagged())
+//     {
+//       item->setObjectTagged(true);
+//       list.add(item);
+//     }
+//   }
+// }
+
+//---------------------------------------------------------
+//   tagAllSelectedItems
+//---------------------------------------------------------
+
+void Canvas::tagAllSelectedItems(bool range, bool rangeSelectedOnly,
+        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{ 
+  CItem* item;
+  if(range)
+  {
+    if(rangeSelectedOnly)
+    {
+      for(ciCItem i = items.begin(); i != items.end(); ++i)
+      {
+        item = i->second;
+        if(item->isSelected() && item->isObjectInRange(p0, p1))
+          item->setObjectTagged(true);
+      }
+    }
+    else
+    {
+      for(ciCItem i = items.begin(); i != items.end(); ++i)
+      {
+        item = i->second;
+        if(item->isObjectInRange(p0, p1))
+          item->setObjectTagged(true);
+      }
+    }
+  }
+  else
+  {
+    for(ciCItem i = items.begin(); i != items.end(); ++i)
+    {
+      item = i->second;
+      if(item->isSelected())
+        item->setObjectTagged(true);
+    }
+  }
+}
+
+// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   updateItemSelections
 //---------------------------------------------------------

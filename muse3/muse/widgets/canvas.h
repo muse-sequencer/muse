@@ -38,6 +38,7 @@ class QPoint;
 
 namespace MusECore {
 class Undo;
+class Pos;
 }
   
 namespace MusEGui {
@@ -260,6 +261,15 @@ class Canvas : public View {
       bool isSingleSelection() const;
       int selectionSize() const;
       bool itemsAreSelected() const;
+// REMOVE Tim. citem. Added.
+      // Adds all selected items to the given list. Does not clear the list first.
+      // Checks for duplicates, employing the 'tagged' features.
+      //void getAllSelectedItems(CItemSet&) const;
+      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+        const MusECore::Pos& = MusECore::Pos(),
+        const MusECore::Pos& = MusECore::Pos()) const;
+
       Tool tool() const { return _tool; }
       MusECore::Part* part() const { return curPart; }
       void setCurrentPart(MusECore::Part*); 

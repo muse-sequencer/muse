@@ -62,12 +62,14 @@ namespace MusEGui {
 //    ''visual'' Wave Event
 //---------------------------------------------------------
 
-class WEvent : public CItem {
+// REMOVE Tim. citem. Changed.
+// class WEvent : public CItem {
+class WEvent : public EItem {
    public:
       WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
       
       // REMOVE Tim. citem. Added.
-      bool objectIsSelected() const { return event().selected(); }
+      //bool objectIsSelected() const { return event().selected(); }
       };
 
 //---------------------------------------------------------

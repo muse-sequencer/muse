@@ -71,6 +71,14 @@ class Part : public PosLen {
 
       QString _name;
       bool _selected;
+      // REMOVE Tim. citem. Added.
+      // Temporary general purpose tag. Used for example when iterating
+      //  midi controller canvases for selected canvas items to copy to the clipboard
+      //  and needing to see if the event was already put into the selected item list.
+      // This greatly saves from having to check the selected item list for duplicates
+      //  for every item encountered. Just make sure to reset the tag at some point!
+      bool _tagged;
+      bool _eventsTagged;
       bool _mute;
       int _colorIndex;
                    
@@ -99,6 +107,10 @@ class Part : public PosLen {
       void setName(const QString& s)   { _name = s; }
       bool selected() const            { return _selected; }
       void setSelected(bool f)         { _selected = f; }
+      bool tagged() const              { return _tagged; }
+      void setTagged(bool v)           { _tagged = v; }
+      bool eventsTagged() const        { return _eventsTagged; }
+      void setEventsTagged(bool v)     { _eventsTagged = v; }
       // Select or unselect a range of events. If t0 == t1, ALL events will be affected.
       // The t0 and t1 can be ticks or frames depending on the type of events. Unused for now.
       // Returns true if anything changed.

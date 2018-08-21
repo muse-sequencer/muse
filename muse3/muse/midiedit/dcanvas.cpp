@@ -71,7 +71,9 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
-  : CItem(e, p)
+// REMOVE Tim. citem. Changed.
+//   : CItem(e, p)
+  : EItem(e, p)
       {
       int y  = instr * TH + TH/2;
       int tick = e.tick() + p->tick();
@@ -666,7 +668,7 @@ bool DrumCanvas::deleteItem(CItem* item)
 //   itemPressed
 //---------------------------------------------------------
 
-void DrumCanvas::itemPressed(const MusEGui::CItem* item)
+void DrumCanvas::itemPressed(const CItem* item)
       {
       if (!_playEvents)
             return;
@@ -691,7 +693,7 @@ void DrumCanvas::itemPressed(const MusEGui::CItem* item)
 //   itemReleased
 //---------------------------------------------------------
 
-void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
+void DrumCanvas::itemReleased(const CItem*, const QPoint&)
       {
       if (!_playEvents)
               return;
@@ -703,7 +705,7 @@ void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 //   itemMoved
 //---------------------------------------------------------
 
-void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
+void DrumCanvas::itemMoved(const CItem* item, const QPoint& pos)
       {
       int index = y2pitch(pos.y());
       int pitch, port, channel;
@@ -1371,7 +1373,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
+                  case NoteInfo::VAL_TIME:
                         {
                         int newTime = val;
                         if(delta_mode)
@@ -1383,7 +1385,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_LEN:
+                  case NoteInfo::VAL_LEN:
                         {
                         int len = val;
                         if(delta_mode)
@@ -1393,7 +1395,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setLenTick(len);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELON:
+                  case NoteInfo::VAL_VELON:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -1407,7 +1409,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setVelo(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
+                  case NoteInfo::VAL_VELOFF:
                         {
                         int velo = val;
                         if(delta_mode)

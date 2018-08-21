@@ -59,7 +59,7 @@ class MidiEditor;
 
 // REMOVE Tim. citem. Changed.
 // class CEvent {
-class CEvent : public CItem {
+class CEvent : public EItem {
    private:
 // REMOVE Tim. citem. Removed.
 //       MusECore::Event _event;
@@ -71,7 +71,7 @@ class CEvent : public CItem {
 
    public:
 //       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
-      CEvent(const MusECore::Event& e, MusECore::MidiPart* part, int v);
+      CEvent(const MusECore::Event&, MusECore::MidiPart*, int v);
       
 // REMOVE Tim. citem. Removed.
 //       MusECore::Event event() const          { return _event; }
@@ -94,21 +94,26 @@ class CEvent : public CItem {
       int EX()                      { return ex; }
       };
 
-typedef std::list<CEvent*>::iterator iCEvent;
-typedef std::list<CEvent*>::const_iterator ciCEvent;
+// REMOVE Tim. citem. Removed.
+// typedef std::list<CEvent*>::iterator iCEvent;
+// typedef std::list<CEvent*>::const_iterator ciCEvent;
 
 //---------------------------------------------------------
 //   CEventList
 //    Controller Item List
 //---------------------------------------------------------
 
-class CEventList: public std::list<CEvent*> {
+// REMOVE Tim. citem. Changed.
+// class CEventList: public std::list<CEvent*> {
+//    public:
+//       void add(CEvent* item) { push_back(item); }
+//       
+//       void clearDelete();
+//       };
+class CEventList: public CItemSet {
    public:
-      void add(CEvent* item) { push_back(item); }
-      
       void clearDelete();
       };
-
 
 //---------------------------------------------------------
 //   CtrlCanvas
@@ -238,6 +243,15 @@ class CtrlCanvas : public MusEGui::View {
       int getCurDrumPitch() const { return curDrumPitch; }
       bool perNoteVeloMode() const { return _perNoteVeloMode; }
       void setPerNoteVeloMode(bool);
+      // REMOVE Tim. citem. Added.
+      bool itemsAreSelected() const { return !selection.empty(); }
+      //const CEventList& selectedItems() const { return selection; }
+      // Adds all selected items to the given list. Does not clear the list first.
+      // Checks for duplicates, employing the 'tagged' features.
+      //void getAllSelectedItems(CItemSet&) const;
+      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+        const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
       };
 
 } // namespace MusEGui

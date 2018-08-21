@@ -27,6 +27,7 @@
 #include "part.h"
 #include "dialogs.h"
 #include "type_defs.h"
+//#include "citem.h" // REMOVE Tim. citem. Added.
 #include <QWidget>
 
 class QString;
@@ -51,6 +52,7 @@ bool modify_off_velocity(const std::set<const Part*>& parts, int range, int rate
 bool modify_notelen(const std::set<const Part*>& parts, int range, int rate, int offset=0);
 bool quantize_notes(const std::set<const Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
 bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool erase_items(int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
 bool delete_overlaps(const std::set<const Part*>& parts, int range);
 bool set_notelen(const std::set<const Part*>& parts, int range, int len);
 bool move_notes(const std::set<const Part*>& parts, int range, signed int ticks);
@@ -87,9 +89,11 @@ bool legato();
 
 //functions for copy'n'paste
 void copy_notes(const std::set<const Part*>& parts, int range);
+void copy_items();  // REMOVE Tim. citem. Added.
 bool paste_notes(const Part* paste_into_part=NULL); // shows a dialog
 void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<const Part*>& parts, int range);
+QMimeData* selected_items_to_mime(); // REMOVE Tim. citem. Added.
 QMimeData* parts_to_mime(const std::set<const Part*>& parts);
 
 

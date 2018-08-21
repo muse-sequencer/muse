@@ -50,12 +50,14 @@ class DrumEdit;
 //    ''visual'' Drum Event
 //---------------------------------------------------------
 
-class DEvent : public CItem {
+// REMOVE Tim. citem. Changed.
+//class DEvent : public CItem {
+class DEvent : public EItem {
    public:
       DEvent(MusECore::Event e, MusECore::Part* p, int instr);
       
       // REMOVE Tim. citem. Added.
-      bool objectIsSelected() const { return event().selected(); }
+      //bool objectIsSelected() const { return event().selected(); }
       };
 
 

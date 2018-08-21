@@ -79,7 +79,9 @@ namespace MusEGui {
 //   WEvent
 //---------------------------------------------------------
 
-WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
+// REMOVE Tim. citem. Changed.
+//WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
+WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(e, p)
       {
       unsigned frame = e.frame() + p->frame();
       setPos(QPoint(frame, 0));
@@ -1153,7 +1155,7 @@ int WaveCanvas::y2pitch(int) const
 
 // REMOVE Tim. citem. Changed.
 // void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& rect, const QRegion&)
+void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
 {
       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
       if(!wp || !wp->track())
@@ -1391,7 +1393,7 @@ void WaveCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 
 // REMOVE Tim. citem. Changed.
 // void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
-void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect, const QRegion&)
+void WaveCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, const QRegion&)
     {
       QRect mr = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       mr = mr.intersected(rect);
@@ -1411,7 +1413,7 @@ void WaveCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect
 
 void WaveCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       {
-      if ((_tool != MusEGui::PointerTool) && (event->button() != Qt::LeftButton)) {
+      if ((_tool != PointerTool) && (event->button() != Qt::LeftButton)) {
             mousePress(event);
             return;
             }
@@ -1421,7 +1423,7 @@ void WaveCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/, int dx, DragType dtype, bool rasterize)
+MusECore::Undo WaveCanvas::moveCanvasItems(CItemList& items, int /*dp*/, int dx, DragType dtype, bool rasterize)
 {      
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list
@@ -1436,9 +1438,9 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       continue;
     
     int npartoffset = 0;
-    for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+    for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
-      MusEGui::CItem* ci = ici->second;
+      CItem* ci = ici->second;
       if(ci->part() != part)
         continue;
       
@@ -1492,12 +1494,12 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
         
         if (!forbidden)
         {
-                std::vector< MusEGui::CItem* > doneList;
-                typedef std::vector< MusEGui::CItem* >::iterator iDoneList;
+                std::vector< CItem* > doneList;
+                typedef std::vector< CItem* >::iterator iDoneList;
                 
-                for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+                for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
                 {
-                        MusEGui::CItem* ci = ici->second;
+                        CItem* ci = ici->second;
                         
                         int x = ci->pos().x();
                         //int y = ci->pos().y();
@@ -1552,7 +1554,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
 //    called after moving an object
 //---------------------------------------------------------
 
-bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
+bool WaveCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -1585,7 +1587,7 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
 //   newItem(p, state)
 //---------------------------------------------------------
 
-MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
+CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       {
       int frame  = p.x();
       if(!(key_modifiers & Qt::ShiftModifier))
@@ -1601,7 +1603,7 @@ MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       return we;
       }
 
-void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
+void WaveCanvas::newItem(CItem* item, bool noSnap)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -1651,7 +1653,7 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
 //   resizeItem
 //---------------------------------------------------------
 
-void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
+void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -1698,7 +1700,7 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
 //   deleteItem
 //---------------------------------------------------------
 
-bool WaveCanvas::deleteItem(MusEGui::CItem* item)
+bool WaveCanvas::deleteItem(CItem* item)
       {
       WEvent* wevent = (WEvent*) item;
       if (wevent->part() == curPart) {
@@ -1721,7 +1723,7 @@ void WaveCanvas::adjustWaveOffset()
   bool have_selected = false;
   int init_offset = 0;
   
-  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) 
+  for (iCItem k = items.begin(); k != items.end(); ++k) 
   {
     if (k->second->isSelected())
     {
@@ -1753,7 +1755,7 @@ void WaveCanvas::adjustWaveOffset()
 
   // FIXME: Respect clones! If operating on two selected clones of the same part, an extra event is created!
   //        Check - Is it really this code's problem? Seems so, other operations like moving an event seem OK.
-  for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+  for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
     if(ici->second->isSelected())
     {
@@ -1906,7 +1908,7 @@ void WaveCanvas::cmd(int cmd)
       double paramA = 0.0;
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  if (tool() == MusEGui::RangeTool) 
+                  if (tool() == RangeTool) 
                   {
                     if (!editor->parts()->empty()) {
                           MusECore::iPart iBeg = editor->parts()->begin();
@@ -1919,7 +1921,7 @@ void WaveCanvas::cmd(int cmd)
                           redraw();
                           }
                   }
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
                               selectItem(k->second, true);
                         }
@@ -1929,12 +1931,12 @@ void WaveCanvas::cmd(int cmd)
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         selectItem(k->second, !k->second->isSelected());
                         }
                   break;
             case CMD_SELECT_ILOOP:     // select inside loop
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         WEvent* wevent = (WEvent*)(k->second);
                         MusECore::Part* part     = wevent->part();
                         MusECore::Event event    = wevent->event();
@@ -1946,7 +1948,7 @@ void WaveCanvas::cmd(int cmd)
                         }
                   break;
             case CMD_SELECT_OLOOP:     // select outside loop
-                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items.begin(); k != items.end(); ++k) {
                         WEvent* wevent = (WEvent*)(k->second);
                         MusECore::Part* part     = wevent->part();
                         MusECore::Event event    = wevent->event();
@@ -2668,7 +2670,7 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
 //   startDrag
 //---------------------------------------------------------
 
-void WaveCanvas::startDrag(MusEGui::CItem* /* item*/, DragType t)
+void WaveCanvas::startDrag(CItem* /* item*/, DragType t)
 {
    QMimeData* md = MusECore::selected_events_to_mime(MusECore::partlist_to_set(editor->parts()), 1);
 
@@ -2720,7 +2722,7 @@ void WaveCanvas::dragLeaveEvent(QDragLeaveEvent*)
 //   itemPressed
 //---------------------------------------------------------
 
-void WaveCanvas::itemPressed(const MusEGui::CItem*)
+void WaveCanvas::itemPressed(const CItem*)
       {
       }
 
@@ -2728,7 +2730,7 @@ void WaveCanvas::itemPressed(const MusEGui::CItem*)
 //   itemReleased
 //---------------------------------------------------------
 
-void WaveCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
+void WaveCanvas::itemReleased(const CItem*, const QPoint&)
       {
       }
 
@@ -2736,7 +2738,7 @@ void WaveCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
 //   itemMoved
 //---------------------------------------------------------
 
-void WaveCanvas::itemMoved(const MusEGui::CItem*, const QPoint&)
+void WaveCanvas::itemMoved(const CItem*, const QPoint&)
       {
       }
 
@@ -2754,12 +2756,12 @@ void WaveCanvas::curPartChanged()
 //   modifySelected
 //---------------------------------------------------------
 
-void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
+void WaveCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode)
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
       QList< QPair<int,MusECore::Event> > already_done;
       MusECore::Undo operations;
-      for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
+      for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
             WEvent* e   = (WEvent*)(i->second);
@@ -2775,7 +2777,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
+                  case NoteInfo::VAL_TIME:
                         {
                         int newTime = val;
                         if(delta_mode)
@@ -2787,7 +2789,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_LEN:
+                  case NoteInfo::VAL_LEN:
                         {
                         int len = val;
                         if(delta_mode)
@@ -2797,7 +2799,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setLenTick(len);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELON:
+                  case NoteInfo::VAL_VELON:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -2811,7 +2813,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setVelo(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
+                  case NoteInfo::VAL_VELOFF:
                         {
                         int velo = val;
                         if(delta_mode)
@@ -2823,7 +2825,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         newEvent.setVeloOff(velo);
                         }
                         break;
-                  case MusEGui::NoteInfo::VAL_PITCH:
+                  case NoteInfo::VAL_PITCH:
                         {
                         int pitch = val;
                         if(delta_mode)

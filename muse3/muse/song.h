@@ -167,7 +167,8 @@ class Song : public QObject {
       void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
       void removeTrackOperation(Track* track, PendingOperationList& ops);
       bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      void changeEventOperation(const Event&, const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      void changeEventOperation(const Event& oldEvent, const Event& newEvent,
+                                Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       void deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       
    public:

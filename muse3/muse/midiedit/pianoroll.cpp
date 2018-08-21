@@ -853,14 +853,28 @@ void PianoRoll::cmd(int cmd)
         
 			switch (cmd)
 						{
+// REMOVE Tim. citem. Changed.
+//             case PianoCanvas::CMD_CUT:
+//                   copy_notes(partlist_to_set(parts()), 1);
+//                   erase_notes(partlist_to_set(parts()), 1);
+//                   break;
+//             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+//             case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
+//               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
+//                   3 : 2); break;
             case PianoCanvas::CMD_CUT:
-                  copy_notes(partlist_to_set(parts()), 1);
-                  erase_notes(partlist_to_set(parts()), 1);
+                  tagAllSelectedItems();
+                  MusECore::erase_items();
                   break;
-            case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-            case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
-              MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
-                  3 : 2); break;
+            case PianoCanvas::CMD_COPY:
+                  tagAllSelectedItems();
+                  MusECore::copy_items();
+                  break;
+            case PianoCanvas::CMD_COPY_RANGE:
+                  tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+                  MusECore::copy_items();
+                  break;
+                  
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
                               MusECore::paste_notes(3072, false, true, canvas->part());
@@ -1650,7 +1664,9 @@ void PianoRoll::clipboardChanged()
 
 void PianoRoll::selectionChanged()
       {
-      bool flag = canvas->selectionSize() > 0;
+// REMOVE Tim. citem. Changed.
+//       bool flag = canvas->selectionSize() > 0;
+      bool flag = itemsAreSelected();
       editCutAction->setEnabled(flag);
       editCopyAction->setEnabled(flag);
       editDelEventsAction->setEnabled(flag);

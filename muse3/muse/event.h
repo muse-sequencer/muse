@@ -79,6 +79,8 @@ class Event {
       int getRefCount() const;
       bool selected() const;
       void setSelected(bool val);
+      bool tagged() const;
+      void setTagged(bool v);
       void move(int offset);
 
       void read(Xml& xml);
@@ -139,6 +141,7 @@ class Event {
       Pos end() const;
       unsigned endTick() const;
       unsigned endFrame() const;
+      Pos pos() const;
       void setPos(const Pos& p);
       };
 

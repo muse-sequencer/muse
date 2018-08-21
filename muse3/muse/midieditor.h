@@ -26,6 +26,9 @@
 #include "type_defs.h"
 #include "al/sig.h"
 #include "cobject.h"
+// REMOVE Tim. citem. Added.
+//#include "citem.h"
+#include "ctrl/ctrledit.h"
 
 
 #include <set>
@@ -42,7 +45,6 @@ class Xml;
 }
 
 namespace MusEGui {
-class CtrlEdit;
 class EventCanvas;
 class MTScale;
 class ScrollScale;
@@ -67,7 +69,7 @@ class MidiEditor : public TopWin  {
       EventCanvas* canvas;
       //WaveView* wview;
 
-      std::list<CtrlEdit*> ctrlEditList;
+      CtrlEditList ctrlEditList;
       int _raster;
       QGridLayout* mainGrid;
       QWidget* mainw;
@@ -104,6 +106,15 @@ class MidiEditor : public TopWin  {
       MusECore::Part* curCanvasPart();
       void setCurCanvasPart(MusECore::Part*); 
       void addPart(MusECore::Part*);
+      // REMOVE Tim. citem. Added.
+      bool itemsAreSelected() const;
+      // Adds all selected items to the given list. Does not clear the list first.
+      // Checks for duplicates, employing the 'tagged' features.
+      //void getAllSelectedItems(CItemSet&) const;
+      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+        const MusECore::Pos& = MusECore::Pos(),
+        const MusECore::Pos& = MusECore::Pos()) const;
       };
 
 } // namespace MusEGui

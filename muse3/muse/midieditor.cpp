@@ -125,6 +125,56 @@ void MidiEditor::addPart(MusECore::Part* p)
   _parts.insert(p->sn());
 }
 
+// REMOVE Tim. citem. Added.
+// void MidiEditor::getAllSelectedItems(CItemSet& list) const
+// {
+//   if(!canvas)
+//     return;
+//   
+//   // These two steps use the tagging features to mark the objects (events)
+//   //  as having been visited already, to avoid duplicates in the list.
+//   canvas->getAllSelectedItems(list);
+//   //
+//   for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+//     (*i)->getAllSelectedItems(list);
+//   
+//   // Now that we have gathered all the selected items we need, and avoided
+//   //  duplicates by using the tagging features, reset all the tagged flags now!
+//   for(ciCItemSet i = list.begin(); i != list.end(); ++i)
+//     (*i)->setObjectTagged(false);
+// }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool MidiEditor::itemsAreSelected() const
+{
+  bool res = false;
+  if(canvas && canvas->itemsAreSelected())
+    res = true;
+  for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+    if((*i)->itemsAreSelected())
+      res = true;
+  return res;
+}
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   tagAllSelectedItems
+//---------------------------------------------------------
+
+void MidiEditor::tagAllSelectedItems(bool range, bool rangeSelectedOnly,
+        const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  // These two steps use the tagging features to mark the objects (events)
+  //  as having been visited already, to avoid duplicates in the list.
+  if(canvas)
+    canvas->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1);
+  for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+    (*i)->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1);
+}
 
 //---------------------------------------------------------
 //   MidiEditor

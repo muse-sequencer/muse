@@ -34,26 +34,30 @@ namespace MusEGui {
 
 CItem::CItem()
       {
+// REMOVE Tim. citem. Removed.
+//       _part = NULL;
       _isSelected = false;
       _isMoving = false;
       }
 
 CItem::CItem(const QPoint&p, const QRect& r)
       {
-      _part = NULL;  
+// REMOVE Tim. citem. Removed.
+//       _part = NULL;  
       _pos   = p;
       _bbox  = r;
       _isSelected = false;
       _isMoving = false;
       }
 
-CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
-      {
-      _event = e;
-      _part  = p;
-      _isSelected = false;
-      _isMoving = false;
-      }
+// REMOVE Tim. citem. Removed.
+// CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
+//       {
+//       _event = e;
+//       _part  = p;
+//       _isSelected = false;
+//       _isMoving = false;
+//       }
 
 // REMOVE Tim. citem. Changed.
 // //---------------------------------------------------------
@@ -73,6 +77,39 @@ CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
 //       {
 //       _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
 //       }
+
+
+//---------------------------------------------------------
+//   EItem
+//---------------------------------------------------------
+
+EItem::EItem() : CItem()
+      {
+      _part = NULL;
+      }
+
+EItem::EItem(const QPoint&p, const QRect& r) : CItem(p, r)
+      {
+      _part = NULL;  
+      }
+
+EItem::EItem(const MusECore::Event& e, MusECore::Part* p) : CItem()
+      {
+      _event = e;
+      _part  = p;
+      }
+
+void EItem::setObjectTagged(bool v)
+{
+  _event.setTagged(v);
+  if(_part)
+    _part->setEventsTagged(true);
+}
+
+bool EItem::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  return _event.pos() >= p0 && _event.pos() < p1;
+}
 
 //---------------------------------------------------------
 //   CItemList

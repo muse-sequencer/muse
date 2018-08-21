@@ -45,6 +45,7 @@ namespace MusECore {
 struct CtrlVal;
 class Xml;
 class Undo;
+class Part;
 }
 
 //#define beats     4
@@ -62,20 +63,29 @@ class MidiEditor;
 
 class NPart : public CItem {
    protected:
+// REMOVE Tim. citem. Added.
+      MusECore::Part* _part;
+     
       int _serial;
    
    public:
-      NPart(MusECore::Part* e);
+      NPart(MusECore::Part*);
       const QString name() const     { return part()->name(); }
       void setName(const QString& s) { part()->setName(s); }
       MusECore::Track* track() const           { return part()->track(); }
       int serial() { return _serial; }
       // REMOVE Tim. citem. Added.
+      //bool objectEquals(const NPart& p) const { return part() == p.part(); }
       bool objectIsSelected() const { return part()->selected(); }
+      bool isObjectTagged() const   { return part()->tagged(); }
+      void setObjectTagged(bool v)  { part()->setTagged(v); }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
     
+// REMOVE Tim. citem. Added.
+      MusECore::Part* part() const          { return _part; }
+      void setPart(MusECore::Part* p)       { _part = p; }
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };

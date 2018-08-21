@@ -90,16 +90,19 @@ const int PartCanvas::_automationPointWidthSel = 3;
 //   NPart
 //---------------------------------------------------------
 
-NPart::NPart(MusECore::Part* e) : CItem(MusECore::Event(), e)
+// REMOVE Tim. citem. Changed.
+//NPart::NPart(MusECore::Part* e) : CItem(MusECore::Event(), e)
+NPart::NPart(MusECore::Part* p) : CItem()
       {
+      _part = p;
       leftBorderTouches = false;
       rightBorderTouches = false;
 
-      _serial=e->sn();
+      _serial=_part->sn();
 
       int y  = track()->y();
-      setPos(QPoint(e->tick(), y));
-      setBBox(QRect(e->tick(), y, e->lenTick(), track()->height()));
+      setPos(QPoint(_part->tick(), y));
+      setBBox(QRect(_part->tick(), y, _part->lenTick(), track()->height()));
       }
 
 //---------------------------------------------------------

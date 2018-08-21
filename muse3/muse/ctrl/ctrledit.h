@@ -75,8 +75,22 @@ class CtrlEdit : public QWidget {
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);
+      bool itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
+      // Adds all selected items to the given list. Does not clear the list first.
+      // Checks for duplicates, employing the 'tagged' features.
+      //void getAllSelectedItems(CItemSet& list) const { if(!canvas) return; canvas->getAllSelectedItems(list); }
+      // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
+      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+        const MusECore::Pos& p0 = MusECore::Pos(),
+        const MusECore::Pos& p1 = MusECore::Pos()) const {
+        if(canvas) canvas->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1); }
       };
 
+      
+typedef std::list<CtrlEdit*> CtrlEditList;
+typedef CtrlEditList::iterator iCtrlEdit;
+typedef CtrlEditList::const_iterator ciCtrlEdit;
+      
 } // namespace MusEGui
 
 #endif

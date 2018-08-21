@@ -675,6 +675,52 @@ bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, b
 		return false;
 }
 
+bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+{
+  Undo operations;
+  
+  bool changed = false;
+  Part* part;
+  PartList* pl;
+  TrackList* tl = MusEGlobal::song->tracks();
+
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      part = ip->second;
+      part->setTagged(false);
+      if(part->eventsTagged())
+      {
+        part->setEventsTagged(false);
+        EventList& el = part->nonconst_events();
+        for(iEvent ie = el.begin(); ie != el.end(); ie++)
+        {
+          Event& e = ie->second;
+          if(e.tagged())
+          {
+            e.setTagged(false);
+            // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
+            if ( (!velo_thres_used && !len_thres_used) ||
+                  (velo_thres_used && e.velo() < velo_threshold) ||
+                  (len_thres_used && int(e.lenTick()) < len_threshold) )
+            {
+              changed = true;
+              operations.push_back(UndoOp(UndoOp::DeleteEvent, e, part, false, false));
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  if(changed)
+    return MusEGlobal::song->applyOperationGroup(operations);
+  else
+    return false;
+}
+
 bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)
 {
 	map<const Event*, const Part*> events = get_events(parts, range);
@@ -903,6 +949,14 @@ void copy_notes(const set<const Part*>& parts, int range)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
+void copy_items()
+{
+	QMimeData* drag = selected_items_to_mime();
+
+	if (drag)
+		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+}
+
 unsigned get_groupedevents_len(const QString& pt)
 {
 	unsigned maxlen=0;
@@ -1013,6 +1067,105 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
         xml.etag(--level, "eventlist");
     }
 
+    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    fclose(tmp);
+    return mimeData;
+}
+
+// REMOVE Tim. citem. Added.
+// if nothing is selected/relevant, this function returns NULL
+QMimeData* selected_items_to_mime()
+{
+    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+
+    Part* part;
+    PartList* pl;
+    TrackList* tl = MusEGlobal::song->tracks();
+    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      pl = (*it)->parts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        if(part->eventsTagged())
+        {
+          const EventList& el = part->events();
+          for(ciEvent ie = el.begin(); ie != el.end(); ie++)
+          {
+            const Event& e = ie->second;
+            if(e.tagged()) // && is_relevant(e, part, range, AllEventsRelevant))
+            {
+              if(e.tick() < start_tick)
+                start_tick = e.tick();
+            }
+          }
+        }
+      }
+    }
+    
+    if (start_tick == INT_MAX)
+    {
+      // We must clear all the tagged flags...
+      for(iTrack it = tl->begin(); it != tl->end(); ++it)
+      {
+        pl = (*it)->parts();
+        for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+        {
+          part = ip->second;
+          part->setTagged(false);
+          if(part->eventsTagged())
+          {
+            part->setEventsTagged(false);
+            EventList& el = part->nonconst_events();
+            for(iEvent ie = el.begin(); ie != el.end(); ie++)
+              ie->second.setTagged(false);
+          }
+        }
+      }
+      return NULL;
+    }
+
+    //---------------------------------------------------
+    //    write events as XML into tmp file
+    //---------------------------------------------------
+
+    FILE* tmp = tmpfile();
+    if (tmp == 0)
+    {
+        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+        return 0;
+    }
+
+    Xml xml(tmp);
+    int level = 0;
+
+    for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    {
+      pl = (*it)->parts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      {
+        part = ip->second;
+        part->setTagged(false);
+        if(part->eventsTagged())
+        {
+          part->setEventsTagged(false);
+          xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+          EventList& el = part->nonconst_events();
+          for(iEvent ie = el.begin(); ie != el.end(); ie++)
+          {
+            Event& e = ie->second;
+            if(e.tagged())
+            {
+              e.setTagged(false);
+              //if(is_relevant(e, part, range, AllEventsRelevant))
+                e.write(level, xml, -start_tick);
+            }
+          }
+          xml.etag(--level, "eventlist");
+        }
+      }
+    }
+    
     QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
     fclose(tmp);
     return mimeData;
@@ -1220,7 +1373,36 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 										}
 									}
 									
-									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+// REMOVE Tim. citem. Changed.
+// 									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+									// Don't add Note or Wave event types if they have no length.
+									// Otherwise, controllers, sysex, and meta should all be allowed.
+									//if ((e.type() != Note && e.type() != Wave) || e.lenTick() != 0)
+									//	operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+									switch(e.type())
+									{
+										case Note:
+											if(e.lenTick() != 0)
+										    operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+										break;
+										
+										case Wave:
+											if(e.lenFrame() != 0)
+										    operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+										break;
+										
+										case Controller:
+										break;
+										
+										// Be careful with sysex and meta - there's no way to really determine if they are the same or not.
+										case Sysex:
+											operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+										break;
+										
+										case Meta:
+											operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
+										break;
+									}
 								}
 							}
 						}

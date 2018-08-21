@@ -44,6 +44,7 @@ EventBase::EventBase(EventType t)
       Pos::setType(_type == Wave ? FRAMES : TICKS);
       refCount  = 0;
       _selected = false;
+      _tagged = false;
       _uniqueId = newId();
       _id = _uniqueId;
       }
@@ -53,6 +54,7 @@ EventBase::EventBase(const EventBase& ev, bool duplicate_not_clone)
       {
       refCount  = 0;
       _selected = ev._selected;
+      _tagged = ev._tagged;
       _type     = ev._type;
       _uniqueId = newId();
       _id = duplicate_not_clone ? _uniqueId : ev._id;
@@ -68,6 +70,7 @@ void EventBase::assign(const EventBase& ev)
   
   (PosLen&)(*this) = (const PosLen&)ev;
   setSelected(ev.selected());
+  setTagged(ev.tagged());
 }
 
 //---------------------------------------------------------
@@ -272,6 +275,8 @@ bool Event::isSimilarTo(const Event& other) const
 int Event::getRefCount() const    { return ev ? ev->getRefCount() : 0; }
 bool Event::selected() const      { return ev ? ev->_selected : false; }
 void Event::setSelected(bool val) { if(ev) ev->_selected = val; }
+bool Event::tagged() const        { return ev ? ev->_tagged : false; }
+void Event::setTagged(bool val)   { if(ev) ev->_tagged = val; }
 void Event::move(int offset)      { if(ev) ev->move(offset); }
 
 void Event::read(Xml& xml)            
@@ -356,6 +361,7 @@ unsigned Event::lenValue() const        { return ev ? ev->lenValue() : 0; }
 Pos Event::end() const                  { return ev ? ev->end() : Pos(); }
 unsigned Event::endTick() const         { return ev ? ev->end().tick() : 0; }
 unsigned Event::endFrame() const        { return ev ? ev->end().frame() : 0; }
+Pos Event::pos() const                  { return ev ? *ev : Pos(); }
 void Event::setPos(const Pos& p)        { if(ev) ev->setPos(p); }
 
 } // namespace MusECore

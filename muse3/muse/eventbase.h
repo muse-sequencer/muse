@@ -48,6 +48,13 @@ class EventBase : public PosLen {
    protected:
       int refCount;
       bool _selected;
+      // REMOVE Tim. citem. Added.
+      // Temporary general purpose tag. Used for example when iterating
+      //  midi controller canvases for selected canvas items to copy to the clipboard
+      //  and needing to see if the event was already put into the selected item list.
+      // This greatly saves from having to check the selected item list for duplicates
+      //  for every item encountered. Just make sure to reset the tag at some point!
+      bool _tagged;
 
    public:
       EventBase(EventType t);
@@ -67,6 +74,8 @@ class EventBase : public PosLen {
       void setType(EventType t)  { _type = t;  }
       bool selected() const      { return _selected; }
       void setSelected(bool val) { _selected = val; }
+      bool tagged() const { return _tagged; }
+      void setTagged(bool v) { _tagged = v; }
 
       void move(int offset);
       
