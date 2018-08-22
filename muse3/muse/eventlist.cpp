@@ -130,7 +130,7 @@ void EventList::move(Event& event, unsigned tick)
 
 iEvent EventList::find(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second == event)
@@ -141,7 +141,7 @@ iEvent EventList::find(const Event& event)
 
 ciEvent EventList::find(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -153,7 +153,7 @@ ciEvent EventList::find(const Event& event) const
 
 iEvent EventList::findSimilar(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.isSimilarTo(event))
@@ -164,7 +164,7 @@ iEvent EventList::findSimilar(const Event& event)
 
 ciEvent EventList::findSimilar(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -174,9 +174,47 @@ ciEvent EventList::findSimilar(const Event& event) const
       return end();
       }
 
+// REMOVE Tim. citem. Added.
+int EventList::findSimilarType(const Event& event, EventList& list,
+                              bool compareTime,
+                              bool compareA, bool compareB, bool compareC,
+                              bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  int cnt = 0;
+  cEventRange range = compareTime ? equal_range(event.posValue()) : cEventRange(begin(), end());
+  for(ciEvent i = range.first; i != range.second; ++i)
+  {
+    const Event& e = i->second;
+    if(e.isSimilarType(event,
+          false, // Do not compare time, that's handled above.
+          compareA, compareB, compareC,
+          compareWavePath, compareWavePos, compareWaveStartPos))
+    {
+      ++cnt;
+      list.add(e);
+    }
+  }
+  return cnt;
+}
+
+// REMOVE Tim. citem. Added.
+// int EventList::findSimilarType(const Event& event, EventList& list,
+//                               bool compareA, bool compareB, bool compareC,
+//                               bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+//       {
+//       cEventRange range = equal_range(event.posValue());
+// 
+//       
+//       for (ciEvent i = range.first; i != range.second; ++i) {
+//             if (i->second.isSimilarTo(event))
+//                   return i;
+//             }
+//       return end();
+//       }
+
 iEvent EventList::findId(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == event.id())
@@ -187,7 +225,7 @@ iEvent EventList::findId(const Event& event)
 
 ciEvent EventList::findId(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {
@@ -199,7 +237,7 @@ ciEvent EventList::findId(const Event& event) const
 
 iEvent EventList::findId(unsigned t, EventID_t id)
 {
-      std::pair<iEvent,iEvent> range = equal_range(t);
+      EventRange range = equal_range(t);
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == id)
                   return i;
@@ -209,7 +247,7 @@ iEvent EventList::findId(unsigned t, EventID_t id)
 
 ciEvent EventList::findId(unsigned t, EventID_t id) const
       {
-      EventRange range = equal_range(t);
+      cEventRange range = equal_range(t);
       for (ciEvent i = range.first; i != range.second; ++i) {
             if (i->second.id() == id)
                   return i;
@@ -237,7 +275,7 @@ ciEvent EventList::findId(EventID_t id) const
 
 iEvent EventList::findWithId(const Event& event)
 {
-      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      EventRange range = equal_range(event.posValue());
 
       for (iEvent i = range.first; i != range.second; ++i) {
             if (i->second == event || i->second.id() == event.id())
@@ -248,7 +286,7 @@ iEvent EventList::findWithId(const Event& event)
 
 ciEvent EventList::findWithId(const Event& event) const
       {
-      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+      cEventRange range = equal_range(event.posValue());
 
       
       for (ciEvent i = range.first; i != range.second; ++i) {

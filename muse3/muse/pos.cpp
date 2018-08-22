@@ -219,6 +219,14 @@ bool Pos::operator==(const Pos& s) const
             return _tick == s.tick();
       }
 
+bool Pos::operator!=(const Pos& s) const
+      {
+      if (_type == FRAMES)
+            return _frame != s.frame();
+      else
+            return _tick != s.tick();
+      }
+
 //---------------------------------------------------------
 //   tick
 //---------------------------------------------------------

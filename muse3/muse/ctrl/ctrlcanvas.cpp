@@ -121,11 +121,31 @@ static int computeY(const MusECore::MidiController* mc, int val, int height)
 //       _isSelected = false;
 //       ex     = !e.empty() ? e.tick() : 0;
 //       }
-CEvent::CEvent(const MusECore::Event& e, MusECore::MidiPart* pt, int v) :
-  EItem(e, pt)
+CEvent::CEvent() : CItem()
 {
-      _val   = v;
-      ex     = !e.empty() ? e.tick() : 0;
+  _part = NULL;
+  _val = 0;
+  ex = 0;
+}
+
+CEvent::CEvent(const MusECore::Event& e, MusECore::Part* pt, int v) : CItem()
+{
+  _part = pt;
+  _event = e;
+  _val   = v;
+  ex     = !e.empty() ? e.tick() : 0;
+}
+
+void CEvent::setObjectTagged(bool v)
+{
+  _event.setTagged(v);
+  if(_part)
+    _part->setEventsTagged(true);
+}
+
+bool CEvent::isObjectInRange(const MusECore::Pos& p0, const MusECore::Pos& p1) const
+{
+  return _event.pos() >= p0 && _event.pos() < p1;
 }
 
 //---------------------------------------------------------

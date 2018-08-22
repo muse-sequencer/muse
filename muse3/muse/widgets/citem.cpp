@@ -40,15 +40,16 @@ CItem::CItem()
       _isMoving = false;
       }
 
-CItem::CItem(const QPoint&p, const QRect& r)
-      {
 // REMOVE Tim. citem. Removed.
-//       _part = NULL;  
-      _pos   = p;
-      _bbox  = r;
-      _isSelected = false;
-      _isMoving = false;
-      }
+// CItem::CItem(const QPoint&p, const QRect& r)
+//       {
+// // REMOVE Tim. citem. Removed.
+// //       _part = NULL;  
+//       _pos   = p;
+//       _bbox  = r;
+//       _isSelected = false;
+//       _isMoving = false;
+//       }
 
 // REMOVE Tim. citem. Removed.
 // CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
@@ -79,24 +80,64 @@ CItem::CItem(const QPoint&p, const QRect& r)
 //       }
 
 
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   BItem
+//---------------------------------------------------------
+
+BItem::BItem(const QPoint&p, const QRect& r) : CItem()
+      {
+      _pos   = p;
+      _bbox  = r;
+      }
+
+// REMOVE Tim. citem. Added.
+//---------------------------------------------------------
+//   PItem
+//---------------------------------------------------------
+
+PItem::PItem(const QPoint& p, const QRect& r) : BItem(p, r)
+{
+  _part = NULL;
+}
+
+PItem::PItem() : BItem()
+{
+  _part = NULL;
+}
+
+PItem::PItem(MusECore::Part* p) : BItem()
+{
+  _part = p;
+}
+
+bool PItem::objectIsSelected() const
+{
+  return _part->selected();
+}
+
+bool PItem::isObjectTagged() const
+{
+  return _part->tagged();
+}
+
+void PItem::setObjectTagged(bool v)
+{
+  _part->setTagged(v);
+}
+
+// REMOVE Tim. citem. Added.
 //---------------------------------------------------------
 //   EItem
 //---------------------------------------------------------
 
-EItem::EItem() : CItem()
+EItem::EItem(const QPoint&p, const QRect& r) : PItem(p, r)
       {
-      _part = NULL;
       }
 
-EItem::EItem(const QPoint&p, const QRect& r) : CItem(p, r)
-      {
-      _part = NULL;  
-      }
-
-EItem::EItem(const MusECore::Event& e, MusECore::Part* p) : CItem()
+EItem::EItem(const MusECore::Event& e, MusECore::Part* p) : PItem(p)
       {
       _event = e;
-      _part  = p;
       }
 
 void EItem::setObjectTagged(bool v)

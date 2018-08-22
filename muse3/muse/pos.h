@@ -72,6 +72,7 @@ class Pos {
       bool operator<(const Pos& s) const;
       bool operator<=(const Pos& s) const;
       bool operator==(const Pos& s) const;
+      bool operator!=(const Pos& s) const;
 
       friend Pos operator+(Pos a, Pos b);
       friend Pos operator+(Pos a, int b);

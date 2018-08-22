@@ -151,6 +151,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      editPasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
+      mapper->setMapping(editPasteToCurPartAction, PianoCanvas::CMD_PASTE_TO_CUR_PART);
+      connect(editPasteToCurPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
       editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
       mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
       connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -862,27 +866,35 @@ void PianoRoll::cmd(int cmd)
 //             case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
 //               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
 //                   3 : 2); break;
-            case PianoCanvas::CMD_CUT:
-                  tagAllSelectedItems();
-                  MusECore::erase_items();
-                  break;
-            case PianoCanvas::CMD_COPY:
-                  tagAllSelectedItems();
-                  MusECore::copy_items();
-                  break;
-            case PianoCanvas::CMD_COPY_RANGE:
-                  tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-                  MusECore::copy_items();
-                  break;
-                  
-            case PianoCanvas::CMD_PASTE: 
-                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_notes(3072, false, true, canvas->part());
-                              break;
-            case PianoCanvas::CMD_PASTE_DIALOG: 
-                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              MusECore::paste_notes((canvas->part()));
-                              break;
+//             case PianoCanvas::CMD_PASTE: 
+//                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+//                               MusECore::paste_notes(3072, false, true, canvas->part());
+//                               break;
+						case PianoCanvas::CMD_CUT:
+									tagAllSelectedItems();
+									MusECore::erase_items();
+									break;
+						case PianoCanvas::CMD_COPY:
+									tagAllSelectedItems();
+									MusECore::copy_items();
+									break;
+						case PianoCanvas::CMD_COPY_RANGE:
+									tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+									MusECore::copy_items();
+									break;
+						case PianoCanvas::CMD_PASTE: 
+															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+															MusECore::paste_notes(3072, false, true);
+															break;
+						case PianoCanvas::CMD_PASTE_TO_CUR_PART: 
+															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+															MusECore::paste_notes(3072, false, true, canvas->part());
+															break;
+                              
+						case PianoCanvas::CMD_PASTE_DIALOG: 
+															((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+															MusECore::paste_notes((canvas->part()));
+															break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
@@ -1654,8 +1666,10 @@ void PianoRoll::setEventColorMode(int mode)
 
 void PianoRoll::clipboardChanged()
       {
-      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
-      editPasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      const bool has_gel = QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists"));
+      editPasteAction->setEnabled(has_gel);
+      editPasteToCurPartAction->setEnabled(has_gel);
+      editPasteDialogAction->setEnabled(has_gel);
       }
 
 //---------------------------------------------------------
@@ -1692,6 +1706,7 @@ void PianoRoll::initShortcuts()
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
       editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      editPasteToCurPartAction->setShortcut(shortcuts[SHRT_PASTE_TO_CUR_PART].key);
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);
       

@@ -2399,7 +2399,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       Event ev;
       if(event.type() == Controller)
       {
-        EventRange range = part->events().equal_range(tick);
+        cEventRange range = part->events().equal_range(tick);
         for(ciEvent i = range.first; i != range.second; ++i) 
         {
           ev = i->second;
@@ -2696,7 +2696,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     unsigned partEnd   = partStart + part->lenTick();
     if(tick >= partStart && tick < partEnd)
     {
-      EventRange range = part->events().equal_range(tick - partStart);
+            cEventRange range = part->events().equal_range(tick - partStart);
       for(ciEvent i = range.first; i != range.second; ++i) 
       {
         ev = i->second;

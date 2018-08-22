@@ -59,20 +59,21 @@ class MidiEditor;
 
 // REMOVE Tim. citem. Changed.
 // class CEvent {
-class CEvent : public EItem {
+class CEvent : public CItem {
    private:
 // REMOVE Tim. citem. Removed.
-//       MusECore::Event _event;
+      MusECore::Event _event;
       int       _val;
 // REMOVE Tim. citem. Removed.
 //       MusECore::MidiPart* _part;
+      MusECore::Part* _part;
       int ex;
       //bool _isSelected;
 
    public:
 //       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
-      CEvent(const MusECore::Event&, MusECore::MidiPart*, int v);
-      
+      CEvent(const MusECore::Event&, MusECore::Part*, int v);
+      CEvent();
 // REMOVE Tim. citem. Removed.
 //       MusECore::Event event() const          { return _event; }
 //       void setEvent(MusECore::Event& ev)     { _event = ev; }
@@ -82,6 +83,9 @@ class CEvent : public EItem {
 //       void setSelected(bool v);
       //bool isSelected() const { return _isSelected; }
       //void setSelected(bool f) { _isSelected = f; }
+      bool isObjectTagged() const { return _event.tagged(); }
+      void setObjectTagged(bool v);
+      bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const;
       bool objectIsSelected() const { return _event.selected(); }
       
       int val() const              { return _val;   }
@@ -92,6 +96,12 @@ class CEvent : public EItem {
       bool containsXRange(int x1, int x2) const;
       bool intersectsController(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
       int EX()                      { return ex; }
+
+// REMOVE Tim. citem. Added.
+      MusECore::Event event() const         { return _event;  }
+      void setEvent(const MusECore::Event& e)     { _event = e;     }
+      MusECore::Part* part() const  { return _part;  }
+      void setPart(MusECore::Part* p)       { _part = p; }
       };
 
 // REMOVE Tim. citem. Removed.

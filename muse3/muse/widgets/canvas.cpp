@@ -159,14 +159,15 @@ void Canvas::lassoToRegion(const QRect& r_in, QRegion& rg_out) const
   // Left line.
   rg_out += QRect(x - x_line_off, y, line_w, h + line_h);
   
-  const int rg_sz = rg_out.rectCount();
-  int rg_r_cnt = 0;
-  fprintf(stderr, "Region rect count:%d\n", rg_sz);
-  for(QRegion::const_iterator i = rg_out.begin(); i != rg_out.end(); ++i, ++rg_r_cnt)
-  {
-    const QRect& rg_r = *i;
-    fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-  }
+  // REMOVE Tim. citem. Added. For testing.
+//   const int rg_sz = rg_out.rectCount();
+//   int rg_r_cnt = 0;
+//   fprintf(stderr, "Region rect count:%d\n", rg_sz);
+//   for(QRegion::const_iterator i = rg_out.begin(); i != rg_out.end(); ++i, ++rg_r_cnt)
+//   {
+//     const QRect& rg_r = *i;
+//     fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+//   }
   
 }
 
@@ -1532,7 +1533,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 //                            mapy(lasso.y() + lasso.height()) - mapy(lasso.y()));
 //                   //p.setWorldMatrixEnabled(true);
 //                   redraw(r1);
-                  fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing old lassoRegion\n");
+                  // REMOVE Tim. citem. Added. For testing.
+//                   fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing old lassoRegion\n");
                   // Update the old lasso region.
                   redraw(lassoRegion);
 //                   QRegion l_rg = lassoRegion;
@@ -1550,7 +1552,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 //                            mapx(lasso.x() + lasso.width()) - mapx(lasso.x()),
 //                            mapy(lasso.y() + lasso.height()) - mapy(lasso.y()));
 //                   redraw(r2);
-                  fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing new lassoRegion\n");
+                  // REMOVE Tim. citem. Added. For testing.
+//                   fprintf(stderr, "Canvas::viewMouseMoveEvent: Redrawing new lassoRegion\n");
                   // Update the new lasso region.
                   redraw(lassoRegion);
 //                   redraw(lassoRegion + l_rg);

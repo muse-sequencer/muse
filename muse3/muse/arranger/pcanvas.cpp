@@ -92,9 +92,9 @@ const int PartCanvas::_automationPointWidthSel = 3;
 
 // REMOVE Tim. citem. Changed.
 //NPart::NPart(MusECore::Part* e) : CItem(MusECore::Event(), e)
-NPart::NPart(MusECore::Part* p) : CItem()
+NPart::NPart(MusECore::Part* p) : PItem(p)
       {
-      _part = p;
+//       _part = p;
       leftBorderTouches = false;
       rightBorderTouches = false;
 

@@ -75,6 +75,10 @@ class Event {
       
       bool operator==(const Event& e) const;
       bool isSimilarTo(const Event& other) const;
+      bool isSimilarType(const Event&,
+                              bool compareTime = false,
+                              bool compareA = false, bool compareB = false, bool compareC = false,
+                              bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
       
       int getRefCount() const;
       bool selected() const;
@@ -143,13 +147,15 @@ class Event {
       unsigned endFrame() const;
       Pos pos() const;
       void setPos(const Pos& p);
+      PosLen posLen() const;
       };
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
-typedef std::pair <ciEvent, ciEvent> EventRange;
+typedef std::pair <ciEvent, ciEvent> cEventRange;
+typedef std::pair <iEvent, iEvent> EventRange;
 
 //---------------------------------------------------------
 //   EventList
@@ -157,13 +163,29 @@ typedef std::pair <ciEvent, ciEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-      void deselect();
+// REMOVE Tim. citem. Removed. Unused.
+//       void deselect();
 
    public:
+      // Looks for specific event (EventBase pointer).
       ciEvent find(const Event&) const;
       iEvent find(const Event&);
+      
+      // Looks for events with identical values, but not necessarily EventBase pointers.
       ciEvent findSimilar(const Event&) const;
       iEvent findSimilar(const Event&);
+      
+      // Looks for events with identical type, and identical note or controller number, or
+      //  sysex or meta length and identical data, or wave path and start postion and event position.
+      // Adds found items to the given list. Does not clear the list first. Returns the number of items added.
+      int findSimilarType(const Event&, EventList&,
+                              bool compareTime = false,
+                              bool compareA = false, bool compareB = false, bool compareC = false,
+                              bool compareWavePath = false, bool compareWavePos = false, bool compareWaveStartPos = false) const;
+      //int findSimilarType(const Event&, EventList&,
+      //                        bool compareA = true, bool compareB = true, bool compareC = true,
+      //                        bool compareWavePath = true, bool compareWavePos = true, bool compareWaveStartPos = true);
+      
       ciEvent findId(const Event&) const;             // Fast, index t is known.
       iEvent findId(const Event&);                    // Fast, index t is known.
       ciEvent findId(unsigned t, EventID_t id) const; // Fast, index t is known.

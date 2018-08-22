@@ -107,6 +107,7 @@ enum {
       SHRT_COPY_RANGE, //Ctrl+Shift+C
       SHRT_CUT,   //Ctrl+X
       SHRT_PASTE, //Ctrl+V
+      SHRT_PASTE_TO_CUR_PART, //CTRL+Key_B
       SHRT_PASTE_CLONE, //CTRL+Shift+V
       SHRT_PASTE_TO_TRACK, //CTRL+Key_B
       SHRT_PASTE_CLONE_TO_TRACK, //CTRL+SHIFT+Key_B

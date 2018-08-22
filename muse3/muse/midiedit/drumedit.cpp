@@ -190,6 +190,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
       copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
+      pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
       pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
@@ -198,6 +199,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(copyRangeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(pasteToCurPartAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
@@ -205,6 +207,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
       signalMapper->setMapping(copyRangeAction, DrumCanvas::CMD_COPY_RANGE);
       signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
+      signalMapper->setMapping(pasteToCurPartAction, DrumCanvas::CMD_PASTE_TO_CUR_PART);
       signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
       signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
 
@@ -1289,7 +1292,7 @@ void DrumEdit::cmd(int cmd)
       if(canvas->getCurrentDrag())
         return;
       
-      switch(cmd) {
+			switch(cmd) {
 // REMOVE Tim. citem. Changed.
 //             case DrumCanvas::CMD_CUT:
 //                   copy_notes(partlist_to_set(parts()), 1);
@@ -1299,57 +1302,65 @@ void DrumEdit::cmd(int cmd)
 //             case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()),
 //               MusECore::any_event_selected(partlist_to_set(parts()), MusECore::AllEventsRelevant) ?
 //                   3 : 2); break;
-            case DrumCanvas::CMD_CUT:
-                  tagAllSelectedItems();
-                  MusECore::erase_items();
-                  break;
-            case DrumCanvas::CMD_COPY:
-                  tagAllSelectedItems();
-                  MusECore::copy_items();
-                  break;
-            case DrumCanvas::CMD_COPY_RANGE:
-                  tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
-                  MusECore::copy_items();
-                  break;
+//             case DrumCanvas::CMD_PASTE: 
+//                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+//                   MusECore::paste_notes(3072, false, true, canvas->part());
+//                   break;
+						case DrumCanvas::CMD_CUT:
+									tagAllSelectedItems();
+									MusECore::erase_items();
+									break;
+						case DrumCanvas::CMD_COPY:
+									tagAllSelectedItems();
+									MusECore::copy_items();
+									break;
+						case DrumCanvas::CMD_COPY_RANGE:
+									tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+									MusECore::copy_items();
+									break;
+						case DrumCanvas::CMD_PASTE: 
+															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+															MusECore::paste_notes(3072, false, true);
+															break;
+						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
+															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+															MusECore::paste_notes(3072, false, true, canvas->part());
+															break;
                   
-            case DrumCanvas::CMD_PASTE: 
-                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  MusECore::paste_notes(3072, false, true, canvas->part());
-                  break;
-            case DrumCanvas::CMD_PASTE_DIALOG: 
-                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  MusECore::paste_notes((canvas->part()));
-                  break;
-            case DrumCanvas::CMD_LOAD: load(); break;
-            case DrumCanvas::CMD_SAVE: save(); break;
-            case DrumCanvas::CMD_RESET: reset(); break;
-            case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_QUANTIZE:
-                  {
-                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
-                  if (quantize_dialog->exec())
-                        quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                       (MusEGlobal::config.division*4)/raster,
-                                       /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
-                                       quantize_dialog->swing, quantize_dialog->threshold);
-                  break;
-                  }
-            case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
-            case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
-            case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
-            //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
-                                              // special nature (each drum has its own length)
-            
-            case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-            case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-            case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-            
-            default: ((DrumCanvas*)(canvas))->cmd(cmd);
-            }
-      }
+						case DrumCanvas::CMD_PASTE_DIALOG: 
+									((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+									MusECore::paste_notes((canvas->part()));
+									break;
+						case DrumCanvas::CMD_LOAD: load(); break;
+						case DrumCanvas::CMD_SAVE: save(); break;
+						case DrumCanvas::CMD_RESET: reset(); break;
+						case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_QUANTIZE:
+									{
+									int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+									if (quantize_dialog->exec())
+												quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
+																				(MusEGlobal::config.division*4)/raster,
+																				/* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
+																				quantize_dialog->swing, quantize_dialog->threshold);
+									break;
+									}
+						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
+						case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
+						//case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
+																							// special nature (each drum has its own length)
+						
+						case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+						case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+						case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+						
+						default: ((DrumCanvas*)(canvas))->cmd(cmd);
+						}
+			}
 
 //---------------------------------------------------------
 //   clipboardChanged
@@ -1357,8 +1368,10 @@ void DrumEdit::cmd(int cmd)
 
 void DrumEdit::clipboardChanged()
       {
-      pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
-      pasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      const bool has_gel = QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists"));
+      pasteAction->setEnabled(has_gel);
+      pasteToCurPartAction->setEnabled(has_gel);
+      pasteDialogAction->setEnabled(has_gel);
       }
 
 //---------------------------------------------------------
@@ -1795,6 +1808,7 @@ void DrumEdit::initShortcuts()
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
       copyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      pasteToCurPartAction->setShortcut(shortcuts[SHRT_PASTE_TO_CUR_PART].key);
       pasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
 

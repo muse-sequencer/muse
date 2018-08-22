@@ -123,7 +123,8 @@ class DrumEdit : public MidiEditor {
       static bool _ignore_hide_init;
 
       QAction *loadAction, *saveAction, *resetAction;
-      QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction, *pasteDialogAction, *deleteAction;
+      QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction;
+      QAction *pasteToCurPartAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;

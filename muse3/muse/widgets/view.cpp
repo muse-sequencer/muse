@@ -417,15 +417,15 @@ void View::paint(const QRect& r, const QRegion& rg)
       #endif
 
       // REMOVE Tim. citem. Added. For testing.
-      const int rg_sz = rg.rectCount();
-      int rg_r_cnt = 0;
-      fprintf(stderr, "View::paint: rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
-              r.x(), r.y(), r.width(), r.height(), rg_sz);
-      for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
-      {
-        const QRect& rg_r = *i;
-        fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
-      }
+//       const int rg_sz = rg.rectCount();
+//       int rg_r_cnt = 0;
+//       fprintf(stderr, "View::paint: rect: x:%d y:%d w:%d h:%d region rect count:%d\n",
+//               r.x(), r.y(), r.width(), r.height(), rg_sz);
+//       for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i, ++rg_r_cnt)
+//       {
+//         const QRect& rg_r = *i;
+//         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
+//       }
       
       p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
       

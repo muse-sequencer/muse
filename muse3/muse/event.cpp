@@ -82,6 +82,48 @@ void EventBase::move(int tickOffset)
       setTick(tick() + tickOffset);
       }
 
+bool EventBase::isSimilarType(const EventBase& e,
+            bool compareTime,
+            bool compareA, bool compareB, bool compareC,
+            bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  // Types must be the same.
+  if((e.type() != type()) ||
+     // Compares base Pos positions.
+     (compareTime && *this != e))
+    return false;
+
+  switch(type())
+  {
+    case Note:
+      // Are the note, and on and off velocities the same?
+      return (!compareA || e.dataA() == dataA()) &&
+             (!compareB || e.dataB() == dataB()) &&
+             (!compareC || e.dataC() == dataC());
+    break;
+    
+    case Controller:
+      // Are the controller numbers and values the same?
+      return (!compareA || e.dataA() == dataA()) &&
+             (!compareB || e.dataB() == dataB());
+    break;
+    
+    case Sysex:
+    case Meta:
+      // Are the sysex or meta length and data the same?
+      return dataLen() == e.dataLen() && (dataLen() == 0 || (memcmp(data(), e.data(), dataLen()) == 0));
+    break;
+    
+    case Wave:
+      // Are the sound file path, wave starting position and event position and length the same?
+      return (!compareWavePos || this->PosLen::operator==(e)) &&
+             (!compareWaveStartPos || spos() == e.spos()) &&
+             (!compareWavePath || sndFile().dirPath() == e.sndFile().dirPath());
+    break;
+  }
+  return false;
+}
+
 //---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
@@ -267,9 +309,22 @@ void Event::assign(const Event& e)
 bool Event::operator==(const Event& e) const {
             return ev == e.ev;
             }
+
 bool Event::isSimilarTo(const Event& other) const
 {
 		return ev ? ev->isSimilarTo(*other.ev) : (other.ev ? false : true);
+}
+
+bool Event::isSimilarType(const Event& e,
+            bool compareTime,
+            bool compareA, bool compareB, bool compareC,
+            bool compareWavePath, bool compareWavePos, bool compareWaveStartPos) const
+{
+  return ev ? ev->isSimilarType(*e.ev,
+         compareTime,
+         compareA, compareB, compareC,
+         compareWavePath, compareWavePos, compareWaveStartPos) :
+       (e.ev ? false : true);
 }
 
 int Event::getRefCount() const    { return ev ? ev->getRefCount() : 0; }
@@ -363,5 +418,6 @@ unsigned Event::endTick() const         { return ev ? ev->end().tick() : 0; }
 unsigned Event::endFrame() const        { return ev ? ev->end().frame() : 0; }
 Pos Event::pos() const                  { return ev ? *ev : Pos(); }
 void Event::setPos(const Pos& p)        { if(ev) ev->setPos(p); }
+PosLen Event::posLen() const            { return ev ? *ev : PosLen(); }
 
 } // namespace MusECore
