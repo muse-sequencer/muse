@@ -326,7 +326,28 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       trackInfoWidget = new TrackInfoWidget(hsplitter);
       genTrackInfo(trackInfoWidget);
 
+      time                 = new MTScale(&_raster, mainw, xscale, true);
+      
+      //QWidget* split1     = new QWidget(splitter);
+      QWidget* split1     = new QWidget();
+      split1->setObjectName("split1");
+      QGridLayout* gridS1 = new QGridLayout(split1);
+      gridS1->setContentsMargins(0, 0, 0, 0);
+      gridS1->setSpacing(0);  
 
+      gridS1->setRowStretch(2, 100);
+      gridS1->setColumnStretch(1, 100);     
+
+//       gridS1->addWidget(time,                   0, 1, 1, 2);
+//       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
+//       //gridS1->addWidget(piano,                  2,    0);
+//       gridS1->addWidget(canvas,                 2,    1);
+//       gridS1->addWidget(vscroll,                2,    2);
+
+      gridS1->addWidget(time,   0, 0, 1, 2);
+      gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
+      gridS1->addWidget(canvas,    2, 0);
+      gridS1->addWidget(ymag,    2, 1);
 
       
       QWidget* gridS2_w = new QWidget();
@@ -336,7 +357,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       gridS2->setContentsMargins(0, 0, 0, 0);
       gridS2->setSpacing(0);  
       gridS2->setRowStretch(0, 100);
-      gridS2->setColumnStretch(1, 100);
+      //gridS2->setColumnStretch(1, 100);
       //gridS2->addWidget(ctrl,    0, 0);
       gridS2->addWidget(hscroll, 0, 0);
       gridS2->addWidget(corner,  0, 1, Qt::AlignBottom|Qt::AlignRight);
@@ -350,6 +371,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       splitter_vbox->setContentsMargins(0, 0, 0, 0);
       splitter_vbox->setSpacing(0);  
       //splitter_vbox->addWidget(splitter);
+      splitter_vbox->addWidget(split1);
       splitter_vbox->addWidget(gridS2_w);
       
       hsplitter->addWidget(splitter_w);
@@ -369,7 +391,6 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
 
       
-      time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
@@ -380,25 +401,25 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       
       
-      QWidget* split1     = new QWidget(splitter_w);
-      split1->setObjectName("split1");
-      QGridLayout* gridS1 = new QGridLayout(split1);
-      gridS1->setContentsMargins(0, 0, 0, 0);
-      gridS1->setSpacing(0);  
-
-      gridS1->setRowStretch(2, 100);
-      gridS1->setColumnStretch(1, 100);     
-
-//       gridS1->addWidget(time,                   0, 1, 1, 2);
-//       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
-//       //gridS1->addWidget(piano,                  2,    0);
-//       gridS1->addWidget(canvas,                 2,    1);
-//       gridS1->addWidget(vscroll,                2,    2);
-
-      gridS1->addWidget(time,   0, 0, 1, 2);
-      gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
-      gridS1->addWidget(canvas,    2, 0);
-      gridS1->addWidget(ymag,    2, 1);
+//       QWidget* split1     = new QWidget(splitter_w);
+//       split1->setObjectName("split1");
+//       QGridLayout* gridS1 = new QGridLayout(split1);
+//       gridS1->setContentsMargins(0, 0, 0, 0);
+//       gridS1->setSpacing(0);  
+// 
+//       gridS1->setRowStretch(2, 100);
+//       gridS1->setColumnStretch(1, 100);     
+// 
+// //       gridS1->addWidget(time,                   0, 1, 1, 2);
+// //       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
+// //       //gridS1->addWidget(piano,                  2,    0);
+// //       gridS1->addWidget(canvas,                 2,    1);
+// //       gridS1->addWidget(vscroll,                2,    2);
+// 
+//       gridS1->addWidget(time,   0, 0, 1, 2);
+//       gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
+//       gridS1->addWidget(canvas,    2, 0);
+//       gridS1->addWidget(ymag,    2, 1);
 
       
 //       mainGrid->setRowStretch(0, 100);

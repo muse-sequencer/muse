@@ -32,6 +32,7 @@
 
 #include "trackinfo_layout.h"
 #include "icons.h"
+#include "astrip.h"
 #include "mstrip.h"
 #include "gconfig.h"
 #include "app.h"
@@ -136,7 +137,8 @@ void MidiEditor::switchInfo(int n)
       {
       const int idx = 1;
       if(n == idx) {
-            MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
+//             MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
+            Strip* w = (Strip*)(trackInfoWidget->getWidget(idx));
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
                   {
@@ -144,7 +146,10 @@ void MidiEditor::switchInfo(int n)
                         delete w;
                         //w->deleteLater();
                   }
-                  w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
+                  if(selected->isMidiTrack())
+                    w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
+                  else
+                    w = new AudioStrip(trackInfoWidget, static_cast <MusECore::AudioTrack*>(selected));
                   // Leave broadcasting changes to other selected tracks off.
                   
                   // Set focus yielding to the canvas.
@@ -181,12 +186,9 @@ void MidiEditor::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
   if(!selected)
     return;
   
-  if(selected->isMidiTrack()) 
-  {
-    MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(1));
-    if(w)
-      w->songChanged(flags);
-  }
+  Strip* w = static_cast<Strip*>(trackInfoWidget->getWidget(1));
+  if(w)
+    w->songChanged(flags);
 }
 
 //---------------------------------------------------------
@@ -205,7 +207,7 @@ void MidiEditor::updateTrackInfo()
             switchInfo(0);
             return;
             }
-      if (selected->isMidiTrack()) 
+//       if (selected->isMidiTrack()) 
             switchInfo(1);
 }
 
