@@ -72,10 +72,13 @@
 #include "menutitleitem.h"
 #include "operations.h"
 #include "widgets/function_dialogs/quantize.h"
+#include "trackinfo_layout.h"
 
 namespace MusEGui {
 
 int DrumEdit::_rasterInit = 96;
+int DrumEdit::_trackInfoWidthInit = 50;
+int DrumEdit::_canvasWidthInit = 300;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
 bool DrumEdit::_ignore_hide_init = false;
@@ -143,9 +146,20 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       //Store values of the horizontal splitter
       QList<int> sizes = split2->sizes();
       QList<int>::iterator it = sizes.begin();
-      _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
+      //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget      
+      _dlistWidthInit = *it;
       it++;
       _dcanvasWidthInit = *it;
+      
+      //Store values of the horizontal splitter
+      sizes.clear();
+      sizes = hsplitter->sizes();
+      it = sizes.begin();
+      //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+      _trackInfoWidthInit = *it;
+      it++;
+      _canvasWidthInit = *it;
+    
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
@@ -487,6 +501,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //    split
       //---------------------------------------------------
 
+      hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
+      hsplitter->setChildrenCollapsible(true);
+      hsplitter->setHandleWidth(4);
+      
+      trackInfoWidget = new TrackInfoWidget(hsplitter);
+      genTrackInfo(trackInfoWidget);
+      
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
       ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
@@ -498,28 +519,60 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setToolTip(tr("Add Controller View"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
-      corner->setFixedHeight(hscroll->sizeHint().height());
+      //corner->setFixedHeight(hscroll->sizeHint().height());
+      
+      QWidget* gridSplit1_w = new QWidget();
+      gridSplit1_w->setObjectName("gridSplit1_w");
+      gridSplit1_w->setContentsMargins(0, 0, 0, 0);
+      QGridLayout* gridSplit1 = new QGridLayout(gridSplit1_w);
+      gridSplit1->setContentsMargins(0, 0, 0, 0);
+      gridSplit1->setSpacing(0);  
+      gridSplit1->setRowStretch(0, 100);
+      gridSplit1->setColumnStretch(1, 100);
+      gridSplit1->addWidget(ctrl,    0, 0);
+      gridSplit1->addWidget(hscroll, 0, 1);
+      gridSplit1->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
+      gridSplit1_w->setMaximumHeight(hscroll->sizeHint().height());
+      gridSplit1_w->setMinimumHeight(hscroll->sizeHint().height());
+      
+      QWidget* split1_w = new QWidget();
+      split1_w->setObjectName("split1_w");
+      split1_w->setContentsMargins(0, 0, 0, 0);
+      QVBoxLayout* split1_w_vbox = new QVBoxLayout(split1_w);
+      split1_w_vbox->setContentsMargins(0, 0, 0, 0);
+      split1_w_vbox->setSpacing(0);  
+      split1_w_vbox->addWidget(split1);
+      split1_w_vbox->addWidget(gridSplit1_w);
+      
+      hsplitter->addWidget(split1_w);
+          
+      hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      trackInfoWidget->setSizePolicy(tipolicy);
 
-      mainGrid->setRowStretch(0, 100);
-      mainGrid->setColumnStretch(1, 100);
-
-      mainGrid->addWidget(split1, 0, 0,  1, 3);
-      mainGrid->addWidget(ctrl,    1, 0);
-      mainGrid->addWidget(hscroll, 1, 1);
-      mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
+      hsplitter->setStretchFactor(hsplitter->indexOf(split1_w), 1);
+      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      split1->setSizePolicy(epolicy);
+      
+      mainGrid->addWidget(hsplitter, 0, 0,  1, 1);
 
       split2              = new MusEGui::Splitter(Qt::Horizontal, split1, "split2");
+
       split1w1            = new QWidget(split2);
       QWidget* split1w2   = new QWidget(split2);
       
       split2->setStretchFactor(split2->indexOf(split1w1), 0);
-      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
       tipolicy.setHorizontalStretch(0);
       tipolicy.setVerticalStretch(100);
       split1w1->setSizePolicy(tipolicy);
 
       split2->setStretchFactor(split2->indexOf(split1w2), 1);
-      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
       split1w2->setSizePolicy(epolicy);
@@ -541,12 +594,19 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(horizontalZoom(bool,const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
+      connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
       time->setOrigin(offset, 0);
 
       QList<int> mops;
       mops.append(_dlistWidthInit);
       mops.append(_dcanvasWidthInit);
       split2->setSizes(mops);
+      
+      mops.clear();
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+      
       // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
       // Can't seem to get the splitter to readjust when manually setting sizes.
       //split2->setResizeMode(split1w1, QSplitter::KeepSize); DELETETHIS or FIXME?
@@ -600,7 +660,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setColumnStretch(0, 100);
       gridS1->addWidget(header, 0, 0);
       gridS1->addWidget(dlist, 1, 0);
-      
+
+
       connect(canvas, SIGNAL(newWidth(int)), SLOT(newCanvasWidth(int)));
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
@@ -667,7 +728,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         hscroll->setOffset((int)pos);
 
       if(canvas->track())
+      {
+        updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
+      }
       
       initTopwinState();
       finalizeInit();
@@ -682,6 +746,10 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         if(_isDeleting)  // Ignore while deleting to prevent crash.
           return;
         
+        // We must catch this first and be sure to update the strips.
+        if(bits._flags & SC_TRACK_REMOVED)
+          checkTrackInfoTrack();
+        
         if (bits._flags & SC_SOLO)
         {
             if(canvas->track())
@@ -693,6 +761,22 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
         
         songChanged(bits);
+        
+        // We'll receive SC_SELECTION if a different part is selected.
+        // Addition - also need to respond here to moving part to another track. (Tim)
+// REMOVE Tim. citem. Changed.
+//         if (bits._flags & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+          updateTrackInfo();
+        
+        // We must marshall song changed instead of connecting to the strip's song changed
+        //  otherwise it crashes when loading another song because track is no longer valid
+        //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+        //  gets called and has a chance to stop the crash.
+        // Also, calling updateTrackInfo() from here is too heavy, it destroys and recreates
+        //  the strips each time no matter what the flags are !
+        else  
+          trackInfoSongChange(bits);
       }
 
 //---------------------------------------------------------
@@ -1150,6 +1234,10 @@ void DrumEdit::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
+                        else if (tag == "trackinfowidth")
+                              _trackInfoWidthInit = xml.parseInt();
+                        else if (tag == "canvaswidth")
+                              _canvasWidthInit = xml.parseInt();
                         else if (tag == "dcanvaswidth")
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
@@ -1179,6 +1267,8 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "drumedit");
       xml.intTag(level, "raster", _rasterInit);
+      xml.intTag(level, "trackinfowidth", _trackInfoWidthInit);
+      xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
       xml.intTag(level, "ignore_hide_init", _ignore_hide_init);
@@ -1306,6 +1396,18 @@ void DrumEdit::cmd(int cmd)
 //                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
 //                   MusECore::paste_notes(3072, false, true, canvas->part());
 //                   break;
+// 						case DrumCanvas::CMD_PASTE: 
+// 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+// 															MusECore::paste_notes(3072, false, true);
+// 															break;
+// 						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
+// 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+// 															MusECore::paste_notes(3072, false, true, canvas->part());
+// 															break;
+// 						case DrumCanvas::CMD_PASTE_DIALOG: 
+// 									((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+// 									MusECore::paste_notes((canvas->part()));
+// 									break;
 						case DrumCanvas::CMD_CUT:
 									tagAllSelectedItems();
 									MusECore::erase_items();
@@ -1320,17 +1422,17 @@ void DrumEdit::cmd(int cmd)
 									break;
 						case DrumCanvas::CMD_PASTE: 
 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-															MusECore::paste_notes(3072, false, true);
+															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true);
 															break;
 						case DrumCanvas::CMD_PASTE_TO_CUR_PART: 
 															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-															MusECore::paste_notes(3072, false, true, canvas->part());
+															MusECore::paste_items(partlist_to_set(parts()), 3072, false, true, canvas->part());
 															break;
-                  
 						case DrumCanvas::CMD_PASTE_DIALOG: 
-									((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-									MusECore::paste_notes((canvas->part()));
-									break;
+															((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+															MusECore::paste_items(partlist_to_set(parts()), (canvas->part()));
+															break;
+															
 						case DrumCanvas::CMD_LOAD: load(); break;
 						case DrumCanvas::CMD_SAVE: save(); break;
 						case DrumCanvas::CMD_RESET: reset(); break;

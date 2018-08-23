@@ -38,6 +38,7 @@ class QWidget;
 class QPoint;
 
 namespace MusECore {
+class Track;
 class Part;
 class PartList;
 class WavePart;
@@ -48,6 +49,7 @@ namespace MusEGui {
 class EventCanvas;
 class MTScale;
 class ScrollScale;
+class TrackInfoWidget;
 //class WaveView;
 
 //---------------------------------------------------------
@@ -68,6 +70,10 @@ class MidiEditor : public TopWin  {
       MusEGui::MTScale* time;
       EventCanvas* canvas;
       //WaveView* wview;
+      
+      TrackInfoWidget* trackInfoWidget;
+      QWidget* noTrackInfo;
+      MusECore::Track* selected;
 
       CtrlEditList ctrlEditList;
       int _raster;
@@ -78,7 +84,16 @@ class MidiEditor : public TopWin  {
       void writePartList(int, MusECore::Xml&) const;
       void genPartlist();
       void movePlayPointerToSelectedEvent();
+      
+      void genTrackInfo(TrackInfoWidget* trackInfo);
+      void switchInfo(int);
+      void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
+      // Checks if track info track is valid and deletes the strip if the track is not found.
+      void checkTrackInfoTrack();
 
+   protected slots:
+      void updateTrackInfo();
+      
    private slots:
       void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 

@@ -62,7 +62,8 @@ class Xml;
 
 namespace MusEGui {
 
-class MidiStrip;
+// REMOVE Tim. citem. Removed.
+// class MidiStrip;
 class CtrlEdit;
 class PianoCanvas;
 class PitchLabel;
@@ -72,11 +73,11 @@ class Splitter;
 class TimeLabel;
 class Toolbar1;
 class Piano;
-class TrackInfoToolBar;
-class TrackInfoWidget;
-#ifdef _USE_TRACKINFO_ALT
-class MidiTrackInfo;
-#endif
+// REMOVE Tim. citem. Removed.
+//class TrackInfoWidget;
+// #ifdef _USE_TRACKINFO_ALT
+// class MidiTrackInfo;
+// #endif
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -86,13 +87,15 @@ class PianoRoll : public MidiEditor {
       Q_OBJECT
     
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
-      MusEGui::MidiStrip *midiStrip;
-#ifdef _USE_TRACKINFO_ALT
-      MusEGui::MidiTrackInfo *midiTrackInfo;
-#endif
-      TrackInfoWidget* trackInfoWidget;
-      QWidget* noTrackInfo;
-      MusECore::Track* selected;
+// REMOVE Tim. citem. Removed.
+//       MusEGui::MidiStrip *midiStrip;
+// REMOVE Tim. citem. Removed.
+// #ifdef _USE_TRACKINFO_ALT
+//       MusEGui::MidiTrackInfo *midiTrackInfo;
+// #endif
+//       TrackInfoWidget* trackInfoWidget;
+//       QWidget* noTrackInfo;
+//       MusECore::Track* selected;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -147,13 +150,11 @@ class PianoRoll : public MidiEditor {
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;
-      MusEGui::Splitter* ctrlLane;
       QPushButton* ctrl;
       
       QToolButton* speaker;
       QToolBar* tools;
       MusEGui::EditToolBar* tools2;
-      TrackInfoToolBar* trackInfoBar;
 
       int colorMode;
 
@@ -168,9 +169,10 @@ class PianoRoll : public MidiEditor {
       void setupNewCtrl(CtrlEdit* ctrlEdit);
       void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);
-      void genTrackInfo(TrackInfoWidget* trackInfo);
-      void switchInfo(int);
-      void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
+// REMOVE Tim. citem. Removed.
+//       void genTrackInfo(TrackInfoWidget* trackInfo);
+//       void switchInfo(int);
+//       void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
 
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
@@ -192,8 +194,10 @@ class PianoRoll : public MidiEditor {
       void songChanged1(MusECore::SongChangedStruct_t);
       void configChanged();
       void newCanvasWidth(int);
-      void toggleTrackInfo();
-      void updateTrackInfo(MusECore::SongChangedStruct_t);
+// REMOVE Tim. citem. Removed.
+//       void toggleTrackInfo();
+// REMOVE Tim. citem. Removed.
+//       void updateTrackInfo();
       void deltaModeChanged(bool);
       void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);

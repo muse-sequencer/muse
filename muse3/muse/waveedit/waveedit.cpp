@@ -47,7 +47,6 @@
 #include "waveedit.h"
 #include "mtscale.h"
 #include "scrollscale.h"
-//#include "waveview.h"
 #include "wavecanvas.h"
 #include "ttoolbar.h"
 #include "globals.h"
@@ -60,6 +59,8 @@
 #include "shortcuts.h"
 #include "cmd.h"
 #include "operations.h"
+#include "trackinfo_layout.h"
+#include "splitter.h"
 
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
@@ -71,6 +72,8 @@ static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui:
                            MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool;
 
 int WaveEdit::_rasterInit = 96;
+int WaveEdit::_trackInfoWidthInit = 50;
+int WaveEdit::_canvasWidthInit = 300;
 int WaveEdit::colorModeInit = 0;
   
 //---------------------------------------------------------
@@ -84,6 +87,14 @@ void WaveEdit::closeEvent(QCloseEvent* e)
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
+      
+      //Store values of the horizontal splitter
+      QList<int> sizes = hsplitter->sizes();
+      QList<int>::iterator it = sizes.begin();
+      _trackInfoWidthInit = *it; //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+      it++;
+      _canvasWidthInit = *it;
+    
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
@@ -304,6 +315,60 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       ymag->setValue(yscale);
       ymag->setFocusPolicy(Qt::NoFocus);
 
+      //---------------------------------------------------
+      //    split
+      //---------------------------------------------------
+
+      hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
+      hsplitter->setChildrenCollapsible(true);
+      hsplitter->setHandleWidth(4);
+      
+      trackInfoWidget = new TrackInfoWidget(hsplitter);
+      genTrackInfo(trackInfoWidget);
+
+
+
+      
+      QWidget* gridS2_w = new QWidget();
+      gridS2_w->setObjectName("gridS2_w");
+      gridS2_w->setContentsMargins(0, 0, 0, 0);
+      QGridLayout* gridS2 = new QGridLayout(gridS2_w);
+      gridS2->setContentsMargins(0, 0, 0, 0);
+      gridS2->setSpacing(0);  
+      gridS2->setRowStretch(0, 100);
+      gridS2->setColumnStretch(1, 100);
+      //gridS2->addWidget(ctrl,    0, 0);
+      gridS2->addWidget(hscroll, 0, 0);
+      gridS2->addWidget(corner,  0, 1, Qt::AlignBottom|Qt::AlignRight);
+      gridS2_w->setMaximumHeight(hscroll->sizeHint().height());
+      gridS2_w->setMinimumHeight(hscroll->sizeHint().height());
+      
+      QWidget* splitter_w = new QWidget();
+      splitter_w->setObjectName("splitter_w");
+      splitter_w->setContentsMargins(0, 0, 0, 0);
+      QVBoxLayout* splitter_vbox = new QVBoxLayout(splitter_w);
+      splitter_vbox->setContentsMargins(0, 0, 0, 0);
+      splitter_vbox->setSpacing(0);  
+      //splitter_vbox->addWidget(splitter);
+      splitter_vbox->addWidget(gridS2_w);
+      
+      hsplitter->addWidget(splitter_w);
+          
+      hsplitter->setStretchFactor(hsplitter->indexOf(trackInfoWidget), 0);
+      QSizePolicy tipolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+      tipolicy.setHorizontalStretch(0);
+      tipolicy.setVerticalStretch(100);
+      trackInfoWidget->setSizePolicy(tipolicy);
+
+      hsplitter->setStretchFactor(hsplitter->indexOf(splitter_w), 1);
+      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      //splitter->setSizePolicy(epolicy);
+      
+
+
+      
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
@@ -313,15 +378,40 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       time->setOrigin(0, 0);
 
-      mainGrid->setRowStretch(0, 100);
-      mainGrid->setColumnStretch(0, 100);
+      
+      
+      QWidget* split1     = new QWidget(splitter_w);
+      split1->setObjectName("split1");
+      QGridLayout* gridS1 = new QGridLayout(split1);
+      gridS1->setContentsMargins(0, 0, 0, 0);
+      gridS1->setSpacing(0);  
 
-      mainGrid->addWidget(time,   0, 0, 1, 2);
-      mainGrid->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
-      mainGrid->addWidget(canvas,    2, 0);
-      mainGrid->addWidget(ymag,    2, 1);
-      mainGrid->addWidget(hscroll, 3, 0);
-      mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
+      gridS1->setRowStretch(2, 100);
+      gridS1->setColumnStretch(1, 100);     
+
+//       gridS1->addWidget(time,                   0, 1, 1, 2);
+//       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
+//       //gridS1->addWidget(piano,                  2,    0);
+//       gridS1->addWidget(canvas,                 2,    1);
+//       gridS1->addWidget(vscroll,                2,    2);
+
+      gridS1->addWidget(time,   0, 0, 1, 2);
+      gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
+      gridS1->addWidget(canvas,    2, 0);
+      gridS1->addWidget(ymag,    2, 1);
+
+      
+//       mainGrid->setRowStretch(0, 100);
+//       mainGrid->setColumnStretch(0, 100);
+
+//       mainGrid->addWidget(time,   0, 0, 1, 2);
+//       mainGrid->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
+//       mainGrid->addWidget(canvas,    2, 0);
+//       mainGrid->addWidget(ymag,    2, 1);
+//       mainGrid->addWidget(hscroll, 3, 0);
+//       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
+
+      mainGrid->addWidget(hsplitter, 0, 0, 1, 1);
 
       canvas->setFocus();  
       
@@ -340,6 +430,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
+      connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
@@ -361,6 +452,17 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
         solo->setChecked(part->track()->solo());
       }
 
+      if(canvas->track())
+      {
+        updateTrackInfo();
+        //toolbar->setSolo(canvas->track()->solo());
+      }
+      
+      QList<int> mops;
+      mops.append(_trackInfoWidthInit);
+      mops.append(_canvasWidthInit);
+      hsplitter->setSizes(mops);
+    
       initTopwinState();
       finalizeInit();
       }
@@ -500,6 +602,10 @@ void WaveEdit::readConfiguration(MusECore::Xml& xml)
                               MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
                         else if (tag == "raster")
                               _rasterInit = xml.parseInt();
+                        else if (tag == "trackinfowidth")
+                              _trackInfoWidthInit = xml.parseInt();
+                        else if (tag == "canvaswidth")
+                              _canvasWidthInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
                         else if (tag == "topwin")
@@ -528,6 +634,8 @@ void WaveEdit::writeConfiguration(int level, MusECore::Xml& xml)
       xml.tag(level++, "waveedit");
       xml.colorTag(level, "bgcolor", MusEGlobal::config.waveEditBackgroundColor);
       xml.intTag(level, "raster", _rasterInit);
+      xml.intTag(level, "trackinfowidth", _trackInfoWidthInit);
+      xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "colormode", colorModeInit);
       TopWin::writeConfiguration(WAVE, level,xml);
       xml.tag(level, "/waveedit");
@@ -598,6 +706,10 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;
 
+        // We must catch this first and be sure to update the strips.
+        if(bits._flags & SC_TRACK_REMOVED)
+          checkTrackInfoTrack();
+        
         if (bits._flags & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
@@ -607,6 +719,22 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         }  
         
         songChanged(bits);
+
+        // We'll receive SC_SELECTION if a different part is selected.
+        // Addition - also need to respond here to moving part to another track. (Tim)
+// REMOVE Tim. citem. Changed.
+//         if (bits._flags & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
+        if (bits._flags & (SC_PART_INSERTED | SC_PART_REMOVED))
+          updateTrackInfo();
+
+        // We must marshall song changed instead of connecting to the strip's song changed
+        //  otherwise it crashes when loading another song because track is no longer valid
+        //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+        //  gets called and has a chance to stop the crash.
+        // Also, calling updateTrackInfo() from here is too heavy, it destroys and recreates
+        //  the strips each time no matter what the flags are !
+        else  
+          trackInfoSongChange(bits);
       }
 
 

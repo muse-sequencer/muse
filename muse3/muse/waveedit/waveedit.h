@@ -49,7 +49,7 @@ class PartList;
 }
 
 namespace MusEGui {
-
+class Splitter;
 class PosLabel;
 class ScrollScale;
 class SNode;
@@ -83,7 +83,12 @@ class WaveEdit : public MidiEditor {
       MusEGui::EditToolBar* tools2;
       QMenu* menuFunctions, *select, *menuGain, *eventColor;
       int colorMode;
+      
+      MusEGui::Splitter* hsplitter;
+      
       static int _rasterInit;
+      static int _trackInfoWidthInit;
+      static int _canvasWidthInit;
       static int colorModeInit;
 
       virtual void closeEvent(QCloseEvent*);

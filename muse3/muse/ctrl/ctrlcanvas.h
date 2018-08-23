@@ -176,7 +176,9 @@ class CtrlCanvas : public MusEGui::View {
       void pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg);
       void pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, int drum_ctl);
       void partControllers(const MusECore::MidiPart*, int, int*, int*, MusECore::MidiController**, MusECore::MidiCtrlValList**);
-      
+      // Checks if the current drum pitch requires setting the midi controller and rebuilding the items.
+      // Returns whether setMidiController() and updateItems() were in fact called.
+      bool drumPitchChanged();
       
 
    protected:
@@ -228,7 +230,8 @@ class CtrlCanvas : public MusEGui::View {
    private slots:
       void songChanged(MusECore::SongChangedStruct_t type);
       void configChanged();    
-      void setCurDrumPitch(int);
+      // Returns whether setMidiController() and updateItems() were in fact called, via drumPitchChanged().
+      bool setCurDrumPitch(int);
 
    public slots:
       void setTool(int t);

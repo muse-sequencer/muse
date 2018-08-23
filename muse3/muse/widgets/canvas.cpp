@@ -625,10 +625,17 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
 //             if (y < 0)
 //                   y = 0;
             
-            x2 = x + w;
+//             x2 = x + w;
 
 //             QRect new_rect(x, y, w, h);
             QRect new_rect = devToVirt(rect);
+            x = new_rect.x();
+            y = new_rect.y();
+            w = new_rect.width();
+            h = new_rect.height();
+            
+            x2 = x + w;
+            
             QRegion new_rg;
             for(QRegion::const_iterator i = rg.begin(); i != rg.end(); ++i)
               new_rg += devToVirt(*i);
@@ -727,7 +734,8 @@ void Canvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
-      p.setPen(Qt::red);
+      pen.setColor(Qt::red);
+      p.setPen(pen);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
             mx = mapx(pos[0]);
             p.drawLine(mx, my, mx, my2);

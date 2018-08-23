@@ -109,6 +109,7 @@ class DrumEdit : public MidiEditor {
       bool _playEvents;
 
       MusEGui::Toolbar1* toolbar;
+      MusEGui::Splitter* hsplitter;
       MusEGui::Splitter* split1;
       MusEGui::Splitter* split2;
       QWidget* split1w1;
@@ -119,6 +120,8 @@ class DrumEdit : public MidiEditor {
       QPushButton* ctrl;
 
       static int _rasterInit;
+      static int _trackInfoWidthInit;
+      static int _canvasWidthInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
       static bool _ignore_hide_init;
 

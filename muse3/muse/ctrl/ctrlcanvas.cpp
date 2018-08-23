@@ -598,7 +598,10 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
     return; 
   
   if(type._flags & SC_CONFIG)
+  {
+    setBg(MusEGlobal::config.midiControllerViewBg);
     setFont(MusEGlobal::config.fonts[3]);  
+  }
   
   bool changed = false;
   if(type._flags & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
@@ -633,7 +636,8 @@ void CtrlCanvas::songChanged(MusECore::SongChangedStruct_t type)
 //   num is the controller number, in 'MidiController terms' (lo-byte = 0xff for per-note controllers).
 //---------------------------------------------------------
 
-void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* dnum, int* didx, MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl)
+void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* dnum, int* didx,
+                                 MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl)
 {
   if(num == MusECore::CTRL_VELOCITY) // special case
   {    
@@ -2651,10 +2655,27 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion&)
       }
 
 //---------------------------------------------------------
+//   drumPitchChanged
+//---------------------------------------------------------
+
+bool CtrlCanvas::drumPitchChanged()
+{
+  // Is it a drum controller?
+  if((curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff))
+  {
+    // Recompose the canvas according to the new selected pitch.
+    setMidiController(_cnum);
+    updateItems();
+    return true;
+  }
+  return false;
+}
+
+//---------------------------------------------------------
 //   setCurDrumPitch
 //---------------------------------------------------------
 
-void CtrlCanvas::setCurDrumPitch(int instrument)
+bool CtrlCanvas::setCurDrumPitch(int instrument)
 {
       DrumEdit* drumedit = dynamic_cast<DrumEdit*>(editor);
       if (drumedit == NULL || drumedit->old_style_drummap_mode())
@@ -2672,20 +2693,20 @@ void CtrlCanvas::setCurDrumPitch(int instrument)
           curDrumPitch = -2; // this means "invalid", but not "unused"
       }
 
-      // Is it a drum controller?
-      if((curDrumPitch >= 0) && ((_cnum & 0xff) == 0xff))
-      {
-        // Recompose the canvas according to the new selected pitch.
-        setMidiController(_cnum);
-        updateItems();
-      }
+      return drumPitchChanged();
 }
 
 void CtrlCanvas::curPartHasChanged(MusECore::Part*)
 {
-  setCurTrackAndPart();
-  setCurDrumPitch(editor->curDrumInstrument());
-  songChanged(SC_EVENT_MODIFIED);
+  // If the current part or track changed, setup the midi controller variables.
+  if(setCurTrackAndPart())
+    setMidiController(_cnum);
+  
+  // Rebuild if setCurDrumPitch() doesn't already do it.
+  if(!setCurDrumPitch(editor->curDrumInstrument()))
+    updateItems();
+  
+//   songChanged(SC_EVENT_MODIFIED);
 }
 
 void CtrlCanvas::setPerNoteVeloMode(bool v)

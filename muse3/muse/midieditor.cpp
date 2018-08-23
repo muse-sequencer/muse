@@ -30,9 +30,17 @@
 #include "track.h"
 #include "song.h"
 
+#include "trackinfo_layout.h"
+#include "icons.h"
+#include "mstrip.h"
+#include "gconfig.h"
+#include "app.h"
+
 #include <QRect>
 #include <QColor>
 #include <QGridLayout>
+#include <QPainter>
+#include <QPixmap>
 
 namespace MusEGui {
 
@@ -50,6 +58,10 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
                   _parts.insert(i->second->sn());
       _raster  = r;
       canvas   = 0;
+      
+      trackInfoWidget = 0;
+      selected = 0;
+      
       //wview    = 0;
       _curDrumInstrument = -1;
       mainw    = new QWidget(this);
@@ -93,8 +105,142 @@ void MidiEditor::genPartlist()
       }
 
 //---------------------------------------------------------
-//   addPart
+//   genTrackInfo
 //---------------------------------------------------------
+
+void MidiEditor::genTrackInfo(TrackInfoWidget* trackInfo)
+      {
+      noTrackInfo          = new QWidget(trackInfo);
+      noTrackInfo->setAutoFillBackground(true);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000);
+      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
+      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
+      QPainter p(noInfoPix);
+      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
+
+      QPalette palette;
+      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
+      noTrackInfo->setPalette(palette);
+      noTrackInfo->setGeometry(0, 0, 65, 200);
+      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+      trackInfo->addWidget(noTrackInfo,   0);
+      trackInfo->addWidget(0, 1);
+      }
+
+//---------------------------------------------------------
+//   switchInfo
+//---------------------------------------------------------
+
+void MidiEditor::switchInfo(int n)
+      {
+      const int idx = 1;
+      if(n == idx) {
+            MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
+            if (w == 0 || selected != w->getTrack()) {
+                  if (w)
+                  {
+                        //fprintf(stderr, "MidiEditor::switchInfo deleting strip\n");
+                        delete w;
+                        //w->deleteLater();
+                  }
+                  w = new MidiStrip(trackInfoWidget, static_cast <MusECore::MidiTrack*>(selected));
+                  // Leave broadcasting changes to other selected tracks off.
+                  
+                  // Set focus yielding to the canvas.
+                  if(MusEGlobal::config.smartFocus)
+                  {
+                    w->setFocusYieldWidget(canvas);
+                    //w->setFocusPolicy(Qt::WheelFocus);
+                  }
+
+                  // We must marshall song changed instead of connecting to the strip's song changed
+                  //  otherwise it crashes when loading another song because track is no longer valid
+                  //  and the strip's songChanged() seems to be called before Pianoroll songChanged()
+                  //  gets called and has a chance to stop the crash.
+                  //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
+                  
+                  connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+                  w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  trackInfoWidget->addWidget(w, idx);
+                  w->show();
+                  //setTabOrder(midiTrackInfo, w);
+                  }
+            }
+      if (trackInfoWidget->curIdx() == n)
+            return;
+      trackInfoWidget->raiseWidget(n);
+      }
+
+//---------------------------------------------------------
+//   trackInfoSongChange
+//---------------------------------------------------------
+
+void MidiEditor::trackInfoSongChange(MusECore::SongChangedStruct_t flags)
+{
+  if(!selected)
+    return;
+  
+  if(selected->isMidiTrack()) 
+  {
+    MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(1));
+    if(w)
+      w->songChanged(flags);
+  }
+}
+
+//---------------------------------------------------------
+//   updateTrackInfo
+//---------------------------------------------------------
+
+void MidiEditor::updateTrackInfo()
+{
+      MusECore::Part* part = curCanvasPart();
+      if(part)
+        selected = part->track();
+      else
+        selected = 0;
+      
+      if (selected == 0) {
+            switchInfo(0);
+            return;
+            }
+      if (selected->isMidiTrack()) 
+            switchInfo(1);
+}
+
+//---------------------------------------------------------
+//   checkTrackInfoTrack
+//---------------------------------------------------------
+
+void MidiEditor::checkTrackInfoTrack()
+{
+  const int idx = 1;
+  {
+    Strip* w = static_cast<Strip*>(trackInfoWidget->getWidget(idx));
+    if(w)
+    {
+      MusECore::Track* t = w->getTrack();
+      if(t)
+      {
+        MusECore::TrackList* tl = MusEGlobal::song->tracks();
+        MusECore::iTrack it = tl->find(t);
+        if(it == tl->end())
+        {
+          delete w;
+          trackInfoWidget->addWidget(0, idx);
+          selected = 0;
+          switchInfo(0);
+        } 
+      }   
+    } 
+  }
+}
+        
+//---------------------------------------------------------
+//   movePlayPointerToSelectedEvent
+//---------------------------------------------------------
+
 void MidiEditor::movePlayPointerToSelectedEvent()
 {
     const MusECore::EventList & evl = curCanvasPart()->events();
