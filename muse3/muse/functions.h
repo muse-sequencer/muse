@@ -27,7 +27,7 @@
 #include "part.h"
 #include "dialogs.h"
 #include "type_defs.h"
-//#include "citem.h" // REMOVE Tim. citem. Added.
+#include "pos.h" // REMOVE Tim. citem. Added.
 #include <QWidget>
 
 class QString;
@@ -35,11 +35,63 @@ class QMimeData;
 
 #define FUNCTION_RANGE_ONLY_SELECTED 1
 #define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
-
-
+#define FUNCTION_ALL_PARTS 1
 
 namespace MusECore {
 class Undo;
+
+struct FunctionDialogMode{
+	bool _eventButtons;
+	bool _partsButtons;
+	bool _rangeButtons;
+	Pos  _pos0;
+	Pos  _pos1;
+	FunctionDialogMode() : _eventButtons(false), _partsButtons(false), _rangeButtons(false) { }
+	FunctionDialogMode(bool eventButtons, bool partsButtons,
+										 bool rangeButtons = false,
+										 const Pos& pos0 = Pos(), const Pos& pos1 = Pos()) :
+		_eventButtons(eventButtons), _partsButtons(partsButtons),
+		_rangeButtons(rangeButtons), _pos0(pos0), _pos1(pos1) { }
+};
+
+class FunctionDialogReturnBase
+{
+ public:
+	bool _valid;
+	bool _allEvents;
+	bool _allParts;
+	bool _range;
+	Pos  _pos0;
+	Pos  _pos1;
+	
+	FunctionDialogReturnBase() :_valid(false), _allEvents(false), _allParts(false), _range(false) { }
+	FunctionDialogReturnBase(bool allEvents, bool allParts,
+											 bool useRange = false,
+											 const Pos& pos0 = Pos(), const Pos& pos1 = Pos()) :
+		_valid(true), _allEvents(allEvents),
+		_allParts(allParts), _range(useRange), _pos0(pos0), _pos1(pos1) { }
+};
+
+class FunctionDialogReturnVeloLen : public FunctionDialogReturnBase
+{
+ public:
+	bool _veloThresUsed;
+  int  _veloThreshold;
+	bool _lenThresUsed;
+	int  _lenThreshold;
+	
+	FunctionDialogReturnVeloLen() : FunctionDialogReturnBase(),
+			_veloThresUsed(false), _veloThreshold(0),
+			_lenThresUsed(false), _lenThreshold(0) { }
+	FunctionDialogReturnVeloLen(bool allEvents, bool allParts,
+											 bool useRange = false,
+											 const Pos& pos0 = Pos(), const Pos& pos1 = Pos(),
+											 bool veloThresUsed = false, int veloThreshold = 0,
+											 bool lenThresUsed = false, int lenThreshold = 0) :
+				 FunctionDialogReturnBase(allEvents, allParts, useRange, pos0, pos1), 
+		_veloThresUsed(veloThresUsed), _veloThreshold(veloThreshold),
+		_lenThresUsed(lenThresUsed), _lenThreshold(lenThreshold) { }
+};
 
 std::set<const Part*> partlist_to_set(PartList* pl);
 std::set<const Part*> part_to_set(const Part* p);
@@ -59,6 +111,8 @@ bool move_notes(const std::set<const Part*>& parts, int range, signed int ticks)
 bool transpose_notes(const std::set<const Part*>& parts, int range, signed int halftonesteps);
 bool crescendo(const std::set<const Part*>& parts, int range, int start_val, int end_val, bool absolute);
 bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
+// Ensures that all events are untagged. Useful for aborting dialog etc.
+void untag_all_items();
 
 
 //the below functions automatically open the dialog
@@ -71,6 +125,7 @@ bool move_notes(const std::set<const Part*>& parts);
 bool transpose_notes(const std::set<const Part*>& parts);
 bool crescendo(const std::set<const Part*>& parts);
 bool erase_notes(const std::set<const Part*>& parts);
+FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode&);
 bool delete_overlaps(const std::set<const Part*>& parts);
 bool legato(const std::set<const Part*>& parts);
 

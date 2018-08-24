@@ -1409,15 +1409,15 @@ void DrumEdit::cmd(int cmd)
 // 									MusECore::paste_notes((canvas->part()));
 // 									break;
 						case DrumCanvas::CMD_CUT:
-									tagAllSelectedItems();
+									tagItems();
 									MusECore::erase_items();
 									break;
 						case DrumCanvas::CMD_COPY:
-									tagAllSelectedItems();
+									tagItems();
 									MusECore::copy_items();
 									break;
 						case DrumCanvas::CMD_COPY_RANGE:
-									tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+									tagItems(!itemsAreSelected(), false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
 									MusECore::copy_items();
 									break;
 						case DrumCanvas::CMD_PASTE: 
@@ -1448,8 +1448,21 @@ void DrumEdit::cmd(int cmd)
 																				quantize_dialog->swing, quantize_dialog->threshold);
 									break;
 									}
-						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
+// 						case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+						case DrumCanvas::CMD_ERASE_EVENT:
+            {
+							MusECore::FunctionDialogReturnVeloLen ret =
+							  MusECore::erase_items_dialog(MusECore::FunctionDialogMode(true, true, true));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+							MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+            }
+						break;
+// 						case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
+						case DrumCanvas::CMD_DEL:
+							tagItems();
+							MusECore::erase_items();
+						break;
 						case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
 						case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
 						case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;

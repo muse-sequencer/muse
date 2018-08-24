@@ -39,6 +39,7 @@ class Remove : public QDialog, public Ui::RemoveBase
 	private:
 		
 		QButtonGroup* range_group;
+		QButtonGroup* parts_group;
 		
 	protected slots:
 		void accept();
@@ -46,8 +47,10 @@ class Remove : public QDialog, public Ui::RemoveBase
 
 	public:
 		Remove(QWidget* parent = 0);
+		~Remove();
 
 		static int range;
+		static int parts;
 		static int velo_threshold;
 		static bool velo_thres_used;
 		static int len_threshold;
@@ -58,7 +61,7 @@ class Remove : public QDialog, public Ui::RemoveBase
 		
 		
 	public slots:
-		int exec();
+		int exec(bool showEventsButtons = true, bool showPartsButtons = false, bool showMarkerButtons = true);
 };
 
 } // namespace MusEGui

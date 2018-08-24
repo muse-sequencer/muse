@@ -27,10 +27,11 @@
 namespace MusEGui {
 
 int Remove::range = 1;
+int Remove::parts = 0;
 int Remove::velo_threshold = 16;
-bool Remove::velo_thres_used = 0;
+bool Remove::velo_thres_used = false;
 int Remove::len_threshold = 12;
-bool Remove::len_thres_used = 0;
+bool Remove::len_thres_used = false;
 
 
 Remove::Remove(QWidget* parent)
@@ -42,11 +43,22 @@ Remove::Remove(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
+	
+	parts_group = new QButtonGroup;
+	parts_group ->addButton(not_all_parts_button,0);
+	parts_group ->addButton(all_parts_button,1);
+}
+
+Remove::~Remove()
+{
+	delete parts_group;
+	delete range_group;
 }
 
 void Remove::pull_values()
 {
 	range = range_group->checkedId();
+	parts = parts_group->checkedId();
 	len_thres_used=len_checkbox->isChecked();
 	len_threshold=len_spinbox->value();
 	velo_thres_used=velo_checkbox->isChecked();
@@ -59,16 +71,30 @@ void Remove::accept()
 	QDialog::accept();
 }
 
-int Remove::exec()
+int Remove::exec(bool showEventsButtons, bool showPartsButtons, bool showMarkerButtons)
 {
 	if ((range < 0) || (range > 3)) range=0;
+	if ((parts < 0) || (parts > 1)) parts=0;
 	
 	range_group->button(range)->setChecked(true);
+	parts_group->button(parts)->setChecked(true);
+	all_events_button->setEnabled(showEventsButtons);
+	all_events_button->setVisible(showEventsButtons);
+	selected_events_button->setEnabled(showEventsButtons);
+	selected_events_button->setVisible(showEventsButtons);
+	looped_events_button->setEnabled(showMarkerButtons);
+	looped_events_button->setVisible(showMarkerButtons);
+	selected_looped_button->setEnabled(showMarkerButtons);
+	selected_looped_button->setVisible(showMarkerButtons);
+
 	len_checkbox->setChecked(len_thres_used);
 	len_spinbox->setValue(len_threshold);
 	velo_checkbox->setChecked(velo_thres_used);
 	velo_spinbox->setValue(velo_threshold);
-	
+
+	partsBox->setEnabled(showPartsButtons);
+	partsBox->setVisible(showPartsButtons);
+
 	return QDialog::exec();
 }
 
@@ -86,6 +112,8 @@ void Remove::read_configuration(MusECore::Xml& xml)
 			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
+				else if (tag == "parts")
+					parts=xml.parseInt();
 				else if (tag == "velo_threshold")
 					velo_threshold=xml.parseInt();
 				else if (tag == "velo_thres_used")
@@ -112,6 +140,7 @@ void Remove::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "erase");
 	xml.intTag(level, "range", range);
+	xml.intTag(level, "parts", parts);
 	xml.intTag(level, "velo_threshold", velo_threshold);
 	xml.intTag(level, "velo_thres_used", velo_thres_used);
 	xml.intTag(level, "len_threshold", len_threshold);

@@ -263,7 +263,7 @@ class CtrlCanvas : public MusEGui::View {
       // Checks for duplicates, employing the 'tagged' features.
       //void getAllSelectedItems(CItemSet&) const;
       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+      void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
         const MusECore::Pos& = MusECore::Pos(), const MusECore::Pos& = MusECore::Pos()) const;
       };
 

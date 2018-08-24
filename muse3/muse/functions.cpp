@@ -176,6 +176,30 @@ map<const Event*, const Part*> get_events(const set<const Part*>& parts, int ran
 }
 
 
+void untag_all_items()
+{
+	Part* part;
+	PartList* pl;
+	TrackList* tl = MusEGlobal::song->tracks();
+	
+	// We must clear all the tagged flags...
+	for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		pl = (*it)->parts();
+		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+		{
+			part = ip->second;
+			part->setTagged(false);
+			if(part->eventsTagged())
+			{
+				part->setEventsTagged(false);
+				EventList& el = part->nonconst_events();
+				for(iEvent ie = el.begin(); ie != el.end(); ie++)
+					ie->second.setTagged(false);
+			}
+		}
+	}
+}
 
 
 bool modify_notelen(const set<const Part*>& parts)
@@ -702,8 +726,8 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
           {
             e.setTagged(false);
             // FIXME TODO Likely need agnostic Pos or frames rather than ticks if WaveCanvas is to use this.
-            if ( (!velo_thres_used && !len_thres_used) ||
-                  (velo_thres_used && e.velo() < velo_threshold) ||
+            if ( e.type() != Note || (!velo_thres_used && !len_thres_used) ||
+                   (velo_thres_used && e.velo() < velo_threshold) ||
                   (len_thres_used && int(e.lenTick()) < len_threshold) )
             {
               changed = true;
@@ -719,6 +743,30 @@ bool erase_items(int velo_threshold, bool velo_thres_used, int len_threshold, bo
     return MusEGlobal::song->applyOperationGroup(operations);
   else
     return false;
+}
+
+FunctionDialogReturnVeloLen erase_items_dialog(const FunctionDialogMode& mode)
+{
+	if (!MusEGui::erase_dialog->exec(mode._eventButtons, mode._partsButtons, mode._rangeButtons))
+		return FunctionDialogReturnVeloLen();
+		
+	return FunctionDialogReturnVeloLen(!(MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED),
+															MusEGui::erase_dialog->parts & FUNCTION_ALL_PARTS,
+															MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,
+															MusEGlobal::song->lPos(), MusEGlobal::song->rPos(),
+															MusEGui::erase_dialog->velo_thres_used, MusEGui::erase_dialog->velo_threshold,
+															MusEGui::erase_dialog->len_thres_used, MusEGui::erase_dialog->len_threshold);
+
+//   // TODO For now only do current part. Add support for 'all parts' option.
+//   if(range_items)
+//     editor->tagItems(!selected_items, false, true, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+//   else
+//     editor->tagItems(!selected_items, false);
+//   
+//   erase_items(MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+//               MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
+// 
+//   return true;
 }
 
 bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)

@@ -310,18 +310,83 @@ bool MidiEditor::itemsAreSelected() const
 
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
-//   tagAllSelectedItems
+//   tagItems
 //---------------------------------------------------------
 
-void MidiEditor::tagAllSelectedItems(bool range, bool rangeSelectedOnly,
+void MidiEditor::tagItems(bool tagAllItems, bool tagAllParts, bool range,
         const MusECore::Pos& p0, const MusECore::Pos& p1) const
 {
-  // These two steps use the tagging features to mark the objects (events)
-  //  as having been visited already, to avoid duplicates in the list.
-  if(canvas)
-    canvas->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1);
-  for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
-    (*i)->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1);
+  // If tagging all items, don't bother with the controller editors below,
+  //  since everything that they could tag will already be tagged.
+  if(tagAllItems)
+  {
+    MusECore::Part* part;
+    MusECore::Pos pos;
+    if(tagAllParts)
+    {
+      if(_pl)
+      {
+        for(MusECore::ciPart ip = _pl->begin(); ip != _pl->end(); ++ip)
+        {
+          part = ip->second;
+          MusECore::EventList& el = part->nonconst_events();
+          for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+          {
+            MusECore::Event& e = ie->second;
+            if(range)
+            {
+              pos = e.pos();
+              if(pos >= p0 && pos < p1)
+              {
+                e.setTagged(true);
+                part->setEventsTagged(true);
+              }
+            }
+            else
+            {
+              e.setTagged(true);
+              part->setEventsTagged(true);
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      if(canvas && canvas->part())
+      {
+        part = canvas->part();
+        MusECore::EventList& el = part->nonconst_events();
+        for(MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie)
+        {
+          MusECore::Event& e = ie->second;
+          if(range)
+          {
+            pos = e.pos();
+            if(pos >= p0 && pos < p1)
+            {
+              e.setTagged(true);
+              part->setEventsTagged(true);
+            }
+          }
+          else
+          {
+            e.setTagged(true);
+            part->setEventsTagged(true);
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    // These two steps use the tagging features to mark the objects (events)
+    //  as having been visited already, to avoid duplicates in the list.
+    if(canvas)
+      canvas->tagItems(false, tagAllParts, range, p0, p1);
+    for(ciCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+      (*i)->tagItems(false, tagAllParts, range, p0, p1);
+  }
 }
 
 //---------------------------------------------------------

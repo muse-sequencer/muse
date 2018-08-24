@@ -80,10 +80,10 @@ class CtrlEdit : public QWidget {
       // Checks for duplicates, employing the 'tagged' features.
       //void getAllSelectedItems(CItemSet& list) const { if(!canvas) return; canvas->getAllSelectedItems(list); }
       // Tags all selected item objects. Checks for duplicates, employing the 'tagged' features.
-      void tagAllSelectedItems(bool range = false, bool rangeSelectedOnly = false,
+      void tagItems(bool tagAllItems = false, bool tagAllParts = false, bool range = false,
         const MusECore::Pos& p0 = MusECore::Pos(),
         const MusECore::Pos& p1 = MusECore::Pos()) const {
-        if(canvas) canvas->tagAllSelectedItems(range, rangeSelectedOnly, p0, p1); }
+        if(canvas) canvas->tagItems (tagAllItems, tagAllParts, range, p0, p1); }
       };
 
       

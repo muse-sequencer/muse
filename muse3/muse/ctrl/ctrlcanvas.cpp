@@ -494,29 +494,38 @@ void CtrlCanvas::removeSelection(CEvent* e)
 
 // REMOVE Tim. citem. Added.
 //---------------------------------------------------------
-//   tagAllSelectedItems
+//   tagItems
 //---------------------------------------------------------
 
-void CtrlCanvas::tagAllSelectedItems(bool range, bool rangeSelectedOnly,
+void CtrlCanvas::tagItems(bool tagAllItems, bool tagAllParts, bool range,
      const MusECore::Pos& p0, const MusECore::Pos& p1) const
 { 
   CItem* item;
+  MusECore::Part* part;
   if(range)
   {
-    if(rangeSelectedOnly)
+    if(tagAllItems || tagAllParts)
     {
-      for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+      for(ciCItemSet i = items.begin(); i != items.end(); ++i)
       {
         item = *i;
+        part = item->part();
+        if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+          continue;
+        if(!tagAllItems && !item->isSelected())
+          continue;
         if(item->isObjectInRange(p0, p1))
           item->setObjectTagged(true);
       }
     }
     else
     {
-      for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+      for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
       {
         item = *i;
+        part = item->part();
+        if(part != curPart || (part && part->track() != curTrack))
+          continue;
         if(item->isObjectInRange(p0, p1))
           item->setObjectTagged(true);
       }
@@ -524,8 +533,30 @@ void CtrlCanvas::tagAllSelectedItems(bool range, bool rangeSelectedOnly,
   }
   else
   {
-    for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
-      (*i)->setObjectTagged(true);
+    if(tagAllItems || tagAllParts)
+    {
+      for(ciCItemSet i = items.begin(); i != items.end(); ++i)
+      {
+        item = *i;
+        part = item->part();
+        if(!tagAllParts && (part != curPart || (part && part->track() != curTrack)))
+          continue;
+        if(!tagAllItems && !item->isSelected())
+          continue;
+        item->setObjectTagged(true);
+      }
+    }
+    else
+    {
+      for(ciCItemSet i = selection.begin(); i != selection.end(); ++i)
+      {
+        item = *i;
+        part = item->part();
+        if(part != curPart || (part && part->track() != curTrack))
+          continue;
+        item->setObjectTagged(true);
+      }
+    }
   }
 }
 

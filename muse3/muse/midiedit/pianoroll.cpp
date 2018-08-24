@@ -874,15 +874,15 @@ void PianoRoll::cmd(int cmd)
 // 															MusECore::paste_notes((canvas->part()));
 // 															break;
 						case PianoCanvas::CMD_CUT:
-									tagAllSelectedItems();
+									tagItems();
 									MusECore::erase_items();
 									break;
 						case PianoCanvas::CMD_COPY:
-									tagAllSelectedItems();
+									tagItems();
 									MusECore::copy_items();
 									break;
 						case PianoCanvas::CMD_COPY_RANGE:
-									tagAllSelectedItems(true, itemsAreSelected(), MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
+									tagItems(!itemsAreSelected(), true, false, MusEGlobal::song->lPos(), MusEGlobal::song->rPos());
 									MusECore::copy_items();
 									break;
 						case PianoCanvas::CMD_PASTE: 
@@ -903,8 +903,21 @@ void PianoRoll::cmd(int cmd)
 						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
-						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
+// 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_ERASE_EVENT:
+            {
+							MusECore::FunctionDialogReturnVeloLen ret =
+							  MusECore::erase_items_dialog(MusECore::FunctionDialogMode(true, true, true));
+              if(ret._valid)
+                tagItems(ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1);
+							MusECore::erase_items(ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+            }
+						break;
+// 						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
+						case PianoCanvas::CMD_DEL:
+							tagItems();
+							MusECore::erase_items();
+							break;
 						case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
